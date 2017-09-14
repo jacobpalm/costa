@@ -1,0 +1,322 @@
+DECLARE FUNCTION IconEdit.SaveIcon% ()
+DECLARE FUNCTION IconEdit.LoadIcon% ()
+
+DEFINT A-Z
+OPTION EXPLICIT
+
+DECLARE SUB IconEdit.Main ()
+
+TYPE IconDataType
+    Pixel(31, 31) AS INTEGER
+END TYPE
+
+STACK 5120
+
+DIM SHARED IconData AS IconDataType
+DIM SHARED IconFileName AS STRING
+
+'$INCLUDE: 'D:\COSTA\SOURCE\COSTALIB.BI'
+
+IF File.Exists(Sys.Path + "DATA\TEMP\RUNSTAT.TMP") = False THEN
+    IF NOT COMMAND$ = "/DEV" THEN 'debug
+        CLS
+        PRINT "This program is a part of The Costa Graphical Shell and should not be executed"
+        PRINT "directly from the command prompt."
+        PRINT
+        PRINT "To start Costa, run COSTA.BAT. If that file doesn't exist, run SETUP.EXE."
+        PRINT
+        END
+    END IF
+END IF
+
+IF Sys.Path = "" OR File.Exists(Sys.Path + "COSTA099.EXE") = False THEN
+    CLS
+    PRINT "The environment variable COSTA099, which contains the path to Costa, is either"
+    PRINT "not set or contains an invalid path."
+    PRINT
+    PRINT "Run SETUP.EXE to fix this issue."
+    PRINT
+    END
+END IF
+
+IF NOT COMMAND$ = "/?" AND NOT COMMAND$ = "/DEV" THEN
+    IconFileName = COMMAND$
+END IF
+
+Sys.Load
+
+IconEdit.Main
+
+DEFSNG A-Z
+SUB Calc.Main ()
+END SUB
+
+SUB Conf.Main ()
+END SUB
+
+DEFINT A-Z
+FUNCTION IconEdit.LoadIcon ()
+    DIM LoadFile AS STRING, FileHandle
+    DIM Header AS STRING * 9
+    
+    LoadFile = UCASE$(LTRIM$(RTRIM$(Sys.InputBox("Load icon file", "Type the name of a icon file below, without path or" + CHR$(13) + "extension (8 letters max, for example: MYICON).", "PAINT", IconFileName))))
+
+    IF LoadFile = "" THEN EXIT FUNCTION
+
+    IF LoadFile = IconFileName THEN
+        IF Sys.MsgBox("File already open", "The file you specified is already opened." + CHR$(13) + "Do you want to discard all changes and reload" + CHR$(13) + "the icon as it was last saved?", msgQuest) = False THEN EXIT FUNCTION
+    END IF
+
+    IF LEN(LoadFile) > 8 THEN
+        FileHandle = Sys.MsgBox("Invalid file name", "The filename you specified was too long." + CHR$(13) + "Do not type a path or extension, only a filename" + CHR$(13) + "with a maximun lenght of 8 characters.", msgError)
+        EXIT FUNCTION
+    END IF
+
+    IF NOT File.Exists(Sys.Path + "DATA\IMAGES\" + LoadFile + ".BIF") THEN
+        FileHandle = Sys.MsgBox("File not found", "The icon file specified does not exist.", msgError)
+        EXIT FUNCTION
+    END IF
+
+    FileHandle = FREEFILE
+
+    'DEBUG DEBUG
+    'Check stoerrelse, kontroller header m.m.
+
+    OPEN Sys.Path + "DATA\IMAGES\" + LoadFile + ".BIF" FOR BINARY AS #FileHandle
+    GET #FileHandle, , Header
+    GET #FileHandle, , IconData
+    CLOSE #FileHandle
+
+    IconFileName = LoadFile
+    IconEdit.LoadIcon = True
+
+END FUNCTION
+
+SUB IconEdit.Main ()
+
+    DIM winMain AS WindowType, txtDrawArea AS TextBoxType
+    DIM btnPreview AS ButtonType
+    DIM btnNew AS ButtonType, btnOpen AS ButtonType, btnSave AS ButtonType
+    DIM btnExit AS ButtonType
+    DIM txtColor(-1 TO 15) AS TextBoxType
+
+    DIM Key$, YPos, XPos, CursorX, CursorY, DrawColor, TransClick
+    DIM IconChanged, ColChk
+
+    Obj.SetSize winMain.Pos, 48, 11, 544, 458
+    Obj.SetSize txtDrawArea.Pos, winMain.Pos.Left + 8, winMain.Pos.Top + 31, 418, 418
+
+    Obj.SetSize btnPreview.Pos, winMain.Pos.Left + txtDrawArea.Pos.Width + 38, winMain.Pos.Top + 280, 52, 52
+    btnPreview.Transparent = True
+
+    Obj.SetSize btnSave.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, winMain.Pos.Top + winMain.Pos.Height - 95, 100, 22
+    btnSave.Caption = "Save"
+    btnSave.Hotkey = 1
+    
+    Obj.SetSize btnOpen.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, winMain.Pos.Top + winMain.Pos.Height - 63, 100, 22
+    btnOpen.Caption = "Load"
+    btnOpen.Hotkey = 1
+
+    Obj.SetSize btnExit.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, winMain.Pos.Top + winMain.Pos.Height - 31, 100, 22
+    btnExit.Caption = "Exit"
+    btnExit.Hotkey = 2
+
+    Obj.SetSize txtColor(-1).Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, txtDrawArea.Pos.Top + 153, 37, 18
+    
+StartOfMain:
+
+    DrawColor = 0
+    CursorX = 0
+    CursorY = 0
+    IconChanged = False
+    
+    winMain.Caption = "Icon Editor for Costa -"
+    IF IconFileName = "" THEN
+        winMain.Caption = RTRIM$(winMain.Caption) + " Untitled"
+    ELSE
+        winMain.Caption = RTRIM$(winMain.Caption) + " " + IconFileName
+    END IF
+
+    Obj.DrawWin winMain
+    Obj.DrawTxt txtDrawArea, "", False
+    Obj.DrawBtn btnPreview, False
+    Obj.DrawBtn btnSave, False
+    Obj.DrawBtn btnOpen, False
+    Obj.DrawBtn btnExit, False
+    Obj.DrawTxt txtColor(-1), "", False
+
+    Mouse.Hide
+    LINE (txtDrawArea.Pos.Left + 2, txtDrawArea.Pos.Top + 2)-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width - 2, txtDrawArea.Pos.Top + txtDrawArea.Pos.Width - 2), 15, BF
+    FOR YPos = 0 TO 31
+        LINE (txtDrawArea.Pos.Left + 2, txtDrawArea.Pos.Top + (YPos * 13) + 1)-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width - 2, txtDrawArea.Pos.Top + (YPos * 13) + 1), 0
+    NEXT
+    FOR XPos = 0 TO 31
+        LINE (txtDrawArea.Pos.Left + (XPos * 13) + 1, txtDrawArea.Pos.Top + 2)-(txtDrawArea.Pos.Left + (XPos * 13) + 1, txtDrawArea.Pos.Top + txtDrawArea.Pos.Height - 2), 0
+    NEXT
+
+    FOR YPos = 0 TO 7
+        Obj.SetSize txtColor(YPos).Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, txtDrawArea.Pos.Top + (YPos * 19), 18, 18
+        Obj.DrawTxt txtColor(YPos), "", False
+        LINE (txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 12, txtDrawArea.Pos.Top + (YPos * 19) + 2)-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 26, txtDrawArea.Pos.Top + (YPos * 19) + 16), YPos, BF
+    NEXT
+    FOR YPos = 8 TO 15
+        Obj.SetSize txtColor(YPos).Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 29, txtDrawArea.Pos.Top + ((YPos - 8) * 19), 18, 18
+        Obj.DrawTxt txtColor(YPos), "", False
+        LINE (txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 31, txtDrawArea.Pos.Top + ((YPos - 8) * 19) + 2)-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 45, txtDrawArea.Pos.Top + ((YPos - 8) * 19) + 16), YPos, BF
+    NEXT
+
+
+    FOR XPos = 0 TO 31
+        FOR YPos = 0 TO 31
+            IF IconFileName = "" THEN
+                Font.Print "T", txtDrawArea.Pos.Left + (XPos * 13) + 5, txtDrawArea.Pos.Top + (YPos * 13) + 4, 0, fontHeading
+                IconData.Pixel(XPos, YPos) = -1
+            ELSE
+                IF IconData.Pixel(XPos, YPos) > -1 THEN
+                    LINE (txtDrawArea.Pos.Left + 2 + (XPos * 13), txtDrawArea.Pos.Top + 2 + (YPos * 13))-(txtDrawArea.Pos.Left + 2 + (XPos * 13) + 11, txtDrawArea.Pos.Top + 2 + (YPos * 13) + 11), IconData.Pixel(XPos, YPos), BF
+                    PSET (btnPreview.Pos.Left + 10 + XPos, btnPreview.Pos.Top + 10 + YPos), IconData.Pixel(XPos, YPos)
+                ELSE
+                    Font.Print "T", txtDrawArea.Pos.Left + (XPos * 13) + 5, txtDrawArea.Pos.Top + (YPos * 13) + 4, 0, fontHeading
+                END IF
+            END IF
+        NEXT
+    NEXT
+    LINE (txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 12, txtDrawArea.Pos.Top + 155)-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 45, txtDrawArea.Pos.Top + 169), 15, BF
+    Mouse.Show
+
+    Font.Print "T", txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 26, txtDrawArea.Pos.Top + 158, 0, fontHeading
+
+    DO
+        Key$ = LCASE$(INKEY$)
+
+        IF Mouse.InArea(txtDrawArea.Pos) THEN
+            CursorX = (Mouse.X - (txtDrawArea.Pos.Left + 7)) / 13
+            CursorY = (Mouse.Y - (txtDrawArea.Pos.Top + 7)) / 13
+            IF CursorX < 0 THEN CursorX = 0
+            IF CursorY < 0 THEN CursorY = 0
+            IF CursorX > 31 THEN CursorX = 31
+            IF CursorY > 31 THEN CursorY = 31
+        ELSE
+            CursorX = -1
+            CursorY = -1
+        END IF
+
+        IF Obj.BtnClick(btnSave) OR Key$ = "s" THEN
+            IF IconEdit.SaveIcon THEN GOTO StartOfMain
+        END IF
+
+        IF Obj.BtnClick(btnOpen) OR Key$ = "l" THEN
+            IF IconEdit.LoadIcon THEN GOTO StartOfMain
+        END IF
+
+        IF Obj.BtnClick(btnExit) OR Key$ = "x" THEN
+            IF IconChanged = True THEN
+                IF Sys.MsgBox("Icon has been modified", "This icon contains unsaved changes. Do you" + CHR$(13) + "want to save it before you exit?", msgQuest) = True THEN
+                    IF IconEdit.SaveIcon = True THEN END
+                ELSE
+                    END
+                END IF
+            ELSE
+                END
+            END IF
+        END IF
+        
+        FOR ColChk = -1 TO 15
+            IF Obj.TxtClick(txtColor(ColChk)) THEN
+                IF NOT DrawColor = ColChk THEN
+                    DrawColor = ColChk
+                END IF
+            END IF
+        NEXT
+
+        IF Mouse.Clicked AND CursorX > -1 AND CursorY > -1 THEN
+            XPos = txtDrawArea.Pos.Left + 2 + (CursorX * 13)
+            YPos = txtDrawArea.Pos.Top + 2 + (CursorY * 13)
+
+            IF Mouse.Clicked = mbLeft THEN
+                IF NOT IconData.Pixel(CursorX, CursorY) = DrawColor THEN
+                    IconChanged = True
+                    IconData.Pixel(CursorX, CursorY) = DrawColor
+                    Mouse.Hide
+                    IF DrawColor > -1 THEN
+                        TransClick = False
+                        LINE (XPos, YPos)-(XPos + 11, YPos + 11), DrawColor, BF
+                    ELSE
+                        TransClick = True
+                        LINE (XPos, YPos)-(XPos + 11, YPos + 11), 15, BF
+                        Font.Print "T", XPos + 3, YPos + 2, 0, fontHeading
+                    END IF
+                    Mouse.Show
+                    GOSUB UpdatePreview
+                END IF
+            ELSE
+                IF NOT IconData.Pixel(CursorX, CursorY) = -1 THEN
+                    IconChanged = True
+                    TransClick = True
+                    IconData.Pixel(CursorX, CursorY) = -1
+                    Mouse.Hide
+                    LINE (XPos, YPos)-(XPos + 11, YPos + 11), 15, BF
+                    Mouse.Show
+                    Font.Print "T", XPos + 3, YPos + 2, 0, fontHeading
+                    GOSUB UpdatePreview
+                END IF
+            END IF
+
+
+        END IF
+        
+    LOOP UNTIL Key$ = CHR$(27)
+
+    EXIT SUB
+
+UpdatePreview:
+    Mouse.Hide
+    IF TransClick = True THEN
+        PSET (btnPreview.Pos.Left + 10 + CursorX, btnPreview.Pos.Top + 10 + CursorY), clrButton
+    ELSE
+        PSET (btnPreview.Pos.Left + 10 + CursorX, btnPreview.Pos.Top + 10 + CursorY), DrawColor
+    END IF
+
+    Mouse.Show
+    RETURN
+
+END SUB
+
+FUNCTION IconEdit.SaveIcon ()
+
+    DIM SaveAs AS STRING, FileHandle
+    DIM Header AS STRING * 9
+    Header = "JACOBPALM"
+
+    SaveAs = Sys.InputBox("Save icon file", "Type a name for the icon file below, without path or" + CHR$(13) + "extension (8 letters max, for example: MYICON).", "PAINT", IconFileName)
+
+    IF SaveAs = "" THEN EXIT FUNCTION
+
+    IF LEN(SaveAs) > 8 THEN
+        'show error
+        FileHandle = Sys.MsgBox("Invalid file name", "The filename you specified was too long." + CHR$(13) + "Do not type a path or extension, only a filename" + CHR$(13) + "with a maximun lenght of 8 characters.", msgError)
+        EXIT FUNCTION
+    END IF
+
+    IF File.Exists(Sys.Path + "DATA\IMAGES\" + SaveAs + ".BIF") THEN KILL Sys.Path + "DATA\IMAGES\" + SaveAs + ".BIF"
+    
+    FileHandle = FREEFILE
+
+    OPEN Sys.Path + "DATA\IMAGES\" + SaveAs + ".BIF" FOR BINARY AS #FileHandle
+    'User defined data type
+    PUT #FileHandle, , Header
+    PUT #FileHandle, , IconData
+    CLOSE #FileHandle
+
+    IconFileName = SaveAs
+    IconEdit.SaveIcon = True
+    
+END FUNCTION
+
+DEFSNG A-Z
+SUB Tic.Main ()
+END SUB
+
+SUB TView.Main (FileToView AS STRING)
+END SUB
+
