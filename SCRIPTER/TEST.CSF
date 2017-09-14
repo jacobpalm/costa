@@ -1,0 +1,18 @@
+'Test script
+'
+'By JacobPalm.dk
+'
+'For testing of newly implemented routines
+
+Sub Script_Load
+
+	GUI.SetWindow "Control tests", 90, 60, 200, 150
+
+	GUI.SetControl 1, Label, "Label test", 15, 10
+	GUI.SetControl 2, Textbox, "Textbox test", 15, 30, 120, 22
+	GUI.SetControl 3, Button, "Button test", 15, 60, 120, 22
+	GUI.SetControl 4, Icon, "ICONS\TEST.CIF", 145, 30
+	GUI.SetControl 5, Checkbox, "Checkbox test", 15, 90, 0, 0
+	GUI.SetControl 6, Label, "Checkbox test", 30, 89
+
+End Sub
