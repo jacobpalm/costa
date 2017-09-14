@@ -6,19 +6,19 @@ REM RAM, this version only has the batch program in memory, conserving
 REM a lot of conventional RAM.
 
 REM This is where the path to Costa is defined.
-SET COSTA099=C:\COSTA
+SET COSTA100=C:\COSTA
 
-IF NOT EXIST %COSTA099%\COSTA099.EXE GOTO ExeNotFound
+IF NOT EXIST %COSTA100%\COSTA100.EXE GOTO ExeNotFound
 
 REM Make sure a mouse driver is loaded. This driver will only load if
 REM another mouse driver isn't present.
-%COSTA099%\CTMOUSE.COM >NUL
+%COSTA100%\CTMOUSE.COM >NUL
 
 REM Start by launching the desktop. The /BOOT parameter is simply there to
 REM prevent the desktop from being launched outside of this batch program,
 REM since it wouldn't work if it were (it would just exit whenever a link
 REM on the desktop was clicked)
-%COSTA099%\COSTA099.EXE /BOOT
+%COSTA100%\COSTA100.EXE /BOOT
 
 
 :LoopStart
@@ -32,30 +32,30 @@ IF ERRORLEVEL = 1 GOTO Exit
 REM If we make it here no errorlevel has been set and we can return to the
 REM desktop. The /BOOT parameter is no longer neccesary, as Costa is already
 REM running.
-%COSTA099%\COSTA099.EXE
+%COSTA100%\COSTA100.EXE
 GOTO LoopStart
 
 
 :RunBat
 REM Run the batch file, delete it and return to the top of the loop. The
-REM reason COSTA099.EXE is executed here is to prevent the errorlevel from
+REM reason COSTA100.EXE is executed here is to prevent the errorlevel from
 REM the external program affecting the errorlevel check above.
-CALL %COSTA099%\DATA\TEMP\RUN.BAT
-DEL %COSTA099%\DATA\TEMP\RUN.BAT
-%COSTA099%\COSTA099.EXE
+CALL %COSTA100%\DATA\TEMP\RUN.BAT
+DEL %COSTA100%\DATA\TEMP\RUN.BAT
+%COSTA100%\COSTA100.EXE
 GOTO LoopStart
 
 :ExeNotFound
 ECHO.
-ECHO COSTA099.EXE was not found in %COSTA099%.
+ECHO COSTA100.EXE was not found in %COSTA100%.
 ECHO.
 ECHO Run SETUP.EXE to fix this issue.
 ECHO.
-SET COSTA099=
+SET COSTA100=
 GOTO EndOfBAT
 
 :Exit
-SET COSTA099=
+SET COSTA100=
 CD \
 CLS
 ECHO Thank you for using The Costa Graphical Shell.

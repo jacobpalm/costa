@@ -153,7 +153,6 @@ SUB Desk.DrawDesktop ()
 
     'Description (caption) and target file
     IF VAL(File.CfgRead("DATA\CONFIG\DESKTOP.CFG", "ShowLinkDescriptions", "1")) = 1 THEN
-        
 
         IF VAL(File.CfgRead("DATA\CONFIG\DESKTOP.CFG", "ShowLinkTargetFiles", "1")) = 1 THEN
             Font.Print DeskLink(TargetLink).Caption, DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 4, ClrDesktopText, 1
@@ -167,7 +166,7 @@ SUB Desk.DrawDesktop ()
         END IF
 
     END IF
-
+                 
   NEXT
   
 END SUB
