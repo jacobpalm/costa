@@ -8,4 +8,6 @@ theory it should run on any MS-DOS compatible operating system.
 The low system requirements make Costa especially useful for older machines,
 which are also the machines that typically run the MS-DOS operating system.
 
-See the included documentation for more information.
+See the included documentation for more information, or visit the homepage
+of Costa at
+  http://costa.jacobpalm.dk
