@@ -1,8 +1,6 @@
-# costa
-The Costa Graphical User Interface
-
-Costa is a graphical user interface, designed to run on top of the command line
-as a shell.
+# The Costa GUI
+Costa is a graphical user interface (GUI), designed to run on top of the command
+line as a shell.
 
 It is designed for MS-DOS, but tested with FreeDOS and DOSBox as well. In theory,
 it should run on any MS-DOS compatible operating system.
