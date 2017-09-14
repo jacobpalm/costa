@@ -1,0 +1,274 @@
+
+                          The Costa Graphical Shell
+                                Version 1.0.0
+                                By Jacob Palm                   
+
+                          User's guide and reference 
+
+------------------------------------------------------------------------------
+| Table of contents                                                          |
+------------------------------------------------------------------------------
+
+1.0 Before you start
+   1.1 What is Costa?
+   1.2 System requirements
+   1.3 News in this version
+   1.4 About Costa
+   1.5 License
+2.0 Using Costa
+   2.1 Starting Costa
+   2.2 Exiting Costa
+   2.3 Managing desktop links
+   2.4 Running DOS commands
+3.0 Customizing Costa
+   3.1 Launching the Configuration program
+   3.2 The theme selector
+   3.3 File associations
+   3.4 Other settings
+
+
+------------------------------------------------------------------------------
+| 1.0 - Before you start                                                     |
+------------------------------------------------------------------------------
+ ** 1.1 - What is Costa? **
+
+    Costa is a shell with a graphical user interface which replaces the
+   DOS-prompt with a mouse operated environment with windows, buttons,
+   textboxes and such. The low system requirements make Costa very useful
+   for older machines, which are also the machines that typically run the
+   MS-DOS operating system.
+
+    When using Costa, you can use icons to launch programs instead of long
+   and difficult commands. Launching a program is just a mouse click away,
+   and Costa even comes with a collection of programs to replace the ones
+   that came with MS-DOS. All of these programs act and look like Costa
+   itself, which means better consistency between programs and an easier
+   learning curve for users.
+
+    Costa uses a desktop to show you the programs on your computer. Users
+   who have tried Windows will be familiar with Costa's desktop, as the two
+   are not unlike each other. The icons on Costa's desktop are fully
+   customizable, and can be moved around freely. You can add more icons if
+   you want to, or you can remove or modify the existing ones.
+
+
+ ** 1.2 - System requirements **
+
+    Unlike most of the modern interfaces, Costa doesn't require much to run.
+   Below you'll find a list of Costa's requirements.
+
+    - A 286-processor or better
+    - At least 250 KB free conventional RAM is recommended. When running a
+      program, the resident part of Costa will use only a few hundred bytes
+      of RAM
+    - 2 MB free hard drive space on the installation drive recommended
+    - VGA capable monitor and graphics card (640x480 pixels, 16 colours)
+    - DOS 3.1 or newer
+    
+     If your computer doesn't meet one or more of the above requirements,
+    Costa might behave strangely or not work at all.
+
+     Although a mouse is not required, it is recommended to improve the user 
+    experience. Costa works with all Microsoft-compatible mice and includes
+    a driver that will be loaded automatically if you haven't loaded one.
+
+    
+ ** 1.3 - News in the version **
+
+    This version of Costa has many improvements over the last version, and
+   introduces a few new features. Among them are improved speed and
+   stability, more settings and a lot less flicker in the graphics.
+   
+    For a complete listing of changes, see DOCS\CHANGES.TXT.
+
+
+ ** 1.4 - About Costa **
+
+    The Costa development started in February 2004 and I worked on it almost
+   almost every day for a couple of years. Then, I felt the need to move on
+   to other projects. Costa was abandoned, and left untouched for a long,
+   long time. Then, in 2008, I decided to finish what I started. I took the
+   old source code to various versions of Costa, studied it and thought of
+   what was good, and what was bad. I decided to do a complete rewrite, and
+   quickly made a GUI toolkit to allow quick and fairly easy development of
+   programs. Soon after, the desktop was completed.
+
+    Costa was made using Microsoft Visual Basic for MS-DOS. I didn't use the
+   forms engine in Visual Basic for MS-DOS, I wrote everything from scratch.
+   Although the code to load the fonts was written by me, the fonts were made
+   by other people. The document README.TXT in the DATA\FONTS directory
+   contains more information about this, and gives proper credit to the
+   authors.
+
+    Although I've made Costa myself, some people have helped me with some
+   tips and tricks. I would like to thank Todd Suess for his tips on
+   stability, and the rest of the QBasic community for answering my questions 
+   at the various forums out there.
+
+
+ ** 1.5 - License **
+
+    Costa is freeware, meaning you can use it free of charge. You are more
+   than welcome to give away copies of Costa, as long as you don't charge
+   anything for it and don't modify any files.
+
+    A full copy of the license can be found in DOCS\LICENSE.TXT, which must
+   always be included with any distribution of Costa.
+
+
+------------------------------------------------------------------------------
+| 2.0 - Using Costa                                                          |
+------------------------------------------------------------------------------
+ ** 2.1 - Starting Costa **
+    Starting Costa is very simple. Simply navigate to the directory in which
+   you placed Costa's files, and type this DOS command:
+
+     COSTA.BAT
+    
+    This will bring you to Costa's desktop.
+
+
+ ** 2.2 - Exiting Costa **
+
+    To exit Costa, close any program you have running to return to the
+   desktop. Once you see the desktop, simply click the "Exit" button and
+   then confirm that you want to exit. If you don't have a mouse, you can
+   always activate any button by pressing the underlined letter on your
+   keyboard - on the "Exit" button, "E" is underlined, so press the "E" key
+   to exit.
+
+
+ ** 2.3 - Managing desktop links **
+    
+    Managing desktop links is as easy as it gets. To customize an existing
+   link or to open the file/program it points to, just click it using the
+   mouse. You can also use the TAB key on your keyboard to cycle through the
+   icons from left to right, and then press Enter when the desired icon is
+   highlighted. Use Shift+TAB to cycle right to left through links.
+   Once the icon has been clicked, you will get a menu with four choices: 
+   
+     -Open/run
+      Run the program or open the target file specified for this desktop link
+
+     -Customize..
+      Opens a dialog where you can change the target filename, path, icon and
+      more. If the "Pause after execution" checkbox is selected, Costa will
+      wait for a key press before returning to the desktop once the program
+      is ends. This is usefull if you need to see the output of a program
+      before returning to the desktop.
+
+     -Move
+      Allows you to move the icon freely around the screen. Once the icon is
+      where you want it to be, click any mouse button. If you don't have a
+      mouse, use the arrow keys to move the icon and press Enter when done.
+
+     -Remove
+      Removes the desktop link permanently. Costa will ask you to confirm
+      this action.
+
+    To close the menu without choosing any options, click outside of the menu
+   or press the Escape key.
+
+    To add a new desktop link, click the "Add link" button in the top right
+   corner of the desktop. The dialog mentioned earlier under "Customize"
+   will appear to allow you to define the properties of your new link. If you
+   click "Cancel" in this dialog, no new link will be added.
+
+
+ ** 2.4 Running DOS commands **
+
+    You can execute a DOS command directly from the desktop, without having
+   to open a DOS prompt first. To do so, click the "Execute" button on the
+   desktop. This will show a dialog where you can enter a DOS command, or
+   open a file associated with a program.
+
+    To run a command or open a program, simply type the command/filename in
+   the input field and click "OK".
+
+    Similarly, to open a file associated with a program, type its filename
+   and click "OK".
+
+
+------------------------------------------------------------------------------
+| 3.0 - Customizing Costa                                                    |
+------------------------------------------------------------------------------
+ ** 3.1 Launching the Configuration program **
+    On the desktop you will find a built-in shortcut named "Configuration".
+   This shortcut can be moved like any other shortcut, but cannot be removed
+   or customized. Clicking it will open the Configuration program, which
+   allows you to change the appearance and behavior of Costa.
+
+
+ ** 3.2 The theme selector **
+
+    The theme selector can be used to change the appearance of Costa to a
+   number of predefined themes, some made by myself and some submitted by
+   users of earlier versions. To change the theme, open the Configuration
+   program and select "Theme selector".
+   
+    To select a theme, click one of the two arrow buttons on the screen or
+   press the left and right keys to cycle through the themes. Once you've
+   found one you like, click "Save" to apply the changes immediately. Click
+   "Cancel" to discard you changes and return to the desktop without
+   changing the theme.
+    
+    For the more technical users, the theme files in DATA\THEMES can be
+   edited manually, and more can be added. Just open the files in EDIT or a
+   similar text editor. The format is pretty straight forward, and the color
+   values resemble those from Microsoft QBASIC.
+
+
+ ** 3.3 File associations **
+
+    When enabled, file associations allow you to open files in the right
+   program automatically. For instance, if .TXT files are associated with
+   EDIT.COM and you try to open README.TXT, Costa will launch EDIT.COM and
+   tell it to open README.TXT for you. This way, instead of writing
+     C:\DOS\EDIT.COM C:\EXAMPLE\README.TXT
+   you can just write
+     C:\EXAMPLE\README.TXT
+   with the exact same result.
+
+    To edit file associations, Costa includes a small editor. Launch the
+   configuration program, and select "File associations". Once the editor
+   is loaded, it will tell you everything you need to know to edit file
+   associations. It also enables you to disable this feature completely. If
+   you disable it, and later want to enable it again, simple return to the
+   file association editor.
+
+
+ ** 3.4 Other settings **
+
+    The last option in the Configuration program, "Other settings", allows
+   you to tweak various aspects of Costa to make it behave exactly like you
+   want it to. To toggle a feature on or off, click the checkbox in front of
+   it. An X in a checkbox indicates an enabled feature, an empty checkbox
+   indicates a disabled feature.
+
+    - Show link descriptions
+      Toggles whether or not the title of a link should be displayed.
+
+    - Show link targets
+      If "Show link descriptions" is enabled, you can choose to have the
+      filename the link points to shown underneath the description.
+
+    - Show link menu on both left and right click
+      When enabled, you will get a menu regardless of which mouse button you
+      use to click a link. If disabled, a menu will only be shown on right-
+      click, and a left click will simply execute the link.
+
+    - Animate user interface
+      Makes the bar at the top of the desktop and link menus appear and
+      disappear using a sliding animation, which looks nice but results in
+      a short delay.
+
+    - Confirm when trying to exit Costa
+      If enabled you will be asked if you really want to exit Costa when you
+      click the "Exit" button on the desktop.
+
+    - Grey out screen while showing a messagebox
+      Draws a grey grid over the screen while a messagebox is shown, so that
+      only the messagebox is visible. Although it looks nice it results in
+      a delayed showing of the messagebox, and is thus disabled by default.
+
+                           --- End of document ---

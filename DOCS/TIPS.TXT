@@ -1,0 +1,30 @@
+
+                         The Costa Graphical Shell
+                               Version 1.0.0
+                               By Jacob Palm                   
+
+                          A few useful tips and tricks
+
+
+ * When editing a textbox, pressing ENTER will finish the editing. However,
+   you can also press ESCAPE to disregard your changes and stop the editing.
+   This is useful if you regret a change you've made.
+
+ * It is possible to type the name of any file, for example README.TXT, in
+   the target field when customizing a desktop link and when using the
+   "Execute" dialog. Costa will look at the FILETYPE.CFG file and see which
+   program .TXT is associated with, and will pass README.TXT to that program.
+   Use the configuration program to manage file associations.
+
+ * If you don't have a mouse, use the TAB key to cycle between desktop links.
+   Then press ENTER to open the link menu for the selected link. Use
+   SHIFT+TAB to cycle through links in reverse order.
+
+ * To associate an extension with the built-in text viewer, simply associate
+   it with COSTA100.EXE (without any path).
+
+ * To draw a transparent pixel in the icon editor, you don't have to choose
+   the transparent color first. You can simply right click the pixel.
+
+ * In the icon editor you can check out your icon on different background
+   colors. To do so, click the preview of it (or press P on the keyboard).
