@@ -1,1 +1,0 @@
-This folder is for any files used in development, which are not to be included in final distribution.
