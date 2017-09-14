@@ -6,7 +6,7 @@ OPTION EXPLICIT
 DEFINT A-Z
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
-'$INCLUDE: 'C:\VBDOS\VBDOS.BI'
+'$INCLUDE: 'C:\VBDOS\INC\VBDOS.BI'
 
 'This is dimmed here, and not in LIBRARY.BI, because only this module uses
 'it
@@ -1007,7 +1007,7 @@ SUB Sys.Load ()
 	'Make sure Costa is running, by checking if RUNSTAT.TMP created by the
 	'/BOOT parameter exists
 		IF File.Exists(Sys.Path + "DATA\TEMP\RUNSTAT.TMP") = False THEN
-			IF INSTR(COMMAND$, "/DEV") = 0 THEN 'DEBUG! Not for final release
+			'IF INSTR(COMMAND$, "/DEV") = 0 THEN 'DEBUG! Not for final release
 				CLS
 				PRINT "This program is a part of The Costa Graphical Shell and should not be executed"
 				PRINT "directly from the command prompt."
@@ -1015,7 +1015,7 @@ SUB Sys.Load ()
 				PRINT "To start Costa, run COSTA.BAT. If that file doesn't exist, run SETUP.EXE."
 				PRINT
 				END
-			END IF
+			'END IF
 		END IF
 	
 	'Prepare fonts for use
@@ -1257,10 +1257,10 @@ END FUNCTION
 FUNCTION Sys.Path () AS STRING
 
 	'DEBUG
-	IF COMMAND$ = "/DEV" THEN
-		Sys.Path = "C:\COSTA\"
-		EXIT FUNCTION
-	END IF
+	'IF COMMAND$ = "/DEV" THEN
+	'    Sys.Path = "C:\COSTA\"
+	'    EXIT FUNCTION
+	'END IF
 
 	DIM SysPath AS STRING
 
