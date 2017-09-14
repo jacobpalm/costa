@@ -1,4 +1,4 @@
-# The Costa GUI
+# The Costa Graphical Shell
 Costa is a graphical user interface (GUI), designed to run on top of the command
 line as a shell.
 
