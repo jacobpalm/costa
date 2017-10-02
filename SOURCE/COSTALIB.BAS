@@ -872,6 +872,7 @@ DEFINT A-Z
 FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS STRING, msgDefault AS STRING) AS STRING
 
 	DIM msgLines() AS STRING, msgLineCount, msgTextWidth
+	DIM GreyoutScreen
 
 	IF RIGHT$(msgText, 1) = CHR$(13) THEN msgText = LEFT$(msgText, LEN(msgText) - 1)
 	IF INSTR(msgText, CHR$(13)) = 0 THEN
@@ -928,7 +929,8 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 
 	Sys.VGASave "INPUTBOX"
 
-	IF VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "GreyOutOnMsgBox", "0")) = 1 THEN
+	GreyoutScreen = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "GreyOutOnMsgBox", "0"))
+	IF GreyoutScreen = 1 THEN
 		DIM LX, LY
 		LY = 0
 		Mouse.Hide
@@ -1133,7 +1135,7 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	DIM btnFirst AS ButtonType, btnSecond AS ButtonType
 	DIM imgIcon AS ImageType
 	DIM winMsgBox AS WindowType
-
+	DIM GreyoutScreen
 
 	IF RIGHT$(msgText, 1) = CHR$(13) THEN msgText = LEFT$(msgText, LEN(msgText) - 1)
 	IF INSTR(msgText, CHR$(13)) = 0 THEN
@@ -1194,7 +1196,8 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	
 	Sys.VGASave "MSGBOX"
 
-	IF VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "GreyOutOnMsgBox", "0")) = 1 THEN
+	GreyoutScreen = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "GreyOutOnMsgBox", "0"))
+	IF GreyoutScreen = 1 THEN
 		DIM LX, LY
 		LY = 0
 		Mouse.Hide
@@ -1257,10 +1260,10 @@ END FUNCTION
 FUNCTION Sys.Path () AS STRING
 
 	'DEBUG
-	'IF COMMAND$ = "/DEV" THEN
-	'    Sys.Path = "C:\COSTA\"
-	'    EXIT FUNCTION
-	'END IF
+	IF COMMAND$ = "/DEV" THEN
+		Sys.Path = "C:\COSTA\"
+		EXIT FUNCTION
+	END IF
 
 	DIM SysPath AS STRING
 
