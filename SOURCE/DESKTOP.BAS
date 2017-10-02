@@ -137,7 +137,7 @@ SUB Desk.DrawDesktop ()
   'desklinks exist
   IF RTRIM$(DeskLink(0).ImageFile) = "" OR DeskLink(0).Caption = STRING$(25, 0) THEN EXIT SUB
 
-
+  DIM ShowDesc, ShowTarget
   DIM imgDeskLinkIcon AS ImageType
   DIM TargetLink
 
@@ -151,10 +151,13 @@ SUB Desk.DrawDesktop ()
 
     Obj.DrawImg imgDeskLinkIcon
 
-    'Description (caption) and target file
-    IF VAL(File.CfgRead("DATA\CONFIG\DESKTOP.CFG", "ShowLinkDescriptions", "1")) = 1 THEN
+    ShowDesc = VAL(File.CfgRead("DATA\CONFIG\DESKTOP.CFG", "ShowLinkDescriptions", "1"))
+    ShowTarget = VAL(File.CfgRead("DATA\CONFIG\DESKTOP.CFG", "ShowLinkTargetFiles", "1"))
 
-        IF VAL(File.CfgRead("DATA\CONFIG\DESKTOP.CFG", "ShowLinkTargetFiles", "1")) = 1 THEN
+    'Description (caption) and target file
+    IF ShowDesc = 1 THEN
+    
+        IF ShowTarget = 1 THEN
             Font.Print DeskLink(TargetLink).Caption, DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 4, ClrDesktopText, 1
             IF NOT LEFT$(DeskLink(TargetLink).Path, 1) = CHR$(13) THEN
                 Font.Print LCASE$(DeskLink(TargetLink).Filename), DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 18, ClrDesktopText, 2
@@ -365,7 +368,6 @@ SUB Desk.LinkLoad ()
     DIM LinkCount, LinkLoad, FileHandle
     FileHandle = FREEFILE
 
-    'DEBUG - check om filen findes, ellers opret den
     OPEN Sys.Path + "DATA\CONFIG\DESKLINK.DAT" FOR BINARY AS #FileHandle
     IF NOT LOF(FileHandle) = 0 THEN GET #FileHandle, , LinkCount
 
