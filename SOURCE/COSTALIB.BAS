@@ -555,12 +555,7 @@ SUB Obj.DrawChk (TargetChk AS CheckBoxType)
 	LINE (x1 + 1, y2)-(x2, y2), 15
 	LINE (x2, y1 + 1)-(x2, y2 - 1), 15
 
-	Mouse.Show
-
-
 	IF TargetChk.Checked = True THEN
-		'Font.Print "x", x1 + 4, y1 + 2, ClrTextboxText, 3
-
 		LINE (x1 + 4, y1 + 7)-(x1 + 4, y1 + 9), ClrTextboxText
 		LINE (x1 + 5, y1 + 8)-(x1 + 5, y1 + 10), ClrTextboxText
 		LINE (x1 + 6, y1 + 9)-(x1 + 6, y1 + 11), ClrTextboxText
@@ -570,6 +565,8 @@ SUB Obj.DrawChk (TargetChk AS CheckBoxType)
 		LINE (x1 + 9, y1 + 6)-(x1 + 9, y1 + 8), ClrTextboxText
 		LINE (x1 + 10, y1 + 5)-(x1 + 10, y1 + 7), ClrTextboxText
 	END IF
+
+	Mouse.Show
 
 END SUB
 
