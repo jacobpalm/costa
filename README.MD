@@ -11,3 +11,6 @@ which are also the machines that typically run the MS-DOS operating system.
 See the included documentation for more information, or visit the homepage
 of Costa at
   http://costa.jacobpalm.dk
+  
+  ## Icons and themes always welcome!
+  If you have made any icons you would like to see included with Costa, or perhaps a nifty theme, feel free to drop me a message. I am always looking to add more to Costa, and credit will of course be given! 
