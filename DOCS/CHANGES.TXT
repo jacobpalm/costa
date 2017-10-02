@@ -1,17 +1,23 @@
 
                          The Costa Graphical Shell
-                               Version 1.0.0
+                               Version 1.1.0
                                By Jacob Palm                   
 
                                  Changelog
 
 
+*1.1.0*
+This version contains mostly minor improvements to Costa.
+  -Bug in checkboxes fixed, no more graphical glitches when moving cursor
+   after checking/unchecking
+  -More icons included
+
 *1.0.0*
-At last, after almost a decade of hobby coding, Costa har reached the 1.0.0
-milestone and is no longer in the BETA phase! I worked on various TUI (Text-
+At last, after almost a decade of hobby coding, Costa had reached the 1.0.0
+milestone and was no longer in the BETA phase! I worked on various TUI (Text-
 mode User Interfaces) from 2001 onwards, before swicthing to GUI development
 and releasing the first version of Costa in 2004.
-Since version 0.9.9, not much has changed - the focus has been on improving
+Since version 0.9.9, not much has changed - the focus was on improving
 stability, and fixing any bugs I could stumble upon.
   -Documentation finished
   -Various bugfixes and stability improvements

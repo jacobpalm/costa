@@ -155,14 +155,14 @@ SUB File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVA
 	IF LEN(TargetPath) THEN
 		IF RIGHT$(TargetPath, 1) = "\" AND LEN(TargetPath) > 1 THEN TargetPath = LEFT$(TargetPath, LEN(TargetPath) - 1)
 	END IF
-	IF INSTR(UCASE$(TargetPath), "%COSTA100%") THEN
+	IF INSTR(UCASE$(TargetPath), "%COSTA110%") THEN
 		DIM TmpPath AS STRING
-		IF INSTR(UCASE$(TargetPath), "%COSTA100%") > 1 THEN
-			TmpPath = LEFT$(TargetPath, INSTR(UCASE$(TargetPath), "%COSTA100%") - 1)
+		IF INSTR(UCASE$(TargetPath), "%COSTA110%") > 1 THEN
+			TmpPath = LEFT$(TargetPath, INSTR(UCASE$(TargetPath), "%COSTA110%") - 1)
 		END IF
 		TmpPath = TmpPath + Sys.Path
-		IF LEN(TargetPath) > INSTR(UCASE$(TargetPath), "%COSTA100%") + 9 THEN
-			TmpPath = TmpPath + RIGHT$(TargetPath, LEN(TargetPath) - 9 - INSTR(UCASE$(TargetPath), "%COSTA100%"))
+		IF LEN(TargetPath) > INSTR(UCASE$(TargetPath), "%COSTA110%") + 9 THEN
+			TmpPath = TmpPath + RIGHT$(TargetPath, LEN(TargetPath) - 9 - INSTR(UCASE$(TargetPath), "%COSTA110%"))
 		END IF
 		TargetPath = TmpPath
 		IF LEN(TargetPath) THEN IF RIGHT$(TargetPath, 1) = "\" AND LEN(TargetPath) > 1 THEN TargetPath = LEFT$(TargetPath, LEN(TargetPath) - 1)
@@ -180,7 +180,7 @@ SUB File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVA
 		OpenWith = File.CfgRead("DATA\CONFIG\FILETYPE.CFG", FileType, "")
 																	 
 		IF NOT OpenWith = "" AND NOT INSTR(TargetFile, " ") THEN
-			IF LCASE$(OpenWith) = "costa100" OR LCASE$(OpenWith) = "costa100.exe" THEN
+			IF LCASE$(OpenWith) = "COSTA110" OR LCASE$(OpenWith) = "COSTA110.exe" THEN
 				IF LEN(TargetDrive) THEN CHDRIVE TargetDrive
 				ON LOCAL ERROR RESUME NEXT
 				IF LEN(TargetPath) THEN CHDIR "\": CHDIR TargetPath
@@ -998,7 +998,7 @@ SUB Sys.Load ()
 			PRINT "The Costa Graphical Shell"
 			PRINT "Copyright 2004-2009 Jacob Palm"
 			PRINT
-			PRINT "Version 1.0.0"
+			PRINT "Version 1.1.0"
 			PRINT
 			END
 		END IF
@@ -1264,7 +1264,7 @@ FUNCTION Sys.Path () AS STRING
 
 	DIM SysPath AS STRING
 
-	SysPath = ENVIRON$("COSTA100")
+	SysPath = ENVIRON$("COSTA110")
 
 	IF LEN(SysPath) > 0 THEN
 		IF NOT RIGHT$(SysPath, 1) = "\" THEN SysPath = SysPath + "\"

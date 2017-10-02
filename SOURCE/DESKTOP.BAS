@@ -29,9 +29,9 @@ REDIM SHARED DeskLink(0 TO 0) AS DeskLinkType
 
 IF COMMAND$ = "/BOOT" THEN
 
-    IF Sys.Path = "" OR File.Exists(Sys.Path + "COSTA100.EXE") = False THEN
+    IF Sys.Path = "" OR File.Exists(Sys.Path + "COSTA110.EXE") = False THEN
         CLS
-        PRINT "The environment variable COSTA100, which contains the path to Costa, is either"
+        PRINT "The environment variable COSTA110, which contains the path to Costa, is either"
         PRINT "not set or contains an invalid path."
         PRINT
         PRINT "Run SETUP.EXE to fix this issue."
@@ -108,7 +108,7 @@ SUB Desk.AboutBox ()
   Obj.DrawImg imgLogo
   
   Font.Print "The Costa Graphical Shell", 210, 117, 0, 1
-  Font.Print "Version 1.0.0", 210, 131, 0, 2
+  Font.Print "Version 1.1.0", 210, 131, 0, 2
   Font.Print "Copyright (C) 2004-2012 Jacob Palm Christensen,", 168, 153, 0, 2
   Font.Print "all rights reserved.", 168, 167, 0, 2
   Font.Print "Font files (C) 1998-1999 Rush Soft.", 168, 195, 0, 2

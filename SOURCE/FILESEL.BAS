@@ -31,9 +31,9 @@ IF File.Exists(Sys.Path + "DATA\TEMP\RUNSTAT.TMP") = False THEN
     END IF
 END IF
 
-IF Sys.Path = "" OR File.Exists(Sys.Path + "COSTA100.EXE") = False THEN
+IF Sys.Path = "" OR File.Exists(Sys.Path + "COSTA110.EXE") = False THEN
     CLS
-    PRINT "The environment variable COSTA100, which contains the path to Costa, is either"
+    PRINT "The environment variable COSTA110, which contains the path to Costa, is either"
     PRINT "not set or contains an invalid path."
     PRINT
     PRINT "Run SETUP.EXE to fix this issue."
