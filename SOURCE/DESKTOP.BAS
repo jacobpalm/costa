@@ -1,3 +1,8 @@
+DECLARE SUB Desktop.LaunchLink (TargetLink AS INTEGER)
+DECLARE SUB Conf.Main ()
+DECLARE SUB TView.Main (FileToView AS STRING)
+DECLARE SUB Tic.Main ()
+DECLARE SUB Calc.Main ()
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -72,7 +77,9 @@ IF COMMAND$ = "/BOOT" THEN
     CLS
     PRINT
     PRINT "  The Costa Graphical Shell"
-    PRINT "  Copyright 2004-2012 Jacob Palm"
+    PRINT "  Coded in 2004-2017 by Jacob Palm"
+    PRINT
+    PRINT "  Released under the MIT License"
     PRINT
     Sys.Delay 1.9
 END IF
@@ -109,16 +116,16 @@ SUB Desk.AboutBox ()
   
   Font.Print "The Costa Graphical Shell", 210, 117, 0, 1
   Font.Print "Version 1.1.0", 210, 131, 0, 2
-  Font.Print "Copyright (C) 2004-2012 Jacob Palm Christensen,", 168, 153, 0, 2
-  Font.Print "all rights reserved.", 168, 167, 0, 2
-  Font.Print "Font files (C) 1998-1999 Rush Soft.", 168, 195, 0, 2
-  Font.Print "Costa is freeware and may be freely distributed as", 168, 223, 0, 2
-  Font.Print "long as no files are modified and all copyright", 168, 237, 0, 2
-  Font.Print "notices are included and left unmodified.", 168, 251, 0, 2
+  Font.Print "Made in 2004-2017 by Jacob Palm", 168, 153, 0, 2
+  Font.Print "Released under the MIT License.", 168, 167, 0, 2
+  Font.Print "Font files made in 1998-1999 by Rush Soft.", 168, 195, 0, 2
+  Font.Print "Costa is open source and may be freely distributed", 168, 223, 0, 2
+  Font.Print "as long as the terms of the MIT License is upheld -", 168, 237, 0, 2
+  Font.Print "more info can be found in the LICENSE file.", 168, 251, 0, 2
   Font.Print "Special thanks to Todd Suess, who helped during", 168, 279, 0, 2
   Font.Print "the development with useful tips and ideas. Also", 168, 293, 0, 2
-  Font.Print "thanks to those people who keep the QB GUI", 168, 307, 0, 2
-  Font.Print "development community alive.", 168, 321, 0, 2
+  Font.Print "thanks to those people who where part of the QB", 168, 307, 0, 2
+  Font.Print "GUI community - every one of you.", 168, 321, 0, 2
 
 
   DO: LOOP WHILE Mouse.Clicked
@@ -390,6 +397,8 @@ SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
   DIM BehindMenu(1681), FrontOfMenu(1681)
   DIM DrawFromLeft, DrawFromTop, ActiveItem, FgColor, BgColor
   DIM MenuBack AS ButtonType
+  DIM DoAnimations
+
   MenuBack.Pos.Width = 94
   MenuBack.Pos.Height = 69
 
@@ -419,7 +428,8 @@ SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
   
   GET (x1, y1)-(X2, Y2), BehindMenu
   
-  IF VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "Animations", "1")) = 1 THEN
+  DoAnimations = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "Animations", "1"))
+  IF DoAnimations = 1 THEN
     DIM Sys.DelayWait
 
     IF DrawFromLeft = True THEN
@@ -552,7 +562,7 @@ LinkMenuRefresh:
             PUT (x1, y1), BehindMenu, PSET
             Mouse.Show
             Sys.VGASave "DESKTOP"
-            File.Run RTRIM$(DeskLink(TargetLink).Filename), RTRIM$(DeskLink(TargetLink).Parameters), RTRIM$(DeskLink(TargetLink).Path), DeskLink(TargetLink).PauseOnExit
+            Desktop.LaunchLink TargetLink
             EXIT SUB
           END IF
 
@@ -796,7 +806,7 @@ SUB Desk.Main ()
 
   DIM btnAddLink AS ButtonType, btnRunCmd AS ButtonType
   DIM btnAboutCosta AS ButtonType, btnExitCosta AS ButtonType
-  DIM SlidePos, DelayFixer
+  DIM SlidePos, DelayFixer, ShowLinkMenu, ShowAnimations
 
   Obj.SetSize btnAddLink.Pos, 3, 2, 92, 22
   btnAddLink.Caption = "Add link": btnAddLink.HotKey = 5
@@ -863,7 +873,8 @@ MainLoopStart:
               ELSE
                 'Depending on the configuration a left click on a link
                 'will either open/run the targetfile or show the menu
-                IF VAL(File.CfgRead("DATA\CONFIG\DESKTOP.CFG", "LinkMenuOnLeftClick", "1")) = 1 THEN
+                ShowLinkMenu = VAL(File.CfgRead("DATA\CONFIG\DESKTOP.CFG", "LinkMenuOnLeftClick", "1"))
+                IF ShowLinkMenu = 1 THEN
                     IF NOT TabCheck = -1 THEN
                         Mouse.Hide
                         LINE (DeskLink(TabCheck).Left - 3, DeskLink(TabCheck).Top - 3)-(DeskLink(TabCheck).Left + 35, DeskLink(TabCheck).Top + 35), ClrDesktop, BF
@@ -875,7 +886,8 @@ MainLoopStart:
                     Desk.LinkMenu DeskLinkCheck, ClickedX, ClickedY
                 ELSE
                     Sys.VGASave "DESKTOP"
-                    File.Run RTRIM$(DeskLink(DeskLinkCheck).Filename), RTRIM$(DeskLink(DeskLinkCheck).Parameters), RTRIM$(DeskLink(DeskLinkCheck).Path), DeskLink(DeskLinkCheck).PauseOnExit
+
+                    Desktop.LaunchLink DeskLinkCheck
                 END IF
               END IF
 
@@ -925,7 +937,11 @@ MainLoopStart:
             GOSUB SlideUp
             DIM FileToRun AS STRING
             FileToRun = Sys.InputBox("Execute program or command", "You can also use this dialog to open any file" + CHR$(13) + "associated with a program (like README.TXT).", "RUNPROG", "C:\")
-            IF LEN(FileToRun) AND NOT FileToRun = "C:\" THEN File.Run FileToRun, "", "", True
+            IF LEN(FileToRun) AND NOT FileToRun = "C:\" THEN
+                DIM RunFile AS STRING
+                RunFile = File.Run(FileToRun, "", "", True)
+                IF LEN(RunFile) > 0 THEN TView.Main RunFile
+            END IF
             GOSUB SlideDown
             GOTO MainLoopStart
         END IF
@@ -1006,7 +1022,8 @@ EXIT SUB
 
 SlideDown:
   Mouse.Hide
-  IF VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "Animations", "1")) = 1 THEN
+  ShowAnimations = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "Animations", "1"))
+  IF ShowAnimations = 1 THEN
     DelayFixer = 0
     FOR SlidePos = 0 TO 26 STEP 2
       LINE (0, 0)-(639, SlidePos), ClrWindow, BF
@@ -1033,7 +1050,8 @@ RETURN
 SlideUp:
   Mouse.Hide
   DelayFixer = 0
-  IF VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "Animations", "1")) = 1 THEN
+  ShowAnimations = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "Animations", "1"))
+  IF ShowAnimations = 1 THEN
     LINE (0, 0)-(639, 28), ClrWindow, BF
     FOR SlidePos = 25 TO 0 STEP -2
       LINE (0, SlidePos)-(639, SlidePos), Clr3DShadow
@@ -1054,6 +1072,32 @@ SlideUp:
   Mouse.Show
 RETURN
 
+
+END SUB
+
+' Launches a specific desktop link. It first checks if the link is internal,
+' and launces the internal program if it is.
+' Otherwise, it launches the external program.
+SUB Desktop.LaunchLink (TargetLink AS INTEGER)
+
+    DIM TargetPath AS STRING
+    DIM FileToOpen AS STRING
+
+    TargetPath = RTRIM$(DeskLink(TargetLink).Path)
+
+    SELECT CASE TargetPath
+        CASE CHR$(13) + "TICTAC"
+            Tic.Main
+        CASE CHR$(13) + "CONFIG"
+            Conf.Main
+        CASE CHR$(13) + "TEXTVIEW"
+            TView.Main ""
+        CASE CHR$(13) + "CALC"
+            Calc.Main
+        CASE ELSE
+            FileToOpen = File.Run(RTRIM$(DeskLink(TargetLink).Filename), RTRIM$(DeskLink(TargetLink).Parameters), RTRIM$(DeskLink(TargetLink).Path), DeskLink(TargetLink).PauseOnExit)
+            IF LEN(FileToOpen) > 0 THEN TView.Main FileToOpen
+    END SELECT
 
 END SUB
 

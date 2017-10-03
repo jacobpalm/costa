@@ -1,7 +1,3 @@
-DECLARE SUB TView.Main (FileToView AS STRING)
-DECLARE SUB Conf.Main ()
-DECLARE SUB Tic.Main ()
-DECLARE SUB Calc.Main ()
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -137,15 +133,15 @@ FUNCTION File.Exists (TargetFile AS STRING)
 
 END FUNCTION
 
-SUB File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVAL TargetPath AS STRING, PauseOnExit AS INTEGER)
+'Runs an external program.
+'Also checks for a file association if passed a file, and passes the
+'filename to the relevant program as a parameter.
+'If this function returns any value, it should be passed to TView.Main as
+'that means the file should be opened with Costa itself (only used in
+'DESKTOP.MAK)
+FUNCTION File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVAL TargetPath AS STRING, PauseOnExit AS INTEGER) AS STRING
 
-
-	IF INSTR(TargetPath, CHR$(13) + "TICTAC") THEN Tic.Main: EXIT SUB
-	IF INSTR(TargetPath, CHR$(13) + "CONFIG") THEN Conf.Main: EXIT SUB
-	IF INSTR(TargetPath, CHR$(13) + "TEXTVIEW") THEN TView.Main "": EXIT SUB
-	IF INSTR(TargetPath, CHR$(13) + "CALC") THEN Calc.Main: EXIT SUB
-
-	DIM RunHandle, DotPos
+	DIM RunHandle, DotPos, AssignFileTypes
 	DIM TargetDrive AS STRING, SysDrive AS STRING
 
 	TargetFile = LTRIM$(RTRIM$(TargetFile))
@@ -172,22 +168,24 @@ SUB File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVA
 	
 	'Get the file extension, and see if it's associated with a program
 	DotPos = INSTR(TargetFile, ".")
-	IF DotPos > 0 AND VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "AssignFileTypes", "1")) = 1 THEN
+	AssignFileTypes = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "AssignFileTypes", "1"))
+	IF DotPos > 0 AND AssignFileTypes = 1 THEN
 
 		DIM FileType AS STRING, OpenWith AS STRING
 		FileType = RIGHT$(TargetFile, LEN(TargetFile) - DotPos)
 
 		OpenWith = File.CfgRead("DATA\CONFIG\FILETYPE.CFG", FileType, "")
-																	 
+		
 		IF NOT OpenWith = "" AND NOT INSTR(TargetFile, " ") THEN
-			IF LCASE$(OpenWith) = "COSTA110" OR LCASE$(OpenWith) = "COSTA110.exe" THEN
+			IF LCASE$(OpenWith) = "costa110" OR LCASE$(OpenWith) = "costa110.exe" THEN
+
 				IF LEN(TargetDrive) THEN CHDRIVE TargetDrive
 				ON LOCAL ERROR RESUME NEXT
 				IF LEN(TargetPath) THEN CHDIR "\": CHDIR TargetPath
 				ON LOCAL ERROR GOTO 0
 				IF LEN(TargetPath) > 0 THEN TargetPath = TargetPath + "\"
-				TView.Main TargetPath + TargetFile
-				EXIT SUB
+				File.Run = TargetPath + TargetFile
+				EXIT FUNCTION
 			ELSE
 				TargetFile = OpenWith + " " + TargetFile
 			END IF
@@ -222,7 +220,7 @@ SUB File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVA
 	DO: LOOP WHILE LEN(INKEY$)
 	END 2
 
-END SUB
+END FUNCTION
 
 FUNCTION Font.GetWidth (TargetText AS STRING, FontID AS INTEGER)
 
@@ -996,7 +994,7 @@ SUB Sys.Load ()
 		IF INSTR(COMMAND$, "/VER") OR INSTR(COMMAND$, "/?") THEN
 			PRINT
 			PRINT "The Costa Graphical Shell"
-			PRINT "Copyright 2004-2009 Jacob Palm"
+			PRINT "Made in 2004-2017 Jacob Palm"
 			PRINT
 			PRINT "Version 1.1.0"
 			PRINT

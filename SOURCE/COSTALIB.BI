@@ -2,7 +2,7 @@
     DECLARE FUNCTION File.CfgRead (BYVAL CfgFile AS STRING, Setting AS STRING, DefaultValue AS STRING) AS STRING
     DECLARE FUNCTION File.Exists% (TargetFile AS STRING)
     DECLARE SUB File.CfgWrite (BYVAL CfgFile AS STRING, Setting AS STRING, Value AS STRING)
-    DECLARE SUB File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVAL TargetPath AS STRING, PauseOnExit AS INTEGER)
+    DECLARE FUNCTION File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVAL TargetPath AS STRING, PauseOnExit AS INTEGER) AS STRING
 
     DECLARE FUNCTION Font.GetWidth% (TargetText AS STRING, FontID%)
     DECLARE SUB Font.Print (BYVAL Text AS STRING, X%, Y%, Col%, FontID%)

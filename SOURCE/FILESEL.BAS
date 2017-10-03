@@ -1,12 +1,7 @@
-DECLARE FUNCTION File.Browse (BYVAL WindowCaption AS STRING, BYVAL StartPath AS STRING) AS STRING
-DECLARE SUB IconEdit.Preview ()
-DECLARE FUNCTION IconEdit.SaveIcon% ()
-DECLARE FUNCTION IconEdit.LoadIcon% ()
-
 DEFINT A-Z
 OPTION EXPLICIT
 
-DECLARE SUB IconEdit.Main ()
+DECLARE FUNCTION File.Browse (BYVAL WindowCaption AS STRING, BYVAL StartPath AS STRING) AS STRING
 
 TYPE IconDataType
     Pixel(31, 31) AS INTEGER
@@ -52,12 +47,6 @@ DIM TestFile$
 
 TestFile$ = File.Browse("Please select a file to test", "C:\VBDOS")
 
-SUB Calc.Main ()
-END SUB
-
-SUB Conf.Main ()
-END SUB
-
 FUNCTION File.Browse (BYVAL WindowCaption AS STRING, BYVAL StartPath AS STRING) AS STRING
 
     'Declarations
@@ -99,10 +88,4 @@ FUNCTION File.Browse (BYVAL WindowCaption AS STRING, BYVAL StartPath AS STRING) 
     SLEEP
 
 END FUNCTION
-
-SUB Tic.Main ()
-END SUB
-
-SUB TView.Main (FileToView AS STRING)
-END SUB
 
