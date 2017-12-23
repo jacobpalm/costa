@@ -140,10 +140,10 @@ SUB Conf.ConfMisc ()
     DIM chkShowLinkDesc AS CheckBoxType, chkShowLinkTarget AS CheckBoxType
     DIM chkLinkMenuOnLeft AS CheckBoxType, chkConfLinkDel AS CheckBoxType
     DIM chkConfExit AS CheckBoxType, chkGreyOutMsgbox AS CheckBoxType
-    DIM chkAnimUI AS CheckBoxType
+    DIM chkAnimUI AS CheckBoxType, chkDailyTip AS CheckBoxType
 
     DIM ShowLinkDesc, ShowLinkTarget, LinkMenuOnLeft, ConfLinkDel
-    DIM AnimUI, ConfExit, GreyOutMsgbox, ShowTargetChk
+    DIM AnimUI, ConfExit, GreyOutMsgbox, ShowTargetChk, DailyTip
     DIM Key$
 
     ShowLinkDesc = VAL(File.CfgRead("DATA\CONFIG\DESKTOP.CFG", "ShowLinkDescriptions", "1"))
@@ -153,6 +153,8 @@ SUB Conf.ConfMisc ()
     AnimUI = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "Animations", "1"))
     ConfExit = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "ConfirmExit", "1"))
     GreyOutMsgbox = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "GreyOutOnMsgbox", "0"))
+    DailyTip = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "TipOfTheDay", "1"))
+
     IF ShowLinkDesc = 1 THEN ShowLinkDesc = True: ShowTargetChk = True
     IF ShowLinkTarget = 1 THEN ShowLinkTarget = True
     IF LinkMenuOnLeft = 1 THEN LinkMenuOnLeft = True
@@ -160,11 +162,12 @@ SUB Conf.ConfMisc ()
     IF AnimUI = 1 THEN AnimUI = True
     IF ConfExit = 1 THEN ConfExit = True
     IF GreyOutMsgbox = 1 THEN GreyOutMsgbox = True
+    IF DailyTip = 1 THEN DailyTip = True
 
 
-    Obj.SetSize winMisc.Pos, 125, 92, 390, 296
-    Obj.SetSize frmDesktop.Pos, 137, winMisc.Pos.Top + 34, winMisc.Pos.Width - 24, 118
-    Obj.SetSize frmVarious.Pos, 137, frmDesktop.Pos.Top + frmDesktop.Pos.Height + 12, frmDesktop.Pos.Width, 85
+    Obj.SetSize winMisc.Pos, 125, 82, 390, 318
+    Obj.SetSize frmDesktop.Pos, winMisc.Pos.Left + 12, winMisc.Pos.Top + 34, winMisc.Pos.Width - 24, 118
+    Obj.SetSize frmVarious.Pos, winMisc.Pos.Left + 12, frmDesktop.Pos.Top + frmDesktop.Pos.Height + 12, frmDesktop.Pos.Width, 107
     Obj.SetSize chkShowLinkDesc.Pos, frmDesktop.Pos.Left + 12, frmDesktop.Pos.Top + 16, -1, -1
     Obj.SetSize chkShowLinkTarget.Pos, frmDesktop.Pos.Left + 34, frmDesktop.Pos.Top + 38, -1, -1
     Obj.SetSize chkLinkMenuOnLeft.Pos, frmDesktop.Pos.Left + 12, frmDesktop.Pos.Top + 70, -1, -1
@@ -172,6 +175,7 @@ SUB Conf.ConfMisc ()
     Obj.SetSize chkAnimUI.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 16, -1, -1
     Obj.SetSize chkConfExit.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 38, -1, -1
     Obj.SetSize chkGreyOutMsgbox.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 60, -1, -1
+    Obj.SetSize chkDailyTip.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 82, -1, -1
     Obj.SetSize btnCancel.Pos, winMisc.Pos.Left + winMisc.Pos.Width - 104, winMisc.Pos.Top + winMisc.Pos.Height - 34, -1, -1
     Obj.SetSize btnSave.Pos, winMisc.Pos.Left + winMisc.Pos.Width - 208, winMisc.Pos.Top + winMisc.Pos.Height - 34, -1, -1
 
@@ -186,6 +190,7 @@ SUB Conf.ConfMisc ()
     chkAnimUI.Checked = AnimUI
     chkConfExit.Checked = ConfExit
     chkGreyOutMsgbox.Checked = GreyOutMsgbox
+    chkDailyTip.Checked = DailyTip
 
 
     Obj.DrawWin winMisc
@@ -204,6 +209,7 @@ SUB Conf.ConfMisc ()
     Obj.DrawChk chkAnimUI
     Obj.DrawChk chkConfExit
     Obj.DrawChk chkGreyOutMsgbox
+    Obj.DrawChk chkDailyTip
     Obj.DrawBtn btnSave, False
     Obj.DrawBtn btnCancel, False
 
@@ -225,6 +231,7 @@ SUB Conf.ConfMisc ()
     Font.Print "Animate user interface (sliding menus)", chkAnimUI.Pos.Left + 20, chkAnimUI.Pos.Top + 3, ClrWindowText, 2
     Font.Print "Confirm when trying to exit Costa", chkConfExit.Pos.Left + 20, chkConfExit.Pos.Top + 3, ClrWindowText, 2
     Font.Print "Grey out screen while showing a messagebox", chkGreyOutMsgbox.Pos.Left + 20, chkGreyOutMsgbox.Pos.Top + 3, ClrWindowText, 2
+    Font.Print "Show start-up ""Tip of the Day"" messages", chkDailyTip.Pos.Left + 20, chkDailyTip.Pos.Top + 3, ClrWindowText, 2
     
     Mouse.Hide
     LINE (chkShowLinkDesc.Pos.Left + 81, chkShowLinkDesc.Pos.Top + 14)-(chkShowLinkDesc.Pos.Left + 88, chkShowLinkDesc.Pos.Top + 14), ClrWindowText
@@ -233,6 +240,7 @@ SUB Conf.ConfMisc ()
     LINE (chkConfExit.Pos.Left + 169, chkConfExit.Pos.Top + 14)-(chkConfExit.Pos.Left + 175, chkConfExit.Pos.Top + 14), ClrWindowText
     LINE (chkAnimUI.Pos.Left + 19, chkAnimUI.Pos.Top + 14)-(chkAnimUI.Pos.Left + 27, chkAnimUI.Pos.Top + 14), ClrWindowText
     LINE (chkGreyOutMsgbox.Pos.Left + 19, chkGreyOutMsgbox.Pos.Top + 14)-(chkGreyOutMsgbox.Pos.Left + 26, chkGreyOutMsgbox.Pos.Top + 14), ClrWindowText
+    LINE (chkDailyTip.Pos.Left + 41, chkDailyTip.Pos.Top + 14)-(chkDailyTip.Pos.Left + 51, chkDailyTip.Pos.Top + 14), ClrWindowText
     Mouse.Show
 
     DO
@@ -251,6 +259,7 @@ SUB Conf.ConfMisc ()
         Obj.ChkClick chkConfExit
         Obj.ChkClick chkGreyOutMsgbox
         Obj.ChkClick chkAnimUI
+        Obj.ChkClick chkDailyTip
 
         IF Obj.BtnClick(btnCancel) OR Key$ = "c" OR Key$ = CHR$(27) THEN EXIT SUB
 
@@ -262,6 +271,7 @@ SUB Conf.ConfMisc ()
             IF chkAnimUI.Checked = True THEN AnimUI = 1:  ELSE AnimUI = False
             IF chkConfExit.Checked = True THEN ConfExit = 1:  ELSE ConfExit = False
             IF chkGreyOutMsgbox.Checked = True THEN GreyOutMsgbox = 1:  ELSE GreyOutMsgbox = False
+            IF chkDailyTip.Checked = True THEN DailyTip = 1:  ELSE DailyTip = False
             File.CfgWrite "DATA\CONFIG\DESKTOP.CFG", "ShowLinkDescriptions", LTRIM$(STR$(ShowLinkDesc))
             File.CfgWrite "DATA\CONFIG\DESKTOP.CFG", "ShowLinkTargetFiles", LTRIM$(STR$(ShowLinkTarget))
             File.CfgWrite "DATA\CONFIG\DESKTOP.CFG", "LinkMenuOnLeftClick", LTRIM$(STR$(LinkMenuOnLeft))
@@ -269,6 +279,7 @@ SUB Conf.ConfMisc ()
             File.CfgWrite "DATA\CONFIG\COSTA.CFG", "Animations", LTRIM$(STR$(AnimUI))
             File.CfgWrite "DATA\CONFIG\COSTA.CFG", "ConfirmExit", LTRIM$(STR$(ConfExit))
             File.CfgWrite "DATA\CONFIG\COSTA.CFG", "GreyOutOnMsgbox", LTRIM$(STR$(GreyOutMsgbox))
+            File.CfgWrite "DATA\CONFIG\COSTA.CFG", "TipOfTheDay", LTRIM$(STR$(DailyTip))
             
             EXIT SUB
         END IF
@@ -297,6 +308,7 @@ SUB Conf.ConfMisc ()
         IF Key$ = "a" THEN chkAnimUI.Checked = NOT chkAnimUI.Checked: Obj.DrawChk chkAnimUI
         IF Key$ = "x" THEN chkConfExit.Checked = NOT chkConfExit.Checked: Obj.DrawChk chkConfExit
         IF Key$ = "g" THEN chkGreyOutMsgbox.Checked = NOT chkGreyOutMsgbox.Checked: Obj.DrawChk chkGreyOutMsgbox
+        IF Key$ = "w" THEN chkDailyTip.Checked = NOT chkDailyTip.Checked: Obj.DrawChk chkDailyTip
         
 
 
