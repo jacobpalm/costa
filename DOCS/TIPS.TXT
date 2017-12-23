@@ -21,7 +21,7 @@
    SHIFT+TAB to cycle through links in reverse order.
 
  * To associate an extension with the built-in text viewer, simply associate
-   it with COSTA100.EXE (without any path).
+   it with COSTA110.EXE (without any path).
 
  * To draw a transparent pixel in the icon editor, you don't have to choose
    the transparent color first. You can simply right click the pixel.
