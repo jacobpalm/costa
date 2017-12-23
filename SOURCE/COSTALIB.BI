@@ -35,7 +35,6 @@
     DECLARE SUB Sys.VGALoad (TargetFile AS STRING)
     DECLARE SUB Sys.VGASave (TargetFile AS STRING)
 
-
 'Boolean constants
     CONST False = 0
     CONST True = NOT False
@@ -72,7 +71,7 @@
     Transparent AS INTEGER
   END TYPE
 
-  'The textbox doesn't have a TEXT property. Use a string variable instead.
+  'The textbox doesn't have a TEXT property. Uses a string variable instead.
   'This is to avoid fixed-lenght strings
   TYPE TextboxType
     Pos AS PosType
@@ -114,6 +113,4 @@
   COMMON SHARED ClrTitleBarText AS INTEGER
   COMMON SHARED ClrSelect AS INTEGER
   COMMON SHARED ClrSelectText AS INTEGER
-  
-  'COMMON SHARED Sys.Path AS STRING
 
