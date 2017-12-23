@@ -1,6 +1,6 @@
 @ECHO OFF
 
-REM Costa 1.1.0 - Copyright 2004-2012 Jacob Palm
+REM The Costa Graphical Shell 1.1.0 - Made in 2004-2018 by Jacob Palm
 
 SET COSTA110=C:\costa
 IF NOT EXIST %COSTA110%\COSTA110.EXE GOTO ExeNotFound

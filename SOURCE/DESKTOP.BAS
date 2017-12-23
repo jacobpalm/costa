@@ -1,23 +1,24 @@
-DECLARE SUB Desktop.LaunchLink (TargetLink AS INTEGER)
-DECLARE SUB Conf.Main ()
-DECLARE SUB TView.Main (FileToView AS STRING)
-DECLARE SUB Tic.Main ()
-DECLARE SUB Calc.Main ()
 OPTION EXPLICIT
 DEFINT A-Z
 
+DECLARE SUB Calc.Main ()
+DECLARE SUB Conf.Main ()
 DECLARE SUB Desk.AboutBox ()
 DECLARE SUB Desk.DrawDesktop ()
 DECLARE SUB Desk.ExitGUI ()
 DECLARE SUB Desk.LinkDialog (TargetLink%, DidEdit%, NewLink%)
+DECLARE SUB Desk.LinkLaunch (TargetLink AS INTEGER)
 DECLARE SUB Desk.LinkLoad ()
-DECLARE SUB Desk.LinkSave ()
 DECLARE SUB Desk.LinkMenu (TargetLink%, MenuX%, MenuY%)
 DECLARE SUB Desk.LinkMove (TargetLink%)
+DECLARE SUB Desk.LinkSave ()
 DECLARE SUB Desk.Main ()
 DECLARE SUB Desk.RunDialog ()
+DECLARE SUB Tic.Main ()
+DECLARE SUB TView.Main (FileToView AS STRING)
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
+'$INCLUDE: 'C:\COSTA\SOURCE\APPINFO.BI'
 
 TYPE DeskLinkType
   Caption AS STRING * 25
@@ -34,9 +35,9 @@ REDIM SHARED DeskLink(0 TO 0) AS DeskLinkType
 
 IF COMMAND$ = "/BOOT" THEN
 
-    IF Sys.Path = "" OR File.Exists(Sys.Path + "COSTA110.EXE") = False THEN
+    IF Sys.Path = "" OR File.Exists(Sys.Path + appExeName + ".EXE") = False THEN
         CLS
-        PRINT "The environment variable COSTA110, which contains the path to Costa, is either"
+        PRINT "The environment variable " + appExeName + ", which contains the path to Costa, is either"
         PRINT "not set or contains an invalid path."
         PRINT
         PRINT "Run SETUP.EXE to fix this issue."
@@ -76,8 +77,8 @@ IF COMMAND$ = "/BOOT" THEN
     COLOR 7, 0
     CLS
     PRINT
-    PRINT "  The Costa Graphical Shell"
-    PRINT "  Coded in 2004-2017 by Jacob Palm"
+    PRINT "  " + appName
+    PRINT "  Coded in 2004-" + appYear + " by Jacob Palm"
     PRINT
     PRINT "  Released under the MIT License"
     PRINT
@@ -114,9 +115,9 @@ SUB Desk.AboutBox ()
   Mouse.Show
   Obj.DrawImg imgLogo
   
-  Font.Print "The Costa Graphical Shell", 210, 117, 0, 1
-  Font.Print "Version 1.1.0", 210, 131, 0, 2
-  Font.Print "Made in 2004-2017 by Jacob Palm", 168, 153, 0, 2
+  Font.Print appName, 210, 117, 0, 1
+  Font.Print "Version " + appVersion, 210, 131, 0, 2
+  Font.Print "Made in 2004-" + appYear + " by Jacob Palm", 168, 153, 0, 2
   Font.Print "Released under the MIT License.", 168, 167, 0, 2
   Font.Print "Font files made in 1998-1999 by Rush Soft.", 168, 195, 0, 2
   Font.Print "Costa is open source and may be freely distributed", 168, 223, 0, 2
@@ -370,6 +371,32 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
 
 END SUB
 
+' Launches a specific desktop link. It first checks if the link is internal,
+' and launces the internal program if it is.
+' Otherwise, it launches the external program.
+SUB Desk.LinkLaunch (TargetLink AS INTEGER)
+
+    DIM TargetPath AS STRING
+    DIM FileToOpen AS STRING
+
+    TargetPath = RTRIM$(DeskLink(TargetLink).Path)
+
+    SELECT CASE TargetPath
+        CASE CHR$(13) + "TICTAC"
+            Tic.Main
+        CASE CHR$(13) + "CONFIG"
+            Conf.Main
+        CASE CHR$(13) + "TEXTVIEW"
+            TView.Main ""
+        CASE CHR$(13) + "CALC"
+            Calc.Main
+        CASE ELSE
+            FileToOpen = File.Run(RTRIM$(DeskLink(TargetLink).Filename), RTRIM$(DeskLink(TargetLink).Parameters), RTRIM$(DeskLink(TargetLink).Path), DeskLink(TargetLink).PauseOnExit)
+            IF LEN(FileToOpen) > 0 THEN TView.Main FileToOpen
+    END SELECT
+
+END SUB
+
 SUB Desk.LinkLoad ()
   
     DIM LinkCount, LinkLoad, FileHandle
@@ -562,7 +589,7 @@ LinkMenuRefresh:
             PUT (x1, y1), BehindMenu, PSET
             Mouse.Show
             Sys.VGASave "DESKTOP"
-            Desktop.LaunchLink TargetLink
+            Desk.LinkLaunch TargetLink
             EXIT SUB
           END IF
 
@@ -887,7 +914,7 @@ MainLoopStart:
                 ELSE
                     Sys.VGASave "DESKTOP"
 
-                    Desktop.LaunchLink DeskLinkCheck
+                    Desk.LinkLaunch DeskLinkCheck
                 END IF
               END IF
 
@@ -960,7 +987,7 @@ MainLoopStart:
 
             DIM DoExit
             IF File.CfgRead("DATA\CONFIG\COSTA.CFG", "ConfirmExit", "1") = "1" THEN
-                DoExit = Sys.MsgBox("Exit The Costa Graphical Shell", "This will exit Costa and return you to the DOS" + CHR$(13) + "prompt. Are you sure?", msgQuest)
+                DoExit = Sys.MsgBox("Exit " + appName, "This will exit Costa and return you to the DOS" + CHR$(13) + "prompt. Are you sure?", msgQuest)
             ELSE
                 DoExit = True
             END IF
@@ -1072,32 +1099,6 @@ SlideUp:
   Mouse.Show
 RETURN
 
-
-END SUB
-
-' Launches a specific desktop link. It first checks if the link is internal,
-' and launces the internal program if it is.
-' Otherwise, it launches the external program.
-SUB Desktop.LaunchLink (TargetLink AS INTEGER)
-
-    DIM TargetPath AS STRING
-    DIM FileToOpen AS STRING
-
-    TargetPath = RTRIM$(DeskLink(TargetLink).Path)
-
-    SELECT CASE TargetPath
-        CASE CHR$(13) + "TICTAC"
-            Tic.Main
-        CASE CHR$(13) + "CONFIG"
-            Conf.Main
-        CASE CHR$(13) + "TEXTVIEW"
-            TView.Main ""
-        CASE CHR$(13) + "CALC"
-            Calc.Main
-        CASE ELSE
-            FileToOpen = File.Run(RTRIM$(DeskLink(TargetLink).Filename), RTRIM$(DeskLink(TargetLink).Parameters), RTRIM$(DeskLink(TargetLink).Path), DeskLink(TargetLink).PauseOnExit)
-            IF LEN(FileToOpen) > 0 THEN TView.Main FileToOpen
-    END SELECT
 
 END SUB
 

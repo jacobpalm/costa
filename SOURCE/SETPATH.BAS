@@ -1,6 +1,10 @@
-DEFINT A-Z
-DECLARE FUNCTION File.Exists (TargetFile AS STRING)
 OPTION EXPLICIT
+DEFINT A-Z
+
+DECLARE FUNCTION File.Exists (TargetFile AS STRING)
+
+'$INCLUDE: 'C:\COSTA\SOURCE\APPINFO.BI'
+
 CONST False = 0
 CONST True = -1
 
@@ -13,8 +17,8 @@ ELSE
     PRINT ""
 END IF
 
-PRINT "The Costa Graphical Shell setup utility"
-PRINT "Version 1.1.0 - Made in 2004-2017 by Jacob Palm"
+PRINT appName + " setup utility"
+PRINT "Version " + appVersion + " - Made in 2004-" + appYear + " by Jacob Palm"
 PRINT
 
 IF COMMAND$ = "/?" OR COMMAND$ = "/VER" THEN END
@@ -39,7 +43,7 @@ DO
         IF RIGHT$(Sys.Path, 1) = "\" OR RIGHT$(Sys.Path, 1) = "/" THEN Sys.Path = LEFT$(Sys.Path, LEN(Sys.Path) - 1)
     END IF
 
-    IF File.Exists(Sys.Path + "\COSTA110.EXE") THEN EXIT DO
+    IF File.Exists(Sys.Path + "\" + appExeName + ".EXE") THEN EXIT DO
 
     PRINT
     PRINT "Costa is not located in that directory. Please try again."
@@ -52,35 +56,35 @@ ON ERROR GOTO WriteErr
 OPEN Sys.Path + "\COSTA.BAT" FOR OUTPUT AS #1
 PRINT #1, "@ECHO OFF"
 PRINT #1, ""
-PRINT #1, "REM Costa 1.1.0 - Made in 2004-2017 by Jacob Palm"
+PRINT #1, "REM " + appName + " " + appVersion + " - Made in 2004-" + appYear + " by Jacob Palm"
 PRINT #1, ""
-PRINT #1, "SET COSTA110=" + Sys.Path
-PRINT #1, "IF NOT EXIST %COSTA110%\COSTA110.EXE GOTO ExeNotFound"
-PRINT #1, "%COSTA110%\CTMOUSE.EXE >NUL"
-PRINT #1, "%COSTA110%\COSTA110.EXE /BOOT"
+PRINT #1, "SET " + appExeName + "=" + Sys.Path
+PRINT #1, "IF NOT EXIST %" + appExeName + "%\" + appExeName + ".EXE GOTO ExeNotFound"
+PRINT #1, "%" + appExeName + "%\CTMOUSE.EXE >NUL"
+PRINT #1, "%" + appExeName + "%\" + appExeName + ".EXE /BOOT"
 PRINT #1, ":LoopStart"
 PRINT #1, "IF ERRORLEVEL = 2 GOTO RunBat"
 PRINT #1, "IF ERRORLEVEL = 1 GOTO Exit"
-PRINT #1, "%COSTA110%\COSTA110.EXE"
+PRINT #1, "%" + appExeName + "%\" + appExeName + ".EXE"
 PRINT #1, "GOTO LoopStart"
 PRINT #1, ":RunBat"
-PRINT #1, "CALL %COSTA110%\DATA\TEMP\RUN.BAT"
-PRINT #1, "DEL %COSTA110%\DATA\TEMP\RUN.BAT"
-PRINT #1, "%COSTA110%\COSTA110.EXE"
+PRINT #1, "CALL %" + appExeName + "%\DATA\TEMP\RUN.BAT"
+PRINT #1, "DEL %" + appExeName + "%\DATA\TEMP\RUN.BAT"
+PRINT #1, "%" + appExeName + "%\" + appExeName + ".EXE"
 PRINT #1, "GOTO LoopStart"
 PRINT #1, ":ExeNotFound"
 PRINT #1, "ECHO."
-PRINT #1, "ECHO COSTA110.EXE was not found in %COSTA110%."
+PRINT #1, "ECHO " + appExeName + ".EXE was not found in %" + appExeName + "%."
 PRINT #1, "ECHO."
 PRINT #1, "ECHO Run SETUP.EXE to fix this issue."
 PRINT #1, "ECHO."
-PRINT #1, "SET COSTA110="
+PRINT #1, "SET " + appExeName + "="
 PRINT #1, "GOTO EndOfBAT"
 PRINT #1, ":Exit"
-PRINT #1, "SET COSTA110="
+PRINT #1, "SET " + appExeName + "="
 PRINT #1, "CD \"
 PRINT #1, "CLS"
-PRINT #1, "ECHO Thank you for using The Costa Graphical Shell."
+PRINT #1, "ECHO Thank you for using " + appName + "."
 PRINT #1, "ECHO."
 PRINT #1, ":EndOfBAT"
 CLOSE #1

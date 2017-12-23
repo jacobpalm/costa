@@ -1,4 +1,3 @@
-DECLARE SUB Desk.DrawDesktop ()
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -9,8 +8,10 @@ DECLARE SUB Conf.ConfTheme ()
 DECLARE SUB Conf.LoadDefaultThm ()
 DECLARE SUB Conf.LoadTheme (BYVAL ThmFile AS STRING)
 DECLARE SUB Conf.Main ()
+DECLARE SUB Desk.DrawDesktop ()
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
+'$INCLUDE: 'C:\COSTA\SOURCE\APPINFO.BI'
 
 DIM SHARED ThemeFile$, ThemeName$, ThemeAuthor$
 DIM SHARED ThemeList() AS STRING
@@ -355,13 +356,13 @@ SUB Conf.ConfTheme ()
     winPreview.Pos.Top = frmPreview.Pos.Top + 20
     winPreview.Pos.Width = 260
     winPreview.Pos.Height = 145
-    winPreview.Caption = "The Costa Graphical Shell"
+    winPreview.Caption = appName
 
     txtPreview.Pos.Left = winPreview.Pos.Left + 12
     txtPreview.Pos.Top = winPreview.Pos.Top + 74
     txtPreview.Pos.Width = 236
     txtPreview.Pos.Height = 19
-    txtPreviewText = "The Costa Grap"
+    txtPreviewText = "Textbox contents"
     
     Obj.SetSize btnPreview1.Pos, winPreview.Pos.Left + 14, winPreview.Pos.Top + 111, 111, 22
     btnPreview1.Caption = "Button up"

@@ -2,6 +2,7 @@ OPTION EXPLICIT
 DEFINT A-Z
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
+'$INCLUDE: 'C:\COSTA\SOURCE\APPINFO.BI'
 '$INCLUDE: 'C:\VBDOS\VBDOS.BI'
 
 'This is dimmed here, and not in LIBRARY.BI, because only this module uses
@@ -151,14 +152,14 @@ FUNCTION File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING,
 	IF LEN(TargetPath) THEN
 		IF RIGHT$(TargetPath, 1) = "\" AND LEN(TargetPath) > 1 THEN TargetPath = LEFT$(TargetPath, LEN(TargetPath) - 1)
 	END IF
-	IF INSTR(UCASE$(TargetPath), "%COSTA110%") THEN
+	IF INSTR(UCASE$(TargetPath), appEnviron) THEN
 		DIM TmpPath AS STRING
-		IF INSTR(UCASE$(TargetPath), "%COSTA110%") > 1 THEN
-			TmpPath = LEFT$(TargetPath, INSTR(UCASE$(TargetPath), "%COSTA110%") - 1)
+		IF INSTR(UCASE$(TargetPath), appEnviron) > 1 THEN
+			TmpPath = LEFT$(TargetPath, INSTR(UCASE$(TargetPath), appEnviron) - 1)
 		END IF
 		TmpPath = TmpPath + Sys.Path
-		IF LEN(TargetPath) > INSTR(UCASE$(TargetPath), "%COSTA110%") + 9 THEN
-			TmpPath = TmpPath + RIGHT$(TargetPath, LEN(TargetPath) - 9 - INSTR(UCASE$(TargetPath), "%COSTA110%"))
+		IF LEN(TargetPath) > INSTR(UCASE$(TargetPath), appEnviron) + 9 THEN
+			TmpPath = TmpPath + RIGHT$(TargetPath, LEN(TargetPath) - 9 - INSTR(UCASE$(TargetPath), appEnviron))
 		END IF
 		TargetPath = TmpPath
 		IF LEN(TargetPath) THEN IF RIGHT$(TargetPath, 1) = "\" AND LEN(TargetPath) > 1 THEN TargetPath = LEFT$(TargetPath, LEN(TargetPath) - 1)
@@ -177,7 +178,7 @@ FUNCTION File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING,
 		OpenWith = File.CfgRead("DATA\CONFIG\FILETYPE.CFG", FileType, "")
 		
 		IF NOT OpenWith = "" AND NOT INSTR(TargetFile, " ") THEN
-			IF LCASE$(OpenWith) = "costa110" OR LCASE$(OpenWith) = "costa110.exe" THEN
+			IF UCASE$(OpenWith) = appExeName OR UCASE$(OpenWith) = appExeName + ".EXE" THEN
 
 				IF LEN(TargetDrive) THEN CHDRIVE TargetDrive
 				ON LOCAL ERROR RESUME NEXT
@@ -993,10 +994,10 @@ SUB Sys.Load ()
 	'If the parameters /VER or /? are used, just show version info and exit
 		IF INSTR(COMMAND$, "/VER") OR INSTR(COMMAND$, "/?") THEN
 			PRINT
-			PRINT "The Costa Graphical Shell"
-			PRINT "Made in 2004-2017 Jacob Palm"
+			PRINT appName
+			PRINT "Made in 2004-" + appYear + " Jacob Palm"
 			PRINT
-			PRINT "Version 1.1.0"
+			PRINT "Version " + appVersion
 			PRINT
 			END
 		END IF
@@ -1006,7 +1007,7 @@ SUB Sys.Load ()
 		IF File.Exists(Sys.Path + "DATA\TEMP\RUNSTAT.TMP") = False THEN
 			IF INSTR(COMMAND$, "/DEV") = 0 THEN 'DEBUG! Not for final release
 				CLS
-				PRINT "This program is a part of The Costa Graphical Shell and should not be executed"
+				PRINT "This program is a part of " + appName + " and should not be executed"
 				PRINT "directly from the command prompt."
 				PRINT
 				PRINT "To start Costa, run COSTA.BAT. If that file doesn't exist, run SETUP.EXE."
@@ -1262,7 +1263,7 @@ FUNCTION Sys.Path () AS STRING
 
 	DIM SysPath AS STRING
 
-	SysPath = ENVIRON$("COSTA110")
+	SysPath = ENVIRON$(appExeName)
 
 	IF LEN(SysPath) > 0 THEN
 		IF NOT RIGHT$(SysPath, 1) = "\" THEN SysPath = SysPath + "\"
