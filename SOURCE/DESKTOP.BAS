@@ -858,7 +858,13 @@ Desk.MainTop:
   'DEBUG - check if first run in session, only show tip if it is
   IF VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "TipOfTheDay", "1")) = 1 THEN
     DIM showTip
-    showTipe = Sys.MsgBox "Did you know?", "This is a tip for you. You are welcome", msgTip
+    DIM tipTmp AS STRING
+    tipTmp = "If you don't have a mouse, use the TAB key to cycle between desktop icons."
+    tipTmp = tipTmp + CHR$(13)
+    tipTmp = tipTmp + "Use Shift+TAB keys to cycle in reverse order."
+    tipTmp = tipTmp + CHR$(13) + CHR$(13)
+    tipTmp = tipTmp + "Then, to open the link menu, simply press Enter."
+    showTip = Sys.MsgBox("Did you know?", tipTmp, msgTip)
   END IF
 
 
