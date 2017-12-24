@@ -855,6 +855,13 @@ Desk.MainTop:
   Mouse.Show
   TabCheck = -1
 
+  'DEBUG - check if first run in session, only show tip if it is
+  IF VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "TipOfTheDay", "1")) = 1 THEN
+    DIM showTip
+    showTipe = Sys.MsgBox "Did you know?", "This is a tip for you. You are welcome", msgTip
+  END IF
+
+
   'The buttons on the menu is drawn at the label SlideDown
   GOSUB SlideDown
 

@@ -1170,18 +1170,23 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	IF msgType = msgWarn THEN winMsgBox.Caption = "Warning"
 	IF msgType = msgQuest THEN winMsgBox.Caption = "Question"
 	IF msgType = msgError THEN winMsgBox.Caption = "Error"
+	IF msgType = msgTip THEN winMsgBox.Caption = "Tip of the Day"
 
 	Obj.SetSize imgIcon.Pos, winMsgBox.Pos.Left + 13, winMsgBox.Pos.Top + 33, -1, -1
 	IF msgType = msgInfo THEN imgIcon.ImageFile = "MSGINFO"
 	IF msgType = msgWarn THEN imgIcon.ImageFile = "MSGWARN"
 	IF msgType = msgQuest THEN imgIcon.ImageFile = "MSGQUEST"
 	IF msgType = msgError THEN imgIcon.ImageFile = "MSGERROR"
+	IF msgType = msgTip THEN imgIcon.ImageFile = "TIPBULB"
 
 	Obj.SetSize btnFirst.Pos, -1, winMsgBox.Pos.Top + 60 + (15 * msgLineCount), 80, 22
 	btnFirst.HotKey = 1
 	IF msgType = msgQuest THEN
 		btnFirst.Caption = "Yes"
 		btnFirst.Pos.Left = 320 - 86
+	ELSEIF msgType = msgTip THEN
+		btnFirst.Caption = "Continue"
+		btnFirst.Pos.Left = (640 - btnFirst.Pos.Width) / 2
 	ELSE
 		btnFirst.Caption = "OK"
 		btnFirst.Pos.Left = (640 - btnFirst.Pos.Width) / 2
@@ -1237,6 +1242,11 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 					EXIT DO
 				ELSEIF Key$ = "n" OR Key$ = CHR$(27) THEN
 					Sys.MsgBox = False
+					EXIT DO
+				END IF
+			ELSEIF msgType = msgTip THEN
+				IF Key$ = CHR$(13) OR Key$ = CHR$(27) OR Key$ = CHR$(32) OR Key$ = "c" THEN
+					Sys.MsgBox = True
 					EXIT DO
 				END IF
 			ELSE
