@@ -54,6 +54,7 @@
     CONST msgWarn = 2
     CONST msgQuest = 3
     CONST msgError = 4
+    CONST msgTip = 5
     
 
 'Type declarations
