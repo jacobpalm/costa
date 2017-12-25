@@ -1,6 +1,7 @@
 OPTION EXPLICIT
 DEFINT A-Z
 
+DECLARE FUNCTION Desk.GetDailyTip () AS STRING
 DECLARE SUB Calc.Main ()
 DECLARE SUB Conf.Main ()
 DECLARE SUB Desk.AboutBox ()
@@ -196,6 +197,49 @@ SUB Desk.ExitGUI ()
     COLOR 7, 0
     END 1
 END SUB
+
+FUNCTION Desk.GetDailyTip () AS STRING
+
+    ON LOCAL ERROR GOTO DailyTipError
+
+    DIM TipHandle, TipCount
+    DIM DailyTips() AS STRING
+    DIM TipToShow AS STRING
+    DIM PipePos
+
+    TipCount = 0
+    REDIM DailyTips(1 TO 1) AS STRING
+
+    TipHandle = FREEFILE
+    OPEN Sys.Path + "DATA\DAILYTIP.DAT" FOR INPUT AS #TipHandle
+    DO WHILE NOT EOF(TipHandle)
+        TipCount = TipCount + 1
+        REDIM PRESERVE DailyTips(1 TO TipCount) AS STRING
+        LINE INPUT #TipHandle, DailyTips(TipCount)
+    LOOP
+    CLOSE #TipHandle
+
+    'Get random tip
+    RANDOMIZE TIMER
+    TipToShow = DailyTips(INT(RND * TipCount) + 1)
+    
+    'Replace pipe with line break in tip
+    WHILE INSTR(TipToShow, "|")
+        PipePos = INSTR(TipToShow, "|")
+        TipToShow = LEFT$(TipToShow, PipePos - 1) + CHR$(13) + RIGHT$(TipToShow, LEN(TipToShow) - PipePos)
+    WEND
+
+    Desk.GetDailyTip = TipToShow
+    EXIT FUNCTION
+
+
+DailyTipError:
+    
+    Desk.GetDailyTip = ""
+    EXIT FUNCTION
+    RESUME
+
+END FUNCTION
 
 SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
 
@@ -864,20 +908,22 @@ Desk.MainTop:
   'Check if "Tip of the Day" should be shown
   IF VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "TipOfTheDay", "1")) = 1 THEN
 
-    'DEBUG - Only show a tip if this is the first time Costa is started today
-    'IF NOT File.CfgRead("DATA\CONFIG\COSTA.CFG", "TipLastShown", "") = STR$(DAY(NOW)) + STR$(MONTH(NOW)) THEN
-        DIM showTip
-        DIM tipTmp AS STRING
-        tipTmp = "If you don't have a mouse, use the TAB key to cycle between desktop icons."
-        tipTmp = tipTmp + CHR$(13)
-        tipTmp = tipTmp + "Use Shift+TAB keys to cycle in reverse order."
-        tipTmp = tipTmp + CHR$(13) + CHR$(13)
-        tipTmp = tipTmp + "Then, to open the link menu, simply press Enter."
+    'Only show a tip if this is the first time Costa is started today
+    IF NOT File.CfgRead("DATA\CONFIG\COSTA.CFG", "TipLastShown", "") = STR$(DAY(NOW)) + STR$(MONTH(NOW)) THEN
+
+        DIM showTip, TipOfTheDay AS STRING
+        TipOfTheDay = Desk.GetDailyTip
         Mouse.Show
-        showTip = Sys.MsgBox("Did you know?", tipTmp, msgTip)
+
+        IF LEN(TipOfTheDay) THEN
+            showTip = Sys.MsgBox("Did you know?", TipOfTheDay, msgTip)
+        ELSE
+            showTip = Sys.MsgBox("Could not read daily tips", "Could not read daily tips from DATA\DAILYTIPS.TXT." + CHR$(13) + "Make sure this file exists, and isn't corrupted.", msgError)
+        END IF
+
         Mouse.Hide
         File.CfgWrite "DATA\CONFIG\COSTA.CFG", "TipLastShown", STR$(DAY(NOW)) + STR$(MONTH(NOW))
-    'END IF
+    END IF
   END IF
 
 
