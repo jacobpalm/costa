@@ -8,6 +8,8 @@
 
 *1.1.0*
 This version contains mostly minor improvements to Costa.
+  -Added "Tip of the Day" dialog, which can be enabled/disabled from the
+   configuration editor
   -Bug in checkboxes fixed, no more graphical glitches when moving cursor
    after checking/unchecking
   -Fixed bug that would in some cases make text on desktop icons disappear
