@@ -846,6 +846,7 @@ SUB Desk.Main ()
 
   DIM DeskLinkCheck, ClickedX, ClickedY, ClickedB, DidEdit, Key$
   DIM TabCheck, btnTab AS ButtonType, imgTab AS ImageType
+  DIM dateLastLaunch AS STRING
   
 Desk.MainTop:
   Mouse.Hide
@@ -855,16 +856,28 @@ Desk.MainTop:
   Mouse.Show
   TabCheck = -1
 
-  'DEBUG - check if first run in session, only show tip if it is
+  'Clear mouse and keyboard buffer, since DOSBox will sometimes leave data
+  DO: LOOP WHILE Mouse.Clicked
+  DO: LOOP WHILE LEN(INKEY$)
+
+
+  'Check if "Tip of the Day" should be shown
   IF VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "TipOfTheDay", "1")) = 1 THEN
-    DIM showTip
-    DIM tipTmp AS STRING
-    tipTmp = "If you don't have a mouse, use the TAB key to cycle between desktop icons."
-    tipTmp = tipTmp + CHR$(13)
-    tipTmp = tipTmp + "Use Shift+TAB keys to cycle in reverse order."
-    tipTmp = tipTmp + CHR$(13) + CHR$(13)
-    tipTmp = tipTmp + "Then, to open the link menu, simply press Enter."
-    showTip = Sys.MsgBox("Did you know?", tipTmp, msgTip)
+
+    'DEBUG - Only show a tip if this is the first time Costa is started today
+    'IF NOT File.CfgRead("DATA\CONFIG\COSTA.CFG", "TipLastShown", "") = STR$(DAY(NOW)) + STR$(MONTH(NOW)) THEN
+        DIM showTip
+        DIM tipTmp AS STRING
+        tipTmp = "If you don't have a mouse, use the TAB key to cycle between desktop icons."
+        tipTmp = tipTmp + CHR$(13)
+        tipTmp = tipTmp + "Use Shift+TAB keys to cycle in reverse order."
+        tipTmp = tipTmp + CHR$(13) + CHR$(13)
+        tipTmp = tipTmp + "Then, to open the link menu, simply press Enter."
+        Mouse.Show
+        showTip = Sys.MsgBox("Did you know?", tipTmp, msgTip)
+        Mouse.Hide
+        File.CfgWrite "DATA\CONFIG\COSTA.CFG", "TipLastShown", STR$(DAY(NOW)) + STR$(MONTH(NOW))
+    'END IF
   END IF
 
 
@@ -872,8 +885,6 @@ Desk.MainTop:
   GOSUB SlideDown
 
   Mouse.Show
-  DO: LOOP WHILE Mouse.Clicked
-  DO: LOOP WHILE LEN(INKEY$)
   
 MainLoopStart:
   DO
