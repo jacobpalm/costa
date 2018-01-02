@@ -322,7 +322,6 @@ SUB Conf.ConfTheme ()
     DIM frmPreview AS FrameType
     DIM btnBack AS ButtonType, btnNext AS ButtonType
     DIM btnSave AS ButtonType, btnCancel AS ButtonType
-    DIM chkAnim AS CheckBoxType
     
     winTheme.Pos.Width = 324
     winTheme.Pos.Height = 347
@@ -339,7 +338,7 @@ SUB Conf.ConfTheme ()
     btnBack.Caption = "<-"
 
     Obj.SetSize btnSave.Pos, winTheme.Pos.Left + 89, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 69, 22
-    btnSave.Caption = "Save": btnSave.HotKey = 1
+    btnSave.Caption = "Select": btnSave.HotKey = 1
 
     Obj.SetSize btnCancel.Pos, winTheme.Pos.Left + 166, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 69, 22
     btnCancel.Caption = "Cancel": btnCancel.HotKey = 1
