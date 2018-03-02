@@ -10,6 +10,9 @@
 This version contains mostly minor improvements to Costa.
   -Added "Tip of the Day" dialog, which can be enabled/disabled from the
    configuration editor
+  -DESKLINK.DAT will now be recreated automatically if missing. This also 
+   allows built-in icons to be recreated, since they cannot be added/edited 
+   through the UI.
   -Bug in checkboxes fixed, no more graphical glitches when moving cursor
    after checking/unchecking
   -Fixed bug that would in some cases make text on desktop icons disappear
