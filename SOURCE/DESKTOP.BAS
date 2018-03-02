@@ -1,3 +1,4 @@
+DECLARE SUB Desk.LinkReset ()
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -449,7 +450,11 @@ SUB Desk.LinkLoad ()
     OPEN Sys.Path + "DATA\CONFIG\DESKLINK.DAT" FOR BINARY AS #FileHandle
     IF NOT LOF(FileHandle) = 0 THEN GET #FileHandle, , LinkCount
 
-    IF LinkCount = 0 THEN REDIM DeskLink(0 TO 0) AS DeskLinkType: CLOSE #FileHandle: EXIT SUB
+    IF LinkCount = 0 THEN
+        CLOSE #FileHandle
+        Desk.LinkReset
+        EXIT SUB
+    END IF
     
     REDIM DeskLink(0 TO LinkCount - 1) AS DeskLinkType
 
@@ -808,6 +813,75 @@ SUB Desk.LinkMove (TargetLink)
   Desk.LinkSave
 
   DO: LOOP WHILE Mouse.Clicked
+END SUB
+
+'Resets all desk icons, by recreating the array as default
+SUB Desk.LinkReset ()
+
+    REDIM DeskLink(0 TO 7) AS DeskLinkType
+
+    DeskLink(0).Caption = "Tic Tac Toe"
+    DeskLink(0).Filename = "(accessory)"
+    DeskLink(0).Path = CHR$(13) + "TICTAC"
+    DeskLink(0).ImageFile = "TICTAC"
+    DeskLink(0).Left = 15
+    DeskLink(0).Top = 298
+
+    DeskLink(1).Caption = "Text Viewer"
+    DeskLink(1).Filename = "(accessory)"
+    DeskLink(1).Path = CHR$(13) + "TEXTVIEW"
+    DeskLink(1).ImageFile = "DOCUMENT"
+    DeskLink(1).Left = 15
+    DeskLink(1).Top = 343
+
+    DeskLink(2).Caption = "Calculator"
+    DeskLink(2).Filename = "(accessory)"
+    DeskLink(2).Path = CHR$(13) + "CALC"
+    DeskLink(2).ImageFile = "CALC"
+    DeskLink(2).Left = 15
+    DeskLink(2).Top = 388
+
+    DeskLink(3).Caption = "Icon Editor"
+    DeskLink(3).Filename = "ICONEDIT.EXE"
+    DeskLink(3).Path = appEnviron + "\"
+    DeskLink(3).ImageFile = "PAINT"
+    DeskLink(3).Left = 15
+    DeskLink(3).Top = 433
+
+    DeskLink(4).Caption = "DOS-prompt"
+    DeskLink(4).Filename = "COMMAND.COM"
+    DeskLink(4).ImageFile = "DOSPROG"
+    DeskLink(4).PauseOnExit = True
+    DeskLink(4).Left = 480
+    DeskLink(4).Top = 45
+
+    DeskLink(5).Caption = "What's new?"
+    DeskLink(5).Filename = "DOCS\CHANGES.TXT"
+    DeskLink(5).Path = appEnviron + "\"
+    DeskLink(5).ImageFile = "NEWSPAPE"
+    DeskLink(5).Left = 480
+    DeskLink(5).Top = 342
+
+    DeskLink(6).Caption = "User's guide"
+    DeskLink(6).Filename = "DOCS\HELP.TXT"
+    DeskLink(6).Path = appEnviron + "\"
+    DeskLink(6).ImageFile = "HELP"
+    DeskLink(6).Left = 480
+    DeskLink(6).Top = 388
+
+    DeskLink(7).Caption = "Configuration"
+    DeskLink(7).Filename = "(accessory)"
+    DeskLink(7).Path = CHR$(13) + "CONFIG"
+    DeskLink(7).ImageFile = "CONFIG"
+    DeskLink(7).Left = 480
+    DeskLink(7).Top = 433
+
+    Desk.LinkSave
+
+    DIM ResetMsg
+    ResetMsg = Sys.MsgBox("Desktop links reset to default", "The file in which Costa stores the configuration for desktop links, DESKLINK.DAT," + CHR$(13) + "was not found." + CHR$(13) + CHR$(13) +  _
+"A new file has been automatically created, but any custom links will need to be" + CHR$(13) + "created again manually.", msgError)
+
 END SUB
 
 SUB Desk.LinkSave ()
