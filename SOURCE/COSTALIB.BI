@@ -2,7 +2,7 @@
     DECLARE FUNCTION File.CfgRead (BYVAL CfgFile AS STRING, Setting AS STRING, DefaultValue AS STRING) AS STRING
     DECLARE FUNCTION File.Exists% (TargetFile AS STRING)
     DECLARE SUB File.CfgWrite (BYVAL CfgFile AS STRING, Setting AS STRING, Value AS STRING)
-    DECLARE SUB File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVAL TargetPath AS STRING, PauseOnExit AS INTEGER)
+    DECLARE FUNCTION File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVAL TargetPath AS STRING, PauseOnExit AS INTEGER) AS STRING
 
     DECLARE FUNCTION Font.GetWidth% (TargetText AS STRING, FontID%)
     DECLARE SUB Font.Print (BYVAL Text AS STRING, X%, Y%, Col%, FontID%)
@@ -35,7 +35,6 @@
     DECLARE SUB Sys.VGALoad (TargetFile AS STRING)
     DECLARE SUB Sys.VGASave (TargetFile AS STRING)
 
-
 'Boolean constants
     CONST False = 0
     CONST True = NOT False
@@ -55,6 +54,7 @@
     CONST msgWarn = 2
     CONST msgQuest = 3
     CONST msgError = 4
+    CONST msgTip = 5
     
 
 'Type declarations
@@ -72,7 +72,7 @@
     Transparent AS INTEGER
   END TYPE
 
-  'The textbox doesn't have a TEXT property. Use a string variable instead.
+  'The textbox doesn't have a TEXT property. Uses a string variable instead.
   'This is to avoid fixed-lenght strings
   TYPE TextboxType
     Pos AS PosType
@@ -114,6 +114,4 @@
   COMMON SHARED ClrTitleBarText AS INTEGER
   COMMON SHARED ClrSelect AS INTEGER
   COMMON SHARED ClrSelectText AS INTEGER
-  
-  'COMMON SHARED Sys.Path AS STRING
 

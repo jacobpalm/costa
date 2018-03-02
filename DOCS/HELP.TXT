@@ -1,6 +1,6 @@
 
                           The Costa Graphical Shell
-                                Version 1.0.0
+                                Version 1.1.0
                                 By Jacob Palm                   
 
                           User's guide and reference 
@@ -32,11 +32,11 @@
 ------------------------------------------------------------------------------
  ** 1.1 - What is Costa? **
 
-    Costa is a shell with a graphical user interface which replaces the
-   DOS-prompt with a mouse operated environment with windows, buttons,
-   textboxes and such. The low system requirements make Costa very useful
-   for older machines, which are also the machines that typically run the
-   MS-DOS operating system.
+    Costa is a shell with a graphical user interface, which replaces the
+   DOS-prompt with a mouse operated environment consisting of windows,
+   buttons, textboxes and such. The low system requirements make Costa very
+   useful for older machines, which are also the machines that typically run
+   the MS-DOS operating system.
 
     When using Costa, you can use icons to launch programs instead of long
    and difficult commands. Launching a program is just a mouse click away,
@@ -77,7 +77,7 @@
 
     This version of Costa has many improvements over the last version, and
    introduces a few new features. Among them are improved speed and
-   stability, more settings and a lot less flicker in the graphics.
+   stability, more settings and other new features.
    
     For a complete listing of changes, see DOCS\CHANGES.TXT.
 
@@ -108,12 +108,12 @@
 
  ** 1.5 - License **
 
-    Costa is freeware, meaning you can use it free of charge. You are more
-   than welcome to give away copies of Costa, as long as you don't charge
-   anything for it and don't modify any files.
+    Costa is open source, meaning you can use it free of charge. You are more
+   than welcome to give away copies of Costa.
 
-    A full copy of the license can be found in DOCS\LICENSE.TXT, which must
-   always be included with any distribution of Costa.
+    It is distributed under the MIT License. A full copy of this license can
+   be found in the file LICENSE, which must always be included with any
+   distribution of Costa.
 
 
 ------------------------------------------------------------------------------
@@ -270,5 +270,10 @@
       Draws a grey grid over the screen while a messagebox is shown, so that
       only the messagebox is visible. Although it looks nice it results in
       a delayed showing of the messagebox, and is thus disabled by default.
+
+    - Show start-up "Tip of the Day" messages
+      If enabled, Costa will - once per day - show a messagebox with a tip.
+      These tips help you discover features in Costa, or smarter ways to
+      perform certain tasks.
 
                            --- End of document ---

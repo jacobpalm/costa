@@ -1,11 +1,8 @@
-DECLARE SUB TView.Main (FileToView AS STRING)
-DECLARE SUB Conf.Main ()
-DECLARE SUB Tic.Main ()
-DECLARE SUB Calc.Main ()
 OPTION EXPLICIT
 DEFINT A-Z
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
+'$INCLUDE: 'C:\COSTA\SOURCE\APPINFO.BI'
 '$INCLUDE: 'C:\VBDOS\VBDOS.BI'
 
 'This is dimmed here, and not in LIBRARY.BI, because only this module uses
@@ -137,15 +134,15 @@ FUNCTION File.Exists (TargetFile AS STRING)
 
 END FUNCTION
 
-SUB File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVAL TargetPath AS STRING, PauseOnExit AS INTEGER)
+'Runs an external program.
+'Also checks for a file association if passed a file, and passes the
+'filename to the relevant program as a parameter.
+'If this function returns any value, it should be passed to TView.Main as
+'that means the file should be opened with Costa itself (only used in
+'DESKTOP.MAK)
+FUNCTION File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVAL TargetPath AS STRING, PauseOnExit AS INTEGER) AS STRING
 
-
-	IF INSTR(TargetPath, CHR$(13) + "TICTAC") THEN Tic.Main: EXIT SUB
-	IF INSTR(TargetPath, CHR$(13) + "CONFIG") THEN Conf.Main: EXIT SUB
-	IF INSTR(TargetPath, CHR$(13) + "TEXTVIEW") THEN TView.Main "": EXIT SUB
-	IF INSTR(TargetPath, CHR$(13) + "CALC") THEN Calc.Main: EXIT SUB
-
-	DIM RunHandle, DotPos
+	DIM RunHandle, DotPos, AssignFileTypes
 	DIM TargetDrive AS STRING, SysDrive AS STRING
 
 	TargetFile = LTRIM$(RTRIM$(TargetFile))
@@ -155,14 +152,14 @@ SUB File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVA
 	IF LEN(TargetPath) THEN
 		IF RIGHT$(TargetPath, 1) = "\" AND LEN(TargetPath) > 1 THEN TargetPath = LEFT$(TargetPath, LEN(TargetPath) - 1)
 	END IF
-	IF INSTR(UCASE$(TargetPath), "%COSTA100%") THEN
+	IF INSTR(UCASE$(TargetPath), appEnviron) THEN
 		DIM TmpPath AS STRING
-		IF INSTR(UCASE$(TargetPath), "%COSTA100%") > 1 THEN
-			TmpPath = LEFT$(TargetPath, INSTR(UCASE$(TargetPath), "%COSTA100%") - 1)
+		IF INSTR(UCASE$(TargetPath), appEnviron) > 1 THEN
+			TmpPath = LEFT$(TargetPath, INSTR(UCASE$(TargetPath), appEnviron) - 1)
 		END IF
 		TmpPath = TmpPath + Sys.Path
-		IF LEN(TargetPath) > INSTR(UCASE$(TargetPath), "%COSTA100%") + 9 THEN
-			TmpPath = TmpPath + RIGHT$(TargetPath, LEN(TargetPath) - 9 - INSTR(UCASE$(TargetPath), "%COSTA100%"))
+		IF LEN(TargetPath) > INSTR(UCASE$(TargetPath), appEnviron) + 9 THEN
+			TmpPath = TmpPath + RIGHT$(TargetPath, LEN(TargetPath) - 9 - INSTR(UCASE$(TargetPath), appEnviron))
 		END IF
 		TargetPath = TmpPath
 		IF LEN(TargetPath) THEN IF RIGHT$(TargetPath, 1) = "\" AND LEN(TargetPath) > 1 THEN TargetPath = LEFT$(TargetPath, LEN(TargetPath) - 1)
@@ -172,22 +169,24 @@ SUB File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVA
 	
 	'Get the file extension, and see if it's associated with a program
 	DotPos = INSTR(TargetFile, ".")
-	IF DotPos > 0 AND VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "AssignFileTypes", "1")) = 1 THEN
+	AssignFileTypes = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "AssignFileTypes", "1"))
+	IF DotPos > 0 AND AssignFileTypes = 1 THEN
 
 		DIM FileType AS STRING, OpenWith AS STRING
 		FileType = RIGHT$(TargetFile, LEN(TargetFile) - DotPos)
 
 		OpenWith = File.CfgRead("DATA\CONFIG\FILETYPE.CFG", FileType, "")
-																	 
+		
 		IF NOT OpenWith = "" AND NOT INSTR(TargetFile, " ") THEN
-			IF LCASE$(OpenWith) = "costa100" OR LCASE$(OpenWith) = "costa100.exe" THEN
+			IF UCASE$(OpenWith) = appExeName OR UCASE$(OpenWith) = appExeName + ".EXE" THEN
+
 				IF LEN(TargetDrive) THEN CHDRIVE TargetDrive
 				ON LOCAL ERROR RESUME NEXT
 				IF LEN(TargetPath) THEN CHDIR "\": CHDIR TargetPath
 				ON LOCAL ERROR GOTO 0
 				IF LEN(TargetPath) > 0 THEN TargetPath = TargetPath + "\"
-				TView.Main TargetPath + TargetFile
-				EXIT SUB
+				File.Run = TargetPath + TargetFile
+				EXIT FUNCTION
 			ELSE
 				TargetFile = OpenWith + " " + TargetFile
 			END IF
@@ -222,7 +221,7 @@ SUB File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVA
 	DO: LOOP WHILE LEN(INKEY$)
 	END 2
 
-END SUB
+END FUNCTION
 
 FUNCTION Font.GetWidth (TargetText AS STRING, FontID AS INTEGER)
 
@@ -995,10 +994,10 @@ SUB Sys.Load ()
 	'If the parameters /VER or /? are used, just show version info and exit
 		IF INSTR(COMMAND$, "/VER") OR INSTR(COMMAND$, "/?") THEN
 			PRINT
-			PRINT "The Costa Graphical Shell"
-			PRINT "Copyright 2004-2009 Jacob Palm"
+			PRINT appName
+			PRINT "Made in 2004-" + appYear + " Jacob Palm"
 			PRINT
-			PRINT "Version 1.0.0"
+			PRINT "Version " + appVersion
 			PRINT
 			END
 		END IF
@@ -1008,7 +1007,7 @@ SUB Sys.Load ()
 		IF File.Exists(Sys.Path + "DATA\TEMP\RUNSTAT.TMP") = False THEN
 			IF INSTR(COMMAND$, "/DEV") = 0 THEN 'DEBUG! Not for final release
 				CLS
-				PRINT "This program is a part of The Costa Graphical Shell and should not be executed"
+				PRINT "This program is a part of " + appName + " and should not be executed"
 				PRINT "directly from the command prompt."
 				PRINT
 				PRINT "To start Costa, run COSTA.BAT. If that file doesn't exist, run SETUP.EXE."
@@ -1171,18 +1170,23 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	IF msgType = msgWarn THEN winMsgBox.Caption = "Warning"
 	IF msgType = msgQuest THEN winMsgBox.Caption = "Question"
 	IF msgType = msgError THEN winMsgBox.Caption = "Error"
+	IF msgType = msgTip THEN winMsgBox.Caption = "Tip of the Day"
 
 	Obj.SetSize imgIcon.Pos, winMsgBox.Pos.Left + 13, winMsgBox.Pos.Top + 33, -1, -1
 	IF msgType = msgInfo THEN imgIcon.ImageFile = "MSGINFO"
 	IF msgType = msgWarn THEN imgIcon.ImageFile = "MSGWARN"
 	IF msgType = msgQuest THEN imgIcon.ImageFile = "MSGQUEST"
 	IF msgType = msgError THEN imgIcon.ImageFile = "MSGERROR"
+	IF msgType = msgTip THEN imgIcon.ImageFile = "TIPBULB"
 
 	Obj.SetSize btnFirst.Pos, -1, winMsgBox.Pos.Top + 60 + (15 * msgLineCount), 80, 22
 	btnFirst.HotKey = 1
 	IF msgType = msgQuest THEN
 		btnFirst.Caption = "Yes"
 		btnFirst.Pos.Left = 320 - 86
+	ELSEIF msgType = msgTip THEN
+		btnFirst.Caption = "Continue"
+		btnFirst.Pos.Left = (640 - btnFirst.Pos.Width) / 2
 	ELSE
 		btnFirst.Caption = "OK"
 		btnFirst.Pos.Left = (640 - btnFirst.Pos.Width) / 2
@@ -1240,6 +1244,11 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 					Sys.MsgBox = False
 					EXIT DO
 				END IF
+			ELSEIF msgType = msgTip THEN
+				IF Key$ = CHR$(13) OR Key$ = CHR$(27) OR Key$ = CHR$(32) OR Key$ = "c" THEN
+					Sys.MsgBox = True
+					EXIT DO
+				END IF
 			ELSE
 				IF Key$ = CHR$(13) OR Key$ = CHR$(27) OR Key$ = CHR$(32) OR Key$ = "o" THEN
 					Sys.MsgBox = True
@@ -1264,7 +1273,7 @@ FUNCTION Sys.Path () AS STRING
 
 	DIM SysPath AS STRING
 
-	SysPath = ENVIRON$("COSTA100")
+	SysPath = ENVIRON$(appExeName)
 
 	IF LEN(SysPath) > 0 THEN
 		IF NOT RIGHT$(SysPath, 1) = "\" THEN SysPath = SysPath + "\"

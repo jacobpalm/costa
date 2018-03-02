@@ -1,18 +1,26 @@
 OPTION EXPLICIT
 DEFINT A-Z
 
+DECLARE FUNCTION Desk.GetDailyTip () AS STRING
+DECLARE SUB Calc.Main ()
+DECLARE SUB Conf.Main ()
 DECLARE SUB Desk.AboutBox ()
 DECLARE SUB Desk.DrawDesktop ()
 DECLARE SUB Desk.ExitGUI ()
 DECLARE SUB Desk.LinkDialog (TargetLink%, DidEdit%, NewLink%)
+DECLARE SUB Desk.LinkLaunch (TargetLink AS INTEGER)
 DECLARE SUB Desk.LinkLoad ()
-DECLARE SUB Desk.LinkSave ()
 DECLARE SUB Desk.LinkMenu (TargetLink%, MenuX%, MenuY%)
 DECLARE SUB Desk.LinkMove (TargetLink%)
+DECLARE SUB Desk.LinkReset ()
+DECLARE SUB Desk.LinkSave ()
 DECLARE SUB Desk.Main ()
 DECLARE SUB Desk.RunDialog ()
+DECLARE SUB Tic.Main ()
+DECLARE SUB TView.Main (FileToView AS STRING)
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
+'$INCLUDE: 'C:\COSTA\SOURCE\APPINFO.BI'
 
 TYPE DeskLinkType
   Caption AS STRING * 25
@@ -29,9 +37,9 @@ REDIM SHARED DeskLink(0 TO 0) AS DeskLinkType
 
 IF COMMAND$ = "/BOOT" THEN
 
-    IF Sys.Path = "" OR File.Exists(Sys.Path + "COSTA100.EXE") = False THEN
+    IF Sys.Path = "" OR File.Exists(Sys.Path + appExeName + ".EXE") = False THEN
         CLS
-        PRINT "The environment variable COSTA100, which contains the path to Costa, is either"
+        PRINT "The environment variable " + appExeName + ", which contains the path to Costa, is either"
         PRINT "not set or contains an invalid path."
         PRINT
         PRINT "Run SETUP.EXE to fix this issue."
@@ -71,8 +79,10 @@ IF COMMAND$ = "/BOOT" THEN
     COLOR 7, 0
     CLS
     PRINT
-    PRINT "  The Costa Graphical Shell"
-    PRINT "  Copyright 2004-2012 Jacob Palm"
+    PRINT "  " + appName
+    PRINT "  Coded in 2004-" + appYear + " by Jacob Palm"
+    PRINT
+    PRINT "  Released under the MIT License"
     PRINT
     Sys.Delay 1.9
 END IF
@@ -107,18 +117,18 @@ SUB Desk.AboutBox ()
   Mouse.Show
   Obj.DrawImg imgLogo
   
-  Font.Print "The Costa Graphical Shell", 210, 117, 0, 1
-  Font.Print "Version 1.0.0", 210, 131, 0, 2
-  Font.Print "Copyright (C) 2004-2012 Jacob Palm Christensen,", 168, 153, 0, 2
-  Font.Print "all rights reserved.", 168, 167, 0, 2
-  Font.Print "Font files (C) 1998-1999 Rush Soft.", 168, 195, 0, 2
-  Font.Print "Costa is freeware and may be freely distributed as", 168, 223, 0, 2
-  Font.Print "long as no files are modified and all copyright", 168, 237, 0, 2
-  Font.Print "notices are included and left unmodified.", 168, 251, 0, 2
+  Font.Print appName, 210, 117, 0, 1
+  Font.Print "Version " + appVersion, 210, 131, 0, 2
+  Font.Print "Made in 2004-" + appYear + " by Jacob Palm", 168, 153, 0, 2
+  Font.Print "Released under the MIT License.", 168, 167, 0, 2
+  Font.Print "Font files made in 1998-1999 by Rush Soft.", 168, 195, 0, 2
+  Font.Print "Costa is open source and may be freely distributed", 168, 223, 0, 2
+  Font.Print "as long as the terms of the MIT License is upheld -", 168, 237, 0, 2
+  Font.Print "more info can be found in the LICENSE file.", 168, 251, 0, 2
   Font.Print "Special thanks to Todd Suess, who helped during", 168, 279, 0, 2
   Font.Print "the development with useful tips and ideas. Also", 168, 293, 0, 2
-  Font.Print "thanks to those people who keep the QB GUI", 168, 307, 0, 2
-  Font.Print "development community alive.", 168, 321, 0, 2
+  Font.Print "thanks to those people who where part of the QB", 168, 307, 0, 2
+  Font.Print "GUI community - every one of you.", 168, 321, 0, 2
 
 
   DO: LOOP WHILE Mouse.Clicked
@@ -188,6 +198,49 @@ SUB Desk.ExitGUI ()
     COLOR 7, 0
     END 1
 END SUB
+
+FUNCTION Desk.GetDailyTip () AS STRING
+
+    ON LOCAL ERROR GOTO DailyTipError
+
+    DIM TipHandle, TipCount
+    DIM DailyTips() AS STRING
+    DIM TipToShow AS STRING
+    DIM PipePos
+
+    TipCount = 0
+    REDIM DailyTips(1 TO 1) AS STRING
+
+    TipHandle = FREEFILE
+    OPEN Sys.Path + "DATA\DAILYTIP.DAT" FOR INPUT AS #TipHandle
+    DO WHILE NOT EOF(TipHandle)
+        TipCount = TipCount + 1
+        REDIM PRESERVE DailyTips(1 TO TipCount) AS STRING
+        LINE INPUT #TipHandle, DailyTips(TipCount)
+    LOOP
+    CLOSE #TipHandle
+
+    'Get random tip
+    RANDOMIZE TIMER
+    TipToShow = DailyTips(INT(RND * TipCount) + 1)
+    
+    'Replace pipe with line break in tip
+    WHILE INSTR(TipToShow, "|")
+        PipePos = INSTR(TipToShow, "|")
+        TipToShow = LEFT$(TipToShow, PipePos - 1) + CHR$(13) + RIGHT$(TipToShow, LEN(TipToShow) - PipePos)
+    WEND
+
+    Desk.GetDailyTip = TipToShow
+    EXIT FUNCTION
+
+
+DailyTipError:
+    
+    Desk.GetDailyTip = ""
+    EXIT FUNCTION
+    RESUME
+
+END FUNCTION
 
 SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
 
@@ -363,6 +416,32 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
 
 END SUB
 
+' Launches a specific desktop link. It first checks if the link is internal,
+' and launces the internal program if it is.
+' Otherwise, it launches the external program.
+SUB Desk.LinkLaunch (TargetLink AS INTEGER)
+
+    DIM TargetPath AS STRING
+    DIM FileToOpen AS STRING
+
+    TargetPath = RTRIM$(DeskLink(TargetLink).Path)
+
+    SELECT CASE TargetPath
+        CASE CHR$(13) + "TICTAC"
+            Tic.Main
+        CASE CHR$(13) + "CONFIG"
+            Conf.Main
+        CASE CHR$(13) + "TEXTVIEW"
+            TView.Main ""
+        CASE CHR$(13) + "CALC"
+            Calc.Main
+        CASE ELSE
+            FileToOpen = File.Run(RTRIM$(DeskLink(TargetLink).Filename), RTRIM$(DeskLink(TargetLink).Parameters), RTRIM$(DeskLink(TargetLink).Path), DeskLink(TargetLink).PauseOnExit)
+            IF LEN(FileToOpen) > 0 THEN TView.Main FileToOpen
+    END SELECT
+
+END SUB
+
 SUB Desk.LinkLoad ()
   
     DIM LinkCount, LinkLoad, FileHandle
@@ -371,7 +450,11 @@ SUB Desk.LinkLoad ()
     OPEN Sys.Path + "DATA\CONFIG\DESKLINK.DAT" FOR BINARY AS #FileHandle
     IF NOT LOF(FileHandle) = 0 THEN GET #FileHandle, , LinkCount
 
-    IF LinkCount = 0 THEN REDIM DeskLink(0 TO 0) AS DeskLinkType: CLOSE #FileHandle: EXIT SUB
+    IF LinkCount = 0 THEN
+        CLOSE #FileHandle
+        Desk.LinkReset
+        EXIT SUB
+    END IF
     
     REDIM DeskLink(0 TO LinkCount - 1) AS DeskLinkType
 
@@ -390,6 +473,8 @@ SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
   DIM BehindMenu(1681), FrontOfMenu(1681)
   DIM DrawFromLeft, DrawFromTop, ActiveItem, FgColor, BgColor
   DIM MenuBack AS ButtonType
+  DIM DoAnimations
+
   MenuBack.Pos.Width = 94
   MenuBack.Pos.Height = 69
 
@@ -419,7 +504,8 @@ SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
   
   GET (x1, y1)-(X2, Y2), BehindMenu
   
-  IF VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "Animations", "1")) = 1 THEN
+  DoAnimations = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "Animations", "1"))
+  IF DoAnimations = 1 THEN
     DIM Sys.DelayWait
 
     IF DrawFromLeft = True THEN
@@ -552,7 +638,7 @@ LinkMenuRefresh:
             PUT (x1, y1), BehindMenu, PSET
             Mouse.Show
             Sys.VGASave "DESKTOP"
-            File.Run RTRIM$(DeskLink(TargetLink).Filename), RTRIM$(DeskLink(TargetLink).Parameters), RTRIM$(DeskLink(TargetLink).Path), DeskLink(TargetLink).PauseOnExit
+            Desk.LinkLaunch TargetLink
             EXIT SUB
           END IF
 
@@ -729,6 +815,75 @@ SUB Desk.LinkMove (TargetLink)
   DO: LOOP WHILE Mouse.Clicked
 END SUB
 
+'Resets all desk icons, by recreating the array as default
+SUB Desk.LinkReset ()
+
+    REDIM DeskLink(0 TO 7) AS DeskLinkType
+
+    DeskLink(0).Caption = "Tic Tac Toe"
+    DeskLink(0).Filename = "(accessory)"
+    DeskLink(0).Path = CHR$(13) + "TICTAC"
+    DeskLink(0).ImageFile = "TICTAC"
+    DeskLink(0).Left = 15
+    DeskLink(0).Top = 298
+
+    DeskLink(1).Caption = "Text Viewer"
+    DeskLink(1).Filename = "(accessory)"
+    DeskLink(1).Path = CHR$(13) + "TEXTVIEW"
+    DeskLink(1).ImageFile = "DOCUMENT"
+    DeskLink(1).Left = 15
+    DeskLink(1).Top = 343
+
+    DeskLink(2).Caption = "Calculator"
+    DeskLink(2).Filename = "(accessory)"
+    DeskLink(2).Path = CHR$(13) + "CALC"
+    DeskLink(2).ImageFile = "CALC"
+    DeskLink(2).Left = 15
+    DeskLink(2).Top = 388
+
+    DeskLink(3).Caption = "Icon Editor"
+    DeskLink(3).Filename = "ICONEDIT.EXE"
+    DeskLink(3).Path = appEnviron + "\"
+    DeskLink(3).ImageFile = "PAINT"
+    DeskLink(3).Left = 15
+    DeskLink(3).Top = 433
+
+    DeskLink(4).Caption = "DOS-prompt"
+    DeskLink(4).Filename = "COMMAND.COM"
+    DeskLink(4).ImageFile = "DOSPROG"
+    DeskLink(4).PauseOnExit = True
+    DeskLink(4).Left = 480
+    DeskLink(4).Top = 45
+
+    DeskLink(5).Caption = "What's new?"
+    DeskLink(5).Filename = "DOCS\CHANGES.TXT"
+    DeskLink(5).Path = appEnviron + "\"
+    DeskLink(5).ImageFile = "NEWSPAPE"
+    DeskLink(5).Left = 480
+    DeskLink(5).Top = 342
+
+    DeskLink(6).Caption = "User's guide"
+    DeskLink(6).Filename = "DOCS\HELP.TXT"
+    DeskLink(6).Path = appEnviron + "\"
+    DeskLink(6).ImageFile = "HELP"
+    DeskLink(6).Left = 480
+    DeskLink(6).Top = 388
+
+    DeskLink(7).Caption = "Configuration"
+    DeskLink(7).Filename = "(accessory)"
+    DeskLink(7).Path = CHR$(13) + "CONFIG"
+    DeskLink(7).ImageFile = "CONFIG"
+    DeskLink(7).Left = 480
+    DeskLink(7).Top = 433
+
+    Desk.LinkSave
+
+    DIM ResetMsg
+    ResetMsg = Sys.MsgBox("Desktop links reset to default", "The file in which Costa stores the configuration for desktop links, DESKLINK.DAT," + CHR$(13) + "was not found." + CHR$(13) + CHR$(13) +  _
+"A new file has been automatically created, but any custom links will need to be" + CHR$(13) + "created again manually.", msgError)
+
+END SUB
+
 SUB Desk.LinkSave ()
 
     'Sort before saving if array contains more than one item - this
@@ -796,7 +951,7 @@ SUB Desk.Main ()
 
   DIM btnAddLink AS ButtonType, btnRunCmd AS ButtonType
   DIM btnAboutCosta AS ButtonType, btnExitCosta AS ButtonType
-  DIM SlidePos, DelayFixer
+  DIM SlidePos, DelayFixer, ShowLinkMenu, ShowAnimations
 
   Obj.SetSize btnAddLink.Pos, 3, 2, 92, 22
   btnAddLink.Caption = "Add link": btnAddLink.HotKey = 5
@@ -809,6 +964,7 @@ SUB Desk.Main ()
 
   DIM DeskLinkCheck, ClickedX, ClickedY, ClickedB, DidEdit, Key$
   DIM TabCheck, btnTab AS ButtonType, imgTab AS ImageType
+  DIM dateLastLaunch AS STRING
   
 Desk.MainTop:
   Mouse.Hide
@@ -818,12 +974,37 @@ Desk.MainTop:
   Mouse.Show
   TabCheck = -1
 
+  'Clear mouse and keyboard buffer, since DOSBox will sometimes leave data
+  DO: LOOP WHILE Mouse.Clicked
+  DO: LOOP WHILE LEN(INKEY$)
+
+
+  'Check if "Tip of the Day" should be shown
+  IF VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "TipOfTheDay", "1")) = 1 THEN
+
+    'Only show a tip if this is the first time Costa is started today
+    IF NOT File.CfgRead("DATA\CONFIG\COSTA.CFG", "TipLastShown", "") = STR$(DAY(NOW)) + STR$(MONTH(NOW)) THEN
+
+        DIM showTip, TipOfTheDay AS STRING
+        TipOfTheDay = Desk.GetDailyTip
+        Mouse.Show
+
+        IF LEN(TipOfTheDay) THEN
+            showTip = Sys.MsgBox("Did you know?", TipOfTheDay, msgTip)
+        ELSE
+            showTip = Sys.MsgBox("Could not read daily tips", "Could not read daily tips from " + Sys.Path + "DATA\DAILYTIPS.DAT." + CHR$(13) + "Make sure this file exists, and isn't corrupted.", msgError)
+        END IF
+
+        Mouse.Hide
+        File.CfgWrite "DATA\CONFIG\COSTA.CFG", "TipLastShown", STR$(DAY(NOW)) + STR$(MONTH(NOW))
+    END IF
+  END IF
+
+
   'The buttons on the menu is drawn at the label SlideDown
   GOSUB SlideDown
 
   Mouse.Show
-  DO: LOOP WHILE Mouse.Clicked
-  DO: LOOP WHILE LEN(INKEY$)
   
 MainLoopStart:
   DO
@@ -863,7 +1044,8 @@ MainLoopStart:
               ELSE
                 'Depending on the configuration a left click on a link
                 'will either open/run the targetfile or show the menu
-                IF VAL(File.CfgRead("DATA\CONFIG\DESKTOP.CFG", "LinkMenuOnLeftClick", "1")) = 1 THEN
+                ShowLinkMenu = VAL(File.CfgRead("DATA\CONFIG\DESKTOP.CFG", "LinkMenuOnLeftClick", "1"))
+                IF ShowLinkMenu = 1 THEN
                     IF NOT TabCheck = -1 THEN
                         Mouse.Hide
                         LINE (DeskLink(TabCheck).Left - 3, DeskLink(TabCheck).Top - 3)-(DeskLink(TabCheck).Left + 35, DeskLink(TabCheck).Top + 35), ClrDesktop, BF
@@ -875,7 +1057,8 @@ MainLoopStart:
                     Desk.LinkMenu DeskLinkCheck, ClickedX, ClickedY
                 ELSE
                     Sys.VGASave "DESKTOP"
-                    File.Run RTRIM$(DeskLink(DeskLinkCheck).Filename), RTRIM$(DeskLink(DeskLinkCheck).Parameters), RTRIM$(DeskLink(DeskLinkCheck).Path), DeskLink(DeskLinkCheck).PauseOnExit
+
+                    Desk.LinkLaunch DeskLinkCheck
                 END IF
               END IF
 
@@ -925,7 +1108,11 @@ MainLoopStart:
             GOSUB SlideUp
             DIM FileToRun AS STRING
             FileToRun = Sys.InputBox("Execute program or command", "You can also use this dialog to open any file" + CHR$(13) + "associated with a program (like README.TXT).", "RUNPROG", "C:\")
-            IF LEN(FileToRun) AND NOT FileToRun = "C:\" THEN File.Run FileToRun, "", "", True
+            IF LEN(FileToRun) AND NOT FileToRun = "C:\" THEN
+                DIM RunFile AS STRING
+                RunFile = File.Run(FileToRun, "", "", True)
+                IF LEN(RunFile) > 0 THEN TView.Main RunFile
+            END IF
             GOSUB SlideDown
             GOTO MainLoopStart
         END IF
@@ -944,7 +1131,7 @@ MainLoopStart:
 
             DIM DoExit
             IF File.CfgRead("DATA\CONFIG\COSTA.CFG", "ConfirmExit", "1") = "1" THEN
-                DoExit = Sys.MsgBox("Exit The Costa Graphical Shell", "This will exit Costa and return you to the DOS" + CHR$(13) + "prompt. Are you sure?", msgQuest)
+                DoExit = Sys.MsgBox("Exit " + appName, "This will exit Costa and return you to the DOS" + CHR$(13) + "prompt. Are you sure?", msgQuest)
             ELSE
                 DoExit = True
             END IF
@@ -1006,7 +1193,8 @@ EXIT SUB
 
 SlideDown:
   Mouse.Hide
-  IF VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "Animations", "1")) = 1 THEN
+  ShowAnimations = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "Animations", "1"))
+  IF ShowAnimations = 1 THEN
     DelayFixer = 0
     FOR SlidePos = 0 TO 26 STEP 2
       LINE (0, 0)-(639, SlidePos), ClrWindow, BF
@@ -1033,7 +1221,8 @@ RETURN
 SlideUp:
   Mouse.Hide
   DelayFixer = 0
-  IF VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "Animations", "1")) = 1 THEN
+  ShowAnimations = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "Animations", "1"))
+  IF ShowAnimations = 1 THEN
     LINE (0, 0)-(639, 28), ClrWindow, BF
     FOR SlidePos = 25 TO 0 STEP -2
       LINE (0, SlidePos)-(639, SlidePos), Clr3DShadow

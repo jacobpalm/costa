@@ -20,7 +20,7 @@ to add more to Costa, and credit will of course be given!
 ## Using this code
 When opening project files (.MAK), use the /L parameter - as such:
 
-VBDOS.EXE COSTA100.MAK /L
+VBDOS.EXE COSTA110.MAK /L
 
 This will cause VBDOS to load the libraries neccesary for Costa to work.
 If you get an error relating to "CALL ABSOLUTE", you have probably not

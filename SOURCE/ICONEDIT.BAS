@@ -1,11 +1,10 @@
-DECLARE SUB IconEdit.Preview ()
-DECLARE FUNCTION IconEdit.SaveIcon% ()
-DECLARE FUNCTION IconEdit.LoadIcon% ()
-
 DEFINT A-Z
 OPTION EXPLICIT
 
 DECLARE SUB IconEdit.Main ()
+DECLARE SUB IconEdit.Preview ()
+DECLARE FUNCTION IconEdit.SaveIcon% ()
+DECLARE FUNCTION IconEdit.LoadIcon% ()
 
 TYPE IconDataType
     Pixel(31, 31) AS INTEGER
@@ -15,25 +14,25 @@ DIM SHARED IconData AS IconDataType
 DIM SHARED IconFileName AS STRING
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
+'$INCLUDE: 'C:\COSTA\SOURCE\APPINFO.BI'
 
 STACK 5120
 
 IF File.Exists(Sys.Path + "DATA\TEMP\RUNSTAT.TMP") = False THEN
-    'DEBUG - not for final releases
-    'IF NOT COMMAND$ = "/DEV" THEN 'Debug - ikke for final release
+    IF NOT COMMAND$ = "/DEV" THEN
         CLS
-        PRINT "This program is a part of The Costa Graphical Shell and should not be executed"
+        PRINT "This program is a part of " + appName + " and should not be executed"
         PRINT "directly from the command prompt."
         PRINT
         PRINT "To start Costa, run COSTA.BAT. If that file doesn't exist, run SETUP.EXE."
         PRINT
         END
-    'END IF
+    END IF
 END IF
 
-IF Sys.Path = "" OR File.Exists(Sys.Path + "COSTA100.EXE") = False THEN
+IF Sys.Path = "" OR File.Exists(Sys.Path + appExeName + ".EXE") = False THEN
     CLS
-    PRINT "The environment variable COSTA100, which contains the path to Costa, is either"
+    PRINT "The environment variable " + appExeName + ", which contains the path to Costa, is either"
     PRINT "not set or contains an invalid path."
     PRINT
     PRINT "Run SETUP.EXE to fix this issue."
@@ -41,20 +40,13 @@ IF Sys.Path = "" OR File.Exists(Sys.Path + "COSTA100.EXE") = False THEN
     END
 END IF
 
-                                                      'DEBUG - not for final releases
-IF NOT COMMAND$ = "/?" AND NOT COMMAND$ = "/VER" THEN 'AND NOT COMMAND$ = "/DEV" THEN
+IF NOT COMMAND$ = "/?" AND NOT COMMAND$ = "/VER" AND NOT COMMAND$ = "/DEV" THEN
     IconFileName = COMMAND$
 END IF
 
 Sys.Load
 
 IconEdit.Main
-
-SUB Calc.Main ()
-END SUB
-
-SUB Conf.Main ()
-END SUB
 
 FUNCTION IconEdit.LoadIcon ()
     DIM LoadFile AS STRING, FileHandle
@@ -551,10 +543,4 @@ TopOfSave:
     IconEdit.SaveIcon = True
     
 END FUNCTION
-
-SUB Tic.Main ()
-END SUB
-
-SUB TView.Main (FileToView AS STRING)
-END SUB
 
