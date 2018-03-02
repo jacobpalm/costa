@@ -992,7 +992,7 @@ Desk.MainTop:
         IF LEN(TipOfTheDay) THEN
             showTip = Sys.MsgBox("Did you know?", TipOfTheDay, msgTip)
         ELSE
-            showTip = Sys.MsgBox("Could not read daily tips", "Could not read daily tips from DATA\DAILYTIPS.TXT." + CHR$(13) + "Make sure this file exists, and isn't corrupted.", msgError)
+            showTip = Sys.MsgBox("Could not read daily tips", "Could not read daily tips from " + Sys.Path + "DATA\DAILYTIPS.DAT." + CHR$(13) + "Make sure this file exists, and isn't corrupted.", msgError)
         END IF
 
         Mouse.Hide
