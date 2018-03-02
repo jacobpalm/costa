@@ -1,4 +1,3 @@
-DECLARE SUB Desk.LinkReset ()
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -13,6 +12,7 @@ DECLARE SUB Desk.LinkLaunch (TargetLink AS INTEGER)
 DECLARE SUB Desk.LinkLoad ()
 DECLARE SUB Desk.LinkMenu (TargetLink%, MenuX%, MenuY%)
 DECLARE SUB Desk.LinkMove (TargetLink%)
+DECLARE SUB Desk.LinkReset ()
 DECLARE SUB Desk.LinkSave ()
 DECLARE SUB Desk.Main ()
 DECLARE SUB Desk.RunDialog ()
