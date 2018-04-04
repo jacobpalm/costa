@@ -85,13 +85,13 @@
  ** 1.4 - About Costa **
 
     The Costa development started in February 2004 and I worked on it almost
-   almost every day for a couple of years. Then, I felt the need to move on
-   to other projects. Costa was abandoned, and left untouched for a long,
-   long time. Then, in 2008, I decided to finish what I started. I took the
-   old source code to various versions of Costa, studied it and thought of
-   what was good, and what was bad. I decided to do a complete rewrite, and
-   quickly made a GUI toolkit to allow quick and fairly easy development of
-   programs. Soon after, the desktop was completed.
+   every day for a couple of years. Then, I felt the need to move on to other 
+   projects. Costa was abandoned, and left untouched for a long, long time.
+   Then, in 2008, I decided to finish what I started. I took the old source
+   code to various versions of Costa, studied it and thought of what was
+   good, and what was bad. I decided to do a complete rewrite, and quickly
+   made a GUI toolkit to allow quick and fairly easy development of programs. 
+   Soon after, the desktop was completed.
 
     Costa was made using Microsoft Visual Basic for MS-DOS. I didn't use the
    forms engine in Visual Basic for MS-DOS, I wrote everything from scratch.
