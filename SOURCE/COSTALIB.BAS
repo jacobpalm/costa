@@ -2,7 +2,6 @@ OPTION EXPLICIT
 DEFINT A-Z
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
-'$INCLUDE: 'C:\COSTA\SOURCE\APPINFO.BI'
 '$INCLUDE: 'C:\VBDOS\VBDOS.BI'
 
 'This is dimmed here, and not in LIBRARY.BI, because only this module uses

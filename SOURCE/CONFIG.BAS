@@ -11,7 +11,6 @@ DECLARE SUB Conf.Main ()
 DECLARE SUB Desk.DrawDesktop ()
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
-'$INCLUDE: 'C:\COSTA\SOURCE\APPINFO.BI'
 
 DIM SHARED ThemeFile$, ThemeName$, ThemeAuthor$
 DIM SHARED ThemeList() AS STRING

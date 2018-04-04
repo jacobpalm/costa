@@ -35,6 +35,9 @@
     DECLARE SUB Sys.VGALoad (TargetFile AS STRING)
     DECLARE SUB Sys.VGASave (TargetFile AS STRING)
 
+'App name, version etc.
+    '$INCLUDE: 'C:\COSTA\SOURCE\APPINFO.BI'
+
 'Boolean constants
     CONST False = 0
     CONST True = NOT False
