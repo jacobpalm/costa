@@ -391,7 +391,7 @@ StartOfMain:
                     Mouse.Show
                     GOSUB UpdatePreview
                 END IF
-            ELSE
+            ELSEIF Mouse.Clicked = mbRight THEN
                 IF NOT IconData.Pixel(CursorX, CursorY) = -1 THEN
                     IconChanged = True
                     TransClick = True
@@ -418,7 +418,6 @@ UpdatePreview:
     ELSE
         PSET (btnPreview.Pos.Left + 10 + CursorX, btnPreview.Pos.Top + 10 + CursorY), DrawColor
     END IF
-
     Mouse.Show
     RETURN
 
@@ -538,7 +537,7 @@ TopOfSave:
     PUT #FileHandle, , IconData
     CLOSE #FileHandle
 
-    IconFileName = SaveAs
+    IconFileName = UCASE$(SaveAs)
     IconEdit.SaveIcon = True
     
 END FUNCTION
