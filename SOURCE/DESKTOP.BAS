@@ -126,7 +126,7 @@ SUB Desk.AboutBox ()
   Font.Print "more info can be found in the LICENSE file.", 168, 251, 0, 2
   Font.Print "Special thanks to Todd Suess, who helped during", 168, 279, 0, 2
   Font.Print "the development with useful tips and ideas. Also", 168, 293, 0, 2
-  Font.Print "thanks to those people who where part of the QB", 168, 307, 0, 2
+  Font.Print "thanks to those people who were part of the QB", 168, 307, 0, 2
   Font.Print "GUI community - every one of you.", 168, 321, 0, 2
 
 
