@@ -204,6 +204,7 @@ FUNCTION Desk.GetDailyTip () AS STRING
 
     DIM TipHandle, TipCount
     DIM DailyTips() AS STRING
+    DIM ReadTip AS STRING
     DIM TipToShow AS STRING
     DIM PipePos
 
@@ -213,9 +214,12 @@ FUNCTION Desk.GetDailyTip () AS STRING
     TipHandle = FREEFILE
     OPEN Sys.Path + "DATA\DAILYTIP.DAT" FOR INPUT AS #TipHandle
     DO WHILE NOT EOF(TipHandle)
-        TipCount = TipCount + 1
-        REDIM PRESERVE DailyTips(1 TO TipCount) AS STRING
-        LINE INPUT #TipHandle, DailyTips(TipCount)
+        LINE INPUT #TipHandle, ReadTip
+        IF NOT ReadTip = "" THEN
+            TipCount = TipCount + 1
+            REDIM PRESERVE DailyTips(1 TO TipCount) AS STRING
+            DailyTips(TipCount) = ReadTip
+        END IF
     LOOP
     CLOSE #TipHandle
 
@@ -234,7 +238,6 @@ FUNCTION Desk.GetDailyTip () AS STRING
 
 
 DailyTipError:
-    
     Desk.GetDailyTip = ""
     EXIT FUNCTION
     RESUME
