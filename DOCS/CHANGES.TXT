@@ -6,6 +6,17 @@
                                  Changelog
 
 
+*1.2.0*
+One again a minor release of Costa, with mostly bug fixes and other
+refinements.
+  -Added more tips for "Tip of the Day" dialog, to help users discover more
+   hidden (or less well-known) features of Costa
+  -Fixed bug in icon editor that resulted in a blank pixel being drawn when
+   the left mouse button was lifted
+  -Fixed bug in icon editor that caused it to repeatly ask for confirmation
+   before overwrite on each save, even if the icon had already been saved to
+   that same filename
+
 *1.1.0*
 This version contains mostly minor improvements to Costa.
   -Added "Tip of the Day" dialog, which can be enabled/disabled from the
