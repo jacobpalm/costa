@@ -16,6 +16,15 @@ DIM SHARED ThemeFile$, ThemeName$, ThemeAuthor$
 DIM SHARED ThemeList() AS STRING
 DIM SHARED DeskNeedsDraw
 
+' =========================================================================
+'          NAME: Conf.ConfAssoc()
+'    PARAMETERS: None
+'       RETURNS: Nothing
+'       ASSUMES: Nothing
+'   CALLED FROM: CONFIG.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: UI and logic for file association editor
+' =========================================================================
 SUB Conf.ConfAssoc ()
 
     IF NOT File.CfgRead("DATA\CONFIG\COSTA.CFG", "AssignFileTypes", "1") = "1" THEN
@@ -131,6 +140,15 @@ SUB Conf.ConfAssoc ()
 
 END SUB
 
+' =========================================================================
+'          NAME: Conf.ConfMisc()
+'    PARAMETERS: None
+'       RETURNS: Nothing
+'       ASSUMES: Nothing
+'   CALLED FROM: CONFIG.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: UI and logic for misc. options editor
+' =========================================================================
 SUB Conf.ConfMisc ()
 
     DIM winMisc AS WindowType
@@ -315,6 +333,15 @@ SUB Conf.ConfMisc ()
 
 END SUB
 
+' =========================================================================
+'          NAME: Conf.ConfTheme()
+'    PARAMETERS: None
+'       RETURNS: Nothing
+'       ASSUMES: Nothing
+'   CALLED FROM: CONFIG.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: UI and logic for theme selector
+' =========================================================================
 SUB Conf.ConfTheme ()
 
     DIM winTheme AS WindowType
@@ -463,6 +490,15 @@ UpdatePreview:
 
 END SUB
 
+' =========================================================================
+'          NAME: Conf.LoadTheme()
+'    PARAMETERS: ThmFile - the filename of the theme to load
+'       RETURNS: Nothing
+'       ASSUMES: That the specified theme file exists
+'   CALLED FROM: CONFIG.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Loads a theme into the UI color variables
+' =========================================================================
 SUB Conf.LoadTheme (BYVAL ThmFile AS STRING)
 
     IF NOT UCASE$(RIGHT$(ThmFile, 4)) = ".THM" THEN ThmFile = ThmFile + ".THM"
@@ -488,6 +524,16 @@ SUB Conf.LoadTheme (BYVAL ThmFile AS STRING)
     
 END SUB
 
+' =========================================================================
+'          NAME: Conf.Main()
+'    PARAMETERS: None
+'       RETURNS: Nothing
+'       ASSUMES: Nothing
+'   CALLED FROM: DESKTOP.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: UI and logic for the main window of the configuration
+'                editor.
+' =========================================================================
 SUB Conf.Main ()
 
     DIM winConfig AS WindowType

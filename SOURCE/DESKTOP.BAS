@@ -92,6 +92,15 @@ CALL Sys.Load
 
 Desk.Main
 
+' =========================================================================
+'          NAME: Desk.AboutBox()
+'    PARAMETERS: None
+'       RETURNS: Nothing
+'       ASSUMES: Nothing
+'   CALLED FROM: DESKTOP.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Shows a modal window with information about the software.
+' =========================================================================
 SUB Desk.AboutBox ()
 
   DIM winAboutBox AS WindowType
@@ -140,6 +149,17 @@ SUB Desk.AboutBox ()
   
 END SUB
 
+' =========================================================================
+'          NAME: Desk.DrawDesktop()
+'    PARAMETERS: None
+'       RETURNS: Nothing
+'       ASSUMES: That Desk.LinkLoad has been called beforehand
+'   CALLED FROM: DESKTOP.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Redraws all of the links on the desktop - icon, caption,
+'                target - according to the settings defined in the config
+'                file
+' =========================================================================
 SUB Desk.DrawDesktop ()
    
   'All desklinks will always have an imagefile. Use this to check if any
@@ -183,6 +203,17 @@ SUB Desk.DrawDesktop ()
   
 END SUB
 
+' =========================================================================
+'          NAME: Desk.ExitGUI()
+'    PARAMETERS: None
+'       RETURNS: Nothing
+'       ASSUMES: Nothing
+'   CALLED FROM: DESKTOP.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Removes temporary files used in the current session, and
+'                exits the program with an exitcode of 1, signalling to
+'                the batch script that it should terminate itself
+' =========================================================================
 SUB Desk.ExitGUI ()
     ON LOCAL ERROR RESUME NEXT
 
@@ -198,6 +229,17 @@ SUB Desk.ExitGUI ()
     END 1
 END SUB
 
+' =========================================================================
+'          NAME: Desk.GetDailyTip()
+'    PARAMETERS: None
+'       RETURNS: A string containing a tip of the day - or an empty string
+'                if any error occurs
+'       ASSUMES: Nothing
+'   CALLED FROM: DESKTOP.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Loads all "Tip of the Day" messages from a file, and
+'                picks a random one to return
+' =========================================================================
 FUNCTION Desk.GetDailyTip () AS STRING
 
     ON LOCAL ERROR GOTO DailyTipError
@@ -244,6 +286,22 @@ DailyTipError:
 
 END FUNCTION
 
+' =========================================================================
+'          NAME: Desk.LinkDialog()
+'    PARAMETERS: TargetLink - the ID of the icon to edit
+'                DidEdit    - pass an empty variable, it will be modified
+'                             by reference
+'                NewLink    - True/False value indicating wether this is
+'                             a new link being created
+'       RETURNS: A value of True of False in the variable passed to the
+'                DidEdit parameter
+'       ASSUMES: That the DeskLink array contains a position matching the
+'                one passed to TargetLink
+'   CALLED FROM: DESKTOP.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Shows a modal window allowing the user to edit a desktop
+'                link, or create a new one.
+' =========================================================================
 SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
 
   DIM AllIcons() AS STRING
@@ -418,9 +476,19 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
 
 END SUB
 
-' Launches a specific desktop link. It first checks if the link is internal,
-' and launces the internal program if it is.
-' Otherwise, it launches the external program.
+' =========================================================================
+'          NAME: Desk.LinkLaunch()
+'    PARAMETERS: TargetLink - the position in the DeskLink array
+'                             containing the link to launch
+'       RETURNS: Nothing
+'       ASSUMES: That the array position in the DeskLink array exists
+'   CALLED FROM: DESKTOP.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Writes a file telling the batch script which program or
+'                command to launch, and exits this program - unless the
+'                command is an internal one, in which case the
+'                corresponding SUB is called
+' =========================================================================
 SUB Desk.LinkLaunch (TargetLink AS INTEGER)
 
     DIM TargetPath AS STRING
@@ -439,11 +507,27 @@ SUB Desk.LinkLaunch (TargetLink AS INTEGER)
             Calc.Main
         CASE ELSE
             FileToOpen = File.Run(RTRIM$(DeskLink(TargetLink).Filename), RTRIM$(DeskLink(TargetLink).Parameters), RTRIM$(DeskLink(TargetLink).Path), DeskLink(TargetLink).PauseOnExit)
+
+            'If FileToOpen returned a value, it contains the filename to be
+            'opened with the built-in text editor
             IF LEN(FileToOpen) > 0 THEN TView.Main FileToOpen
     END SELECT
 
 END SUB
 
+' =========================================================================
+'          NAME: Desk.LinkLoad()
+'    PARAMETERS: None
+'       RETURNS: Nothing
+'       ASSUMES: Nothing
+'   CALLED FROM: DESKTOP.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Loads desktop link config from a configuration file, and
+'                places it in the DeskLink array.
+'                If no icons exist in the file, or the file itself does
+'                not exist, Desk.LinkReset is called to re-create built-in
+'                desktop links.
+' =========================================================================
 SUB Desk.LinkLoad ()
   
     DIM LinkCount, LinkLoad, FileHandle
@@ -470,6 +554,18 @@ SUB Desk.LinkLoad ()
 
 END SUB
 
+' =========================================================================
+'          NAME: Desk.LinkMenu
+'    PARAMETERS: TargetLink   - the position in the DeskLink array
+'                               containing the link to show menu for
+'                MenuX, MenuY - the coordinates where menu should be shown
+'       RETURNS: Nothing
+'       ASSUMES: That the array position in the DeskLink array exists
+'   CALLED FROM: DESKTOP.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Shows the menu that allows the user to open, edit, move
+'                or delete a desktop link
+' =========================================================================
 SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
 
   DIM BehindMenu(1681), FrontOfMenu(1681)
@@ -744,6 +840,17 @@ LinkMenuRefresh:
 
 END SUB
 
+' =========================================================================
+'          NAME: Desk.LinkMove()
+'    PARAMETERS: TargetLink - the position in the DeskLink array
+'                             containing the link to move
+'       RETURNS: Nothing
+'       ASSUMES: That the array position in the DeskLink array exists
+'   CALLED FROM: DESKTOP.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Allows the user to move the specified link on the desktop
+'                using mouse or keyboard
+' =========================================================================
 SUB Desk.LinkMove (TargetLink)
 
   DO: LOOP WHILE Mouse.Clicked
@@ -817,6 +924,16 @@ SUB Desk.LinkMove (TargetLink)
   DO: LOOP WHILE Mouse.Clicked
 END SUB
 
+' =========================================================================
+'          NAME: Desk.LinkReset()
+'    PARAMETERS: None
+'       RETURNS: Nothing
+'       ASSUMES: Nothing
+'   CALLED FROM: DESKTOP.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Resets all desktop links, by recreating the default array
+'                and calling Desk.LinkSave
+' =========================================================================
 'Resets all desk icons, by recreating the array as default
 SUB Desk.LinkReset ()
 
@@ -886,6 +1003,16 @@ SUB Desk.LinkReset ()
 
 END SUB
 
+' =========================================================================
+'          NAME: Desk.LinkSave()
+'    PARAMETERS: None
+'       RETURNS: Nothing
+'       ASSUMES: Nothing
+'   CALLED FROM: DESKTOP.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Writes the DeskLink array to the config file - providing
+'                the array is not empty
+' =========================================================================
 SUB Desk.LinkSave ()
 
     'Sort before saving if array contains more than one item - this
@@ -949,6 +1076,16 @@ SUB Desk.LinkSave ()
 
 END SUB
 
+' =========================================================================
+'          NAME: Desk.Main()
+'    PARAMETERS: None
+'       RETURNS: Nothing
+'       ASSUMES: Nothing
+'   CALLED FROM: DESKTOP.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Shows the main desktop, and loops through events.
+'                This is the main logic for this program.
+' =========================================================================
 SUB Desk.Main ()
 
   DIM btnAddLink AS ButtonType, btnRunCmd AS ButtonType

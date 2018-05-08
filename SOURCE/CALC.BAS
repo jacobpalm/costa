@@ -6,6 +6,16 @@ DECLARE SUB Calc.Main ()
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
+' =========================================================================
+'          NAME: Calc.FormatNum()
+'    PARAMETERS: TargetStr - string containing a number to format nicely
+'       RETURNS: A string with a well-formatted number to show the user
+'       ASSUMES: Nothing
+'   CALLED FROM: CALC.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Returns a number formatted as a string, with thousands
+'                seperators, for visual representation
+' =========================================================================
 FUNCTION Calc.FormatNum (TargetStr AS STRING) AS STRING
 
     DIM BeforeDot AS STRING, AfterDot AS STRING
@@ -33,6 +43,17 @@ FUNCTION Calc.FormatNum (TargetStr AS STRING) AS STRING
     
 END FUNCTION
 
+' =========================================================================
+'          NAME: Calc.Main()
+'    PARAMETERS: TargetLink - the position in the DeskLink array
+'                             containing the link to launch
+'       RETURNS: Nothing
+'       ASSUMES: That the array position in the DeskLink array exists
+'   CALLED FROM: DESKTOP.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: The calculator accessory. Draws the UI and handles main
+'                logic
+' =========================================================================
 SUB Calc.Main ()
 
     DIM winCalc AS WindowType
