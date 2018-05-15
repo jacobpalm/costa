@@ -169,6 +169,7 @@ SUB Desk.DrawDesktop ()
   DIM ShowDesc, ShowTarget
   DIM imgDeskLinkIcon AS ImageType
   DIM TargetLink
+  DIM LinkTargetText AS STRING
 
   'Draw desklinks one by one, using imgDeskLinkIcon to draw the imagefile of
   'each desklink
@@ -189,7 +190,14 @@ SUB Desk.DrawDesktop ()
         IF ShowTarget = 1 THEN
             Font.Print DeskLink(TargetLink).Caption, DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 4, ClrDesktopText, 1
             IF NOT LEFT$(DeskLink(TargetLink).Path, 1) = CHR$(13) THEN
-                Font.Print LCASE$(DeskLink(TargetLink).Filename), DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 18, ClrDesktopText, 2
+                LinkTargetText = LCASE$(DeskLink(TargetLink).Filename)
+
+                'Remove path from string, if present
+                DO WHILE INSTR(LinkTargetText, "\")
+                    LinkTargetText = RIGHT$(LinkTargetText, LEN(LinkTargetText) - INSTR(LinkTargetText, "\"))
+                LOOP
+
+                Font.Print LinkTargetText, DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 18, ClrDesktopText, 2
             ELSE
                 Font.Print "Built-in", DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 18, ClrDesktopText, 2
             END IF
