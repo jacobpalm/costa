@@ -1,3 +1,4 @@
+DECLARE SUB Sys.LoadTheme ()
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -1015,6 +1016,16 @@ SUB Sys.Load ()
 			END IF
 		END IF
 	
+	'Load profile
+		IF File.Exists(Sys.Path + "DATA\TEMP\PROFILE.TMP") THEN
+			DIM ProfileFileHandle
+			ProfileFileHandle = FREEFILE
+			OPEN Sys.Path + "DATA\TEMP\PROFILE.TMP" FOR INPUT AS #ProfileFileHandle
+			IF LOF(ProfileFileHandle) > 0 THEN LINE INPUT #ProfileFileHandle, ProfileID
+			CLOSE #ProfileFileHandle
+		END IF
+	
+
 	'Prepare fonts for use
 		DIM FontErr
 		IF NOT File.Exists(Sys.Path + "DATA\FONTS\HEADING.FNT") THEN FontErr = True
@@ -1054,31 +1065,14 @@ SUB Sys.Load ()
 			NEXT
 			CLOSE #FontFileHandle
 
-	'ProfileID - DEBUG!
-		ProfileID = "PROFILE1"
+	'DEBUG - If a session is active, load ProfileID!
 
 	'Load colors for the interface
-		ClrThemeFile = File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "ThemeFile", "Default")
-		ClrDesktop = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrDesktop", "3"))
-		ClrDesktopText = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrDesktopText", "0"))
-		ClrWindow = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrWindow", "7"))
-		ClrButton = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrButton", "7"))
-		ClrTextbox = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrTextbox", "15"))
-		ClrTextboxText = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrTextboxText", "0"))
-		ClrWindowText = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrWindowText", "0"))
-		ClrTitleBar = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrTitlebar", "0"))
-		ClrTitleBarText = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrTitlebarText", "15"))
-		Clr3DLight = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "Clr3DLight", "7"))
-		Clr3DShadow = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "Clr3DShadow", "8"))
-		ClrSelect = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrSelect", "1"))
-		ClrSelectText = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrSelectText", "15"))
-
+		Sys.LoadTheme
 
 	'Clear the keyboard buffer, DOSBox has some issues with leaving keys in it
 			DO: LOOP WHILE LEN(INKEY$)
 			
-	'DEBUG
-	'IF NOT COMMAND$ = "/DEV" THEN Sys.Delay 1.2
 
 	'VGA 640x480, 16 colors
 	SCREEN 12
@@ -1124,6 +1118,23 @@ SUB Sys.Load ()
 
 	Mouse.Show
 
+END SUB
+
+SUB Sys.LoadTheme ()
+	ClrThemeFile = File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "ThemeFile", "Default")
+	ClrDesktop = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrDesktop", "3"))
+	ClrDesktopText = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrDesktopText", "0"))
+	ClrWindow = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrWindow", "7"))
+	ClrButton = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrButton", "7"))
+	ClrTextbox = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrTextbox", "15"))
+	ClrTextboxText = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrTextboxText", "0"))
+	ClrWindowText = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrWindowText", "0"))
+	ClrTitleBar = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrTitlebar", "0"))
+	ClrTitleBarText = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrTitlebarText", "15"))
+	Clr3DLight = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "Clr3DLight", "7"))
+	Clr3DShadow = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "Clr3DShadow", "8"))
+	ClrSelect = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrSelect", "1"))
+	ClrSelectText = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrSelectText", "15"))
 END SUB
 
 FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)

@@ -2,6 +2,8 @@ OPTION EXPLICIT
 DEFINT A-Z
 
 DECLARE FUNCTION Desk.GetDailyTip () AS STRING
+DECLARE FUNCTION Desk.ProfileEdit (ProfileNum AS INTEGER) AS INTEGER
+DECLARE FUNCTION Desk.ProfileSelect () AS STRING
 DECLARE SUB Calc.Main ()
 DECLARE SUB Conf.Main ()
 DECLARE SUB Desk.AboutBox ()
@@ -96,6 +98,13 @@ END IF
 STACK 5120
 
 CALL Sys.Load
+
+'Check if active session - if so, load profile
+
+IF ProfileID = "" THEN
+    ProfileID = Desk.ProfileSelect
+    Sys.LoadTheme
+END IF
 
 Desk.Main
 
@@ -1151,8 +1160,6 @@ Desk.MainTop:
         Mouse.Hide
         File.CfgWrite "DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "TipLastShown", STR$(DAY(NOW)) + STR$(MONTH(NOW))
     END IF
-  ELSE
-    PRINT "no tip": SLEEP 'DEBUG
   END IF
 
 
@@ -1400,4 +1407,134 @@ RETURN
 
 
 END SUB
+
+FUNCTION Desk.ProfileEdit (ProfileNum AS INTEGER) AS INTEGER
+
+    'DEBUG - show window for editing
+    'DEBUG - return true if anything was modifed
+
+END FUNCTION
+
+FUNCTION Desk.ProfileSelect () AS STRING
+    DIM ProfileEnabled(1 TO 5) AS INTEGER
+    DIM ProfileName(1 TO 5) AS STRING
+    DIM Counter, SelectedProfile
+    DIM ProfileNamePos
+    DIM Key$
+
+    DIM winProfiles AS WindowType
+    DIM btnProfile(1 TO 5) AS ButtonType
+    DIM imgProfile(1 TO 5) AS ImageType
+    DIM btnContinue AS ButtonType
+    DIM btnEdit AS ButtonType
+
+    FOR Counter = 1 TO 5
+        ProfileName(Counter) = File.CfgRead("DATA\CONFIG\PROFILE" + LTRIM$(STR$(Counter)) + "\PROFILE.CFG", "ProfileName", "Profile" + STR$(Counter))
+        imgProfile(Counter).ImageFile = File.CfgRead("DATA\CONFIG\PROFILE" + LTRIM$(STR$(Counter)) + "\PROFILE.CFG", "ProfileIcon", "USERS")
+        ProfileEnabled(Counter) = VAL(File.CfgRead("DATA\CONFIG\PROFILE" + LTRIM$(STR$(Counter)) + "\PROFILE.CFG", "ProfileEnabled", "0"))
+    NEXT
+
+    winProfiles.Pos.Width = 338
+    winProfiles.Pos.Height = 220
+    winProfiles.Pos.Left = (640 - winProfiles.Pos.Width) / 2
+    winProfiles.Pos.Top = (480 - winProfiles.Pos.Height) / 2
+    winProfiles.Caption = "Profile selection"
+
+    Obj.SetSize btnProfile(1).Pos, winProfiles.Pos.Left + 18, winProfiles.Pos.Top + 84, 46, 46
+    Obj.SetSize btnProfile(2).Pos, winProfiles.Pos.Left + 82, winProfiles.Pos.Top + 84, 46, 46
+    Obj.SetSize btnProfile(3).Pos, winProfiles.Pos.Left + 146, winProfiles.Pos.Top + 84, 46, 46
+    Obj.SetSize btnProfile(4).Pos, winProfiles.Pos.Left + 210, winProfiles.Pos.Top + 84, 46, 46
+    Obj.SetSize btnProfile(5).Pos, winProfiles.Pos.Left + 274, winProfiles.Pos.Top + 84, 46, 46
+    btnProfile(1).Transparent = True
+    btnProfile(2).Transparent = True
+    btnProfile(3).Transparent = True
+    btnProfile(4).Transparent = True
+    btnProfile(5).Transparent = True
+
+    Obj.SetSize btnContinue.Pos, winProfiles.Pos.Left + winProfiles.Pos.Width - 94, winProfiles.Pos.Top + winProfiles.Pos.Height - 34, 80, 22
+    btnContinue.Caption = "Continue"
+    btnContinue.HotKey = 1
+
+    Obj.SetSize btnEdit.Pos, winProfiles.Pos.Left + 18, winProfiles.Pos.Top + winProfiles.Pos.Height - 34, 80, 22
+    btnEdit.Caption = "Edit..."
+    btnEdit.HotKey = 1
+
+    SelectedProfile = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "LastUsedProfile", "1"))
+    IF SelectedProfile < 1 OR SelectedProfile > 5 THEN SelectedProfile = 1
+
+
+TopOfProfile:
+
+    Obj.DrawWin winProfiles
+    Font.Print "Please select a profile from which your desktop,", winProfiles.Pos.Left + 14, winProfiles.Pos.Top + 36, ClrWindowText, FontNormal
+    Font.Print "theme and other customizations will be loaded.", winProfiles.Pos.Left + 14, winProfiles.Pos.Top + 50, ClrWindowText, FontNormal
+
+    IF SelectedProfile < 1 OR SelectedProfile > 5 THEN
+        SelectedProfile = 1
+    END IF
+
+    ProfileNamePos = winProfiles.Pos.Left + (winProfiles.Pos.Width / 2) - (Font.GetWidth(ProfileName(SelectedProfile), FontHeading) / 2)
+    Font.Print ProfileName(SelectedProfile), ProfileNamePos, winProfiles.Pos.Top + 154, ClrWindowText, FontHeading
+
+    FOR Counter = 1 TO 5
+        IF Counter = SelectedProfile THEN
+            Obj.DrawBtn btnProfile(Counter), True
+        ELSE
+            Obj.DrawBtn btnProfile(Counter), False
+        END IF
+        imgProfile(Counter).Pos.Top = btnProfile(Counter).Pos.Top + 7
+        imgProfile(Counter).Pos.Left = btnProfile(Counter).Pos.Left + 7
+        Obj.DrawImg imgProfile(Counter)
+    NEXT
+
+    Obj.DrawBtn btnContinue, False
+    Obj.DrawBtn btnEdit, False
+
+    DO
+        Key$ = LCASE$(INKEY$)
+
+        IF Key$ = CHR$(0) + "k" THEN Key$ = LTRIM$(STR$(SelectedProfile - 1))
+        IF Key$ = CHR$(0) + "m" THEN Key$ = LTRIM$(STR$(SelectedProfile + 1))
+
+        FOR Counter = 1 TO 5
+            IF Mouse.Clicked AND Mouse.InArea(btnProfile(Counter).Pos) THEN
+                Key$ = LTRIM$(STR$(Counter))
+            END IF
+
+            IF Key$ = LTRIM$(STR$(Counter)) THEN
+                IF NOT Counter = SelectedProfile THEN
+                    Obj.DrawBtn btnProfile(SelectedProfile), False
+                    Obj.DrawBtn btnProfile(Counter), True
+                    SelectedProfile = Counter
+                    ProfileNamePos = winProfiles.Pos.Left + (winProfiles.Pos.Width / 2) - (Font.GetWidth(ProfileName(SelectedProfile), FontHeading) / 2)
+                    Mouse.Hide
+                    LINE (winProfiles.Pos.Left + 2, winProfiles.Pos.Top + 150)-(winProfiles.Pos.Left + winProfiles.Pos.Width - 2, winProfiles.Pos.Top + 166), ClrWindow, BF
+                    Mouse.Show
+                    Font.Print ProfileName(SelectedProfile), ProfileNamePos, winProfiles.Pos.Top + 154, ClrWindowText, FontHeading
+                    DO WHILE Mouse.Clicked: LOOP
+                END IF
+            END IF
+        NEXT
+
+        IF Key$ = "c" OR Key$ = CHR$(13) OR Obj.BtnClick(btnContinue) THEN
+            DIM FileHandle
+            FileHandle = FREEFILE
+            OPEN Sys.Path + "DATA\TEMP\PROFILE.TMP" FOR OUTPUT AS #FileHandle
+            PRINT #FileHandle, "PROFILE" + LTRIM$(STR$(SelectedProfile))
+            CLOSE #FileHandle
+
+            File.CfgWrite "DATA\CONFIG\COSTA.CFG", "LastUsedProfile", LTRIM$(STR$(SelectedProfile))
+
+            Desk.ProfileSelect = "PROFILE" + LTRIM$(STR$(SelectedProfile))
+            EXIT FUNCTION
+        END IF
+
+        IF Key$ = "e" OR Obj.BtnClick(btnEdit) THEN
+            DIM DidEdit
+            DidEdit = Desk.ProfileEdit(SelectedProfile)
+            IF DidEdit THEN GOSUB TopOfProfile
+        END IF
+    LOOP
+
+END FUNCTION
 

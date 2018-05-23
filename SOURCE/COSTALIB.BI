@@ -32,6 +32,7 @@
     DECLARE FUNCTION Sys.Path () AS STRING
     DECLARE SUB Sys.Delay (Seconds AS SINGLE)
     DECLARE SUB Sys.Load ()
+    DECLARE SUB Sys.LoadTheme ()
     DECLARE SUB Sys.VGALoad (TargetFile AS STRING)
     DECLARE SUB Sys.VGASave (TargetFile AS STRING)
 
@@ -102,7 +103,7 @@
   END TYPE
 
 'Common shared variables
-  COMMON SHARED ProfileID AS STRING * 8
+  COMMON SHARED ProfileID AS STRING
 
   COMMON SHARED ClrThemeFile AS STRING
 
