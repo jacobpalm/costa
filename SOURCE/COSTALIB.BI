@@ -102,6 +102,8 @@
   END TYPE
 
 'Common shared variables
+  COMMON SHARED ProfileID AS STRING * 8
+
   COMMON SHARED ClrThemeFile AS STRING
 
   COMMON SHARED ClrDesktop AS INTEGER

@@ -32,7 +32,7 @@ TYPE DeskLinkType
   Top AS INTEGER
 END TYPE
 
-REDIM SHARED DeskLink(0 TO 0) AS DeskLinkType
+REDIM SHARED DESKLINK(0 TO 0) AS DeskLinkType
 
 IF COMMAND$ = "/BOOT" THEN
 
@@ -56,6 +56,13 @@ IF COMMAND$ = "/BOOT" THEN
     CHDIR "DATA"
     MKDIR "TEMP"
     MKDIR "CONFIG"
+    CHDIR "CONFIG"
+    MKDIR "PROFILE1"
+    MKDIR "PROFILE2"
+    MKDIR "PROFILE3"
+    MKDIR "PROFILE4"
+    MKDIR "PROFILE5"
+    CHDIR ".."
     MKDIR "FONTS"
     MKDIR "IMAGES"
     MKDIR "THEMES"
@@ -164,7 +171,7 @@ SUB Desk.DrawDesktop ()
    
   'All desklinks will always have an imagefile. Use this to check if any
   'desklinks exist
-  IF RTRIM$(DeskLink(0).ImageFile) = "" OR DeskLink(0).Caption = STRING$(25, 0) THEN EXIT SUB
+  IF RTRIM$(DESKLINK(0).ImageFile) = "" OR DESKLINK(0).Caption = STRING$(25, 0) THEN EXIT SUB
 
   DIM ShowDesc, ShowTarget
   DIM imgDeskLinkIcon AS ImageType
@@ -173,36 +180,36 @@ SUB Desk.DrawDesktop ()
 
   'Draw desklinks one by one, using imgDeskLinkIcon to draw the imagefile of
   'each desklink
-  FOR TargetLink = 0 TO UBOUND(DeskLink)
+  FOR TargetLink = 0 TO UBOUND(DESKLINK)
 
-    imgDeskLinkIcon.ImageFile = DeskLink(TargetLink).ImageFile
-    imgDeskLinkIcon.Pos.Left = DeskLink(TargetLink).Left
-    imgDeskLinkIcon.Pos.Top = DeskLink(TargetLink).Top
+    imgDeskLinkIcon.ImageFile = DESKLINK(TargetLink).ImageFile
+    imgDeskLinkIcon.Pos.Left = DESKLINK(TargetLink).Left
+    imgDeskLinkIcon.Pos.Top = DESKLINK(TargetLink).Top
 
     Obj.DrawImg imgDeskLinkIcon
 
-    ShowDesc = VAL(File.CfgRead("DATA\CONFIG\DESKTOP.CFG", "ShowLinkDescriptions", "1"))
-    ShowTarget = VAL(File.CfgRead("DATA\CONFIG\DESKTOP.CFG", "ShowLinkTargetFiles", "1"))
+    ShowDesc = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "ShowLinkDescriptions", "1"))
+    ShowTarget = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "ShowLinkTargetFiles", "1"))
 
     'Description (caption) and target file
     IF ShowDesc = 1 THEN
     
         IF ShowTarget = 1 THEN
-            Font.Print DeskLink(TargetLink).Caption, DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 4, ClrDesktopText, 1
-            IF NOT LEFT$(DeskLink(TargetLink).Path, 1) = CHR$(13) THEN
-                LinkTargetText = LCASE$(DeskLink(TargetLink).Filename)
+            Font.Print DESKLINK(TargetLink).Caption, DESKLINK(TargetLink).Left + 38, DESKLINK(TargetLink).Top + 4, ClrDesktopText, 1
+            IF NOT LEFT$(DESKLINK(TargetLink).Path, 1) = CHR$(13) THEN
+                LinkTargetText = LCASE$(DESKLINK(TargetLink).Filename)
 
                 'Remove path from string, if present
                 DO WHILE INSTR(LinkTargetText, "\")
                     LinkTargetText = RIGHT$(LinkTargetText, LEN(LinkTargetText) - INSTR(LinkTargetText, "\"))
                 LOOP
 
-                Font.Print LinkTargetText, DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 18, ClrDesktopText, 2
+                Font.Print LinkTargetText, DESKLINK(TargetLink).Left + 38, DESKLINK(TargetLink).Top + 18, ClrDesktopText, 2
             ELSE
-                Font.Print "Built-in", DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 18, ClrDesktopText, 2
+                Font.Print "Built-in", DESKLINK(TargetLink).Left + 38, DESKLINK(TargetLink).Top + 18, ClrDesktopText, 2
             END IF
         ELSE
-            Font.Print DeskLink(TargetLink).Caption, DeskLink(TargetLink).Left + 16 - (Font.GetWidth(RTRIM$(DeskLink(TargetLink).Caption), FontNormal) / 2), DeskLink(TargetLink).Top + 38, ClrDesktopText, FontNormal
+            Font.Print DESKLINK(TargetLink).Caption, DESKLINK(TargetLink).Left + 16 - (Font.GetWidth(RTRIM$(DESKLINK(TargetLink).Caption), FontNormal) / 2), DESKLINK(TargetLink).Top + 38, ClrDesktopText, FontNormal
         END IF
 
     END IF
@@ -324,7 +331,7 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
         REDIM PRESERVE AllIcons(0 TO IconCount) AS STRING
         AllIcons(IconCount) = LEFT$(IconFile, LEN(IconFile) - 4)
         
-        IF AllIcons(IconCount) = RTRIM$(DeskLink(TargetLink).ImageFile) THEN CurrentIcon = IconCount
+        IF AllIcons(IconCount) = RTRIM$(DESKLINK(TargetLink).ImageFile) THEN CurrentIcon = IconCount
 
         IconCount = IconCount + 1
         IconFile = DIR$
@@ -368,12 +375,12 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
   txtFileName.MaxLen = 50
   txtParams.MaxLen = 50
   txtPath.MaxLen = 50
-  txtFilenameText = RTRIM$(DeskLink(TargetLink).Filename)
-  txtParamsText = RTRIM$(DeskLink(TargetLink).Parameters)
-  txtPathText = RTRIM$(DeskLink(TargetLink).Path)
-  txtLinkCaptText = RTRIM$(DeskLink(TargetLink).Caption)
-  imgIcon.ImageFile = DeskLink(TargetLink).ImageFile
-  chkPauseOnExit.Checked = DeskLink(TargetLink).PauseOnExit
+  txtFilenameText = RTRIM$(DESKLINK(TargetLink).Filename)
+  txtParamsText = RTRIM$(DESKLINK(TargetLink).Parameters)
+  txtPathText = RTRIM$(DESKLINK(TargetLink).Path)
+  txtLinkCaptText = RTRIM$(DESKLINK(TargetLink).Caption)
+  imgIcon.ImageFile = DESKLINK(TargetLink).ImageFile
+  chkPauseOnExit.Checked = DESKLINK(TargetLink).PauseOnExit
   btnIconPrev.Caption = "<"
   btnIconNext.Caption = ">"
   IF NewLink = False THEN
@@ -423,14 +430,14 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
 
     IF Obj.BtnClick(btnOK) OR Key$ = CHR$(13) THEN
       IF RTRIM$(txtLinkCaptText) = "" THEN txtLinkCaptText = "Unnamed link"
-      DeskLink(TargetLink).Caption = RTRIM$(txtLinkCaptText)
-      DeskLink(TargetLink).Filename = RTRIM$(txtFilenameText)
-      DeskLink(TargetLink).Path = RTRIM$(txtPathText)
-      DeskLink(TargetLink).Parameters = RTRIM$(txtParamsText)
-      DeskLink(TargetLink).PauseOnExit = chkPauseOnExit.Checked
+      DESKLINK(TargetLink).Caption = RTRIM$(txtLinkCaptText)
+      DESKLINK(TargetLink).Filename = RTRIM$(txtFilenameText)
+      DESKLINK(TargetLink).Path = RTRIM$(txtPathText)
+      DESKLINK(TargetLink).Parameters = RTRIM$(txtParamsText)
+      DESKLINK(TargetLink).PauseOnExit = chkPauseOnExit.Checked
 
       IF IconChanged = True THEN
-          DeskLink(TargetLink).ImageFile = AllIcons(CurrentIcon)
+          DESKLINK(TargetLink).ImageFile = AllIcons(CurrentIcon)
       END IF
 
       Desk.LinkSave
@@ -502,7 +509,7 @@ SUB Desk.LinkLaunch (TargetLink AS INTEGER)
     DIM TargetPath AS STRING
     DIM FileToOpen AS STRING
 
-    TargetPath = RTRIM$(DeskLink(TargetLink).Path)
+    TargetPath = RTRIM$(DESKLINK(TargetLink).Path)
 
     SELECT CASE TargetPath
         CASE CHR$(13) + "TICTAC"
@@ -514,7 +521,7 @@ SUB Desk.LinkLaunch (TargetLink AS INTEGER)
         CASE CHR$(13) + "CALC"
             Calc.Main
         CASE ELSE
-            FileToOpen = File.Run(RTRIM$(DeskLink(TargetLink).Filename), RTRIM$(DeskLink(TargetLink).Parameters), RTRIM$(DeskLink(TargetLink).Path), DeskLink(TargetLink).PauseOnExit)
+            FileToOpen = File.Run(RTRIM$(DESKLINK(TargetLink).Filename), RTRIM$(DESKLINK(TargetLink).Parameters), RTRIM$(DESKLINK(TargetLink).Path), DESKLINK(TargetLink).PauseOnExit)
 
             'If FileToOpen returned a value, it contains the filename to be
             'opened with the built-in text editor
@@ -541,7 +548,7 @@ SUB Desk.LinkLoad ()
     DIM LinkCount, LinkLoad, FileHandle
     FileHandle = FREEFILE
 
-    OPEN Sys.Path + "DATA\CONFIG\DESKLINK.DAT" FOR BINARY AS #FileHandle
+    OPEN Sys.Path + "DATA\CONFIG\" + ProfileID + "\DESKLINK.DAT" FOR BINARY AS #FileHandle
     IF NOT LOF(FileHandle) = 0 THEN GET #FileHandle, , LinkCount
 
     IF LinkCount = 0 THEN
@@ -550,11 +557,11 @@ SUB Desk.LinkLoad ()
         EXIT SUB
     END IF
     
-    REDIM DeskLink(0 TO LinkCount - 1) AS DeskLinkType
+    REDIM DESKLINK(0 TO LinkCount - 1) AS DeskLinkType
 
     FOR LinkLoad = 0 TO LinkCount - 1
 
-        GET #FileHandle, , DeskLink(LinkLoad)
+        GET #FileHandle, , DESKLINK(LinkLoad)
 
     NEXT
     
@@ -610,7 +617,7 @@ SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
   
   GET (x1, y1)-(X2, Y2), BehindMenu
   
-  DoAnimations = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "Animations", "1"))
+  DoAnimations = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "Animations", "1"))
   IF DoAnimations = 1 THEN
     DIM Sys.DelayWait
 
@@ -755,7 +762,7 @@ LinkMenuRefresh:
             Mouse.Show
             DO: LOOP WHILE Mouse.Clicked
 
-            IF LEFT$(DeskLink(TargetLink).Path, 1) = CHR$(13) THEN
+            IF LEFT$(DESKLINK(TargetLink).Path, 1) = CHR$(13) THEN
                 DidEdit = Sys.MsgBox("This link cannot be customized", "This link points to a built-in program and" + CHR$(13) + "cannot be customized.", msgInfo)
                 EXIT SUB
             END IF
@@ -779,9 +786,9 @@ LinkMenuRefresh:
           IF Key$ = "m" THEN
             Mouse.Hide
             PUT (x1, y1), BehindMenu, PSET
-            Mouse.Driver 7, 0, DeskLink(TargetLink).Left + 16, DeskLink(TargetLink).Left + 16
+            Mouse.Driver 7, 0, DESKLINK(TargetLink).Left + 16, DESKLINK(TargetLink).Left + 16
             Mouse.Driver 7, 0, 0, 640
-            Mouse.Driver 8, 0, DeskLink(TargetLink).Top + 16, DeskLink(TargetLink).Top + 16
+            Mouse.Driver 8, 0, DESKLINK(TargetLink).Top + 16, DESKLINK(TargetLink).Top + 16
             Mouse.Driver 8, 0, 0, 479
             Mouse.Show
             Desk.LinkMove TargetLink
@@ -796,7 +803,7 @@ LinkMenuRefresh:
           IF Key$ = "r" THEN
             DIM DoDelete
 
-            IF LEFT$(DeskLink(TargetLink).Path, 1) = CHR$(13) THEN
+            IF LEFT$(DESKLINK(TargetLink).Path, 1) = CHR$(13) THEN
                 Mouse.Hide
                 PUT (x1, y1), BehindMenu, PSET
                 Mouse.Show
@@ -804,7 +811,7 @@ LinkMenuRefresh:
                 EXIT SUB
             END IF
             
-            IF File.CfgRead("DATA\CONFIG\DESKTOP.CFG", "ConfirmLinkDelete", "1") = "1" THEN
+            IF File.CfgRead("DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "ConfirmLinkDelete", "1") = "1" THEN
                 Mouse.Hide
                 PUT (x1, y1), BehindMenu, PSET
                 Mouse.Show
@@ -814,7 +821,7 @@ LinkMenuRefresh:
             END IF
 
             IF DoDelete THEN
-                DeskLink(TargetLink).Caption = ""
+                DESKLINK(TargetLink).Caption = ""
                 Desk.LinkSave
                 Desk.LinkLoad
                 Mouse.Hide
@@ -866,7 +873,7 @@ SUB Desk.LinkMove (TargetLink)
   DIM LinkIcon(257), LinkIconBack(257)
   DIM LastX, LastY, FlickerX, FlickerY
   DIM KeyX, KeyY
-  LastX = DeskLink(TargetLink).Left + 16: LastY = DeskLink(TargetLink).Top + 16
+  LastX = DESKLINK(TargetLink).Left + 16: LastY = DESKLINK(TargetLink).Top + 16
   Mouse.Hide
   GET (LastX - 16, LastY - 16)-(LastX + 15, LastY + 15), LinkIcon
   GET (LastX - 16, LastY - 16)-(LastX + 15, LastY + 15), LinkIconBack
@@ -924,8 +931,8 @@ SUB Desk.LinkMove (TargetLink)
     END IF
   LOOP UNTIL Mouse.Clicked
 
-  DeskLink(TargetLink).Left = LastX - 16
-  DeskLink(TargetLink).Top = LastY - 16
+  DESKLINK(TargetLink).Left = LastX - 16
+  DESKLINK(TargetLink).Top = LastY - 16
 
   Desk.LinkSave
 
@@ -945,68 +952,68 @@ END SUB
 'Resets all desk icons, by recreating the array as default
 SUB Desk.LinkReset ()
 
-    REDIM DeskLink(0 TO 7) AS DeskLinkType
+    REDIM DESKLINK(0 TO 7) AS DeskLinkType
 
-    DeskLink(0).Caption = "Tic Tac Toe"
-    DeskLink(0).Filename = "(accessory)"
-    DeskLink(0).Path = CHR$(13) + "TICTAC"
-    DeskLink(0).ImageFile = "TICTAC"
-    DeskLink(0).Left = 15
-    DeskLink(0).Top = 298
+    DESKLINK(0).Caption = "Tic Tac Toe"
+    DESKLINK(0).Filename = "(accessory)"
+    DESKLINK(0).Path = CHR$(13) + "TICTAC"
+    DESKLINK(0).ImageFile = "TICTAC"
+    DESKLINK(0).Left = 15
+    DESKLINK(0).Top = 298
 
-    DeskLink(1).Caption = "Text Viewer"
-    DeskLink(1).Filename = "(accessory)"
-    DeskLink(1).Path = CHR$(13) + "TEXTVIEW"
-    DeskLink(1).ImageFile = "DOCUMENT"
-    DeskLink(1).Left = 15
-    DeskLink(1).Top = 343
+    DESKLINK(1).Caption = "Text Viewer"
+    DESKLINK(1).Filename = "(accessory)"
+    DESKLINK(1).Path = CHR$(13) + "TEXTVIEW"
+    DESKLINK(1).ImageFile = "DOCUMENT"
+    DESKLINK(1).Left = 15
+    DESKLINK(1).Top = 343
 
-    DeskLink(2).Caption = "Calculator"
-    DeskLink(2).Filename = "(accessory)"
-    DeskLink(2).Path = CHR$(13) + "CALC"
-    DeskLink(2).ImageFile = "CALC"
-    DeskLink(2).Left = 15
-    DeskLink(2).Top = 388
+    DESKLINK(2).Caption = "Calculator"
+    DESKLINK(2).Filename = "(accessory)"
+    DESKLINK(2).Path = CHR$(13) + "CALC"
+    DESKLINK(2).ImageFile = "CALC"
+    DESKLINK(2).Left = 15
+    DESKLINK(2).Top = 388
 
-    DeskLink(3).Caption = "Icon Editor"
-    DeskLink(3).Filename = "ICONEDIT.EXE"
-    DeskLink(3).Path = appEnviron + "\"
-    DeskLink(3).ImageFile = "PAINT"
-    DeskLink(3).Left = 15
-    DeskLink(3).Top = 433
+    DESKLINK(3).Caption = "Icon Editor"
+    DESKLINK(3).Filename = "ICONEDIT.EXE"
+    DESKLINK(3).Path = appEnviron + "\"
+    DESKLINK(3).ImageFile = "PAINT"
+    DESKLINK(3).Left = 15
+    DESKLINK(3).Top = 433
 
-    DeskLink(4).Caption = "DOS-prompt"
-    DeskLink(4).Filename = "COMMAND.COM"
-    DeskLink(4).ImageFile = "DOSPROG"
-    DeskLink(4).PauseOnExit = True
-    DeskLink(4).Left = 480
-    DeskLink(4).Top = 45
+    DESKLINK(4).Caption = "DOS-prompt"
+    DESKLINK(4).Filename = "COMMAND.COM"
+    DESKLINK(4).ImageFile = "DOSPROG"
+    DESKLINK(4).PauseOnExit = True
+    DESKLINK(4).Left = 480
+    DESKLINK(4).Top = 45
 
-    DeskLink(5).Caption = "What's new?"
-    DeskLink(5).Filename = "DOCS\CHANGES.TXT"
-    DeskLink(5).Path = appEnviron + "\"
-    DeskLink(5).ImageFile = "NEWSPAPE"
-    DeskLink(5).Left = 480
-    DeskLink(5).Top = 342
+    DESKLINK(5).Caption = "What's new?"
+    DESKLINK(5).Filename = "DOCS\CHANGES.TXT"
+    DESKLINK(5).Path = appEnviron + "\"
+    DESKLINK(5).ImageFile = "NEWSPAPE"
+    DESKLINK(5).Left = 480
+    DESKLINK(5).Top = 342
 
-    DeskLink(6).Caption = "User's guide"
-    DeskLink(6).Filename = "DOCS\HELP.TXT"
-    DeskLink(6).Path = appEnviron + "\"
-    DeskLink(6).ImageFile = "HELP"
-    DeskLink(6).Left = 480
-    DeskLink(6).Top = 388
+    DESKLINK(6).Caption = "User's guide"
+    DESKLINK(6).Filename = "DOCS\HELP.TXT"
+    DESKLINK(6).Path = appEnviron + "\"
+    DESKLINK(6).ImageFile = "HELP"
+    DESKLINK(6).Left = 480
+    DESKLINK(6).Top = 388
 
-    DeskLink(7).Caption = "Configuration"
-    DeskLink(7).Filename = "(accessory)"
-    DeskLink(7).Path = CHR$(13) + "CONFIG"
-    DeskLink(7).ImageFile = "CONFIG"
-    DeskLink(7).Left = 480
-    DeskLink(7).Top = 433
+    DESKLINK(7).Caption = "Configuration"
+    DESKLINK(7).Filename = "(accessory)"
+    DESKLINK(7).Path = CHR$(13) + "CONFIG"
+    DESKLINK(7).ImageFile = "CONFIG"
+    DESKLINK(7).Left = 480
+    DESKLINK(7).Top = 433
 
     Desk.LinkSave
 
     DIM ResetMsg
-    ResetMsg = Sys.MsgBox("Desktop links reset to default", "The file in which Costa stores the configuration for desktop links, DESKLINK.DAT," + CHR$(13) + "was not found." + CHR$(13) + CHR$(13) +  _
+    ResetMsg = Sys.MsgBox("Desktop links reset to default", "The file in which Costa stores the configuration for desktop links, DESKLNK" + ProfileID + ".DAT," + CHR$(13) + "was not found." + CHR$(13) + CHR$(13) +  _
 "A new file has been automatically created, but any custom links will need to be" + CHR$(13) + "created again manually.", msgError)
 
 END SUB
@@ -1025,16 +1032,16 @@ SUB Desk.LinkSave ()
 
     'Sort before saving if array contains more than one item - this
     'enables TAB cycling from left to right, top to bottom
-    IF UBOUND(DeskLink) > 0 THEN
+    IF UBOUND(DESKLINK) > 0 THEN
         DIM SortCount, CheckLink, AddNext
-        DIM SortedLinks(0 TO UBOUND(DeskLink)) AS DeskLinkType
+        DIM SortedLinks(0 TO UBOUND(DESKLINK)) AS DeskLinkType
         DO
 
-            AddNext = LBOUND(DeskLink)
-            FOR CheckLink = 0 TO UBOUND(DeskLink)
-                IF DeskLink(CheckLink).Left <= DeskLink(AddNext).Left THEN
-                    IF DeskLink(CheckLink).Left = DeskLink(AddNext).Left THEN
-                        IF DeskLink(CheckLink).Top < DeskLink(AddNext).Top THEN
+            AddNext = LBOUND(DESKLINK)
+            FOR CheckLink = 0 TO UBOUND(DESKLINK)
+                IF DESKLINK(CheckLink).Left <= DESKLINK(AddNext).Left THEN
+                    IF DESKLINK(CheckLink).Left = DESKLINK(AddNext).Left THEN
+                        IF DESKLINK(CheckLink).Top < DESKLINK(AddNext).Top THEN
                             AddNext = CheckLink
                         END IF
                     ELSE
@@ -1043,39 +1050,39 @@ SUB Desk.LinkSave ()
                 END IF
             NEXT
 
-            SortedLinks(SortCount) = DeskLink(AddNext)
-            DeskLink(AddNext).Left = 999
-            DeskLink(AddNext).Top = 999
+            SortedLinks(SortCount) = DESKLINK(AddNext)
+            DESKLINK(AddNext).Left = 999
+            DESKLINK(AddNext).Top = 999
             SortCount = SortCount + 1
 
-        LOOP UNTIL SortCount = UBOUND(DeskLink) + 1 OR INKEY$ = CHR$(27)
+        LOOP UNTIL SortCount = UBOUND(DESKLINK) + 1 OR INKEY$ = CHR$(27)
 
-        FOR SortCount = 0 TO UBOUND(DeskLink)
-            DeskLink(SortCount) = SortedLinks(SortCount)
+        FOR SortCount = 0 TO UBOUND(DESKLINK)
+            DESKLINK(SortCount) = SortedLinks(SortCount)
         NEXT
     END IF
 
 
     'Save
     DIM LinkCount, LinkSave, FileHandle
-    FOR LinkSave = 0 TO UBOUND(DeskLink)
-        IF NOT RTRIM$(DeskLink(LinkSave).Caption) = "" AND NOT DeskLink(LinkSave).Caption = STRING$(25, 0) THEN
+    FOR LinkSave = 0 TO UBOUND(DESKLINK)
+        IF NOT RTRIM$(DESKLINK(LinkSave).Caption) = "" AND NOT DESKLINK(LinkSave).Caption = STRING$(25, 0) THEN
             LinkCount = LinkCount + 1
         END IF
     NEXT
     
     FileHandle = FREEFILE
-    IF File.Exists(Sys.Path + "DATA\CONFIG\DESKLINK.DAT") THEN KILL Sys.Path + "DATA\CONFIG\DESKLINK.DAT"
-    OPEN Sys.Path + "DATA\CONFIG\DESKLINK.DAT" FOR BINARY AS #FileHandle
+    IF File.Exists(Sys.Path + "DATA\CONFIG\" + ProfileID + "\DESKLINK.DAT") THEN KILL Sys.Path + "DATA\CONFIG\" + ProfileID + "\DESKLINK.DAT"
+    OPEN Sys.Path + "DATA\CONFIG\" + ProfileID + "\DESKLINK.DAT" FOR BINARY AS #FileHandle
     PUT #FileHandle, , LinkCount
 
     IF LinkCount = 0 THEN CLOSE #FileHandle: EXIT SUB
 
-    FOR LinkSave = 0 TO UBOUND(DeskLink)
+    FOR LinkSave = 0 TO UBOUND(DESKLINK)
 
-        IF NOT RTRIM$(DeskLink(LinkSave).Caption) = "" AND NOT DeskLink(LinkSave).Caption = STRING$(25, 0) THEN
+        IF NOT RTRIM$(DESKLINK(LinkSave).Caption) = "" AND NOT DESKLINK(LinkSave).Caption = STRING$(25, 0) THEN
 
-            PUT #FileHandle, , DeskLink(LinkSave)
+            PUT #FileHandle, , DESKLINK(LinkSave)
 
         END IF
     NEXT
@@ -1127,10 +1134,9 @@ Desk.MainTop:
 
 
   'Check if "Tip of the Day" should be shown
-  IF VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "TipOfTheDay", "1")) = 1 THEN
-
+  IF VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "TipOfTheDay", "1")) <> 0 THEN
     'Only show a tip if this is the first time Costa is started today
-    IF NOT File.CfgRead("DATA\CONFIG\COSTA.CFG", "TipLastShown", "") = STR$(DAY(NOW)) + STR$(MONTH(NOW)) THEN
+    IF NOT File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "TipLastShown", "") = STR$(DAY(NOW)) + STR$(MONTH(NOW)) THEN
 
         DIM showTip, TipOfTheDay AS STRING
         TipOfTheDay = Desk.GetDailyTip
@@ -1143,8 +1149,10 @@ Desk.MainTop:
         END IF
 
         Mouse.Hide
-        File.CfgWrite "DATA\CONFIG\COSTA.CFG", "TipLastShown", STR$(DAY(NOW)) + STR$(MONTH(NOW))
+        File.CfgWrite "DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "TipLastShown", STR$(DAY(NOW)) + STR$(MONTH(NOW))
     END IF
+  ELSE
+    PRINT "no tip": SLEEP 'DEBUG
   END IF
 
 
@@ -1168,12 +1176,12 @@ MainLoopStart:
       
       'The mouse was clicked. Before checking if a desktop link was clicked,
       'check to see if any desktop links are present
-      IF NOT RTRIM$(DeskLink(0).Caption) = "" THEN
-        FOR DeskLinkCheck = UBOUND(DeskLink) TO 0 STEP -1
+      IF NOT RTRIM$(DESKLINK(0).Caption) = "" THEN
+        FOR DeskLinkCheck = UBOUND(DESKLINK) TO 0 STEP -1
 
           'Check if the mouse was within the coordinates of the link
-          IF ClickedX >= DeskLink(DeskLinkCheck).Left AND ClickedX <= DeskLink(DeskLinkCheck).Left + 31 THEN
-            IF ClickedY >= DeskLink(DeskLinkCheck).Top AND ClickedY <= DeskLink(DeskLinkCheck).Top + 31 THEN
+          IF ClickedX >= DESKLINK(DeskLinkCheck).Left AND ClickedX <= DESKLINK(DeskLinkCheck).Left + 31 THEN
+            IF ClickedY >= DESKLINK(DeskLinkCheck).Top AND ClickedY <= DESKLINK(DeskLinkCheck).Top + 31 THEN
 
               'If we reach this point, the link was clicked.
               GOSUB SlideUp
@@ -1181,7 +1189,7 @@ MainLoopStart:
                 'If the right mouse button was clicked, show the menu
                 IF NOT TabCheck = -1 THEN
                     Mouse.Hide
-                    LINE (DeskLink(TabCheck).Left - 3, DeskLink(TabCheck).Top - 3)-(DeskLink(TabCheck).Left + 35, DeskLink(TabCheck).Top + 35), ClrDesktop, BF
+                    LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), ClrDesktop, BF
                     Mouse.Show
                     Obj.DrawImg imgTab
                     TabCheck = -1
@@ -1191,11 +1199,11 @@ MainLoopStart:
               ELSE
                 'Depending on the configuration a left click on a link
                 'will either open/run the targetfile or show the menu
-                ShowLinkMenu = VAL(File.CfgRead("DATA\CONFIG\DESKTOP.CFG", "LinkMenuOnLeftClick", "1"))
+                ShowLinkMenu = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "LinkMenuOnLeftClick", "1"))
                 IF ShowLinkMenu = 1 THEN
                     IF NOT TabCheck = -1 THEN
                         Mouse.Hide
-                        LINE (DeskLink(TabCheck).Left - 3, DeskLink(TabCheck).Top - 3)-(DeskLink(TabCheck).Left + 35, DeskLink(TabCheck).Top + 35), ClrDesktop, BF
+                        LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), ClrDesktop, BF
                         Mouse.Show
                         Obj.DrawImg imgTab
                         TabCheck = -1
@@ -1222,19 +1230,19 @@ MainLoopStart:
     IF LEN(Key$) THEN
 
         IF Key$ = "l" THEN
-            REDIM PRESERVE DeskLink(0 TO UBOUND(DeskLink) + 1) AS DeskLinkType
+            REDIM PRESERVE DESKLINK(0 TO UBOUND(DESKLINK) + 1) AS DeskLinkType
             
-            DeskLink(UBOUND(DeskLink)).Caption = "Unnamed link"
-            DeskLink(UBOUND(DeskLink)).Filename = ""
-            DeskLink(UBOUND(DeskLink)).Path = ""
-            DeskLink(UBOUND(DeskLink)).Parameters = ""
-            DeskLink(UBOUND(DeskLink)).ImageFile = "PROGRAM"
-            DeskLink(UBOUND(DeskLink)).Left = 25
-            DeskLink(UBOUND(DeskLink)).Top = 53
+            DESKLINK(UBOUND(DESKLINK)).Caption = "Unnamed link"
+            DESKLINK(UBOUND(DESKLINK)).Filename = ""
+            DESKLINK(UBOUND(DESKLINK)).Path = ""
+            DESKLINK(UBOUND(DESKLINK)).Parameters = ""
+            DESKLINK(UBOUND(DESKLINK)).ImageFile = "PROGRAM"
+            DESKLINK(UBOUND(DESKLINK)).Left = 25
+            DESKLINK(UBOUND(DESKLINK)).Top = 53
 
             GOSUB SlideUp
             Sys.VGASave "DESKTOP"
-            Desk.LinkDialog UBOUND(DeskLink), DidEdit, True
+            Desk.LinkDialog UBOUND(DESKLINK), DidEdit, True
 
             IF DidEdit THEN
                 TabCheck = -1
@@ -1244,7 +1252,7 @@ MainLoopStart:
                 Desk.DrawDesktop
                 Mouse.Show
             ELSE
-                REDIM PRESERVE DeskLink(0 TO UBOUND(DeskLink) - 1) AS DeskLinkType
+                REDIM PRESERVE DESKLINK(0 TO UBOUND(DESKLINK) - 1) AS DeskLinkType
                 Sys.VGALoad "DESKTOP"
             END IF
 
@@ -1277,7 +1285,7 @@ MainLoopStart:
             GOSUB SlideUp
 
             DIM DoExit
-            IF File.CfgRead("DATA\CONFIG\COSTA.CFG", "ConfirmExit", "1") = "1" THEN
+            IF File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "ConfirmExit", "1") = "1" THEN
                 DoExit = Sys.MsgBox("Exit " + appName, "This will exit Costa and return you to the DOS" + CHR$(13) + "prompt. Are you sure?", msgQuest)
             ELSE
                 DoExit = True
@@ -1295,26 +1303,26 @@ MainLoopStart:
         IF Key$ = CHR$(9) OR Key$ = CHR$(0) + CHR$(15) THEN
             IF TabCheck > -1 THEN
                 Mouse.Hide
-                LINE (DeskLink(TabCheck).Left - 3, DeskLink(TabCheck).Top - 3)-(DeskLink(TabCheck).Left + 35, DeskLink(TabCheck).Top + 35), ClrDesktop, BF
+                LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), ClrDesktop, BF
                 Obj.DrawImg imgTab
                 Mouse.Show
             END IF
 
             IF Key$ = CHR$(9) THEN
                 TabCheck = TabCheck + 1
-                IF TabCheck > UBOUND(DeskLink) THEN TabCheck = 0
+                IF TabCheck > UBOUND(DESKLINK) THEN TabCheck = 0
             ELSE
                 TabCheck = TabCheck - 1
-                IF TabCheck < 0 THEN TabCheck = UBOUND(DeskLink)
+                IF TabCheck < 0 THEN TabCheck = UBOUND(DESKLINK)
             END IF
             
-            IF DeskLink(TabCheck).ImageFile = STRING$(8, 0) THEN
+            IF DESKLINK(TabCheck).ImageFile = STRING$(8, 0) THEN
                 TabCheck = -1
             ELSE
                 Mouse.Hide
-                imgTab.ImageFile = DeskLink(TabCheck).ImageFile
-                imgTab.Pos.Left = DeskLink(TabCheck).Left: imgTab.Pos.Top = DeskLink(TabCheck).Top
-                btnTab.Pos.Left = DeskLink(TabCheck).Left - 3: btnTab.Pos.Top = DeskLink(TabCheck).Top - 3
+                imgTab.ImageFile = DESKLINK(TabCheck).ImageFile
+                imgTab.Pos.Left = DESKLINK(TabCheck).Left: imgTab.Pos.Top = DESKLINK(TabCheck).Top
+                btnTab.Pos.Left = DESKLINK(TabCheck).Left - 3: btnTab.Pos.Top = DESKLINK(TabCheck).Top - 3
                 btnTab.Pos.Width = 38: btnTab.Pos.Height = 38
                 Obj.DrawBtn btnTab, False
                 Obj.DrawImg imgTab
@@ -1324,11 +1332,11 @@ MainLoopStart:
 
         IF (Key$ = CHR$(13) OR Key$ = CHR$(32)) AND TabCheck > -1 THEN
             Mouse.Hide
-            LINE (DeskLink(TabCheck).Left - 3, DeskLink(TabCheck).Top - 3)-(DeskLink(TabCheck).Left + 35, DeskLink(TabCheck).Top + 35), ClrDesktop, BF
+            LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), ClrDesktop, BF
             Obj.DrawImg imgTab
             Mouse.Show
 
-            IF Key$ = CHR$(13) THEN GOSUB SlideUp: Desk.LinkMenu TabCheck, DeskLink(TabCheck).Left + 15, DeskLink(TabCheck).Top + 15: GOSUB SlideDown
+            IF Key$ = CHR$(13) THEN GOSUB SlideUp: Desk.LinkMenu TabCheck, DESKLINK(TabCheck).Left + 15, DESKLINK(TabCheck).Top + 15: GOSUB SlideDown
             TabCheck = -1
         END IF
 
@@ -1340,7 +1348,7 @@ EXIT SUB
 
 SlideDown:
   Mouse.Hide
-  ShowAnimations = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "Animations", "1"))
+  ShowAnimations = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "Animations", "1"))
   IF ShowAnimations = 1 THEN
     DelayFixer = 0
     FOR SlidePos = 0 TO 26 STEP 2
@@ -1368,7 +1376,7 @@ RETURN
 SlideUp:
   Mouse.Hide
   DelayFixer = 0
-  ShowAnimations = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "Animations", "1"))
+  ShowAnimations = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "Animations", "1"))
   IF ShowAnimations = 1 THEN
     LINE (0, 0)-(639, 28), ClrWindow, BF
     FOR SlidePos = 25 TO 0 STEP -2

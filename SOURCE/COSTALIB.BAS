@@ -168,7 +168,7 @@ FUNCTION File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING,
 	
 	'Get the file extension, and see if it's associated with a program
 	DotPos = INSTR(TargetFile, ".")
-	AssignFileTypes = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "AssignFileTypes", "1"))
+	AssignFileTypes = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "AssignFileTypes", "1"))
 	IF DotPos > 0 AND AssignFileTypes = 1 THEN
 
 		DIM FileType AS STRING, OpenWith AS STRING
@@ -924,7 +924,7 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 
 	Sys.VGASave "INPUTBOX"
 
-	GreyoutScreen = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "GreyOutOnMsgBox", "0"))
+	GreyoutScreen = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "GreyOutOnMsgBox", "0"))
 	IF GreyoutScreen = 1 THEN
 		DIM LX, LY
 		LY = 0
@@ -1054,9 +1054,11 @@ SUB Sys.Load ()
 			NEXT
 			CLOSE #FontFileHandle
 
+	'ProfileID - DEBUG!
+		ProfileID = "PROFILE1"
 
 	'Load colors for the interface
-		ClrThemeFile = File.CfgRead("DATA\CONFIG\COSTA.CFG", "ThemeFile", "Default")
+		ClrThemeFile = File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "ThemeFile", "Default")
 		ClrDesktop = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrDesktop", "3"))
 		ClrDesktopText = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrDesktopText", "0"))
 		ClrWindow = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrWindow", "7"))
@@ -1196,7 +1198,7 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	
 	Sys.VGASave "MSGBOX"
 
-	GreyoutScreen = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "GreyOutOnMsgBox", "0"))
+	GreyoutScreen = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "GreyOutOnMsgBox", "0"))
 	IF GreyoutScreen = 1 THEN
 		DIM LX, LY
 		LY = 0

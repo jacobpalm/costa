@@ -27,9 +27,9 @@ DIM SHARED DeskNeedsDraw
 ' =========================================================================
 SUB Conf.ConfAssoc ()
 
-    IF NOT File.CfgRead("DATA\CONFIG\COSTA.CFG", "AssignFileTypes", "1") = "1" THEN
+    IF NOT File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "AssignFileTypes", "1") = "1" THEN
         IF Sys.MsgBox("File associations disabled", "File associations are currently disabled." + CHR$(13) + "Do you want to enable this feature?", msgQuest) = True THEN
-            File.CfgWrite "DATA\CONFIG\COSTA.CFG", "AssignFileTypes", "1"
+            File.CfgWrite "DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "AssignFileTypes", "1"
         ELSE
             EXIT SUB
         END IF
@@ -130,7 +130,7 @@ SUB Conf.ConfAssoc ()
 
         IF Obj.BtnClick(btnDisable) OR Key$ = "d" THEN
             IF Sys.MsgBox("Disable file associations", "This will disable file associations in Costa" + CHR$(13) + "and all of its acessories. Are you sure?", msgQuest) = True THEN
-                File.CfgWrite "DATA\CONFIG\COSTA.CFG", "AssignFileTypes", "0"
+                File.CfgWrite "DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "AssignFileTypes", "0"
                 EXIT SUB
             END IF
         END IF
@@ -163,14 +163,14 @@ SUB Conf.ConfMisc ()
     DIM AnimUI, ConfExit, GreyOutMsgbox, ShowTargetChk, DailyTip
     DIM Key$
 
-    ShowLinkDesc = VAL(File.CfgRead("DATA\CONFIG\DESKTOP.CFG", "ShowLinkDescriptions", "1"))
-    ShowLinkTarget = VAL(File.CfgRead("DATA\CONFIG\DESKTOP.CFG", "ShowLinkTargetFiles", "1"))
-    LinkMenuOnLeft = VAL(File.CfgRead("DATA\CONFIG\DESKTOP.CFG", "LinkMenuOnLeftClick", "1"))
-    ConfLinkDel = VAL(File.CfgRead("DATA\CONFIG\DESKTOP.CFG", "ConfirmLinkDelete", "1"))
-    AnimUI = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "Animations", "1"))
-    ConfExit = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "ConfirmExit", "1"))
-    GreyOutMsgbox = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "GreyOutOnMsgbox", "0"))
-    DailyTip = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "TipOfTheDay", "1"))
+    ShowLinkDesc = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "ShowLinkDescriptions", "1"))
+    ShowLinkTarget = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "ShowLinkTargetFiles", "1"))
+    LinkMenuOnLeft = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "LinkMenuOnLeftClick", "1"))
+    ConfLinkDel = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "ConfirmLinkDelete", "1"))
+    AnimUI = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "Animations", "1"))
+    ConfExit = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "ConfirmExit", "1"))
+    GreyOutMsgbox = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "GreyOutOnMsgbox", "0"))
+    DailyTip = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "TipOfTheDay", "1"))
 
     IF ShowLinkDesc = 1 THEN ShowLinkDesc = True: ShowTargetChk = True
     IF ShowLinkTarget = 1 THEN ShowLinkTarget = True
@@ -289,14 +289,14 @@ SUB Conf.ConfMisc ()
             IF chkConfExit.Checked = True THEN ConfExit = 1:  ELSE ConfExit = False
             IF chkGreyOutMsgbox.Checked = True THEN GreyOutMsgbox = 1:  ELSE GreyOutMsgbox = False
             IF chkDailyTip.Checked = True THEN DailyTip = 1:  ELSE DailyTip = False
-            File.CfgWrite "DATA\CONFIG\DESKTOP.CFG", "ShowLinkDescriptions", LTRIM$(STR$(ShowLinkDesc))
-            File.CfgWrite "DATA\CONFIG\DESKTOP.CFG", "ShowLinkTargetFiles", LTRIM$(STR$(ShowLinkTarget))
-            File.CfgWrite "DATA\CONFIG\DESKTOP.CFG", "LinkMenuOnLeftClick", LTRIM$(STR$(LinkMenuOnLeft))
-            File.CfgWrite "DATA\CONFIG\DESKTOP.CFG", "ConfirmLinkDelete", LTRIM$(STR$(ConfLinkDel))
-            File.CfgWrite "DATA\CONFIG\COSTA.CFG", "Animations", LTRIM$(STR$(AnimUI))
-            File.CfgWrite "DATA\CONFIG\COSTA.CFG", "ConfirmExit", LTRIM$(STR$(ConfExit))
-            File.CfgWrite "DATA\CONFIG\COSTA.CFG", "GreyOutOnMsgbox", LTRIM$(STR$(GreyOutMsgbox))
-            File.CfgWrite "DATA\CONFIG\COSTA.CFG", "TipOfTheDay", LTRIM$(STR$(DailyTip))
+            File.CfgWrite "DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "ShowLinkDescriptions", LTRIM$(STR$(ShowLinkDesc))
+            File.CfgWrite "DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "ShowLinkTargetFiles", LTRIM$(STR$(ShowLinkTarget))
+            File.CfgWrite "DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "LinkMenuOnLeftClick", LTRIM$(STR$(LinkMenuOnLeft))
+            File.CfgWrite "DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "ConfirmLinkDelete", LTRIM$(STR$(ConfLinkDel))
+            File.CfgWrite "DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "Animations", LTRIM$(STR$(AnimUI))
+            File.CfgWrite "DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "ConfirmExit", LTRIM$(STR$(ConfExit))
+            File.CfgWrite "DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "GreyOutOnMsgbox", LTRIM$(STR$(GreyOutMsgbox))
+            File.CfgWrite "DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "TipOfTheDay", LTRIM$(STR$(DailyTip))
             
             EXIT SUB
         END IF
@@ -421,7 +421,7 @@ SUB Conf.ConfTheme ()
         TmpName$ = LEFT$(TmpName$, LEN(TmpName$) - 4)
         REDIM PRESERVE ThemeList(0 TO TmpCount) AS STRING
         ThemeList(UBOUND(ThemeList)) = TmpName$
-        IF UCASE$(TmpName$) = UCASE$(File.CfgRead("DATA\CONFIG\COSTA.CFG", "ThemeFile", "DEFAULT")) THEN ActiveTheme = TmpCount
+        IF UCASE$(TmpName$) = UCASE$(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "ThemeFile", "DEFAULT")) THEN ActiveTheme = TmpCount
         TmpName$ = DIR$
         TmpCount = TmpCount + 1
     LOOP
@@ -462,7 +462,7 @@ UpdatePreview:
 
         IF Obj.BtnClick(btnSave) OR Key$ = "s" OR Key$ = CHR$(13) THEN
             DeskNeedsDraw = True
-            File.CfgWrite "DATA\CONFIG\COSTA.CFG", "ThemeFile", ThemeList(ActiveTheme)
+            File.CfgWrite "DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "ThemeFile", ThemeList(ActiveTheme)
             ClrThemeFile = ThemeList(ActiveTheme)
             EXIT SUB
         END IF
@@ -609,7 +609,7 @@ SUB Conf.Main ()
             IF DeskNeedsDraw = False THEN
                 Sys.VGALoad "DESKTOP"
             ELSE
-                Conf.LoadTheme File.CfgRead("DATA\CONFIG\COSTA.CFG", "ThemeFile", "Default")
+                Conf.LoadTheme File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "ThemeFile", "Default")
                 Mouse.Hide
                 LINE (0, 0)-(639, 479), ClrDesktop, BF
                 Mouse.Show
