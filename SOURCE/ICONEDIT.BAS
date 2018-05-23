@@ -17,18 +17,6 @@ DIM SHARED IconFileName AS STRING
 
 STACK 5120
 
-IF File.Exists(Sys.Path + "DATA\TEMP\RUNSTAT.TMP") = False THEN
-    IF NOT COMMAND$ = "/DEV" THEN
-        CLS
-        PRINT "This program is a part of " + appName + " and should not be executed"
-        PRINT "directly from the command prompt."
-        PRINT
-        PRINT "To start Costa, run COSTA.BAT. If that file doesn't exist, run SETUP.EXE."
-        PRINT
-        END
-    END IF
-END IF
-
 IF Sys.Path = "" OR File.Exists(Sys.Path + appExeName + ".EXE") = False THEN
     CLS
     PRINT "The environment variable " + appExeName + ", which contains the path to Costa, is either"
@@ -206,9 +194,10 @@ SUB IconEdit.Main ()
 
     Obj.SetSize txtColor(-1).Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 36, txtDrawArea.Pos.Top + 153, 37, 18
     
+    DrawColor = 0
+
 StartOfMain:
 
-    DrawColor = 0
     CursorX = 0
     CursorY = 0
     IconChanged = False
@@ -337,13 +326,13 @@ StartOfMain:
             IF IconChanged = True THEN
                 IF Sys.MsgBox("Icon has been modified", "This icon contains unsaved changes. Do you" + CHR$(13) + "want to save it before you load another?", msgQuest) = True THEN
                     IF IconEdit.SaveIcon = True THEN
-                        IF IconEdit.LoadIcon THEN GOTO StartOfMain
+                        IF IconEdit.LoadIcon THEN DrawColor = 0: GOTO StartOfMain
                     END IF
                 ELSE
-                    IF IconEdit.LoadIcon THEN GOTO StartOfMain
+                    IF IconEdit.LoadIcon THEN DrawColor = 0: GOTO StartOfMain
                 END IF
             ELSE
-                IF IconEdit.LoadIcon THEN GOTO StartOfMain
+                IF IconEdit.LoadIcon THEN DrawColor = 0: GOTO StartOfMain
             END IF
         END IF
 
