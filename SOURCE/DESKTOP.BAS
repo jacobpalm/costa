@@ -2,7 +2,6 @@ OPTION EXPLICIT
 DEFINT A-Z
 
 DECLARE FUNCTION Desk.GetDailyTip () AS STRING
-DECLARE FUNCTION Desk.ProfileEdit (ProfileNum AS INTEGER) AS INTEGER
 DECLARE FUNCTION Desk.ProfileSelect () AS STRING
 DECLARE SUB Calc.Main ()
 DECLARE SUB Conf.Main ()
@@ -17,6 +16,7 @@ DECLARE SUB Desk.LinkMove (TargetLink%)
 DECLARE SUB Desk.LinkReset ()
 DECLARE SUB Desk.LinkSave ()
 DECLARE SUB Desk.Main ()
+DECLARE SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
 DECLARE SUB Desk.RunDialog ()
 DECLARE SUB Tic.Main ()
 DECLARE SUB TView.Main (FileToView AS STRING)
@@ -1408,12 +1408,114 @@ RETURN
 
 END SUB
 
-FUNCTION Desk.ProfileEdit (ProfileNum AS INTEGER) AS INTEGER
+SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
+    DIM AllIcons() AS STRING
+    DIM IconCount AS INTEGER, CurrentIcon AS INTEGER, IconFile AS STRING
+    DIM CurrentIconFilename AS STRING
 
-    'DEBUG - show window for editing
-    'DEBUG - return true if anything was modifed
+    IconFile = DIR$(Sys.Path + "DATA\IMAGES\*.BIF")
+    IconCount = 0
+    CurrentIconFilename = UCASE$(File.CfgRead("DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileNum)) + "\PROFILE.CFG", "ProfileIcon", "USERS"))
 
-END FUNCTION
+    REDIM PRESERVE AllIcons(0) AS STRING
+    IF NOT IconFile = "" THEN
+        DO
+          REDIM PRESERVE AllIcons(0 TO IconCount) AS STRING
+          AllIcons(IconCount) = LEFT$(IconFile, LEN(IconFile) - 4)
+
+          IF AllIcons(IconCount) = CurrentIconFilename THEN CurrentIcon = IconCount
+
+          IconCount = IconCount + 1
+          IconFile = DIR$
+        LOOP UNTIL IconFile = ""
+    ELSE
+      IconFile = "UNKNOWN"
+      AllIcons(0) = "UNKNOWN"
+    END IF
+
+
+    DIM winProfEdit AS WindowType
+    DIM txtProfileName AS TextboxType
+    DIM txtProfileNameText AS STRING
+    DIM btnSave AS ButtonType, btnCancel AS ButtonType
+    DIM btnIconPrev AS ButtonType, btnIconNext AS ButtonType
+    DIM frmIconFrame AS FrameType
+    DIM imgIcon AS ImageType
+    
+    winProfEdit.Pos.Width = 220
+    winProfEdit.Pos.Height = 208
+    winProfEdit.Pos.Left = (640 - winProfEdit.Pos.Width) / 2
+    winProfEdit.Pos.Top = (480 - winProfEdit.Pos.Height) / 2
+    winProfEdit.Caption = "Edit profile"
+
+    Obj.SetSize frmIconFrame.Pos, 296, winProfEdit.Pos.Top + 46, 48, 48
+    Obj.SetSize imgIcon.Pos, 304, frmIconFrame.Pos.Top + 8, 32, 32
+    Obj.SetSize btnIconPrev.Pos, 262, frmIconFrame.Pos.Top + 14, 22, 22
+    Obj.SetSize btnIconNext.Pos, 356, frmIconFrame.Pos.Top + 14, 22, 22
+    Obj.SetSize txtProfileName.Pos, 222, winProfEdit.Pos.Top + 128, 196, 19
+    Obj.SetSize btnSave.Pos, 229, winProfEdit.Pos.Top + 174, 84, 22
+    Obj.SetSize btnCancel.Pos, 326, winProfEdit.Pos.Top + 174, 84, 22
+
+    txtProfileName.MaxLen = 50
+    txtProfileNameText = File.CfgRead("DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileNum)) + "\PROFILE.CFG", "ProfileName", "Profile " + LTRIM$(STR$(ProfileNum)))
+    btnIconPrev.Caption = "<"
+    btnIconNext.Caption = ">"
+    btnSave.Caption = "Save": btnSave.HotKey = 1
+    btnCancel.Caption = "Cancel": btnCancel.HotKey = 1
+    imgIcon.ImageFile = AllIcons(CurrentIcon)
+
+    Obj.DrawWin winProfEdit
+    Obj.DrawBtn btnIconPrev, False
+    Obj.DrawFrm frmIconFrame, 15, Clr3DShadow
+    Obj.DrawBtn btnIconNext, False
+    Obj.DrawTxt txtProfileName, txtProfileNameText, False
+    Obj.DrawBtn btnSave, False
+    Obj.DrawBtn btnCancel, False
+    Font.Print "Name:", 222, winProfEdit.Pos.Top + 114, ClrWindowText, 1
+    Mouse.Hide
+    'DEBUG - underline N in "Name"
+    Mouse.Show
+    Obj.DrawImg imgIcon
+
+    DIM Key$
+    DO
+        Key$ = LCASE$(INKEY$)
+
+        IF Obj.BtnClick(btnIconPrev) OR Key$ = CHR$(0) + "k" THEN
+          CurrentIcon = CurrentIcon - 1
+          IF CurrentIcon < 0 THEN CurrentIcon = UBOUND(AllIcons)
+          Mouse.Hide
+          LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), ClrDesktop, BF
+          Mouse.Show
+          imgIcon.ImageFile = AllIcons(CurrentIcon)
+          Obj.DrawImg imgIcon
+        END IF
+
+        IF Obj.BtnClick(btnIconNext) OR Key$ = CHR$(0) + "m" THEN
+          CurrentIcon = CurrentIcon + 1
+          IF CurrentIcon > UBOUND(AllIcons) THEN CurrentIcon = 0
+          Mouse.Hide
+          LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), ClrDesktop, BF
+          Mouse.Show
+          imgIcon.ImageFile = AllIcons(CurrentIcon)
+          Obj.DrawImg imgIcon
+        END IF
+
+        IF Obj.TxtClick(txtProfileName) OR Key$ = "n" THEN Obj.EditTxt txtProfileName, txtProfileNameText
+
+        IF Obj.BtnClick(btnSave) OR Key$ = CHR$(13) OR Key$ = "s" THEN
+            File.CfgWrite "DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileNum)) + "\PROFILE.CFG", "ProfileName", txtProfileNameText
+            File.CfgWrite "DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileNum)) + "\PROFILE.CFG", "ProfileIcon", AllIcons(CurrentIcon)
+            EXIT SUB
+        END IF
+
+        IF Obj.BtnClick(btnCancel) OR Key$ = CHR$(27) OR Key$ = "c" THEN
+            EXIT SUB
+        END IF
+
+    LOOP
+
+END SUB
 
 FUNCTION Desk.ProfileSelect () AS STRING
     DIM ProfileEnabled(1 TO 5) AS INTEGER
@@ -1427,12 +1529,6 @@ FUNCTION Desk.ProfileSelect () AS STRING
     DIM imgProfile(1 TO 5) AS ImageType
     DIM btnContinue AS ButtonType
     DIM btnEdit AS ButtonType
-
-    FOR Counter = 1 TO 5
-        ProfileName(Counter) = File.CfgRead("DATA\CONFIG\PROFILE" + LTRIM$(STR$(Counter)) + "\PROFILE.CFG", "ProfileName", "Profile" + STR$(Counter))
-        imgProfile(Counter).ImageFile = File.CfgRead("DATA\CONFIG\PROFILE" + LTRIM$(STR$(Counter)) + "\PROFILE.CFG", "ProfileIcon", "USERS")
-        ProfileEnabled(Counter) = VAL(File.CfgRead("DATA\CONFIG\PROFILE" + LTRIM$(STR$(Counter)) + "\PROFILE.CFG", "ProfileEnabled", "0"))
-    NEXT
 
     winProfiles.Pos.Width = 338
     winProfiles.Pos.Height = 220
@@ -1464,6 +1560,12 @@ FUNCTION Desk.ProfileSelect () AS STRING
 
 
 TopOfProfile:
+
+    FOR Counter = 1 TO 5
+        ProfileName(Counter) = File.CfgRead("DATA\CONFIG\PROFILE" + LTRIM$(STR$(Counter)) + "\PROFILE.CFG", "ProfileName", "Profile" + STR$(Counter))
+        imgProfile(Counter).ImageFile = File.CfgRead("DATA\CONFIG\PROFILE" + LTRIM$(STR$(Counter)) + "\PROFILE.CFG", "ProfileIcon", "USERS")
+        ProfileEnabled(Counter) = VAL(File.CfgRead("DATA\CONFIG\PROFILE" + LTRIM$(STR$(Counter)) + "\PROFILE.CFG", "ProfileEnabled", "0"))
+    NEXT
 
     Obj.DrawWin winProfiles
     Font.Print "Please select a profile from which your desktop,", winProfiles.Pos.Left + 14, winProfiles.Pos.Top + 36, ClrWindowText, FontNormal
@@ -1530,10 +1632,10 @@ TopOfProfile:
         END IF
 
         IF Key$ = "e" OR Obj.BtnClick(btnEdit) THEN
-            DIM DidEdit
-            DidEdit = Desk.ProfileEdit(SelectedProfile)
-            IF DidEdit THEN GOSUB TopOfProfile
+            Desk.ProfileEdit SelectedProfile
+            GOSUB TopOfProfile
         END IF
+
     LOOP
 
 END FUNCTION
