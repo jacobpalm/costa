@@ -655,7 +655,7 @@ SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
     Y2 = y1
 
     DO
-      LINE (x1, y1)-(X2, Y2), ClrWindow, B
+      LINE (x1, y1)-(X2, Y2), clrWindow, B
       IF x1 > MenuBack.Pos.Left THEN x1 = x1 - 1
       IF y1 > MenuBack.Pos.Top THEN y1 = y1 - 1
       IF X2 < MenuBack.Pos.Left + MenuBack.Pos.Width THEN X2 = X2 + 1
@@ -669,7 +669,7 @@ SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
   FgColor = ClrWindowText
   Obj.DrawBtn MenuBack, False
   Mouse.Hide
-  LINE (x1 + 2, y1 + 2)-(X2 - 2, Y2 - 2), ClrWindow, BF
+  LINE (x1 + 2, y1 + 2)-(X2 - 2, Y2 - 2), clrWindow, BF
   Mouse.Show
   Font.Print "Open/run", MenuBack.Pos.Left + 6, MenuBack.Pos.Top + 6, FgColor, 1
   Font.Print "Customize..", MenuBack.Pos.Left + 6, MenuBack.Pos.Top + 22, FgColor, 1
@@ -1387,7 +1387,7 @@ SlideDown:
   IF ShowAnimations = 1 THEN
     DelayFixer = 0
     FOR SlidePos = 0 TO 26 STEP 2
-      LINE (0, 0)-(639, SlidePos), ClrWindow, BF
+      LINE (0, 0)-(639, SlidePos), clrWindow, BF
       LINE (0, SlidePos + 1)-(639, SlidePos + 1), Clr3DShadow
       LINE (0, SlidePos + 2)-(639, SlidePos + 2), 0
       DelayFixer = DelayFixer + 1
@@ -1397,7 +1397,7 @@ SlideDown:
       END IF
     NEXT
   ELSE
-    LINE (0, 0)-(639, 26), ClrWindow, BF
+    LINE (0, 0)-(639, 26), clrWindow, BF
     LINE (0, 27)-(639, 27), Clr3DShadow
     LINE (0, 28)-(639, 28), 0
   END IF
@@ -1414,7 +1414,7 @@ SlideUp:
   DelayFixer = 0
   ShowAnimations = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "Animations", "1"))
   IF ShowAnimations = 1 THEN
-    LINE (0, 0)-(639, 28), ClrWindow, BF
+    LINE (0, 0)-(639, 28), clrWindow, BF
     FOR SlidePos = 25 TO 0 STEP -2
       LINE (0, SlidePos)-(639, SlidePos), Clr3DShadow
       LINE (0, SlidePos + 1)-(639, SlidePos + 1), 0
@@ -1427,7 +1427,7 @@ SlideUp:
     NEXT
   ELSE
       LINE (0, 3)-(639, 28), clrDesktop, BF
-      LINE (0, 0)-(639, 0), ClrWindow
+      LINE (0, 0)-(639, 0), clrWindow
       LINE (0, 1)-(639, 1), Clr3DShadow
       LINE (0, 2)-(639, 2), 0
   END IF
@@ -1514,7 +1514,7 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
           CurrentIcon = CurrentIcon - 1
           IF CurrentIcon < 0 THEN CurrentIcon = UBOUND(AllIcons)
           Mouse.Hide
-          LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), clrDesktop, BF
+          LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), clrButton, BF
           Mouse.Show
           imgIcon.ImageFile = AllIcons(CurrentIcon)
           Obj.DrawImg imgIcon
@@ -1524,7 +1524,7 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
           CurrentIcon = CurrentIcon + 1
           IF CurrentIcon > UBOUND(AllIcons) THEN CurrentIcon = 0
           Mouse.Hide
-          LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), clrDesktop, BF
+          LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), clrButton, BF
           Mouse.Show
           imgIcon.ImageFile = AllIcons(CurrentIcon)
           Obj.DrawImg imgIcon
@@ -1639,7 +1639,7 @@ TopOfProfile:
                     SelectedProfile = Counter
                     ProfileNamePos = winProfiles.Pos.Left + (winProfiles.Pos.Width / 2) - (Font.GetWidth(ProfileName(SelectedProfile), FontHeading) / 2)
                     Mouse.Hide
-                    LINE (winProfiles.Pos.Left + 2, winProfiles.Pos.Top + 150)-(winProfiles.Pos.Left + winProfiles.Pos.Width - 2, winProfiles.Pos.Top + 166), ClrWindow, BF
+                    LINE (winProfiles.Pos.Left + 2, winProfiles.Pos.Top + 150)-(winProfiles.Pos.Left + winProfiles.Pos.Width - 2, winProfiles.Pos.Top + 166), clrWindow, BF
                     Mouse.Show
                     Font.Print ProfileName(SelectedProfile), ProfileNamePos, winProfiles.Pos.Top + 154, ClrWindowText, FontHeading
                     DO WHILE Mouse.Clicked: LOOP
