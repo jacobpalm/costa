@@ -158,19 +158,21 @@ SUB Conf.ConfMisc ()
     DIM chkLinkMenuOnLeft AS CheckBoxType, chkConfLinkDel AS CheckBoxType
     DIM chkConfExit AS CheckBoxType, chkGreyOutMsgbox AS CheckBoxType
     DIM chkAnimUI AS CheckBoxType, chkDailyTip AS CheckBoxType
+    DIM chkUseLastProfile AS CheckBoxType
 
     DIM ShowLinkDesc, ShowLinkTarget, LinkMenuOnLeft, ConfLinkDel
-    DIM AnimUI, ConfExit, GreyOutMsgbox, ShowTargetChk, DailyTip
+    DIM AnimUI, ConfExit, GreyOutMsgbox, ShowTargetChk, DailyTip, UseLastProfile
     DIM Key$
 
     ShowLinkDesc = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "ShowLinkDescriptions", "1"))
     ShowLinkTarget = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "ShowLinkTargetFiles", "1"))
-    LinkMenuOnLeft = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "LinkMenuOnLeftClick", "1"))
+    LinkMenuOnLeft = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "LinkMenuOnLeftClick", "0"))
     ConfLinkDel = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "ConfirmLinkDelete", "1"))
     AnimUI = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "Animations", "1"))
     ConfExit = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "ConfirmExit", "1"))
     GreyOutMsgbox = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "GreyOutOnMsgbox", "0"))
     DailyTip = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "TipOfTheDay", "1"))
+    UseLastProfile = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "UseLastProfile", "0"))
 
     IF ShowLinkDesc = 1 THEN ShowLinkDesc = True: ShowTargetChk = True
     IF ShowLinkTarget = 1 THEN ShowLinkTarget = True
@@ -180,11 +182,15 @@ SUB Conf.ConfMisc ()
     IF ConfExit = 1 THEN ConfExit = True
     IF GreyOutMsgbox = 1 THEN GreyOutMsgbox = True
     IF DailyTip = 1 THEN DailyTip = True
+    IF UseLastProfile = 1 THEN UseLastProfile = True
 
 
-    Obj.SetSize winMisc.Pos, 125, 82, 390, 318
+    winMisc.Pos.Width = 390
+    winMisc.Pos.Height = 340
+    winMisc.Pos.Left = (640 - winMisc.Pos.Width) / 2
+    winMisc.Pos.Top = (480 - winMisc.Pos.Height) / 2
     Obj.SetSize frmDesktop.Pos, winMisc.Pos.Left + 12, winMisc.Pos.Top + 34, winMisc.Pos.Width - 24, 118
-    Obj.SetSize frmVarious.Pos, winMisc.Pos.Left + 12, frmDesktop.Pos.Top + frmDesktop.Pos.Height + 12, frmDesktop.Pos.Width, 107
+    Obj.SetSize frmVarious.Pos, winMisc.Pos.Left + 12, frmDesktop.Pos.Top + frmDesktop.Pos.Height + 12, frmDesktop.Pos.Width, 129
     Obj.SetSize chkShowLinkDesc.Pos, frmDesktop.Pos.Left + 12, frmDesktop.Pos.Top + 16, -1, -1
     Obj.SetSize chkShowLinkTarget.Pos, frmDesktop.Pos.Left + 34, frmDesktop.Pos.Top + 38, -1, -1
     Obj.SetSize chkLinkMenuOnLeft.Pos, frmDesktop.Pos.Left + 12, frmDesktop.Pos.Top + 70, -1, -1
@@ -193,6 +199,9 @@ SUB Conf.ConfMisc ()
     Obj.SetSize chkConfExit.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 38, -1, -1
     Obj.SetSize chkGreyOutMsgbox.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 60, -1, -1
     Obj.SetSize chkDailyTip.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 82, -1, -1
+    Obj.SetSize chkUseLastProfile.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 104, -1, -1
+
+
     Obj.SetSize btnCancel.Pos, winMisc.Pos.Left + winMisc.Pos.Width - 104, winMisc.Pos.Top + winMisc.Pos.Height - 34, -1, -1
     Obj.SetSize btnSave.Pos, winMisc.Pos.Left + winMisc.Pos.Width - 208, winMisc.Pos.Top + winMisc.Pos.Height - 34, -1, -1
 
@@ -208,6 +217,7 @@ SUB Conf.ConfMisc ()
     chkConfExit.Checked = ConfExit
     chkGreyOutMsgbox.Checked = GreyOutMsgbox
     chkDailyTip.Checked = DailyTip
+    chkUseLastProfile.Checked = UseLastProfile
 
 
     Obj.DrawWin winMisc
@@ -227,6 +237,7 @@ SUB Conf.ConfMisc ()
     Obj.DrawChk chkConfExit
     Obj.DrawChk chkGreyOutMsgbox
     Obj.DrawChk chkDailyTip
+    Obj.DrawChk chkUseLastProfile
     Obj.DrawBtn btnSave, False
     Obj.DrawBtn btnCancel, False
 
@@ -249,6 +260,7 @@ SUB Conf.ConfMisc ()
     Font.Print "Confirm when trying to exit Costa", chkConfExit.Pos.Left + 20, chkConfExit.Pos.Top + 3, ClrWindowText, 2
     Font.Print "Grey out screen while showing a messagebox", chkGreyOutMsgbox.Pos.Left + 20, chkGreyOutMsgbox.Pos.Top + 3, ClrWindowText, 2
     Font.Print "Show start-up ""Tip of the Day"" messages", chkDailyTip.Pos.Left + 20, chkDailyTip.Pos.Top + 3, ClrWindowText, 2
+    Font.Print "Use last profile on start-up without asking", chkUseLastProfile.Pos.Left + 20, chkUseLastProfile.Pos.Top + 3, ClrWindowText, 2
     
     Mouse.Hide
     LINE (chkShowLinkDesc.Pos.Left + 81, chkShowLinkDesc.Pos.Top + 14)-(chkShowLinkDesc.Pos.Left + 88, chkShowLinkDesc.Pos.Top + 14), ClrWindowText
@@ -258,6 +270,7 @@ SUB Conf.ConfMisc ()
     LINE (chkAnimUI.Pos.Left + 19, chkAnimUI.Pos.Top + 14)-(chkAnimUI.Pos.Left + 27, chkAnimUI.Pos.Top + 14), ClrWindowText
     LINE (chkGreyOutMsgbox.Pos.Left + 19, chkGreyOutMsgbox.Pos.Top + 14)-(chkGreyOutMsgbox.Pos.Left + 26, chkGreyOutMsgbox.Pos.Top + 14), ClrWindowText
     LINE (chkDailyTip.Pos.Left + 41, chkDailyTip.Pos.Top + 14)-(chkDailyTip.Pos.Left + 51, chkDailyTip.Pos.Top + 14), ClrWindowText
+    LINE (chkUseLastProfile.Pos.Left + 19, chkUseLastProfile.Pos.Top + 14)-(chkUseLastProfile.Pos.Left + 26, chkUseLastProfile.Pos.Top + 14), ClrWindowText
     Mouse.Show
 
     DO
@@ -277,6 +290,7 @@ SUB Conf.ConfMisc ()
         Obj.ChkClick chkGreyOutMsgbox
         Obj.ChkClick chkAnimUI
         Obj.ChkClick chkDailyTip
+        Obj.ChkClick chkUseLastProfile
 
         IF Obj.BtnClick(btnCancel) OR Key$ = "c" OR Key$ = CHR$(27) THEN EXIT SUB
 
@@ -289,6 +303,7 @@ SUB Conf.ConfMisc ()
             IF chkConfExit.Checked = True THEN ConfExit = 1:  ELSE ConfExit = False
             IF chkGreyOutMsgbox.Checked = True THEN GreyOutMsgbox = 1:  ELSE GreyOutMsgbox = False
             IF chkDailyTip.Checked = True THEN DailyTip = 1:  ELSE DailyTip = False
+            IF chkUseLastProfile.Checked = True THEN UseLastProfile = 1:  ELSE UseLastProfile = False
             File.CfgWrite "DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "ShowLinkDescriptions", LTRIM$(STR$(ShowLinkDesc))
             File.CfgWrite "DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "ShowLinkTargetFiles", LTRIM$(STR$(ShowLinkTarget))
             File.CfgWrite "DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "LinkMenuOnLeftClick", LTRIM$(STR$(LinkMenuOnLeft))
@@ -297,6 +312,7 @@ SUB Conf.ConfMisc ()
             File.CfgWrite "DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "ConfirmExit", LTRIM$(STR$(ConfExit))
             File.CfgWrite "DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "GreyOutOnMsgbox", LTRIM$(STR$(GreyOutMsgbox))
             File.CfgWrite "DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "TipOfTheDay", LTRIM$(STR$(DailyTip))
+            File.CfgWrite "DATA\CONFIG\COSTA.CFG", "UseLastProfile", LTRIM$(STR$(UseLastProfile))
             
             EXIT SUB
         END IF
@@ -326,6 +342,7 @@ SUB Conf.ConfMisc ()
         IF Key$ = "x" THEN chkConfExit.Checked = NOT chkConfExit.Checked: Obj.DrawChk chkConfExit
         IF Key$ = "g" THEN chkGreyOutMsgbox.Checked = NOT chkGreyOutMsgbox.Checked: Obj.DrawChk chkGreyOutMsgbox
         IF Key$ = "w" THEN chkDailyTip.Checked = NOT chkDailyTip.Checked: Obj.DrawChk chkDailyTip
+        IF Key$ = "u" THEN chkUseLastProfile.Checked = NOT chkUseLastProfile.Checked: Obj.DrawChk chkUseLastProfile
         
 
 
