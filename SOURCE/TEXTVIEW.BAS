@@ -5,10 +5,18 @@ DECLARE FUNCTION TView.LoadFile% (TargetFile AS STRING)
 DECLARE SUB TView.DrawText (StartLine%)
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
-'$INCLUDE: 'C:\COSTA\SOURCE\APPINFO.BI'
 
 COMMON SHARED FileData() AS STRING
 
+' =========================================================================
+'          NAME: TView.DrawText()
+'    PARAMETERS: StartLine - the array position of the first line to print
+'       RETURNS: Nothing
+'       ASSUMES: That the array position exists
+'   CALLED FROM: TEXTVIEW.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Writes file content to the main textbox
+' =========================================================================
 SUB TView.DrawText (StartLine)
 
     DIM LineCount
@@ -24,6 +32,15 @@ SUB TView.DrawText (StartLine)
 
 END SUB
 
+' =========================================================================
+'          NAME: TView.LoadFile()
+'    PARAMETERS: TargetFile - filename of the file to load
+'       RETURNS: Nothing
+'       ASSUMES: Nothing
+'   CALLED FROM: TEXTVIEW.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Loads the file into memory, in an array of strings
+' =========================================================================
 FUNCTION TView.LoadFile (TargetFile AS STRING)
 
     DIM FileHandle, LineCount
@@ -88,6 +105,15 @@ TViewLoadErr:
     RESUME NEXT
 END FUNCTION
 
+' =========================================================================
+'          NAME: TView.Main()
+'    PARAMETERS: FileToView - filename of file to view, if any
+'       RETURNS: Nothing
+'       ASSUMES: Nothing
+'   CALLED FROM: DESKTOP.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Main UI + logic of the TextViewer accessory
+' =========================================================================
 SUB TView.Main (FileToView AS STRING)
 
     DIM FileWin AS WindowType

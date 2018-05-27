@@ -15,8 +15,18 @@ DIM SHARED EnableAI AS INTEGER
 DIM SHARED PlayField(1 TO 3, 1 TO 3) AS INTEGER
 DIM SHARED txtPlayField(1 TO 3, 1 TO 3) AS TextboxType
 
+' =========================================================================
+'          NAME: Tic.AIMove()
+'    PARAMETERS: None
+'       RETURNS: Nothing
+'       ASSUMES: Nothing
+'   CALLED FROM: TICTAC.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Performs a move for the computer player.
+' =========================================================================
 SUB Tic.AIMove ()
 
+    'Simulate some random "thinking" time
     RANDOMIZE TIMER
     Sys.Delay (INT(RND * 550) + 550) / 1000
 
@@ -109,9 +119,17 @@ SUB Tic.AIMove ()
       LOOP
 END SUB
 
+' =========================================================================
+'          NAME: Tic.CheckWin()
+'    PARAMETERS: None
+'       RETURNS: Nothing
+'       ASSUMES: Nothing
+'   CALLED FROM: TICTAC.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Returns true if the current player has won the game.
+'                Should be called after every turn.
+' =========================================================================
 FUNCTION Tic.CheckWin ()
-    'Returns True if the current player has won the game - should be called
-    'after every turn
 
     'Horizontal
     IF PlayField(1, 1) = PlayerTurn AND PlayField(1, 2) = PlayerTurn AND PlayField(1, 3) = PlayerTurn THEN Tic.CheckWin = True: EXIT FUNCTION
@@ -129,6 +147,16 @@ FUNCTION Tic.CheckWin ()
 
 END FUNCTION
 
+' =========================================================================
+'          NAME: Tic.DrawXO()
+'    PARAMETERS: FieldRow, FieldCol - the position where to draw an X or O
+'       RETURNS: Nothing
+'       ASSUMES: Nothing
+'   CALLED FROM: TICTAC.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Draws an X or O in the specified field.
+'                PlayerTurn decides wether it will be an X or an O.
+' =========================================================================
 SUB Tic.DrawXO (FieldRow, FieldCol)
 
     DIM XCoord, YCoord
@@ -176,6 +204,15 @@ SUB Tic.DrawXO (FieldRow, FieldCol)
 
 END SUB
 
+' =========================================================================
+'          NAME: Tic.Main()
+'    PARAMETERS: None
+'       RETURNS: Nothing
+'       ASSUMES: Nothing
+'   CALLED FROM: DESKTOP.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Main UI and logic for the Tic Tac Toe accessory
+' =========================================================================
 SUB Tic.Main ()
 
     DIM winTic AS WindowType

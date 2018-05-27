@@ -11,7 +11,6 @@ DIM SHARED IconData AS IconDataType
 DIM SHARED IconFileName AS STRING
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
-'$INCLUDE: 'C:\COSTA\SOURCE\APPINFO.BI'
 
 STACK 5120
 
@@ -52,9 +51,12 @@ FUNCTION File.Browse (BYVAL WindowCaption AS STRING, BYVAL StartPath AS STRING) 
 
     'Declarations
     DIM CurrentPath AS STRING
-    DIM winFile AS WindowType, txtFileList AS TextboxType
+    DIM winFile AS WindowType, txtFilelist AS TextboxType
+    DIM ReadFilename AS STRING
+    DIM FileItems(1 TO 1) AS STRING * 14
 
     'DEBUG - check if start path exists
+
     'If StartPath is empty, set to root of the drive Costa is installed on
     IF StartPath = "" THEN StartPath = LEFT$(Sys.Path, 3)
     CurrentPath = StartPath
@@ -68,25 +70,58 @@ FUNCTION File.Browse (BYVAL WindowCaption AS STRING, BYVAL StartPath AS STRING) 
     WindowCaption = LTRIM$(RTRIM$(WindowCaption))
     IF WindowCaption = "" THEN WindowCaption = "Select file"
     winFile.Caption = WindowCaption
-    Obj.SetSize winFile.Pos, x1, y1, 300, 300
+    Obj.SetSize winFile.Pos, x1, y1, 494, 374
     
     Obj.DrawWin winFile
-    Font.Print "Current path: " + CurrentPath, x1 + 20, y1 + 30, ClrWindowText, FontNormal
+    Font.Print "Current path: " + CurrentPath, x1 + 12, y1 + 32, ClrWindowText, FontNormal
 
-    Obj.SetSize txtFileList.Pos, x1 + 20, y1 + 40, 200, 250
-    Obj.DrawTxt txtFileList, "", False
+    Obj.SetSize txtFilelist.Pos, x1 + 12, y1 + 50, 470, 312
+    Obj.DrawTxt txtFilelist, "", False
+
+    'DEBUG - drive list if above root?
+
+    'DEBUG - if not root folder, add ".." entry
+
+    'DEBUG - find folders first and add to array, surrounded by []
+
+LoadFilelist:
+    IF NOT RIGHT$(CurrentPath, 1) = "\" THEN CurrentPath = CurrentPath + "\"
+    ReadFilename = DIR$(CurrentPath + "\")
+    IF NOT ReadFilename = "" THEN
+        FileItems(1) = ReadFilename
+        DO
+            ReadFilename = DIR$
+            IF ReadFilename = "" THEN
+                EXIT DO
+            ELSE
+                REDIM PRESERVE FileItems(1 TO UBOUND(FileItems) + 1) AS STRING * 14
+                FileItems(UBOUND(FileItems)) = ReadFilename
+            END IF
+        LOOP
+    END IF
+
+PrintFileList:
+    DIM I, XOffset, YOffset
+    FOR I = 1 TO 100
+        IF I < UBOUND(FileItems) THEN
+            IF I <= 25 THEN
+                XOffset = 0
+                YOffset = 0
+            ELSEIF I <= 50 THEN
+                XOffset = 120
+                YOffset = 25 * 12
+            ELSEIF I <= 75 THEN
+                XOffset = 240
+                YOffset = 50 * 12
+            ELSEIF I <= 100 THEN
+                XOffset = 360
+                YOffset = 75 * 12
+            END IF
+            Font.Print FileItems(I), txtFilelist.Pos.Left + 8 + XOffset, txtFilelist.Pos.Top - 4 + (12 * I) - YOffset, ClrTextboxText, FontSystem
+        END IF
+    NEXT
 
 
-    DIM FileItems() AS STRING * 8
     
-    'Hvis ikke root, tilf›j ".." element
-    'Find mapper f›rst og tilf›j til array
-
-    FILES
-
-
-
-    SLEEP
-
 END FUNCTION
 
