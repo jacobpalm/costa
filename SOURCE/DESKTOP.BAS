@@ -99,11 +99,22 @@ STACK 5120
 
 CALL Sys.Load
 
-'Check if active session - if so, load profile
-
 IF ProfileID = "" THEN
-    ProfileID = Desk.ProfileSelect
-    Sys.LoadTheme
+    IF File.CfgRead("DATA\CONFIG\COSTA.CFG", "UseLastProfile", "0") = "1" THEN
+        DIM ProfileToUse
+        ProfileToUse = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "LastUsedProfile", "1"))
+        
+        IF ProfileToUse > 0 AND ProfileToUse < 5 THEN
+            ProfileID = "PROFILE" + LTRIM$(STR$(ProfileToUse))
+        ELSE
+            ProfileID = "PROFILE1"
+        END IF
+
+        Sys.LoadTheme
+    ELSE
+        ProfileID = Desk.ProfileSelect
+        Sys.LoadTheme
+    END IF
 END IF
 
 Desk.Main
@@ -419,7 +430,7 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
   Font.Print "Pause after execution", 242, 360, ClrWindowText, 2
   Mouse.Hide
   LINE (221, 108)-(228, 108), ClrWindowText
-  LINE (298, 152)-(342, 196), ClrDesktop, BF
+  LINE (298, 152)-(342, 196), clrDesktop, BF
   LINE (221, 224)-(228, 224), ClrWindowText
   LINE (237, 322)-(244, 322), ClrWindowText
   LINE (321, 371)-(327, 371), ClrWindowText
@@ -465,7 +476,7 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
       CurrentIcon = CurrentIcon - 1
       IF CurrentIcon < 0 THEN CurrentIcon = UBOUND(AllIcons)
       Mouse.Hide
-      LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), ClrDesktop, BF
+      LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), clrDesktop, BF
       Mouse.Show
       imgIcon.ImageFile = AllIcons(CurrentIcon)
       Obj.DrawImg imgIcon
@@ -476,7 +487,7 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
       CurrentIcon = CurrentIcon + 1
       IF CurrentIcon > UBOUND(AllIcons) THEN CurrentIcon = 0
       Mouse.Hide
-      LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), ClrDesktop, BF
+      LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), clrDesktop, BF
       Mouse.Show
       imgIcon.ImageFile = AllIcons(CurrentIcon)
       Obj.DrawImg imgIcon
@@ -781,7 +792,7 @@ LinkMenuRefresh:
 
             IF DidEdit THEN
                 Mouse.Hide
-                LINE (0, 29)-(639, 479), ClrDesktop, BF
+                LINE (0, 29)-(639, 479), clrDesktop, BF
                 Desk.DrawDesktop
                 Mouse.Show
             ELSE
@@ -802,7 +813,7 @@ LinkMenuRefresh:
             Mouse.Show
             Desk.LinkMove TargetLink
             Mouse.Hide
-            LINE (0, 2)-(639, 479), ClrDesktop, BF
+            LINE (0, 2)-(639, 479), clrDesktop, BF
             Desk.DrawDesktop
             Mouse.Show
             EXIT SUB
@@ -834,7 +845,7 @@ LinkMenuRefresh:
                 Desk.LinkSave
                 Desk.LinkLoad
                 Mouse.Hide
-                LINE (0, 2)-(639, 479), ClrDesktop, BF
+                LINE (0, 2)-(639, 479), clrDesktop, BF
                 Desk.DrawDesktop
                 Mouse.Show
                 DO: LOOP WHILE Mouse.Clicked
@@ -1022,7 +1033,7 @@ SUB Desk.LinkReset ()
     Desk.LinkSave
 
     DIM ResetMsg
-    ResetMsg = Sys.MsgBox("Desktop links reset to default", "The file in which Costa stores the configuration for desktop links, DESKLNK" + ProfileID + ".DAT," + CHR$(13) + "was not found." + CHR$(13) + CHR$(13) +  _
+    ResetMsg = Sys.MsgBox("Desktop links reset to default", "The file in which Costa stores the configuration for desktop links, DESKLNK.DAT," + CHR$(13) + "was not found in this profile." + CHR$(13) + CHR$(13) +  _
 "A new file has been automatically created, but any custom links will need to be" + CHR$(13) + "created again manually.", msgError)
 
 END SUB
@@ -1114,14 +1125,17 @@ SUB Desk.Main ()
 
   DIM btnAddLink AS ButtonType, btnRunCmd AS ButtonType
   DIM btnAboutCosta AS ButtonType, btnExitCosta AS ButtonType
+  DIM btnProfile AS ButtonType
   DIM SlidePos, DelayFixer, ShowLinkMenu, ShowAnimations
 
   Obj.SetSize btnAddLink.Pos, 3, 2, 92, 22
   btnAddLink.Caption = "Add link": btnAddLink.HotKey = 5
   Obj.SetSize btnRunCmd.Pos, 102, 2, 92, 22
   btnRunCmd.Caption = "Execute": btnRunCmd.HotKey = 2
-  Obj.SetSize btnAboutCosta.Pos, 446, 2, 92, 22
+  Obj.SetSize btnAboutCosta.Pos, 274, 2, 92, 22
   btnAboutCosta.Caption = "About...": btnAboutCosta.HotKey = 1
+  Obj.SetSize btnProfile.Pos, 446, 2, 92, 22
+  btnProfile.Caption = "Profile...": btnProfile.HotKey = 1
   Obj.SetSize btnExitCosta.Pos, 545, 2, 92, 22
   btnExitCosta.Caption = "Exit": btnExitCosta.HotKey = 1
 
@@ -1131,7 +1145,7 @@ SUB Desk.Main ()
   
 Desk.MainTop:
   Mouse.Hide
-  LINE (0, 2)-(639, 479), ClrDesktop, BF
+  LINE (0, 2)-(639, 479), clrDesktop, BF
   Desk.LinkLoad
   Desk.DrawDesktop
   Mouse.Show
@@ -1176,6 +1190,7 @@ MainLoopStart:
     IF Obj.BtnClick(btnAddLink) THEN Key$ = "l"
     IF Obj.BtnClick(btnRunCmd) THEN Key$ = "x"
     IF Obj.BtnClick(btnAboutCosta) THEN Key$ = "a"
+    IF Obj.BtnClick(btnProfile) THEN Key$ = "p"
     IF Obj.BtnClick(btnExitCosta) THEN Key$ = "e"
 
     IF Mouse.Clicked AND Mouse.Y > 32 THEN
@@ -1196,7 +1211,7 @@ MainLoopStart:
                 'If the right mouse button was clicked, show the menu
                 IF NOT TabCheck = -1 THEN
                     Mouse.Hide
-                    LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), ClrDesktop, BF
+                    LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), clrDesktop, BF
                     Mouse.Show
                     Obj.DrawImg imgTab
                     TabCheck = -1
@@ -1206,11 +1221,11 @@ MainLoopStart:
               ELSE
                 'Depending on the configuration a left click on a link
                 'will either open/run the targetfile or show the menu
-                ShowLinkMenu = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "LinkMenuOnLeftClick", "1"))
+                ShowLinkMenu = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "LinkMenuOnLeftClick", "0"))
                 IF ShowLinkMenu = 1 THEN
                     IF NOT TabCheck = -1 THEN
                         Mouse.Hide
-                        LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), ClrDesktop, BF
+                        LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), clrDesktop, BF
                         Mouse.Show
                         Obj.DrawImg imgTab
                         TabCheck = -1
@@ -1255,7 +1270,7 @@ MainLoopStart:
                 TabCheck = -1
                 Desk.LinkLoad
                 Mouse.Hide
-                LINE (0, 29)-(639, 479), ClrDesktop, BF
+                LINE (0, 29)-(639, 479), clrDesktop, BF
                 Desk.DrawDesktop
                 Mouse.Show
             ELSE
@@ -1288,6 +1303,19 @@ MainLoopStart:
             GOTO MainLoopStart
         END IF
 
+        IF Key$ = "p" THEN
+            GOSUB SlideUp
+            ProfileID = ""
+            Sys.LoadTheme
+            Mouse.Hide
+            LINE (0, 0)-(639, 479), clrDesktop, BF
+            Mouse.Show
+            ProfileID = Desk.ProfileSelect
+            Sys.LoadTheme
+            GOSUB Desk.MainTop
+        END IF
+
+
         IF Key$ = "e" OR Key$ = CHR$(27) THEN
             GOSUB SlideUp
 
@@ -1300,7 +1328,7 @@ MainLoopStart:
 
             IF DoExit = True THEN
                 Mouse.Hide
-                Sys.Delay .8
+                IF NOT COMMAND$ = "/DEV" THEN Sys.Delay .8
                 Desk.ExitGUI
             END IF
 
@@ -1310,7 +1338,7 @@ MainLoopStart:
         IF Key$ = CHR$(9) OR Key$ = CHR$(0) + CHR$(15) THEN
             IF TabCheck > -1 THEN
                 Mouse.Hide
-                LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), ClrDesktop, BF
+                LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), clrDesktop, BF
                 Obj.DrawImg imgTab
                 Mouse.Show
             END IF
@@ -1339,7 +1367,7 @@ MainLoopStart:
 
         IF (Key$ = CHR$(13) OR Key$ = CHR$(32)) AND TabCheck > -1 THEN
             Mouse.Hide
-            LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), ClrDesktop, BF
+            LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), clrDesktop, BF
             Obj.DrawImg imgTab
             Mouse.Show
 
@@ -1377,6 +1405,7 @@ SlideDown:
   Obj.DrawBtn btnAddLink, False
   Obj.DrawBtn btnRunCmd, False
   Obj.DrawBtn btnAboutCosta, False
+  Obj.DrawBtn btnProfile, False
   Obj.DrawBtn btnExitCosta, False
 RETURN
 
@@ -1389,7 +1418,7 @@ SlideUp:
     FOR SlidePos = 25 TO 0 STEP -2
       LINE (0, SlidePos)-(639, SlidePos), Clr3DShadow
       LINE (0, SlidePos + 1)-(639, SlidePos + 1), 0
-      LINE (0, SlidePos + 2)-(639, SlidePos + 3), ClrDesktop, BF
+      LINE (0, SlidePos + 2)-(639, SlidePos + 3), clrDesktop, BF
       DelayFixer = DelayFixer + 1
       IF DelayFixer = 4 THEN
         Sys.Delay .01
@@ -1397,7 +1426,7 @@ SlideUp:
       END IF
     NEXT
   ELSE
-      LINE (0, 3)-(639, 28), ClrDesktop, BF
+      LINE (0, 3)-(639, 28), clrDesktop, BF
       LINE (0, 0)-(639, 0), ClrWindow
       LINE (0, 1)-(639, 1), Clr3DShadow
       LINE (0, 2)-(639, 2), 0
@@ -1473,7 +1502,7 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
     Obj.DrawBtn btnCancel, False
     Font.Print "Name:", 222, winProfEdit.Pos.Top + 114, ClrWindowText, 1
     Mouse.Hide
-    'DEBUG - underline N in "Name"
+    LINE (221, winProfEdit.Pos.Top + 125)-(229, winProfEdit.Pos.Top + 125), ClrWindowText
     Mouse.Show
     Obj.DrawImg imgIcon
 
@@ -1485,7 +1514,7 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
           CurrentIcon = CurrentIcon - 1
           IF CurrentIcon < 0 THEN CurrentIcon = UBOUND(AllIcons)
           Mouse.Hide
-          LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), ClrDesktop, BF
+          LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), clrDesktop, BF
           Mouse.Show
           imgIcon.ImageFile = AllIcons(CurrentIcon)
           Obj.DrawImg imgIcon
@@ -1495,7 +1524,7 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
           CurrentIcon = CurrentIcon + 1
           IF CurrentIcon > UBOUND(AllIcons) THEN CurrentIcon = 0
           Mouse.Hide
-          LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), ClrDesktop, BF
+          LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), clrDesktop, BF
           Mouse.Show
           imgIcon.ImageFile = AllIcons(CurrentIcon)
           Obj.DrawImg imgIcon
