@@ -16,6 +16,10 @@ DIM SHARED ThemeFile$, ThemeName$, ThemeAuthor$
 DIM SHARED ThemeList() AS STRING
 DIM SHARED DeskNeedsDraw
 
+Sys.Load
+
+Conf.Main
+
 ' =========================================================================
 '          NAME: Conf.ConfAssoc()
 '    PARAMETERS: None

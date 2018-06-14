@@ -15,6 +15,10 @@ DIM SHARED EnableAI AS INTEGER
 DIM SHARED PlayField(1 TO 3, 1 TO 3) AS INTEGER
 DIM SHARED txtPlayField(1 TO 3, 1 TO 3) AS TextboxType
 
+Sys.Load
+
+Tic.Main
+
 ' =========================================================================
 '          NAME: Tic.AIMove()
 '    PARAMETERS: None
@@ -282,7 +286,7 @@ StartOfGame:
         Key$ = LCASE$(INKEY$)
 
         IF Obj.BtnClick(btnNew) OR Key$ = "n" THEN GOTO StartOfGame
-        IF Obj.BtnClick(btnExit) OR Key$ = "c" THEN Sys.VGALoad "DESKTOP": EXIT SUB
+        IF Obj.BtnClick(btnExit) OR Key$ = "c" THEN EXIT SUB
 
         IF Obj.BtnClick(btnAIToggle) OR Key$ = "p" THEN
             EnableAI = NOT EnableAI

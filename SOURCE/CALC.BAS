@@ -6,6 +6,10 @@ DECLARE SUB Calc.Main ()
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
+Sys.Load
+
+Calc.Main
+
 ' =========================================================================
 '          NAME: Calc.FormatNum()
 '    PARAMETERS: TargetStr - string containing a number to format nicely

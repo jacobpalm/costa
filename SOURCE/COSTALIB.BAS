@@ -137,10 +137,7 @@ END FUNCTION
 'Runs an external program.
 'Also checks for a file association if passed a file, and passes the
 'filename to the relevant program as a parameter.
-'If this function returns any value, it should be passed to TView.Main as
-'that means the file should be opened with Costa itself (only used in
-'DESKTOP.MAK)
-FUNCTION File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVAL TargetPath AS STRING, PauseOnExit AS INTEGER) AS STRING
+SUB File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVAL TargetPath AS STRING, PauseOnExit AS INTEGER)
 
 	DIM RunHandle, DotPos, AssignFileTypes
 	DIM TargetDrive AS STRING, SysDrive AS STRING
@@ -178,18 +175,7 @@ FUNCTION File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING,
 		OpenWith = File.CfgRead("DATA\CONFIG\FILETYPE.CFG", FileType, "")
 		
 		IF NOT OpenWith = "" AND NOT INSTR(TargetFile, " ") THEN
-			IF UCASE$(OpenWith) = appExeName OR UCASE$(OpenWith) = appExeName + ".EXE" THEN
-
-				IF LEN(TargetDrive) THEN CHDRIVE TargetDrive
-				ON LOCAL ERROR RESUME NEXT
-				IF LEN(TargetPath) THEN CHDIR "\": CHDIR TargetPath
-				ON LOCAL ERROR GOTO 0
-				IF LEN(TargetPath) > 0 THEN TargetPath = TargetPath + "\"
-				File.Run = TargetPath + TargetFile
-				EXIT FUNCTION
-			ELSE
-				TargetFile = OpenWith + " " + TargetFile
-			END IF
+			TargetFile = OpenWith + " " + TargetFile
 		END IF
 
 	END IF
@@ -221,7 +207,7 @@ FUNCTION File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING,
 	DO: LOOP WHILE LEN(INKEY$)
 	END 2
 
-END FUNCTION
+END SUB
 
 FUNCTION Font.GetWidth (TargetText AS STRING, FontID AS INTEGER)
 
@@ -1297,7 +1283,11 @@ END FUNCTION
 
 STATIC SUB Sys.VGALoad (TargetFile AS STRING)
 	'BLOADs a VGA screen saved by Sys.VGASave
-	'DEBUG - use File.Exists to avoid errors
+	
+	IF File.Exists(Sys.Path + "DATA\TEMP\" + TargetFile + ".BLU") = False THEN EXIT SUB
+	IF File.Exists(Sys.Path + "DATA\TEMP\" + TargetFile + ".GRN") = False THEN EXIT SUB
+	IF File.Exists(Sys.Path + "DATA\TEMP\" + TargetFile + ".RED") = False THEN EXIT SUB
+	IF File.Exists(Sys.Path + "DATA\TEMP\" + TargetFile + ".INT") = False THEN EXIT SUB
 
 	Mouse.Hide
 

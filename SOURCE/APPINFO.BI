@@ -6,5 +6,5 @@
     CONST appVersion = "1.3.0"
     CONST appYear = "2018"
     CONST appEnviron = "%COSTA130%"
-    CONST appExeName = "COSTA130" 'Without extension
+    CONST appExeName = "DESKTOP" 'Without extension
 
