@@ -6,6 +6,11 @@
                                  Changelog
 
 
+*1.3.0*
+Description
+  -Moved accessories out of desktop, and into separate programs, for easier
+   development
+
 *1.2.0*
 This version brings back a feature from the past - the multi-user support
 from version 0.8.0 has resurfaced as "Profiles", allowing more people to
