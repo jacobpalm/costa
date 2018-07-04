@@ -195,7 +195,7 @@ SUB File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVA
 		PRINT #RunHandle, "CD\"
 		PRINT #RunHandle, "CD " + TargetPath
 	END IF
-	PRINT #RunHandle, TargetFile + TargetParameters
+	PRINT #RunHandle, TargetFile + " " + TargetParameters
 	IF PauseOnExit = True THEN PRINT #RunHandle, "PAUSE"
 
 	IF MID$(Sys.Path, 2, 2) = ":\" THEN SysDrive = LEFT$(Sys.Path, 2)
