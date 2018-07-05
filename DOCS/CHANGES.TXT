@@ -10,6 +10,9 @@
 Description
   -Moved accessories out of desktop, and into separate programs, for easier
    development
+  -Fixed bug introduced in 1.2.0, where the procedure resposible for running
+   external programs did not put a space between the command/filename and the
+   parameters, breaking some desktop links
 
 *1.2.0*
 This version brings back a feature from the past - the multi-user support
