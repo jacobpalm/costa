@@ -81,16 +81,6 @@ IF COMMAND$ = "/BOOT" THEN
     PRINT #FileHandle, "1"
     CLOSE #FileHandle
     
-    SCREEN 0
-    COLOR 7, 0
-    CLS
-    PRINT
-    PRINT "  " + appName
-    PRINT "  Coded in 2004-" + appYear + " by Jacob Palm"
-    PRINT
-    PRINT "  Released under the MIT License"
-    PRINT
-    Sys.Delay 1.9
 END IF
 
 STACK 5120
@@ -1303,7 +1293,6 @@ MainLoopStart:
 
             IF DoExit = True THEN
                 Mouse.Hide
-                IF NOT COMMAND$ = "/DEV" THEN Sys.Delay .8
                 Desk.ExitGUI
             END IF
 
