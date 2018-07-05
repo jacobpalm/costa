@@ -1216,8 +1216,8 @@ MainLoopStart:
             DESKLINK(UBOUND(DESKLINK)).Path = ""
             DESKLINK(UBOUND(DESKLINK)).Parameters = ""
             DESKLINK(UBOUND(DESKLINK)).ImageFile = "PROGRAM"
-            DESKLINK(UBOUND(DESKLINK)).Left = 25
-            DESKLINK(UBOUND(DESKLINK)).Top = 53
+            DESKLINK(UBOUND(DESKLINK)).Left = 15
+            DESKLINK(UBOUND(DESKLINK)).Top = 45
 
             GOSUB SlideUp
             Sys.VGASave "DESKTOP"
