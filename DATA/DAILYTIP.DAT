@@ -7,4 +7,4 @@ To draw a transparent pixel in the icon editor, you don't have to choose|the tra
 Want to see how your icon in the icon editor looks on different|background colors?||To do so, simply click the preview of it - or press P on the keyboard.
 If your are missing some of the default links on the desktop, or your desktop|links have somehow become corrupt, you can reset the links by deleting|DATA\CONFIG\DESKLINK.DAT.||Costa will then recreate it with the default links.
 If you don't like the default behavior of desktop links, where|a menu is shown on both left- and right-click, you can use|the built-in configuration editor to change this.
-You can change the colors of the interface using the built-in|configuration link on the desktop.||Costa comes with many themes to choose from!
+You can change the colors of the interface using the built-in|configuration dialog.||Costa comes with many themes to choose from!
