@@ -1241,7 +1241,7 @@ MainLoopStart:
         IF Key$ = "x" THEN
             GOSUB SlideUp
             DIM FileToRun AS STRING
-            FileToRun = Sys.InputBox("Execute program or command", "You can also use this dialog to open any file" + CHR$(13) + "associated with a program (like README.TXT).", "RUNPROG", "C:\")
+            FileToRun = Sys.InputBox("Execute program or command", "You can also use this dialog to open any file" + CHR$(13) + "associated with a program (like README.TXT).", "RUNPROG", "")
             IF LEN(FileToRun) AND NOT FileToRun = "C:\" THEN
                 Sys.VGASave "DESKTOP"
                 DIM RunFile AS STRING
