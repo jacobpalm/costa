@@ -17,16 +17,6 @@ DIM SHARED IconFileName AS STRING
 
 STACK 5120
 
-IF Sys.Path = "" OR File.Exists(Sys.Path + appExeName + ".EXE") = False THEN
-    CLS
-    PRINT "The environment variable " + appExeName + ", which contains the path to Costa, is either"
-    PRINT "not set or contains an invalid path."
-    PRINT
-    PRINT "Run SETUP.EXE to fix this issue."
-    PRINT
-    END
-END IF
-
 IF NOT COMMAND$ = "/?" AND NOT COMMAND$ = "/VER" AND NOT COMMAND$ = "/DEV" THEN
     IconFileName = COMMAND$
 END IF
