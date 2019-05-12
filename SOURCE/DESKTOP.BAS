@@ -142,7 +142,7 @@ SUB Desk.AboutBox ()
   
   Font.Print appName, 210, 117, 0, 1
   Font.Print "Version " + appVersion, 210, 131, 0, 2
-  Font.Print "Made in 2004-" + appYear + " by Jacob Palm", 168, 153, 0, 2
+  Font.Print "Made in 2004-" + appYear + " by Jacob Palm.", 168, 153, 0, 2
   Font.Print "Released under the MIT License.", 168, 167, 0, 2
   Font.Print "Font files made in 1998-1999 by Rush Soft.", 168, 195, 0, 2
   Font.Print "Costa is open source and may be freely distributed", 168, 223, 0, 2
