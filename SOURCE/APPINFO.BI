@@ -4,7 +4,7 @@
 
     CONST appName = "The Costa Graphical Shell"
     CONST appVersion = "1.3.0"
-    CONST appYear = "2018"
+    CONST appYear = "2019"
     CONST appEnviron = "%COSTA130%"
     CONST appExeName = "DESKTOP" 'Without extension
 
