@@ -45,45 +45,51 @@ Theme.Main
 
 SUB Theme.Edit (BYVAL ThmFile AS STRING)
 
-    DIM WinThemeEdit AS WindowType
+    DIM winThemeEdit AS WindowType
     DIM frmPreview AS FrameType
     DIM btnSave AS ButtonType, btnSaveAs AS ButtonType
     DIM btnExit AS ButtonType
+    DIM txtThemeName AS TextboxType, txtThemeAuthor AS TextboxType
 
     DIM ThmClrDesktop, ThmClrDesktopText, ThmClrWindow
     DIM ThmClrButton, ThmClrTextbox, ThmClrTextboxText
     DIM ThmClrWindowText, ThmClrTitleBar, ThmClrTitleBarText
     DIM ThmClr3DLight, ThmClr3DShadow, ThmClrSelect, ThmClrSelectText
     
-    WinThemeEdit.Pos.Width = 624
-    WinThemeEdit.Pos.Height = 347
-    WinThemeEdit.Pos.Left = (640 - WinThemeEdit.Pos.Width) / 2
-    WinThemeEdit.Pos.Top = (480 - WinThemeEdit.Pos.Height) / 2
-    WinThemeEdit.Caption = "Theme editor"
+    winThemeEdit.Pos.Width = 534
+    winThemeEdit.Pos.Height = 315
+    winThemeEdit.Pos.Left = (640 - winThemeEdit.Pos.Width) / 2
+    winThemeEdit.Pos.Top = (480 - winThemeEdit.Pos.Height) / 2
+    winThemeEdit.Caption = "Theme editor"
 
-    frmPreview.Pos.Left = WinThemeEdit.Pos.Left + 12
-    frmPreview.Pos.Top = WinThemeEdit.Pos.Top + 64
+    frmPreview.Pos.Left = winThemeEdit.Pos.Left + 12
+    frmPreview.Pos.Top = winThemeEdit.Pos.Top + 34
     frmPreview.Pos.Width = 300
     frmPreview.Pos.Height = 240
 
 
-    Obj.SetSize btnSave.Pos, WinThemeEdit.Pos.Left + 12, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 69, 22
+    Obj.SetSize btnSave.Pos, winThemeEdit.Pos.Left + 12, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 69, 22
     btnSave.Caption = "Save": btnSave.HotKey = 1
 
-    Obj.SetSize btnSaveAs.Pos, WinThemeEdit.Pos.Left + 89, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 69, 22
+    Obj.SetSize btnSaveAs.Pos, winThemeEdit.Pos.Left + 89, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 69, 22
     btnSaveAs.Caption = "Save as": btnSaveAs.HotKey = 6
 
-    Obj.SetSize btnExit.Pos, WinThemeEdit.Pos.Left + 267, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 69, 22
+    Obj.SetSize btnExit.Pos, winThemeEdit.Pos.Left + 457, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 69, 22
     btnExit.Caption = "Exit": btnExit.HotKey = 2
 
-    Obj.DrawWin WinThemeEdit
+    Obj.SetSize txtThemeName.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 50, 200, 0
+    Obj.SetSize txtThemeAuthor.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 98, 200, 0
+
+    Obj.DrawWin winThemeEdit
     Obj.DrawBtn btnSaveAs, False
     Obj.DrawBtn btnSave, False
     Obj.DrawBtn btnExit, False
+    Obj.DrawTxt txtThemeName, ThemeName$, False
+    Obj.DrawTxt txtThemeAuthor, ThemeAuthor$, False
     Obj.DrawFrm frmPreview, 15, Clr3DShadow
     Mouse.Hide
-    Font.Print "Theme name:", WinThemeEdit.Pos.Left + 12, WinThemeEdit.Pos.Top + 32, ClrWindowText, 1
-    Font.Print "Theme author:", WinThemeEdit.Pos.Left + 12, WinThemeEdit.Pos.Top + 47, ClrWindowText, 1
+    Font.Print "Theme name:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 34, ClrWindowText, 1
+    Font.Print "Theme author:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 82, ClrWindowText, 1
     Mouse.Show
 
     'The rest of the controls are used in the preview
