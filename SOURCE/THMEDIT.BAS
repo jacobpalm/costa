@@ -51,12 +51,15 @@ SUB Theme.Edit (BYVAL ThmFile AS STRING)
     DIM btnExit AS ButtonType
     DIM txtThemeName AS TextboxType, txtThemeAuthor AS TextboxType
 
-    DIM ThmClrDesktop, ThmClrDesktopText, ThmClrWindow
+    DIM btnColor(0 TO 15) AS ButtonType
+
+    DIM thmClrDesktop, ThmClrDesktopText, ThmClrWindow
     DIM ThmClrButton, ThmClrTextbox, ThmClrTextboxText
     DIM ThmClrWindowText, ThmClrTitleBar, ThmClrTitleBarText
     DIM ThmClr3DLight, ThmClr3DShadow, ThmClrSelect, ThmClrSelectText
+    DIM I, YPos, XPos
     
-    winThemeEdit.Pos.Width = 534
+    winThemeEdit.Pos.Width = 528
     winThemeEdit.Pos.Height = 315
     winThemeEdit.Pos.Left = (640 - winThemeEdit.Pos.Width) / 2
     winThemeEdit.Pos.Top = (480 - winThemeEdit.Pos.Height) / 2
@@ -74,11 +77,23 @@ SUB Theme.Edit (BYVAL ThmFile AS STRING)
     Obj.SetSize btnSaveAs.Pos, winThemeEdit.Pos.Left + 89, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 69, 22
     btnSaveAs.Caption = "Save as": btnSaveAs.HotKey = 6
 
-    Obj.SetSize btnExit.Pos, winThemeEdit.Pos.Left + 457, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 69, 22
+    Obj.SetSize btnExit.Pos, winThemeEdit.Pos.Left + 450, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 69, 22
     btnExit.Caption = "Exit": btnExit.HotKey = 2
 
-    Obj.SetSize txtThemeName.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 50, 200, 0
-    Obj.SetSize txtThemeAuthor.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 98, 200, 0
+    Obj.SetSize txtThemeName.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 50, 194, 0
+    Obj.SetSize txtThemeAuthor.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 98, 194, 0
+
+    YPos = 0
+    XPos = 0
+    FOR I = 0 TO 15
+        IF I = 8 THEN
+            YPos = 25
+            XPos = 0
+        END IF
+        Obj.SetSize btnColor(I).Pos, txtThemeAuthor.Pos.Left + XPos, txtThemeAuthor.Pos.Top + 60 + YPos, 19, 19
+        btnColor(I).Transparent = True
+        XPos = XPos + 25
+    NEXT
 
     Obj.DrawWin winThemeEdit
     Obj.DrawBtn btnSaveAs, False
@@ -87,9 +102,15 @@ SUB Theme.Edit (BYVAL ThmFile AS STRING)
     Obj.DrawTxt txtThemeName, ThemeName$, False
     Obj.DrawTxt txtThemeAuthor, ThemeAuthor$, False
     Obj.DrawFrm frmPreview, 15, Clr3DShadow
+    FOR I = 0 TO 15
+        Obj.DrawBtn btnColor(I), True
+        LINE (btnColor(I).Pos.Left + 2, btnColor(I).Pos.Top + 2)-(btnColor(I).Pos.Left + btnColor(I).Pos.Width - 2, btnColor(I).Pos.Top + btnColor(I).Pos.Height - 2), I, BF
+    NEXT
     Mouse.Hide
     Font.Print "Theme name:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 34, ClrWindowText, 1
     Font.Print "Theme author:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 82, ClrWindowText, 1
+    Font.Print "Object selected:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 130, ClrWindowText, 1
+    Font.Print "Desktop", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 144, ClrWindowText, 1
     Mouse.Show
 
     'The rest of the controls are used in the preview
@@ -122,7 +143,7 @@ SUB Theme.Edit (BYVAL ThmFile AS STRING)
 
     Theme.Load ThmFile
 
-    ThmClrDesktop = ClrDesktop
+    thmClrDesktop = ClrDesktop
     ThmClrDesktopText = ClrDesktopText
     ThmClrWindow = ClrWindow
     ThmClrButton = ClrButton
@@ -139,7 +160,7 @@ SUB Theme.Edit (BYVAL ThmFile AS STRING)
 
     DIM Key$
 UpdateEditPreview:
-    ClrDesktop = ThmClrDesktop
+    ClrDesktop = thmClrDesktop
     ClrDesktopText = ThmClrDesktopText
     ClrWindow = ThmClrWindow
     ClrButton = ThmClrButton
@@ -174,6 +195,15 @@ UpdateEditPreview:
 
     DO
         Key$ = LCASE$(INKEY$)
+
+        FOR I = 0 TO 15
+            IF Obj.BtnClick(btnColor(I)) THEN
+                Obj.DrawBtn btnColor(I), True
+                thmClrDesktop = I
+                GOTO UpdateEditPreview
+            END IF
+        NEXT
+
 
         IF Obj.BtnClick(btnSaveAs) OR Key$ = CHR$(0) + "a" THEN
 
@@ -250,7 +280,7 @@ FUNCTION Theme.Select () AS STRING
     winTheme.Pos.Height = 347
     winTheme.Pos.Left = (640 - winTheme.Pos.Width) / 2
     winTheme.Pos.Top = (480 - winTheme.Pos.Height) / 2
-    winTheme.Caption = "Theme editor"
+    winTheme.Caption = "Select theme to edit"
       
     frmPreview.Pos.Left = winTheme.Pos.Left + 12
     frmPreview.Pos.Top = winTheme.Pos.Top + 64
