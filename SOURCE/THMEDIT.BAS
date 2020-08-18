@@ -1,8 +1,9 @@
-DECLARE SUB Theme.Main ()
 OPTION EXPLICIT
 DEFINT A-Z
 
+DECLARE FUNCTION Theme.SelectObject (BYVAL CurrentSelection%) AS INTEGER
 DECLARE FUNCTION Theme.Select () AS STRING
+DECLARE SUB Theme.Main ()
 DECLARE SUB Theme.Load (BYVAL ThmFile AS STRING)
 DECLARE SUB Theme.Edit (BYVAL ThmFile AS STRING)
 
@@ -48,16 +49,16 @@ SUB Theme.Edit (BYVAL ThmFile AS STRING)
     DIM winThemeEdit AS WindowType
     DIM frmPreview AS FrameType
     DIM btnSave AS ButtonType, btnSaveAs AS ButtonType
-    DIM btnExit AS ButtonType
+    DIM btnExit AS ButtonType, btnObject AS ButtonType
     DIM txtThemeName AS TextboxType, txtThemeAuthor AS TextboxType
 
     DIM btnColor(0 TO 15) AS ButtonType
 
-    DIM thmClrDesktop, ThmClrDesktopText, ThmClrWindow
+    DIM thmClrDesktop, thmClrDesktopText, ThmClrWindow
     DIM ThmClrButton, ThmClrTextbox, ThmClrTextboxText
     DIM ThmClrWindowText, ThmClrTitleBar, ThmClrTitleBarText
     DIM ThmClr3DLight, ThmClr3DShadow, ThmClrSelect, ThmClrSelectText
-    DIM I, YPos, XPos
+    DIM I, YPos, XPos, SelectedObject
     
     winThemeEdit.Pos.Width = 528
     winThemeEdit.Pos.Height = 315
@@ -82,6 +83,9 @@ SUB Theme.Edit (BYVAL ThmFile AS STRING)
 
     Obj.SetSize txtThemeName.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 50, 194, 0
     Obj.SetSize txtThemeAuthor.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 98, 194, 0
+    Obj.SetSize btnObject.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 144, 194, 0
+    btnObject.Caption = "Desktop"
+    SelectedObject = 1
 
     YPos = 0
     XPos = 0
@@ -90,7 +94,7 @@ SUB Theme.Edit (BYVAL ThmFile AS STRING)
             YPos = 25
             XPos = 0
         END IF
-        Obj.SetSize btnColor(I).Pos, txtThemeAuthor.Pos.Left + XPos, txtThemeAuthor.Pos.Top + 60 + YPos, 19, 19
+        Obj.SetSize btnColor(I).Pos, txtThemeAuthor.Pos.Left + XPos, txtThemeAuthor.Pos.Top + 82 + YPos, 19, 19
         btnColor(I).Transparent = True
         XPos = XPos + 25
     NEXT
@@ -101,16 +105,18 @@ SUB Theme.Edit (BYVAL ThmFile AS STRING)
     Obj.DrawBtn btnExit, False
     Obj.DrawTxt txtThemeName, ThemeName$, False
     Obj.DrawTxt txtThemeAuthor, ThemeAuthor$, False
+    Obj.DrawBtn btnObject, False
     Obj.DrawFrm frmPreview, 15, Clr3DShadow
     FOR I = 0 TO 15
         Obj.DrawBtn btnColor(I), True
+        Mouse.Hide
         LINE (btnColor(I).Pos.Left + 2, btnColor(I).Pos.Top + 2)-(btnColor(I).Pos.Left + btnColor(I).Pos.Width - 2, btnColor(I).Pos.Top + btnColor(I).Pos.Height - 2), I, BF
+        Mouse.Show
     NEXT
     Mouse.Hide
     Font.Print "Theme name:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 34, ClrWindowText, 1
     Font.Print "Theme author:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 82, ClrWindowText, 1
     Font.Print "Object selected:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 130, ClrWindowText, 1
-    Font.Print "Desktop", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 144, ClrWindowText, 1
     Mouse.Show
 
     'The rest of the controls are used in the preview
@@ -144,7 +150,7 @@ SUB Theme.Edit (BYVAL ThmFile AS STRING)
     Theme.Load ThmFile
 
     thmClrDesktop = ClrDesktop
-    ThmClrDesktopText = ClrDesktopText
+    thmClrDesktopText = ClrDesktopText
     ThmClrWindow = ClrWindow
     ThmClrButton = ClrButton
     ThmClrTextbox = ClrTextbox
@@ -161,7 +167,7 @@ SUB Theme.Edit (BYVAL ThmFile AS STRING)
     DIM Key$
 UpdateEditPreview:
     ClrDesktop = thmClrDesktop
-    ClrDesktopText = ThmClrDesktopText
+    ClrDesktopText = thmClrDesktopText
     ClrWindow = ThmClrWindow
     ClrButton = ThmClrButton
     ClrTextbox = ThmClrTextbox
@@ -188,24 +194,89 @@ UpdateEditPreview:
     Font.Print "Preview link", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 4, ClrDesktopText, 1
     Font.Print "preview.exe", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 18, ClrDesktopText, 2
 
-    'DEBUG - color background of edit fields
+    Sys.LoadTheme
 
-    Theme.Load ClrThemeFile
-
-
+    
     DO
+        LOCATE 1, 1
+        PRINT STR$(Mouse.X) + "   "
+        PRINT STR$(Mouse.Y) + "   "
+
         Key$ = LCASE$(INKEY$)
 
         FOR I = 0 TO 15
-            IF Obj.BtnClick(btnColor(I)) THEN
-                Obj.DrawBtn btnColor(I), True
-                thmClrDesktop = I
-                GOTO UpdateEditPreview
+            IF Mouse.Clicked AND Mouse.InArea(btnColor(I).Pos) THEN
+                DO: LOOP WHILE Mouse.Clicked
+                IF Mouse.InArea(btnColor(I).Pos) THEN
+                    SELECT CASE SelectedObject
+                        CASE 1
+                            thmClrDesktop = I
+                        CASE 2
+                            thmClrDesktopText = I
+                        CASE 3
+                            ThmClrWindow = I
+                        CASE 4
+                            ThmClrWindowText = I
+                        CASE 5
+                            ThmClrButton = I
+                        CASE 6
+                            ThmClrTextbox = I
+                        CASE 7
+                            ThmClrTextboxText = I
+                        CASE 8
+                            ThmClr3DLight = I
+                        CASE 9
+                            ThmClr3DShadow = I
+                        CASE 10
+                            ThmClrTitleBar = I
+                        CASE 11
+                            ThmClrTitleBarText = I
+                        CASE 12
+                            ThmClrSelect = I
+                        CASE 13
+                            ThmClrSelectText = I
+                    END SELECT
+
+                    GOTO UpdateEditPreview
+                END IF
             END IF
         NEXT
 
+        IF Obj.BtnClick(btnObject) OR Key$ = "o" THEN
 
-        IF Obj.BtnClick(btnSaveAs) OR Key$ = CHR$(0) + "a" THEN
+            SelectedObject = Theme.SelectObject(SelectedObject)
+            SELECT CASE SelectedObject
+                CASE 1
+                    btnObject.Caption = "Desktop"
+                CASE 2
+                    btnObject.Caption = "Desktop text"
+                CASE 3
+                    btnObject.Caption = "Window"
+                CASE 4
+                    btnObject.Caption = "Window text"
+                CASE 5
+                    btnObject.Caption = "Button"
+                CASE 6
+                    btnObject.Caption = "Textbox"
+                CASE 7
+                    btnObject.Caption = "Textbox text"
+                CASE 8
+                    btnObject.Caption = "3D light"
+                CASE 9
+                    btnObject.Caption = "3D Shadow"
+                CASE 10
+                    btnObject.Caption = "Titlebar"
+                CASE 11
+                    btnObject.Caption = "Titlebar text"
+                CASE 12
+                    btnObject.Caption = "Selection"
+                CASE 13
+                    btnObject.Caption = "Selection text"
+            END SELECT
+            Obj.DrawBtn btnObject, False
+        END IF
+
+        IF Obj.BtnClick(btnSaveAs) OR Key$ = "a" THEN
 
             'DEBUG - ask for filename, check if file already exists, then save
 
@@ -219,7 +290,7 @@ UpdateEditPreview:
             'EXIT SUB
         END IF
 
-        IF Obj.BtnClick(btnExit) OR Key$ = "x" THEN
+        IF Obj.BtnClick(btnExit) OR Key$ = "x" OR Key$ = CHR$(27) THEN
 
             'DEBUG - check if saved
 
@@ -381,8 +452,8 @@ UpdatePreview:
     Mouse.Show
     Font.Print ThemeName$, winTheme.Pos.Left + 115, winTheme.Pos.Top + 32, POINT(178, 100), 2
     Font.Print ThemeAuthor$, winTheme.Pos.Left + 115, winTheme.Pos.Top + 47, POINT(178, 100), 2
-    Theme.Load ClrThemeFile
 
+    Sys.LoadTheme
 
     DO
         Key$ = LCASE$(INKEY$)
@@ -413,6 +484,103 @@ UpdatePreview:
         END IF
 
     LOOP
+
+END FUNCTION
+
+FUNCTION Theme.SelectObject (BYVAL CurrentSelection) AS INTEGER
+
+    DIM winSelectObject AS WindowType
+    DIM btnObject(1 TO 13) AS ButtonType
+    DIM Key$, I, ActiveSelection
+    
+    winSelectObject.Pos.Width = 224
+    winSelectObject.Pos.Height = 343
+    winSelectObject.Pos.Left = (640 - winSelectObject.Pos.Width) / 2
+    winSelectObject.Pos.Top = (480 - winSelectObject.Pos.Height) / 2
+    winSelectObject.Caption = "Select Object"
+
+    FOR I = 1 TO 13
+        Obj.SetSize btnObject(I).Pos, winSelectObject.Pos.Left + 12, winSelectObject.Pos.Top + (I * 23) + 10, 200, 22
+    NEXT
+    btnObject(1).Caption = "Desktop"
+    btnObject(2).Caption = "Desktop text"
+    btnObject(3).Caption = "Window"
+    btnObject(4).Caption = "Window text"
+    btnObject(5).Caption = "Button"
+    btnObject(6).Caption = "Textbox"
+    btnObject(7).Caption = "Textbox text"
+    btnObject(8).Caption = "3D light"
+    btnObject(9).Caption = "3D Shadow"
+    btnObject(10).Caption = "Titlebar"
+    btnObject(11).Caption = "Titlebar text"
+    btnObject(12).Caption = "Selection"
+    btnObject(13).Caption = "Selection text"
+
+    ActiveSelection = CurrentSelection
+
+    Sys.VGASave "THMOBJ"
+    Obj.DrawWin winSelectObject
+    FOR I = 1 TO 13
+        IF I = CurrentSelection THEN
+            Obj.DrawBtn btnObject(I), True
+        ELSE
+            Obj.DrawBtn btnObject(I), False
+        END IF
+    NEXT
+
+    DO
+
+        Key$ = LCASE$(INKEY$)
+        
+        IF Key$ = CHR$(13) THEN
+            Theme.SelectObject = ActiveSelection
+            Sys.VGALoad "THMOBJ"
+            EXIT FUNCTION
+        END IF
+
+        IF Key$ = CHR$(27) THEN
+            Theme.SelectObject = CurrentSelection
+            Sys.VGALoad "THMOBJ"
+            EXIT FUNCTION
+        END IF
+
+
+        IF Mouse.Clicked THEN
+            FOR I = 1 TO 13
+                IF Mouse.InArea(btnObject(I).Pos) THEN
+                    Obj.DrawBtn btnObject(I), True
+                    DO: LOOP WHILE Mouse.Clicked
+                    IF Mouse.InArea(btnObject(I).Pos) THEN
+                        Theme.SelectObject = I
+                        Sys.VGALoad "THMOBJ"
+                        EXIT FUNCTION
+                    ELSE
+                        IF NOT I = ActiveSelection THEN Obj.DrawBtn btnObject(I), False
+                    END IF
+                END IF
+            NEXT
+        END IF
+
+        IF Key$ = CHR$(0) + "h" THEN
+            IF ActiveSelection > 1 THEN
+                Obj.DrawBtn btnObject(ActiveSelection), False
+                ActiveSelection = ActiveSelection - 1
+                Obj.DrawBtn btnObject(ActiveSelection), True
+            END IF
+        END IF
+
+        IF Key$ = CHR$(0) + "p" THEN
+            IF ActiveSelection < 13 THEN
+                Obj.DrawBtn btnObject(ActiveSelection), False
+                ActiveSelection = ActiveSelection + 1
+                Obj.DrawBtn btnObject(ActiveSelection), True
+            END IF
+        END IF
+
+
+
+    LOOP
+
 
 END FUNCTION
 
