@@ -931,56 +931,72 @@ END SUB
 'Resets all desk icons, by recreating the array as default
 SUB Desk.LinkReset ()
 
-    REDIM DESKLINK(0 TO 6) AS DeskLinkType
+    REDIM DESKLINK(0 TO 7) AS DeskLinkType
 
     DESKLINK(0).Caption = "Tic Tac Toe"
     DESKLINK(0).Filename = "TICTAC.EXE"
     DESKLINK(0).Path = appEnviron + "\"
+    DESKLINK(0).Parameters = ""
     DESKLINK(0).ImageFile = "TICTAC"
     DESKLINK(0).Left = 15
-    DESKLINK(0).Top = 298
+    DESKLINK(0).Top = 253
 
     DESKLINK(1).Caption = "Text Viewer"
     DESKLINK(1).Filename = "TEXTVIEW.EXE"
     DESKLINK(1).Path = appEnviron + "\"
+    DESKLINK(1).Parameters = ""
     DESKLINK(1).ImageFile = "DOCUMENT"
     DESKLINK(1).Left = 15
-    DESKLINK(1).Top = 343
+    DESKLINK(1).Top = 298
 
     DESKLINK(2).Caption = "Calculator"
     DESKLINK(2).Filename = "CALC.EXE"
     DESKLINK(2).Path = appEnviron + "\"
+    DESKLINK(2).Parameters = ""
     DESKLINK(2).ImageFile = "CALC"
     DESKLINK(2).Left = 15
-    DESKLINK(2).Top = 388
+    DESKLINK(2).Top = 343
 
-    DESKLINK(3).Caption = "Icon Editor"
-    DESKLINK(3).Filename = "ICONEDIT.EXE"
+    DESKLINK(3).Caption = "Theme Editor"
+    DESKLINK(3).Filename = "THMEDIT.EXE"
     DESKLINK(3).Path = appEnviron + "\"
-    DESKLINK(3).ImageFile = "PAINT"
+    DESKLINK(3).Parameters = ""
+    DESKLINK(3).ImageFile = "THEMES"
     DESKLINK(3).Left = 15
-    DESKLINK(3).Top = 433
+    DESKLINK(3).Top = 388
 
-    DESKLINK(4).Caption = "DOS-prompt"
-    DESKLINK(4).Filename = "COMMAND.COM"
-    DESKLINK(4).ImageFile = "DOSPROG"
-    DESKLINK(4).PauseOnExit = True
-    DESKLINK(4).Left = 480
-    DESKLINK(4).Top = 45
+    DESKLINK(4).Caption = "Icon Editor"
+    DESKLINK(4).Filename = "ICONEDIT.EXE"
+    DESKLINK(4).Path = appEnviron + "\"
+    DESKLINK(4).Parameters = ""
+    DESKLINK(4).ImageFile = "PAINT"
+    DESKLINK(4).Left = 15
+    DESKLINK(4).Top = 433
 
-    DESKLINK(5).Caption = "What's new?"
-    DESKLINK(5).Filename = "DOCS\CHANGES.TXT"
-    DESKLINK(5).Path = appEnviron + "\"
-    DESKLINK(5).ImageFile = "NEWSPAPE"
+    DESKLINK(5).Caption = "DOS-prompt"
+    DESKLINK(5).Filename = "COMMAND.COM"
+    DESKLINK(5).Path = ""
+    DESKLINK(5).Parameters = ""
+    DESKLINK(5).ImageFile = "DOSPROG"
+    DESKLINK(5).PauseOnExit = True
     DESKLINK(5).Left = 480
-    DESKLINK(5).Top = 388
+    DESKLINK(5).Top = 45
 
-    DESKLINK(6).Caption = "User's guide"
-    DESKLINK(6).Filename = "DOCS\HELP.TXT"
+    DESKLINK(6).Caption = "What's new?"
+    DESKLINK(6).Filename = "DOCS\CHANGES.TXT"
     DESKLINK(6).Path = appEnviron + "\"
-    DESKLINK(6).ImageFile = "HELP"
+    DESKLINK(6).Parameters = ""
+    DESKLINK(6).ImageFile = "NEWSPAPE"
     DESKLINK(6).Left = 480
-    DESKLINK(6).Top = 433
+    DESKLINK(6).Top = 388
+
+    DESKLINK(7).Caption = "User's guide"
+    DESKLINK(7).Filename = "DOCS\HELP.TXT"
+    DESKLINK(7).Path = appEnviron + "\"
+    DESKLINK(7).Parameters = ""
+    DESKLINK(7).ImageFile = "HELP"
+    DESKLINK(7).Left = 480
+    DESKLINK(7).Top = 433
 
     Desk.LinkSave
 
