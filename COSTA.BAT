@@ -1,8 +1,8 @@
 @ECHO OFF
 
-REM The Costa Graphical Shell 1.3.0 - Made in 2004-2018 by Jacob Palm
+REM The Costa Graphical Shell 1.3.0 - Made in 2004-2020 by Jacob Palm
 
-SET DESKTOP=C:\Costa
+SET DESKTOP=C:\costa
 IF NOT EXIST %DESKTOP%\DESKTOP.EXE GOTO ExeNotFound
 %DESKTOP%\CTMOUSE.EXE >NUL
 %DESKTOP%\DESKTOP.EXE /BOOT
