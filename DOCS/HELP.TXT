@@ -212,10 +212,8 @@
    "Cancel" to discard you changes and return to the desktop without
    changing the theme.
     
-    For the more technical users, the theme files in DATA\THEMES can be
-   edited manually, and more can be added. Just open the files in EDIT or a
-   similar text editor. The format is pretty straight forward, and the color
-   values resemble those from Microsoft QBASIC.
+    If none of the default themes suit your taste, use the included theme
+   editor to make your own. User submitted teams are always welcome!
 
 
  ** 3.3 File associations **
