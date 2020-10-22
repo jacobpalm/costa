@@ -19,8 +19,8 @@ though - at last, Costa has a built-in theme editor!
    parameters, breaking some desktop links
   -More icons added - including one for everyones favorite game, MS-DOS
    Gorillas!
-  -Moved Configuration from a desktop link to a to button in top panel, to
-   free up screen real estate for user links
+  -Moved Configuration from a desktop link to a button in top panel, to free 
+   up screen real estate for user links
   -Minor bugfixes
   -Theme files (.thm) now associated with Theme Editor
 
