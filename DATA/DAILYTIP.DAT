@@ -5,7 +5,7 @@ If you don't have a mouse, use the TAB key to cycle between desktop links.|Use S
 To associate a file type with the built-in text viewer, simply associate|it with COSTA120.EXE (without any path).||Use the configuration program to manage file type associations.
 To draw a transparent pixel in the icon editor, you don't have to choose|the transparent color from the palette.||Simply right-click the pixel to make it transparent.
 Want to see how your icon in the icon editor looks on different|background colors?||To do so, simply click the preview of it - or press P on the keyboard.
-If your are missing some of the default links on the desktop, or your desktop|links have somehow become corrupt, you can reset the links by deleting|DATA\CONFIG\DESKLINK.DAT.||Costa will then recreate it with the default links.
+If your are missing some of the default links on the desktop, or your desktop|links have somehow become corrupted, you can reset the links by deleting|DATA\CONFIG\DESKLINK.DAT.||Costa will then recreate it with the default links.
 If you don't like the default behavior of desktop links, where|a menu is shown on both left- and right-click, you can use|the built-in configuration editor to change this.
 You can change the colors of the interface using the built-in|configuration dialog.||Costa comes with many themes to choose from!
 Can't find a theme to suite your linking? Make your own!|Costa comes with a theme editor, which allows you to get creative.||If you make a good theme, why not submit it at costa.jacobpalm.dk?
