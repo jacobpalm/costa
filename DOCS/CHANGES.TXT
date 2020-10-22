@@ -1,10 +1,28 @@
 
                          The Costa Graphical Shell
-                               Version 1.2.0
+                               Version 1.3.0
                                By Jacob Palm                   
 
                                  Changelog
 
+
+*1.3.0*
+Most of the stuff in this release takes place behind the scenes, where a
+bunch of minor bugs, typos etc. has been fixed. There is one major addition
+though - at last, Costa has a built-in theme editor!
+  -New theme editor - allowing you to edit any theme, and modify the colors
+   to your liking. User submitted themes are welcome!
+  -Moved accessories out of desktop, and into separate programs, for easier
+   development and modularity
+  -Fixed bug introduced in 1.2.0, where the procedure responsible for running
+   external programs did not put a space between the command/filename and the
+   parameters, breaking some desktop links
+  -More icons added - including one for everyones favorite game, MS-DOS
+   Gorillas!
+  -Moved Configuration from a desktop link to a button in top panel, to free 
+   up screen real estate for user links
+  -Minor bugfixes
+  -Theme files (.thm) now associated with Theme Editor
 
 *1.2.0*
 This version brings back a feature from the past - the multi-user support

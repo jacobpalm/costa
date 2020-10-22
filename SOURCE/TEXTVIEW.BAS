@@ -1,3 +1,4 @@
+DECLARE SUB TView.Main (FileToView AS STRING)
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -7,6 +8,14 @@ DECLARE SUB TView.DrawText (StartLine%)
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
 COMMON SHARED FileData() AS STRING
+
+Sys.Load
+
+IF NOT INSTR(COMMAND$, "/DEV") THEN
+    TView.Main COMMAND$
+ELSE
+    TView.Main ""
+END IF
 
 ' =========================================================================
 '          NAME: TView.DrawText()
