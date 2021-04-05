@@ -23,7 +23,7 @@ title: Development blog
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2">
                     <h4>{{ post.title }}</h4>
-                    <p>{% assign day = post.date | date: "%-d"  %}
+                    <p>Posted on the {% assign day = post.date | date: "%-d"  %}
                         {% case day %}
                           {% when '1' or '21' or '31' %}{{ day }}st
                           {% when '2' or '22' %}{{ day }}nd
@@ -32,7 +32,8 @@ title: Development blog
                         {% endcase %}
                         {{ post.date | date: "of %B, %Y" }}</p>
                         <a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.img}}"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.img}}" alt="Screenshot" style="float:right; width: 320px; height: 240px; padding: 0px 0px 20px 20px;"></a>
-                        {{ post.content }}
+                        {{ post.excerpt }}
+                        <p><a href="{{ post.url }}">Read more...</a></p>
                 </div>
             </div>
         </div>
