@@ -1,8 +1,8 @@
 ---
 layout: post
 title:  "Still going - though not at fast rate"
+img: 2009-04-23.png
 ---
-
 Wow, it's definitely been a while since I last updated! This is due to an extremely busy personal life. On September 1st, 2008 I started my military career in the Royal Danish Navy. 8 months later I'm still working hard on my military education, which I will finish this summer. Once I'm done with my education I will start working on the radio station onboard one of the ships of the danish navy. Exciting!
 
 But even though my job in the navy has taken a whole lot of my spare time, I've been able to work a little on Costa every now and then on weekends. Since my last post 9 months ago, I've ironed out quite a few bug and rewritten a lot of code. Visually the interface looks the same, but all executables have been reduced in size and improved in performance. Good stuff!

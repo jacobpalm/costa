@@ -1,6 +1,9 @@
-The desktop is complete! by Jacob Palm on August 20th, 2008
-
-Click to enlarge I've finished the "Customize desktop link" dialog, and I've also added a run dialog to the desktop. I've also tested the desktop for bugs, and so far I haven't found any. I've learned from my mistakes in the past and have taken a lot of measures to avoid a crash if an error should occur. Every single computer program properly has bugs in it, but I haven't found anything so far. I'll release a test version before version 1.0 to make sure anybody else doesn't come across a bug.
+---
+layout: post
+title:  "The desktop is complete!"
+img: 2008-08-20.png
+---
+I've finished the "Customize desktop link" dialog, and I've also added a run dialog to the desktop. I've also tested the desktop for bugs, and so far I haven't found any. I've learned from my mistakes in the past and have taken a lot of measures to avoid a crash if an error should occur. Every single computer program properly has bugs in it, but I haven't found anything so far. I'll release a test version before version 1.0 to make sure anybody else doesn't come across a bug.
 
 It took me less than seven days to make the desktop, thanks to my GUI toolkit which really simplified making buttons, dialogs and other UI releated parts of the desktop.
 

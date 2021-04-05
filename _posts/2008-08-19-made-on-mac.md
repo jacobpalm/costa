@@ -1,6 +1,9 @@
-Made on Mac OS X by Jacob Palm on August 19th, 2008
-
-Click to enlarge I made a lot of progress on the desktop today. Once I've finished the "Customize desktop link" dialog (which is basically the same as "Shortcut Properties" in Windows) the desktop will be completed. Once I'm done with it, I'll start work on one of the accessories.
+---
+layout: post
+title:  "Made on Mac OS X"
+img: 2008-08-19.png
+---
+I made a lot of progress on the desktop today. Once I've finished the "Customize desktop link" dialog (which is basically the same as "Shortcut Properties" in Windows) the desktop will be completed. Once I'm done with it, I'll start work on one of the accessories.
 
 In the past I've kept Costa's source for myself, and I haven't shared much information on how I develop the GUI. One of the goals of this blog is to share more information about the development, and every now and then I will try to give an insight into the source code. At one point I will release the source code, but not before I'm done with version 1.0. I made that promise a long, long time ago - and I'm going to keep it.
 

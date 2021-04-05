@@ -31,6 +31,7 @@ title: Development blog
                           {% else %}{{ day }}th
                         {% endcase %}
                         {{ post.date | date: "of %B, %Y" }}</p>
+                        <img src="{{"/assets/img/blog" | prepend: site.baseurl | append : post.img}}" alt="Click to enlarge" style="float:right; width: 160; height: 160;">
                         {{ post.content }}
                 </div>
             </div>

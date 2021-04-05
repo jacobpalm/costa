@@ -1,6 +1,9 @@
-Site online again by Jacob Palm on August 18th, 2008
-
-Click to enlarge I've had a long break from programming. Almost a year, in fact. But in the past three weeks I've been trying out several new design ideas for Costa. And I'm not just talking about the design of the interface - I'm talking about the underlying design, about how everything should work. I've come to a conclusion.
+---
+layout: post
+title:  "Site online again"
+img: 2008-08-18.png
+---
+I've had a long break from programming. Almost a year, in fact. But in the past three weeks I've been trying out several new design ideas for Costa. And I'm not just talking about the design of the interface - I'm talking about the underlying design, about how everything should work. I've come to a conclusion.
 
 Although Costa has been in development for several years, version 1.0 still hasn't been released. Back in the good ol' days, I used to release a new version frequently. But ever since I switched to from single-tasking and hard coded programs to a single, task-swapping and scripting based program development has slowed down. This is all because of one thing: As every program for Costa was to be written in Costa's own scripting language, I had to define and code a parser for that scripting language first. This proved to be a huge task, and all my time went into the scripting language.
 

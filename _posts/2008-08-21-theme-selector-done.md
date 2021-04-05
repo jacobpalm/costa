@@ -1,6 +1,9 @@
-Theme selector done by Jacob Palm on August 21st, 2008
-
-Click to enlarge I spent today working on the theme selector. It's as good as done now, and I think it turned out pretty well. Unlike the previous versions of Costa you don't have to type the filename of the theme. Now you can browse the themes - with previews of each theme - and choose the one you like. The changes will take effect immediately. In fact, all changes you make to configuration files will take effect right away.
+---
+layout: post
+title:  "Theme selector done"
+img: 2008-08-21.png
+---
+I spent today working on the theme selector. It's as good as done now, and I think it turned out pretty well. Unlike the previous versions of Costa you don't have to type the filename of the theme. Now you can browse the themes - with previews of each theme - and choose the one you like. The changes will take effect immediately. In fact, all changes you make to configuration files will take effect right away.
 
 Since I'm hoping to get user submitted themes all theme files contain theme name and author, which is shown in the theme selector. I'll also convert some of the themes people submitted for Costa 0.9.1.
 
