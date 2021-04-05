@@ -1,0 +1,39 @@
+---
+layout: default
+title: Development blog
+---
+<div class="grey">
+	<div class="container">
+		<div class="row">
+			<div class="col-lg-8 col-lg-offset-2 centered">
+				<h1>Development Blog</h1>
+				<p>At this blog you will be able to follow the development of Costa.
+                    Every now and then I will post about the current status of the project, and talk a little about future goals.</p>
+				<p>Every post in the blog is accompanied by a screenshot showing off some of the new things in Costa.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% for post in site.posts %}
+    <div class="white">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2">
+                    <h4>{{ post.title }}</h4>
+                    <p>{% assign day = post.date | date: "%-d"  %}
+                        {% case day %}
+                          {% when '1' or '21' or '31' %}{{ day }}st
+                          {% when '2' or '22' %}{{ day }}nd
+                          {% when '3' or '23' %}{{ day }}rd
+                          {% else %}{{ day }}th
+                        {% endcase %}
+                        {{ post.date | date: "of %B, %Y" }}</p>
+                        {{ post.content }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
