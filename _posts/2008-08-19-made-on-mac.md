@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Made on Mac OS X"
-img: 2008-08-19.png
+img: 2008-08-19.jpg
 ---
 I made a lot of progress on the desktop today. Once I've finished the "Customize desktop link" dialog (which is basically the same as "Shortcut Properties" in Windows) the desktop will be completed. Once I'm done with it, I'll start work on one of the accessories.
 
