@@ -18,7 +18,7 @@ title: Development blog
 
 
 {% for post in site.posts %}
-    <div class="white">
+    <div class="{% cycle 'white', 'grey' %}">
         <div class="container">
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2">
@@ -31,7 +31,7 @@ title: Development blog
                           {% else %}{{ day }}th
                         {% endcase %}
                         {{ post.date | date: "of %B, %Y" }}</p>
-                        <img src="{{"/assets/img/blog" | prepend: site.baseurl | append : post.img}}" alt="Click to enlarge" style="float:right; width: 160; height: 160;">
+                        <a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.img}}"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.img}}" alt="Screenshot" style="float:right; width: 320px; height: 240px; padding: 0px 0px 20px 20px;"></a>
                         {{ post.content }}
                 </div>
             </div>
