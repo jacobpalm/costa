@@ -5,11 +5,11 @@ layout: default
     <div class="container">
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2">
-                <h4>{{ page.heading }}</h4>
+                <h4>{{ page.title }}</h4>
                 <p><a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.img}}"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.img}}" alt="Screenshot" style="float:right; width: 320px; height: 240px; padding: 0px 0px 20px 20px;"></a></p>
                 {{ content | markdownify }}
                 <hr>
-                <p><a href="{{ site.baseURL }}/{{ page.origin }}">Back</a></p>
+                <p><a href="{{ site.baseURL }}/blog.html">Back</a></p>
             </div>
         </div>
     </div>

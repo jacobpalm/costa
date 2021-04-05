@@ -32,11 +32,11 @@ title: Development blog
                         {% endcase %}
                         {{ post.date | date: "of %B, %Y" }}</p>
                         <div class="col-8">
-                            <a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.img}}"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.img}}" alt="Screenshot" style="float:right; width: 320px; height: 240px; padding: 0px 0px 20px 20px;"></a>
-                        </div>
-                        <div class="col-4">
                             {{ post.excerpt }}
-                            <p><a href="{{ post.url | prepend: site.baseurl }}">Read more...</a></p>
+                            <p><a href="{{post.url | prepend: site.baseurl}}">Read more...</a></p>
+                        </div>
+                        <div class="col-8"></div>
+                            <a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.img}}"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.img}}" alt="Screenshot"></a>
                         </div>
                 </div>
             </div>
