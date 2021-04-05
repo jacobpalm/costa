@@ -6,6 +6,7 @@ layout: default
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2">
                 <h4>{{ page.title }}</h4>
+                <p>{{ page.date }}</p>
                 <p><a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.img}}"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.img}}" alt="Screenshot" style="width: 100%"></a></p>
                 {{ content | markdownify }}
                 <hr>
