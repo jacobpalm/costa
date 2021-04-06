@@ -7,4 +7,4 @@ After a 2&frac12; year hiatus, I have once again pulled the source code for Cost
 
 With this new theme editor, users can now customize any color of the interface - either by modifying existing themes, or making their own. User submissions are welcome!
 
-Full details about this and previous releases are available in the [archive]({{ site.baseURL }}/archive.html).
+Full details about this and previous releases are available in the [archive]({{ site.baseURL }}/archive.html#version130).
