@@ -11,7 +11,7 @@ title: Development blog
                 Visit GitHub to see the source code, and to pull a copy for your own use.
                 <p>
                     <a class="btn btn-default" href="https://github.com/jacobpalm/costa/" role="button">
-                        <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span> Get source code
+                        <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span>&nbsp;Get source code
                     </a>
                 </p>
                 <p>At this blog you will be able to follow the development of Costa. Every now and then I will post about the current status of the project, and talk a little about future goals.</p>
@@ -35,16 +35,22 @@ title: Development blog
                           {% when '3' or '23' %}{{ day }}rd
                           {% else %}{{ day }}th
                         {% endcase %}
-                        {{ post.date | date: "of %B, %Y" }}</p>
-                        <div class="col-xs-8" style="padding-left: 0px;">
-                            <a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.img}}" class="thumbnail visible-xs"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.img}}" alt="Screenshot"></a>
-                            {{ post.excerpt }}
-                            <p><a href="{{post.url | prepend: site.baseurl}}">Read more...</a></p>
-                        </div>
-                        <div class="col-xs-4 hidden-xs" style="padding-right: 0px;">
-                            <a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.img}}" class="thumbnail"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.img}}" alt="Screenshot"></a>
-                        </div>
+                        {{ post.date | date: "of %B, %Y" }}
+                    </p>
                 </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2">
+                    <div class="col-xs-8" style="padding-left: 0px;">
+                        <a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.img}}" class="thumbnail visible-xs"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.img}}" alt="Screenshot"></a>
+                        {{ post.excerpt }}
+                        <p><a href="{{post.url | prepend: site.baseurl}}">Read more...</a></p>
+                    </div>
+                    <div class="col-xs-4 hidden-xs" style="padding-right: 0px;">
+                        <a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.img}}" class="thumbnail"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.img}}" alt="Screenshot"></a>
+                    </div>
+                </div>div>
+                
             </div>
         </div>
     </div>
