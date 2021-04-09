@@ -1,4 +1,5 @@
 name: The Costa Graphical User Interface
+description: Costa is a small and lightweight GUI (Graphical User Interface) for MS-DOS compatible systems, provided to you free of charge.
 author: Jacob Palm
 markdown: kramdown
 baseURL: https://costa.jacobpalm.dk
