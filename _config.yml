@@ -1,3 +1,6 @@
 name: The Costa Graphical User Interface
 markdown: kramdown
 baseURL: https://costa.jacobpalm.dk
+
+plugins:
+  - jekyll-feed
