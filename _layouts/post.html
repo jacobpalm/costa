@@ -14,8 +14,8 @@ layout: default
                       {% else %}{{ day }}th
                     {% endcase %}
                     {{ page.date | date: "of %B, %Y" }}</p>
-                {% if page.img %}
-                <p><a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.img}}"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.img}}" alt="Screenshot" style="width: 100%"></a></p>
+                {% if page.image %}
+                <p><a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.image}}"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.image}}" alt="Screenshot" style="width: 100%"></a></p>
                 {% else %}
                 {% endif %}
                 {{ content | markdownify }}

@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Theme selector done"
-img: 2008-08-21.png
+image: 2008-08-21.png
 excerpt_separator: <!--more-->
 ---
 I spent today working on the theme selector. It's as good as done now, and I think it turned out pretty well. Unlike the previous versions of Costa you don't have to type the filename of the theme. Now you can browse the themes - with previews of each theme - and choose the one you like. The changes will take effect immediately. In fact, all changes you make to configuration files will take effect right away.

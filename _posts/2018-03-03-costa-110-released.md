@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "New release of Costa - version 1.1.0"
-img: 2018-03-03.png
+image: 2018-03-03.png
 excerpt_separator: <!--more-->
 ---
 Yesterday I released a new version of my long-time hobby coding project, Costa.

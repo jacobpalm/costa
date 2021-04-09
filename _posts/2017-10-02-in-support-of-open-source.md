@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "In support of Open Source"
-img: 2017-10-02.png
+image: 2017-10-02.png
 excerpt_separator: <!--more-->
 ---
 Over the past couple of years I have been using Open Source software increasingly. More and more of the applications I use everyday have been replaced by open source alternatives, and I now only have a handful of proprietary software left. Even my operating system has been replaced by Ubuntu Gnome.

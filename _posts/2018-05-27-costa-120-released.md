@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "New release of Costa - version 1.2.0"
-img: 2018-05-27.png
+image: 2018-05-27.png
 ---
 Once again I have released a new version Costa, version 1.2.0.
 

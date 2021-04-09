@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Site online again"
-img: 2008-08-18.png
+image: 2008-08-18.png
 ---
 I've had a long break from programming. Almost a year, in fact. But in the past three weeks I've been trying out several new design ideas for Costa. And I'm not just talking about the design of the interface - I'm talking about the underlying design, about how everything should work. I've come to a conclusion.
 

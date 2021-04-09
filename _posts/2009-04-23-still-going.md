@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Still going - though not at fast rate"
-img: 2009-04-23.png
+image: 2009-04-23.png
 excerpt_separator: <!--more-->
 ---
 Wow, it's definitely been a while since I last updated! Even though my career in the navy has taken a whole lot of my spare time, I've been able to work a little on Costa every now and then on weekends. Since my last post I've ironed out quite a few bugs and rewritten a lot of code. Visually the interface looks the same, but all executables have been reduced in size and improved in performance. Good stuff!
