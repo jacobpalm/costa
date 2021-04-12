@@ -1,3 +1,6 @@
+DECLARE SUB IconEdit.FillNeighbours (BYVAL StartX%, BYVAL StartY%, DrawColor%, ReplaceColor%)
+
+DECLARE SUB IconEdit.FillArea (FillX%, FillY%, FillColor%)
 DEFINT A-Z
 OPTION EXPLICIT
 
@@ -24,6 +27,78 @@ END IF
 Sys.Load
 
 IconEdit.Main
+
+SUB IconEdit.FillArea (StartX, StartY, FillColor)
+
+    DIM CheckX, CheckY, ReplaceColor
+    DIM SubX, SubY
+    ReplaceColor = IconData.Pixel(StartX, StartY)
+    
+    CheckY = StartY
+    FOR CheckX = StartX TO 0 STEP -1
+        IF IconData.Pixel(CheckX, CheckY) = ReplaceColor THEN
+            IconData.Pixel(CheckX, CheckY) = FillColor
+        ELSE
+            EXIT FOR
+        END IF
+
+        IF StartY > 0 THEN
+            FOR CheckY = StartY - 1 TO 0 STEP -1
+                IF IconData.Pixel(CheckX, CheckY) = ReplaceColor THEN
+                    IconData.Pixel(CheckX, CheckY) = FillColor
+                ELSE
+                    EXIT FOR
+                END IF
+            NEXT
+            CheckY = StartY
+        END IF
+        IF StartY < 31 THEN
+            FOR CheckY = StartY + 1 TO 31
+                IF IconData.Pixel(CheckX, CheckY) = ReplaceColor THEN
+                    IconData.Pixel(CheckX, CheckY) = FillColor
+                ELSE
+                    EXIT FOR
+                END IF
+            NEXT
+            CheckY = StartY
+        END IF
+    NEXT
+
+    CheckY = StartY
+    IF StartX < 31 THEN
+        FOR CheckX = StartX + 1 TO 31
+            IF IconData.Pixel(CheckX, CheckY) = ReplaceColor THEN
+                IconData.Pixel(CheckX, CheckY) = FillColor
+            ELSE
+                EXIT FOR
+            END IF
+
+            IF StartY > 0 THEN
+                FOR CheckY = StartY - 1 TO 0 STEP -1
+                    IF IconData.Pixel(CheckX, CheckY) = ReplaceColor THEN
+                        IconData.Pixel(CheckX, CheckY) = FillColor
+                    ELSE
+                        EXIT FOR
+                    END IF
+                NEXT
+                CheckY = StartY
+            END IF
+            IF StartY < 31 THEN
+                FOR CheckY = StartY + 1 TO 31
+                    IF IconData.Pixel(CheckX, CheckY) = ReplaceColor THEN
+                        IconData.Pixel(CheckX, CheckY) = FillColor
+                    ELSE
+                        EXIT FOR
+                    END IF
+                NEXT
+                CheckY = StartY
+            END IF
+
+        NEXT
+    END IF
+
+
+END SUB
 
 FUNCTION IconEdit.LoadIcon ()
     DIM LoadFile AS STRING, FileHandle
@@ -158,7 +233,7 @@ SUB IconEdit.Main ()
     DIM txtColor(-1 TO 15) AS TextboxType
 
     DIM Key$, YPos, XPos, CursorX, CursorY, DrawColor, TransClick
-    DIM IconChanged, ColChk
+    DIM IconChanged, ColChk, FillColor, FillX, FillY
 
     Obj.SetSize winMain.Pos, 48, 11, 544, 458
     Obj.SetSize txtDrawArea.Pos, winMain.Pos.Left + 8, winMain.Pos.Top + 31, 418, 418
@@ -233,22 +308,39 @@ StartOfMain:
     Font.Print "Preview", btnPreview.Pos.Left, btnPreview.Pos.Top - 15, clrWindowText, FontHeading
     LINE (btnPreview.Pos.Left - 1, btnPreview.Pos.Top - 4)-(btnPreview.Pos.Left + 5, btnPreview.Pos.Top - 4), clrWindowText
     
+    IF LEN(IconFileName) THEN
+        DIM Header AS STRING * 9
+        DIM FileHandle, Loaded
+        FileHandle = FREEFILE
+        OPEN Sys.Path + "DATA\IMAGES\" + IconFileName + ".BIF" FOR BINARY AS #FileHandle
 
-    FOR XPos = 0 TO 31
-        FOR YPos = 0 TO 31
-            IF IconFileName = "" THEN
-                Font.Print "T", txtDrawArea.Pos.Left + (XPos * 13) + 5, txtDrawArea.Pos.Top + (YPos * 13) + 4, 0, FontHeading
-                IconData.Pixel(XPos, YPos) = -1
+        IF LOF(FileHandle) = 2057 THEN
+            GET #FileHandle, , Header
+            IF Header = "JACOBPALM" THEN
+                GET #FileHandle, , IconData
+                CLOSE #FileHandle
+                Loaded = True
             ELSE
-                IF IconData.Pixel(XPos, YPos) > -1 THEN
-                    LINE (txtDrawArea.Pos.Left + 2 + (XPos * 13), txtDrawArea.Pos.Top + 2 + (YPos * 13))-(txtDrawArea.Pos.Left + 2 + (XPos * 13) + 11, txtDrawArea.Pos.Top + 2 + (YPos * 13) + 11), IconData.Pixel(XPos, YPos), BF
-                    PSET (btnPreview.Pos.Left + 10 + XPos, btnPreview.Pos.Top + 10 + YPos), IconData.Pixel(XPos, YPos)
-                ELSE
-                    Font.Print "T", txtDrawArea.Pos.Left + (XPos * 13) + 5, txtDrawArea.Pos.Top + (YPos * 13) + 4, 0, FontHeading
-                END IF
+                CLOSE #FileHandle
             END IF
+        END IF
+
+        IF NOT Loaded THEN
+            Mouse.Show
+            FileHandle = Sys.MsgBox("Invalid image file", "The icon you selected does not contain a valid icon. The" + CHR$(13) + "file might be damaged, or not an icon file at all.", msgError)
+            Mouse.Hide
+            IconFileName = ""
+        END IF
+    END IF
+
+    IF IconFileName = "" THEN
+        FOR XPos = 0 TO 31
+            FOR YPos = 0 TO 31
+                IconData.Pixel(XPos, YPos) = -1
+            NEXT
         NEXT
-    NEXT
+    END IF
+    GOSUB RedrawEditor
     LINE (txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 38, txtDrawArea.Pos.Top + 155)-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 71, txtDrawArea.Pos.Top + 169), 15, BF
     Mouse.Show
                                                                                                                              
@@ -370,7 +462,7 @@ StartOfMain:
                     Mouse.Show
                     GOSUB UpdatePreview
                 END IF
-            ELSEIF Mouse.Clicked = mbRight THEN
+            ELSEIF Mouse.Clicked = mbBoth THEN
                 IF NOT IconData.Pixel(CursorX, CursorY) = -1 THEN
                     IconChanged = True
                     TransClick = True
@@ -381,8 +473,17 @@ StartOfMain:
                     Font.Print "T", XPos + 3, YPos + 2, 0, FontHeading
                     GOSUB UpdatePreview
                 END IF
-            END IF
+            ELSEIF Mouse.Clicked = mbRight THEN
 
+                IF NOT IconData.Pixel(CursorX, CursorY) = DrawColor THEN
+                    IconEdit.FillArea CursorX, CursorY, DrawColor
+                    IconChanged = True
+                    GOSUB RedrawEditor
+                END IF
+
+                DO: LOOP WHILE Mouse.Clicked
+
+            END IF
 
         END IF
         
@@ -400,6 +501,20 @@ UpdatePreview:
     Mouse.Show
     RETURN
 
+RedrawEditor:
+    Mouse.Hide
+    FOR XPos = 0 TO 31
+        FOR YPos = 0 TO 31
+            IF IconData.Pixel(XPos, YPos) > -1 THEN
+                LINE (txtDrawArea.Pos.Left + 2 + (XPos * 13), txtDrawArea.Pos.Top + 2 + (YPos * 13))-(txtDrawArea.Pos.Left + 2 + (XPos * 13) + 11, txtDrawArea.Pos.Top + 2 + (YPos * 13) + 11), IconData.Pixel(XPos, YPos), BF
+                PSET (btnPreview.Pos.Left + 10 + XPos, btnPreview.Pos.Top + 10 + YPos), IconData.Pixel(XPos, YPos)
+            ELSE
+                Font.Print "T", txtDrawArea.Pos.Left + (XPos * 13) + 5, txtDrawArea.Pos.Top + (YPos * 13) + 4, 0, FontHeading
+            END IF
+        NEXT
+    NEXT
+    Mouse.Show
+    RETURN
 END SUB
 
 SUB IconEdit.Preview ()
