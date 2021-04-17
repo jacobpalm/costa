@@ -105,11 +105,9 @@ SUB File.CfgWrite (BYVAL CfgFile AS STRING, Setting AS STRING, Value AS STRING)
 		RenCfgFile = RIGHT$(RenCfgFile, LEN(RenCfgFile) - INSTR(RenCfgFile, "\"))
 	LOOP
 
-	PRINT "ren"
 	SHELL "ren " + Sys.Path + LEFT$(CfgFile, LEN(CfgFile) - 3) + "TMP " + RenCfgFile
-	PRINT "chdir " + LEFT$(Sys.Path, LEN(Sys.Path) - 1)
-	SHELL "chdir " + LEFT$(Sys.Path, LEN(Sys.Path) - 1)
-	PRINT
+	CHDIR LEFT$(Sys.Path, LEN(Sys.Path) - 1)
+
 	ON LOCAL ERROR GOTO 0
 	
 END SUB
