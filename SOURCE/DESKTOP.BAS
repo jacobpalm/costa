@@ -1142,7 +1142,7 @@ Desk.MainTop:
         ELSE
             showTip = Sys.MsgBox("Could not read daily tips", "Could not read daily tips from " + Sys.Path + "DATA\DAILYTIPS.DAT." + CHR$(13) + "Make sure this file exists, and isn't corrupted.", msgError)
         END IF
-
+        PRINT "DATA\CONFIG\" + ProfileID + "\PROFILE.CFG"
         Mouse.Hide
         File.CfgWrite "DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "TipLastShown", STR$(DAY(NOW)) + STR$(MONTH(NOW))
     END IF

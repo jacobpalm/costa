@@ -105,8 +105,11 @@ SUB File.CfgWrite (BYVAL CfgFile AS STRING, Setting AS STRING, Value AS STRING)
 		RenCfgFile = RIGHT$(RenCfgFile, LEN(RenCfgFile) - INSTR(RenCfgFile, "\"))
 	LOOP
 
+	PRINT "ren"
 	SHELL "ren " + Sys.Path + LEFT$(CfgFile, LEN(CfgFile) - 3) + "TMP " + RenCfgFile
-	SHELL "chdir " + Sys.Path
+	PRINT "chdir " + LEFT$(Sys.Path, LEN(Sys.Path) - 1)
+	SHELL "chdir " + LEFT$(Sys.Path, LEN(Sys.Path) - 1)
+	PRINT
 	ON LOCAL ERROR GOTO 0
 	
 END SUB
@@ -1270,7 +1273,7 @@ FUNCTION Sys.Path () AS STRING
 
 	DIM SysPath AS STRING
 
-	SysPath = ENVIRON$(appExeName)
+	SysPath = ENVIRON$(appEnviron)
 
 	IF LEN(SysPath) > 0 THEN
 		IF NOT RIGHT$(SysPath, 1) = "\" THEN SysPath = SysPath + "\"
