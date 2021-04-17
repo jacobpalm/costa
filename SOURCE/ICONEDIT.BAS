@@ -270,6 +270,41 @@ SUB IconEdit.Main ()
     
     DrawColor = 0
 
+
+    IF LEN(IconFileName) THEN
+
+        IF File.Exists(Sys.Path + "DATA\IMAGES\" + IconFileName + ".BIF") THEN
+            DIM Header AS STRING * 9
+            DIM FileHandle, Loaded
+            FileHandle = FREEFILE
+            OPEN Sys.Path + "DATA\IMAGES\" + IconFileName + ".BIF" FOR BINARY AS #FileHandle
+
+            IF LOF(FileHandle) = 2057 THEN
+                GET #FileHandle, , Header
+                IF Header = "JACOBPALM" THEN
+                    GET #FileHandle, , IconData
+                    CLOSE #FileHandle
+                    Loaded = True
+                ELSE
+                    CLOSE #FileHandle
+                END IF
+            END IF
+
+            IF NOT Loaded THEN
+                Mouse.Show
+                FileHandle = Sys.MsgBox("Invalid icon file", "The icon you selected does not contain a valid icon. The" + CHR$(13) + "file might be damaged, or not an icon file at all.", msgError)
+                Mouse.Hide
+                IconFileName = ""
+            END IF
+        ELSE
+            Mouse.Show
+            FileHandle = Sys.MsgBox("File not found", "Could not open the specified icon." + CHR$(13) + "Verify the filename and try again.", msgError)
+            Mouse.Hide
+            IconFileName = ""
+        END IF
+    END IF
+
+
 StartOfMain:
 
     CursorX = 0
@@ -317,31 +352,6 @@ StartOfMain:
     Font.Print "Preview", btnPreview.Pos.Left, btnPreview.Pos.Top - 15, clrWindowText, FontHeading
     LINE (btnPreview.Pos.Left - 1, btnPreview.Pos.Top - 4)-(btnPreview.Pos.Left + 5, btnPreview.Pos.Top - 4), clrWindowText
     
-    IF LEN(IconFileName) THEN
-        DIM Header AS STRING * 9
-        DIM FileHandle, Loaded
-        FileHandle = FREEFILE
-        OPEN Sys.Path + "DATA\IMAGES\" + IconFileName + ".BIF" FOR BINARY AS #FileHandle
-
-        IF LOF(FileHandle) = 2057 THEN
-            GET #FileHandle, , Header
-            IF Header = "JACOBPALM" THEN
-                GET #FileHandle, , IconData
-                CLOSE #FileHandle
-                Loaded = True
-            ELSE
-                CLOSE #FileHandle
-            END IF
-        END IF
-
-        IF NOT Loaded THEN
-            Mouse.Show
-            FileHandle = Sys.MsgBox("Invalid image file", "The icon you selected does not contain a valid icon. The" + CHR$(13) + "file might be damaged, or not an icon file at all.", msgError)
-            Mouse.Hide
-            IconFileName = ""
-        END IF
-    END IF
-
     IF IconFileName = "" THEN
         FOR XPos = 0 TO 31
             FOR YPos = 0 TO 31
