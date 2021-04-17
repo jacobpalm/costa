@@ -1,6 +1,6 @@
 
                          The Costa Graphical Shell
-                               Version 1.3.0
+                               Version 1.4.0
                                By Jacob Palm                   
 
                                  Changelog
@@ -11,8 +11,10 @@ Yet to be written.
   -Fill functionality ("paint bucket") for Icon Editor - right click any area
    to fill out that area with the current color. Makes for much easier
    editing!
-  -Several minor bug fixes - running Costaon a Windows machine produced
-   bugs not present in DOSBox. These have been corrected.
+  -Several minor bug fixes - running Costa on a Windows machine produced
+   bugs not present in DOSBox. These have been corrected. CuteMouse driver
+   replaced with Microsofts mouse.com, since the former produced errors on
+   some Windows machines.
 
 *1.3.0*
 Most of the stuff in this release takes place behind the scenes, where a
