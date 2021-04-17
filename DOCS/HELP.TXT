@@ -1,6 +1,6 @@
 
                           The Costa Graphical Shell
-                                Version 1.3.0
+                                Version 1.4.0
                                 By Jacob Palm                   
 
                           User's guide and reference 
@@ -125,7 +125,10 @@
 
      COSTA.BAT
     
-    This will bring you to Costa's desktop.
+    This will bring you to Costa's desktop. The first time you run Costa, you
+   may be greeted by a message telling you to run SETUP.EXE in order to set
+   up the path to Costas data. If so, simply launch the program as instructed
+   and input the path to the directory in which you placed Costa.
 
 
  ** 2.2 - Exiting Costa **
@@ -193,6 +196,7 @@
 | 3.0 - Customizing Costa                                                    |
 ------------------------------------------------------------------------------
  ** 3.1 Launching the Configuration program **
+
     On the desktop you will find a built-in shortcut named "Configuration".
    This shortcut can be moved like any other shortcut, but cannot be removed
    or customized. Clicking it will open the Configuration program, which
@@ -222,9 +226,13 @@
    program automatically. For instance, if .TXT files are associated with
    EDIT.COM and you try to open README.TXT, Costa will launch EDIT.COM and
    tell it to open README.TXT for you. This way, instead of writing
+
      C:\DOS\EDIT.COM C:\EXAMPLE\README.TXT
+
    you can just write
+
      C:\EXAMPLE\README.TXT
+
    with the exact same result.
 
     To edit file associations, Costa includes a small editor. Launch the

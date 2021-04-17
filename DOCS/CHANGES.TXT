@@ -6,6 +6,14 @@
                                  Changelog
 
 
+*1.4.0*
+Yet to be written.
+  -Fill functionality ("paint bucket") for Icon Editor - right click any area
+   to fill out that area with the current color. Makes for much easier
+   editing!
+  -Several minor bug fixes - running Costaon a Windows machine produced
+   bugs not present in DOSBox. These have been corrected.
+
 *1.3.0*
 Most of the stuff in this release takes place behind the scenes, where a
 bunch of minor bugs, typos etc. has been fixed. There is one major addition
