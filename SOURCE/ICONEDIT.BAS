@@ -1,9 +1,7 @@
-DECLARE SUB IconEdit.FillNeighbours (BYVAL StartX%, BYVAL StartY%, DrawColor%, ReplaceColor%)
-
-DECLARE SUB IconEdit.FillArea (FillX%, FillY%, FillColor%)
 DEFINT A-Z
 OPTION EXPLICIT
 
+DECLARE SUB IconEdit.FillArea (StartX, StartY, FillColor)
 DECLARE SUB IconEdit.Main ()
 DECLARE SUB IconEdit.Preview ()
 DECLARE FUNCTION IconEdit.SaveIcon% ()
@@ -30,73 +28,84 @@ IconEdit.Main
 
 SUB IconEdit.FillArea (StartX, StartY, FillColor)
 
-    DIM CheckX, CheckY, ReplaceColor
-    DIM SubX, SubY
+    'The fillmask holds only pixels changed by flood fill
+    DIM FillMask AS IconDataType
+
+    'Used to koop through FillMask
+    DIM CheckX, CheckY
+
+    'Track if pixels are changed in an iteration, so we can exit sub when
+    'none are
+    DIM PixelsFilled
+
+    'Used to keep track of filled pixels in FillMask
+    DIM Filled
+    Filled = 1
+
+    'Color to replace
+    DIM ReplaceColor
     ReplaceColor = IconData.Pixel(StartX, StartY)
+
     
-    CheckY = StartY
-    FOR CheckX = StartX TO 0 STEP -1
-        IF IconData.Pixel(CheckX, CheckY) = ReplaceColor THEN
-            IconData.Pixel(CheckX, CheckY) = FillColor
-        ELSE
-            EXIT FOR
-        END IF
+    IconData.Pixel(StartX, StartY) = FillColor
+    FillMask.Pixel(StartX, StartY) = Filled
+    PixelsFilled = True
+    
 
-        IF StartY > 0 THEN
-            FOR CheckY = StartY - 1 TO 0 STEP -1
-                IF IconData.Pixel(CheckX, CheckY) = ReplaceColor THEN
-                    IconData.Pixel(CheckX, CheckY) = FillColor
-                ELSE
-                    EXIT FOR
-                END IF
-            NEXT
-            CheckY = StartY
-        END IF
-        IF StartY < 31 THEN
-            FOR CheckY = StartY + 1 TO 31
-                IF IconData.Pixel(CheckX, CheckY) = ReplaceColor THEN
-                    IconData.Pixel(CheckX, CheckY) = FillColor
-                ELSE
-                    EXIT FOR
-                END IF
-            NEXT
-            CheckY = StartY
-        END IF
-    NEXT
+    'Loop through FillMask as long as pixels are changing
+    DO WHILE PixelsFilled
 
-    CheckY = StartY
-    IF StartX < 31 THEN
-        FOR CheckX = StartX + 1 TO 31
-            IF IconData.Pixel(CheckX, CheckY) = ReplaceColor THEN
-                IconData.Pixel(CheckX, CheckY) = FillColor
-            ELSE
-                EXIT FOR
-            END IF
+        PixelsFilled = False
 
-            IF StartY > 0 THEN
-                FOR CheckY = StartY - 1 TO 0 STEP -1
-                    IF IconData.Pixel(CheckX, CheckY) = ReplaceColor THEN
-                        IconData.Pixel(CheckX, CheckY) = FillColor
-                    ELSE
-                        EXIT FOR
+        FOR CheckX = 0 TO 31
+            FOR CheckY = 0 TO 31
+
+                IF FillMask.Pixel(CheckX, CheckY) = Filled THEN
+
+                    'Pixel was filled, check neighbours in all directions
+
+                    'Check left
+                    IF CheckX > 0 THEN
+                        IF IconData.Pixel(CheckX - 1, CheckY) = ReplaceColor THEN
+                            IconData.Pixel(CheckX - 1, CheckY) = FillColor
+                            FillMask.Pixel(CheckX - 1, CheckY) = Filled
+                            PixelsFilled = True
+                        END IF
                     END IF
-                NEXT
-                CheckY = StartY
-            END IF
-            IF StartY < 31 THEN
-                FOR CheckY = StartY + 1 TO 31
-                    IF IconData.Pixel(CheckX, CheckY) = ReplaceColor THEN
-                        IconData.Pixel(CheckX, CheckY) = FillColor
-                    ELSE
-                        EXIT FOR
-                    END IF
-                NEXT
-                CheckY = StartY
-            END IF
 
+                    'Check right
+                    IF CheckX < 31 THEN
+                        IF IconData.Pixel(CheckX + 1, CheckY) = ReplaceColor THEN
+                            IconData.Pixel(CheckX + 1, CheckY) = FillColor
+                            FillMask.Pixel(CheckX + 1, CheckY) = Filled
+                            PixelsFilled = True
+                        END IF
+                    END IF
+
+                    'Check up
+                    IF CheckY > 0 THEN
+                        IF IconData.Pixel(CheckX, CheckY - 1) = ReplaceColor THEN
+                            IconData.Pixel(CheckX, CheckY - 1) = FillColor
+                            FillMask.Pixel(CheckX, CheckY - 1) = Filled
+                            PixelsFilled = True
+                        END IF
+                    END IF
+
+                    'Check down
+                    IF CheckY < 31 THEN
+                        IF IconData.Pixel(CheckX, CheckY + 1) = ReplaceColor THEN
+                            IconData.Pixel(CheckX, CheckY + 1) = FillColor
+                            FillMask.Pixel(CheckX, CheckY + 1) = Filled
+                            PixelsFilled = True
+                        END IF
+                    END IF
+
+                END IF
+
+            NEXT
         NEXT
-    END IF
 
+    LOOP
 
 END SUB
 
@@ -432,6 +441,10 @@ StartOfMain:
         
         IF Obj.BtnClick(btnPreview) OR Key$ = "p" THEN
             IconEdit.Preview
+        END IF
+
+        IF Key$ = "t" THEN
+            DrawColor = -1
         END IF
 
         FOR ColChk = -1 TO 15
