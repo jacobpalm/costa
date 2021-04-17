@@ -1,11 +1,11 @@
 DEFINT A-Z
 OPTION EXPLICIT
 
-DECLARE SUB IconEdit.FillArea (StartX, StartY, FillColor)
+DECLARE SUB IconEdit.FillArea (StartX, StartY, BYVAL FillColor)
 DECLARE SUB IconEdit.Main ()
 DECLARE SUB IconEdit.Preview ()
-DECLARE FUNCTION IconEdit.SaveIcon% ()
 DECLARE FUNCTION IconEdit.LoadIcon% ()
+DECLARE FUNCTION IconEdit.SaveIcon% ()
 
 TYPE IconDataType
     Pixel(31, 31) AS INTEGER
@@ -26,7 +26,7 @@ Sys.Load
 
 IconEdit.Main
 
-SUB IconEdit.FillArea (StartX, StartY, FillColor)
+SUB IconEdit.FillArea (StartX, StartY, BYVAL FillColor)
 
     'The fillmask holds only pixels changed by flood fill
     DIM FillMask AS IconDataType
@@ -38,6 +38,9 @@ SUB IconEdit.FillArea (StartX, StartY, FillColor)
     'none are
     DIM PixelsFilled
 
+    'Used for redrawing - if true, draw white pixel with "T"
+    DIM FillTransParent
+
     'Used to keep track of filled pixels in FillMask
     DIM Filled
     Filled = 1
@@ -47,12 +50,14 @@ SUB IconEdit.FillArea (StartX, StartY, FillColor)
     ReplaceColor = IconData.Pixel(StartX, StartY)
 
     
+    'Fill the specified pixel
     IconData.Pixel(StartX, StartY) = FillColor
     FillMask.Pixel(StartX, StartY) = Filled
     PixelsFilled = True
     
 
-    'Loop through FillMask as long as pixels are changing
+    'Loop through FillMask as long as pixels are changing in direct
+    'neighbours
     DO WHILE PixelsFilled
 
         PixelsFilled = False
@@ -106,6 +111,31 @@ SUB IconEdit.FillArea (StartX, StartY, FillColor)
         NEXT
 
     LOOP
+
+
+    'Redraw changed pixels
+    IF FillColor = -1 THEN
+        FillTransParent = True
+        FillColor = 15
+    END IF
+
+    Mouse.Hide
+    FOR CheckX = 0 TO 31
+        FOR CheckY = 0 TO 31
+
+            IF FillMask.Pixel(CheckX, CheckY) = Filled THEN
+                LINE (58 + (CheckX * 13), 44 + (CheckY * 13))-(69 + (CheckX * 13), 55 + (CheckY * 13)), FillColor, BF
+                IF FillTransParent = True THEN
+                    PSET (514 + CheckX, 269 + CheckY), clrButton
+                    Font.Print "T", 61 + (CheckX * 13), 46 + (CheckY * 13), 0, FontHeading
+                ELSE
+                    PSET (514 + CheckX, 269 + CheckY), FillColor
+                END IF
+            END IF
+
+        NEXT
+    NEXT
+    Mouse.Show
 
 END SUB
 
@@ -241,8 +271,8 @@ SUB IconEdit.Main ()
     DIM btnExit AS ButtonType
     DIM txtColor(-1 TO 15) AS TextboxType
 
-    DIM Key$, YPos, XPos, CursorX, CursorY, DrawColor, TransClick
-    DIM IconChanged, ColChk, FillColor, FillX, FillY
+    DIM Key$, YPos, XPos, CursorX, CursorY, DrawColor
+    DIM IconChanged, ColChk, FillColor, FillX, FillY, ClickedInDraw
 
     Obj.SetSize winMain.Pos, 48, 11, 544, 458
     Obj.SetSize txtDrawArea.Pos, winMain.Pos.Left + 8, winMain.Pos.Top + 31, 418, 418
@@ -359,7 +389,23 @@ StartOfMain:
             NEXT
         NEXT
     END IF
-    GOSUB RedrawEditor
+
+    Mouse.Hide
+    FOR XPos = 0 TO 31
+        FOR YPos = 0 TO 31
+            IF IconData.Pixel(XPos, YPos) > -1 THEN
+                LINE (txtDrawArea.Pos.Left + 2 + (XPos * 13), txtDrawArea.Pos.Top + 2 + (YPos * 13))-(txtDrawArea.Pos.Left + 2 + (XPos * 13) + 11, txtDrawArea.Pos.Top + 2 + (YPos * 13) + 11), IconData.Pixel(XPos, YPos), BF
+                PSET (btnPreview.Pos.Left + 10 + XPos, btnPreview.Pos.Top + 10 + YPos), IconData.Pixel(XPos, YPos)
+            ELSE
+                LINE (txtDrawArea.Pos.Left + 2 + (XPos * 13), txtDrawArea.Pos.Top + 2 + (YPos * 13))-(txtDrawArea.Pos.Left + 2 + (XPos * 13) + 11, txtDrawArea.Pos.Top + 2 + (YPos * 13) + 11), 15, BF
+                PSET (btnPreview.Pos.Left + 10 + XPos, btnPreview.Pos.Top + 10 + YPos), clrButton
+                Font.Print "T", txtDrawArea.Pos.Left + (XPos * 13) + 5, txtDrawArea.Pos.Top + (YPos * 13) + 4, 0, FontHeading
+            END IF
+        NEXT
+    NEXT
+    Mouse.Show
+    
+
     LINE (txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 38, txtDrawArea.Pos.Top + 155)-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 71, txtDrawArea.Pos.Top + 169), 15, BF
     Mouse.Show
                                                                                                                              
@@ -381,10 +427,22 @@ StartOfMain:
             CursorY = -1
         END IF
 
-        IF Obj.BtnClick(btnNew) OR Key$ = "n" THEN
-            IF IconChanged = True THEN
-                IF Sys.MsgBox("Icon has been modified", "This icon contains unsaved changes. Do you" + CHR$(13) + "want to save it before you make a new?", msgQuest) = True THEN
-                    IF IconEdit.SaveIcon THEN
+        IF NOT ClickedInDraw THEN
+            IF Obj.BtnClick(btnNew) OR Key$ = "n" THEN
+                IF IconChanged = True THEN
+                    IF Sys.MsgBox("Icon has been modified", "This icon contains unsaved changes. Do you" + CHR$(13) + "want to save it before you make a new?", msgQuest) = True THEN
+                        IF IconEdit.SaveIcon THEN
+                            FOR XPos = 0 TO 31
+                                FOR YPos = 0 TO 31
+                                    IconData.Pixel(XPos, YPos) = 0
+                                NEXT
+                            NEXT
+                            IconFileName = ""
+                            IconChanged = 0
+                            DrawColor = 0
+                            GOTO StartOfMain
+                        END IF
+                    ELSE
                         FOR XPos = 0 TO 31
                             FOR YPos = 0 TO 31
                                 IconData.Pixel(XPos, YPos) = 0
@@ -406,102 +464,85 @@ StartOfMain:
                     DrawColor = 0
                     GOTO StartOfMain
                 END IF
-            ELSE
-                FOR XPos = 0 TO 31
-                    FOR YPos = 0 TO 31
-                        IconData.Pixel(XPos, YPos) = 0
-                    NEXT
-                NEXT
-                IconFileName = ""
-                IconChanged = 0
-                DrawColor = 0
-                GOTO StartOfMain
             END IF
-        END IF
 
-        IF Obj.BtnClick(btnSave) OR Key$ = "s" THEN
-            IF IconEdit.SaveIcon THEN GOTO StartOfMain
-        END IF
+            IF Obj.BtnClick(btnSave) OR Key$ = "s" THEN
+                IF IconEdit.SaveIcon THEN GOTO StartOfMain
+            END IF
 
-        IF Obj.BtnClick(btnOpen) OR Key$ = "l" THEN
-            IF IconChanged = True THEN
-                IF Sys.MsgBox("Icon has been modified", "This icon contains unsaved changes. Do you" + CHR$(13) + "want to save it before you load another?", msgQuest) = True THEN
-                    IF IconEdit.SaveIcon = True THEN
+            IF Obj.BtnClick(btnOpen) OR Key$ = "l" THEN
+                IF IconChanged = True THEN
+                    IF Sys.MsgBox("Icon has been modified", "This icon contains unsaved changes. Do you" + CHR$(13) + "want to save it before you load another?", msgQuest) = True THEN
+                        IF IconEdit.SaveIcon = True THEN
+                            IF IconEdit.LoadIcon THEN DrawColor = 0: GOTO StartOfMain
+                        END IF
+                    ELSE
                         IF IconEdit.LoadIcon THEN DrawColor = 0: GOTO StartOfMain
                     END IF
                 ELSE
                     IF IconEdit.LoadIcon THEN DrawColor = 0: GOTO StartOfMain
                 END IF
-            ELSE
-                IF IconEdit.LoadIcon THEN DrawColor = 0: GOTO StartOfMain
             END IF
-        END IF
 
-        IF Obj.BtnClick(btnExit) OR Key$ = "x" THEN
-            IF IconChanged = True THEN
-                IF Sys.MsgBox("Icon has been modified", "This icon contains unsaved changes. Do you" + CHR$(13) + "want to save it before you exit?", msgQuest) = True THEN
-                    IF IconEdit.SaveIcon = True THEN END
+            IF Obj.BtnClick(btnExit) OR Key$ = "x" THEN
+                IF IconChanged = True THEN
+                    IF Sys.MsgBox("Icon has been modified", "This icon contains unsaved changes. Do you" + CHR$(13) + "want to save it before you exit?", msgQuest) = True THEN
+                        IF IconEdit.SaveIcon = True THEN END
+                    ELSE
+                        END
+                    END IF
                 ELSE
                     END
                 END IF
-            ELSE
-                END
             END IF
-        END IF
         
-        IF Obj.BtnClick(btnPreview) OR Key$ = "p" THEN
-            IconEdit.Preview
-        END IF
-
-        IF Key$ = "t" THEN
-            DrawColor = -1
-        END IF
-
-        FOR ColChk = -1 TO 15
-            IF Obj.TxtClick(txtColor(ColChk)) THEN
-                IF NOT DrawColor = ColChk THEN
-                    DrawColor = ColChk
-                END IF
+            IF Obj.BtnClick(btnPreview) OR Key$ = "p" THEN
+                IconEdit.Preview
             END IF
-        NEXT
+
+            IF Key$ = "t" THEN
+                DrawColor = -1
+            END IF
+
+            FOR ColChk = -1 TO 15
+                IF Obj.TxtClick(txtColor(ColChk)) THEN
+                    IF NOT DrawColor = ColChk THEN
+                        DrawColor = ColChk
+                    END IF
+                END IF
+            NEXT
+        END IF
 
         IF Mouse.Clicked AND CursorX > -1 AND CursorY > -1 THEN
+            ClickedInDraw = True
+
             XPos = txtDrawArea.Pos.Left + 2 + (CursorX * 13)
             YPos = txtDrawArea.Pos.Top + 2 + (CursorY * 13)
 
             IF Mouse.Clicked = mbLeft THEN
+
                 IF NOT IconData.Pixel(CursorX, CursorY) = DrawColor THEN
+
                     IconChanged = True
                     IconData.Pixel(CursorX, CursorY) = DrawColor
                     Mouse.Hide
                     IF DrawColor > -1 THEN
-                        TransClick = False
                         LINE (XPos, YPos)-(XPos + 11, YPos + 11), DrawColor, BF
+                        PSET (btnPreview.Pos.Left + 10 + CursorX, btnPreview.Pos.Top + 10 + CursorY), DrawColor
                     ELSE
-                        TransClick = True
                         LINE (XPos, YPos)-(XPos + 11, YPos + 11), 15, BF
                         Font.Print "T", XPos + 3, YPos + 2, 0, FontHeading
+                        PSET (btnPreview.Pos.Left + 10 + CursorX, btnPreview.Pos.Top + 10 + CursorY), clrButton
                     END IF
                     Mouse.Show
-                    GOSUB UpdatePreview
+
                 END IF
-            ELSEIF Mouse.Clicked = mbBoth THEN
-                IF NOT IconData.Pixel(CursorX, CursorY) = -1 THEN
-                    IconChanged = True
-                    TransClick = True
-                    IconData.Pixel(CursorX, CursorY) = -1
-                    Mouse.Hide
-                    LINE (XPos, YPos)-(XPos + 11, YPos + 11), 15, BF
-                    Mouse.Show
-                    Font.Print "T", XPos + 3, YPos + 2, 0, FontHeading
-                    GOSUB UpdatePreview
-                END IF
+
             ELSEIF Mouse.Clicked = mbRight THEN
 
                 IF NOT IconData.Pixel(CursorX, CursorY) = DrawColor THEN
                     IconEdit.FillArea CursorX, CursorY, DrawColor
                     IconChanged = True
-                    GOSUB RedrawEditor
                 END IF
 
                 DO: LOOP WHILE Mouse.Clicked
@@ -509,37 +550,16 @@ StartOfMain:
             END IF
 
         END IF
-        
-    LOOP UNTIL Key$ = CHR$(27)
 
-    EXIT SUB
+        'Used to make sure buttons etc. can not be clicked during drawing,
+        'if the cursor trips outside the drawing field while still clicked
+        IF ClickedInDraw AND NOT Mouse.Clicked THEN
+            ClickedInDraw = False
+        END IF
+    
+    LOOP
 
-UpdatePreview:
-    Mouse.Hide
-    IF TransClick = True THEN
-        PSET (btnPreview.Pos.Left + 10 + CursorX, btnPreview.Pos.Top + 10 + CursorY), clrButton
-    ELSE
-        PSET (btnPreview.Pos.Left + 10 + CursorX, btnPreview.Pos.Top + 10 + CursorY), DrawColor
-    END IF
-    Mouse.Show
-    RETURN
 
-RedrawEditor:
-    Mouse.Hide
-    FOR XPos = 0 TO 31
-        FOR YPos = 0 TO 31
-            IF IconData.Pixel(XPos, YPos) > -1 THEN
-                LINE (txtDrawArea.Pos.Left + 2 + (XPos * 13), txtDrawArea.Pos.Top + 2 + (YPos * 13))-(txtDrawArea.Pos.Left + 2 + (XPos * 13) + 11, txtDrawArea.Pos.Top + 2 + (YPos * 13) + 11), IconData.Pixel(XPos, YPos), BF
-                PSET (btnPreview.Pos.Left + 10 + XPos, btnPreview.Pos.Top + 10 + YPos), IconData.Pixel(XPos, YPos)
-            ELSE
-                LINE (txtDrawArea.Pos.Left + 2 + (XPos * 13), txtDrawArea.Pos.Top + 2 + (YPos * 13))-(txtDrawArea.Pos.Left + 2 + (XPos * 13) + 11, txtDrawArea.Pos.Top + 2 + (YPos * 13) + 11), 15, BF
-                PSET (btnPreview.Pos.Left + 10 + XPos, btnPreview.Pos.Top + 10 + YPos), clrButton
-                Font.Print "T", txtDrawArea.Pos.Left + (XPos * 13) + 5, txtDrawArea.Pos.Top + (YPos * 13) + 4, 0, FontHeading
-            END IF
-        NEXT
-    NEXT
-    Mouse.Show
-    RETURN
 END SUB
 
 SUB IconEdit.Preview ()
