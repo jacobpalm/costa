@@ -1,11 +1,12 @@
 DEFINT A-Z
 OPTION EXPLICIT
 
+DECLARE FUNCTION IconEdit.LoadIcon% ()
+DECLARE FUNCTION IconEdit.SaveIcon% ()
+DECLARE SUB IconEdit.DrawPixel (CursorX%, CursorY%, DrawColor%)
 DECLARE SUB IconEdit.FillArea (StartX, StartY, BYVAL FillColor)
 DECLARE SUB IconEdit.Main ()
 DECLARE SUB IconEdit.Preview ()
-DECLARE FUNCTION IconEdit.LoadIcon% ()
-DECLARE FUNCTION IconEdit.SaveIcon% ()
 
 TYPE IconDataType
     Pixel(31, 31) AS INTEGER
@@ -13,10 +14,11 @@ END TYPE
 
 DIM SHARED IconData AS IconDataType
 DIM SHARED IconFileName AS STRING
+DIM SHARED IconChanged
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
-STACK 5120
+'STACK 5120
 
 IF NOT COMMAND$ = "/?" AND NOT COMMAND$ = "/VER" AND NOT COMMAND$ = "/DEV" THEN
     IconFileName = COMMAND$
@@ -25,6 +27,36 @@ END IF
 Sys.Load
 
 IconEdit.Main
+
+SUB IconEdit.DrawPixel (CursorX, CursorY, DrawColor)
+
+    DIM XPos, YPos
+
+    IF NOT IconData.Pixel(CursorX, CursorY) = DrawColor THEN
+
+        '58 and 44 are the coords for the top-left corner of the drawing area
+        'and each "pixel" in it is 13x13 pixels
+        XPos = 58 + (CursorX * 13)
+        YPos = 44 + (CursorY * 13)
+
+        IconChanged = True
+        IconData.Pixel(CursorX, CursorY) = DrawColor
+
+        Mouse.Hide
+        IF DrawColor > -1 THEN
+            LINE (XPos, YPos)-(XPos + 11, YPos + 11), DrawColor, BF
+            PSET (514 + CursorX, 269 + CursorY), DrawColor
+        ELSE
+            LINE (XPos, YPos)-(XPos + 11, YPos + 11), 15, BF
+            PSET (514 + CursorX, 269 + CursorY), clrButton
+            Font.Print "T", XPos + 3, YPos + 2, 0, FontHeading
+        END IF
+        Mouse.Show
+
+    END IF
+
+
+END SUB
 
 SUB IconEdit.FillArea (StartX, StartY, BYVAL FillColor)
 
@@ -45,15 +77,22 @@ SUB IconEdit.FillArea (StartX, StartY, BYVAL FillColor)
     DIM Filled
     Filled = 1
 
+    'If the pixel already has the current color, there's nothing to paint.
+    'Wait mouse release and exit.
+    IF IconData.Pixel(StartX, StartY) = FillColor THEN
+        DO: LOOP WHILE Mouse.Clicked
+        EXIT SUB
+    END IF
+    
     'Color to replace
     DIM ReplaceColor
     ReplaceColor = IconData.Pixel(StartX, StartY)
 
-    
     'Fill the specified pixel
     IconData.Pixel(StartX, StartY) = FillColor
     FillMask.Pixel(StartX, StartY) = Filled
     PixelsFilled = True
+    IconChanged = True
     
 
     'Loop through FillMask as long as pixels are changing in direct
@@ -114,6 +153,9 @@ SUB IconEdit.FillArea (StartX, StartY, BYVAL FillColor)
 
 
     'Redraw changed pixels
+
+    'If fillwas transparent, set color to white (T's will laterbe printed in
+    'each pixel)
     IF FillColor = -1 THEN
         FillTransParent = True
         FillColor = 15
@@ -136,6 +178,10 @@ SUB IconEdit.FillArea (StartX, StartY, BYVAL FillColor)
         NEXT
     NEXT
     Mouse.Show
+
+    'Stick around as long as the mouse is clicked - to avoid fill while mouse
+    'is moved around. We only want one fill per click
+    DO: LOOP WHILE Mouse.Clicked
 
 END SUB
 
@@ -272,7 +318,7 @@ SUB IconEdit.Main ()
     DIM txtColor(-1 TO 15) AS TextboxType
 
     DIM Key$, YPos, XPos, CursorX, CursorY, DrawColor
-    DIM IconChanged, ColChk, FillColor, FillX, FillY, ClickedInDraw
+    DIM ColChk, FillColor, ClickedInDraw
 
     Obj.SetSize winMain.Pos, 48, 11, 544, 458
     Obj.SetSize txtDrawArea.Pos, winMain.Pos.Left + 8, winMain.Pos.Top + 31, 418, 418
@@ -390,6 +436,7 @@ StartOfMain:
         NEXT
     END IF
 
+    'DEBUG - only on redraw, already white on new icon!
     Mouse.Hide
     FOR XPos = 0 TO 31
         FOR YPos = 0 TO 31
@@ -467,7 +514,9 @@ StartOfMain:
             END IF
 
             IF Obj.BtnClick(btnSave) OR Key$ = "s" THEN
+
                 IF IconEdit.SaveIcon THEN GOTO StartOfMain
+                 
             END IF
 
             IF Obj.BtnClick(btnOpen) OR Key$ = "l" THEN
@@ -497,11 +546,15 @@ StartOfMain:
             END IF
         
             IF Obj.BtnClick(btnPreview) OR Key$ = "p" THEN
+
                 IconEdit.Preview
+
             END IF
 
             IF Key$ = "t" THEN
+
                 DrawColor = -1
+
             END IF
 
             FOR ColChk = -1 TO 15
@@ -514,45 +567,20 @@ StartOfMain:
         END IF
 
         IF Mouse.Clicked AND CursorX > -1 AND CursorY > -1 THEN
-            ClickedInDraw = True
-
-            XPos = txtDrawArea.Pos.Left + 2 + (CursorX * 13)
-            YPos = txtDrawArea.Pos.Top + 2 + (CursorY * 13)
-
+            
+            'Mouse clicked in drawing area
             IF Mouse.Clicked = mbLeft THEN
-
-                IF NOT IconData.Pixel(CursorX, CursorY) = DrawColor THEN
-
-                    IconChanged = True
-                    IconData.Pixel(CursorX, CursorY) = DrawColor
-                    Mouse.Hide
-                    IF DrawColor > -1 THEN
-                        LINE (XPos, YPos)-(XPos + 11, YPos + 11), DrawColor, BF
-                        PSET (btnPreview.Pos.Left + 10 + CursorX, btnPreview.Pos.Top + 10 + CursorY), DrawColor
-                    ELSE
-                        LINE (XPos, YPos)-(XPos + 11, YPos + 11), 15, BF
-                        Font.Print "T", XPos + 3, YPos + 2, 0, FontHeading
-                        PSET (btnPreview.Pos.Left + 10 + CursorX, btnPreview.Pos.Top + 10 + CursorY), clrButton
-                    END IF
-                    Mouse.Show
-
-                END IF
-
+                ClickedInDraw = True
+                IconEdit.DrawPixel CursorX, CursorY, DrawColor
             ELSEIF Mouse.Clicked = mbRight THEN
-
-                IF NOT IconData.Pixel(CursorX, CursorY) = DrawColor THEN
-                    IconEdit.FillArea CursorX, CursorY, DrawColor
-                    IconChanged = True
-                END IF
-
-                DO: LOOP WHILE Mouse.Clicked
-
+                IconEdit.FillArea CursorX, CursorY, DrawColor
             END IF
 
         END IF
 
-        'Used to make sure buttons etc. can not be clicked during drawing,
-        'if the cursor trips outside the drawing field while still clicked
+        'Used to make sure buttons etc. can not be clicked during drawing if
+        'the cursor trips outside the drawing field while still clicked.
+        'Reset when mouse is no longer clicked.
         IF ClickedInDraw AND NOT Mouse.Clicked THEN
             ClickedInDraw = False
         END IF
@@ -605,6 +633,8 @@ SUB IconEdit.Preview ()
     LINE (txtPreview.Pos.Left + 185, txtPreview.Pos.Top + 185)-(txtPreview.Pos.Left + 245, txtPreview.Pos.Top + 245), 15, BF
     Mouse.Show
     
+    'Save to a temp location, so that we can call Obj.DrawImg on the temp
+    'file
     ON LOCAL ERROR RESUME NEXT
     FileHandle = FREEFILE
     OPEN Sys.Path + "DATA\IMAGES\PRW_JPC8.BIF" FOR BINARY AS #FileHandle
@@ -623,6 +653,7 @@ SUB IconEdit.Preview ()
         NEXT
     NEXT
     
+    'Kill temp file, ignore errors
     ON LOCAL ERROR RESUME NEXT
     KILL Sys.Path + "DATA\IMAGES\PRW_JPC8.BIF"
     ON LOCAL ERROR GOTO 0
@@ -630,7 +661,9 @@ SUB IconEdit.Preview ()
     DO
         Key$ = INKEY$
 
-        IF Obj.BtnClick(btnClose) OR Key$ = "c" OR Key$ = CHR$(27) THEN EXIT DO
+        IF Obj.BtnClick(btnClose) OR Key$ = "c" OR Key$ = CHR$(27) THEN
+            EXIT DO
+        END IF
 
     LOOP
 
