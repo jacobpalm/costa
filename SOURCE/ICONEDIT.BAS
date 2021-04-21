@@ -1,9 +1,9 @@
-DECLARE SUB IconEdit.DrawGrid ()
+DECLARE SUB IconEdit.SetTitle ()
 DEFINT A-Z
 OPTION EXPLICIT
 
 DECLARE FUNCTION IconEdit.SaveIcon% ()
-DECLARE SUB IconEdit.DrawPixel (X%, Y%, DrawColor%)
+DECLARE SUB IconEdit.DrawPixel (X%, Y%, DrawColor%, ForceDraw%)
 DECLARE SUB IconEdit.FillArea (X%, Y%, BYVAL FillColor)
 DECLARE SUB IconEdit.LoadIcon (IconFile AS STRING)
 DECLARE SUB IconEdit.Main (IconToLoad AS STRING)
@@ -32,30 +32,11 @@ ELSE
     IconEdit.Main ""
 END IF
 
-
-
-
-SUB IconEdit.DrawGrid ()
-
-    DIM XPos, YPos
-    'DEBUG - omregn
-
-    FOR YPos = 0 TO 31
-        LINE (58, 42 + (YPos * 13) + 1)-(474 - 2, 42 + (YPos * 13) + 1), 8
-        LINE (58, 42 + (YPos * 13) + 1)-(474 - 2, 42 + (YPos * 13) + 1), 0, , &HAAAA
-    NEXT
-    FOR XPos = 0 TO 31
-        LINE (56 + (XPos * 13) + 1, 44)-(56 + (XPos * 13) + 1, 42 + 418 - 2), 8
-        LINE (56 + (XPos * 13) + 1, 44)-(56 + (XPos * 13) + 1, 42 + 418 - 2), 0, , &HAAAA
-    NEXT
-
-END SUB
-
-SUB IconEdit.DrawPixel (X, Y, DrawColor)
+SUB IconEdit.DrawPixel (X, Y, DrawColor, ForceDraw)
 
     DIM XPos, YPos
 
-    IF NOT IconData.Pixel(X, Y) = DrawColor THEN
+    IF NOT IconData.Pixel(X, Y) = DrawColor OR ForceDraw = True THEN
 
         '58 and 44 are the coords for the top-left corner of the drawing area
         'and each "pixel" in it is 13x13 pixels
@@ -111,11 +92,14 @@ SUB IconEdit.FillArea (X, Y, BYVAL FillColor)
     DIM ReplaceColor
     ReplaceColor = IconData.Pixel(X, Y)
 
+    'Drawing routines hide mouse automatically, but we do it anyway since
+    'there might be cursor flicker if filling many pixels
+    Mouse.Hide
+
     'Fill the specified pixel
-    IconData.Pixel(X, Y) = FillColor
+    IconEdit.DrawPixel X, Y, FillColor, False
     FillMask.Pixel(X, Y) = Filled
     PixelsFilled = True
-    IconChanged = True
     
 
     'Loop through FillMask as long as pixels are changing in direct
@@ -134,7 +118,7 @@ SUB IconEdit.FillArea (X, Y, BYVAL FillColor)
                     'Check left
                     IF CheckX > 0 THEN
                         IF IconData.Pixel(CheckX - 1, CheckY) = ReplaceColor THEN
-                            IconData.Pixel(CheckX - 1, CheckY) = FillColor
+                            IconEdit.DrawPixel CheckX - 1, CheckY, FillColor, False
                             FillMask.Pixel(CheckX - 1, CheckY) = Filled
                             PixelsFilled = True
                         END IF
@@ -143,7 +127,7 @@ SUB IconEdit.FillArea (X, Y, BYVAL FillColor)
                     'Check right
                     IF CheckX < 31 THEN
                         IF IconData.Pixel(CheckX + 1, CheckY) = ReplaceColor THEN
-                            IconData.Pixel(CheckX + 1, CheckY) = FillColor
+                            IconEdit.DrawPixel CheckX + 1, CheckY, FillColor, False
                             FillMask.Pixel(CheckX + 1, CheckY) = Filled
                             PixelsFilled = True
                         END IF
@@ -152,7 +136,7 @@ SUB IconEdit.FillArea (X, Y, BYVAL FillColor)
                     'Check up
                     IF CheckY > 0 THEN
                         IF IconData.Pixel(CheckX, CheckY - 1) = ReplaceColor THEN
-                            IconData.Pixel(CheckX, CheckY - 1) = FillColor
+                            IconEdit.DrawPixel CheckX, CheckY - 1, FillColor, False
                             FillMask.Pixel(CheckX, CheckY - 1) = Filled
                             PixelsFilled = True
                         END IF
@@ -161,7 +145,7 @@ SUB IconEdit.FillArea (X, Y, BYVAL FillColor)
                     'Check down
                     IF CheckY < 31 THEN
                         IF IconData.Pixel(CheckX, CheckY + 1) = ReplaceColor THEN
-                            IconData.Pixel(CheckX, CheckY + 1) = FillColor
+                            IconEdit.DrawPixel CheckX, CheckY + 1, FillColor, False
                             FillMask.Pixel(CheckX, CheckY + 1) = Filled
                             PixelsFilled = True
                         END IF
@@ -174,34 +158,9 @@ SUB IconEdit.FillArea (X, Y, BYVAL FillColor)
 
     LOOP
 
-
-    'Redraw changed pixels
-
-    'If fill was transparent, set color to white (T's will later be printed
-    'in each pixel)
-    IF FillColor = -1 THEN
-        FillTransParent = True
-        FillColor = 15
-    END IF
-
-    Mouse.Hide
-    FOR CheckX = 0 TO 31
-        FOR CheckY = 0 TO 31
-
-            IF FillMask.Pixel(CheckX, CheckY) = Filled THEN
-                LINE (58 + (CheckX * 13), 44 + (CheckY * 13))-(69 + (CheckX * 13), 55 + (CheckY * 13)), FillColor, BF
-                IF FillTransParent = True THEN
-                    PSET (514 + CheckX, 269 + CheckY), clrButton
-                    Font.Print "T", 61 + (CheckX * 13), 46 + (CheckY * 13), 0, FontHeading
-                ELSE
-                    PSET (514 + CheckX, 269 + CheckY), FillColor
-                END IF
-            END IF
-
-        NEXT
-    NEXT
     Mouse.Show
 
+    
     'Stick around as long as the mouse is clicked - to avoid fill while mouse
     'is moved around. We only want one fill per click.
     DO: LOOP WHILE Mouse.Clicked
@@ -257,28 +216,18 @@ SUB IconEdit.LoadIcon (IconToLoad AS STRING)
             IconChanged = False
             
             'Update window title
-            WindowTitle = "Icon Editor for Costa - " + IconFileName
-            Mouse.Hide
-            LINE (48 + 5, 11 + 5)-(48 + 544 - 5, 11 + 21), ClrTitleBar, BF
-            XPos = (640 - Font.GetWidth(WindowTitle, FontHeading)) / 2
-            Font.Print WindowTitle, XPos, 11 + 9, ClrTitleBarText, FontHeading
-            Mouse.Show
+            IconEdit.SetTitle
 
             'Draw icon and preview
             Mouse.Hide
             FOR XPos = 0 TO 31
                 FOR YPos = 0 TO 31
-                    IF IconData.Pixel(XPos, YPos) > -1 THEN
-                        LINE (56 + 2 + (XPos * 13), 42 + 2 + (YPos * 13))-(56 + 2 + (XPos * 13) + 11, 42 + 2 + (YPos * 13) + 11), IconData.Pixel(XPos, YPos), BF
-                        PSET (504 + 10 + XPos, 259 + 10 + YPos), IconData.Pixel(XPos, YPos)
-                    ELSE
-                        LINE (56 + 2 + (XPos * 13), 42 + 2 + (YPos * 13))-(56 + 2 + (XPos * 13) + 11, 42 + 2 + (YPos * 13) + 11), 15, BF
-                        PSET (504 + 10 + XPos, 259 + 10 + YPos), clrButton
-                        Font.Print "T", 56 + (XPos * 13) + 5, 42 + (YPos * 13) + 4, 0, FontHeading
-                    END IF
+                    IconEdit.DrawPixel XPos, YPos, IconData.Pixel(XPos, YPos), True
                 NEXT
             NEXT
             Mouse.Show
+
+            IconChanged = False
 
             EXIT SUB
         END IF
@@ -356,12 +305,22 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     Font.Print "Preview", btnPreview.Pos.Left, btnPreview.Pos.Top - 15, clrWindowText, FontHeading
     LINE (btnPreview.Pos.Left - 1, btnPreview.Pos.Top - 4)-(btnPreview.Pos.Left + 5, btnPreview.Pos.Top - 4), clrWindowText
 
+    'Draw grid in drawing area
+    FOR YPos = 0 TO 31
+        LINE (txtDrawArea.Pos.Left + 2, txtDrawArea.Pos.Top + 1 + (YPos * 13))-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width - 2, 43 + (YPos * 13)), 8
+        LINE (txtDrawArea.Pos.Left + 2, txtDrawArea.Pos.Top + 1 + (YPos * 13))-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width - 2, 43 + (YPos * 13)), 0, , &HAAAA
+    NEXT
+    FOR XPos = 0 TO 31
+        LINE (txtDrawArea.Pos.Left + 1 + (XPos * 13), txtDrawArea.Pos.Top + 2)-(txtDrawArea.Pos.Left + 1 + (XPos * 13), txtDrawArea.Pos.Top + txtDrawArea.Pos.Height - 2), 8
+        LINE (txtDrawArea.Pos.Left + 1 + (XPos * 13), txtDrawArea.Pos.Top + 2)-(txtDrawArea.Pos.Left + 1 + (XPos * 13), txtDrawArea.Pos.Top + txtDrawArea.Pos.Height - 2), 0, , &HAAAA
+    NEXT
+
+
     Mouse.Show
 
     IF IconToLoad = "" THEN
         IconEdit.NewIcon
     ELSE
-        IconEdit.DrawGrid
         IconEdit.LoadIcon IconToLoad
     END IF
 
@@ -441,7 +400,7 @@ SUB IconEdit.Main (IconToLoad AS STRING)
             'Mouse clicked in drawing area
             IF Mouse.Clicked = mbLeft THEN
                 ClickedInDraw = True
-                IconEdit.DrawPixel CursorX, CursorY, DrawColor
+                IconEdit.DrawPixel CursorX, CursorY, DrawColor, False
             ELSEIF Mouse.Clicked = mbRight THEN
                 IconEdit.FillArea CursorX, CursorY, DrawColor
             END IF
@@ -465,36 +424,21 @@ SUB IconEdit.NewIcon ()
     DIM XPos, YPos
     DIM WindowTitle AS STRING
                     
-    'DEBUG - omregn tal!
-                    
+    'Redraw window title
+    IconFileName = ""
+    IconEdit.SetTitle
 
     Mouse.Hide
-    'Clear drawing area
-    LINE (58 + (XPos * 13), 44 + (YPos * 13))-(58 + (XPos * 13) + 11, 44 + (YPos * 13) + 11), 15, BF
-    
-    LINE (58, 44)-(474 - 2, 460 - 2), 15, BF
-    IconEdit.DrawGrid
 
     'Draw all pixels transparent
     FOR XPos = 0 TO 31
         FOR YPos = 0 TO 31
-            IconData.Pixel(XPos, YPos) = -1
-            Font.Print "T", 56 + (XPos * 13) + 5, 42 + (YPos * 13) + 4, 0, FontHeading
+            IconEdit.DrawPixel XPos, YPos, -1, True
         NEXT
     NEXT
 
-    'Clear preview
-    LINE (514, 269)-(546, 301), clrButton, BF
-
-    'Redraw window title
-    WindowTitle = "Icon Editor for Costa - Untitled"
-    LINE (48 + 5, 11 + 5)-(48 + 544 - 5, 11 + 21), ClrTitleBar, BF
-    XPos = (640 - Font.GetWidth(WindowTitle, FontHeading)) / 2
-    Font.Print WindowTitle, XPos, 11 + 9, ClrTitleBarText, FontHeading
     Mouse.Show
-
-    IconFileName = ""
-    IconChanged = 0
+    IconChanged = False
 
 END SUB
 
@@ -576,6 +520,7 @@ SUB IconEdit.Preview ()
     LOOP
 
     Sys.VGALoad "ICONPREW"
+
 END SUB
 
 FUNCTION IconEdit.SaveIcon ()
@@ -620,17 +565,33 @@ TopOfSave:
     IconFileName = UCASE$(SaveAs)
 
     'Redraw window title
-    WindowTitle = "Icon Editor for Costa - " + IconFileName
-    Mouse.Hide
-    LINE (48 + 5, 11 + 5)-(48 + 544 - 5, 11 + 21), ClrTitleBar, BF
-    XPos = (640 - Font.GetWidth(WindowTitle, FontHeading)) / 2
-    Font.Print WindowTitle, XPos, 11 + 9, ClrTitleBarText, FontHeading
-    Mouse.Show
+    IconEdit.SetTitle
 
     IconEdit.SaveIcon = True
 
     
 END FUNCTION
+
+SUB IconEdit.SetTitle ()
+
+    DIM XPos
+    DIM WindowTitle AS STRING
+
+    IF IconFileName = "" THEN
+        WindowTitle = "Untitled"
+    ELSE
+        WindowTitle = UCASE$(IconFileName)
+    END IF
+
+    WindowTitle = "Icon Editor for Costa - " + WindowTitle
+
+    Mouse.Hide
+    LINE (53, 16)-(587, 32), ClrTitleBar, BF
+    XPos = (640 - Font.GetWidth(WindowTitle, FontHeading)) / 2
+    Font.Print WindowTitle, XPos, 20, ClrTitleBarText, FontHeading
+    Mouse.Show
+
+END SUB
 
 SUB IconEdit.ShowLoadDialog ()
     DIM IconFiles() AS STRING
