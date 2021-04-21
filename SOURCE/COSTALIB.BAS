@@ -7,7 +7,8 @@ DEFINT A-Z
 'This is dimmed here, and not in LIBRARY.BI, because only this module uses
 'it
 	TYPE IconDataType
-		Pixel(31, 31) AS INTEGER
+		'Pixel(31, 31) AS INTEGER
+		Pixel(31, 31) AS STRING * 1
 	END TYPE
 	
 	DIM SHARED FontData(1 TO 3, 32 TO 127) AS STRING
@@ -583,7 +584,7 @@ SUB Obj.DrawImg (TargetImg AS ImageType)
 	TargetImg.Pos.Height = 31
 
 
-	IF NOT File.Exists(Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".BIF") THEN
+	IF NOT File.Exists(Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".CIF") THEN
 		'Draw a red box with the text "IMG ERR" to indicate a missing file
 		Mouse.Hide
 		LINE (X + 1, Y + 1)-(X + 30, Y + 30), 4, BF
@@ -596,24 +597,24 @@ SUB Obj.DrawImg (TargetImg AS ImageType)
 
 
 
-	DIM BifHandle
+	DIM CifHandle
 	DIM IconData AS IconDataType
 
-	BifHandle = FREEFILE
+	CifHandle = FREEFILE
 	
 	'DEBUG DEBUG
 	'Check stoerrelse, kontroller header m.m.
 
-	OPEN Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".BIF" FOR BINARY AS #BifHandle
-	GET #BifHandle, , Header
-	GET #BifHandle, , IconData
-	CLOSE #BifHandle
+	OPEN Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".CIF" FOR BINARY AS #CifHandle
+	GET #CifHandle, , Header
+	GET #CifHandle, , IconData
+	CLOSE #CifHandle
 	
 	Mouse.Hide
 	FOR XPos = 0 TO 31
 		FOR YPos = 0 TO 31
-			IF IconData.Pixel(XPos, YPos) > -1 THEN
-				PSET (X + XPos, Y + YPos), IconData.Pixel(XPos, YPos)
+			IF ASC(IconData.Pixel(XPos, YPos)) > 0 THEN
+				PSET (X + XPos, Y + YPos), ASC(IconData.Pixel(XPos, YPos)) - 1
 			END IF
 		NEXT
 	NEXT

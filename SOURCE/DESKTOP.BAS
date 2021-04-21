@@ -327,7 +327,7 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
   DIM AllIcons() AS STRING
   DIM IconCount AS INTEGER, CurrentIcon AS INTEGER, IconFile AS STRING
 
-  IconFile = DIR$(Sys.Path + "DATA\IMAGES\*.BIF")
+  IconFile = DIR$(Sys.Path + "DATA\IMAGES\*.CIF")
   IconCount = 0
 
   REDIM PRESERVE AllIcons(0) AS STRING
@@ -1423,7 +1423,7 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
     DIM IconCount AS INTEGER, CurrentIcon AS INTEGER, IconFile AS STRING
     DIM CurrentIconFilename AS STRING
 
-    IconFile = DIR$(Sys.Path + "DATA\IMAGES\*.BIF")
+    IconFile = DIR$(Sys.Path + "DATA\IMAGES\*.CIF")
     IconCount = 0
     CurrentIconFilename = UCASE$(File.CfgRead("DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileNum)) + "\PROFILE.CFG", "ProfileIcon", "USERS"))
 

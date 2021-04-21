@@ -1,4 +1,3 @@
-DECLARE SUB IconEdit.SetTitle ()
 DEFINT A-Z
 OPTION EXPLICIT
 
@@ -9,13 +8,22 @@ DECLARE SUB IconEdit.LoadIcon (IconFile AS STRING)
 DECLARE SUB IconEdit.Main (IconToLoad AS STRING)
 DECLARE SUB IconEdit.NewIcon ()
 DECLARE SUB IconEdit.Preview ()
+DECLARE SUB IconEdit.SetTitle ()
 DECLARE SUB IconEdit.ShowLoadDialog ()
 
 TYPE IconDataType
+    Pixel(31, 31) AS STRING * 1
+END TYPE
+
+TYPE IconEditDataType
     Pixel(31, 31) AS INTEGER
 END TYPE
 
-DIM SHARED IconData AS IconDataType
+TYPE FillMaskType
+    Pixel(31, 31) AS INTEGER
+END TYPE
+
+DIM SHARED IconData AS IconEditDataType
 DIM SHARED IconFileName AS STRING
 DIM SHARED IconChanged
 
@@ -65,7 +73,7 @@ END SUB
 SUB IconEdit.FillArea (X, Y, BYVAL FillColor)
 
     'The fillmask holds only pixels changed by flood fill
-    DIM FillMask AS IconDataType
+    DIM FillMask AS FillMaskType
 
     'Used to koop through FillMask
     DIM CheckX, CheckY
@@ -172,8 +180,9 @@ SUB IconEdit.LoadIcon (IconToLoad AS STRING)
     DIM FileHandle, XPos, YPos
     DIM Header AS STRING * 9
     DIM WindowTitle AS STRING
+    DIM IconLoadData AS IconDataType
     
-    IF NOT File.Exists(Sys.Path + "DATA\IMAGES\" + IconToLoad + ".BIF") THEN
+    IF NOT File.Exists(Sys.Path + "DATA\IMAGES\" + IconToLoad + ".CIF") THEN
         FileHandle = Sys.MsgBox("File not found", "Could not open the specified icon." + CHR$(13) + "Verify the filename and try again.", msgError)
         EXIT SUB
     END IF
@@ -204,12 +213,11 @@ SUB IconEdit.LoadIcon (IconToLoad AS STRING)
     'We made it this far - load icon
 
     FileHandle = FREEFILE
-    OPEN Sys.Path + "DATA\IMAGES\" + IconToLoad + ".BIF" FOR BINARY AS #FileHandle
-
-    IF LOF(FileHandle) = 2057 THEN
+    OPEN Sys.Path + "DATA\IMAGES\" + IconToLoad + ".CIF" FOR BINARY AS #FileHandle
+    IF LOF(FileHandle) = 1033 THEN
         GET #FileHandle, , Header
         IF Header = "JACOBPALM" THEN
-            GET #FileHandle, , IconData
+            GET #FileHandle, , IconLoadData
             CLOSE #FileHandle
 
             IconFileName = IconToLoad
@@ -222,7 +230,7 @@ SUB IconEdit.LoadIcon (IconToLoad AS STRING)
             Mouse.Hide
             FOR XPos = 0 TO 31
                 FOR YPos = 0 TO 31
-                    IconEdit.DrawPixel XPos, YPos, IconData.Pixel(XPos, YPos), True
+                    IconEdit.DrawPixel XPos, YPos, ASC(IconLoadData.Pixel(XPos, YPos)) - 1, True
                 NEXT
             NEXT
             Mouse.Show
@@ -447,6 +455,7 @@ SUB IconEdit.Preview ()
     DIM winPreview AS WindowType, btnClose AS ButtonType
     DIM txtPreview AS TextboxType, imgPreview AS ImageType
     DIM Key$, XPos, YPos, FileHandle
+    DIM IconSaveData AS IconDataType
     DIM Header AS STRING * 9
     Header = "JACOBPALM"
     
@@ -487,15 +496,20 @@ SUB IconEdit.Preview ()
     
     'Save to a temp location, so that we can call Obj.DrawImg on the temp
     'file
+    FOR XPos = 0 TO 31
+        FOR YPos = 0 TO 31
+            IconSaveData.Pixel(XPos, YPos) = CHR$(IconData.Pixel(XPos, YPos) + 1)
+        NEXT
+    NEXT
     ON LOCAL ERROR RESUME NEXT
     FileHandle = FREEFILE
-    OPEN Sys.Path + "DATA\IMAGES\PRW_JPC8.BIF" FOR BINARY AS #FileHandle
+    OPEN Sys.Path + "DATA\IMAGES\PRW_JPC8.CIF" FOR BINARY AS #FileHandle
     PUT #FileHandle, , Header
-    PUT #FileHandle, , IconData
+    PUT #FileHandle, , IconSaveData
     CLOSE #FileHandle
     ON LOCAL ERROR GOTO 0
 
-    imgPreview.ImageFile = "PRW_JPC8.BIF"
+    imgPreview.ImageFile = "PRW_JPC8.CIF"
     
     FOR XPos = 2 TO 185 STEP 61
         FOR YPos = 2 TO 185 STEP 61
@@ -507,7 +521,7 @@ SUB IconEdit.Preview ()
     
     'Kill temp file, ignore errors
     ON LOCAL ERROR RESUME NEXT
-    KILL Sys.Path + "DATA\IMAGES\PRW_JPC8.BIF"
+    KILL Sys.Path + "DATA\IMAGES\PRW_JPC8.CIF"
     ON LOCAL ERROR GOTO 0
 
     DO
@@ -525,8 +539,10 @@ END SUB
 
 FUNCTION IconEdit.SaveIcon ()
 
-    DIM SaveAs AS STRING, FileHandle, XPos
+    DIM SaveAs AS STRING, FileHandle, XPos, YPos
     DIM Header AS STRING * 9, WindowTitle AS STRING
+    DIM IconSaveData AS IconDataType
+
     Header = "JACOBPALM"
 
 TopOfSave:
@@ -541,7 +557,7 @@ TopOfSave:
         EXIT FUNCTION
     END IF
 
-    IF File.Exists(Sys.Path + "DATA\IMAGES\" + SaveAs + ".BIF") THEN
+    IF File.Exists(Sys.Path + "DATA\IMAGES\" + SaveAs + ".CIF") THEN
         IF NOT UCASE$(SaveAs) = IconFileName THEN
         
             DIM DoSave
@@ -551,15 +567,21 @@ TopOfSave:
 
         END IF
 
-        KILL Sys.Path + "DATA\IMAGES\" + SaveAs + ".BIF"
+        KILL Sys.Path + "DATA\IMAGES\" + SaveAs + ".CIF"
     END IF
+
+    FOR XPos = 0 TO 31
+        FOR YPos = 0 TO 31
+            IconSaveData.Pixel(XPos, YPos) = CHR$(IconData.Pixel(XPos, YPos) + 1)
+        NEXT
+    NEXT
     
     FileHandle = FREEFILE
 
-    OPEN Sys.Path + "DATA\IMAGES\" + SaveAs + ".BIF" FOR BINARY AS #FileHandle
+    OPEN Sys.Path + "DATA\IMAGES\" + SaveAs + ".CIF" FOR BINARY AS #FileHandle
     'User defined data type
     PUT #FileHandle, , Header
-    PUT #FileHandle, , IconData
+    PUT #FileHandle, , IconSaveData
     CLOSE #FileHandle
 
     IconFileName = UCASE$(SaveAs)
@@ -604,7 +626,7 @@ SUB IconEdit.ShowLoadDialog ()
     DIM btnLoad AS ButtonType
                                      
     REDIM IconFiles(0) AS STRING
-    IconFiles(0) = DIR$(Sys.Path + "DATA\IMAGES\*.BIF")
+    IconFiles(0) = DIR$(Sys.Path + "DATA\IMAGES\*.CIF")
 
     IF IconFiles(0) = "" THEN
         DIM void
