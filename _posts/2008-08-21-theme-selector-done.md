@@ -8,6 +8,6 @@ I spent today working on the theme selector. It's as good as done now, and I thi
 
 Since I'm hoping to get user submitted themes, all theme files contain theme name and author, which is shown in the theme selector.<!--more--> I'll also convert some of the themes people submitted for Costa 0.9.1.
 
-I'm really satisfied with this GUI toolkit I wrote. It took almost two weeks to make and test, but using it I was able to make the desktop in four days and the theme selector in four hours. It's much more fun to program when you can see the results right away. When Costa had a scripting engine I spent all my time working on that and never really saw any progress because it was all under the hood.
+I'm really satisfied with this [GUI](https://en.wikipedia.org/wiki/Graphical_user_interface) toolkit I wrote. It took almost two weeks to make and test, but using it I was able to make the desktop in four days and the theme selector in four hours. It's much more fun to program when you can see the results right away. When Costa had a [scripting engine](https://en.wikipedia.org/wiki/Scripting_language) I spent all my time working on that and never really saw any progress because it was all under the hood.
 
 The screenshot shows Costa's desktop with the "Greyscale" theme.

@@ -11,6 +11,6 @@ I got tired of programming because I didn't see any results. I spent a lot of ti
 
 So that's why I have decided to return to single-tasking and hard-coded programs. Even though the programs are hard-coded I'll make them very flexible, and easy to customize through plain-text configuration files.
 
-In the past two weeks I've written a reasonably powerful GUI toolkit with routines to handle everything from updating the screen to reading configuration files. It already has support for buttons, textboxes, checkboxes, images and windows. Using this toolkit I've also made a working desktop, complete with right-click menu and moveable icons.
+In the past two weeks I've written a reasonably powerful [GUI](https://en.wikipedia.org/wiki/Graphical_user_interface) toolkit with routines to handle everything from updating the screen to reading configuration files. It already has support for buttons, textboxes, checkboxes, images and windows. Using this toolkit I've also made a working desktop, complete with right-click menu and moveable icons.
 
 Unlike previous versions, a lot of things in the GUI will be animated (menus, windows and more).

@@ -31,4 +31,4 @@ So now, the icon format looks like this:
 
 Say what you want about this solution, but it did save 120 kilobytes of disk space, at a very minor cost of performance. All existing icons have been converted to this new format - the Costa Image Format, or CIF for short.
 
-In the future, I might look into optimizing even further - even this new solution will waste 3 bits per pixel, which amounts to 3 kilobytes per icon. With the current count of 118 icons, that's 43 kilobytes.
+In the future, I might look into optimizing even further - even this new solution will waste 3 bits per pixel, which amounts to 0,38 kilobytes per icon. With the current count of 118 icons, that's roughly 44 kilobytes.
