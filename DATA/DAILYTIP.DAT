@@ -2,7 +2,6 @@ Using the built-in configuration editor, you can associate a|file type with a pr
 When editing a textbox, pressing ENTER will finish the editing.|However, you can also press ESCAPE to disregard the changes.||This is useful if you regret a change you've made.
 It is possible to type the name of any file, for example README.TXT,| in the target field when customizing a desktop link, or when using the|"Execute" dialog.||Use the configuration program to manage which programs will open|a specific file type.
 If you don't have a mouse, use the TAB key to cycle between desktop links.|Use SHIFT+TAB to cycle through links in reverse order.||Then, simply press ENTER to open the link menu for the selected link.
-To associate a file type with the built-in text viewer, simply associate|it with COSTA120.EXE (without any path).||Use the configuration program to manage file type associations.
 When editing an icon, you can fill out an entire area using the current|color. To do so, simply right-click within the area!
 Want to see how your icon in the icon editor looks on different|background colors?||To do so, simply click the preview of it - or press P on the keyboard.
 If your are missing some of the default links on the desktop, or your desktop|links have somehow become corrupted, you can reset the links by deleting|DATA\CONFIG\DESKLINK.DAT.||Costa will then recreate it with the default links.
