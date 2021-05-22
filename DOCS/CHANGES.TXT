@@ -7,14 +7,20 @@
 
 
 *1.4.0*
-Yet to be written.
+As with the previous release, the focus with this release has mainly been
+on behind-the-scenes improvements. A long requested flood fill function has
+been added to the icon editor.
   -Fill functionality ("paint bucket") for Icon Editor - right click any area
    to fill out that area with the current color. Makes for much easier
    editing!
+  -New icon format, cutting size of icons on disk roughly in half
+  -Heavy optimizations for icon editor
   -Several minor bug fixes - running Costa on a Windows machine produced
    bugs not present in DOSBox. These have been corrected. CuteMouse driver
    replaced with Microsofts mouse.com, since the former produced errors on
    some Windows machines.
+  -More icons and themes
+
 
 *1.3.0*
 Most of the stuff in this release takes place behind the scenes, where a
