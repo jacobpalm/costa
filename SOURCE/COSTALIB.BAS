@@ -1011,6 +1011,14 @@ SUB Sys.Load ()
 			IF LOF(ProfileFileHandle) > 0 THEN LINE INPUT #ProfileFileHandle, ProfileID
 			CLOSE #ProfileFileHandle
 		END IF
+
+		'When running with /DEV parameter, always use profile 1 if none is
+		'specified. Otherwise, config files from accessories will end up in the
+		'wrong path
+		IF ProfileID = "" AND INSTR(COMMAND$, "/DEV") THEN
+			ProfileID = "PROFILE1"
+		END IF
+
 	
 
 	'Prepare fonts for use
