@@ -551,8 +551,12 @@ SUB Tic.PlaySound (SoundType AS INTEGER)
 			SOUND 800, .7
 		CASE SoundIllegalMove
 			SOUND 100, .7
-		CASE SoundWin TO SoundDraw
+		CASE SoundWin
 			PLAY "O2 T100 C D T200 G T400 E"
+		CASE SoundLoose
+			PLAY "O1 T400 E3 G3 D6 T100 C9 C9"
+		CASE SoundDraw
+			PLAY "O1 T400 C9 T100 E9 G9 D C9"
 		CASE SoundNew
 			PLAY "O2 T180 C8 C8 E3"
 	END SELECT
