@@ -14,7 +14,7 @@ STACK 5120
 DIM SHARED ThemeFile$, ThemeName$, ThemeAuthor$
 DIM SHARED ThemeList() AS STRING
 
-IF File.Exists(Sys.Path + "DATA\TEMP\RUNSTAT.TMP") = FALSE THEN
+IF File.Exists(Sys.Path + "DATA\TEMP\RUNSTAT.TMP") = False THEN
     IF NOT COMMAND$ = "/DEV" THEN
         CLS
         PRINT "This program is a part of " + appName + " and should not be executed"
@@ -26,7 +26,7 @@ IF File.Exists(Sys.Path + "DATA\TEMP\RUNSTAT.TMP") = FALSE THEN
     END IF
 END IF
 
-IF Sys.Path = "" OR File.Exists(Sys.Path + appExeName + ".EXE") = FALSE THEN
+IF Sys.Path = "" OR File.Exists(Sys.Path + appExeName + ".EXE") = False THEN
     CLS
     PRINT "The environment variable " + appExeName + ", which contains the path to Costa, is either"
     PRINT "not set or contains an invalid path."
@@ -118,12 +118,12 @@ SUB Theme.Edit (BYVAL ThmFile AS STRING)
 
 RedrawAll:
     Obj.DrawWin winThemeEdit
-    Obj.DrawBtn btnSaveAs, FALSE
-    Obj.DrawBtn btnSave, FALSE
-    Obj.DrawBtn btnExit, FALSE
-    Obj.DrawTxt txtThemeName, ThemeName$, FALSE
-    Obj.DrawTxt txtThemeAuthor, ThemeAuthor$, FALSE
-    Obj.DrawBtn btnObject, FALSE
+    Obj.DrawBtn btnSaveAs, False
+    Obj.DrawBtn btnSave, False
+    Obj.DrawBtn btnExit, False
+    Obj.DrawTxt txtThemeName, ThemeName$, False
+    Obj.DrawTxt txtThemeAuthor, ThemeAuthor$, False
+    Obj.DrawBtn btnObject, False
     Obj.DrawFrm frmPreview, 15, Clr3DShadow
     FOR I = 0 TO 15
         Obj.DrawBtn btnColor(I), True
@@ -131,20 +131,23 @@ RedrawAll:
         LINE (btnColor(I).Pos.Left + 2, btnColor(I).Pos.Top + 2)-(btnColor(I).Pos.Left + btnColor(I).Pos.Width - 2, btnColor(I).Pos.Top + btnColor(I).Pos.Height - 2), I, BF
         Mouse.Show
     NEXT
-    Mouse.Hide
     Font.Print "Theme name:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 34, clrWindowText, 1
-    LINE (433, 174)-(440, 174), clrWindowText
     Font.Print "Theme author:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 82, clrWindowText, 1
-    LINE (425, 126)-(432, 126), clrWindowText
     Font.Print "Object selected:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 130, clrWindowText, 1
+    
+    Mouse.Hide
+    LINE (433, 174)-(440, 174), clrWindowText
+    LINE (425, 126)-(432, 126), clrWindowText
     LINE (379, 222)-(386, 222), clrWindowText
     Mouse.Show
+
 
     'The rest of the controls are used in the preview
     DIM winPreview AS WindowType
     DIM txtPreview AS TextboxType, txtPreviewText AS STRING
     DIM btnPreview1 AS ButtonType, btnPreview2 AS ButtonType
     DIM imgPreview AS ImageType
+    DIM btnMenuPreview AS ButtonType
 
     winPreview.Pos.Left = frmPreview.Pos.Left + 20
     winPreview.Pos.Top = frmPreview.Pos.Top + 20
@@ -164,9 +167,11 @@ RedrawAll:
     Obj.SetSize btnPreview2.Pos, winPreview.Pos.Left + 133, winPreview.Pos.Top + 111, 111, 22
     btnPreview2.Caption = "Button down"
 
-    imgPreview.Pos.Left = frmPreview.Pos.Left + 100
+    imgPreview.Pos.Left = frmPreview.Pos.Left + 32
     imgPreview.Pos.Top = frmPreview.Pos.Top + 190
     imgPreview.ImageFile = "LOGO"
+
+    Obj.SetSize btnMenuPreview.Pos, imgPreview.Pos.Left + 140, imgPreview.Pos.Top - 4, 98, 37
 
     Theme.Load ThemeFile$
 
@@ -182,7 +187,7 @@ RedrawAll:
     thmClr3DLight = Clr3DLight
     thmClr3DShadow = Clr3DShadow
     thmClrSelect = ClrSelect
-    thmClrSelectText = ClrSelectText
+    thmClrSelectText = clrSelectText
 
 
     DIM Key$
@@ -199,21 +204,31 @@ UpdateEditPreview:
     Clr3DLight = thmClr3DLight
     Clr3DShadow = thmClr3DShadow
     ClrSelect = thmClrSelect
-    ClrSelectText = thmClrSelectText
+    clrSelectText = thmClrSelectText
 
     Mouse.Hide
     LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 2)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + frmPreview.Pos.Height - 2), ClrDesktop, BF
     Mouse.Show
     Obj.DrawWin winPreview
     Obj.DrawTxt txtPreview, txtPreviewText, True
-    Obj.DrawBtn btnPreview1, FALSE
+    Obj.DrawBtn btnPreview1, False
     Obj.DrawBtn btnPreview2, True
-    Obj.DrawImg imgPreview
-
+    
     Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 32, clrWindowText, 1
     Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 48, clrWindowText, 2
     Font.Print "Preview link", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 4, ClrDesktopText, 1
     Font.Print "preview.exe", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 18, ClrDesktopText, 2
+
+    Obj.DrawImg imgPreview
+    Obj.DrawBtn btnMenuPreview, False
+    Font.Print "Unselected", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 22, clrWindowText, 1
+
+    Mouse.Hide
+    LINE (btnMenuPreview.Pos.Left + 2, btnMenuPreview.Pos.Top + 3)-(btnMenuPreview.Pos.Left + btnMenuPreview.Pos.Width - 2, btnMenuPreview.Pos.Top + 18), ClrSelect, BF
+    LINE (btnMenuPreview.Pos.Left + 5, btnMenuPreview.Pos.Top + 17)-(btnMenuPreview.Pos.Left + 12, btnMenuPreview.Pos.Top + 17), clrSelectText
+    LINE (btnMenuPreview.Pos.Left + 5, btnMenuPreview.Pos.Top + 33)-(btnMenuPreview.Pos.Left + 12, btnMenuPreview.Pos.Top + 33), clrWindowText
+    Mouse.Show
+    Font.Print "Selected item", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 6, clrSelectText, 1
 
     Sys.LoadTheme
 
@@ -291,7 +306,7 @@ TopOfLoop:
                 CASE 13
                     btnObject.Caption = "Selection text"
             END SELECT
-            Obj.DrawBtn btnObject, FALSE
+            Obj.DrawBtn btnObject, False
         END IF
 
         IF Obj.TxtClick(txtThemeName) OR Key$ = "n" THEN
@@ -319,7 +334,7 @@ TopOfLoop:
                 IF NOT UCASE$(TargetFile$) = ThemeFile$ THEN
                     DIM DoSave
                     DoSave = Sys.MsgBox("File already exists", "The specified theme file already exists. Do you want" + CHR$(13) + "to owerwrite it with this theme?", msgQuest)
-                    IF DoSave = FALSE THEN GOTO TopOfLoop
+                    IF DoSave = False THEN GOTO TopOfLoop
                 END IF
 
                 'Make sure we start with a clean file
@@ -353,13 +368,13 @@ TopOfLoop:
             File.CfgWrite TargetFile$, "ClrSelect", LTRIM$(STR$(thmClrSelect))
             File.CfgWrite TargetFile$, "ClrSelectText", LTRIM$(STR$(thmClrSelectText))
 
-            ThemeChanged = FALSE
+            ThemeChanged = False
 
             GOTO RedrawAll
         END IF
 
         IF Obj.BtnClick(btnExit) OR Key$ = "x" OR Key$ = CHR$(27) THEN
-            IF ThemeChanged = FALSE THEN END
+            IF ThemeChanged = False THEN END
             IF Sys.MsgBox("Theme has been modified", "This theme contains unsaved changes. Do you" + CHR$(13) + "want to exit and loose your changes?", msgQuest) = True THEN
                 END
             END IF
@@ -399,7 +414,7 @@ SUB Theme.Load (BYVAL ThmFile AS STRING)
     Clr3DLight = VAL(File.CfgRead(ThmFile, "Clr3DLight", "7"))
     Clr3DShadow = VAL(File.CfgRead(ThmFile, "Clr3DShadow", "8"))
     ClrSelect = VAL(File.CfgRead(ThmFile, "ClrSelect", "1"))
-    ClrSelectText = VAL(File.CfgRead(ThmFile, "ClrSelectText", "1"))
+    clrSelectText = VAL(File.CfgRead(ThmFile, "ClrSelectText", "1"))
 
     
 END SUB
@@ -444,7 +459,7 @@ SUB Theme.Main ()
             END
         END IF
 
-        IF File.Exists(Sys.Path + "DATA\THEMES\" + ThemeFile$ + ".THM") = FALSE THEN
+        IF File.Exists(Sys.Path + "DATA\THEMES\" + ThemeFile$ + ".THM") = False THEN
             I = Sys.MsgBox("File not found", "The filename you specified was not found." + CHR$(13) + "Do not type a path or extension, only a filename" + CHR$(13) + "with a maximun lenght of 8 characters.", msgError)
             END
         END IF
@@ -501,10 +516,10 @@ FUNCTION Theme.Select () AS STRING
     btnNext.Caption = "->"
 
     Obj.DrawWin winTheme
-    Obj.DrawBtn btnBack, FALSE
-    Obj.DrawBtn btnEdit, FALSE
-    Obj.DrawBtn btnCancel, FALSE
-    Obj.DrawBtn btnNext, FALSE
+    Obj.DrawBtn btnBack, False
+    Obj.DrawBtn btnEdit, False
+    Obj.DrawBtn btnCancel, False
+    Obj.DrawBtn btnNext, False
     Obj.DrawFrm frmPreview, 15, Clr3DShadow
     Font.Print "Theme name:", winTheme.Pos.Left + 12, winTheme.Pos.Top + 32, clrWindowText, 1
     Font.Print "Theme author:", winTheme.Pos.Left + 12, winTheme.Pos.Top + 47, clrWindowText, 1
@@ -514,6 +529,7 @@ FUNCTION Theme.Select () AS STRING
     DIM txtPreview AS TextboxType, txtPreviewText AS STRING
     DIM btnPreview1 AS ButtonType, btnPreview2 AS ButtonType
     DIM imgPreview AS ImageType
+    DIM btnMenuPreview AS ButtonType
 
     winPreview.Pos.Left = frmPreview.Pos.Left + 20
     winPreview.Pos.Top = frmPreview.Pos.Top + 20
@@ -533,9 +549,11 @@ FUNCTION Theme.Select () AS STRING
     Obj.SetSize btnPreview2.Pos, winPreview.Pos.Left + 133, winPreview.Pos.Top + 111, 111, 22
     btnPreview2.Caption = "Button down"
 
-    imgPreview.Pos.Left = frmPreview.Pos.Left + 100
+    imgPreview.Pos.Left = frmPreview.Pos.Left + 32
     imgPreview.Pos.Top = frmPreview.Pos.Top + 190
     imgPreview.ImageFile = "LOGO"
+
+    Obj.SetSize btnMenuPreview.Pos, imgPreview.Pos.Left + 140, imgPreview.Pos.Top - 4, 98, 37
 
 
     'Load theme filenames into array
@@ -570,7 +588,7 @@ UpdatePreview:
 
     Obj.DrawWin winPreview
     Obj.DrawTxt txtPreview, txtPreviewText, True
-    Obj.DrawBtn btnPreview1, FALSE
+    Obj.DrawBtn btnPreview1, False
     Obj.DrawBtn btnPreview2, True
     
     Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 32, clrWindowText, 1
@@ -579,6 +597,15 @@ UpdatePreview:
     Font.Print "preview.exe", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 18, ClrDesktopText, 2
 
     Obj.DrawImg imgPreview
+    Obj.DrawBtn btnMenuPreview, False
+    Font.Print "Unselected", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 22, clrWindowText, 1
+
+    Mouse.Hide
+    LINE (btnMenuPreview.Pos.Left + 2, btnMenuPreview.Pos.Top + 3)-(btnMenuPreview.Pos.Left + btnMenuPreview.Pos.Width - 2, btnMenuPreview.Pos.Top + 18), ClrSelect, BF
+    LINE (btnMenuPreview.Pos.Left + 5, btnMenuPreview.Pos.Top + 17)-(btnMenuPreview.Pos.Left + 12, btnMenuPreview.Pos.Top + 17), clrSelectText
+    LINE (btnMenuPreview.Pos.Left + 5, btnMenuPreview.Pos.Top + 33)-(btnMenuPreview.Pos.Left + 12, btnMenuPreview.Pos.Top + 33), clrWindowText
+    Mouse.Show
+    Font.Print "Selected item", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 6, clrSelectText, 1
 
     Sys.LoadTheme
 
@@ -662,7 +689,7 @@ FUNCTION Theme.SelectObject (BYVAL CurrentSelection) AS INTEGER
         IF I = CurrentSelection THEN
             Obj.DrawBtn btnObject(I), True
         ELSE
-            Obj.DrawBtn btnObject(I), FALSE
+            Obj.DrawBtn btnObject(I), False
         END IF
     NEXT
 
@@ -693,7 +720,7 @@ FUNCTION Theme.SelectObject (BYVAL CurrentSelection) AS INTEGER
                         Sys.VGALoad "THMOBJ"
                         EXIT FUNCTION
                     ELSE
-                        IF NOT I = ActiveSelection THEN Obj.DrawBtn btnObject(I), FALSE
+                        IF NOT I = ActiveSelection THEN Obj.DrawBtn btnObject(I), False
                     END IF
                 END IF
             NEXT
@@ -701,7 +728,7 @@ FUNCTION Theme.SelectObject (BYVAL CurrentSelection) AS INTEGER
 
         IF Key$ = CHR$(0) + "h" THEN
             IF ActiveSelection > 1 THEN
-                Obj.DrawBtn btnObject(ActiveSelection), FALSE
+                Obj.DrawBtn btnObject(ActiveSelection), False
                 ActiveSelection = ActiveSelection - 1
                 Obj.DrawBtn btnObject(ActiveSelection), True
             END IF
@@ -709,7 +736,7 @@ FUNCTION Theme.SelectObject (BYVAL CurrentSelection) AS INTEGER
 
         IF Key$ = CHR$(0) + "p" THEN
             IF ActiveSelection < 13 THEN
-                Obj.DrawBtn btnObject(ActiveSelection), FALSE
+                Obj.DrawBtn btnObject(ActiveSelection), False
                 ActiveSelection = ActiveSelection + 1
                 Obj.DrawBtn btnObject(ActiveSelection), True
             END IF
