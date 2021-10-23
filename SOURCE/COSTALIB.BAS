@@ -466,9 +466,9 @@ SUB Obj.DrawBtn (TargetBtn AS ButtonType, Pressed AS INTEGER)
 	DIM Color1, Color2, Color3, Color4
 	IF Pressed = False THEN
 		Color1 = 15
-		Color2 = Clr3DLight
+		Color2 = ClrButton
 		Color3 = Clr3DShadow
-		Color4 = 0
+		Color4 = ClrWindowText
 	ELSE
 		Color1 = 0
 		Color2 = Clr3DShadow
@@ -477,19 +477,17 @@ SUB Obj.DrawBtn (TargetBtn AS ButtonType, Pressed AS INTEGER)
 	END IF
 
 	Mouse.Hide
-	IF TargetBtn.Transparent = False THEN LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 2), ClrButton, BF
+	IF TargetBtn.Transparent = False THEN
+		LINE (x1, y1)-(x2 - 1, y2 - 1), Color2, BF
+	ELSE
+		LINE (x1, y1)-(x2 - 1, y2 - 1), Color2, B
+	END IF
 
-	LINE (x1, y1)-(x1, y2), Color1
-	LINE (x1 + 1, y1)-(x2, y1), Color1
+	LINE (x1 + 1, y1 + 1)-(x2 - 2, y1 + 1), Color1
+	LINE (x1 + 1, y1 + 2)-(x1 + 1, y2 - 2), Color1
 
-	LINE (x1 + 1, y1 + 1)-(x1 + 1, y2 - 1), Color2
-	LINE (x1 + 2, y1 + 1)-(x2 - 1, y1 + 1), Color2
-	
-	LINE (x1 + 2, y2 - 1)-(x2 - 1, y2 - 1), Color3
-	LINE (x2 - 1, y1 + 2)-(x2 - 1, y2 - 2), Color3
-
-	LINE (x1 + 1, y2)-(x2, y2), Color4
-	LINE (x2, y1 + 1)-(x2, y2 - 1), Color4
+	LINE (x1, y2)-(x2, y2), Color3
+	LINE (x2, y1)-(x2, y2 - 1), Color3
 
 	IF NOT RTRIM$(TargetBtn.Caption) = "" THEN
 		'Draw the caption centered on the button, and underline the hotkey
@@ -497,14 +495,14 @@ SUB Obj.DrawBtn (TargetBtn AS ButtonType, Pressed AS INTEGER)
 		y1 = ((y2 - y1) - 9) / 2 + y1
 		IF Pressed = True THEN x1 = x1 + 1: y1 = y1 + 1
 		
-		Font.Print TargetBtn.Caption, x1, y1, ClrWindowText, FontHeading
+		Font.Print TargetBtn.Caption, x1, y1, Color4, FontHeading
 
 		
 		IF TargetBtn.HotKey > 0 AND TargetBtn.HotKey <= LEN(RTRIM$(TargetBtn.Caption)) THEN
 			DIM XStart, XEnd
 			XStart = x1 + Font.GetWidth(LEFT$(TargetBtn.Caption, TargetBtn.HotKey - 1), FontHeading) - 1
 			XEnd = x1 + Font.GetWidth(LEFT$(TargetBtn.Caption, TargetBtn.HotKey), FontHeading) + 1
-			LINE (x1 + Font.GetWidth(LEFT$(TargetBtn.Caption, TargetBtn.HotKey - 1), FontHeading) - 1, y1 + 11)-(x1 + Font.GetWidth(LEFT$(TargetBtn.Caption, TargetBtn.HotKey), FontHeading), y1 + 11), ClrWindowText
+			LINE (x1 + Font.GetWidth(LEFT$(TargetBtn.Caption, TargetBtn.HotKey - 1), FontHeading) - 1, y1 + 11)-(x1 + Font.GetWidth(LEFT$(TargetBtn.Caption, TargetBtn.HotKey), FontHeading), y1 + 11), Color4
 		END IF
 		
 	END IF
@@ -529,27 +527,27 @@ SUB Obj.DrawChk (TargetChk AS CheckBoxType)
 	Mouse.Hide
 	LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 2), ClrTextbox, BF
 
-	LINE (x1, y1)-(x1, y2), 0
-	LINE (x1 + 1, y1)-(x2, y1), 0
-
-	LINE (x1 + 1, y1 + 1)-(x1 + 1, y2 - 1), Clr3DShadow
-	LINE (x1 + 2, y1 + 1)-(x2 - 1, y1 + 1), Clr3DShadow
-
-	LINE (x1 + 2, y2 - 1)-(x2 - 1, y2 - 1), Clr3DLight
-	LINE (x2 - 1, y1 + 2)-(x2 - 1, y2 - 2), Clr3DLight
-
-	LINE (x1 + 1, y2)-(x2, y2), 15
-	LINE (x2, y1 + 1)-(x2, y2 - 1), 15
+	LINE (x1 + 1, y1 + 1)-(x2, y2)
+	LINE (x1 + 1, y1 + 1)-(x2, y2), 0, B
+	LINE (x2 - 1, y1 + 2)-(x2 - 1, y2 - 1), 0
+	LINE (x1 + 2, y2 - 1)-(x2 - 2, y2 - 1), 0
+	
+	LINE (x1, y1)-(x1, y2), Clr3DShadow
+	LINE (x1 + 1, y1)-(x2, y1), Clr3DShadow
 
 	IF TargetChk.Checked = True THEN
-		LINE (x1 + 4, y1 + 7)-(x1 + 4, y1 + 9), ClrTextboxText
-		LINE (x1 + 5, y1 + 8)-(x1 + 5, y1 + 10), ClrTextboxText
-		LINE (x1 + 6, y1 + 9)-(x1 + 6, y1 + 11), ClrTextboxText
 
-		LINE (x1 + 7, y1 + 8)-(x1 + 7, y1 + 10), ClrTextboxText
-		LINE (x1 + 8, y1 + 7)-(x1 + 8, y1 + 9), ClrTextboxText
-		LINE (x1 + 9, y1 + 6)-(x1 + 9, y1 + 8), ClrTextboxText
-		LINE (x1 + 10, y1 + 5)-(x1 + 10, y1 + 7), ClrTextboxText
+		LINE (x1 + 5, y1 + 8)-(x1 + 7, y1 + 10), ClrTextboxText
+		LINE (x1 + 5, y1 + 9)-(x1 + 7, y1 + 11), ClrTextboxText
+		LINE (x1 + 8, y1 + 9)-(x1 + 11, y1 + 6), ClrTextboxText
+		LINE (x1 + 8, y1 + 10)-(x1 + 11, y1 + 7), ClrTextboxText
+
+		LINE (x1 + 5, y1 + 7)-(x1 + 7, y1 + 9), Clr3DShadow
+		LINE (x1 + 8, y1 + 8)-(x1 + 11, y1 + 5), Clr3DShadow
+
+		LINE (x1 + 5, y1 + 10)-(x1 + 6, y1 + 11), Clr3DLight
+		LINE (x1 + 8, y1 + 11)-(x1 + 11, y1 + 8), Clr3DLight
+
 	END IF
 
 	Mouse.Show
@@ -636,17 +634,9 @@ SUB Obj.DrawTxt (TargetTxt AS TextboxType, BYVAL Text AS STRING, IsEditing AS IN
 	Mouse.Hide
 	LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 2), ClrTextbox, BF
 
-	LINE (x1, y1)-(x1, y2), 0
-	LINE (x1 + 1, y1)-(x2, y1), 0
+	LINE (x1, y1)-(x2 - 1, y2 - 1), Clr3DLight, B
+	LINE (x1 + 1, y1 + 1)-(x2, y2), Clr3DShadow, B
 
-	LINE (x1 + 1, y1 + 1)-(x1 + 1, y2 - 1), Clr3DShadow
-	LINE (x1 + 2, y1 + 1)-(x2 - 1, y1 + 1), Clr3DShadow
-
-	LINE (x1 + 2, y2 - 1)-(x2 - 1, y2 - 1), Clr3DLight
-	LINE (x2 - 1, y1 + 2)-(x2 - 1, y2 - 2), Clr3DLight
-
-	LINE (x1 + 1, y2)-(x2, y2), 15
-	LINE (x2, y1 + 1)-(x2, y2 - 1), 15
 
 	Mouse.Show
 
@@ -680,27 +670,25 @@ SUB Obj.DrawWin (TargetWin AS WindowType)
 
 	Mouse.Hide
 
-	'Window interior and borders
-	LINE (x1 + 2, y1 + 2)-(x2 - 1, y2 - 1), ClrWindow, BF
+	'Window titlebar and borders
+	LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 1), ClrTitleBar, BF
 	
-
 	'Outer border
-	LINE (x1 + 1, y1 + 1)-(x1 + 1, y2 - 1), 15
-	LINE (x1 + 2, y1 + 1)-(x2 - 1, y1 + 1), 15
-	LINE (x2 + 1, y1 + 2)-(x2 + 1, y2 + 1), 0
-	LINE (x1 + 1, y2 + 1)-(x2, y2 + 1), 0
+	LINE (x1, y1)-(x2 - 1, y1), 15
+	LINE (x1, y1 + 1)-(x1, y2 - 1), 15
+	LINE (x2, y1)-(x2, y2), 0
+	LINE (x1, y2)-(x2 - 1, y2), 0
+	LINE (x2 - 1, y1 + 1)-(x2 - 1, y2 - 1), Clr3DShadow
+	LINE (x1 + 1, y2 - 1)-(x2 - 2, y2 - 1), Clr3DShadow
+	LINE (x1 + 1, y1 + 1)-(x2 - 2, y1 + 1), Clr3DLight
+	LINE (x1 + 1, y1 + 2)-(x1 + 1, y2 - 2), Clr3DLight
 
 	'Inner border
-	LINE (x1, y1)-(x2, y1), Clr3DLight
-	LINE (x1, y1)-(x1, y2), Clr3DLight
-	LINE (x1 + 1, y2)-(x2, y2), Clr3DShadow
-	LINE (x2, y1 + 1)-(x2, y2 - 1), Clr3DShadow
+	LINE (x1 + 5, y1 + 23)-(x2 - 5, y2 - 5), Clr3DShadow, B
+	LINE (x1 + 6, y1 + 24)-(x2 - 6, y2 - 6), Clr3DLight, B
 
 	'Titlebar
-	LINE (x1 + 4, y1 + 4)-(x2 - 4, y1 + 22), Clr3DShadow, B
-	LINE (x1 + 5, y1 + 5)-(x2 - 5, y1 + 21), ClrTitleBar, BF
-	LINE (x1 + 4, y1 + 23)-(x2 - 4, y1 + 23), 15
-	LINE (x2 - 3, y1 + 4)-(x2 - 3, y1 + 22), 15
+	LINE (x1 + 7, y1 + 25)-(x2 - 7, y2 - 7), ClrWindow, BF
 
 	IF NOT RTRIM$(TargetWin.Caption) = "" THEN
 		'Draw caption centered on titlebar
@@ -885,7 +873,7 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 	DIM winInputBox AS WindowType
 	winInputBox.Pos.Width = msgTextWidth + 76
 	IF winInputBox.Pos.Width < 194 THEN winInputBox.Pos.Width = 194
-	winInputBox.Pos.Height = msgLineCount * 15 + 134
+	winInputBox.Pos.Height = msgLineCount * 15 + 138
 	winInputBox.Pos.Left = (640 - winInputBox.Pos.Width) / 2
 	winInputBox.Pos.Top = (480 - winInputBox.Pos.Height) / 2
 	winInputBox.Caption = "Input required"
@@ -934,7 +922,6 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 	Obj.DrawTxt txtInput, txtInputText, False
 
 	IF LEN(msgIcon) THEN
-		Obj.DrawImg imgIcon
 		Font.Print msgTitle, winInputBox.Pos.Left + 53, winInputBox.Pos.Top + 33, ClrWindowText, 1
 	ELSE
 		Font.Print msgTitle, winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 33, ClrWindowText, 1
@@ -951,6 +938,8 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 
 	Font.Print "Input:", txtInput.Pos.Left, txtInput.Pos.Top - 16, ClrWindowText, FontHeading
 	LINE (txtInput.Pos.Left + 5, txtInput.Pos.Top - 6)-(txtInput.Pos.Left + 12, txtInput.Pos.Top - 6), ClrWindowText
+
+	IF LEN(msgIcon) THEN Obj.DrawImg imgIcon
 
 	DIM Key$
 	DO
@@ -1072,29 +1061,18 @@ SUB Sys.Load ()
 	'VGA 640x480, 16 colors
 	SCREEN 12
 
-	'If DESKTOP.INT exists we can load the desktop, and skip drawing it
-	'manually
-		IF File.Exists(Sys.Path + "DATA\TEMP\DESKTOP.INT") THEN
-			Mouse.Hide
-			Sys.VGALoad "DESKTOP"
-			Mouse.Show
-		ELSE
-			Mouse.Hide
-			PAINT (0, 0), ClrDesktop
-			Mouse.Show
-		END IF
-
+	Mouse.Hide
+	LINE (0, 0)-(639, 0), ClrWindow
+	LINE (0, 1)-(639, 1), Clr3DShadow
+	LINE (0, 2)-(639, 2), 0
+	LINE (0, 2)-(639, 479), ClrDesktop, BF
+	Mouse.Show
 
 	'Set the right colors for the palette
 		OUT &H3C8, 6
 		OUT &H3C9, 31
 		OUT &H3C9, 31
 		OUT &H3C9, 0
-
-		OUT &H3C8, 9
-		OUT &H3C9, 0
-		OUT &H3C9, 0
-		OUT &H3C9, 255
 
 		OUT &H3C8, 10
 		OUT &H3C9, 0
@@ -1117,9 +1095,9 @@ END SUB
 
 SUB Sys.LoadTheme ()
 	ClrThemeFile = File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "ThemeFile", "Default")
-	ClrDesktop = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrDesktop", "3"))
+	ClrDesktop = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrDesktop", "9"))
 	ClrDesktopText = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrDesktopText", "0"))
-	ClrWindow = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrWindow", "7"))
+	ClrWindow = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrWindow", "15"))
 	ClrButton = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrButton", "7"))
 	ClrTextbox = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrTextbox", "15"))
 	ClrTextboxText = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrTextboxText", "0"))
@@ -1128,8 +1106,8 @@ SUB Sys.LoadTheme ()
 	ClrTitleBarText = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrTitlebarText", "15"))
 	Clr3DLight = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "Clr3DLight", "7"))
 	Clr3DShadow = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "Clr3DShadow", "8"))
-	ClrSelect = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrSelect", "1"))
-	ClrSelectText = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrSelectText", "15"))
+	ClrSelect = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrSelect", "15"))
+	ClrSelectText = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrSelectText", "8"))
 END SUB
 
 FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
@@ -1170,7 +1148,7 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	ELSE
 		IF winMsgBox.Pos.Width < 102 THEN winMsgBox.Pos.Width = 102
 	END IF
-	winMsgBox.Pos.Height = msgLineCount * 15 + 92
+	winMsgBox.Pos.Height = msgLineCount * 15 + 96
 	winMsgBox.Pos.Left = (640 - winMsgBox.Pos.Width) / 2
 	winMsgBox.Pos.Top = (480 - winMsgBox.Pos.Height) / 2
 	IF msgType = msgInfo THEN winMsgBox.Caption = "Information"
@@ -1221,7 +1199,6 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	END IF
 
 	Obj.DrawWin winMsgBox
-	Obj.DrawImg imgIcon
 	Obj.DrawBtn btnFirst, False
 	IF msgType = msgQuest THEN Obj.DrawBtn btnSecond, False
 
@@ -1232,6 +1209,8 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 		Font.Print msgLines(PrintLine), winMsgBox.Pos.Left + 56, winMsgBox.Pos.Top + 35 + (15 * PrintLine), ClrWindowText, 2
 	NEXT
 	
+	Obj.DrawImg imgIcon
+
 	DIM Key$
 	DO
 

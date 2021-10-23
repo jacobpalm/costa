@@ -11,7 +11,7 @@ COMMON SHARED FileData() AS STRING
 
 Sys.Load
 
-IF NOT INSTR(COMMAND$, "/DEV") THEN
+IF NOT COMMAND$ = "/DEV" THEN
     TView.Main COMMAND$
 ELSE
     TView.Main ""

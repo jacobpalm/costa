@@ -65,7 +65,6 @@ SUB Conf.ConfAssoc ()
     txtFileType.MaxLen = 3
 
     Obj.DrawWin winAssoc
-    Obj.DrawImg imgIcon
     Obj.DrawTxt txtFileType, txtFileTypeText, False
     Obj.DrawTxt txtOpenWith, txtOpenWithText, False
     Obj.DrawBtn btnClose, False
@@ -87,6 +86,8 @@ SUB Conf.ConfAssoc ()
     LINE (104, 305)-(110, 305), ClrWindowText
     LINE (181, 305)-(188, 305), ClrWindowText
     Mouse.Show
+
+    Obj.DrawImg imgIcon
 
     DO
 
@@ -458,24 +459,23 @@ SUB Conf.ConfTheme ()
 UpdatePreview:
     Mouse.Hide
     LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 2)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + frmPreview.Pos.Height - 2), ClrDesktop, BF
+    LINE (winTheme.Pos.Left + 110, winTheme.Pos.Top + 29)-(winTheme.Pos.Left + 312, winTheme.Pos.Top + 59), POINT(168, 94), BF
+    Font.Print ThemeName$, winTheme.Pos.Left + 115, winTheme.Pos.Top + 32, POINT(178, 100), 2
+    Font.Print ThemeAuthor$, winTheme.Pos.Left + 115, winTheme.Pos.Top + 47, POINT(178, 100), 2
     Mouse.Show
     Obj.DrawWin winPreview
     Obj.DrawTxt txtPreview, txtPreviewText, True
     Obj.DrawBtn btnPreview1, False
     Obj.DrawBtn btnPreview2, True
-    Obj.DrawImg imgPreview
-                                  
+    
     Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 32, ClrWindowText, 1
     Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 48, ClrWindowText, 2
     Font.Print "Preview link", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 4, ClrDesktopText, 1
     Font.Print "preview.exe", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 18, ClrDesktopText, 2
 
-    Mouse.Hide
-    LINE (winTheme.Pos.Left + 110, winTheme.Pos.Top + 29)-(winTheme.Pos.Left + 312, winTheme.Pos.Top + 59), POINT(164, 150), BF
-    Mouse.Show
-    Font.Print ThemeName$, winTheme.Pos.Left + 115, winTheme.Pos.Top + 32, POINT(178, 100), 2
-    Font.Print ThemeAuthor$, winTheme.Pos.Left + 115, winTheme.Pos.Top + 47, POINT(178, 100), 2
-    Conf.LoadTheme ClrThemeFile
+    Obj.DrawImg imgPreview
+
+    Sys.LoadTheme
 
 
     DO
@@ -489,6 +489,7 @@ UpdatePreview:
         END IF
 
         IF Obj.BtnClick(btnCancel) OR Key$ = "c" OR Key$ = CHR$(27) THEN
+            Sys.LoadTheme
             EXIT SUB
         END IF
 
@@ -593,11 +594,8 @@ SUB Conf.Main ()
     Obj.DrawBtn btnThemes, False
     Obj.DrawBtn btnFileAssoc, False
     Obj.DrawBtn btnMisc, False
-    Obj.DrawImg imgThemes
-    Obj.DrawImg imgFileAssoc
-    Obj.DrawImg imgMisc
     Obj.DrawBtn btnClose, False
-
+    
     Font.Print "Theme selector", btnThemes.Pos.Left + 60, btnThemes.Pos.Top, ClrWindowText, 1
     Font.Print "Change the colors of the user interface. Costa comes", btnThemes.Pos.Left + 60, btnThemes.Pos.Top + 15, ClrWindowText, 2
     Font.Print "with a collection of themes for you to choose from.", btnThemes.Pos.Left + 60, btnThemes.Pos.Top + 29, ClrWindowText, 2
@@ -616,6 +614,11 @@ SUB Conf.Main ()
     LINE (btnFileAssoc.Pos.Left + 59, btnFileAssoc.Pos.Top + 11)-(btnFileAssoc.Pos.Left + 64, btnFileAssoc.Pos.Top + 11), ClrWindowText
     Mouse.Show
 
+    Obj.DrawImg imgThemes
+    Obj.DrawImg imgFileAssoc
+    Obj.DrawImg imgMisc
+
+    
     DIM Key$
     DO
         Key$ = LCASE$(INKEY$)

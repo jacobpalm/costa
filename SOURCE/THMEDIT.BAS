@@ -506,11 +506,9 @@ FUNCTION Theme.Select () AS STRING
     Obj.DrawBtn btnCancel, FALSE
     Obj.DrawBtn btnNext, FALSE
     Obj.DrawFrm frmPreview, 15, Clr3DShadow
-    Mouse.Hide
     Font.Print "Theme name:", winTheme.Pos.Left + 12, winTheme.Pos.Top + 32, clrWindowText, 1
     Font.Print "Theme author:", winTheme.Pos.Left + 12, winTheme.Pos.Top + 47, clrWindowText, 1
-    Mouse.Show
-
+    
     'The rest of the controls are used in the preview
     DIM winPreview AS WindowType
     DIM txtPreview AS TextboxType, txtPreviewText AS STRING
@@ -565,23 +563,22 @@ FUNCTION Theme.Select () AS STRING
 UpdatePreview:
     Mouse.Hide
     LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 2)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + frmPreview.Pos.Height - 2), ClrDesktop, BF
+    LINE (winTheme.Pos.Left + 110, winTheme.Pos.Top + 29)-(winTheme.Pos.Left + 312, winTheme.Pos.Top + 59), POINT(170, 93), BF
     Mouse.Show
+    Font.Print ThemeName$, winTheme.Pos.Left + 115, winTheme.Pos.Top + 32, POINT(178, 100), 2
+    Font.Print ThemeAuthor$, winTheme.Pos.Left + 115, winTheme.Pos.Top + 47, POINT(178, 100), 2
+
     Obj.DrawWin winPreview
     Obj.DrawTxt txtPreview, txtPreviewText, True
     Obj.DrawBtn btnPreview1, FALSE
     Obj.DrawBtn btnPreview2, True
-    Obj.DrawImg imgPreview
-                                  
+    
     Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 32, clrWindowText, 1
     Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 48, clrWindowText, 2
     Font.Print "Preview link", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 4, ClrDesktopText, 1
     Font.Print "preview.exe", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 18, ClrDesktopText, 2
 
-    Mouse.Hide
-    LINE (winTheme.Pos.Left + 110, winTheme.Pos.Top + 29)-(winTheme.Pos.Left + 312, winTheme.Pos.Top + 59), POINT(164, 150), BF
-    Mouse.Show
-    Font.Print ThemeName$, winTheme.Pos.Left + 115, winTheme.Pos.Top + 32, POINT(178, 100), 2
-    Font.Print ThemeAuthor$, winTheme.Pos.Left + 115, winTheme.Pos.Top + 47, POINT(178, 100), 2
+    Obj.DrawImg imgPreview
 
     Sys.LoadTheme
 

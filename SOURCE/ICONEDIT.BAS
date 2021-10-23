@@ -26,6 +26,7 @@ END TYPE
 DIM SHARED IconData AS IconEditDataType
 DIM SHARED IconFileName AS STRING
 DIM SHARED IconChanged
+DIM SHARED TransPixel(49)
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
@@ -59,9 +60,8 @@ SUB IconEdit.DrawPixel (X, Y, DrawColor, ForceDraw)
             LINE (XPos, YPos)-(XPos + 11, YPos + 11), DrawColor, BF
             PSET (514 + X, 269 + Y), DrawColor
         ELSE
-            LINE (XPos, YPos)-(XPos + 11, YPos + 11), 15, BF
+            PUT (XPos, YPos), TransPixel, PSET
             PSET (514 + X, 269 + Y), clrButton
-            Font.Print "T", XPos + 3, YPos + 2, 0, FontHeading
         END IF
         Mouse.Show
 
@@ -284,6 +284,14 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     btnExit.HotKey = 2
 
     Obj.SetSize txtColor(-1).Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 36, txtDrawArea.Pos.Top + 153, 37, 18
+    
+    'Before drawing window, draw traparent pixel and save to buffer for
+    'for faster drawing later (T drawn by font routine is slow)
+    Mouse.Hide
+    LINE (100, 100)-(111, 111), 15, BF
+    Font.Print "T", 103, 102, 0, FontHeading
+    GET (100, 100)-(111, 111), TransPixel(0)
+    Mouse.Show
     
     Obj.DrawWin winMain
     Obj.DrawTxt txtDrawArea, "", False

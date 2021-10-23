@@ -121,24 +121,22 @@ SUB Desk.AboutBox ()
   DIM winAboutBox AS WindowType
   DIM btnClose AS ButtonType
   DIM imgLogo AS ImageType
-  DIM frmBack AS FrameType
   DIM Key$
 
   Obj.SetSize winAboutBox.Pos, 156, 100, 328, 278
-  Obj.SetSize frmBack.Pos, 160, 104, 321, 236
-  Obj.SetSize btnClose.Pos, 274, 348, 92, 22
+  Obj.SetSize btnClose.Pos, 274, 343, 92, 22
   Obj.SetSize imgLogo.Pos, 168, 111, -1, -1
   btnClose.Caption = "Close"
   btnClose.HotKey = 1
   imgLogo.ImageFile = "LOGO"
   
   Obj.DrawWin winAboutBox
-  Obj.DrawBtn btnClose, False
-  Obj.DrawFrm frmBack, 15, 8
   Mouse.Hide
-  LINE (162, 106)-(479, 338), 15, BF
+  LINE (winAboutBox.Pos.Left + 5, winAboutBox.Pos.Top + 5)-(winAboutBox.Pos.Left + winAboutBox.Pos.Width - 5, winAboutBox.Pos.Top + winAboutBox.Pos.Height - 5), Clr3DShadow, B
+  LINE (winAboutBox.Pos.Left + 6, winAboutBox.Pos.Top + 6)-(winAboutBox.Pos.Left + winAboutBox.Pos.Width - 6, winAboutBox.Pos.Top + winAboutBox.Pos.Height - 6), Clr3DLight, B
+  LINE (winAboutBox.Pos.Left + 7, winAboutBox.Pos.Top + 7)-(winAboutBox.Pos.Left + winAboutBox.Pos.Width - 7, winAboutBox.Pos.Top + winAboutBox.Pos.Height - 7), ClrWindow, BF
   Mouse.Show
-  Obj.DrawImg imgLogo
+  Obj.DrawBtn btnClose, False
   
   Font.Print appName, 210, 117, 0, 1
   Font.Print "Version " + appVersion, 210, 131, 0, 2
@@ -153,6 +151,7 @@ SUB Desk.AboutBox ()
   Font.Print "thanks to those people who were part of the QB", 168, 307, 0, 2
   Font.Print "GUI community - every one of you.", 168, 321, 0, 2
 
+  Obj.DrawImg imgLogo
 
   DO: LOOP WHILE Mouse.Clicked
   DO
@@ -601,13 +600,13 @@ SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
 
   Mouse.Hide
 
-  DIM x1, y1, X2, Y2
+  DIM x1, y1, x2, y2
   x1 = MenuBack.Pos.Left
-  X2 = MenuBack.Pos.Left + MenuBack.Pos.Width
+  x2 = MenuBack.Pos.Left + MenuBack.Pos.Width
   y1 = MenuBack.Pos.Top
-  Y2 = MenuBack.Pos.Top + MenuBack.Pos.Height
+  y2 = MenuBack.Pos.Top + MenuBack.Pos.Height
   
-  GET (x1, y1)-(X2, Y2), BehindMenu
+  GET (x1, y1)-(x2, y2), BehindMenu
   
   DoAnimations = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "Animations", "1"))
   IF DoAnimations = 1 THEN
@@ -618,30 +617,30 @@ SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
     ELSE
       x1 = MenuBack.Pos.Left + MenuBack.Pos.Width
     END IF
-    X2 = x1
+    x2 = x1
     IF DrawFromTop = True THEN
       y1 = MenuBack.Pos.Top
     ELSE
       y1 = MenuBack.Pos.Top + MenuBack.Pos.Height
     END IF
-    Y2 = y1
+    y2 = y1
 
     DO
-      LINE (x1, y1)-(X2, Y2), ClrWindow, B
+      LINE (x1, y1)-(x2, y2), ClrWindow, B
       IF x1 > MenuBack.Pos.Left THEN x1 = x1 - 1
       IF y1 > MenuBack.Pos.Top THEN y1 = y1 - 1
-      IF X2 < MenuBack.Pos.Left + MenuBack.Pos.Width THEN X2 = X2 + 1
-      IF Y2 < MenuBack.Pos.Top + MenuBack.Pos.Height THEN Y2 = Y2 + 1
+      IF x2 < MenuBack.Pos.Left + MenuBack.Pos.Width THEN x2 = x2 + 1
+      IF y2 < MenuBack.Pos.Top + MenuBack.Pos.Height THEN y2 = y2 + 1
       Sys.DelayWait = Sys.DelayWait + 1
       IF Sys.DelayWait = 25 THEN Sys.DelayWait = 0: Sys.Delay .01
-    LOOP UNTIL x1 = MenuBack.Pos.Left AND y1 = MenuBack.Pos.Top AND X2 = MenuBack.Pos.Left + MenuBack.Pos.Width AND Y2 = MenuBack.Pos.Top + MenuBack.Pos.Height
+    LOOP UNTIL x1 = MenuBack.Pos.Left AND y1 = MenuBack.Pos.Top AND x2 = MenuBack.Pos.Left + MenuBack.Pos.Width AND y2 = MenuBack.Pos.Top + MenuBack.Pos.Height
   END IF
   Mouse.Show
 
   FgColor = ClrWindowText
   Obj.DrawBtn MenuBack, False
   Mouse.Hide
-  LINE (x1 + 2, y1 + 2)-(X2 - 2, Y2 - 2), ClrWindow, BF
+  LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 2), ClrWindow, BF
   Mouse.Show
   Font.Print "Open/run", MenuBack.Pos.Left + 6, MenuBack.Pos.Top + 6, FgColor, 1
   Font.Print "Customize..", MenuBack.Pos.Left + 6, MenuBack.Pos.Top + 22, FgColor, 1
@@ -653,7 +652,7 @@ SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
   LINE (MenuBack.Pos.Left + 5, MenuBack.Pos.Top + 65)-(MenuBack.Pos.Left + 12, MenuBack.Pos.Top + 65), FgColor
 
   Mouse.Hide
-  GET (x1, y1)-(X2, Y2), FrontOfMenu
+  GET (x1, y1)-(x2, y2), FrontOfMenu
   Mouse.Show
 
   DIM KeyWasPressed, DidEdit, Key$
@@ -935,7 +934,7 @@ SUB Desk.LinkReset ()
 
     DESKLINK(0).Caption = "Tic Tac Toe"
     DESKLINK(0).Filename = "TICTAC.EXE"
-    DESKLINK(0).Path = appEnviron + "\"
+    DESKLINK(0).Path = ""
     DESKLINK(0).Parameters = ""
     DESKLINK(0).ImageFile = "TICTAC"
     DESKLINK(0).Left = 15
@@ -943,7 +942,7 @@ SUB Desk.LinkReset ()
 
     DESKLINK(1).Caption = "Text Viewer"
     DESKLINK(1).Filename = "TEXTVIEW.EXE"
-    DESKLINK(1).Path = appEnviron + "\"
+    DESKLINK(1).Path = ""
     DESKLINK(1).Parameters = ""
     DESKLINK(1).ImageFile = "DOCUMENT"
     DESKLINK(1).Left = 15
@@ -951,7 +950,7 @@ SUB Desk.LinkReset ()
 
     DESKLINK(2).Caption = "Calculator"
     DESKLINK(2).Filename = "CALC.EXE"
-    DESKLINK(2).Path = appEnviron + "\"
+    DESKLINK(2).Path = ""
     DESKLINK(2).Parameters = ""
     DESKLINK(2).ImageFile = "CALC"
     DESKLINK(2).Left = 15
@@ -959,7 +958,7 @@ SUB Desk.LinkReset ()
 
     DESKLINK(3).Caption = "Theme Editor"
     DESKLINK(3).Filename = "THMEDIT.EXE"
-    DESKLINK(3).Path = appEnviron + "\"
+    DESKLINK(3).Path = ""
     DESKLINK(3).Parameters = ""
     DESKLINK(3).ImageFile = "THEMES"
     DESKLINK(3).Left = 15
@@ -967,7 +966,7 @@ SUB Desk.LinkReset ()
 
     DESKLINK(4).Caption = "Icon Editor"
     DESKLINK(4).Filename = "ICONEDIT.EXE"
-    DESKLINK(4).Path = appEnviron + "\"
+    DESKLINK(4).Path = ""
     DESKLINK(4).Parameters = ""
     DESKLINK(4).ImageFile = "PAINT"
     DESKLINK(4).Left = 15
@@ -984,7 +983,7 @@ SUB Desk.LinkReset ()
 
     DESKLINK(6).Caption = "What's new?"
     DESKLINK(6).Filename = "DOCS\CHANGES.TXT"
-    DESKLINK(6).Path = appEnviron + "\"
+    DESKLINK(6).Path = ""
     DESKLINK(6).Parameters = ""
     DESKLINK(6).ImageFile = "NEWSPAPE"
     DESKLINK(6).Left = 480
@@ -992,7 +991,7 @@ SUB Desk.LinkReset ()
 
     DESKLINK(7).Caption = "User's guide"
     DESKLINK(7).Filename = "DOCS\HELP.TXT"
-    DESKLINK(7).Path = appEnviron + "\"
+    DESKLINK(7).Path = ""
     DESKLINK(7).Parameters = ""
     DESKLINK(7).ImageFile = "HELP"
     DESKLINK(7).Left = 480
@@ -1114,6 +1113,11 @@ SUB Desk.Main ()
   DIM DeskLinkCheck, ClickedX, ClickedY, ClickedB, DidEdit, Key$
   DIM TabCheck, btnTab AS ButtonType, imgTab AS ImageType
   DIM dateLastLaunch AS STRING
+
+  ON LOCAL ERROR RESUME NEXT
+  CHDRIVE LEFT$(Sys.Path, 1)
+  CHDIR Sys.Path
+  ON LOCAL ERROR GOTO 0
   
 Desk.MainTop:
   Mouse.Hide
@@ -1142,7 +1146,6 @@ Desk.MainTop:
         ELSE
             showTip = Sys.MsgBox("Could not read daily tips", "Could not read daily tips from " + Sys.Path + "DATA\DAILYTIPS.DAT." + CHR$(13) + "Make sure this file exists, and isn't corrupted.", msgError)
         END IF
-        PRINT "DATA\CONFIG\" + ProfileID + "\PROFILE.CFG"
         Mouse.Hide
         File.CfgWrite "DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "TipLastShown", STR$(DAY(NOW)) + STR$(MONTH(NOW))
     END IF
@@ -1596,11 +1599,14 @@ TopOfProfile:
         END IF
         imgProfile(Counter).Pos.Top = btnProfile(Counter).Pos.Top + 7
         imgProfile(Counter).Pos.Left = btnProfile(Counter).Pos.Left + 7
-        Obj.DrawImg imgProfile(Counter)
     NEXT
 
     Obj.DrawBtn btnContinue, False
     Obj.DrawBtn btnEdit, False
+
+    FOR Counter = 1 TO 5
+      Obj.DrawImg imgProfile(Counter)
+    NEXT
 
     DO
         Key$ = LCASE$(INKEY$)
@@ -1620,7 +1626,7 @@ TopOfProfile:
                     SelectedProfile = Counter
                     ProfileNamePos = winProfiles.Pos.Left + (winProfiles.Pos.Width / 2) - (Font.GetWidth(ProfileName(SelectedProfile), FontHeading) / 2)
                     Mouse.Hide
-                    LINE (winProfiles.Pos.Left + 2, winProfiles.Pos.Top + 150)-(winProfiles.Pos.Left + winProfiles.Pos.Width - 2, winProfiles.Pos.Top + 166), ClrWindow, BF
+                    LINE (winProfiles.Pos.Left + 7, winProfiles.Pos.Top + 150)-(winProfiles.Pos.Left + winProfiles.Pos.Width - 7, winProfiles.Pos.Top + 166), ClrWindow, BF
                     Mouse.Show
                     Font.Print ProfileName(SelectedProfile), ProfileNamePos, winProfiles.Pos.Top + 154, ClrWindowText, FontHeading
                     DO WHILE Mouse.Clicked: LOOP
