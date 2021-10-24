@@ -2,10 +2,10 @@ OPTION EXPLICIT
 DEFINT A-Z
 
 DECLARE FUNCTION Tic.CheckWin% ()
+DECLARE FUNCTION Tic.LoadState% ()
 DECLARE SUB Tic.AIMove ()
 DECLARE SUB Tic.DrawBoard ()
 DECLARE SUB Tic.DrawXO (FieldRow%, FieldCol%, FieldValue%)
-DECLARE SUB Tic.LoadState ()
 DECLARE SUB Tic.NewGame ()
 DECLARE SUB Tic.Main ()
 DECLARE SUB Tic.PlaySound (SoundType AS INTEGER)
@@ -257,33 +257,60 @@ END SUB
 '   DESCRIPTION: Loads game state from config file. Default values are used
 '                to create a new game, if one or more settings are missing.
 ' =========================================================================
-SUB Tic.LoadState ()
-		DIM X, Y, Counter
-		DIM SaveStatePlayField AS STRING
+FUNCTION Tic.LoadState ()
 
-		EnableAI = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\TICTAC.CFG", "SaveStateAI", "-1"))
-		PlayerTurn = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\TICTAC.CFG", "SaveStatePlayerTurn", "1"))
-		PlayerStart = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\TICTAC.CFG", "SaveStatePlayerStart", "2"))
-		TotalTurns = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\TICTAC.CFG", "SaveStateTotalTurns", "0"))
-		chkAudio.Checked = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\TICTAC.CFG", "AudioEnabled", "0"))
-		
-		SaveStatePlayField = File.CfgRead("DATA\CONFIG\" + ProfileID + "\TICTAC.CFG", "SaveStatePlayfield", STRING$(0, "-"))
+	IF NOT File.Exists("DATA\CONFIG\" + ProfileID + "\TICTAC.CFG") THEN
+		Tic.LoadState = False
+		EXIT FUNCTION
+	END IF
 
+	ON LOCAL ERROR GOTO LoadDefaults
+
+	DIM StateFile, X, Y, SoundEnabled
+	StateFile = FREEFILE
+	OPEN "DATA\CONFIG\" + ProfileID + "\TICTAC.CFG" FOR BINARY AS #StateFile
+	
+	GET #StateFile, , TotalTurns
+	GET #StateFile, , EnableAI
+	GET #StateFile, , PlayerTurn
+	GET #StateFile, , PlayerStart
+	GET #StateFile, , chkAudio.Checked
+
+	IF TotalTurns > 0 THEN
 		FOR X = 1 TO 3
 			FOR Y = 1 TO 3
-				Counter = Counter + 1
-				SELECT CASE MID$(SaveStatePlayField, Counter, 1)
-					CASE "X"
-						PlayField(X, Y) = 1
-					CASE "O"
-						PlayField(X, Y) = 2
-					CASE ELSE
-						PlayField(X, Y) = 0
-				END SELECT
+				GET #StateFile, , PlayField(X, Y)
 			NEXT
 		NEXT
+	END IF
+	
+	'If state was saved after a player won, start a new game
+	IF TotalTurns > 8 THEN Tic.NewGame
 
-END SUB
+	CLOSE #StateFile
+
+	ON LOCAL ERROR RESUME NEXT
+
+	Tic.LoadState = True
+	EXIT FUNCTION
+
+LoadDefaults:
+	'If the file couldn't be read for some reason, load defaults to prevent
+	'crash
+
+	TotalTurns = 0
+	EnableAI = -1
+	PlayerTurn = 1
+	PlayerStart = 1
+	chkAudio.Checked = -1
+	FOR X = 1 TO 3
+		FOR Y = 1 TO 3
+			PlayField(X, Y) = 0
+		NEXT
+	NEXT
+	Tic.LoadState = True
+
+END FUNCTION
 
 ' =========================================================================
 '          NAME: Tic.Main()
@@ -299,6 +326,7 @@ SUB Tic.Main ()
 	DIM winTic AS WindowType
 	DIM btnNew AS ButtonType, btnAIToggle AS ButtonType, btnExit AS ButtonType
 	DIM FieldRow, FieldCol
+	DIM DidLoadState
 
 	Obj.SetSize winTic.Pos, 146, 119, 348, 242
 	winTic.Caption = "Tic Tac Toe for Costa"
@@ -330,8 +358,8 @@ SUB Tic.Main ()
 	LINE (438, 350)-(444, 350), clrWindowText
 	Mouse.Show
 
-	Tic.LoadState
-
+	DidLoadState = Tic.LoadState
+	
 	IF EnableAI = True THEN
 		btnAIToggle.Caption = "2 players"
 	ELSE
@@ -340,7 +368,6 @@ SUB Tic.Main ()
 	Obj.DrawBtn btnAIToggle, False
 
 	Obj.DrawChk chkAudio
-
 
 	DIM key$
 
@@ -356,6 +383,8 @@ StartOfGame:
 		Font.Print "O", 400, 271, clrWindowText, 3
 	END IF
 	Font.Print "'s turn", 408, 271, clrWindowText, 2
+
+	IF NOT DidLoadState THEN Tic.PlaySound SoundNew
 
 	IF EnableAI = True AND PlayerTurn = 2 THEN GOTO PerformAIMove
 
@@ -575,41 +604,23 @@ END SUB
 '                Tic.LoadState
 ' =========================================================================
 SUB Tic.SaveState ()
-		DIM X, Y
-		DIM SaveStatePlayField AS STRING
 
-		IF Tic.CheckWin OR TotalTurns = 9 OR TotalTurns = 0 THEN
+	DIM StateFile, X, Y
+	StateFile = FREEFILE
+	OPEN "DATA\CONFIG\" + ProfileID + "\TICTAC.CFG" FOR BINARY AS #StateFile
 
-			'If board is full or empty - or if one of the players have won - save
-			'an empty board
-			SaveStatePlayField = STRING$(0, "-")
-			File.CfgWrite "DATA\CONFIG\" + ProfileID + "\TICTAC.CFG", "SaveStateTotalTurns", "0"
+	PUT #StateFile, , TotalTurns
+	PUT #StateFile, , EnableAI
+	PUT #StateFile, , PlayerTurn
+	PUT #StateFile, , PlayerStart
+	PUT #StateFile, , chkAudio.Checked
+	FOR X = 1 TO 3
+		FOR Y = 1 TO 3
+			PUT #StateFile, , PlayField(X, Y)
+		NEXT
+	NEXT
 
-		ELSE
-
-			File.CfgWrite "DATA\CONFIG\" + ProfileID + "\TICTAC.CFG", "SaveStateTotalTurns", STR$(TotalTurns)
-
-			FOR X = 1 TO 3
-				FOR Y = 1 TO 3
-
-					SELECT CASE PlayField(X, Y)
-						CASE 0
-							SaveStatePlayField = SaveStatePlayField + "-"
-						CASE 1
-							SaveStatePlayField = SaveStatePlayField + "X"
-						CASE 2
-							SaveStatePlayField = SaveStatePlayField + "O"
-					END SELECT
-
-				NEXT
-			NEXT
-		END IF
-
-		File.CfgWrite "DATA\CONFIG\" + ProfileID + "\TICTAC.CFG", "SaveStateAI", STR$(EnableAI)
-		File.CfgWrite "DATA\CONFIG\" + ProfileID + "\TICTAC.CFG", "SaveStatePlayerTurn", STR$(PlayerTurn)
-		File.CfgWrite "DATA\CONFIG\" + ProfileID + "\TICTAC.CFG", "SaveStatePlayerStart", STR$(PlayerStart)
-		File.CfgWrite "DATA\CONFIG\" + ProfileID + "\TICTAC.CFG", "SaveStatePlayfield", SaveStatePlayField
-		File.CfgWrite "DATA\CONFIG\" + ProfileID + "\TICTAC.CFG", "AudioEnabled", STR$(chkAudio.Checked)
+	CLOSE #StateFile
 
 END SUB
 
