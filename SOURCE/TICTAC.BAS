@@ -261,10 +261,10 @@ FUNCTION Tic.LoadState ()
 
 	IF NOT File.Exists("DATA\CONFIG\" + ProfileID + "\TICTAC.CFG") THEN
 		Tic.LoadState = False
-		EXIT FUNCTION
+		GOTO SanityChecks
 	END IF
 
-	ON LOCAL ERROR GOTO LoadDefaults
+	ON LOCAL ERROR RESUME NEXT
 
 	DIM StateFile, X, Y, SoundEnabled
 	StateFile = FREEFILE
@@ -292,24 +292,21 @@ FUNCTION Tic.LoadState ()
 	ON LOCAL ERROR RESUME NEXT
 
 	Tic.LoadState = True
-	EXIT FUNCTION
 
-LoadDefaults:
-	'If the file couldn't be read for some reason, load defaults to prevent
+SanityChecks:
+	'Various sanity checks to make sure loaded data is valid
 	'crash
-
-	TotalTurns = 0
-	EnableAI = -1
-	PlayerTurn = 1
-	PlayerStart = 1
-	chkAudio.Checked = -1
+	IF TotalTurns < 0 OR TotalTurns > 9 THEN TotalTurns = 0
+	IF EnableAI < -1 OR EnableAI > 0 THEN EnableAI = -1
+	IF PlayerTurn < 1 OR PlayerTurn > 2 THEN PlayerTurn = 1
+	IF PlayerStart < 1 OR PlayerStart > 2 THEN PlayerStart = 1
+	IF chkAudio.Checked < -1 OR chkAudio.Checked > 0 THEN chkAudio.Checked = -1
 	FOR X = 1 TO 3
 		FOR Y = 1 TO 3
-			PlayField(X, Y) = 0
+			IF PlayField(X, Y) < 0 OR PlayField(X, Y) > 2 THEN PlayField(X, Y) = 0
 		NEXT
 	NEXT
-	Tic.LoadState = True
-
+	
 END FUNCTION
 
 ' =========================================================================
@@ -384,7 +381,10 @@ StartOfGame:
 	END IF
 	Font.Print "'s turn", 408, 271, clrWindowText, 2
 
-	IF NOT DidLoadState THEN Tic.PlaySound SoundNew
+	IF NOT DidLoadState THEN
+		Tic.PlaySound SoundNew
+		DidLoadState = True 'Just to make sure sound only plays once...
+	END IF
 
 	IF EnableAI = True AND PlayerTurn = 2 THEN GOTO PerformAIMove
 
