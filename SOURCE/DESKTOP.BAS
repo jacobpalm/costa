@@ -741,7 +741,6 @@ LinkMenuRefresh:
             Mouse.Hide
             PUT (x1, y1), BehindMenu, PSET
             Mouse.Show
-            Sys.VGASave "DESKTOP"
             Desk.LinkLaunch TargetLink
             EXIT SUB
           END IF
@@ -1209,8 +1208,6 @@ MainLoopStart:
                     
                     Desk.LinkMenu DeskLinkCheck, ClickedX, ClickedY
                 ELSE
-                    Sys.VGASave "DESKTOP"
-
                     Desk.LinkLaunch DeskLinkCheck
                 END IF
               END IF
