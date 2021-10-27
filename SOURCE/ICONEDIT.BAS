@@ -61,7 +61,7 @@ SUB IconEdit.DrawPixel (X, Y, DrawColor, ForceDraw)
             PSET (514 + X, 269 + Y), DrawColor
         ELSE
             PUT (XPos, YPos), TransPixel, PSET
-            PSET (514 + X, 269 + Y), clrButton
+            PSET (514 + X, 269 + Y), 15
         END IF
         Mouse.Show
 
@@ -177,13 +177,13 @@ END SUB
 
 SUB IconEdit.LoadIcon (IconToLoad AS STRING)
 
-    DIM FileHandle, XPos, YPos
+    DIM ErrMsg, XPos, YPos
     DIM Header AS STRING * 9
     DIM WindowTitle AS STRING
-    DIM IconLoadData AS IconDataType
+    DIM IconLoadData AS IconEditDataType
     
-    IF NOT File.Exists(Sys.Path + "DATA\IMAGES\" + IconToLoad + ".CIF") THEN
-        FileHandle = Sys.MsgBox("File not found", "Could not open the specified icon." + CHR$(13) + "Verify the filename and try again.", msgError)
+    IF NOT File.Exists(Sys.Path + "DATA\IMAGES\" + IconToLoad + ".BSV") THEN
+        ErrMsg = Sys.MsgBox("File not found", "Could not open the specified icon." + CHR$(13) + "Verify the filename and try again.", msgError)
         EXIT SUB
     END IF
 
@@ -198,6 +198,7 @@ SUB IconEdit.LoadIcon (IconToLoad AS STRING)
         IF Sys.MsgBox("File already open", "The icon you selected is already opened." + CHR$(13) + "Do you want to discard all changes and reload" + CHR$(13) + "the icon as it was last saved?", msgQuest) = False THEN
             EXIT SUB
         END IF
+
     END IF
 
     IF IconChanged = True THEN
@@ -212,40 +213,33 @@ SUB IconEdit.LoadIcon (IconToLoad AS STRING)
 
     'We made it this far - load icon
 
-    FileHandle = FREEFILE
-    OPEN Sys.Path + "DATA\IMAGES\" + IconToLoad + ".CIF" FOR BINARY AS #FileHandle
-    IF LOF(FileHandle) = 1033 THEN
-        GET #FileHandle, , Header
-        IF Header = "JACOBPALM" THEN
-            GET #FileHandle, , IconLoadData
-            CLOSE #FileHandle
 
-            IconFileName = IconToLoad
-            IconChanged = False
-            
-            'Update window title
-            IconEdit.SetTitle
+    DEF SEG = VARSEG(IconLoadData.Pixel(0, 0))
+    BLOAD Sys.Path + "DATA\IMAGES\" + IconToLoad + ".BSV", VARPTR(IconLoadData.Pixel(0, 0))
+    DEF SEG
 
-            'Draw icon and preview
-            Mouse.Hide
-            FOR XPos = 0 TO 31
-                FOR YPos = 0 TO 31
-                    IconEdit.DrawPixel XPos, YPos, ASC(IconLoadData.Pixel(XPos, YPos)) - 1, True
-                NEXT
-            NEXT
-            Mouse.Show
+    IconFileName = IconToLoad
+    IconChanged = False
 
-            IconChanged = False
+    'Update window title
+    IconEdit.SetTitle
 
-            EXIT SUB
-        END IF
+    'Draw icon and preview
+    Mouse.Hide
+    FOR XPos = 0 TO 31
+        FOR YPos = 0 TO 31
+            'IconEdit.DrawPixel XPos, YPos, ASC(IconLoadData.Pixel(XPos, YPos)) - 1, True
+            IconEdit.DrawPixel XPos, YPos, IconLoadData.Pixel(XPos, YPos), True
+        NEXT
+    NEXT
+    Mouse.Show
 
-        CLOSE #FileHandle
-    END IF
+    IconChanged = False
+
+    EXIT SUB
 
 
-    'If we make it to here, the icon had the wrong file size or header
-    FileHandle = Sys.MsgBox("Invalid image file", "The icon you selected does not contain a valid icon. The" + CHR$(13) + "file might be damaged, or not an icon file at all.", msgError)
+    'ErrMsg = Sys.MsgBox("Invalid image file", "The icon you selected does not contain a valid icon. The" + CHR$(13) + "file might be damaged, or not an icon file at all.", msgError)
     
 
 END SUB
@@ -320,6 +314,7 @@ SUB IconEdit.Main (IconToLoad AS STRING)
 
     Font.Print "Preview", btnPreview.Pos.Left, btnPreview.Pos.Top - 15, clrWindowText, FontHeading
     LINE (btnPreview.Pos.Left - 1, btnPreview.Pos.Top - 4)-(btnPreview.Pos.Left + 5, btnPreview.Pos.Top - 4), clrWindowText
+    LINE (btnPreview.Pos.Left + 2, btnPreview.Pos.Top + 2)-(btnPreview.Pos.Left + btnPreview.Pos.Width - 2, btnPreview.Pos.Top + btnPreview.Pos.Height - 2), 15, BF
 
     'Draw grid in drawing area
     FOR YPos = 0 TO 31
@@ -344,7 +339,7 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     'Main "event" loop
     DO
         Key$ = LCASE$(INKEY$)
-
+        
         IF Mouse.InArea(txtDrawArea.Pos) THEN
             CursorX = (Mouse.X - (txtDrawArea.Pos.Left + 7)) / 13
             CursorY = (Mouse.Y - (txtDrawArea.Pos.Top + 7)) / 13
@@ -501,23 +496,12 @@ SUB IconEdit.Preview ()
     LINE (txtPreview.Pos.Left + 124, txtPreview.Pos.Top + 185)-(txtPreview.Pos.Left + 184, txtPreview.Pos.Top + 245), 14, BF
     LINE (txtPreview.Pos.Left + 185, txtPreview.Pos.Top + 185)-(txtPreview.Pos.Left + 245, txtPreview.Pos.Top + 245), 15, BF
     Mouse.Show
-    
-    'Save to a temp location, so that we can call Obj.DrawImg on the temp
-    'file
-    FOR XPos = 0 TO 31
-        FOR YPos = 0 TO 31
-            IconSaveData.Pixel(XPos, YPos) = CHR$(IconData.Pixel(XPos, YPos) + 1)
-        NEXT
-    NEXT
-    ON LOCAL ERROR RESUME NEXT
-    FileHandle = FREEFILE
-    OPEN Sys.Path + "DATA\IMAGES\PRW_JPC8.CIF" FOR BINARY AS #FileHandle
-    PUT #FileHandle, , Header
-    PUT #FileHandle, , IconSaveData
-    CLOSE #FileHandle
-    ON LOCAL ERROR GOTO 0
 
-    imgPreview.ImageFile = "PRW_JPC8.CIF"
+    DEF SEG = VARSEG(IconData.Pixel(0, 0))
+    BSAVE Sys.Path + "DATA\IMAGES\PRW_JPC8.BSV", VARPTR(IconData.Pixel(0, 0)), 2048
+    DEF SEG
+    
+    imgPreview.ImageFile = "PRW_JPC8.BSV"
     
     FOR XPos = 2 TO 185 STEP 61
         FOR YPos = 2 TO 185 STEP 61
@@ -529,7 +513,7 @@ SUB IconEdit.Preview ()
     
     'Kill temp file, ignore errors
     ON LOCAL ERROR RESUME NEXT
-    KILL Sys.Path + "DATA\IMAGES\PRW_JPC8.CIF"
+    KILL Sys.Path + "DATA\IMAGES\PRW_JPC8.BSV"
     ON LOCAL ERROR GOTO 0
 
     DO
@@ -549,9 +533,6 @@ FUNCTION IconEdit.SaveIcon ()
 
     DIM SaveAs AS STRING, FileHandle, XPos, YPos
     DIM Header AS STRING * 9, WindowTitle AS STRING
-    DIM IconSaveData AS IconDataType
-
-    Header = "JACOBPALM"
 
 TopOfSave:
 
@@ -565,7 +546,7 @@ TopOfSave:
         EXIT FUNCTION
     END IF
 
-    IF File.Exists(Sys.Path + "DATA\IMAGES\" + SaveAs + ".CIF") THEN
+    IF File.Exists(Sys.Path + "DATA\IMAGES\" + SaveAs + ".BSV") THEN
         IF NOT UCASE$(SaveAs) = IconFileName THEN
         
             DIM DoSave
@@ -575,22 +556,12 @@ TopOfSave:
 
         END IF
 
-        KILL Sys.Path + "DATA\IMAGES\" + SaveAs + ".CIF"
+        KILL Sys.Path + "DATA\IMAGES\" + SaveAs + ".BSV"
     END IF
 
-    FOR XPos = 0 TO 31
-        FOR YPos = 0 TO 31
-            IconSaveData.Pixel(XPos, YPos) = CHR$(IconData.Pixel(XPos, YPos) + 1)
-        NEXT
-    NEXT
-    
-    FileHandle = FREEFILE
-
-    OPEN Sys.Path + "DATA\IMAGES\" + SaveAs + ".CIF" FOR BINARY AS #FileHandle
-    'User defined data type
-    PUT #FileHandle, , Header
-    PUT #FileHandle, , IconSaveData
-    CLOSE #FileHandle
+    DEF SEG = VARSEG(IconData.Pixel(0, 0))
+    BSAVE Sys.Path + "DATA\IMAGES\" + SaveAs + ".BSV", VARPTR(IconData.Pixel(0, 0)), 2048
+    DEF SEG
 
     IconFileName = UCASE$(SaveAs)
 
@@ -634,7 +605,7 @@ SUB IconEdit.ShowLoadDialog ()
     DIM btnLoad AS ButtonType
                                      
     REDIM IconFiles(0) AS STRING
-    IconFiles(0) = DIR$(Sys.Path + "DATA\IMAGES\*.CIF")
+    IconFiles(0) = DIR$(Sys.Path + "DATA\IMAGES\*.BSV")
 
     IF IconFiles(0) = "" THEN
         DIM void
@@ -692,7 +663,7 @@ SUB IconEdit.ShowLoadDialog ()
             IF IconIndex = -1 THEN IconIndex = UBOUND(IconFiles)
             imgPreview.ImageFile = IconFiles(IconIndex)
             Mouse.Hide
-            LINE (btnLoad.Pos.Left + 11, btnLoad.Pos.Top + 11)-(btnLoad.Pos.Left + 42, btnLoad.Pos.Top + 42), clrButton, BF
+            LINE (btnLoad.Pos.Left + 11, btnLoad.Pos.Top + 11)-(btnLoad.Pos.Left + 42, btnLoad.Pos.Top + 42), clrWindow, BF
             LINE (winSelect.Pos.Left + 10, winSelect.Pos.Top + 33)-(winSelect.Pos.Left + 146, winSelect.Pos.Top + 50), clrWindow, BF
             Mouse.Show
             Obj.DrawImg imgPreview
@@ -704,7 +675,7 @@ SUB IconEdit.ShowLoadDialog ()
             IF IconIndex > UBOUND(IconFiles) THEN IconIndex = 0
             imgPreview.ImageFile = IconFiles(IconIndex)
             Mouse.Hide
-            LINE (btnLoad.Pos.Left + 11, btnLoad.Pos.Top + 11)-(btnLoad.Pos.Left + 42, btnLoad.Pos.Top + 42), clrButton, BF
+            LINE (btnLoad.Pos.Left + 11, btnLoad.Pos.Top + 11)-(btnLoad.Pos.Left + 42, btnLoad.Pos.Top + 42), clrWindow, BF
             LINE (winSelect.Pos.Left + 10, winSelect.Pos.Top + 33)-(winSelect.Pos.Left + 146, winSelect.Pos.Top + 50), clrWindow, BF
             Mouse.Show
             Obj.DrawImg imgPreview

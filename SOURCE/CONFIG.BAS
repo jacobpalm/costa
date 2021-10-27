@@ -229,8 +229,8 @@ SUB Conf.ConfMisc ()
     Obj.DrawFrm frmDesktop, 15, Clr3DShadow
     Obj.DrawFrm frmVarious, 15, Clr3DShadow
     Mouse.Hide
-    LINE (frmDesktop.Pos.Left + 7, frmDesktop.Pos.Top)-(frmDesktop.Pos.Left + 64, frmDesktop.Pos.Top + 1), ClrWindow, B
-    LINE (frmVarious.Pos.Left + 7, frmVarious.Pos.Top)-(frmVarious.Pos.Left + 116, frmVarious.Pos.Top + 1), ClrWindow, B
+    LINE (frmDesktop.Pos.Left + 7, frmDesktop.Pos.Top)-(frmDesktop.Pos.Left + 64, frmDesktop.Pos.Top + 1), clrWindow, B
+    LINE (frmVarious.Pos.Left + 7, frmVarious.Pos.Top)-(frmVarious.Pos.Left + 116, frmVarious.Pos.Top + 1), clrWindow, B
     Mouse.Show
     Font.Print "Desktop", frmDesktop.Pos.Left + 10, frmDesktop.Pos.Top - 3, clrWindowText, 1
     Font.Print "Various settings", frmVarious.Pos.Left + 10, frmVarious.Pos.Top - 3, clrWindowText, 1
@@ -255,7 +255,7 @@ SUB Conf.ConfMisc ()
         Mouse.Show
     ELSE
         Mouse.Hide
-        LINE (chkShowLinkTarget.Pos.Left + 2, chkShowLinkTarget.Pos.Top + 2)-(chkShowLinkTarget.Pos.Left + 12, chkShowLinkTarget.Pos.Top + 12), ClrWindow, BF
+        LINE (chkShowLinkTarget.Pos.Left + 2, chkShowLinkTarget.Pos.Top + 2)-(chkShowLinkTarget.Pos.Left + 12, chkShowLinkTarget.Pos.Top + 12), clrWindow, BF
         Mouse.Show
         Font.Print "Show link targets", chkShowLinkTarget.Pos.Left + 20, chkShowLinkTarget.Pos.Top + 3, Clr3DShadow, 2
     END IF
@@ -334,8 +334,8 @@ SUB Conf.ConfMisc ()
             ELSE
                 Font.Print "Show link targets", chkShowLinkTarget.Pos.Left + 20, chkShowLinkTarget.Pos.Top + 3, Clr3DShadow, 2
                 Mouse.Hide
-                LINE (chkShowLinkTarget.Pos.Left + 2, chkShowLinkTarget.Pos.Top + 2)-(chkShowLinkTarget.Pos.Left + 13, chkShowLinkTarget.Pos.Top + 13), ClrWindow, BF
-                LINE (chkShowLinkTarget.Pos.Left + 81, chkShowLinkTarget.Pos.Top + 14)-(chkShowLinkTarget.Pos.Left + 87, chkShowLinkTarget.Pos.Top + 14), ClrWindow
+                LINE (chkShowLinkTarget.Pos.Left + 2, chkShowLinkTarget.Pos.Top + 2)-(chkShowLinkTarget.Pos.Left + 13, chkShowLinkTarget.Pos.Top + 13), clrWindow, BF
+                LINE (chkShowLinkTarget.Pos.Left + 81, chkShowLinkTarget.Pos.Top + 14)-(chkShowLinkTarget.Pos.Left + 87, chkShowLinkTarget.Pos.Top + 14), clrWindow
                 Mouse.Show
             END IF
         END IF
@@ -435,6 +435,8 @@ SUB Conf.ConfTheme ()
     imgPreview.ImageFile = "LOGO"
 
     Obj.SetSize btnMenuPreview.Pos, imgPreview.Pos.Left + 140, imgPreview.Pos.Top - 4, 98, 37
+    btnMenuPreview.Transparent = True
+
 
     'Load theme filenames into array
     DIM TmpName$, TmpCount, ActiveTheme
@@ -477,14 +479,15 @@ UpdatePreview:
 
     Obj.DrawImg imgPreview
     Obj.DrawBtn btnMenuPreview, False
-    Font.Print "Unselected", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 22, clrWindowText, 1
 
     Mouse.Hide
+    LINE (btnMenuPreview.Pos.Left + 2, btnMenuPreview.Pos.Top + 2)-(btnMenuPreview.Pos.Left + btnMenuPreview.Pos.Width - 2, btnMenuPreview.Pos.Top + btnMenuPreview.Pos.Height - 2), clrWindow, BF
     LINE (btnMenuPreview.Pos.Left + 2, btnMenuPreview.Pos.Top + 3)-(btnMenuPreview.Pos.Left + btnMenuPreview.Pos.Width - 2, btnMenuPreview.Pos.Top + 18), ClrSelect, BF
     LINE (btnMenuPreview.Pos.Left + 5, btnMenuPreview.Pos.Top + 17)-(btnMenuPreview.Pos.Left + 12, btnMenuPreview.Pos.Top + 17), clrSelectText
     LINE (btnMenuPreview.Pos.Left + 5, btnMenuPreview.Pos.Top + 33)-(btnMenuPreview.Pos.Left + 12, btnMenuPreview.Pos.Top + 33), clrWindowText
     Mouse.Show
     Font.Print "Selected item", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 6, clrSelectText, 1
+    Font.Print "Unselected", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 22, clrWindowText, 1
 
     Sys.LoadTheme
 
@@ -542,7 +545,7 @@ SUB Conf.LoadTheme (BYVAL ThmFile AS STRING)
 
     ClrDesktop = VAL(File.CfgRead(ThmFile, "ClrDesktop", "3"))
     ClrDesktopText = VAL(File.CfgRead(ThmFile, "ClrDesktopText", "0"))
-    ClrWindow = VAL(File.CfgRead(ThmFile, "ClrWindow", "7"))
+    clrWindow = VAL(File.CfgRead(ThmFile, "ClrWindow", "7"))
     ClrButton = VAL(File.CfgRead(ThmFile, "ClrButton", "7"))
     ClrTextbox = VAL(File.CfgRead(ThmFile, "ClrTextbox", "15"))
     ClrTextboxText = VAL(File.CfgRead(ThmFile, "ClrTextboxText", "0"))

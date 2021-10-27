@@ -7,8 +7,7 @@ DEFINT A-Z
 'This is dimmed here, and not in LIBRARY.BI, because only this module uses
 'it
 	TYPE IconDataType
-		'Pixel(31, 31) AS INTEGER
-		Pixel(31, 31) AS STRING * 1
+		Pixel(31, 31) AS INTEGER
 	END TYPE
 	
 	DIM SHARED FontData(1 TO 3, 32 TO 127) AS STRING
@@ -581,8 +580,7 @@ SUB Obj.DrawImg (TargetImg AS ImageType)
 	TargetImg.Pos.Width = 31
 	TargetImg.Pos.Height = 31
 
-
-	IF NOT File.Exists(Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".CIF") THEN
+	IF NOT File.Exists(Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".BSV") THEN
 		'Draw a red box with the text "IMG ERR" to indicate a missing file
 		Mouse.Hide
 		LINE (X + 1, Y + 1)-(X + 30, Y + 30), 4, BF
@@ -593,27 +591,17 @@ SUB Obj.DrawImg (TargetImg AS ImageType)
 		EXIT SUB
 	END IF
 
-
-
-	DIM CifHandle
 	DIM IconData AS IconDataType
 
-	CifHandle = FREEFILE
-	
-	'DEBUG DEBUG
-	'Check stoerrelse, kontroller header m.m.
-
-	OPEN Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".CIF" FOR BINARY AS #CifHandle
-	GET #CifHandle, , Header
-	GET #CifHandle, , IconData
-	CLOSE #CifHandle
+	'Load saved memory back to address of IconData.Pixel array
+	DEF SEG = VARSEG(IconData.Pixel(0, 0))
+	BLOAD Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".BSV", VARPTR(IconData.Pixel(0, 0))
+	DEF SEG
 	
 	Mouse.Hide
 	FOR XPos = 0 TO 31
 		FOR YPos = 0 TO 31
-			IF ASC(IconData.Pixel(XPos, YPos)) > 0 THEN
-				PSET (X + XPos, Y + YPos), ASC(IconData.Pixel(XPos, YPos)) - 1
-			END IF
+			IF IconData.Pixel(XPos, YPos) > -1 THEN PSET (X + XPos, Y + YPos), IconData.Pixel(XPos, YPos)
 		NEXT
 	NEXT
 	Mouse.Show
@@ -1106,8 +1094,8 @@ SUB Sys.LoadTheme ()
 	ClrTitleBarText = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrTitlebarText", "15"))
 	Clr3DLight = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "Clr3DLight", "7"))
 	Clr3DShadow = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "Clr3DShadow", "8"))
-	ClrSelect = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrSelect", "15"))
-	ClrSelectText = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrSelectText", "8"))
+	ClrSelect = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrSelect", "8"))
+	ClrSelectText = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrSelectText", "15"))
 END SUB
 
 FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)

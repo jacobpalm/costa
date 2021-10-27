@@ -326,7 +326,7 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
   DIM AllIcons() AS STRING
   DIM IconCount AS INTEGER, CurrentIcon AS INTEGER, IconFile AS STRING
 
-  IconFile = DIR$(Sys.Path + "DATA\IMAGES\*.CIF")
+  IconFile = DIR$(Sys.Path + "DATA\IMAGES\*.BSV")
   IconCount = 0
 
   REDIM PRESERVE AllIcons(0) AS STRING
@@ -1423,7 +1423,7 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
     DIM IconCount AS INTEGER, CurrentIcon AS INTEGER, IconFile AS STRING
     DIM CurrentIconFilename AS STRING
 
-    IconFile = DIR$(Sys.Path + "DATA\IMAGES\*.CIF")
+    IconFile = DIR$(Sys.Path + "DATA\IMAGES\*.BSV")
     IconCount = 0
     CurrentIconFilename = UCASE$(File.CfgRead("DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileNum)) + "\PROFILE.CFG", "ProfileIcon", "USERS"))
 
@@ -1495,7 +1495,7 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
           CurrentIcon = CurrentIcon - 1
           IF CurrentIcon < 0 THEN CurrentIcon = UBOUND(AllIcons)
           Mouse.Hide
-          LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), ClrButton, BF
+          LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), ClrWindow, BF
           Mouse.Show
           imgIcon.ImageFile = AllIcons(CurrentIcon)
           Obj.DrawImg imgIcon
@@ -1505,7 +1505,7 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
           CurrentIcon = CurrentIcon + 1
           IF CurrentIcon > UBOUND(AllIcons) THEN CurrentIcon = 0
           Mouse.Hide
-          LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), ClrButton, BF
+          LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), ClrWindow, BF
           Mouse.Show
           imgIcon.ImageFile = AllIcons(CurrentIcon)
           Obj.DrawImg imgIcon

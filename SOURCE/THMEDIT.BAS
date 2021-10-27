@@ -172,12 +172,13 @@ RedrawAll:
     imgPreview.ImageFile = "LOGO"
 
     Obj.SetSize btnMenuPreview.Pos, imgPreview.Pos.Left + 140, imgPreview.Pos.Top - 4, 98, 37
+    btnMenuPreview.Transparent = True
 
     Theme.Load ThemeFile$
 
     thmClrDesktop = ClrDesktop
     thmClrDesktopText = ClrDesktopText
-    thmClrWindow = ClrWindow
+    thmClrWindow = clrWindow
     thmClrButton = ClrButton
     thmClrTextbox = ClrTextbox
     thmClrTextboxText = ClrTextboxText
@@ -194,7 +195,7 @@ RedrawAll:
 UpdateEditPreview:
     ClrDesktop = thmClrDesktop
     ClrDesktopText = thmClrDesktopText
-    ClrWindow = thmClrWindow
+    clrWindow = thmClrWindow
     ClrButton = thmClrButton
     ClrTextbox = thmClrTextbox
     ClrTextboxText = thmClrTextboxText
@@ -221,14 +222,15 @@ UpdateEditPreview:
 
     Obj.DrawImg imgPreview
     Obj.DrawBtn btnMenuPreview, False
-    Font.Print "Unselected", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 22, clrWindowText, 1
 
     Mouse.Hide
+    LINE (btnMenuPreview.Pos.Left + 2, btnMenuPreview.Pos.Top + 2)-(btnMenuPreview.Pos.Left + btnMenuPreview.Pos.Width - 2, btnMenuPreview.Pos.Top + btnMenuPreview.Pos.Height - 2), clrWindow, BF
     LINE (btnMenuPreview.Pos.Left + 2, btnMenuPreview.Pos.Top + 3)-(btnMenuPreview.Pos.Left + btnMenuPreview.Pos.Width - 2, btnMenuPreview.Pos.Top + 18), ClrSelect, BF
     LINE (btnMenuPreview.Pos.Left + 5, btnMenuPreview.Pos.Top + 17)-(btnMenuPreview.Pos.Left + 12, btnMenuPreview.Pos.Top + 17), clrSelectText
     LINE (btnMenuPreview.Pos.Left + 5, btnMenuPreview.Pos.Top + 33)-(btnMenuPreview.Pos.Left + 12, btnMenuPreview.Pos.Top + 33), clrWindowText
     Mouse.Show
     Font.Print "Selected item", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 6, clrSelectText, 1
+    Font.Print "Unselected", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 22, clrWindowText, 1
 
     Sys.LoadTheme
 
@@ -298,7 +300,7 @@ TopOfLoop:
                 CASE 9
                     btnObject.Caption = "3D Shadow"
                 CASE 10
-                    btnObject.Caption = "Titlebar"
+                    btnObject.Caption = "Titlebar and border"
                 CASE 11
                     btnObject.Caption = "Titlebar text"
                 CASE 12
@@ -404,7 +406,7 @@ SUB Theme.Load (BYVAL ThmFile AS STRING)
 
     ClrDesktop = VAL(File.CfgRead(ThmFile, "ClrDesktop", "3"))
     ClrDesktopText = VAL(File.CfgRead(ThmFile, "ClrDesktopText", "0"))
-    ClrWindow = VAL(File.CfgRead(ThmFile, "ClrWindow", "7"))
+    clrWindow = VAL(File.CfgRead(ThmFile, "ClrWindow", "7"))
     ClrButton = VAL(File.CfgRead(ThmFile, "ClrButton", "7"))
     ClrTextbox = VAL(File.CfgRead(ThmFile, "ClrTextbox", "15"))
     ClrTextboxText = VAL(File.CfgRead(ThmFile, "ClrTextboxText", "0"))
@@ -554,7 +556,7 @@ FUNCTION Theme.Select () AS STRING
     imgPreview.ImageFile = "LOGO"
 
     Obj.SetSize btnMenuPreview.Pos, imgPreview.Pos.Left + 140, imgPreview.Pos.Top - 4, 98, 37
-
+    btnMenuPreview.Transparent = True
 
     'Load theme filenames into array
     DIM TmpName$, TmpCount, ActiveTheme
@@ -598,14 +600,15 @@ UpdatePreview:
 
     Obj.DrawImg imgPreview
     Obj.DrawBtn btnMenuPreview, False
-    Font.Print "Unselected", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 22, clrWindowText, 1
 
     Mouse.Hide
+    LINE (btnMenuPreview.Pos.Left + 2, btnMenuPreview.Pos.Top + 2)-(btnMenuPreview.Pos.Left + btnMenuPreview.Pos.Width - 2, btnMenuPreview.Pos.Top + btnMenuPreview.Pos.Height - 2), clrWindow, BF
     LINE (btnMenuPreview.Pos.Left + 2, btnMenuPreview.Pos.Top + 3)-(btnMenuPreview.Pos.Left + btnMenuPreview.Pos.Width - 2, btnMenuPreview.Pos.Top + 18), ClrSelect, BF
     LINE (btnMenuPreview.Pos.Left + 5, btnMenuPreview.Pos.Top + 17)-(btnMenuPreview.Pos.Left + 12, btnMenuPreview.Pos.Top + 17), clrSelectText
     LINE (btnMenuPreview.Pos.Left + 5, btnMenuPreview.Pos.Top + 33)-(btnMenuPreview.Pos.Left + 12, btnMenuPreview.Pos.Top + 33), clrWindowText
     Mouse.Show
     Font.Print "Selected item", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 6, clrSelectText, 1
+    Font.Print "Unselected", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 22, clrWindowText, 1
 
     Sys.LoadTheme
 
@@ -676,7 +679,7 @@ FUNCTION Theme.SelectObject (BYVAL CurrentSelection) AS INTEGER
     btnObject(7).Caption = "Textbox text"
     btnObject(8).Caption = "3D light"
     btnObject(9).Caption = "3D Shadow"
-    btnObject(10).Caption = "Titlebar"
+    btnObject(10).Caption = "Titlebar and border"
     btnObject(11).Caption = "Titlebar text"
     btnObject(12).Caption = "Selection"
     btnObject(13).Caption = "Selection text"
