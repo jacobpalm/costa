@@ -1,3 +1,4 @@
+DECLARE SUB ShowProfileTemp ()
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -17,7 +18,7 @@ DECLARE SUB Desk.LinkSave ()
 DECLARE SUB Desk.Main ()
 DECLARE SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
 DECLARE SUB Desk.RunDialog ()
-DECLARE SUB TView.Main (FileToView AS STRING)
+
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
@@ -88,12 +89,13 @@ STACK 5120
 CALL Sys.Load
 
 IF ProfileID = "" THEN
-    IF File.CfgRead("DATA\CONFIG\COSTA.CFG", "UseLastProfile", "0") = "1" THEN
+    IF SystemSettings.UseLastProfile = True THEN
         DIM ProfileToUse
-        ProfileToUse = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "LastUsedProfile", "1"))
-        
+        ProfileToUse = SystemSettings.LastUsedProfile
+                            
         IF ProfileToUse > 0 AND ProfileToUse < 5 THEN
             ProfileID = "PROFILE" + LTRIM$(STR$(ProfileToUse))
+            Sys.LoadProfile ProfileToUse
         ELSE
             ProfileID = "PROFILE1"
         END IF
@@ -180,7 +182,6 @@ SUB Desk.DrawDesktop ()
   'desklinks exist
   IF RTRIM$(DESKLINK(0).ImageFile) = "" OR DESKLINK(0).Caption = STRING$(25, 0) THEN EXIT SUB
 
-  DIM ShowDesc, ShowTarget
   DIM imgDeskLinkIcon AS ImageType
   DIM TargetLink
   DIM LinkTargetText AS STRING
@@ -195,13 +196,10 @@ SUB Desk.DrawDesktop ()
 
     Obj.DrawImg imgDeskLinkIcon
 
-    ShowDesc = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "ShowLinkDescriptions", "1"))
-    ShowTarget = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "ShowLinkTargetFiles", "1"))
-
     'Description (caption) and target file
-    IF ShowDesc = 1 THEN
+    IF UserSettings.ShowLinkDescriptions THEN
     
-        IF ShowTarget = 1 THEN
+        IF UserSettings.ShowLinkTargetFiles THEN
             Font.Print DESKLINK(TargetLink).Caption, DESKLINK(TargetLink).Left + 38, DESKLINK(TargetLink).Top + 4, ClrDesktopText, 1
             
             LinkTargetText = LCASE$(DESKLINK(TargetLink).Filename)
@@ -577,8 +575,7 @@ SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
   DIM BehindMenu(1681), FrontOfMenu(1681)
   DIM DrawFromLeft, DrawFromTop, ActiveItem, FgColor, BgColor
   DIM MenuBack AS ButtonType
-  DIM DoAnimations
-
+  
   MenuBack.Pos.Width = 94
   MenuBack.Pos.Height = 69
 
@@ -608,8 +605,7 @@ SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
   
   GET (x1, y1)-(x2, y2), BehindMenu
   
-  DoAnimations = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "Animations", "1"))
-  IF DoAnimations = 1 THEN
+  IF UserSettings.Animations THEN
     DIM Sys.DelayWait
 
     IF DrawFromLeft = True THEN
@@ -788,7 +784,7 @@ LinkMenuRefresh:
           IF Key$ = "r" THEN
             DIM DoDelete
 
-            IF File.CfgRead("DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "ConfirmLinkDelete", "1") = "1" THEN
+            IF UserSettings.ConfirmLinkDelete THEN
                 Mouse.Hide
                 PUT (x1, y1), BehindMenu, PSET
                 Mouse.Show
@@ -1092,7 +1088,7 @@ SUB Desk.Main ()
   DIM btnAddLink AS ButtonType, btnRunCmd AS ButtonType
   DIM btnAboutCosta AS ButtonType, btnExitCosta AS ButtonType
   DIM btnProfile AS ButtonType, btnConfig AS ButtonType
-  DIM SlidePos, DelayFixer, ShowLinkMenu, ShowAnimations
+  DIM SlidePos, DelayFixer
 
   Obj.SetSize btnAddLink.Pos, 3, 2, 92, 22
   btnAddLink.Caption = "Add link": btnAddLink.HotKey = 5
@@ -1132,9 +1128,9 @@ Desk.MainTop:
 
 
   'Check if "Tip of the Day" should be shown
-  IF VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "TipOfTheDay", "1")) <> 0 THEN
+  IF UserSettings.TipOfTheDay THEN
     'Only show a tip if this is the first time Costa is started today
-    IF NOT File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "TipLastShown", "") = STR$(DAY(NOW)) + STR$(MONTH(NOW)) THEN
+    IF UserSettings.TipLastShown = DAY(NOW) THEN
 
         DIM showTip, TipOfTheDay AS STRING
         TipOfTheDay = Desk.GetDailyTip
@@ -1146,7 +1142,8 @@ Desk.MainTop:
             showTip = Sys.MsgBox("Could not read daily tips", "Could not read daily tips from " + Sys.Path + "DATA\DAILYTIPS.DAT." + CHR$(13) + "Make sure this file exists, and isn't corrupted.", msgError)
         END IF
         Mouse.Hide
-        File.CfgWrite "DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "TipLastShown", STR$(DAY(NOW)) + STR$(MONTH(NOW))
+        UserSettings.TipLastShown = DAY(NOW)
+        Sys.SaveProfile VAL(RIGHT$(ProfileID, 1))
     END IF
   END IF
 
@@ -1196,8 +1193,7 @@ MainLoopStart:
               ELSE
                 'Depending on the configuration a left click on a link
                 'will either open/run the targetfile or show the menu
-                ShowLinkMenu = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "LinkMenuOnLeftClick", "0"))
-                IF ShowLinkMenu = 1 THEN
+                IF UserSettings.LinkMenuOnLeftClick THEN
                     IF NOT TabCheck = -1 THEN
                         Mouse.Hide
                         LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), ClrDesktop, BF
@@ -1275,7 +1271,7 @@ MainLoopStart:
             GOSUB SlideDown
             GOTO MainLoopStart
         END IF
-
+  IF Key$ = "t" THEN ShowProfileTemp
         IF Key$ = "p" THEN
             GOSUB SlideUp
             ProfileID = ""
@@ -1301,7 +1297,7 @@ MainLoopStart:
             GOSUB SlideUp
 
             DIM DoExit
-            IF File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "ConfirmExit", "1") = "1" THEN
+            IF UserSettings.ConfirmExit THEN
                 DoExit = Sys.MsgBox("Exit " + appName, "This will exit Costa and return you to the DOS" + CHR$(13) + "prompt. Are you sure?", msgQuest)
             ELSE
                 DoExit = True
@@ -1363,8 +1359,7 @@ EXIT SUB
 
 SlideDown:
   Mouse.Hide
-  ShowAnimations = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "Animations", "1"))
-  IF ShowAnimations = 1 THEN
+  IF UserSettings.Animations THEN
     DelayFixer = 0
     FOR SlidePos = 0 TO 26 STEP 2
       LINE (0, 0)-(639, SlidePos), ClrWindow, BF
@@ -1384,17 +1379,16 @@ SlideDown:
   Mouse.Show
   Obj.DrawBtn btnAddLink, False
   Obj.DrawBtn btnRunCmd, False
-  Obj.DrawBtn btnAboutCosta, False
-  Obj.DrawBtn btnConfig, False
   Obj.DrawBtn btnProfile, False
+  Obj.DrawBtn btnConfig, False
+  Obj.DrawBtn btnAboutCosta, False
   Obj.DrawBtn btnExitCosta, False
 RETURN
 
 SlideUp:
   Mouse.Hide
   DelayFixer = 0
-  ShowAnimations = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "Animations", "1"))
-  IF ShowAnimations = 1 THEN
+  IF UserSettings.Animations THEN
     LINE (0, 0)-(639, 28), ClrWindow, BF
     FOR SlidePos = 25 TO 0 STEP -2
       LINE (0, SlidePos)-(639, SlidePos), Clr3DShadow
@@ -1425,7 +1419,7 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
 
     IconFile = DIR$(Sys.Path + "DATA\IMAGES\*.BSV")
     IconCount = 0
-    CurrentIconFilename = UCASE$(File.CfgRead("DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileNum)) + "\PROFILE.CFG", "ProfileIcon", "USERS"))
+    CurrentIconFilename = RTRIM$(UserSettings.ProfileImage)
 
     REDIM PRESERVE AllIcons(0) AS STRING
     IF NOT IconFile = "" THEN
@@ -1467,7 +1461,7 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
     Obj.SetSize btnCancel.Pos, 326, winProfEdit.Pos.Top + 174, 84, 22
 
     txtProfileName.MaxLen = 50
-    txtProfileNameText = File.CfgRead("DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileNum)) + "\PROFILE.CFG", "ProfileName", "Profile " + LTRIM$(STR$(ProfileNum)))
+    txtProfileNameText = RTRIM$(UserSettings.ProfileName)
     btnIconPrev.Caption = "<"
     btnIconNext.Caption = ">"
     btnSave.Caption = "Save": btnSave.HotKey = 1
@@ -1514,13 +1508,14 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
         IF Obj.TxtClick(txtProfileName) OR Key$ = "n" THEN Obj.EditTxt txtProfileName, txtProfileNameText
 
         IF Obj.BtnClick(btnSave) OR Key$ = CHR$(13) OR Key$ = "s" THEN
-            File.CfgWrite "DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileNum)) + "\PROFILE.CFG", "ProfileName", txtProfileNameText
-            File.CfgWrite "DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileNum)) + "\PROFILE.CFG", "ProfileIcon", AllIcons(CurrentIcon)
-            EXIT SUB
+            UserSettings.ProfileName = LTRIM$(RTRIM$(txtProfileNameText))
+            UserSettings.ProfileImage = AllIcons(CurrentIcon)
+            Sys.SaveProfile ProfileNum
+            EXIT DO
         END IF
 
         IF Obj.BtnClick(btnCancel) OR Key$ = CHR$(27) OR Key$ = "c" THEN
-            EXIT SUB
+            EXIT DO
         END IF
 
     LOOP
@@ -1565,16 +1560,16 @@ FUNCTION Desk.ProfileSelect () AS STRING
     btnEdit.Caption = "Edit..."
     btnEdit.HotKey = 1
 
-    SelectedProfile = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "LastUsedProfile", "1"))
+    SelectedProfile = SystemSettings.LastUsedProfile
     IF SelectedProfile < 1 OR SelectedProfile > 5 THEN SelectedProfile = 1
 
 
 TopOfProfile:
 
     FOR Counter = 1 TO 5
-        ProfileName(Counter) = File.CfgRead("DATA\CONFIG\PROFILE" + LTRIM$(STR$(Counter)) + "\PROFILE.CFG", "ProfileName", "Profile" + STR$(Counter))
-        imgProfile(Counter).ImageFile = File.CfgRead("DATA\CONFIG\PROFILE" + LTRIM$(STR$(Counter)) + "\PROFILE.CFG", "ProfileIcon", "USERS")
-        ProfileEnabled(Counter) = VAL(File.CfgRead("DATA\CONFIG\PROFILE" + LTRIM$(STR$(Counter)) + "\PROFILE.CFG", "ProfileEnabled", "0"))
+        Sys.LoadProfile Counter
+        ProfileName(Counter) = RTRIM$(UserSettings.ProfileName)
+        imgProfile(Counter).ImageFile = RTRIM$(UserSettings.ProfileImage)
     NEXT
 
     Obj.DrawWin winProfiles
@@ -1638,13 +1633,16 @@ TopOfProfile:
             PRINT #FileHandle, "PROFILE" + LTRIM$(STR$(SelectedProfile))
             CLOSE #FileHandle
 
-            File.CfgWrite "DATA\CONFIG\COSTA.CFG", "LastUsedProfile", LTRIM$(STR$(SelectedProfile))
-
+            SystemSettings.LastUsedProfile = SelectedProfile
+            Sys.SaveSettings
+            Sys.LoadProfile SelectedProfile
+            
             Desk.ProfileSelect = "PROFILE" + LTRIM$(STR$(SelectedProfile))
             EXIT FUNCTION
         END IF
 
         IF Key$ = "e" OR Obj.BtnClick(btnEdit) THEN
+            Sys.LoadProfile SelectedProfile
             Desk.ProfileEdit SelectedProfile
             GOSUB TopOfProfile
         END IF
@@ -1652,4 +1650,12 @@ TopOfProfile:
     LOOP
 
 END FUNCTION
+
+SUB ShowProfileTemp ()
+  PRINT "Prof: " + ProfileID
+  PRINT "Name: " + RTRIM$(UserSettings.ProfileName)
+  PRINT "Img:  " + RTRIM$(UserSettings.ProfileImage)
+  PRINT "Thm:  " + RTRIM$(UserSettings.ThemeFile)
+  PRINT "Anim:" + STR$(UserSettings.Animations)
+END SUB
 

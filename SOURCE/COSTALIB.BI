@@ -32,7 +32,11 @@
     DECLARE FUNCTION Sys.Path () AS STRING
     DECLARE SUB Sys.Delay (Seconds AS SINGLE)
     DECLARE SUB Sys.Load ()
+    DECLARE SUB Sys.LoadProfile (ProfileNum%)
+    DECLARE SUB Sys.LoadSettings ()
     DECLARE SUB Sys.LoadTheme ()
+    DECLARE SUB Sys.SaveProfile (ProfileNum%)
+    DECLARE SUB Sys.SaveSettings ()
     DECLARE SUB Sys.VGALoad (TargetFile AS STRING)
     DECLARE SUB Sys.VGASave (TargetFile AS STRING)
 
@@ -102,8 +106,32 @@
     Checked AS INTEGER
   END TYPE
 
+  TYPE SystemSettingsType
+    UseLastProfile AS INTEGER
+    LastUsedProfile AS INTEGER
+  END TYPE
+
+  TYPE UserSettingsType
+    ProfileName AS STRING * 25
+    ProfileImage AS STRING * 8
+    Animations AS INTEGER
+    ShowLinkDescriptions AS INTEGER
+    ShowLinkTargetFiles AS INTEGER
+    LinkMenuOnLeftClick AS INTEGER
+    ConfirmLinkDelete AS INTEGER
+    ConfirmExit AS INTEGER
+    TipOfTheDay AS INTEGER
+    TipLastShown AS INTEGER
+    AssignFileTypes AS INTEGER
+    GreyoutOnMsgBox AS INTEGER
+    ThemeFile AS STRING * 8
+  END TYPE
+
 'Common shared variables
   COMMON SHARED ProfileID AS STRING
+
+  COMMON SHARED SystemSettings AS SystemSettingsType
+  COMMON SHARED UserSettings AS UserSettingsType
 
   COMMON SHARED ClrThemeFile AS STRING
 

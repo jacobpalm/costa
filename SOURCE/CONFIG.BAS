@@ -1,3 +1,5 @@
+DECLARE SUB Sys.SaveProfile (ProfileNum%)
+DECLARE SUB Sys.SaveSettings ()
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -71,20 +73,20 @@ SUB Conf.ConfAssoc ()
     Obj.DrawBtn btnSave, False
     Obj.DrawBtn btnDisable, False
     
-    Font.Print "Edit file associations", 148, winAssoc.Pos.Top + 33, clrWindowText, 1
-    Font.Print "Using this editor you can associate files with programs, meaning", 148, 150, clrWindowText, 2
-    Font.Print "that if you for example run README.TXT, and TXT is associated", 148, 166, clrWindowText, 2
-    Font.Print "with EDIT.COM, EDIT.COM will run and open README.TXT for you.", 105, 182, clrWindowText, 2
-    Font.Print "To associate a filetype with a program, type the filetype below. If a", 105, 214, clrWindowText, 2
-    Font.Print "program is already assigned with this filetype, it will automatically", 105, 230, clrWindowText, 2
-    Font.Print "show up in the ""Open with"" field. To remove an association, leave the", 105, 246, clrWindowText, 2
-    Font.Print """Open with"" field blank.", 105, 262, clrWindowText, 2
+    Font.Print "Edit file associations", 148, winAssoc.Pos.Top + 33, ClrWindowText, 1
+    Font.Print "Using this editor you can associate files with programs, meaning", 148, 150, ClrWindowText, 2
+    Font.Print "that if you for example run README.TXT, and TXT is associated", 148, 166, ClrWindowText, 2
+    Font.Print "with EDIT.COM, EDIT.COM will run and open README.TXT for you.", 105, 182, ClrWindowText, 2
+    Font.Print "To associate a filetype with a program, type the filetype below. If a", 105, 214, ClrWindowText, 2
+    Font.Print "program is already assigned with this filetype, it will automatically", 105, 230, ClrWindowText, 2
+    Font.Print "show up in the ""Open with"" field. To remove an association, leave the", 105, 246, ClrWindowText, 2
+    Font.Print """Open with"" field blank.", 105, 262, ClrWindowText, 2
 
-    Font.Print "Filetype", 105, 294, clrWindowText, 1
-    Font.Print "Open with", 182, 294, clrWindowText, 1
+    Font.Print "Filetype", 105, 294, ClrWindowText, 1
+    Font.Print "Open with", 182, 294, ClrWindowText, 1
     Mouse.Hide
-    LINE (104, 305)-(110, 305), clrWindowText
-    LINE (181, 305)-(188, 305), clrWindowText
+    LINE (104, 305)-(110, 305), ClrWindowText
+    LINE (181, 305)-(188, 305), ClrWindowText
     Mouse.Show
 
     Obj.DrawImg imgIcon
@@ -161,23 +163,13 @@ SUB Conf.ConfMisc ()
     DIM btnSave AS ButtonType, btnCancel AS ButtonType
     DIM chkShowLinkDesc AS CheckBoxType, chkShowLinkTarget AS CheckBoxType
     DIM chkLinkMenuOnLeft AS CheckBoxType, chkConfLinkDel AS CheckBoxType
-    DIM chkConfExit AS CheckBoxType, chkGreyOutMsgbox AS CheckBoxType
+    DIM chkConfExit AS CheckBoxType, chkGreyOutMsgBox AS CheckBoxType
     DIM chkAnimUI AS CheckBoxType, chkDailyTip AS CheckBoxType
     DIM chkUseLastProfile AS CheckBoxType
 
     DIM ShowLinkDesc, ShowLinkTarget, LinkMenuOnLeft, ConfLinkDel
     DIM AnimUI, ConfExit, GreyOutMsgbox, ShowTargetChk, DailyTip, UseLastProfile
     DIM Key$
-
-    ShowLinkDesc = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "ShowLinkDescriptions", "1"))
-    ShowLinkTarget = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "ShowLinkTargetFiles", "1"))
-    LinkMenuOnLeft = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "LinkMenuOnLeftClick", "0"))
-    ConfLinkDel = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "ConfirmLinkDelete", "1"))
-    AnimUI = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "Animations", "1"))
-    ConfExit = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "ConfirmExit", "1"))
-    GreyOutMsgbox = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "GreyOutOnMsgbox", "0"))
-    DailyTip = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "TipOfTheDay", "1"))
-    UseLastProfile = VAL(File.CfgRead("DATA\CONFIG\COSTA.CFG", "UseLastProfile", "0"))
 
     IF ShowLinkDesc = 1 THEN ShowLinkDesc = True: ShowTargetChk = True
     IF ShowLinkTarget = 1 THEN ShowLinkTarget = True
@@ -202,7 +194,7 @@ SUB Conf.ConfMisc ()
     Obj.SetSize chkConfLinkDel.Pos, frmDesktop.Pos.Left + 12, frmDesktop.Pos.Top + 92, -1, -1
     Obj.SetSize chkAnimUI.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 16, -1, -1
     Obj.SetSize chkConfExit.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 38, -1, -1
-    Obj.SetSize chkGreyOutMsgbox.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 60, -1, -1
+    Obj.SetSize chkGreyOutMsgBox.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 60, -1, -1
     Obj.SetSize chkDailyTip.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 82, -1, -1
     Obj.SetSize chkUseLastProfile.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 104, -1, -1
 
@@ -214,68 +206,68 @@ SUB Conf.ConfMisc ()
     winMisc.Caption = "Other settings"
     btnCancel.Caption = "Cancel": btnCancel.HotKey = 1
     btnSave.Caption = "Save": btnSave.HotKey = 1
-    chkShowLinkDesc.Checked = ShowLinkDesc
-    chkShowLinkTarget.Checked = ShowLinkTarget
-    chkLinkMenuOnLeft.Checked = LinkMenuOnLeft
-    chkConfLinkDel.Checked = ConfLinkDel
-    chkAnimUI.Checked = AnimUI
-    chkConfExit.Checked = ConfExit
-    chkGreyOutMsgbox.Checked = GreyOutMsgbox
-    chkDailyTip.Checked = DailyTip
-    chkUseLastProfile.Checked = UseLastProfile
+    chkShowLinkDesc.Checked = UserSettings.ShowLinkDescriptions
+    chkShowLinkTarget.Checked = UserSettings.ShowLinkTargetFiles
+    chkLinkMenuOnLeft.Checked = UserSettings.LinkMenuOnLeftClick
+    chkConfLinkDel.Checked = UserSettings.ConfirmLinkDelete
+    chkAnimUI.Checked = UserSettings.Animations
+    chkConfExit.Checked = UserSettings.ConfirmExit
+    chkGreyOutMsgBox.Checked = UserSettings.GreyoutOnMsgBox
+    chkDailyTip.Checked = UserSettings.TipOfTheDay
+    chkUseLastProfile.Checked = SystemSettings.UseLastProfile
 
 
     Obj.DrawWin winMisc
     Obj.DrawFrm frmDesktop, 15, Clr3DShadow
     Obj.DrawFrm frmVarious, 15, Clr3DShadow
     Mouse.Hide
-    LINE (frmDesktop.Pos.Left + 7, frmDesktop.Pos.Top)-(frmDesktop.Pos.Left + 64, frmDesktop.Pos.Top + 1), clrWindow, B
-    LINE (frmVarious.Pos.Left + 7, frmVarious.Pos.Top)-(frmVarious.Pos.Left + 116, frmVarious.Pos.Top + 1), clrWindow, B
+    LINE (frmDesktop.Pos.Left + 7, frmDesktop.Pos.Top)-(frmDesktop.Pos.Left + 64, frmDesktop.Pos.Top + 1), ClrWindow, B
+    LINE (frmVarious.Pos.Left + 7, frmVarious.Pos.Top)-(frmVarious.Pos.Left + 116, frmVarious.Pos.Top + 1), ClrWindow, B
     Mouse.Show
-    Font.Print "Desktop", frmDesktop.Pos.Left + 10, frmDesktop.Pos.Top - 3, clrWindowText, 1
-    Font.Print "Various settings", frmVarious.Pos.Left + 10, frmVarious.Pos.Top - 3, clrWindowText, 1
+    Font.Print "Desktop", frmDesktop.Pos.Left + 10, frmDesktop.Pos.Top - 3, ClrWindowText, 1
+    Font.Print "Various settings", frmVarious.Pos.Left + 10, frmVarious.Pos.Top - 3, ClrWindowText, 1
     Obj.DrawChk chkShowLinkDesc
     Obj.DrawChk chkShowLinkTarget
     Obj.DrawChk chkLinkMenuOnLeft
     Obj.DrawChk chkConfLinkDel
     Obj.DrawChk chkAnimUI
     Obj.DrawChk chkConfExit
-    Obj.DrawChk chkGreyOutMsgbox
+    Obj.DrawChk chkGreyOutMsgBox
     Obj.DrawChk chkDailyTip
     Obj.DrawChk chkUseLastProfile
     Obj.DrawBtn btnSave, False
     Obj.DrawBtn btnCancel, False
 
 
-    Font.Print "Show link descriptions", chkShowLinkDesc.Pos.Left + 20, chkShowLinkDesc.Pos.Top + 3, clrWindowText, 2
+    Font.Print "Show link descriptions", chkShowLinkDesc.Pos.Left + 20, chkShowLinkDesc.Pos.Top + 3, ClrWindowText, 2
     IF ShowTargetChk = True THEN
-        Font.Print "Show link targets", chkShowLinkTarget.Pos.Left + 20, chkShowLinkTarget.Pos.Top + 3, clrWindowText, 2
+        Font.Print "Show link targets", chkShowLinkTarget.Pos.Left + 20, chkShowLinkTarget.Pos.Top + 3, ClrWindowText, 2
         Mouse.Hide
-        LINE (chkShowLinkTarget.Pos.Left + 81, chkShowLinkTarget.Pos.Top + 14)-(chkShowLinkTarget.Pos.Left + 87, chkShowLinkTarget.Pos.Top + 14), clrWindowText
+        LINE (chkShowLinkTarget.Pos.Left + 81, chkShowLinkTarget.Pos.Top + 14)-(chkShowLinkTarget.Pos.Left + 87, chkShowLinkTarget.Pos.Top + 14), ClrWindowText
         Mouse.Show
     ELSE
         Mouse.Hide
-        LINE (chkShowLinkTarget.Pos.Left + 2, chkShowLinkTarget.Pos.Top + 2)-(chkShowLinkTarget.Pos.Left + 12, chkShowLinkTarget.Pos.Top + 12), clrWindow, BF
+        LINE (chkShowLinkTarget.Pos.Left + 2, chkShowLinkTarget.Pos.Top + 2)-(chkShowLinkTarget.Pos.Left + 12, chkShowLinkTarget.Pos.Top + 12), ClrWindow, BF
         Mouse.Show
         Font.Print "Show link targets", chkShowLinkTarget.Pos.Left + 20, chkShowLinkTarget.Pos.Top + 3, Clr3DShadow, 2
     END IF
-    Font.Print "Show link menu on both left and right click", chkLinkMenuOnLeft.Pos.Left + 20, chkLinkMenuOnLeft.Pos.Top + 3, clrWindowText, 2
-    Font.Print "Confirm link removal", chkConfLinkDel.Pos.Left + 20, chkConfLinkDel.Pos.Top + 3, clrWindowText, 2
-    Font.Print "Animate user interface (sliding menus)", chkAnimUI.Pos.Left + 20, chkAnimUI.Pos.Top + 3, clrWindowText, 2
-    Font.Print "Confirm when trying to exit Costa", chkConfExit.Pos.Left + 20, chkConfExit.Pos.Top + 3, clrWindowText, 2
-    Font.Print "Grey out screen while showing a messagebox", chkGreyOutMsgbox.Pos.Left + 20, chkGreyOutMsgbox.Pos.Top + 3, clrWindowText, 2
-    Font.Print "Show start-up ""Tip of the Day"" messages", chkDailyTip.Pos.Left + 20, chkDailyTip.Pos.Top + 3, clrWindowText, 2
-    Font.Print "Use last profile on start-up without asking", chkUseLastProfile.Pos.Left + 20, chkUseLastProfile.Pos.Top + 3, clrWindowText, 2
+    Font.Print "Show link menu on both left and right click", chkLinkMenuOnLeft.Pos.Left + 20, chkLinkMenuOnLeft.Pos.Top + 3, ClrWindowText, 2
+    Font.Print "Confirm link removal", chkConfLinkDel.Pos.Left + 20, chkConfLinkDel.Pos.Top + 3, ClrWindowText, 2
+    Font.Print "Animate user interface (sliding menus)", chkAnimUI.Pos.Left + 20, chkAnimUI.Pos.Top + 3, ClrWindowText, 2
+    Font.Print "Confirm when trying to exit Costa", chkConfExit.Pos.Left + 20, chkConfExit.Pos.Top + 3, ClrWindowText, 2
+    Font.Print "Grey out screen while showing a messagebox", chkGreyOutMsgBox.Pos.Left + 20, chkGreyOutMsgBox.Pos.Top + 3, ClrWindowText, 2
+    Font.Print "Show start-up ""Tip of the Day"" messages", chkDailyTip.Pos.Left + 20, chkDailyTip.Pos.Top + 3, ClrWindowText, 2
+    Font.Print "Use last profile on start-up without asking", chkUseLastProfile.Pos.Left + 20, chkUseLastProfile.Pos.Top + 3, ClrWindowText, 2
     
     Mouse.Hide
-    LINE (chkShowLinkDesc.Pos.Left + 81, chkShowLinkDesc.Pos.Top + 14)-(chkShowLinkDesc.Pos.Left + 88, chkShowLinkDesc.Pos.Top + 14), clrWindowText
-    LINE (chkLinkMenuOnLeft.Pos.Left + 81, chkLinkMenuOnLeft.Pos.Top + 14)-(chkLinkMenuOnLeft.Pos.Left + 91, chkLinkMenuOnLeft.Pos.Top + 14), clrWindowText
-    LINE (chkConfLinkDel.Pos.Left + 97, chkConfLinkDel.Pos.Top + 14)-(chkConfLinkDel.Pos.Left + 102, chkConfLinkDel.Pos.Top + 14), clrWindowText
-    LINE (chkConfExit.Pos.Left + 169, chkConfExit.Pos.Top + 14)-(chkConfExit.Pos.Left + 175, chkConfExit.Pos.Top + 14), clrWindowText
-    LINE (chkAnimUI.Pos.Left + 19, chkAnimUI.Pos.Top + 14)-(chkAnimUI.Pos.Left + 27, chkAnimUI.Pos.Top + 14), clrWindowText
-    LINE (chkGreyOutMsgbox.Pos.Left + 19, chkGreyOutMsgbox.Pos.Top + 14)-(chkGreyOutMsgbox.Pos.Left + 26, chkGreyOutMsgbox.Pos.Top + 14), clrWindowText
-    LINE (chkDailyTip.Pos.Left + 41, chkDailyTip.Pos.Top + 14)-(chkDailyTip.Pos.Left + 51, chkDailyTip.Pos.Top + 14), clrWindowText
-    LINE (chkUseLastProfile.Pos.Left + 19, chkUseLastProfile.Pos.Top + 14)-(chkUseLastProfile.Pos.Left + 26, chkUseLastProfile.Pos.Top + 14), clrWindowText
+    LINE (chkShowLinkDesc.Pos.Left + 81, chkShowLinkDesc.Pos.Top + 14)-(chkShowLinkDesc.Pos.Left + 88, chkShowLinkDesc.Pos.Top + 14), ClrWindowText
+    LINE (chkLinkMenuOnLeft.Pos.Left + 81, chkLinkMenuOnLeft.Pos.Top + 14)-(chkLinkMenuOnLeft.Pos.Left + 91, chkLinkMenuOnLeft.Pos.Top + 14), ClrWindowText
+    LINE (chkConfLinkDel.Pos.Left + 97, chkConfLinkDel.Pos.Top + 14)-(chkConfLinkDel.Pos.Left + 102, chkConfLinkDel.Pos.Top + 14), ClrWindowText
+    LINE (chkConfExit.Pos.Left + 169, chkConfExit.Pos.Top + 14)-(chkConfExit.Pos.Left + 175, chkConfExit.Pos.Top + 14), ClrWindowText
+    LINE (chkAnimUI.Pos.Left + 19, chkAnimUI.Pos.Top + 14)-(chkAnimUI.Pos.Left + 27, chkAnimUI.Pos.Top + 14), ClrWindowText
+    LINE (chkGreyOutMsgBox.Pos.Left + 19, chkGreyOutMsgBox.Pos.Top + 14)-(chkGreyOutMsgBox.Pos.Left + 26, chkGreyOutMsgBox.Pos.Top + 14), ClrWindowText
+    LINE (chkDailyTip.Pos.Left + 41, chkDailyTip.Pos.Top + 14)-(chkDailyTip.Pos.Left + 51, chkDailyTip.Pos.Top + 14), ClrWindowText
+    LINE (chkUseLastProfile.Pos.Left + 19, chkUseLastProfile.Pos.Top + 14)-(chkUseLastProfile.Pos.Left + 26, chkUseLastProfile.Pos.Top + 14), ClrWindowText
     Mouse.Show
 
     DO
@@ -292,7 +284,7 @@ SUB Conf.ConfMisc ()
         Obj.ChkClick chkLinkMenuOnLeft
         Obj.ChkClick chkConfLinkDel
         Obj.ChkClick chkConfExit
-        Obj.ChkClick chkGreyOutMsgbox
+        Obj.ChkClick chkGreyOutMsgBox
         Obj.ChkClick chkAnimUI
         Obj.ChkClick chkDailyTip
         Obj.ChkClick chkUseLastProfile
@@ -306,19 +298,24 @@ SUB Conf.ConfMisc ()
             IF chkConfLinkDel.Checked = True THEN ConfLinkDel = 1:  ELSE ConfLinkDel = False
             IF chkAnimUI.Checked = True THEN AnimUI = 1:  ELSE AnimUI = False
             IF chkConfExit.Checked = True THEN ConfExit = 1:  ELSE ConfExit = False
-            IF chkGreyOutMsgbox.Checked = True THEN GreyOutMsgbox = 1:  ELSE GreyOutMsgbox = False
+            IF chkGreyOutMsgBox.Checked = True THEN GreyOutMsgbox = 1:  ELSE GreyOutMsgbox = False
             IF chkDailyTip.Checked = True THEN DailyTip = 1:  ELSE DailyTip = False
             IF chkUseLastProfile.Checked = True THEN UseLastProfile = 1:  ELSE UseLastProfile = False
-            File.CfgWrite "DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "ShowLinkDescriptions", LTRIM$(STR$(ShowLinkDesc))
-            File.CfgWrite "DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "ShowLinkTargetFiles", LTRIM$(STR$(ShowLinkTarget))
-            File.CfgWrite "DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "LinkMenuOnLeftClick", LTRIM$(STR$(LinkMenuOnLeft))
-            File.CfgWrite "DATA\CONFIG\" + ProfileID + "\DESKTOP.CFG", "ConfirmLinkDelete", LTRIM$(STR$(ConfLinkDel))
-            File.CfgWrite "DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "Animations", LTRIM$(STR$(AnimUI))
-            File.CfgWrite "DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "ConfirmExit", LTRIM$(STR$(ConfExit))
-            File.CfgWrite "DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "GreyOutOnMsgbox", LTRIM$(STR$(GreyOutMsgbox))
-            File.CfgWrite "DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "TipOfTheDay", LTRIM$(STR$(DailyTip))
-            File.CfgWrite "DATA\CONFIG\COSTA.CFG", "UseLastProfile", LTRIM$(STR$(UseLastProfile))
             
+            SystemSettings.UseLastProfile = chkUseLastProfile.Checked
+            
+            UserSettings.Animations = chkAnimUI.Checked
+            UserSettings.ShowLinkDescriptions = chkShowLinkDesc.Checked
+            UserSettings.ShowLinkTargetFiles = chkShowLinkTarget.Checked
+            UserSettings.LinkMenuOnLeftClick = chkLinkMenuOnLeft.Checked
+            UserSettings.ConfirmLinkDelete = chkConfLinkDel.Checked
+            UserSettings.ConfirmExit = chkConfExit.Checked
+            UserSettings.TipOfTheDay = chkDailyTip.Checked
+            UserSettings.GreyoutOnMsgBox = chkGreyOutMsgBox.Checked
+            
+            Sys.SaveSettings
+            Sys.SaveProfile VAL(RIGHT$(ProfileID, 1))
+                           
             EXIT SUB
         END IF
 
@@ -327,15 +324,15 @@ SUB Conf.ConfMisc ()
             DeskNeedsDraw = True
             IF chkShowLinkDesc.Checked = True THEN
                 Obj.DrawChk chkShowLinkTarget
-                Font.Print "Show link targets", chkShowLinkTarget.Pos.Left + 20, chkShowLinkTarget.Pos.Top + 3, clrWindowText, 2
+                Font.Print "Show link targets", chkShowLinkTarget.Pos.Left + 20, chkShowLinkTarget.Pos.Top + 3, ClrWindowText, 2
                 Mouse.Hide
-                LINE (chkShowLinkTarget.Pos.Left + 81, chkShowLinkTarget.Pos.Top + 14)-(chkShowLinkTarget.Pos.Left + 87, chkShowLinkTarget.Pos.Top + 14), clrWindowText
+                LINE (chkShowLinkTarget.Pos.Left + 81, chkShowLinkTarget.Pos.Top + 14)-(chkShowLinkTarget.Pos.Left + 87, chkShowLinkTarget.Pos.Top + 14), ClrWindowText
                 Mouse.Show
             ELSE
                 Font.Print "Show link targets", chkShowLinkTarget.Pos.Left + 20, chkShowLinkTarget.Pos.Top + 3, Clr3DShadow, 2
                 Mouse.Hide
-                LINE (chkShowLinkTarget.Pos.Left + 2, chkShowLinkTarget.Pos.Top + 2)-(chkShowLinkTarget.Pos.Left + 13, chkShowLinkTarget.Pos.Top + 13), clrWindow, BF
-                LINE (chkShowLinkTarget.Pos.Left + 81, chkShowLinkTarget.Pos.Top + 14)-(chkShowLinkTarget.Pos.Left + 87, chkShowLinkTarget.Pos.Top + 14), clrWindow
+                LINE (chkShowLinkTarget.Pos.Left + 2, chkShowLinkTarget.Pos.Top + 2)-(chkShowLinkTarget.Pos.Left + 13, chkShowLinkTarget.Pos.Top + 13), ClrWindow, BF
+                LINE (chkShowLinkTarget.Pos.Left + 81, chkShowLinkTarget.Pos.Top + 14)-(chkShowLinkTarget.Pos.Left + 87, chkShowLinkTarget.Pos.Top + 14), ClrWindow
                 Mouse.Show
             END IF
         END IF
@@ -345,7 +342,7 @@ SUB Conf.ConfMisc ()
         IF Key$ = "r" THEN chkConfLinkDel.Checked = NOT chkConfLinkDel.Checked: Obj.DrawChk chkConfLinkDel
         IF Key$ = "a" THEN chkAnimUI.Checked = NOT chkAnimUI.Checked: Obj.DrawChk chkAnimUI
         IF Key$ = "x" THEN chkConfExit.Checked = NOT chkConfExit.Checked: Obj.DrawChk chkConfExit
-        IF Key$ = "g" THEN chkGreyOutMsgbox.Checked = NOT chkGreyOutMsgbox.Checked: Obj.DrawChk chkGreyOutMsgbox
+        IF Key$ = "g" THEN chkGreyOutMsgBox.Checked = NOT chkGreyOutMsgBox.Checked: Obj.DrawChk chkGreyOutMsgBox
         IF Key$ = "w" THEN chkDailyTip.Checked = NOT chkDailyTip.Checked: Obj.DrawChk chkDailyTip
         IF Key$ = "u" THEN chkUseLastProfile.Checked = NOT chkUseLastProfile.Checked: Obj.DrawChk chkUseLastProfile
         
@@ -401,8 +398,8 @@ SUB Conf.ConfTheme ()
     Obj.DrawBtn btnNext, False
     Obj.DrawFrm frmPreview, 15, Clr3DShadow
     Mouse.Hide
-    Font.Print "Theme name:", winTheme.Pos.Left + 12, winTheme.Pos.Top + 32, clrWindowText, 1
-    Font.Print "Theme author:", winTheme.Pos.Left + 12, winTheme.Pos.Top + 47, clrWindowText, 1
+    Font.Print "Theme name:", winTheme.Pos.Left + 12, winTheme.Pos.Top + 32, ClrWindowText, 1
+    Font.Print "Theme author:", winTheme.Pos.Left + 12, winTheme.Pos.Top + 47, ClrWindowText, 1
     Mouse.Show
 
     'The rest of the controls are used in the preview
@@ -447,7 +444,7 @@ SUB Conf.ConfTheme ()
         TmpName$ = LEFT$(TmpName$, LEN(TmpName$) - 4)
         REDIM PRESERVE ThemeList(0 TO TmpCount) AS STRING
         ThemeList(UBOUND(ThemeList)) = TmpName$
-        IF UCASE$(TmpName$) = UCASE$(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "ThemeFile", "DEFAULT")) THEN ActiveTheme = TmpCount
+        IF UCASE$(TmpName$) = ClrThemeFile THEN ActiveTheme = TmpCount
         TmpName$ = DIR$
         TmpCount = TmpCount + 1
     LOOP
@@ -472,8 +469,8 @@ UpdatePreview:
     Obj.DrawBtn btnPreview1, False
     Obj.DrawBtn btnPreview2, True
     
-    Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 32, clrWindowText, 1
-    Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 48, clrWindowText, 2
+    Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 32, ClrWindowText, 1
+    Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 48, ClrWindowText, 2
     Font.Print "Preview link", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 4, ClrDesktopText, 1
     Font.Print "preview.exe", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 18, ClrDesktopText, 2
 
@@ -481,13 +478,13 @@ UpdatePreview:
     Obj.DrawBtn btnMenuPreview, False
 
     Mouse.Hide
-    LINE (btnMenuPreview.Pos.Left + 2, btnMenuPreview.Pos.Top + 2)-(btnMenuPreview.Pos.Left + btnMenuPreview.Pos.Width - 2, btnMenuPreview.Pos.Top + btnMenuPreview.Pos.Height - 2), clrWindow, BF
+    LINE (btnMenuPreview.Pos.Left + 2, btnMenuPreview.Pos.Top + 2)-(btnMenuPreview.Pos.Left + btnMenuPreview.Pos.Width - 2, btnMenuPreview.Pos.Top + btnMenuPreview.Pos.Height - 2), ClrWindow, BF
     LINE (btnMenuPreview.Pos.Left + 2, btnMenuPreview.Pos.Top + 3)-(btnMenuPreview.Pos.Left + btnMenuPreview.Pos.Width - 2, btnMenuPreview.Pos.Top + 18), ClrSelect, BF
-    LINE (btnMenuPreview.Pos.Left + 5, btnMenuPreview.Pos.Top + 17)-(btnMenuPreview.Pos.Left + 12, btnMenuPreview.Pos.Top + 17), clrSelectText
-    LINE (btnMenuPreview.Pos.Left + 5, btnMenuPreview.Pos.Top + 33)-(btnMenuPreview.Pos.Left + 12, btnMenuPreview.Pos.Top + 33), clrWindowText
+    LINE (btnMenuPreview.Pos.Left + 5, btnMenuPreview.Pos.Top + 17)-(btnMenuPreview.Pos.Left + 12, btnMenuPreview.Pos.Top + 17), ClrSelectText
+    LINE (btnMenuPreview.Pos.Left + 5, btnMenuPreview.Pos.Top + 33)-(btnMenuPreview.Pos.Left + 12, btnMenuPreview.Pos.Top + 33), ClrWindowText
     Mouse.Show
-    Font.Print "Selected item", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 6, clrSelectText, 1
-    Font.Print "Unselected", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 22, clrWindowText, 1
+    Font.Print "Selected item", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 6, ClrSelectText, 1
+    Font.Print "Unselected", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 22, ClrWindowText, 1
 
     Sys.LoadTheme
 
@@ -497,7 +494,8 @@ UpdatePreview:
 
         IF Obj.BtnClick(btnSave) OR Key$ = "s" OR Key$ = CHR$(13) THEN
             DeskNeedsDraw = True
-            File.CfgWrite "DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "ThemeFile", ThemeList(ActiveTheme)
+            UserSettings.ThemeFile = ThemeList(ActiveTheme)
+            Sys.SaveProfile VAL(RIGHT$(ProfileID, 1))
             ClrThemeFile = ThemeList(ActiveTheme)
             EXIT SUB
         END IF
@@ -545,17 +543,17 @@ SUB Conf.LoadTheme (BYVAL ThmFile AS STRING)
 
     ClrDesktop = VAL(File.CfgRead(ThmFile, "ClrDesktop", "3"))
     ClrDesktopText = VAL(File.CfgRead(ThmFile, "ClrDesktopText", "0"))
-    clrWindow = VAL(File.CfgRead(ThmFile, "ClrWindow", "7"))
+    ClrWindow = VAL(File.CfgRead(ThmFile, "ClrWindow", "7"))
     ClrButton = VAL(File.CfgRead(ThmFile, "ClrButton", "7"))
     ClrTextbox = VAL(File.CfgRead(ThmFile, "ClrTextbox", "15"))
     ClrTextboxText = VAL(File.CfgRead(ThmFile, "ClrTextboxText", "0"))
-    clrWindowText = VAL(File.CfgRead(ThmFile, "ClrWindowText", "0"))
+    ClrWindowText = VAL(File.CfgRead(ThmFile, "ClrWindowText", "0"))
     ClrTitleBar = VAL(File.CfgRead(ThmFile, "ClrTitlebar", "1"))
     ClrTitleBarText = VAL(File.CfgRead(ThmFile, "ClrTitlebarText", "15"))
     Clr3DLight = VAL(File.CfgRead(ThmFile, "Clr3DLight", "7"))
     Clr3DShadow = VAL(File.CfgRead(ThmFile, "Clr3DShadow", "8"))
     ClrSelect = VAL(File.CfgRead(ThmFile, "ClrSelect", "1"))
-    clrSelectText = VAL(File.CfgRead(ThmFile, "ClrSelectText", "1"))
+    ClrSelectText = VAL(File.CfgRead(ThmFile, "ClrSelectText", "1"))
 
     
 END SUB
@@ -610,22 +608,22 @@ SUB Conf.Main ()
     Obj.DrawBtn btnMisc, False
     Obj.DrawBtn btnClose, False
     
-    Font.Print "Theme selector", btnThemes.Pos.Left + 60, btnThemes.Pos.Top, clrWindowText, 1
-    Font.Print "Change the colors of the user interface. Costa comes", btnThemes.Pos.Left + 60, btnThemes.Pos.Top + 15, clrWindowText, 2
-    Font.Print "with a collection of themes for you to choose from.", btnThemes.Pos.Left + 60, btnThemes.Pos.Top + 29, clrWindowText, 2
+    Font.Print "Theme selector", btnThemes.Pos.Left + 60, btnThemes.Pos.Top, ClrWindowText, 1
+    Font.Print "Change the colors of the user interface. Costa comes", btnThemes.Pos.Left + 60, btnThemes.Pos.Top + 15, ClrWindowText, 2
+    Font.Print "with a collection of themes for you to choose from.", btnThemes.Pos.Left + 60, btnThemes.Pos.Top + 29, ClrWindowText, 2
     
-    Font.Print "File associations", btnFileAssoc.Pos.Left + 60, btnFileAssoc.Pos.Top, clrWindowText, 1
-    Font.Print "Enable or disable file associations, and define which", btnFileAssoc.Pos.Left + 60, btnFileAssoc.Pos.Top + 15, clrWindowText, 2
-    Font.Print "programs should open different file types.", btnFileAssoc.Pos.Left + 60, btnFileAssoc.Pos.Top + 29, clrWindowText, 2
+    Font.Print "File associations", btnFileAssoc.Pos.Left + 60, btnFileAssoc.Pos.Top, ClrWindowText, 1
+    Font.Print "Enable or disable file associations, and define which", btnFileAssoc.Pos.Left + 60, btnFileAssoc.Pos.Top + 15, ClrWindowText, 2
+    Font.Print "programs should open different file types.", btnFileAssoc.Pos.Left + 60, btnFileAssoc.Pos.Top + 29, ClrWindowText, 2
 
-    Font.Print "Other settings", btnMisc.Pos.Left + 60, btnMisc.Pos.Top, clrWindowText, 1
-    Font.Print "Tweak various aspects of Costa, like how the desktop", btnMisc.Pos.Left + 60, btnMisc.Pos.Top + 15, clrWindowText, 2
-    Font.Print "acts and if certain things require confirmation.", btnMisc.Pos.Left + 60, btnMisc.Pos.Top + 29, clrWindowText, 2
+    Font.Print "Other settings", btnMisc.Pos.Left + 60, btnMisc.Pos.Top, ClrWindowText, 1
+    Font.Print "Tweak various aspects of Costa, like how the desktop", btnMisc.Pos.Left + 60, btnMisc.Pos.Top + 15, ClrWindowText, 2
+    Font.Print "acts and if certain things require confirmation.", btnMisc.Pos.Left + 60, btnMisc.Pos.Top + 29, ClrWindowText, 2
 
     Mouse.Hide
-    LINE (btnMisc.Pos.Left + 59, btnMisc.Pos.Top + 11)-(btnMisc.Pos.Left + 66, btnMisc.Pos.Top + 11), clrWindowText
-    LINE (btnThemes.Pos.Left + 59, btnThemes.Pos.Top + 11)-(btnThemes.Pos.Left + 66, btnThemes.Pos.Top + 11), clrWindowText
-    LINE (btnFileAssoc.Pos.Left + 59, btnFileAssoc.Pos.Top + 11)-(btnFileAssoc.Pos.Left + 64, btnFileAssoc.Pos.Top + 11), clrWindowText
+    LINE (btnMisc.Pos.Left + 59, btnMisc.Pos.Top + 11)-(btnMisc.Pos.Left + 66, btnMisc.Pos.Top + 11), ClrWindowText
+    LINE (btnThemes.Pos.Left + 59, btnThemes.Pos.Top + 11)-(btnThemes.Pos.Left + 66, btnThemes.Pos.Top + 11), ClrWindowText
+    LINE (btnFileAssoc.Pos.Left + 59, btnFileAssoc.Pos.Top + 11)-(btnFileAssoc.Pos.Left + 64, btnFileAssoc.Pos.Top + 11), ClrWindowText
     Mouse.Show
 
     Obj.DrawImg imgThemes
@@ -647,7 +645,7 @@ SUB Conf.Main ()
             IF DeskNeedsDraw = False THEN
                 Sys.VGALoad "DESKTOP"
             ELSE
-                Conf.LoadTheme File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "ThemeFile", "Default")
+                Conf.LoadTheme RTRIM$(UserSettings.ThemeFile)
                 Mouse.Hide
                 LINE (0, 0)-(639, 479), ClrDesktop, BF
                 Mouse.Show

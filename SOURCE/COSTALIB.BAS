@@ -139,7 +139,7 @@ END FUNCTION
 'filename to the relevant program as a parameter.
 SUB File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVAL TargetPath AS STRING, PauseOnExit AS INTEGER)
 
-	DIM RunHandle, DotPos, AssignFileTypes
+	DIM RunHandle, DotPos
 	DIM TargetDrive AS STRING, SysDrive AS STRING
 
 	TargetFile = LTRIM$(RTRIM$(TargetFile))
@@ -166,8 +166,7 @@ SUB File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVA
 	
 	'Get the file extension, and see if it's associated with a program
 	DotPos = INSTR(TargetFile, ".")
-	AssignFileTypes = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "AssignFileTypes", "1"))
-	IF DotPos > 0 AND AssignFileTypes = 1 THEN
+	IF DotPos > 0 AND UserSettings.AssignFileTypes THEN
 
 		DIM FileType AS STRING, OpenWith AS STRING
 		FileType = RIGHT$(TargetFile, LEN(TargetFile) - DotPos)
@@ -297,6 +296,7 @@ FUNCTION Mouse.Clicked ()
 		Mouse.Clicked = mbRight
 	END IF
 	IF lButton = 0 AND RButton = 0 THEN Mouse.Clicked = 0
+
 END FUNCTION
 
 STATIC SUB Mouse.Driver (M0, M1, M2, M3)
@@ -359,7 +359,9 @@ END SUB
 
 SUB Mouse.Hide ()
 
-	Mouse.Driver 2, 0, 0, 0
+	DIM regs AS RegType
+	regs.ax = 2
+	INTERRUPT 51, regs, regs
 
 END SUB
 
@@ -377,7 +379,9 @@ END FUNCTION
 
 SUB Mouse.Show ()
 
-	Mouse.Driver 1, 0, 0, 0
+	DIM regs AS RegType
+	regs.ax = 1
+	INTERRUPT 51, regs, regs
 
 END SUB
 
@@ -396,6 +400,7 @@ FUNCTION Mouse.Y ()
 	DIM ButtonMouse, Col, Row
 	Mouse.Driver 3, ButtonMouse, Col, Row
 	Mouse.Y = Row
+
 END FUNCTION
 
 FUNCTION Obj.BtnClick (TargetBtn AS ButtonType)
@@ -526,7 +531,6 @@ SUB Obj.DrawChk (TargetChk AS CheckBoxType)
 	Mouse.Hide
 	LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 2), ClrTextbox, BF
 
-	LINE (x1 + 1, y1 + 1)-(x2, y2)
 	LINE (x1 + 1, y1 + 1)-(x2, y2), 0, B
 	LINE (x2 - 1, y1 + 2)-(x2 - 1, y2 - 1), 0
 	LINE (x1 + 2, y2 - 1)-(x2 - 2, y2 - 1), 0
@@ -831,7 +835,6 @@ DEFINT A-Z
 FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS STRING, msgDefault AS STRING) AS STRING
 
 	DIM msgLines() AS STRING, msgLineCount, msgTextWidth
-	DIM GreyoutScreen
 
 	IF RIGHT$(msgText, 1) = CHR$(13) THEN msgText = LEFT$(msgText, LEN(msgText) - 1)
 	IF INSTR(msgText, CHR$(13)) = 0 THEN
@@ -888,8 +891,7 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 
 	Sys.VGASave "INPUTBOX"
 
-	GreyoutScreen = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "GreyOutOnMsgBox", "0"))
-	IF GreyoutScreen = 1 THEN
+	IF UserSettings.GreyOutOnMsgBox THEN
 		DIM LX, LY
 		LY = 0
 		Mouse.Hide
@@ -1037,24 +1039,33 @@ SUB Sys.Load ()
 			NEXT
 			CLOSE #FontFileHandle
 
-	'DEBUG - If a session is active, load ProfileID!
+	
+	'Load settings
+		Sys.LoadSettings
+		
+	'Load user profile - if profile has not yet been selected, load default
+		IF NOT ProfileID = "" THEN
+			Sys.LoadProfile VAL(RIGHT$(ProfileID, 1))
+		ELSE
+			Sys.LoadProfile 0
+		END IF
 
 	'Load colors for the interface
 		Sys.LoadTheme
-
+	
 	'Clear the keyboard buffer, DOSBox has some issues with leaving keys in it
-			DO: LOOP WHILE LEN(INKEY$)
+		DO: LOOP WHILE LEN(INKEY$)
 			
 
 	'VGA 640x480, 16 colors
-	SCREEN 12
+		SCREEN 12
 
-	Mouse.Hide
-	LINE (0, 0)-(639, 0), ClrWindow
-	LINE (0, 1)-(639, 1), Clr3DShadow
-	LINE (0, 2)-(639, 2), 0
-	LINE (0, 2)-(639, 479), ClrDesktop, BF
-	Mouse.Show
+		Mouse.Hide
+		LINE (0, 0)-(639, 0), ClrWindow
+		LINE (0, 1)-(639, 1), Clr3DShadow
+		LINE (0, 2)-(639, 2), 0
+		LINE (0, 2)-(639, 479), ClrDesktop, BF
+		Mouse.Show
 
 	'Set the right colors for the palette
 		OUT &H3C8, 6
@@ -1081,8 +1092,50 @@ SUB Sys.Load ()
 
 END SUB
 
+SUB Sys.LoadProfile (ProfileNum)
+
+	IF ProfileNum > 0 THEN
+		DIM FileHandle
+		FileHandle = FREEFILE
+		OPEN Sys.Path + "\DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileNum)) + ".DAT" FOR BINARY AS #FileHandle
+		GET #FileHandle, , UserSettings
+		CLOSE #FileHandle
+	ELSE
+		UserSettings.ProfileName = "Profile" + STR$(ProfileNum)
+		UserSettings.ProfileImage = "USERS"
+		UserSettings.Animations = True
+		UserSettings.ShowLinkDescriptions = True
+		UserSettings.ShowLinkTargetFiles = True
+		UserSettings.LinkMenuOnLeftClick = False
+		UserSettings.ConfirmLinkDelete = True
+		UserSettings.ConfirmExit = True
+		UserSettings.TipOfTheDay = True
+		UserSettings.TipLastShown = 0
+		UserSettings.AssignFileTypes = True
+		UserSettings.GreyOutOnMsgBox = False
+	END IF
+
+	IF RTRIM$(UserSettings.ProfileName) = "" THEN UserSettings.ProfileName = "Profile" + STR$(ProfileNum)
+	IF RTRIM$(UserSettings.ProfileImage) = "" THEN UserSettings.ProfileImage = "USERS"
+	IF RTRIM$(UserSettings.ThemeFile) = "" THEN UserSettings.ThemeFile = "DEFAULT"
+
+	ClrThemeFile = RTRIM$(UserSettings.ThemeFile)
+
+END SUB
+
+SUB Sys.LoadSettings ()
+
+	DIM FileHandle
+	FileHandle = FREEFILE
+	OPEN Sys.Path + "\DATA\CONFIG\COSTA.DAT" FOR BINARY AS #FileHandle
+	GET #FileHandle, , SystemSettings
+	CLOSE #FileHandle
+
+END SUB
+
 SUB Sys.LoadTheme ()
-	ClrThemeFile = File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "ThemeFile", "Default")
+	ClrThemeFile = RTRIM$(UserSettings.ThemeFile)
+
 	ClrDesktop = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrDesktop", "9"))
 	ClrDesktopText = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrDesktopText", "0"))
 	ClrWindow = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrWindow", "15"))
@@ -1104,8 +1157,7 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	DIM btnFirst AS ButtonType, btnSecond AS ButtonType
 	DIM imgIcon AS ImageType
 	DIM winMsgBox AS WindowType
-	DIM GreyoutScreen
-
+	
 	IF RIGHT$(msgText, 1) = CHR$(13) THEN msgText = LEFT$(msgText, LEN(msgText) - 1)
 	IF INSTR(msgText, CHR$(13)) = 0 THEN
 		msgLineCount = 1
@@ -1170,8 +1222,7 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	
 	Sys.VGASave "MSGBOX"
 
-	GreyoutScreen = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "GreyOutOnMsgBox", "0"))
-	IF GreyoutScreen = 1 THEN
+	IF UserSettings.GreyOutOnMsgBox THEN
 		DIM LX, LY
 		LY = 0
 		Mouse.Hide
@@ -1256,6 +1307,31 @@ FUNCTION Sys.Path () AS STRING
 	Sys.Path = SysPath
 
 END FUNCTION
+
+SUB Sys.SaveProfile (ProfileNum)
+
+	'Debug - error handling
+
+	DIM FileHandle
+	FileHandle = FREEFILE
+	OPEN Sys.Path + "\DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileNum)) + ".DAT" FOR BINARY AS #FileHandle
+	PUT #FileHandle, , UserSettings
+	CLOSE #FileHandle
+
+END SUB
+
+SUB Sys.SaveSettings ()
+
+	'DEBUG - error checking
+
+	DIM FileHandle
+	FileHandle = FREEFILE
+	OPEN Sys.Path + "\DATA\CONFIG\COSTA.DAT" FOR BINARY AS #FileHandle
+	PUT #FileHandle, , SystemSettings
+	CLOSE #FileHandle
+
+
+END SUB
 
 STATIC SUB Sys.VGALoad (TargetFile AS STRING)
 	'BLOADs a VGA screen saved by Sys.VGASave

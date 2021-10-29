@@ -259,7 +259,7 @@ END SUB
 ' =========================================================================
 FUNCTION Tic.LoadState ()
 
-	IF NOT File.Exists("DATA\CONFIG\" + ProfileID + "\TICTAC.CFG") THEN
+	IF NOT File.Exists("DATA\CONFIG\" + ProfileID + "\TICTAC.DAT") THEN
 		Tic.LoadState = False
 		GOTO SanityChecks
 	END IF
@@ -268,7 +268,7 @@ FUNCTION Tic.LoadState ()
 
 	DIM StateFile, X, Y, SoundEnabled
 	StateFile = FREEFILE
-	OPEN "DATA\CONFIG\" + ProfileID + "\TICTAC.CFG" FOR BINARY AS #StateFile
+	OPEN "DATA\CONFIG\" + ProfileID + "\TICTAC.DAT" FOR BINARY AS #StateFile
 	
 	GET #StateFile, , TotalTurns
 	GET #StateFile, , EnableAI
@@ -607,7 +607,7 @@ SUB Tic.SaveState ()
 
 	DIM StateFile, X, Y
 	StateFile = FREEFILE
-	OPEN "DATA\CONFIG\" + ProfileID + "\TICTAC.CFG" FOR BINARY AS #StateFile
+	OPEN "DATA\CONFIG\" + ProfileID + "\TICTAC.DAT" FOR BINARY AS #StateFile
 
 	PUT #StateFile, , TotalTurns
 	PUT #StateFile, , EnableAI
