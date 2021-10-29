@@ -1,13 +1,19 @@
-DECLARE SUB TView.Main (FileToView AS STRING)
+
 OPTION EXPLICIT
 DEFINT A-Z
 
 DECLARE FUNCTION TView.LoadFile% (TargetFile AS STRING)
 DECLARE SUB TView.DrawText (StartLine%)
+DECLARE SUB TView.Main (FileToView AS STRING)
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
 COMMON SHARED FileData() AS STRING
+
+'Window is full screen, so no need to load desktop background
+ON ERROR RESUME NEXT
+KILL Sys.Path + "\DATA\TEMP\DESKTOP.*"
+ON ERROR GOTO 0
 
 Sys.Load
 
@@ -284,7 +290,6 @@ StartOfAll:
 
         IF Obj.BtnClick(btnExit) OR Key$ = "c" OR Key$ = CHR$(27) THEN
             REDIM FileData(1) AS STRING
-            Sys.VGALoad "DESKTOP"
             EXIT SUB
         END IF
 

@@ -891,7 +891,7 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 
 	Sys.VGASave "INPUTBOX"
 
-	IF UserSettings.GreyOutOnMsgBox THEN
+	IF UserSettings.GreyoutOnMsgBox THEN
 		DIM LX, LY
 		LY = 0
 		Mouse.Hide
@@ -989,15 +989,15 @@ SUB Sys.Load ()
 			DIM ProfileFileHandle
 			ProfileFileHandle = FREEFILE
 			OPEN Sys.Path + "DATA\TEMP\PROFILE.TMP" FOR INPUT AS #ProfileFileHandle
-			IF LOF(ProfileFileHandle) > 0 THEN LINE INPUT #ProfileFileHandle, ProfileID
+			IF LOF(ProfileFileHandle) > 0 THEN INPUT #ProfileFileHandle, ProfileID
 			CLOSE #ProfileFileHandle
 		END IF
 
 		'When running with /DEV parameter, always use profile 1 if none is
 		'specified. Otherwise, config files from accessories will end up in the
 		'wrong path
-		IF ProfileID = "" AND INSTR(COMMAND$, "/DEV") THEN
-			ProfileID = "PROFILE1"
+		IF (ProfileID < 1 OR ProfileID > 5) AND INSTR(COMMAND$, "/DEV") THEN
+			ProfileID = 1
 		END IF
 
 	
@@ -1046,8 +1046,8 @@ SUB Sys.Load ()
 		Sys.LoadSettings
 		
 	'Load user profile - if profile has not yet been selected, load default
-		IF NOT ProfileID = "" THEN
-			Sys.LoadProfile VAL(RIGHT$(ProfileID, 1))
+		IF ProfileID THEN
+			Sys.LoadProfile ProfileID
 		ELSE
 			DontDrawDesktop = True 'If no profile loaded, don't draw desktop as
 														 'that will cause flicker once theme is loaded
@@ -1066,12 +1066,17 @@ SUB Sys.Load ()
 		SCREEN 12
 
 		IF NOT DontDrawDesktop THEN
-			Mouse.Hide
-			LINE (0, 0)-(639, 0), ClrWindow
-			LINE (0, 1)-(639, 1), Clr3DShadow
-			LINE (0, 2)-(639, 2), 0
-			LINE (0, 2)-(639, 479), ClrDesktop, BF
-			Mouse.Show
+
+			IF File.Exists(Sys.Path + "DATA\TEMP\DESKTOP.INT") THEN
+				Sys.VGALoad "DESKTOP"
+			ELSE
+				Mouse.Hide
+				LINE (0, 0)-(639, 0), ClrWindow
+				LINE (0, 1)-(639, 1), Clr3DShadow
+				LINE (0, 2)-(639, 2), 0
+				LINE (0, 2)-(639, 479), ClrDesktop, BF
+				Mouse.Show
+			END IF
 		END IF
 
 	'Set the right colors for the palette
@@ -1120,7 +1125,7 @@ SUB Sys.LoadProfile (ProfileNum)
 		UserSettings.TipOfTheDay = True
 		UserSettings.TipLastShown = 0
 		UserSettings.AssignFileTypes = True
-		UserSettings.GreyOutOnMsgBox = False
+		UserSettings.GreyoutOnMsgBox = False
 	END IF
 
 	IF RTRIM$(UserSettings.ProfileName) = "" THEN UserSettings.ProfileName = "Profile" + STR$(ProfileNum)
@@ -1230,7 +1235,7 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	
 	Sys.VGASave "MSGBOX"
 
-	IF UserSettings.GreyOutOnMsgBox THEN
+	IF UserSettings.GreyoutOnMsgBox THEN
 		DIM LX, LY
 		LY = 0
 		Mouse.Hide

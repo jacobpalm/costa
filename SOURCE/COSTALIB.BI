@@ -128,7 +128,7 @@
   END TYPE
 
 'Common shared variables
-  COMMON SHARED ProfileID AS STRING
+  COMMON SHARED ProfileID AS INTEGER
 
   COMMON SHARED SystemSettings AS SystemSettingsType
   COMMON SHARED UserSettings AS UserSettingsType

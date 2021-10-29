@@ -251,9 +251,6 @@ StartOfCalc:
 
     LOOP
 
-    Sys.VGALoad "DESKTOP"
-
-    Mouse.Show
     EXIT SUB
 
 CalcErr:

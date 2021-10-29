@@ -33,9 +33,9 @@ Conf.Main
 ' =========================================================================
 SUB Conf.ConfAssoc ()
 
-    IF NOT File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "AssignFileTypes", "1") = "1" THEN
+    IF NOT File.CfgRead("DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileID)) + "\PROFILE.CFG", "AssignFileTypes", "1") = "1" THEN
         IF Sys.MsgBox("File associations disabled", "File associations are currently disabled." + CHR$(13) + "Do you want to enable this feature?", msgQuest) = True THEN
-            File.CfgWrite "DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "AssignFileTypes", "1"
+            File.CfgWrite "DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileID)) + "\PROFILE.CFG", "AssignFileTypes", "1"
         ELSE
             EXIT SUB
         END IF
@@ -137,7 +137,7 @@ SUB Conf.ConfAssoc ()
 
         IF Obj.BtnClick(btnDisable) OR Key$ = "d" THEN
             IF Sys.MsgBox("Disable file associations", "This will disable file associations in Costa" + CHR$(13) + "and all of its acessories. Are you sure?", msgQuest) = True THEN
-                File.CfgWrite "DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "AssignFileTypes", "0"
+                File.CfgWrite "DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileID)) + "\PROFILE.CFG", "AssignFileTypes", "0"
                 EXIT SUB
             END IF
         END IF
@@ -314,7 +314,7 @@ SUB Conf.ConfMisc ()
             UserSettings.GreyoutOnMsgBox = chkGreyOutMsgBox.Checked
             
             Sys.SaveSettings
-            Sys.SaveProfile VAL(RIGHT$(ProfileID, 1))
+            Sys.SaveProfile ProfileID
                            
             EXIT SUB
         END IF
@@ -495,7 +495,7 @@ UpdatePreview:
         IF Obj.BtnClick(btnSave) OR Key$ = "s" OR Key$ = CHR$(13) THEN
             DeskNeedsDraw = True
             UserSettings.ThemeFile = ThemeList(ActiveTheme)
-            Sys.SaveProfile VAL(RIGHT$(ProfileID, 1))
+            Sys.SaveProfile ProfileID
             ClrThemeFile = ThemeList(ActiveTheme)
             EXIT SUB
         END IF

@@ -3,7 +3,6 @@ OPTION EXPLICIT
 DEFINT A-Z
 
 DECLARE FUNCTION Desk.GetDailyTip () AS STRING
-DECLARE FUNCTION Desk.ProfileSelect () AS STRING
 DECLARE SUB Conf.Main ()
 DECLARE SUB Desk.AboutBox ()
 DECLARE SUB Desk.DrawDesktop ()
@@ -17,6 +16,7 @@ DECLARE SUB Desk.LinkReset ()
 DECLARE SUB Desk.LinkSave ()
 DECLARE SUB Desk.Main ()
 DECLARE SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
+DECLARE SUB Desk.ProfileSelect ()
 DECLARE SUB Desk.RunDialog ()
 
 
@@ -57,13 +57,6 @@ IF COMMAND$ = "/BOOT" THEN
     CHDIR "DATA"
     MKDIR "TEMP"
     MKDIR "CONFIG"
-    CHDIR "CONFIG"
-    MKDIR "PROFILE1"
-    MKDIR "PROFILE2"
-    MKDIR "PROFILE3"
-    MKDIR "PROFILE4"
-    MKDIR "PROFILE5"
-    CHDIR ".."
     MKDIR "FONTS"
     MKDIR "IMAGES"
     MKDIR "THEMES"
@@ -82,30 +75,43 @@ IF COMMAND$ = "/BOOT" THEN
     PRINT #FileHandle, "1"
     CLOSE #FileHandle
     
+ELSE
+
+  'We will redraw the desktop, not load it, so make sure there's nothing to
+  'load
+  ON ERROR RESUME NEXT
+  KILL Sys.Path + "DATA\TEMP\DESKTOP.*"
+  ON ERROR GOTO 0
+
 END IF
 
 STACK 5120
 
 CALL Sys.Load
 
-IF ProfileID = "" THEN
-    IF SystemSettings.UseLastProfile = True THEN
-        DIM ProfileToUse
-        ProfileToUse = SystemSettings.LastUsedProfile
-                            
-        IF ProfileToUse > 0 AND ProfileToUse < 5 THEN
-            ProfileID = "PROFILE" + LTRIM$(STR$(ProfileToUse))
-            Sys.LoadProfile ProfileToUse
-        ELSE
-            ProfileID = "PROFILE1"
-        END IF
+IF ProfileID > 0 OR ProfileID < 5 THEN
 
+    IF SystemSettings.UseLastProfile THEN
+
+        IF SystemSettings.LastUsedProfile > 0 AND SystemSettings.LastUsedProfile < 5 THEN
+            ProfileID = SystemSettings.LastUsedProfile
+        ELSE
+            ProfileID = 1
+        END IF
+        Sys.LoadProfile SystemSettings.LastUsedProfile
         Sys.LoadTheme
+
     ELSE
-        ProfileID = Desk.ProfileSelect
-        Sys.LoadTheme
+        Desk.ProfileSelect
     END IF
+
 END IF
+
+ON ERROR RESUME NEXT
+OPEN Sys.Path + "DATA\TEMP\PROFILE.TMP" FOR OUTPUT AS #FileHandle
+PRINT #FileHandle, ProfileID
+CLOSE #FileHandle
+ON ERROR GOTO 0
 
 Desk.Main
 
@@ -513,6 +519,8 @@ SUB Desk.LinkLaunch (TargetLink AS INTEGER)
 
     TargetPath = RTRIM$(DESKLINK(TargetLink).Path)
 
+    Sys.VGASave "DESKTOP"
+
     'DEBUG
     File.Run RTRIM$(DESKLINK(TargetLink).Filename), RTRIM$(DESKLINK(TargetLink).Parameters), RTRIM$(DESKLINK(TargetLink).Path), DESKLINK(TargetLink).PauseOnExit
 
@@ -537,7 +545,7 @@ SUB Desk.LinkLoad ()
     DIM LinkCount, LinkLoad, FileHandle
     FileHandle = FREEFILE
 
-    OPEN Sys.Path + "DATA\CONFIG\" + ProfileID + "\DESKLINK.DAT" FOR BINARY AS #FileHandle
+    OPEN Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(ProfileID)) + ".DAT" FOR BINARY AS #FileHandle
     IF NOT LOF(FileHandle) = 0 THEN GET #FileHandle, , LinkCount
 
     IF LinkCount = 0 THEN
@@ -1054,8 +1062,8 @@ SUB Desk.LinkSave ()
     NEXT
     
     FileHandle = FREEFILE
-    IF File.Exists(Sys.Path + "DATA\CONFIG\" + ProfileID + "\DESKLINK.DAT") THEN KILL Sys.Path + "DATA\CONFIG\" + ProfileID + "\DESKLINK.DAT"
-    OPEN Sys.Path + "DATA\CONFIG\" + ProfileID + "\DESKLINK.DAT" FOR BINARY AS #FileHandle
+    IF File.Exists(Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(ProfileID)) + ".DAT") THEN KILL Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(ProfileID)) + ".DAT"
+    OPEN Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(ProfileID)) + ".DAT" FOR BINARY AS #FileHandle
     PUT #FileHandle, , LinkCount
 
     IF LinkCount = 0 THEN CLOSE #FileHandle: EXIT SUB
@@ -1143,7 +1151,7 @@ Desk.MainTop:
         END IF
         Mouse.Hide
         UserSettings.TipLastShown = DAY(NOW)
-        Sys.SaveProfile VAL(RIGHT$(ProfileID, 1))
+        Sys.SaveProfile ProfileID
     END IF
   END IF
 
@@ -1274,13 +1282,7 @@ MainLoopStart:
   IF Key$ = "t" THEN ShowProfileTemp
         IF Key$ = "p" THEN
             GOSUB SlideUp
-            ProfileID = ""
-            Sys.LoadTheme
-            Mouse.Hide
-            LINE (0, 0)-(639, 479), ClrDesktop, BF
-            Mouse.Show
-            ProfileID = Desk.ProfileSelect
-            Sys.LoadTheme
+            Desk.ProfileSelect
             GOSUB Desk.MainTop
         END IF
 
@@ -1522,7 +1524,7 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
 
 END SUB
 
-FUNCTION Desk.ProfileSelect () AS STRING
+SUB Desk.ProfileSelect ()
     DIM ProfileEnabled(1 TO 5) AS INTEGER
     DIM ProfileName(1 TO 5) AS STRING
     DIM Counter, SelectedProfile
@@ -1535,6 +1537,12 @@ FUNCTION Desk.ProfileSelect () AS STRING
     DIM btnContinue AS ButtonType
     DIM btnEdit AS ButtonType
 
+    UserSettings.ThemeFile = "DEFAULT"
+    Sys.LoadTheme
+    Mouse.Hide
+    LINE (0, 0)-(639, 479), ClrDesktop, BF
+    Mouse.Show
+    
     winProfiles.Pos.Width = 338
     winProfiles.Pos.Height = 220
     winProfiles.Pos.Left = (640 - winProfiles.Pos.Width) / 2
@@ -1630,15 +1638,16 @@ TopOfProfile:
             DIM FileHandle
             FileHandle = FREEFILE
             OPEN Sys.Path + "DATA\TEMP\PROFILE.TMP" FOR OUTPUT AS #FileHandle
-            PRINT #FileHandle, "PROFILE" + LTRIM$(STR$(SelectedProfile))
+            PRINT #FileHandle, SelectedProfile
             CLOSE #FileHandle
 
+            ProfileID = SelectedProfile
             SystemSettings.LastUsedProfile = SelectedProfile
             Sys.SaveSettings
             Sys.LoadProfile SelectedProfile
+            Sys.LoadTheme
             
-            Desk.ProfileSelect = "PROFILE" + LTRIM$(STR$(SelectedProfile))
-            EXIT FUNCTION
+            EXIT SUB
         END IF
 
         IF Key$ = "e" OR Obj.BtnClick(btnEdit) THEN
@@ -1649,10 +1658,10 @@ TopOfProfile:
 
     LOOP
 
-END FUNCTION
+END SUB
 
 SUB ShowProfileTemp ()
-  PRINT "Prof: " + ProfileID
+  PRINT "Prof: " + STR$(ProfileID)
   PRINT "Name: " + RTRIM$(UserSettings.ProfileName)
   PRINT "Img:  " + RTRIM$(UserSettings.ProfileImage)
   PRINT "Thm:  " + RTRIM$(UserSettings.ThemeFile)
