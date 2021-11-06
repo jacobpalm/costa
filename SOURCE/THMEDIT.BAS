@@ -353,6 +353,33 @@ TopOfLoop:
         IF Obj.BtnClick(btnSave) OR Key$ = "s" THEN
             TargetFile$ = "DATA\THEMES\" + ThemeFile$ + ".THM"
 
+            DIM TargetFileBIN$
+            TargetFileBIN$ = Sys.Path + "\DATA\THEMES\" + ThemeFile$ + ".DAT"
+            DIM ThemeBIN AS ThemeType
+            DIM ThemeBINHandle
+            ThemeBIN.ThemeName = ThemeName$
+            ThemeBIN.ThemeAuthor = ThemeAuthor$
+
+            ThemeBIN.Desktop = thmClrDesktop
+            ThemeBIN.DesktopText = thmClrDesktopText
+            ThemeBIN.Window = thmClrWindow
+            ThemeBIN.Button = thmClrButton
+            ThemeBIN.Textbox = thmClrTextbox
+            ThemeBIN.TextboxText = thmClrTextboxText
+            ThemeBIN.WindowText = thmClrWindowText
+            ThemeBIN.Titlebar = thmClrTitleBar
+            ThemeBIN.TitlebarText = thmClrTitleBarText
+            ThemeBIN.ThreeDLight = thmClr3DLight
+            ThemeBIN.ThreeDShadow = thmClr3DShadow
+            ThemeBIN.Select = thmClrSelect
+            ThemeBIN.SelectText = thmClrSelectText
+
+            ThemeBINHandle = FREEFILE
+            OPEN TargetFileBIN$ FOR BINARY AS #ThemeBINHandle
+            PUT #ThemeBINHandle, , ThemeBIN
+            CLOSE #ThemeBINHandle
+
+
             File.CfgWrite TargetFile$, "ThemeName", ThemeName$
             File.CfgWrite TargetFile$, "ThemeAuthor", ThemeAuthor$
 

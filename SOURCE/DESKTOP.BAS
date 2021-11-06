@@ -1,5 +1,3 @@
-DECLARE SUB Mouse.SetPos (XPos%, YPos%)
-DECLARE SUB ShowProfileTemp ()
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -141,9 +139,9 @@ SUB Desk.AboutBox ()
   
   Obj.DrawWin winAboutBox
   Mouse.Hide
-  LINE (winAboutBox.Pos.Left + 5, winAboutBox.Pos.Top + 5)-(winAboutBox.Pos.Left + winAboutBox.Pos.Width - 5, winAboutBox.Pos.Top + winAboutBox.Pos.Height - 5), Clr3DShadow, B
-  LINE (winAboutBox.Pos.Left + 6, winAboutBox.Pos.Top + 6)-(winAboutBox.Pos.Left + winAboutBox.Pos.Width - 6, winAboutBox.Pos.Top + winAboutBox.Pos.Height - 6), Clr3DLight, B
-  LINE (winAboutBox.Pos.Left + 7, winAboutBox.Pos.Top + 7)-(winAboutBox.Pos.Left + winAboutBox.Pos.Width - 7, winAboutBox.Pos.Top + winAboutBox.Pos.Height - 7), ClrWindow, BF
+  LINE (winAboutBox.Pos.Left + 5, winAboutBox.Pos.Top + 5)-(winAboutBox.Pos.Left + winAboutBox.Pos.Width - 5, winAboutBox.Pos.Top + winAboutBox.Pos.Height - 5), SystemTheme.Shadow, B
+  LINE (winAboutBox.Pos.Left + 6, winAboutBox.Pos.Top + 6)-(winAboutBox.Pos.Left + winAboutBox.Pos.Width - 6, winAboutBox.Pos.Top + winAboutBox.Pos.Height - 6), SystemTheme.Light, B
+  LINE (winAboutBox.Pos.Left + 7, winAboutBox.Pos.Top + 7)-(winAboutBox.Pos.Left + winAboutBox.Pos.Width - 7, winAboutBox.Pos.Top + winAboutBox.Pos.Height - 7), SystemTheme.Window, BF
   Mouse.Show
   Obj.DrawBtn btnClose, False
   
@@ -207,7 +205,7 @@ SUB Desk.DrawDesktop ()
     IF UserSettings.ShowLinkDescriptions THEN
     
         IF UserSettings.ShowLinkTargetFiles THEN
-            Font.Print DESKLINK(TargetLink).Caption, DESKLINK(TargetLink).Left + 38, DESKLINK(TargetLink).Top + 4, ClrDesktopText, 1
+            Font.Print DESKLINK(TargetLink).Caption, DESKLINK(TargetLink).Left + 38, DESKLINK(TargetLink).Top + 4, SystemTheme.DesktopText, 1
             
             LinkTargetText = LCASE$(DESKLINK(TargetLink).Filename)
 
@@ -216,9 +214,9 @@ SUB Desk.DrawDesktop ()
                 LinkTargetText = RIGHT$(LinkTargetText, LEN(LinkTargetText) - INSTR(LinkTargetText, "\"))
             LOOP
 
-            Font.Print LinkTargetText, DESKLINK(TargetLink).Left + 38, DESKLINK(TargetLink).Top + 18, ClrDesktopText, 2
+            Font.Print LinkTargetText, DESKLINK(TargetLink).Left + 38, DESKLINK(TargetLink).Top + 18, SystemTheme.DesktopText, 2
         ELSE
-            Font.Print DESKLINK(TargetLink).Caption, DESKLINK(TargetLink).Left + 16 - (Font.GetWidth(RTRIM$(DESKLINK(TargetLink).Caption), FontNormal) / 2), DESKLINK(TargetLink).Top + 38, ClrDesktopText, FontNormal
+            Font.Print DESKLINK(TargetLink).Caption, DESKLINK(TargetLink).Left + 16 - (Font.GetWidth(RTRIM$(DESKLINK(TargetLink).Caption), FontNormal) / 2), DESKLINK(TargetLink).Top + 38, SystemTheme.DesktopText, FontNormal
         END IF
 
     END IF
@@ -404,7 +402,7 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
   Obj.DrawWin ConfWin
   Obj.DrawTxt txtLinkCapt, txtLinkCaptText, False
   Obj.DrawBtn btnIconPrev, False
-  Obj.DrawFrm frmIconFrame, 15, Clr3DShadow
+  Obj.DrawFrm frmIconFrame, 15, SystemTheme.Shadow
   Obj.DrawBtn btnIconNext, False
   Obj.DrawTxt txtFileName, txtFilenameText, False
   Obj.DrawTxt txtParams, txtParamsText, False
@@ -412,18 +410,18 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
   Obj.DrawChk chkPauseOnExit
   Obj.DrawBtn btnOK, False
   Obj.DrawBtn btnCancel, False
-  Font.Print "Description (caption):", 222, 97, ClrWindowText, 1
-  Font.Print "Program or DOS command:", 222, 213, ClrWindowText, 1
-  Font.Print "Parameters:", 222, 262, ClrWindowText, 1
-  Font.Print "Path (including drive):", 222, 311, ClrWindowText, 1
-  Font.Print "Pause after execution", 242, 360, ClrWindowText, 2
+  Font.Print "Description (caption):", 222, 97, SystemTheme.WindowText, 1
+  Font.Print "Program or DOS command:", 222, 213, SystemTheme.WindowText, 1
+  Font.Print "Parameters:", 222, 262, SystemTheme.WindowText, 1
+  Font.Print "Path (including drive):", 222, 311, SystemTheme.WindowText, 1
+  Font.Print "Pause after execution", 242, 360, SystemTheme.WindowText, 2
   Mouse.Hide
-  LINE (221, 108)-(228, 108), ClrWindowText
-  LINE (298, 152)-(342, 196), ClrDesktop, BF
-  LINE (221, 224)-(228, 224), ClrWindowText
-  LINE (237, 322)-(244, 322), ClrWindowText
-  LINE (321, 371)-(327, 371), ClrWindowText
-  LINE (236, 273)-(243, 273), ClrWindowText
+  LINE (221, 108)-(228, 108), SystemTheme.WindowText
+  LINE (298, 152)-(342, 196), SystemTheme.Desktop, BF
+  LINE (221, 224)-(228, 224), SystemTheme.WindowText
+  LINE (237, 322)-(244, 322), SystemTheme.WindowText
+  LINE (321, 371)-(327, 371), SystemTheme.WindowText
+  LINE (236, 273)-(243, 273), SystemTheme.WindowText
   Mouse.Show
   Obj.DrawImg imgIcon
 
@@ -465,7 +463,7 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
       CurrentIcon = CurrentIcon - 1
       IF CurrentIcon < 0 THEN CurrentIcon = UBOUND(AllIcons)
       Mouse.Hide
-      LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), ClrDesktop, BF
+      LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), SystemTheme.Desktop, BF
       Mouse.Show
       imgIcon.ImageFile = AllIcons(CurrentIcon)
       Obj.DrawImg imgIcon
@@ -476,7 +474,7 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
       CurrentIcon = CurrentIcon + 1
       IF CurrentIcon > UBOUND(AllIcons) THEN CurrentIcon = 0
       Mouse.Hide
-      LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), ClrDesktop, BF
+      LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), SystemTheme.Desktop, BF
       Mouse.Show
       imgIcon.ImageFile = AllIcons(CurrentIcon)
       Obj.DrawImg imgIcon
@@ -631,7 +629,7 @@ SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
     y2 = y1
 
     DO
-      LINE (x1, y1)-(x2, y2), ClrWindow, B
+      LINE (x1, y1)-(x2, y2), SystemTheme.Window, B
       IF x1 > MenuBack.Pos.Left THEN x1 = x1 - 1
       IF y1 > MenuBack.Pos.Top THEN y1 = y1 - 1
       IF x2 < MenuBack.Pos.Left + MenuBack.Pos.Width THEN x2 = x2 + 1
@@ -642,10 +640,10 @@ SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
   END IF
   Mouse.Show
 
-  FgColor = ClrWindowText
+  FgColor = SystemTheme.WindowText
   Obj.DrawBtn MenuBack, False
   Mouse.Hide
-  LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 2), ClrWindow, BF
+  LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 2), SystemTheme.Window, BF
   Mouse.Show
   Font.Print "Open/run", MenuBack.Pos.Left + 6, MenuBack.Pos.Top + 6, FgColor, 1
   Font.Print "Customize..", MenuBack.Pos.Left + 6, MenuBack.Pos.Top + 22, FgColor, 1
@@ -669,28 +667,28 @@ LinkMenuRefresh:
   Mouse.Show
 
   IF ActiveItem = 1 THEN
-    FgColor = ClrSelectText: BgColor = ClrSelect
+    FgColor = SystemTheme.SelectText: BgColor = SystemTheme.Select
     LINE (MenuBack.Pos.Left + 2, MenuBack.Pos.Top + 3)-(MenuBack.Pos.Left + MenuBack.Pos.Width - 2, MenuBack.Pos.Top + 18), BgColor, BF
     Font.Print "Open/run", MenuBack.Pos.Left + 6, MenuBack.Pos.Top + 6, FgColor, 1
     LINE (MenuBack.Pos.Left + 5, MenuBack.Pos.Top + 17)-(MenuBack.Pos.Left + 12, MenuBack.Pos.Top + 17), FgColor
   END IF
 
   IF ActiveItem = 2 THEN
-    FgColor = ClrSelectText: BgColor = ClrSelect
+    FgColor = SystemTheme.SelectText: BgColor = SystemTheme.Select
     LINE (MenuBack.Pos.Left + 2, MenuBack.Pos.Top + 19)-(MenuBack.Pos.Left + MenuBack.Pos.Width - 2, MenuBack.Pos.Top + 34), BgColor, BF
     Font.Print "Customize..", MenuBack.Pos.Left + 6, MenuBack.Pos.Top + 22, FgColor, 1
     LINE (MenuBack.Pos.Left + 5, MenuBack.Pos.Top + 33)-(MenuBack.Pos.Left + 12, MenuBack.Pos.Top + 33), FgColor
   END IF
 
   IF ActiveItem = 3 THEN
-    FgColor = ClrSelectText: BgColor = ClrSelect
+    FgColor = SystemTheme.SelectText: BgColor = SystemTheme.Select
     LINE (MenuBack.Pos.Left + 2, MenuBack.Pos.Top + 35)-(MenuBack.Pos.Left + MenuBack.Pos.Width - 2, MenuBack.Pos.Top + 51), BgColor, BF
     Font.Print "Move", MenuBack.Pos.Left + 6, MenuBack.Pos.Top + 38, FgColor, 1
     LINE (MenuBack.Pos.Left + 5, MenuBack.Pos.Top + 49)-(MenuBack.Pos.Left + 12, MenuBack.Pos.Top + 49), FgColor
   END IF
 
   IF ActiveItem = 4 THEN
-    FgColor = ClrSelectText: BgColor = ClrSelect
+    FgColor = SystemTheme.SelectText: BgColor = SystemTheme.Select
     LINE (MenuBack.Pos.Left + 2, MenuBack.Pos.Top + 52)-(MenuBack.Pos.Left + MenuBack.Pos.Width - 2, MenuBack.Pos.Top + 66), BgColor, BF
     Font.Print "Remove", MenuBack.Pos.Left + 6, MenuBack.Pos.Top + 54, FgColor, 1
     LINE (MenuBack.Pos.Left + 5, MenuBack.Pos.Top + 65)-(MenuBack.Pos.Left + 12, MenuBack.Pos.Top + 65), FgColor
@@ -762,7 +760,7 @@ LinkMenuRefresh:
 
             IF DidEdit THEN
                 Mouse.Hide
-                LINE (0, 29)-(639, 479), ClrDesktop, BF
+                LINE (0, 29)-(639, 479), SystemTheme.Desktop, BF
                 Desk.DrawDesktop
                 Mouse.Show
             ELSE
@@ -779,7 +777,7 @@ LinkMenuRefresh:
             Mouse.Show
             Desk.LinkMove TargetLink
             Mouse.Hide
-            LINE (0, 2)-(639, 479), ClrDesktop, BF
+            LINE (0, 2)-(639, 479), SystemTheme.Desktop, BF
             Desk.DrawDesktop
             Mouse.Show
             EXIT SUB
@@ -803,7 +801,7 @@ LinkMenuRefresh:
                 Desk.LinkSave
                 Desk.LinkLoad
                 Mouse.Hide
-                LINE (0, 2)-(639, 479), ClrDesktop, BF
+                LINE (0, 2)-(639, 479), SystemTheme.Desktop, BF
                 Desk.DrawDesktop
                 Mouse.Show
                 DO: LOOP WHILE Mouse.Clicked
@@ -1127,7 +1125,7 @@ SUB Desk.Main ()
   
 Desk.MainTop:
   Mouse.Hide
-  LINE (0, 2)-(639, 479), ClrDesktop, BF
+  LINE (0, 2)-(639, 479), SystemTheme.Desktop, BF
   Desk.LinkLoad
   Desk.DrawDesktop
   Mouse.Show
@@ -1194,7 +1192,7 @@ MainLoopStart:
                 'If the right mouse button was clicked, show the menu
                 IF NOT TabCheck = -1 THEN
                     Mouse.Hide
-                    LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), ClrDesktop, BF
+                    LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), SystemTheme.Desktop, BF
                     Mouse.Show
                     Obj.DrawImg imgTab
                     TabCheck = -1
@@ -1207,7 +1205,7 @@ MainLoopStart:
                 IF UserSettings.LinkMenuOnLeftClick THEN
                     IF NOT TabCheck = -1 THEN
                         Mouse.Hide
-                        LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), ClrDesktop, BF
+                        LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), SystemTheme.Desktop, BF
                         Mouse.Show
                         Obj.DrawImg imgTab
                         TabCheck = -1
@@ -1250,7 +1248,7 @@ MainLoopStart:
                 TabCheck = -1
                 Desk.LinkLoad
                 Mouse.Hide
-                LINE (0, 29)-(639, 479), ClrDesktop, BF
+                LINE (0, 29)-(639, 479), SystemTheme.Desktop, BF
                 Desk.DrawDesktop
                 Mouse.Show
             ELSE
@@ -1282,7 +1280,7 @@ MainLoopStart:
             GOSUB SlideDown
             GOTO MainLoopStart
         END IF
-  IF Key$ = "t" THEN ShowProfileTemp
+
         IF Key$ = "p" THEN
             GOSUB SlideUp
             Desk.ProfileSelect
@@ -1319,7 +1317,7 @@ MainLoopStart:
         IF Key$ = CHR$(9) OR Key$ = CHR$(0) + CHR$(15) THEN
             IF TabCheck > -1 THEN
                 Mouse.Hide
-                LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), ClrDesktop, BF
+                LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), SystemTheme.Desktop, BF
                 Obj.DrawImg imgTab
                 Mouse.Show
             END IF
@@ -1348,7 +1346,7 @@ MainLoopStart:
 
         IF (Key$ = CHR$(13) OR Key$ = CHR$(32)) AND TabCheck > -1 THEN
             Mouse.Hide
-            LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), ClrDesktop, BF
+            LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), SystemTheme.Desktop, BF
             Obj.DrawImg imgTab
             Mouse.Show
 
@@ -1367,8 +1365,8 @@ SlideDown:
   IF UserSettings.Animations THEN
     DelayFixer = 0
     FOR SlidePos = 0 TO 26 STEP 2
-      LINE (0, 0)-(639, SlidePos), ClrWindow, BF
-      LINE (0, SlidePos + 1)-(639, SlidePos + 1), Clr3DShadow
+      LINE (0, 0)-(639, SlidePos), SystemTheme.Window, BF
+      LINE (0, SlidePos + 1)-(639, SlidePos + 1), SystemTheme.Shadow
       LINE (0, SlidePos + 2)-(639, SlidePos + 2), 0
       DelayFixer = DelayFixer + 1
       IF DelayFixer = 4 THEN
@@ -1377,8 +1375,8 @@ SlideDown:
       END IF
     NEXT
   ELSE
-    LINE (0, 0)-(639, 26), ClrWindow, BF
-    LINE (0, 27)-(639, 27), Clr3DShadow
+    LINE (0, 0)-(639, 26), SystemTheme.Window, BF
+    LINE (0, 27)-(639, 27), SystemTheme.Shadow
     LINE (0, 28)-(639, 28), 0
   END IF
   Mouse.Show
@@ -1394,11 +1392,11 @@ SlideUp:
   Mouse.Hide
   DelayFixer = 0
   IF UserSettings.Animations THEN
-    LINE (0, 0)-(639, 28), ClrWindow, BF
+    LINE (0, 0)-(639, 28), SystemTheme.Window, BF
     FOR SlidePos = 25 TO 0 STEP -2
-      LINE (0, SlidePos)-(639, SlidePos), Clr3DShadow
+      LINE (0, SlidePos)-(639, SlidePos), SystemTheme.Shadow
       LINE (0, SlidePos + 1)-(639, SlidePos + 1), 0
-      LINE (0, SlidePos + 2)-(639, SlidePos + 3), ClrDesktop, BF
+      LINE (0, SlidePos + 2)-(639, SlidePos + 3), SystemTheme.Desktop, BF
       DelayFixer = DelayFixer + 1
       IF DelayFixer = 4 THEN
         Sys.Delay .01
@@ -1406,9 +1404,9 @@ SlideUp:
       END IF
     NEXT
   ELSE
-      LINE (0, 3)-(639, 28), ClrDesktop, BF
-      LINE (0, 0)-(639, 0), ClrWindow
-      LINE (0, 1)-(639, 1), Clr3DShadow
+      LINE (0, 3)-(639, 28), SystemTheme.Desktop, BF
+      LINE (0, 0)-(639, 0), SystemTheme.Window
+      LINE (0, 1)-(639, 1), SystemTheme.Shadow
       LINE (0, 2)-(639, 2), 0
   END IF
   Mouse.Show
@@ -1475,14 +1473,14 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
 
     Obj.DrawWin winProfEdit
     Obj.DrawBtn btnIconPrev, False
-    Obj.DrawFrm frmIconFrame, 15, Clr3DShadow
+    Obj.DrawFrm frmIconFrame, 15, SystemTheme.Shadow
     Obj.DrawBtn btnIconNext, False
     Obj.DrawTxt txtProfileName, txtProfileNameText, False
     Obj.DrawBtn btnSave, False
     Obj.DrawBtn btnCancel, False
-    Font.Print "Name:", 222, winProfEdit.Pos.Top + 114, ClrWindowText, 1
+    Font.Print "Name:", 222, winProfEdit.Pos.Top + 114, SystemTheme.WindowText, 1
     Mouse.Hide
-    LINE (221, winProfEdit.Pos.Top + 125)-(229, winProfEdit.Pos.Top + 125), ClrWindowText
+    LINE (221, winProfEdit.Pos.Top + 125)-(229, winProfEdit.Pos.Top + 125), SystemTheme.WindowText
     Mouse.Show
     Obj.DrawImg imgIcon
 
@@ -1494,7 +1492,7 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
           CurrentIcon = CurrentIcon - 1
           IF CurrentIcon < 0 THEN CurrentIcon = UBOUND(AllIcons)
           Mouse.Hide
-          LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), ClrWindow, BF
+          LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), SystemTheme.Window, BF
           Mouse.Show
           imgIcon.ImageFile = AllIcons(CurrentIcon)
           Obj.DrawImg imgIcon
@@ -1504,7 +1502,7 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
           CurrentIcon = CurrentIcon + 1
           IF CurrentIcon > UBOUND(AllIcons) THEN CurrentIcon = 0
           Mouse.Hide
-          LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), ClrWindow, BF
+          LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), SystemTheme.Window, BF
           Mouse.Show
           imgIcon.ImageFile = AllIcons(CurrentIcon)
           Obj.DrawImg imgIcon
@@ -1543,7 +1541,7 @@ SUB Desk.ProfileSelect ()
     UserSettings.ThemeFile = "DEFAULT"
     Sys.LoadTheme
     Mouse.Hide
-    LINE (0, 0)-(639, 479), ClrDesktop, BF
+    LINE (0, 0)-(639, 479), SystemTheme.Desktop, BF
     Mouse.Show
     
     winProfiles.Pos.Width = 338
@@ -1584,15 +1582,15 @@ TopOfProfile:
     NEXT
 
     Obj.DrawWin winProfiles
-    Font.Print "Please select a profile from which your desktop,", winProfiles.Pos.Left + 14, winProfiles.Pos.Top + 36, ClrWindowText, FontNormal
-    Font.Print "theme and other customizations will be loaded.", winProfiles.Pos.Left + 14, winProfiles.Pos.Top + 50, ClrWindowText, FontNormal
+    Font.Print "Please select a profile from which your desktop,", winProfiles.Pos.Left + 14, winProfiles.Pos.Top + 36, SystemTheme.WindowText, FontNormal
+    Font.Print "theme and other customizations will be loaded.", winProfiles.Pos.Left + 14, winProfiles.Pos.Top + 50, SystemTheme.WindowText, FontNormal
 
     IF SelectedProfile < 1 OR SelectedProfile > 5 THEN
         SelectedProfile = 1
     END IF
 
     ProfileNamePos = winProfiles.Pos.Left + (winProfiles.Pos.Width / 2) - (Font.GetWidth(ProfileName(SelectedProfile), FontHeading) / 2)
-    Font.Print ProfileName(SelectedProfile), ProfileNamePos, winProfiles.Pos.Top + 154, ClrWindowText, FontHeading
+    Font.Print ProfileName(SelectedProfile), ProfileNamePos, winProfiles.Pos.Top + 154, SystemTheme.WindowText, FontHeading
 
     FOR Counter = 1 TO 5
         IF Counter = SelectedProfile THEN
@@ -1629,9 +1627,9 @@ TopOfProfile:
                     SelectedProfile = Counter
                     ProfileNamePos = winProfiles.Pos.Left + (winProfiles.Pos.Width / 2) - (Font.GetWidth(ProfileName(SelectedProfile), FontHeading) / 2)
                     Mouse.Hide
-                    LINE (winProfiles.Pos.Left + 7, winProfiles.Pos.Top + 150)-(winProfiles.Pos.Left + winProfiles.Pos.Width - 7, winProfiles.Pos.Top + 166), ClrWindow, BF
+                    LINE (winProfiles.Pos.Left + 7, winProfiles.Pos.Top + 150)-(winProfiles.Pos.Left + winProfiles.Pos.Width - 7, winProfiles.Pos.Top + 166), SystemTheme.Window, BF
                     Mouse.Show
-                    Font.Print ProfileName(SelectedProfile), ProfileNamePos, winProfiles.Pos.Top + 154, ClrWindowText, FontHeading
+                    Font.Print ProfileName(SelectedProfile), ProfileNamePos, winProfiles.Pos.Top + 154, SystemTheme.WindowText, FontHeading
                     DO WHILE Mouse.Clicked: LOOP
                 END IF
             END IF
@@ -1661,13 +1659,5 @@ TopOfProfile:
 
     LOOP
 
-END SUB
-
-SUB ShowProfileTemp ()
-  PRINT "Prof: " + STR$(ProfileID)
-  PRINT "Name: " + RTRIM$(UserSettings.ProfileName)
-  PRINT "Img:  " + RTRIM$(UserSettings.ProfileImage)
-  PRINT "Thm:  " + RTRIM$(UserSettings.ThemeFile)
-  PRINT "Anim:" + STR$(UserSettings.Animations)
 END SUB
 

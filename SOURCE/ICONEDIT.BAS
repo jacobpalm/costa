@@ -312,8 +312,8 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     LINE (txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 38, txtDrawArea.Pos.Top + 155)-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 71, txtDrawArea.Pos.Top + 169), 15, BF
     Font.Print "T", txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 52, txtDrawArea.Pos.Top + 158, 0, FontHeading
 
-    Font.Print "Preview", btnPreview.Pos.Left, btnPreview.Pos.Top - 15, clrWindowText, FontHeading
-    LINE (btnPreview.Pos.Left - 1, btnPreview.Pos.Top - 4)-(btnPreview.Pos.Left + 5, btnPreview.Pos.Top - 4), clrWindowText
+    Font.Print "Preview", btnPreview.Pos.Left, btnPreview.Pos.Top - 15, SystemTheme.WindowText, FontHeading
+    LINE (btnPreview.Pos.Left - 1, btnPreview.Pos.Top - 4)-(btnPreview.Pos.Left + 5, btnPreview.Pos.Top - 4), SystemTheme.WindowText
     LINE (btnPreview.Pos.Left + 2, btnPreview.Pos.Top + 2)-(btnPreview.Pos.Left + btnPreview.Pos.Width - 2, btnPreview.Pos.Top + btnPreview.Pos.Height - 2), 15, BF
 
     'Draw grid in drawing area
@@ -587,9 +587,9 @@ SUB IconEdit.SetTitle ()
     WindowTitle = "Icon Editor for Costa - " + WindowTitle
 
     Mouse.Hide
-    LINE (53, 16)-(587, 32), ClrTitleBar, BF
+    LINE (53, 16)-(587, 32), SystemTheme.TitleBar, BF
     XPos = (640 - Font.GetWidth(WindowTitle, FontHeading)) / 2
-    Font.Print WindowTitle, XPos, 20, ClrTitleBarText, FontHeading
+    Font.Print WindowTitle, XPos, 20, SystemTheme.TitleBarText, FontHeading
     Mouse.Show
 
 END SUB
@@ -638,7 +638,7 @@ SUB IconEdit.ShowLoadDialog ()
     Obj.DrawBtn BtnCancel, 0
     Obj.DrawImg imgPreview
 
-    Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 37, clrWindowText, FontHeading
+    Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 37, SystemTheme.WindowText, FontHeading
 
     DO
         REDIM PRESERVE IconFiles(0 TO UBOUND(IconFiles) + 1) AS STRING
@@ -663,11 +663,11 @@ SUB IconEdit.ShowLoadDialog ()
             IF IconIndex = -1 THEN IconIndex = UBOUND(IconFiles)
             imgPreview.ImageFile = IconFiles(IconIndex)
             Mouse.Hide
-            LINE (btnLoad.Pos.Left + 11, btnLoad.Pos.Top + 11)-(btnLoad.Pos.Left + 42, btnLoad.Pos.Top + 42), clrWindow, BF
-            LINE (winSelect.Pos.Left + 10, winSelect.Pos.Top + 33)-(winSelect.Pos.Left + 146, winSelect.Pos.Top + 50), clrWindow, BF
+            LINE (btnLoad.Pos.Left + 11, btnLoad.Pos.Top + 11)-(btnLoad.Pos.Left + 42, btnLoad.Pos.Top + 42), SystemTheme.Window, BF
+            LINE (winSelect.Pos.Left + 10, winSelect.Pos.Top + 33)-(winSelect.Pos.Left + 146, winSelect.Pos.Top + 50), SystemTheme.Window, BF
             Mouse.Show
             Obj.DrawImg imgPreview
-            Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 37, clrWindowText, FontHeading
+            Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 37, SystemTheme.WindowText, FontHeading
         END IF
 
         IF Obj.BtnClick(btnNext) OR Key$ = CHR$(0) + "m" THEN 'Right arrow
@@ -675,11 +675,11 @@ SUB IconEdit.ShowLoadDialog ()
             IF IconIndex > UBOUND(IconFiles) THEN IconIndex = 0
             imgPreview.ImageFile = IconFiles(IconIndex)
             Mouse.Hide
-            LINE (btnLoad.Pos.Left + 11, btnLoad.Pos.Top + 11)-(btnLoad.Pos.Left + 42, btnLoad.Pos.Top + 42), clrWindow, BF
-            LINE (winSelect.Pos.Left + 10, winSelect.Pos.Top + 33)-(winSelect.Pos.Left + 146, winSelect.Pos.Top + 50), clrWindow, BF
+            LINE (btnLoad.Pos.Left + 11, btnLoad.Pos.Top + 11)-(btnLoad.Pos.Left + 42, btnLoad.Pos.Top + 42), SystemTheme.Window, BF
+            LINE (winSelect.Pos.Left + 10, winSelect.Pos.Top + 33)-(winSelect.Pos.Left + 146, winSelect.Pos.Top + 50), SystemTheme.Window, BF
             Mouse.Show
             Obj.DrawImg imgPreview
-            Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 37, clrWindowText, FontHeading
+            Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 37, SystemTheme.WindowText, FontHeading
         END IF
 
         IF Obj.BtnClick(btnLoad) OR Key$ = CHR$(13) THEN

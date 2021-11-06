@@ -11,8 +11,8 @@
     DECLARE FUNCTION Mouse.InArea% (TargetArea AS ANY)
     DECLARE FUNCTION Mouse.X% ()
     DECLARE FUNCTION Mouse.Y% ()
-    DECLARE SUB Mouse.Driver (M0%, M1%, M2%, M3%)
     DECLARE SUB Mouse.Hide ()
+    DECLARE SUB Mouse.SetPos (XPos%, YPos%)
     DECLARE SUB Mouse.Show ()
 
     DECLARE FUNCTION Obj.BtnClick% (TargetBtn AS ANY)
@@ -128,8 +128,8 @@
   END TYPE
 
   TYPE ThemeType
-    ThemeName AS STRING * 25
-    ThemeAuthor AS STRING * 25
+    Name AS STRING * 25
+    Author AS STRING * 25
     Desktop AS INTEGER
     DesktopText AS INTEGER
     Window AS INTEGER
@@ -137,8 +137,8 @@
     Button AS INTEGER
     Textbox AS INTEGER
     TextboxText AS INTEGER
-    ThreeDLight AS INTEGER
-    ThreeDShadow AS INTEGER
+    Light AS INTEGER
+    Shadow AS INTEGER
     TitleBar AS INTEGER
     TitleBarText AS INTEGER
     Select AS INTEGER
@@ -151,20 +151,5 @@
 
   COMMON SHARED SystemSettings AS SystemSettingsType
   COMMON SHARED UserSettings AS UserSettingsType
-
-  COMMON SHARED ClrThemeFile AS STRING
-
-  COMMON SHARED ClrDesktop AS INTEGER
-  COMMON SHARED ClrDesktopText AS INTEGER
-  COMMON SHARED ClrWindow AS INTEGER
-  COMMON SHARED ClrWindowText AS INTEGER
-  COMMON SHARED ClrButton AS INTEGER
-  COMMON SHARED ClrTextbox AS INTEGER
-  COMMON SHARED ClrTextboxText AS INTEGER
-  COMMON SHARED Clr3DLight AS INTEGER
-  COMMON SHARED Clr3DShadow AS INTEGER
-  COMMON SHARED ClrTitleBar AS INTEGER
-  COMMON SHARED ClrTitleBarText AS INTEGER
-  COMMON SHARED ClrSelect AS INTEGER
-  COMMON SHARED ClrSelectText AS INTEGER
+  COMMON SHARED SystemTheme AS ThemeType
 

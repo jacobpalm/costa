@@ -39,8 +39,8 @@ SUB TView.DrawText (StartLine)
     Mouse.Hide
     FOR LineCount = StartLine TO StartLine + 26
         IF NOT LineCount > UBOUND(FileData) THEN
-            LINE (7, (15 * (LineCount - StartLine + 1)) + 54)-(633, 15 * (LineCount - StartLine + 1) + 68), ClrTextbox, BF
-            Font.Print FileData(LineCount), 9, (15 * (LineCount - StartLine + 1)) + 56, ClrTextboxText, FontSystem
+            LINE (7, (15 * (LineCount - StartLine + 1)) + 54)-(633, 15 * (LineCount - StartLine + 1) + 68), SystemTheme.Textbox, BF
+            Font.Print FileData(LineCount), 9, (15 * (LineCount - StartLine + 1)) + 56, SystemTheme.TextboxText, FontSystem
         END IF
     NEXT
     Mouse.Show
@@ -113,7 +113,7 @@ TViewLoadErr:
     END IF
     Dummy = Sys.MsgBox("Could not load file", ErrMsg, msgError)
     Mouse.Hide
-    LINE (265, 223)-(375, 257), ClrTextbox, BF
+    LINE (265, 223)-(375, 257), SystemTheme.Textbox, BF
     Mouse.Show
     TView.LoadFile = False
     EXIT FUNCTION
@@ -209,8 +209,8 @@ StartOfAll:
                     PUT (7, (15 * (LineMove + 1)) + 54), LineData, PSET
                     'SLEEP
                 NEXT
-                LINE (7, (15 * (1)) + 54)-(633, 15 * (1) + 68), ClrTextbox, BF
-                Font.Print FileData(StartLine), 9, (15 * (1)) + 56, ClrTextboxText, FontSystem
+                LINE (7, (15 * (1)) + 54)-(633, 15 * (1) + 68), SystemTheme.Textbox, BF
+                Font.Print FileData(StartLine), 9, (15 * (1)) + 56, SystemTheme.TextboxText, FontSystem
 
                 Mouse.Show
             END IF
@@ -231,8 +231,8 @@ StartOfAll:
                     PUT (7, (15 * (LineMove)) + 54), LineData, PSET
                     'SLEEP
                 NEXT
-                LINE (7, (15 * (27)) + 54)-(633, 15 * (27) + 68), ClrTextbox, BF
-                Font.Print FileData(StartLine + 26), 9, (15 * (27)) + 56, ClrTextboxText, FontSystem
+                LINE (7, (15 * (27)) + 54)-(633, 15 * (27) + 68), SystemTheme.Textbox, BF
+                Font.Print FileData(StartLine + 26), 9, (15 * (27)) + 56, SystemTheme.TextboxText, FontSystem
                 Mouse.Show
             END IF
         END IF

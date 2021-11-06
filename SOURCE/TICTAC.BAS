@@ -208,40 +208,40 @@ SUB Tic.DrawXO (FieldRow, FieldCol, FieldValue)
 		SELECT CASE FieldValue
 			CASE 1
 				Mouse.Hide
-				LINE (XCoord + 11, YCoord + 12)-(XCoord + 48, YCoord + 49), ClrTextboxText
-				LINE (XCoord + 11, YCoord + 13)-(XCoord + 47, YCoord + 49), ClrTextboxText
-				LINE (XCoord + 12, YCoord + 12)-(XCoord + 49, YCoord + 49), ClrTextboxText
-				LINE (XCoord + 13, YCoord + 12)-(XCoord + 49, YCoord + 48), ClrTextboxText
-				LINE (XCoord + 11, YCoord + 48)-(XCoord + 47, YCoord + 12), ClrTextboxText
-				LINE (XCoord + 11, YCoord + 49)-(XCoord + 48, YCoord + 12), ClrTextboxText
-				LINE (XCoord + 12, YCoord + 49)-(XCoord + 49, YCoord + 12), ClrTextboxText
-				LINE (XCoord + 13, YCoord + 49)-(XCoord + 49, YCoord + 13), ClrTextboxText
+				LINE (XCoord + 11, YCoord + 12)-(XCoord + 48, YCoord + 49), SystemTheme.TextboxText
+				LINE (XCoord + 11, YCoord + 13)-(XCoord + 47, YCoord + 49), SystemTheme.TextboxText
+				LINE (XCoord + 12, YCoord + 12)-(XCoord + 49, YCoord + 49), SystemTheme.TextboxText
+				LINE (XCoord + 13, YCoord + 12)-(XCoord + 49, YCoord + 48), SystemTheme.TextboxText
+				LINE (XCoord + 11, YCoord + 48)-(XCoord + 47, YCoord + 12), SystemTheme.TextboxText
+				LINE (XCoord + 11, YCoord + 49)-(XCoord + 48, YCoord + 12), SystemTheme.TextboxText
+				LINE (XCoord + 12, YCoord + 49)-(XCoord + 49, YCoord + 12), SystemTheme.TextboxText
+				LINE (XCoord + 13, YCoord + 49)-(XCoord + 49, YCoord + 13), SystemTheme.TextboxText
 				Mouse.Show
 			CASE 2
 				Mouse.Hide
-				CIRCLE (XCoord + 30, YCoord + 30), 19, ClrTextboxText
-				CIRCLE (XCoord + 30, YCoord + 30), 18, ClrTextboxText
-				CIRCLE (XCoord + 30, YCoord + 30), 17, ClrTextboxText
-				PSET (XCoord + 14, YCoord + 23), ClrTextboxText
-				PSET (XCoord + 15, YCoord + 21), ClrTextboxText
-				PSET (XCoord + 21, YCoord + 15), ClrTextboxText
-				PSET (XCoord + 23, YCoord + 14), ClrTextboxText
-				PSET (XCoord + 14, YCoord + 37), ClrTextboxText
-				PSET (XCoord + 15, YCoord + 39), ClrTextboxText
-				PSET (XCoord + 21, YCoord + 45), ClrTextboxText
-				PSET (XCoord + 23, YCoord + 46), ClrTextboxText
-				PSET (XCoord + 37, YCoord + 46), ClrTextboxText
-				PSET (XCoord + 39, YCoord + 45), ClrTextboxText
-				PSET (XCoord + 45, YCoord + 39), ClrTextboxText
-				PSET (XCoord + 46, YCoord + 37), ClrTextboxText
-				PSET (XCoord + 46, YCoord + 23), ClrTextboxText
-				PSET (XCoord + 45, YCoord + 21), ClrTextboxText
-				PSET (XCoord + 39, YCoord + 15), ClrTextboxText
-				PSET (XCoord + 37, YCoord + 14), ClrTextboxText
-				LINE (XCoord + 16, YCoord + 18)-(XCoord + 18, YCoord + 16), ClrTextboxText
-				LINE (XCoord + 42, YCoord + 16)-(XCoord + 44, YCoord + 18), ClrTextboxText
-				LINE (XCoord + 44, YCoord + 42)-(XCoord + 42, YCoord + 44), ClrTextboxText
-				LINE (XCoord + 16, YCoord + 42)-(XCoord + 18, YCoord + 44), ClrTextboxText
+				CIRCLE (XCoord + 30, YCoord + 30), 19, SystemTheme.TextboxText
+				CIRCLE (XCoord + 30, YCoord + 30), 18, SystemTheme.TextboxText
+				CIRCLE (XCoord + 30, YCoord + 30), 17, SystemTheme.TextboxText
+				PSET (XCoord + 14, YCoord + 23), SystemTheme.TextboxText
+				PSET (XCoord + 15, YCoord + 21), SystemTheme.TextboxText
+				PSET (XCoord + 21, YCoord + 15), SystemTheme.TextboxText
+				PSET (XCoord + 23, YCoord + 14), SystemTheme.TextboxText
+				PSET (XCoord + 14, YCoord + 37), SystemTheme.TextboxText
+				PSET (XCoord + 15, YCoord + 39), SystemTheme.TextboxText
+				PSET (XCoord + 21, YCoord + 45), SystemTheme.TextboxText
+				PSET (XCoord + 23, YCoord + 46), SystemTheme.TextboxText
+				PSET (XCoord + 37, YCoord + 46), SystemTheme.TextboxText
+				PSET (XCoord + 39, YCoord + 45), SystemTheme.TextboxText
+				PSET (XCoord + 45, YCoord + 39), SystemTheme.TextboxText
+				PSET (XCoord + 46, YCoord + 37), SystemTheme.TextboxText
+				PSET (XCoord + 46, YCoord + 23), SystemTheme.TextboxText
+				PSET (XCoord + 45, YCoord + 21), SystemTheme.TextboxText
+				PSET (XCoord + 39, YCoord + 15), SystemTheme.TextboxText
+				PSET (XCoord + 37, YCoord + 14), SystemTheme.TextboxText
+				LINE (XCoord + 16, YCoord + 18)-(XCoord + 18, YCoord + 16), SystemTheme.TextboxText
+				LINE (XCoord + 42, YCoord + 16)-(XCoord + 44, YCoord + 18), SystemTheme.TextboxText
+				LINE (XCoord + 44, YCoord + 42)-(XCoord + 42, YCoord + 44), SystemTheme.TextboxText
+				LINE (XCoord + 16, YCoord + 42)-(XCoord + 18, YCoord + 44), SystemTheme.TextboxText
 				Mouse.Show
 		END SELECT
 
@@ -350,9 +350,9 @@ SUB Tic.Main ()
 	Obj.DrawWin winTic
 	Obj.DrawBtn btnNew, False
 	Obj.DrawBtn btnExit, False
-	Font.Print "Enable audio", 396, 339, clrWindowText, fontNormal
+	Font.Print "Enable audio", 396, 339, SystemTheme.WindowText, fontNormal
 	Mouse.Hide
-	LINE (438, 350)-(444, 350), clrWindowText
+	LINE (438, 350)-(444, 350), SystemTheme.WindowText
 	Mouse.Show
 
 	DidLoadState = Tic.LoadState
@@ -372,14 +372,14 @@ StartOfGame:
 	Tic.DrawBoard
 
 	Mouse.Hide
-	LINE (376, 271)-(476, 282), ClrWindow, BF
+	LINE (376, 271)-(476, 282), SystemTheme.Window, BF
 	Mouse.Show
 	IF PlayerTurn = 1 THEN
-		Font.Print "X", 400, 271, clrWindowText, 3
+		Font.Print "X", 400, 271, SystemTheme.WindowText, 3
 	ELSE
-		Font.Print "O", 400, 271, clrWindowText, 3
+		Font.Print "O", 400, 271, SystemTheme.WindowText, 3
 	END IF
-	Font.Print "'s turn", 408, 271, clrWindowText, 2
+	Font.Print "'s turn", 408, 271, SystemTheme.WindowText, 2
 
 	IF NOT DidLoadState THEN
 		Tic.PlaySound SoundNew
@@ -445,29 +445,29 @@ StartOfGame:
 
 					IF Tic.CheckWin = True THEN
 						Mouse.Hide
-						LINE (376, 271)-(476, 279), ClrWindow, BF
+						LINE (376, 271)-(476, 279), SystemTheme.Window, BF
 						Mouse.Show
 
 						IF PlayerTurn = 1 THEN
-							Font.Print "X", 377, 271, clrWindowText, 3
+							Font.Print "X", 377, 271, SystemTheme.WindowText, 3
 						ELSE
-							Font.Print "O", 377, 271, clrWindowText, 3
+							Font.Print "O", 377, 271, SystemTheme.WindowText, 3
 						END IF
-						Font.Print "wins the game!", 388, 271, clrWindowText, 2
+						Font.Print "wins the game!", 388, 271, SystemTheme.WindowText, 2
 						TotalTurns = 9
 						Tic.PlaySound SoundWin
 					ELSE
 						IF TotalTurns < 9 THEN
 							Mouse.Hide
-							LINE (400, 271)-(405, 279), ClrWindow, BF
+							LINE (400, 271)-(405, 279), SystemTheme.Window, BF
 							Mouse.Show
 
 							IF PlayerTurn = 1 THEN
 								PlayerTurn = 2
-								Font.Print "O", 400, 271, clrWindowText, 3
+								Font.Print "O", 400, 271, SystemTheme.WindowText, 3
 							ELSE
 								PlayerTurn = 1
-								Font.Print "X", 400, 271, clrWindowText, 3
+								Font.Print "X", 400, 271, SystemTheme.WindowText, 3
 							END IF
 
 							IF EnableAI = True AND TotalTurns < 9 AND PlayerTurn = 2 THEN
@@ -477,34 +477,34 @@ PerformAIMove:
 								TotalTurns = TotalTurns + 1
 								IF Tic.CheckWin = True THEN
 									Mouse.Hide
-									LINE (376, 271)-(476, 279), ClrWindow, BF
+									LINE (376, 271)-(476, 279), SystemTheme.Window, BF
 									Mouse.Show
-									Font.Print "O", 377, 271, clrWindowText, 3
-									Font.Print "wins the game!", 388, 271, clrWindowText, 2
+									Font.Print "O", 377, 271, SystemTheme.WindowText, 3
+									Font.Print "wins the game!", 388, 271, SystemTheme.WindowText, 2
 									Tic.PlaySound SoundLoose
 									TotalTurns = 9
 								ELSE
 									IF TotalTurns = 9 THEN
 										Mouse.Hide
-										LINE (376, 271)-(476, 279), ClrWindow, BF
+										LINE (376, 271)-(476, 279), SystemTheme.Window, BF
 										Mouse.Show
-										Font.Print "It's a draw!", 393, 271, clrWindowText, 2
+										Font.Print "It's a draw!", 393, 271, SystemTheme.WindowText, 2
 										Tic.PlaySound SoundDraw
 									ELSE
 										PlayerTurn = 1
 										Mouse.Hide
-										LINE (400, 271)-(405, 279), ClrWindow, BF
+										LINE (400, 271)-(405, 279), SystemTheme.Window, BF
 										Mouse.Show
-										Font.Print "X", 400, 271, clrWindowText, 3
+										Font.Print "X", 400, 271, SystemTheme.WindowText, 3
 									END IF
 								END IF
 							END IF
 
 						ELSE
 							Mouse.Hide
-							LINE (376, 271)-(476, 279), ClrWindow, BF
+							LINE (376, 271)-(476, 279), SystemTheme.Window, BF
 							Mouse.Show
-							Font.Print "It's a draw!", 393, 271, clrWindowText, 2
+							Font.Print "It's a draw!", 393, 271, SystemTheme.WindowText, 2
 							Tic.PlaySound SoundDraw
 						END IF
 
