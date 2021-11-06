@@ -1,3 +1,4 @@
+DECLARE SUB Mouse.SetPos (XPos%, YPos%)
 DECLARE SUB ShowProfileTemp ()
 OPTION EXPLICIT
 DEFINT A-Z
@@ -775,10 +776,6 @@ LinkMenuRefresh:
           IF Key$ = "m" THEN
             Mouse.Hide
             PUT (x1, y1), BehindMenu, PSET
-            Mouse.Driver 7, 0, DESKLINK(TargetLink).Left + 16, DESKLINK(TargetLink).Left + 16
-            Mouse.Driver 7, 0, 0, 640
-            Mouse.Driver 8, 0, DESKLINK(TargetLink).Top + 16, DESKLINK(TargetLink).Top + 16
-            Mouse.Driver 8, 0, 0, 479
             Mouse.Show
             Desk.LinkMove TargetLink
             Mouse.Hide
@@ -860,6 +857,8 @@ SUB Desk.LinkMove (TargetLink)
   GET (LastX - 16, LastY - 16)-(LastX + 15, LastY + 15), LinkIconBack
 
   Mouse.Show
+  Mouse.SetPos DESKLINK(TargetLink).Left + 16, DESKLINK(TargetLink).Top + 16
+
   DIM Key$
   DO
     Key$ = LCASE$(INKEY$)
@@ -869,27 +868,31 @@ SUB Desk.LinkMove (TargetLink)
 
     IF Key$ = CHR$(0) + "k" THEN
         KeyX = Mouse.X - 15
+        KeyY = Mouse.Y
         IF KeyX < 16 THEN KeyX = 16
-        Mouse.Driver 7, 0, KeyX, KeyX
-        Mouse.Driver 7, 0, 0, 639
+        IF KeyY < 46 THEN KeyY = 46
+        Mouse.SetPos KeyX, KeyY
     END IF
     IF Key$ = CHR$(0) + "m" THEN
         KeyX = Mouse.X + 15
+        KeyY = Mouse.Y
         IF KeyX > 624 THEN KeyX = 624
-        Mouse.Driver 7, 0, KeyX, KeyX
-        Mouse.Driver 7, 0, 0, 639
+        IF KeyY > 464 THEN KeyY = 464
+        Mouse.SetPos KeyX, KeyY
     END IF
     IF Key$ = CHR$(0) + "h" THEN
         KeyY = Mouse.Y - 15
+        KeyX = Mouse.X
         IF KeyY < 46 THEN KeyY = 46
-        Mouse.Driver 8, 0, KeyY, KeyY
-        Mouse.Driver 8, 0, 0, 479
+        IF KeyX < 16 THEN KeyX = 16
+        Mouse.SetPos KeyX, KeyY
     END IF
     IF Key$ = CHR$(0) + "p" THEN
         KeyY = Mouse.Y + 15
+        KeyX = Mouse.X
         IF KeyY > 464 THEN KeyY = 464
-        Mouse.Driver 8, 0, KeyY, KeyY
-        Mouse.Driver 8, 0, 0, 479
+        IF KeyX > 624 THEN KeyX = 624
+        Mouse.SetPos KeyX, KeyY
     END IF
 
     Sys.Delay .01

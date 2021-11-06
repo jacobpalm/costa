@@ -265,97 +265,21 @@ FUNCTION Mouse.Clicked ()
 	'  Returns a value according to which mouse buttons are clicked.
 	'
 	'Returns:
-	'  False    0 if no button is clicked
-	'  mbLeft  -1 if left button is clicked
-	'  mbRight -2 if right button is clicked
-	'  mbBoth  -3 if both buttons are clicked
+	'          0 if no button is clicked
+	'  mbLeft  1 if left button is clicked
+	'  mbRight 2 if right button is clicked
+	'  mbBoth  3 if both buttons are clicked
 
-	DIM ButtonMouse, Col, Row
-	Mouse.Driver 3, ButtonMouse, Col, Row
+	DIM lButton, RButton, ButtonMouse
+	DIM regs AS RegType
 
-	DIM lButton, RButton
-	IF ButtonMouse AND 1 THEN
-		lButton = -1
-	ELSE
-		lButton = 0
-	END IF
+	regs.ax = 3
+	INTERRUPT 51, regs, regs
+	ButtonMouse = regs.bx
 
-	IF ButtonMouse AND 2 THEN
-		RButton = -1
-	ELSE
-		RButton = 0
-	END IF
-
-	IF lButton = -1 THEN
-		IF RButton = -1 THEN
-			Mouse.Clicked = mbBoth
-		ELSE
-			Mouse.Clicked = mbLeft
-		END IF
-	ELSEIF RButton = -1 THEN
-		Mouse.Clicked = mbRight
-	END IF
-	IF lButton = 0 AND RButton = 0 THEN Mouse.Clicked = 0
+	Mouse.Clicked = ButtonMouse
 
 END FUNCTION
-
-STATIC SUB Mouse.Driver (M0, M1, M2, M3)
-	'  To check if a mouse is present, use this call:
-	'    MouseDriver MousePresent%, 0, 0, 0
-	'
-	'  If a mouse is present, MousePresent% will be True. Otherwise it will
-	'  be False.
-	'
-
-	DIM regs AS RegType
-	DIM MouseSegment&, MouseOffset&
-	DIM MousePresent, MouseChecked
-
-	IF MouseChecked = False THEN
-		DEF SEG = 0
-
-		MouseSegment& = 256& * PEEK(207) + PEEK(206)
-		MouseOffset& = 256& * PEEK(205) + PEEK(204)
-
-		DEF SEG = MouseSegment&
-
-		IF (MouseSegment& = 0 AND MouseOffset& = 0) OR PEEK(MouseOffset&) = 207 THEN
-			MousePresent = False
-			MouseChecked = True
-			DEF SEG
-		END IF
-	END IF
-
-	IF MousePresent = False AND MouseChecked = True THEN
-		EXIT SUB
-	END IF
-
-	' Calls interrupt 51 to invoke mouse functions in the MS Mouse Driver.
-	
-	regs.ax = M0
-	regs.bx = M1
-	regs.cx = M2
-	regs.dx = M3
-
-	INTERRUPT 51, regs, regs
-
-	M0 = regs.ax
-	M1 = regs.bx
-	M2 = regs.cx
-	M3 = regs.dx
-
-	IF MouseChecked THEN EXIT SUB
-
-	' Check for successful mouse initialization
-
-	IF M0 AND NOT MouseChecked THEN
-		MousePresent = True
-		DEF SEG
-	END IF
-
-	MouseChecked = True
-	
-END SUB
 
 SUB Mouse.Hide ()
 
@@ -369,13 +293,29 @@ FUNCTION Mouse.InArea (TargetArea AS PosType)
 
 	'Returns True if the mouse cursor is within the area
 
-	IF Mouse.X > TargetArea.Left AND Mouse.X < TargetArea.Left + TargetArea.Width THEN
-		IF Mouse.Y > TargetArea.Top AND Mouse.Y < TargetArea.Top + TargetArea.Height THEN
+	DIM XPos, YPos
+
+	'Get mouse pos to variables, cuts interrupt calls in half
+	XPos = Mouse.X
+	YPos = Mouse.Y
+
+	IF XPos >= TargetArea.Left AND XPos <= TargetArea.Left + TargetArea.Width THEN
+		IF YPos >= TargetArea.Top AND YPos <= TargetArea.Top + TargetArea.Height THEN
 			Mouse.InArea = True
 		END IF
 	END IF
 	
 END FUNCTION
+
+SUB Mouse.SetPos (XPos, YPos)
+
+	DIM regs AS RegType
+	regs.ax = 4
+	regs.cx = XPos
+	regs.dx = YPos
+	INTERRUPT 51, regs, regs
+
+END SUB
 
 SUB Mouse.Show ()
 
@@ -388,18 +328,21 @@ END SUB
 FUNCTION Mouse.X ()
 	'Returns the X coordinate of the mouse.
 
-	DIM ButtonMouse, Col, Row
-	Mouse.Driver 3, ButtonMouse, Col, Row
-	Mouse.X = Col
+	DIM regs AS RegType
+
+	regs.ax = 3
+	INTERRUPT 51, regs, regs
+	Mouse.X = regs.cx
 
 END FUNCTION
 
 FUNCTION Mouse.Y ()
 	'Returns the Y coordinate of the mouse.
 
-	DIM ButtonMouse, Col, Row
-	Mouse.Driver 3, ButtonMouse, Col, Row
-	Mouse.Y = Row
+	DIM regs AS RegType
+	regs.ax = 3
+	INTERRUPT 51, regs, regs
+	Mouse.Y = regs.dx
 
 END FUNCTION
 
@@ -1106,26 +1049,22 @@ END SUB
 
 SUB Sys.LoadProfile (ProfileNum)
 
-	IF ProfileNum > 0 THEN
-		DIM FileHandle
-		FileHandle = FREEFILE
-		OPEN Sys.Path + "\DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileNum)) + ".DAT" FOR BINARY AS #FileHandle
-		GET #FileHandle, , UserSettings
-		CLOSE #FileHandle
+	DIM FileHandle
+
+	IF ProfileNum > 0 AND ProfileNum < 6 THEN
+
+		IF File.Exists(Sys.Path + "\DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileNum)) + ".DAT") THEN
+			FileHandle = FREEFILE
+			ON LOCAL ERROR GOTO LoadDefaultProfile
+			OPEN Sys.Path + "\DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileNum)) + ".DAT" FOR BINARY AS #FileHandle
+			GET #FileHandle, , UserSettings
+			CLOSE #FileHandle
+		ELSE
+			GOTO LoadDefaultProfile
+		END IF
+
 	ELSE
-		UserSettings.ProfileName = "Profile" + STR$(ProfileNum)
-		UserSettings.ProfileImage = "USERS"
-		UserSettings.ThemeFile = "DEFAULT"
-		UserSettings.Animations = True
-		UserSettings.ShowLinkDescriptions = True
-		UserSettings.ShowLinkTargetFiles = True
-		UserSettings.LinkMenuOnLeftClick = False
-		UserSettings.ConfirmLinkDelete = True
-		UserSettings.ConfirmExit = True
-		UserSettings.TipOfTheDay = True
-		UserSettings.TipLastShown = 0
-		UserSettings.AssignFileTypes = True
-		UserSettings.GreyoutOnMsgBox = False
+		GOTO LoadDefaultProfile
 	END IF
 
 	IF RTRIM$(UserSettings.ProfileName) = "" THEN UserSettings.ProfileName = "Profile" + STR$(ProfileNum)
@@ -1134,6 +1073,22 @@ SUB Sys.LoadProfile (ProfileNum)
 
 	ClrThemeFile = RTRIM$(UserSettings.ThemeFile)
 
+	EXIT SUB
+
+LoadDefaultProfile:
+	UserSettings.ProfileName = "Profile" + STR$(ProfileNum)
+	UserSettings.ProfileImage = "USERS"
+	UserSettings.ThemeFile = "DEFAULT"
+	UserSettings.Animations = True
+	UserSettings.ShowLinkDescriptions = True
+	UserSettings.ShowLinkTargetFiles = True
+	UserSettings.LinkMenuOnLeftClick = False
+	UserSettings.ConfirmLinkDelete = True
+	UserSettings.ConfirmExit = True
+	UserSettings.TipOfTheDay = True
+	UserSettings.TipLastShown = 0
+	UserSettings.AssignFileTypes = True
+	UserSettings.GreyoutOnMsgBox = False
 END SUB
 
 SUB Sys.LoadSettings ()

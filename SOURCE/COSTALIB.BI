@@ -48,9 +48,9 @@
     CONST True = NOT False
 
 'Mouse constants
-    CONST mbLeft = -1
-    CONST mbRight = -2
-    CONST mbBoth = -3
+    CONST mbLeft = 1
+    CONST mbRight = 2
+    CONST mbBoth = 3
 
 'Font type constants
     CONST FontHeading = 1
@@ -126,6 +126,25 @@
     GreyoutOnMsgBox AS INTEGER
     ThemeFile AS STRING * 8
   END TYPE
+
+  TYPE ThemeType
+    ThemeName AS STRING * 25
+    ThemeAuthor AS STRING * 25
+    Desktop AS INTEGER
+    DesktopText AS INTEGER
+    Window AS INTEGER
+    WindowText AS INTEGER
+    Button AS INTEGER
+    Textbox AS INTEGER
+    TextboxText AS INTEGER
+    ThreeDLight AS INTEGER
+    ThreeDShadow AS INTEGER
+    TitleBar AS INTEGER
+    TitleBarText AS INTEGER
+    Select AS INTEGER
+    SelectText AS INTEGER
+  END TYPE
+
 
 'Common shared variables
   COMMON SHARED ProfileID AS INTEGER
