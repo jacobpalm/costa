@@ -26,7 +26,6 @@ END TYPE
 DIM SHARED IconData AS IconEditDataType
 DIM SHARED IconFileName AS STRING
 DIM SHARED IconChanged
-DIM SHARED TransPixel(49)
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
@@ -60,7 +59,8 @@ SUB IconEdit.DrawPixel (X, Y, DrawColor, ForceDraw)
             LINE (XPos, YPos)-(XPos + 11, YPos + 11), DrawColor, BF
             PSET (514 + X, 269 + Y), DrawColor
         ELSE
-            PUT (XPos, YPos), TransPixel, PSET
+            LINE (XPos, YPos)-(XPos + 11, YPos + 11), 15, BF
+            LINE (XPos, YPos + 11)-(XPos + 11, YPos), 7
             PSET (514 + X, 269 + Y), 15
         END IF
         Mouse.Show
@@ -279,14 +279,6 @@ SUB IconEdit.Main (IconToLoad AS STRING)
 
     Obj.SetSize txtColor(-1).Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 36, txtDrawArea.Pos.Top + 153, 37, 18
     
-    'Before drawing window, draw traparent pixel and save to buffer for
-    'for faster drawing later (T drawn by font routine is slow)
-    Mouse.Hide
-    LINE (100, 100)-(111, 111), 15, BF
-    Font.Print "T", 103, 102, 0, FontHeading
-    GET (100, 100)-(111, 111), TransPixel(0)
-    Mouse.Show
-    
     Obj.DrawWin winMain
     Obj.DrawTxt txtDrawArea, "", False
     Obj.DrawBtn btnPreview, False
@@ -310,8 +302,8 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     NEXT
 
     LINE (txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 38, txtDrawArea.Pos.Top + 155)-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 71, txtDrawArea.Pos.Top + 169), 15, BF
-    Font.Print "T", txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 52, txtDrawArea.Pos.Top + 158, 0, FontHeading
-
+    LINE (txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 38, txtDrawArea.Pos.Top + 169)-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 71, txtDrawArea.Pos.Top + 155), 7
+    
     Font.Print "Preview", btnPreview.Pos.Left, btnPreview.Pos.Top - 15, SystemTheme.WindowText, FontHeading
     LINE (btnPreview.Pos.Left - 1, btnPreview.Pos.Top - 4)-(btnPreview.Pos.Left + 5, btnPreview.Pos.Top - 4), SystemTheme.WindowText
     LINE (btnPreview.Pos.Left + 2, btnPreview.Pos.Top + 2)-(btnPreview.Pos.Left + btnPreview.Pos.Width - 2, btnPreview.Pos.Top + btnPreview.Pos.Height - 2), 15, BF
