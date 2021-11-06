@@ -1,6 +1,6 @@
 
                           The Costa Graphical Shell
-                                Version 1.4.0
+                                Version 1.5.0
                                 By Jacob Palm                   
 
                           User's guide and reference 
@@ -57,7 +57,7 @@
     Unlike most of the modern interfaces, Costa doesn't require much to run.
    Below you'll find a list of Costa's requirements.
 
-    - A 286-processor or better
+    - A 286-processor or better (386 recommended, tested down to 16 MHz)
     - At least 250 KB free conventional RAM is recommended. When running a
       program, the resident part of Costa will use only a few hundred bytes
       of RAM
@@ -71,6 +71,11 @@
      Although a mouse is not required, it is recommended to improve the user 
     experience. Costa works with all Microsoft-compatible mice and includes
     a driver that will be loaded automatically if you haven't loaded one.
+
+     For slow hard drives, disk caching software such as SmartDrive is
+    recommended. Costa loads most data in to memory, but in order to conserve
+    memory some resources are loaded on use. Icons are one example of data
+    that is loaded on every use.
 
     
  ** 1.3 - News in the version **

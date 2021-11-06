@@ -1,9 +1,26 @@
 
                          The Costa Graphical Shell
-                               Version 1.4.0
+                               Version 1.5.0
                                By Jacob Palm                   
 
                                  Changelog
+
+
+*1.5.0*
+This version comes with many minor improvements and changes, but two stand
+out from the rest: A new UI design, based on Costa 0.9.4, and massive speed
+improvements to handling of data files.
+  -UI layout from Costa 0.9.4 brought to life again, and all themes have been
+   converted to fit this change. Costa now has a much more unique look, based
+   on old sketches I drew in Microsoft Paint 14 years ago
+  -Data formats from config files and theme files changed from INI format to
+   binary format, massively improving loading/saving times.
+  -Icon files converted to raw memory format, with similar speed improvements
+  -More data cached in memory (for instance, all settings) to reduce disk I/O
+   and improve performance on older machines
+  -Added sounds and save state to Tic Tac Toe - pick up your game where you
+   left off!
+  -Fixed minor graphical glitches, and removed superfluous drawing calls
 
 
 *1.4.0*
