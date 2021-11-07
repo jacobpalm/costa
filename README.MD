@@ -2,8 +2,9 @@
 Costa is a graphical user interface (GUI), designed to run on top of the
 command line as a shell.
 
-It is designed for MS-DOS, but tested with FreeDOS and DOSBox as well. In
-theory it should run on any MS-DOS compatible operating system.
+It is designed for MS-DOS, but tested with PC-DOS, FreeDOS and DOSBox as
+well. In theory it should run on any MS-DOS compatible operating system with
+a 286 or better CPU, VGA graphics and a recommended minimum of 250 KB RAM.
 
 The low system requirements make Costa especially useful for older machines,
 which are also the machines that typically run the MS-DOS operating system.
@@ -23,9 +24,5 @@ When opening project files (.MAK), use the /L parameter - as such:
 VBDOS.EXE DESKTOP.MAK /L
 
 This will cause VBDOS to load the libraries neccesary for Costa to work.
-If you get an error relating to "CALL ABSOLUTE", you have probably not
-used this parameter when starting VBDOS.
-
-**Note** - the only exception is with SETUP.MAK. This is a command line
-tool, and as such does not need any special libraries. It can be opened
-directly.
+If you get an error relating to "CALL ABSOLUTE" or "CALL INTERRUPT", you have 
+probably not used this parameter when starting VBDOS.
