@@ -3,18 +3,20 @@ DEFINT A-Z
 
 DECLARE FUNCTION File.Exists (TargetFile AS STRING)
 
+'$INCLUDE: 'VBDOS.BI'
 '$INCLUDE: 'C:\COSTA\SOURCE\APPINFO.BI'
 
 CONST False = 0
 CONST True = -1
 
 DIM Sys.Path AS STRING
+DIM Tries
 
 IF NOT COMMAND$ = "/?" AND NOT COMMAND$ = "/VER" THEN
-    COLOR 7, 0
-    CLS
+		COLOR 7, 0
+		CLS
 ELSE
-    PRINT ""
+		PRINT ""
 END IF
 
 PRINT appName + " setup utility"
@@ -30,23 +32,32 @@ PRINT
 PRINT "Type the path to Costa's files below (leave blank to cancel):"
 
 DO
-    INPUT "Path: ", Sys.Path
-    
-    IF Sys.Path = "" THEN
-        PRINT
-        PRINT "This program wil now end. Nothing was changed."
-        PRINT
-        END
-    END IF
+		INPUT "Path: ", Sys.Path
+		
+		IF Sys.Path = "" THEN
+				PRINT
+				PRINT "This program wil now end. Nothing was changed."
+				PRINT
+				END
+		END IF
 
-    IF LEN(Sys.Path) > 1 THEN
-        IF RIGHT$(Sys.Path, 1) = "\" OR RIGHT$(Sys.Path, 1) = "/" THEN Sys.Path = LEFT$(Sys.Path, LEN(Sys.Path) - 1)
-    END IF
+		IF LEN(Sys.Path) > 1 THEN
+				IF RIGHT$(Sys.Path, 1) = "\" OR RIGHT$(Sys.Path, 1) = "/" THEN Sys.Path = LEFT$(Sys.Path, LEN(Sys.Path) - 1)
+		END IF
 
-    IF File.Exists(Sys.Path + "\" + appExeName + ".EXE") THEN EXIT DO
+		IF File.Exists(Sys.Path + "\" + appExeName + ".EXE") THEN EXIT DO
 
-    PRINT
-    PRINT "Costa is not located in that directory. Please try again."
+		Tries = Tries + 1
+		IF Tries = 3 THEN
+			PRINT
+			PRINT "Costa is not located in that directory. Please verify that all files are"
+			PRINT "present, and that the directory name is correct, and run this utility again."
+			PRINT
+			END
+		END IF
+
+		PRINT
+		PRINT "Costa is not located in that directory. Please try again."
 LOOP
 
 PRINT
@@ -105,22 +116,24 @@ END
 
 FUNCTION File.Exists (TargetFile AS STRING)
 
-    DIM FileHandle
-    FileHandle = FREEFILE
-    ON LOCAL ERROR RESUME NEXT
-    OPEN TargetFile FOR BINARY AS #FileHandle
+	DIM InRegs AS RegTypeX, OutRegs AS RegTypeX
+	DIM TargetASCIZ$
 
-    IF LOF(FileHandle) = 0 THEN
-        'File doesn't exist
-        CLOSE #FileHandle
-        KILL TargetFile
-        File.Exists = False
-        EXIT FUNCTION
-    ELSE
-        CLOSE #FileHandle
-        File.Exists = True
-        EXIT FUNCTION
-    END IF
+	' Convert the file name to ASCIZ format
+	TargetASCIZ$ = TargetFile + CHR$(0)
+
+	InRegs.AX = &H4E00
+	InRegs.CX = 15 'any file attribute
+	InRegs.DS = SSEG(TargetASCIZ$)
+	InRegs.DX = SADD(TargetASCIZ$)
+
+	CALL INTERRUPTX(&H21, InRegs, OutRegs)
+
+	IF OutRegs.FLAGS AND 1 THEN
+			File.Exists = False
+	ELSE
+			File.Exists = True
+	END IF
 
 END FUNCTION
 

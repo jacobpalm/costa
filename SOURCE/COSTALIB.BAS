@@ -115,21 +115,23 @@ END SUB
 DEFINT A-Z
 FUNCTION File.Exists (TargetFile AS STRING)
 
-	DIM FileHandle
-	FileHandle = FREEFILE
-	ON LOCAL ERROR RESUME NEXT
-	OPEN TargetFile FOR BINARY AS #FileHandle
+	DIM InRegs AS RegTypeX, OutRegs AS RegTypeX
+	DIM TargetASCIZ$
 
-	IF LOF(FileHandle) = 0 THEN
-		'File doesn't exist
-		CLOSE #FileHandle
-		KILL TargetFile
-		File.Exists = False
-		EXIT FUNCTION
+	' Convert the file name to ASCIZ format
+	TargetASCIZ$ = TargetFile + CHR$(0)
+
+	InRegs.AX = &H4E00
+	InRegs.CX = 15 'any file attribute
+	InRegs.DS = SSEG(TargetASCIZ$)
+	InRegs.DX = SADD(TargetASCIZ$)
+
+	CALL INTERRUPTX(&H21, InRegs, OutRegs)
+
+	IF OutRegs.FLAGS AND 1 THEN
+			File.Exists = False
 	ELSE
-		CLOSE #FileHandle
-		File.Exists = True
-		EXIT FUNCTION
+			File.Exists = True
 	END IF
 
 END FUNCTION
@@ -273,7 +275,7 @@ FUNCTION Mouse.Clicked ()
 	DIM lButton, RButton, ButtonMouse
 	DIM regs AS RegType
 
-	regs.ax = 3
+	regs.AX = 3
 	INTERRUPT 51, regs, regs
 	ButtonMouse = regs.bx
 
@@ -284,7 +286,7 @@ END FUNCTION
 SUB Mouse.Hide ()
 
 	DIM regs AS RegType
-	regs.ax = 2
+	regs.AX = 2
 	INTERRUPT 51, regs, regs
 
 END SUB
@@ -310,9 +312,9 @@ END FUNCTION
 SUB Mouse.SetPos (XPos, YPos)
 
 	DIM regs AS RegType
-	regs.ax = 4
-	regs.cx = XPos
-	regs.dx = YPos
+	regs.AX = 4
+	regs.CX = XPos
+	regs.DX = YPos
 	INTERRUPT 51, regs, regs
 
 END SUB
@@ -320,7 +322,7 @@ END SUB
 SUB Mouse.Show ()
 
 	DIM regs AS RegType
-	regs.ax = 1
+	regs.AX = 1
 	INTERRUPT 51, regs, regs
 
 END SUB
@@ -330,9 +332,9 @@ FUNCTION Mouse.X ()
 
 	DIM regs AS RegType
 
-	regs.ax = 3
+	regs.AX = 3
 	INTERRUPT 51, regs, regs
-	Mouse.X = regs.cx
+	Mouse.X = regs.CX
 
 END FUNCTION
 
@@ -340,9 +342,9 @@ FUNCTION Mouse.Y ()
 	'Returns the Y coordinate of the mouse.
 
 	DIM regs AS RegType
-	regs.ax = 3
+	regs.AX = 3
 	INTERRUPT 51, regs, regs
-	Mouse.Y = regs.dx
+	Mouse.Y = regs.DX
 
 END FUNCTION
 
