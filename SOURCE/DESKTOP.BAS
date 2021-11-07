@@ -17,6 +17,7 @@ DECLARE SUB Desk.Main ()
 DECLARE SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
 DECLARE SUB Desk.ProfileSelect ()
 DECLARE SUB Desk.RunDialog ()
+DECLARE SUB Desk.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVAL TargetPath AS STRING, PauseOnExit AS INTEGER)
 
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
@@ -521,7 +522,7 @@ SUB Desk.LinkLaunch (TargetLink AS INTEGER)
     Sys.VGASave "DESKTOP"
 
     'DEBUG
-    File.Run RTRIM$(DESKLINK(TargetLink).Filename), RTRIM$(DESKLINK(TargetLink).Parameters), RTRIM$(DESKLINK(TargetLink).Path), DESKLINK(TargetLink).PauseOnExit
+    Desk.Run RTRIM$(DESKLINK(TargetLink).Filename), RTRIM$(DESKLINK(TargetLink).Parameters), RTRIM$(DESKLINK(TargetLink).Path), DESKLINK(TargetLink).PauseOnExit
 
 
 END SUB
@@ -1266,7 +1267,7 @@ MainLoopStart:
             IF LEN(FileToRun) AND NOT FileToRun = "C:\" THEN
                 Sys.VGASave "DESKTOP"
                 DIM RunFile AS STRING
-                File.Run FileToRun, "", "", True
+                Desk.Run FileToRun, "", "", True
             END IF
             GOSUB SlideDown
             GOTO MainLoopStart
@@ -1658,6 +1659,81 @@ TopOfProfile:
         END IF
 
     LOOP
+
+END SUB
+
+'Runs an external program.
+'Also checks for a file association if passed a file, and passes the
+'filename to the relevant program as a parameter.
+SUB Desk.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVAL TargetPath AS STRING, PauseOnExit AS INTEGER)
+
+  DIM RunHandle, DotPos
+  DIM TargetDrive AS STRING, SysDrive AS STRING
+
+  TargetFile = LTRIM$(RTRIM$(TargetFile))
+  TargetParameters = LTRIM$(RTRIM$(TargetParameters))
+  IF MID$(TargetPath, 2, 2) = ":\" THEN TargetDrive = LEFT$(TargetPath, 2)
+
+  IF LEN(TargetPath) THEN
+    IF RIGHT$(TargetPath, 1) = "\" AND LEN(TargetPath) > 1 THEN TargetPath = LEFT$(TargetPath, LEN(TargetPath) - 1)
+  END IF
+  IF INSTR(UCASE$(TargetPath), appEnviron) THEN
+    DIM TmpPath AS STRING
+    IF INSTR(UCASE$(TargetPath), appEnviron) > 1 THEN
+      TmpPath = LEFT$(TargetPath, INSTR(UCASE$(TargetPath), appEnviron) - 1)
+    END IF
+    TmpPath = TmpPath + Sys.Path
+    IF LEN(TargetPath) > INSTR(UCASE$(TargetPath), appEnviron) + 9 THEN
+      TmpPath = TmpPath + RIGHT$(TargetPath, LEN(TargetPath) - 9 - INSTR(UCASE$(TargetPath), appEnviron))
+    END IF
+    TargetPath = TmpPath
+    IF LEN(TargetPath) THEN IF RIGHT$(TargetPath, 1) = "\" AND LEN(TargetPath) > 1 THEN TargetPath = LEFT$(TargetPath, LEN(TargetPath) - 1)
+  END IF
+  
+
+  
+  'Get the file extension, and see if it's associated with a program
+  DotPos = INSTR(TargetFile, ".")
+  IF DotPos > 0 AND UserSettings.AssignFileTypes THEN
+
+    DIM FileType AS STRING, OpenWith AS STRING
+    FileType = RIGHT$(TargetFile, LEN(TargetFile) - DotPos)
+
+    'DEBUG - implement when file associations are working again
+    'OpenWith = File.CfgRead("DATA\CONFIG\FILETYPE.CFG", FileType, "")
+    
+    IF NOT OpenWith = "" AND NOT INSTR(TargetFile, " ") THEN
+      TargetFile = OpenWith + " " + TargetFile
+    END IF
+
+  END IF
+  
+
+  'Print the filename, parameters, path and wether to pause on exit to
+  'RUN.BAT, and exit. COSTA.EXE will look at the file and run the program
+  RunHandle = FREEFILE
+
+  OPEN Sys.Path + "DATA\TEMP\RUN.BAT" FOR OUTPUT AS #RunHandle
+  PRINT #RunHandle, "@ECHO OFF"
+  IF LEN(TargetDrive) THEN PRINT #RunHandle, TargetDrive
+  IF LEN(TargetPath) THEN
+    IF LEN(TargetPath) > 1 THEN
+      IF RIGHT$(TargetPath, 1) = "\" AND LEN(TargetPath) > 1 THEN TargetPath = LEFT$(TargetPath, LEN(TargetPath) - 1)
+    END IF
+    PRINT #RunHandle, "CD\"
+    PRINT #RunHandle, "CD " + TargetPath
+  END IF
+  PRINT #RunHandle, TargetFile + " " + TargetParameters
+  IF PauseOnExit = True THEN PRINT #RunHandle, "PAUSE"
+
+  IF MID$(Sys.Path, 2, 2) = ":\" THEN SysDrive = LEFT$(Sys.Path, 2)
+  IF LEN(SysDrive) THEN PRINT #RunHandle, SysDrive
+  PRINT #RunHandle, "CD " + LEFT$(Sys.Path, LEN(Sys.Path) - 1)
+
+  CLOSE #RunHandle
+
+  DO: LOOP WHILE LEN(INKEY$)
+  END 2
 
 END SUB
 

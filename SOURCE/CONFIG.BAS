@@ -1,21 +1,17 @@
-DECLARE SUB Sys.SaveProfile (ProfileNum%)
-DECLARE SUB Sys.SaveSettings ()
 OPTION EXPLICIT
 DEFINT A-Z
 
+DECLARE FUNCTION File.CfgRead (BYVAL CfgFile AS STRING, Setting AS STRING, DefaultValue AS STRING) AS STRING
+DECLARE SUB File.CfgWrite (BYVAL CfgFile AS STRING, Setting AS STRING, Value AS STRING)
 
 DECLARE SUB Conf.ConfAssoc ()
 DECLARE SUB Conf.ConfMisc ()
 DECLARE SUB Conf.ConfTheme ()
-DECLARE SUB Conf.LoadDefaultThm ()
-DECLARE SUB Conf.LoadTheme (BYVAL ThmFile AS STRING)
 DECLARE SUB Conf.Main ()
 DECLARE SUB Desk.DrawDesktop ()
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
-DIM SHARED ThemeFile$, ThemeName$, ThemeAuthor$
-DIM SHARED ThemeList() AS STRING
 DIM SHARED DeskNeedsDraw
 
 Sys.Load
@@ -33,9 +29,10 @@ Conf.Main
 ' =========================================================================
 SUB Conf.ConfAssoc ()
 
-    IF NOT File.CfgRead("DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileID)) + "\PROFILE.CFG", "AssignFileTypes", "1") = "1" THEN
+    IF UserSettings.AssignFileTypes = False THEN
         IF Sys.MsgBox("File associations disabled", "File associations are currently disabled." + CHR$(13) + "Do you want to enable this feature?", msgQuest) = True THEN
-            File.CfgWrite "DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileID)) + "\PROFILE.CFG", "AssignFileTypes", "1"
+            UserSettings.AssignFileTypes = True
+            Sys.SaveProfile ProfileID
         ELSE
             EXIT SUB
         END IF
@@ -367,7 +364,9 @@ SUB Conf.ConfTheme ()
     DIM frmPreview AS FrameType
     DIM btnBack AS ButtonType, btnNext AS ButtonType
     DIM btnSave AS ButtonType, btnCancel AS ButtonType
+
     DIM OriginalTheme AS STRING
+    DIM ThemeList() AS STRING
 
     winTheme.Pos.Width = 324
     winTheme.Pos.Height = 347
@@ -612,7 +611,6 @@ SUB Conf.Main ()
         IF Obj.BtnClick(btnClose) THEN Key$ = "c"
 
         IF Key$ = CHR$(27) OR Key$ = "c" THEN
-            REDIM ThemeList(0) AS STRING
             IF DeskNeedsDraw = False THEN
                 Sys.VGALoad "DESKTOP"
             ELSE
@@ -636,5 +634,104 @@ SUB Conf.Main ()
 
     LOOP
 
+END SUB
+
+FUNCTION File.CfgRead (BYVAL CfgFile AS STRING, Setting AS STRING, DefaultValue AS STRING) AS STRING
+
+  IF LEN(CfgFile) > LEN(Sys.Path) THEN
+    IF LEFT$(CfgFile, LEN(Sys.Path)) = Sys.Path THEN CfgFile = RIGHT$(CfgFile, LEN(CfgFile) - LEN(Sys.Path))
+  END IF
+
+  IF NOT File.Exists(Sys.Path + CfgFile) THEN
+    File.CfgRead = DefaultValue
+    EXIT FUNCTION
+  END IF
+
+  DIM CfgHandle
+  DIM TmpSetting AS STRING, TmpValue AS STRING
+  CfgHandle = FREEFILE
+  OPEN Sys.Path + CfgFile FOR INPUT AS #CfgHandle
+
+  DO WHILE NOT EOF(CfgHandle)
+    INPUT #CfgHandle, TmpSetting
+    IF LEFT$(TmpSetting, 1) = "$" THEN
+      INPUT #CfgHandle, TmpValue
+
+      IF LCASE$(TmpSetting) = "$" + LCASE$(Setting) THEN
+        File.CfgRead = TmpValue
+        CLOSE #CfgHandle
+        EXIT FUNCTION
+      END IF
+    END IF
+  LOOP
+
+  CLOSE #CfgHandle
+  File.CfgRead = DefaultValue
+  
+END FUNCTION
+
+DEFSNG A-Z
+SUB File.CfgWrite (BYVAL CfgFile AS STRING, Setting AS STRING, Value AS STRING)
+
+  DIM CfgOut, CfgIn, DidWrite
+  DIM RenCfgFile AS STRING
+
+  IF LEN(CfgFile) > LEN(Sys.Path) THEN
+    IF LEFT$(CfgFile, LEN(Sys.Path)) = Sys.Path THEN CfgFile = RIGHT$(CfgFile, LEN(CfgFile) - LEN(Sys.Path))
+  END IF
+  
+  IF NOT File.Exists(Sys.Path + CfgFile) THEN
+    CfgOut = FREEFILE
+    OPEN Sys.Path + CfgFile FOR OUTPUT AS #CfgOut
+    PRINT #CfgOut, "$" + Setting + ",""" + Value + """"
+    CLOSE #CfgOut
+    EXIT SUB
+  END IF
+
+  DidWrite = False
+
+  DIM TmpSetting AS STRING, TmpValue AS STRING
+  CfgIn = FREEFILE
+  OPEN Sys.Path + CfgFile FOR INPUT AS #CfgIn
+  CfgOut = FREEFILE
+  OPEN Sys.Path + LEFT$(CfgFile, LEN(CfgFile) - 3) + "TMP" FOR OUTPUT AS #CfgOut
+
+  DO WHILE NOT EOF(CfgIn)
+    INPUT #CfgIn, TmpSetting
+
+    IF LEFT$(TmpSetting, 1) = "$" THEN
+      INPUT #CfgIn, TmpValue
+
+      IF LCASE$(TmpSetting) = "$" + LCASE$(Setting) THEN
+        DidWrite = True
+        'Only write the entry if Value is not empty. This will remove
+        'the entry instead of leaving a blank entry in the file
+        IF NOT Value = "" THEN PRINT #CfgOut, TmpSetting + ",""" + Value + """"
+      ELSE
+        PRINT #CfgOut, TmpSetting + ",""" + TmpValue + """"
+      END IF
+    ELSE
+      PRINT #CfgOut, TmpSetting
+    END IF
+  LOOP
+
+  IF DidWrite = False AND LEN(Value) THEN PRINT #CfgOut, "$" + Setting + ",""" + Value + """"
+
+  CLOSE #CfgIn
+  CLOSE #CfgOut
+
+  ON LOCAL ERROR RESUME NEXT
+  KILL Sys.Path + CfgFile
+  RenCfgFile = CfgFile
+
+  DO WHILE INSTR(RenCfgFile, "\")
+    RenCfgFile = RIGHT$(RenCfgFile, LEN(RenCfgFile) - INSTR(RenCfgFile, "\"))
+  LOOP
+
+  SHELL "ren " + Sys.Path + LEFT$(CfgFile, LEN(CfgFile) - 3) + "TMP " + RenCfgFile
+  CHDIR LEFT$(Sys.Path, LEN(Sys.Path) - 1)
+
+  ON LOCAL ERROR GOTO 0
+  
 END SUB
 

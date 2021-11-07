@@ -13,106 +13,6 @@ DEFINT A-Z
 	DIM SHARED FontData(1 TO 3, 32 TO 127) AS STRING
 	DIM SHARED FontWidth(1 TO 2, 32 TO 127) AS INTEGER
 
-FUNCTION File.CfgRead (BYVAL CfgFile AS STRING, Setting AS STRING, DefaultValue AS STRING) AS STRING
-
-	IF LEN(CfgFile) > LEN(Sys.Path) THEN
-		IF LEFT$(CfgFile, LEN(Sys.Path)) = Sys.Path THEN CfgFile = RIGHT$(CfgFile, LEN(CfgFile) - LEN(Sys.Path))
-	END IF
-
-	IF NOT File.Exists(Sys.Path + CfgFile) THEN
-		File.CfgRead = DefaultValue
-		EXIT FUNCTION
-	END IF
-
-	DIM CfgHandle
-	DIM TmpSetting AS STRING, TmpValue AS STRING
-	CfgHandle = FREEFILE
-	OPEN Sys.Path + CfgFile FOR INPUT AS #CfgHandle
-
-	DO WHILE NOT EOF(CfgHandle)
-		INPUT #CfgHandle, TmpSetting
-		IF LEFT$(TmpSetting, 1) = "$" THEN
-			INPUT #CfgHandle, TmpValue
-
-			IF LCASE$(TmpSetting) = "$" + LCASE$(Setting) THEN
-				File.CfgRead = TmpValue
-				CLOSE #CfgHandle
-				EXIT FUNCTION
-			END IF
-		END IF
-	LOOP
-
-	CLOSE #CfgHandle
-	File.CfgRead = DefaultValue
-	
-END FUNCTION
-
-DEFSNG A-Z
-SUB File.CfgWrite (BYVAL CfgFile AS STRING, Setting AS STRING, Value AS STRING)
-
-	DIM CfgOut, CfgIn, DidWrite
-	DIM RenCfgFile AS STRING
-
-	IF LEN(CfgFile) > LEN(Sys.Path) THEN
-		IF LEFT$(CfgFile, LEN(Sys.Path)) = Sys.Path THEN CfgFile = RIGHT$(CfgFile, LEN(CfgFile) - LEN(Sys.Path))
-	END IF
-	
-	IF NOT File.Exists(Sys.Path + CfgFile) THEN
-		CfgOut = FREEFILE
-		OPEN Sys.Path + CfgFile FOR OUTPUT AS #CfgOut
-		PRINT #CfgOut, "$" + Setting + ",""" + Value + """"
-		CLOSE #CfgOut
-		EXIT SUB
-	END IF
-
-	DidWrite = False
-
-	DIM TmpSetting AS STRING, TmpValue AS STRING
-	CfgIn = FREEFILE
-	OPEN Sys.Path + CfgFile FOR INPUT AS #CfgIn
-	CfgOut = FREEFILE
-	OPEN Sys.Path + LEFT$(CfgFile, LEN(CfgFile) - 3) + "TMP" FOR OUTPUT AS #CfgOut
-
-	DO WHILE NOT EOF(CfgIn)
-		INPUT #CfgIn, TmpSetting
-
-		IF LEFT$(TmpSetting, 1) = "$" THEN
-			INPUT #CfgIn, TmpValue
-
-			IF LCASE$(TmpSetting) = "$" + LCASE$(Setting) THEN
-				DidWrite = True
-				'Only write the entry if Value is not empty. This will remove
-				'the entry instead of leaving a blank entry in the file
-				IF NOT Value = "" THEN PRINT #CfgOut, TmpSetting + ",""" + Value + """"
-			ELSE
-				PRINT #CfgOut, TmpSetting + ",""" + TmpValue + """"
-			END IF
-		ELSE
-			PRINT #CfgOut, TmpSetting
-		END IF
-	LOOP
-
-	IF DidWrite = False AND LEN(Value) THEN PRINT #CfgOut, "$" + Setting + ",""" + Value + """"
-
-	CLOSE #CfgIn
-	CLOSE #CfgOut
-
-	ON LOCAL ERROR RESUME NEXT
-	KILL Sys.Path + CfgFile
-	RenCfgFile = CfgFile
-
-	DO WHILE INSTR(RenCfgFile, "\")
-		RenCfgFile = RIGHT$(RenCfgFile, LEN(RenCfgFile) - INSTR(RenCfgFile, "\"))
-	LOOP
-
-	SHELL "ren " + Sys.Path + LEFT$(CfgFile, LEN(CfgFile) - 3) + "TMP " + RenCfgFile
-	CHDIR LEFT$(Sys.Path, LEN(Sys.Path) - 1)
-
-	ON LOCAL ERROR GOTO 0
-	
-END SUB
-
-DEFINT A-Z
 FUNCTION File.Exists (TargetFile AS STRING)
 
 	DIM InRegs AS RegTypeX, OutRegs AS RegTypeX
@@ -121,94 +21,20 @@ FUNCTION File.Exists (TargetFile AS STRING)
 	' Convert the file name to ASCIZ format
 	TargetASCIZ$ = TargetFile + CHR$(0)
 
-	InRegs.AX = &H4E00
-	InRegs.CX = 15 'any file attribute
-	InRegs.DS = SSEG(TargetASCIZ$)
-	InRegs.DX = SADD(TargetASCIZ$)
+	InRegs.ax = &H4E00
+	InRegs.cx = 15 'any file attribute
+	InRegs.ds = SSEG(TargetASCIZ$)
+	InRegs.dx = SADD(TargetASCIZ$)
 
 	CALL INTERRUPTX(&H21, InRegs, OutRegs)
 
-	IF OutRegs.FLAGS AND 1 THEN
+	IF OutRegs.flags AND 1 THEN
 			File.Exists = False
 	ELSE
 			File.Exists = True
 	END IF
 
 END FUNCTION
-
-'Runs an external program.
-'Also checks for a file association if passed a file, and passes the
-'filename to the relevant program as a parameter.
-SUB File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVAL TargetPath AS STRING, PauseOnExit AS INTEGER)
-
-	DIM RunHandle, DotPos
-	DIM TargetDrive AS STRING, SysDrive AS STRING
-
-	TargetFile = LTRIM$(RTRIM$(TargetFile))
-	TargetParameters = LTRIM$(RTRIM$(TargetParameters))
-	IF MID$(TargetPath, 2, 2) = ":\" THEN TargetDrive = LEFT$(TargetPath, 2)
-
-	IF LEN(TargetPath) THEN
-		IF RIGHT$(TargetPath, 1) = "\" AND LEN(TargetPath) > 1 THEN TargetPath = LEFT$(TargetPath, LEN(TargetPath) - 1)
-	END IF
-	IF INSTR(UCASE$(TargetPath), appEnviron) THEN
-		DIM TmpPath AS STRING
-		IF INSTR(UCASE$(TargetPath), appEnviron) > 1 THEN
-			TmpPath = LEFT$(TargetPath, INSTR(UCASE$(TargetPath), appEnviron) - 1)
-		END IF
-		TmpPath = TmpPath + Sys.Path
-		IF LEN(TargetPath) > INSTR(UCASE$(TargetPath), appEnviron) + 9 THEN
-			TmpPath = TmpPath + RIGHT$(TargetPath, LEN(TargetPath) - 9 - INSTR(UCASE$(TargetPath), appEnviron))
-		END IF
-		TargetPath = TmpPath
-		IF LEN(TargetPath) THEN IF RIGHT$(TargetPath, 1) = "\" AND LEN(TargetPath) > 1 THEN TargetPath = LEFT$(TargetPath, LEN(TargetPath) - 1)
-	END IF
-	
-
-	
-	'Get the file extension, and see if it's associated with a program
-	DotPos = INSTR(TargetFile, ".")
-	IF DotPos > 0 AND UserSettings.AssignFileTypes THEN
-
-		DIM FileType AS STRING, OpenWith AS STRING
-		FileType = RIGHT$(TargetFile, LEN(TargetFile) - DotPos)
-
-		OpenWith = File.CfgRead("DATA\CONFIG\FILETYPE.CFG", FileType, "")
-		
-		IF NOT OpenWith = "" AND NOT INSTR(TargetFile, " ") THEN
-			TargetFile = OpenWith + " " + TargetFile
-		END IF
-
-	END IF
-	
-
-	'Print the filename, parameters, path and wether to pause on exit to
-	'RUN.DAT, and exit. COSTA.EXE will look at the file and run the program
-	RunHandle = FREEFILE
-
-	OPEN Sys.Path + "DATA\TEMP\RUN.BAT" FOR OUTPUT AS #RunHandle
-	PRINT #RunHandle, "@ECHO OFF"
-	IF LEN(TargetDrive) THEN PRINT #RunHandle, TargetDrive
-	IF LEN(TargetPath) THEN
-		IF LEN(TargetPath) > 1 THEN
-			IF RIGHT$(TargetPath, 1) = "\" AND LEN(TargetPath) > 1 THEN TargetPath = LEFT$(TargetPath, LEN(TargetPath) - 1)
-		END IF
-		PRINT #RunHandle, "CD\"
-		PRINT #RunHandle, "CD " + TargetPath
-	END IF
-	PRINT #RunHandle, TargetFile + " " + TargetParameters
-	IF PauseOnExit = True THEN PRINT #RunHandle, "PAUSE"
-
-	IF MID$(Sys.Path, 2, 2) = ":\" THEN SysDrive = LEFT$(Sys.Path, 2)
-	IF LEN(SysDrive) THEN PRINT #RunHandle, SysDrive
-	PRINT #RunHandle, "CD " + LEFT$(Sys.Path, LEN(Sys.Path) - 1)
-
-	CLOSE #RunHandle
-
-	DO: LOOP WHILE LEN(INKEY$)
-	END 2
-
-END SUB
 
 FUNCTION Font.GetWidth (TargetText AS STRING, FontID AS INTEGER)
 
@@ -275,7 +101,7 @@ FUNCTION Mouse.Clicked ()
 	DIM lButton, RButton, ButtonMouse
 	DIM regs AS RegType
 
-	regs.AX = 3
+	regs.ax = 3
 	INTERRUPT 51, regs, regs
 	ButtonMouse = regs.bx
 
@@ -286,7 +112,7 @@ END FUNCTION
 SUB Mouse.Hide ()
 
 	DIM regs AS RegType
-	regs.AX = 2
+	regs.ax = 2
 	INTERRUPT 51, regs, regs
 
 END SUB
@@ -312,9 +138,9 @@ END FUNCTION
 SUB Mouse.SetPos (XPos, YPos)
 
 	DIM regs AS RegType
-	regs.AX = 4
-	regs.CX = XPos
-	regs.DX = YPos
+	regs.ax = 4
+	regs.cx = XPos
+	regs.dx = YPos
 	INTERRUPT 51, regs, regs
 
 END SUB
@@ -322,7 +148,7 @@ END SUB
 SUB Mouse.Show ()
 
 	DIM regs AS RegType
-	regs.AX = 1
+	regs.ax = 1
 	INTERRUPT 51, regs, regs
 
 END SUB
@@ -332,9 +158,9 @@ FUNCTION Mouse.X ()
 
 	DIM regs AS RegType
 
-	regs.AX = 3
+	regs.ax = 3
 	INTERRUPT 51, regs, regs
-	Mouse.X = regs.CX
+	Mouse.X = regs.cx
 
 END FUNCTION
 
@@ -342,9 +168,9 @@ FUNCTION Mouse.Y ()
 	'Returns the Y coordinate of the mouse.
 
 	DIM regs AS RegType
-	regs.AX = 3
+	regs.ax = 3
 	INTERRUPT 51, regs, regs
-	Mouse.Y = regs.DX
+	Mouse.Y = regs.dx
 
 END FUNCTION
 
