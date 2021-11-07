@@ -1463,7 +1463,7 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
     Obj.SetSize btnSave.Pos, 229, winProfEdit.Pos.Top + 174, 84, 22
     Obj.SetSize btnCancel.Pos, 326, winProfEdit.Pos.Top + 174, 84, 22
 
-    txtProfileName.MaxLen = 50
+    txtProfileName.MaxLen = 25
     txtProfileNameText = RTRIM$(UserSettings.ProfileName)
     btnIconPrev.Caption = "<"
     btnIconNext.Caption = ">"

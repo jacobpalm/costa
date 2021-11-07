@@ -445,7 +445,7 @@ SUB Conf.ConfTheme ()
         TmpName$ = LEFT$(TmpName$, LEN(TmpName$) - 4)
         REDIM PRESERVE ThemeList(0 TO TmpCount) AS STRING
         ThemeList(UBOUND(ThemeList)) = TmpName$
-        IF UCASE$(TmpName$) = RTRIM$(UserSettings.ThemeFile) THEN ActiveTheme = TmpCount
+        IF UCASE$(TmpName$) = UCASE$(RTRIM$(UserSettings.ThemeFile)) THEN ActiveTheme = TmpCount
         TmpName$ = DIR$
         TmpCount = TmpCount + 1
     LOOP
@@ -464,8 +464,8 @@ UpdatePreview:
     Mouse.Hide
     LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 2)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + frmPreview.Pos.Height - 2), SystemTheme.Desktop, BF
     LINE (winTheme.Pos.Left + 110, winTheme.Pos.Top + 29)-(winTheme.Pos.Left + 312, winTheme.Pos.Top + 59), POINT(168, 94), BF
-    Font.Print SystemTheme.Name, winTheme.Pos.Left + 115, winTheme.Pos.Top + 32, POINT(178, 100), 2
-    Font.Print SystemTheme.Author, winTheme.Pos.Left + 115, winTheme.Pos.Top + 47, POINT(178, 100), 2
+    Font.Print RTRIM$(SystemTheme.Name), winTheme.Pos.Left + 115, winTheme.Pos.Top + 32, POINT(178, 100), 2
+    Font.Print RTRIM$(SystemTheme.Author), winTheme.Pos.Left + 115, winTheme.Pos.Top + 47, POINT(178, 100), 2
     Mouse.Show
     Obj.DrawWin winPreview
     Obj.DrawTxt txtPreview, txtPreviewText, True
