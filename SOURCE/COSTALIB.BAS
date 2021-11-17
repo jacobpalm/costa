@@ -253,6 +253,27 @@ SUB Obj.DrawBtn (TargetBtn AS ButtonType, Pressed AS INTEGER)
 
 	Mouse.Hide
 	IF TargetBtn.Transparent = False THEN
+		IF Color1 = SystemTheme.Window THEN
+			IF SystemTheme.Window >= 8 THEN
+				Color1 = SystemTheme.Window - 8
+			ELSE
+				Color1 = SystemTheme.Window + 8
+			END IF
+		END IF
+		IF Color3 = SystemTheme.Window THEN
+			IF SystemTheme.Window >= 8 THEN
+				Color3 = SystemTheme.Window - 8
+			ELSE
+				Color3 = SystemTheme.Window + 8
+			END IF
+		END IF
+		IF Color4 = Color2 THEN
+			IF Color2 >= 8 THEN
+				Color4 = Color2 - 8
+			ELSE
+				Color4 = Color2 + 8
+			END IF
+		END IF
 		LINE (x1, y1)-(x2 - 1, y2 - 1), Color2, BF
 	ELSE
 		LINE (x1, y1)-(x2 - 1, y2 - 1), Color2, B
