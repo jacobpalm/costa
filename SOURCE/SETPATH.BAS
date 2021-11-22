@@ -116,23 +116,21 @@ END
 
 FUNCTION File.Exists (TargetFile AS STRING)
 
-	DIM InRegs AS RegTypeX, OutRegs AS RegTypeX
-	DIM TargetASCIZ$
+	DIM FileHandle
+	FileHandle = FREEFILE
+	ON LOCAL ERROR RESUME NEXT
+	OPEN TargetFile FOR BINARY AS #FileHandle
 
-	' Convert the file name to ASCIZ format
-	TargetASCIZ$ = TargetFile + CHR$(0)
-
-	InRegs.AX = &H4E00
-	InRegs.CX = 15 'any file attribute
-	InRegs.DS = SSEG(TargetASCIZ$)
-	InRegs.DX = SADD(TargetASCIZ$)
-
-	CALL INTERRUPTX(&H21, InRegs, OutRegs)
-
-	IF OutRegs.FLAGS AND 1 THEN
-			File.Exists = False
+	IF LOF(FileHandle) = 0 THEN
+		'File doesn't exist
+		CLOSE #FileHandle
+		KILL TargetFile
+		File.Exists = False
+		EXIT FUNCTION
 	ELSE
-			File.Exists = True
+		CLOSE #FileHandle
+		File.Exists = True
+		EXIT FUNCTION
 	END IF
 
 END FUNCTION
