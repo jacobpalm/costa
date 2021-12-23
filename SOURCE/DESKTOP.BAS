@@ -89,7 +89,7 @@ STACK 5120
 
 CALL Sys.Load
 
-IF ProfileID > 0 OR ProfileID < 5 THEN
+IF ProfileID < 1 OR ProfileID > 5 THEN
 
     IF SystemSettings.UseLastProfile THEN
 
@@ -97,6 +97,8 @@ IF ProfileID > 0 OR ProfileID < 5 THEN
             ProfileID = SystemSettings.LastUsedProfile
         ELSE
             ProfileID = 1
+            SystemSettings.LastUsedProfile = 1
+            Sys.SaveSettings
         END IF
         Sys.LoadProfile SystemSettings.LastUsedProfile
         Sys.LoadTheme

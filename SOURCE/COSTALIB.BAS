@@ -417,6 +417,7 @@ SUB Obj.DrawImg (TargetImg AS ImageType)
 	DIM IconData AS IconDataType
 
 	'Load saved memory back to address of IconData.Pixel array
+	ON LOCAL ERROR GOTO DrawImgError
 	DEF SEG = VARSEG(IconData.Pixel(0, 0))
 	BLOAD Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".BSV", VARPTR(IconData.Pixel(0, 0))
 	DEF SEG
@@ -428,7 +429,18 @@ SUB Obj.DrawImg (TargetImg AS ImageType)
 		NEXT
 	NEXT
 	Mouse.Show
+	EXIT SUB
 
+DrawImgError:
+	'Draw a red box with the text "IMG ERR" to indicate a missing file
+	Mouse.Hide
+	LINE (X + 1, Y + 1)-(X + 30, Y + 30), 4, BF
+	LINE (X, Y)-(X + 31, Y + 31), 0, B
+	Mouse.Show
+	Font.Print "IMG", X + 6, Y + 4, 15, FontNormal
+	Font.Print "ERR", X + 6, Y + 19, 15, FontNormal
+	EXIT SUB
+	RESUME NEXT
 END SUB
 
 SUB Obj.DrawTxt (TargetTxt AS TextboxType, BYVAL Text AS STRING, IsEditing AS INTEGER)
@@ -983,11 +995,25 @@ SUB Sys.LoadTheme ()
 	DIM FileHandle
 	FileHandle = FREEFILE
 
-	'DEBUG - error checking, load defaults if fail
-
-	OPEN Sys.Path + "\DATA\THEMES\" + ThemeFile + ".DAT" FOR BINARY AS #FileHandle
-	GET #FileHandle, , SystemTheme
-	CLOSE #FileHandle
+	IF File.Exists(Sys.Path + "\DATA\THEMES\" + ThemeFile + ".DAT") THEN
+		OPEN Sys.Path + "\DATA\THEMES\" + ThemeFile + ".DAT" FOR BINARY AS #FileHandle
+		GET #FileHandle, , SystemTheme
+		CLOSE #FileHandle
+	ELSE
+		SystemTheme.Desktop = 9
+		SystemTheme.DesktopText = 0
+		SystemTheme.Window = 15
+		SystemTheme.Button = 7
+		SystemTheme.Textbox = 15
+		SystemTheme.TextboxText = 0
+		SystemTheme.WindowText = 0
+		SystemTheme.TitleBar = 0
+		SystemTheme.TitleBarText = 15
+		SystemTheme.Light = 7
+		SystemTheme.Shadow = 8
+		SystemTheme.Select = 8
+		SystemTheme.SelectText = 15
+	END IF
 
 END SUB
 
@@ -1149,27 +1175,36 @@ END FUNCTION
 
 SUB Sys.SaveProfile (ProfileNum)
 
-	'Debug - error handling
-
 	DIM FileHandle
+
+	ON LOCAL ERROR GOTO SaveProfileError
 	FileHandle = FREEFILE
 	OPEN Sys.Path + "\DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileNum)) + ".DAT" FOR BINARY AS #FileHandle
 	PUT #FileHandle, , UserSettings
 	CLOSE #FileHandle
 
+	EXIT SUB
+
+SaveProfileError:
+	FileHandle = Sys.MsgBox("Could not save settings", "An error occured while saving your settings, and they were not saved." + CHR$(13) + "Make sure the disk is not full or write-protected, and try again.", msgError)
+	EXIT SUB
+	RESUME NEXT
 END SUB
 
 SUB Sys.SaveSettings ()
 
-	'DEBUG - error checking
-
+	ON LOCAL ERROR GOTO SaveSettingsError
 	DIM FileHandle
 	FileHandle = FREEFILE
 	OPEN Sys.Path + "\DATA\CONFIG\COSTA.DAT" FOR BINARY AS #FileHandle
 	PUT #FileHandle, , SystemSettings
 	CLOSE #FileHandle
+	EXIT SUB
 
-
+SaveSettingsError:
+	FileHandle = Sys.MsgBox("Could not save settings", "An error occured while saving your settings, and they were not saved." + CHR$(13) + "Make sure the disk is not full or write-protected, and try again.", msgError)
+	EXIT SUB
+	RESUME NEXT
 END SUB
 
 STATIC SUB Sys.VGALoad (TargetFile AS STRING)

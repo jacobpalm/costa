@@ -196,7 +196,9 @@ SUB IconEdit.LoadIcon (IconToLoad AS STRING)
         END IF
 
         IF Sys.MsgBox("File already open", "The icon you selected is already opened." + CHR$(13) + "Do you want to discard all changes and reload" + CHR$(13) + "the icon as it was last saved?", msgQuest) = False THEN
-            EXIT SUB
+          EXIT SUB
+        ELSE
+          IconChanged = False
         END IF
 
     END IF
@@ -213,34 +215,30 @@ SUB IconEdit.LoadIcon (IconToLoad AS STRING)
 
     'We made it this far - load icon
 
-
+    ON LOCAL ERROR GOTO LoadIconError
     DEF SEG = VARSEG(IconLoadData.Pixel(0, 0))
     BLOAD Sys.Path + "DATA\IMAGES\" + IconToLoad + ".BSV", VARPTR(IconLoadData.Pixel(0, 0))
     DEF SEG
+    ON LOCAL ERROR RESUME NEXT
 
     IconFileName = IconToLoad
-    IconChanged = False
-
-    'Update window title
     IconEdit.SetTitle
-
-    'Draw icon and preview
     Mouse.Hide
     FOR XPos = 0 TO 31
         FOR YPos = 0 TO 31
-            'IconEdit.DrawPixel XPos, YPos, ASC(IconLoadData.Pixel(XPos, YPos)) - 1, True
             IconEdit.DrawPixel XPos, YPos, IconLoadData.Pixel(XPos, YPos), True
         NEXT
     NEXT
     Mouse.Show
-
     IconChanged = False
 
     EXIT SUB
 
-
-    'ErrMsg = Sys.MsgBox("Invalid image file", "The icon you selected does not contain a valid icon. The" + CHR$(13) + "file might be damaged, or not an icon file at all.", msgError)
-    
+LoadIconError:
+    ErrMsg = Sys.MsgBox("Invalid image file", "The icon you selected does not contain a valid icon. The" + CHR$(13) + "file might be damaged, or not an icon file at all.", msgError)
+    IconEdit.NewIcon
+    EXIT SUB
+    RESUME NEXT
 
 END SUB
 
@@ -489,9 +487,11 @@ SUB IconEdit.Preview ()
     LINE (txtPreview.Pos.Left + 185, txtPreview.Pos.Top + 185)-(txtPreview.Pos.Left + 245, txtPreview.Pos.Top + 245), 15, BF
     Mouse.Show
 
+    ON LOCAL ERROR GOTO PreviewError
     DEF SEG = VARSEG(IconData.Pixel(0, 0))
     BSAVE Sys.Path + "DATA\IMAGES\PRW_JPC8.BSV", VARPTR(IconData.Pixel(0, 0)), 2048
     DEF SEG
+    ON LOCAL ERROR RESUME NEXT
     
     imgPreview.ImageFile = "PRW_JPC8.BSV"
     
@@ -518,6 +518,13 @@ SUB IconEdit.Preview ()
     LOOP
 
     Sys.VGALoad "ICONPREW"
+    EXIT SUB
+
+PreviewError:
+    FileHandle = Sys.MsgBox("Could not preview icon", "An error occured while previewing your icon, while saving a temporary copy." + CHR$(13) + "Make sure the disk is not full or write-protected, and try again.", msgError)
+    Sys.VGALoad "ICONPREW"
+    EXIT SUB
+    RESUME NEXT
 
 END SUB
 
@@ -533,7 +540,6 @@ TopOfSave:
     IF SaveAs = "" THEN EXIT FUNCTION
 
     IF LEN(SaveAs) > 8 THEN
-        'show error
         FileHandle = Sys.MsgBox("Invalid file name", "The filename you specified was too long." + CHR$(13) + "Do not type a path or extension, only a filename" + CHR$(13) + "with a maximun lenght of 8 characters.", msgError)
         EXIT FUNCTION
     END IF
@@ -551,9 +557,11 @@ TopOfSave:
         KILL Sys.Path + "DATA\IMAGES\" + SaveAs + ".BSV"
     END IF
 
+    ON LOCAL ERROR GOTO SaveIconError
     DEF SEG = VARSEG(IconData.Pixel(0, 0))
     BSAVE Sys.Path + "DATA\IMAGES\" + SaveAs + ".BSV", VARPTR(IconData.Pixel(0, 0)), 2048
     DEF SEG
+    ON LOCAL ERROR GOTO 0
 
     IconFileName = UCASE$(SaveAs)
 
@@ -561,8 +569,13 @@ TopOfSave:
     IconEdit.SetTitle
 
     IconEdit.SaveIcon = True
+    EXIT FUNCTION
 
-    
+SaveIconError:
+    FileHandle = Sys.MsgBox("Could not save icon", "An error occured while saving your icon, and it was not saved." + CHR$(13) + "Make sure the disk is not full or write-protected, and try again.", msgError)
+    IconEdit.SaveIcon = False
+    EXIT FUNCTION
+    RESUME NEXT
 END FUNCTION
 
 SUB IconEdit.SetTitle ()
