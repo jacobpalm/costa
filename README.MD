@@ -5,8 +5,10 @@ command line as a shell.
 It is designed for MS-DOS, but tested with PC-DOS, FreeDOS and DOSBox as
 well. In theory it should run on any MS-DOS compatible operating system with
 a 286 or better CPU, VGA graphics and a recommended minimum of 250 KB RAM.
-A 386 or better CPU is recommended, as well as disk caching software
-(SmartDrive or similar) when running on older machines..
+
+Although not required, a 386 or better CPU is recommended, as well as disk
+caching software (SmartDrive or similar) when running on older machines,
+since Costa uses the disk where it is located for temporary storage.
 
 The low system requirements make Costa especially useful for older machines,
 which are also the machines that typically run the MS-DOS operating system.
