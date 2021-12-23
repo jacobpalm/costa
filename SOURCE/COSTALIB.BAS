@@ -34,6 +34,35 @@ FUNCTION File.Exists (TargetFile AS STRING)
 
 END FUNCTION
 
+FUNCTION File.GetAssociation (FileType AS STRING) AS STRING
+
+	DIM OpenWith AS STRING, FileAssociation AS FileAssociationType
+	DIM FileHandle
+
+	IF File.Exists(Sys.Path + "\DATA\CONFIG\FILETYPE.DAT") THEN
+		FileHandle = FREEFILE
+		OPEN Sys.Path + "\DATA\CONFIG\FILETYPE.DAT" FOR BINARY AS #FileHandle
+
+		'ON LOCAL ERROR RESUME NEXT
+		DO WHILE NOT EOF(FileHandle)
+
+			GET #FileHandle, , FileAssociation
+		
+			IF UCASE$(FileType) = RTRIM$(FileAssociation.FileType) THEN
+				OpenWith = RTRIM$(FileAssociation.Command)
+				EXIT DO
+			END IF
+
+		LOOP
+		CLOSE #FileHandle
+		ON LOCAL ERROR GOTO 0
+
+	END IF
+
+	File.GetAssociation = OpenWith
+
+END FUNCTION
+
 FUNCTION Font.GetWidth (TargetText AS STRING, FontID AS INTEGER)
 
 	IF TargetText = "" THEN EXIT FUNCTION
@@ -763,7 +792,7 @@ SUB Sys.Load ()
 	'Make sure Costa is running, by checking if RUNSTAT.TMP created by the
 	'/BOOT parameter exists
 		IF File.Exists(Sys.Path + "DATA\TEMP\RUNSTAT.TMP") = False THEN
-			IF INSTR(COMMAND$, "/DEV") = 0 THEN 'DEBUG! Not for final release
+			IF INSTR(COMMAND$, "/DEV") = 0 THEN
 				CLS
 				PRINT "This program is a part of " + appName + " and should not be executed"
 				PRINT "directly from the command prompt."
@@ -1101,7 +1130,6 @@ END FUNCTION
 
 FUNCTION Sys.Path () AS STRING
 
-	'DEBUG
 	IF COMMAND$ = "/DEV" THEN
 		Sys.Path = "C:\COSTA\"
 		EXIT FUNCTION

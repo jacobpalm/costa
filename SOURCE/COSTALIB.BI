@@ -1,5 +1,6 @@
 'Procedure declarations
     DECLARE FUNCTION File.Exists% (TargetFile AS STRING)
+    DECLARE FUNCTION File.GetAssociation (FileType AS STRING) AS STRING
     
     DECLARE FUNCTION Font.GetWidth% (TargetText AS STRING, FontID%)
     DECLARE SUB Font.Print (BYVAL Text AS STRING, X%, Y%, Col%, FontID%)
@@ -142,6 +143,10 @@
     SelectText AS INTEGER
   END TYPE
 
+  TYPE FileAssociationType
+    FileType AS STRING * 3
+    Command AS STRING * 50
+  END TYPE
 
 'Common shared variables
   COMMON SHARED ProfileID AS INTEGER

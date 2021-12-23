@@ -1,8 +1,6 @@
+DECLARE SUB Conf.SaveAssoc (FileType AS STRING, Command AS STRING)
 OPTION EXPLICIT
 DEFINT A-Z
-
-DECLARE FUNCTION File.CfgRead (BYVAL CfgFile AS STRING, Setting AS STRING, DefaultValue AS STRING) AS STRING
-DECLARE SUB File.CfgWrite (BYVAL CfgFile AS STRING, Setting AS STRING, Value AS STRING)
 
 DECLARE SUB Conf.ConfAssoc ()
 DECLARE SUB Conf.ConfMisc ()
@@ -38,7 +36,6 @@ SUB Conf.ConfAssoc ()
         END IF
     END IF
 
-
     DIM winAssoc AS WindowType
     DIM imgIcon AS ImageType
     DIM txtFileType AS TextboxType, txtFileTypeText AS STRING
@@ -47,6 +44,7 @@ SUB Conf.ConfAssoc ()
     DIM OldFileType AS STRING, SaveVar
     DIM Key$
 
+    
     Obj.SetSize winAssoc.Pos, 92, 100, 455, 280
     Obj.SetSize imgIcon.Pos, 105, 138, -1, -1
     Obj.SetSize txtFileType.Pos, 105, 310, 50, -1
@@ -103,7 +101,7 @@ SUB Conf.ConfAssoc ()
                 Obj.DrawTxt txtOpenWith, txtOpenWithText, False
             ELSE
                 IF NOT txtFileTypeText = OldFileType THEN
-                    txtOpenWithText = UCASE$(File.CfgRead("DATA\CONFIG\FILETYPE.CFG", UCASE$(txtFileTypeText), ""))
+                    txtOpenWithText = File.GetAssociation(txtFileTypeText)
                     Obj.DrawTxt txtOpenWith, txtOpenWithText, False
                 END IF
             END IF
@@ -123,7 +121,7 @@ SUB Conf.ConfAssoc ()
             IF txtFileTypeText = "" THEN
                 SaveVar = Sys.MsgBox("No filetype specified", "You must specify a filetype before pressing" + CHR$(13) + "save.", msgError)
             ELSE
-                File.CfgWrite "DATA\CONFIG\FILETYPE.CFG", UCASE$(txtFileTypeText), UCASE$(txtOpenWithText)
+                Conf.SaveAssoc txtFileTypeText, txtOpenWithText
                 IF txtOpenWithText = "" THEN
                     SaveVar = Sys.MsgBox("Association was removed", "Your file association has been removed and" + CHR$(13) + "will take effect immediately.", msgInfo)
                 ELSE
@@ -134,7 +132,8 @@ SUB Conf.ConfAssoc ()
 
         IF Obj.BtnClick(btnDisable) OR Key$ = "d" THEN
             IF Sys.MsgBox("Disable file associations", "This will disable file associations in Costa" + CHR$(13) + "and all of its acessories. Are you sure?", msgQuest) = True THEN
-                File.CfgWrite "DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileID)) + "\PROFILE.CFG", "AssignFileTypes", "0"
+                UserSettings.AssignFileTypes = False
+                Sys.SaveProfile ProfileID
                 EXIT SUB
             END IF
         END IF
@@ -636,102 +635,45 @@ SUB Conf.Main ()
 
 END SUB
 
-FUNCTION File.CfgRead (BYVAL CfgFile AS STRING, Setting AS STRING, DefaultValue AS STRING) AS STRING
+SUB Conf.SaveAssoc (FileType AS STRING, Command AS STRING)
 
-  IF LEN(CfgFile) > LEN(Sys.Path) THEN
-    IF LEFT$(CfgFile, LEN(Sys.Path)) = Sys.Path THEN CfgFile = RIGHT$(CfgFile, LEN(CfgFile) - LEN(Sys.Path))
-  END IF
+  DIM FileAssociation AS FileAssociationType
+  DIM FileHandle, FilePos, AssocSaved
 
-  IF NOT File.Exists(Sys.Path + CfgFile) THEN
-    File.CfgRead = DefaultValue
-    EXIT FUNCTION
-  END IF
+  IF File.Exists(Sys.Path + "\DATA\CONFIG\FILETYPE.DAT") THEN
+    FileHandle = FREEFILE
+    OPEN Sys.Path + "\DATA\CONFIG\FILETYPE.DAT" FOR BINARY AS #FileHandle
 
-  DIM CfgHandle
-  DIM TmpSetting AS STRING, TmpValue AS STRING
-  CfgHandle = FREEFILE
-  OPEN Sys.Path + CfgFile FOR INPUT AS #CfgHandle
+    ON LOCAL ERROR RESUME NEXT
 
-  DO WHILE NOT EOF(CfgHandle)
-    INPUT #CfgHandle, TmpSetting
-    IF LEFT$(TmpSetting, 1) = "$" THEN
-      INPUT #CfgHandle, TmpValue
+    'See if extension is already known, update command if so
+    DO WHILE NOT EOF(FileHandle)
 
-      IF LCASE$(TmpSetting) = "$" + LCASE$(Setting) THEN
-        File.CfgRead = TmpValue
-        CLOSE #CfgHandle
-        EXIT FUNCTION
+      'Save position so we know where to write if this is the one
+      FilePos = LOC(FileHandle)
+      GET #FileHandle, , FileAssociation
+
+      
+      IF UCASE$(FileType) = RTRIM$(FileAssociation.FileType) THEN
+        FileAssociation.Command = UCASE$(Command)
+        PUT #FileHandle, FilePos + 1, FileAssociation
+        AssocSaved = True
+        EXIT DO
       END IF
+
+    LOOP
+
+    'Extension was not in file, add it
+    IF NOT AssocSaved THEN
+      FileAssociation.FileType = UCASE$(FileType)
+      FileAssociation.Command = UCASE$(Command)
+      PUT #FileHandle, , FileAssociation
     END IF
-  LOOP
 
-  CLOSE #CfgHandle
-  File.CfgRead = DefaultValue
-  
-END FUNCTION
+    CLOSE #FileHandle
+    ON LOCAL ERROR GOTO 0
 
-DEFSNG A-Z
-SUB File.CfgWrite (BYVAL CfgFile AS STRING, Setting AS STRING, Value AS STRING)
-
-  DIM CfgOut, CfgIn, DidWrite
-  DIM RenCfgFile AS STRING
-
-  IF LEN(CfgFile) > LEN(Sys.Path) THEN
-    IF LEFT$(CfgFile, LEN(Sys.Path)) = Sys.Path THEN CfgFile = RIGHT$(CfgFile, LEN(CfgFile) - LEN(Sys.Path))
-  END IF
-  
-  IF NOT File.Exists(Sys.Path + CfgFile) THEN
-    CfgOut = FREEFILE
-    OPEN Sys.Path + CfgFile FOR OUTPUT AS #CfgOut
-    PRINT #CfgOut, "$" + Setting + ",""" + Value + """"
-    CLOSE #CfgOut
-    EXIT SUB
   END IF
 
-  DidWrite = False
-
-  DIM TmpSetting AS STRING, TmpValue AS STRING
-  CfgIn = FREEFILE
-  OPEN Sys.Path + CfgFile FOR INPUT AS #CfgIn
-  CfgOut = FREEFILE
-  OPEN Sys.Path + LEFT$(CfgFile, LEN(CfgFile) - 3) + "TMP" FOR OUTPUT AS #CfgOut
-
-  DO WHILE NOT EOF(CfgIn)
-    INPUT #CfgIn, TmpSetting
-
-    IF LEFT$(TmpSetting, 1) = "$" THEN
-      INPUT #CfgIn, TmpValue
-
-      IF LCASE$(TmpSetting) = "$" + LCASE$(Setting) THEN
-        DidWrite = True
-        'Only write the entry if Value is not empty. This will remove
-        'the entry instead of leaving a blank entry in the file
-        IF NOT Value = "" THEN PRINT #CfgOut, TmpSetting + ",""" + Value + """"
-      ELSE
-        PRINT #CfgOut, TmpSetting + ",""" + TmpValue + """"
-      END IF
-    ELSE
-      PRINT #CfgOut, TmpSetting
-    END IF
-  LOOP
-
-  IF DidWrite = False AND LEN(Value) THEN PRINT #CfgOut, "$" + Setting + ",""" + Value + """"
-
-  CLOSE #CfgIn
-  CLOSE #CfgOut
-
-  ON LOCAL ERROR RESUME NEXT
-  KILL Sys.Path + CfgFile
-  RenCfgFile = CfgFile
-
-  DO WHILE INSTR(RenCfgFile, "\")
-    RenCfgFile = RIGHT$(RenCfgFile, LEN(RenCfgFile) - INSTR(RenCfgFile, "\"))
-  LOOP
-
-  SHELL "ren " + Sys.Path + LEFT$(CfgFile, LEN(CfgFile) - 3) + "TMP " + RenCfgFile
-  CHDIR LEFT$(Sys.Path, LEN(Sys.Path) - 1)
-
-  ON LOCAL ERROR GOTO 0
-  
 END SUB
 

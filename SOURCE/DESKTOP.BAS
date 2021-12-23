@@ -521,7 +521,6 @@ SUB Desk.LinkLaunch (TargetLink AS INTEGER)
 
     Sys.VGASave "DESKTOP"
 
-    'DEBUG
     Desk.Run RTRIM$(DESKLINK(TargetLink).Filename), RTRIM$(DESKLINK(TargetLink).Parameters), RTRIM$(DESKLINK(TargetLink).Path), DESKLINK(TargetLink).PauseOnExit
 
 
@@ -1699,8 +1698,7 @@ SUB Desk.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVA
     DIM FileType AS STRING, OpenWith AS STRING
     FileType = RIGHT$(TargetFile, LEN(TargetFile) - DotPos)
 
-    'DEBUG - implement when file associations are working again
-    'OpenWith = File.CfgRead("DATA\CONFIG\FILETYPE.CFG", FileType, "")
+    OpenWith = File.GetAssociation(FileType)
     
     IF NOT OpenWith = "" AND NOT INSTR(TargetFile, " ") THEN
       TargetFile = OpenWith + " " + TargetFile
