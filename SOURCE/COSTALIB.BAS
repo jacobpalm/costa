@@ -773,7 +773,7 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 		END IF
 
 		IF Obj.BtnClick(btnCancel) OR Key$ = "c" OR Key$ = CHR$(27) THEN
-			Sys.InputBox = "" 'DEBUG - changed - any effect?   msgDefault
+			Sys.InputBox = ""
 			EXIT DO
 		END IF
 		
