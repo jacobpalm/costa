@@ -79,7 +79,7 @@ SUB Theme.Edit (BYVAL ThmFile AS STRING)
     txtThemeName.MaxLen = 25
     Obj.SetSize txtThemeAuthor.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 98, 194, 0
     txtThemeAuthor.MaxLen = 25
-    Obj.SetSize btnObject.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 144, 194, 0
+    Obj.SetSize btnObject.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 146, 194, 0
     btnObject.Caption = "Desktop"
     SelectedObject = 1
 
@@ -90,7 +90,7 @@ SUB Theme.Edit (BYVAL ThmFile AS STRING)
         YPos = 25
         XPos = 0
       END IF
-      Obj.SetSize btnColor(I).Pos, txtThemeAuthor.Pos.Left + XPos, txtThemeAuthor.Pos.Top + 82 + YPos, 19, 19
+      Obj.SetSize btnColor(I).Pos, txtThemeAuthor.Pos.Left + XPos, txtThemeAuthor.Pos.Top + 98 + YPos, 19, 19
       btnColor(I).Transparent = True
       XPos = XPos + 25
     NEXT
@@ -137,11 +137,13 @@ RedrawAll:
     Font.Print "Theme name:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 34, SystemTheme.WindowText, 1
     Font.Print "Theme author:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 82, SystemTheme.WindowText, 1
     Font.Print "Object selected:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 130, SystemTheme.WindowText, 1
-    
+    Font.Print "Color for object:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 180, SystemTheme.WindowText, 1
+
     Mouse.Hide
     LINE (433, 174)-(440, 174), SystemTheme.WindowText
     LINE (425, 126)-(432, 126), SystemTheme.WindowText
     LINE (379, 222)-(386, 222), SystemTheme.WindowText
+    LINE (379, 272)-(386, 272), SystemTheme.WindowText
     Mouse.Show
 
 
@@ -263,6 +265,53 @@ TopOfLoop:
           END IF
         END IF
       NEXT
+
+      IF Key$ = "c" THEN
+
+        SELECT CASE SelectedObject
+          CASE 1
+            thmClrDesktop = thmClrDesktop + 1
+            IF thmClrDesktop > 15 THEN thmClrDesktop = 0
+          CASE 2
+            thmClrDesktopText = thmClrDesktopText + 1
+            IF thmClrDesktopText > 15 THEN thmClrDesktopText = 0
+          CASE 3
+            thmClrWindow = thmClrWindow + 1
+            IF thmClrWindow > 15 THEN thmClrWindow = 0
+          CASE 4
+            thmClrWindowText = thmClrWindowText + 1
+            IF thmClrWindowText > 15 THEN thmClrWindowText = 0
+          CASE 5
+            thmClrButton = thmClrButton + 1
+            IF thmClrButton > 15 THEN thmClrButton = 0
+          CASE 6
+            thmClrTextbox = thmClrTextbox + 1
+            IF thmClrTextbox > 15 THEN thmClrTextbox = 0
+          CASE 7
+            thmClrTextboxText = thmClrTextboxText + 1
+            IF thmClrTextboxText > 15 THEN thmClrTextboxText = 0
+          CASE 8
+            thmClr3DLight = thmClr3DLight + 1
+            IF thmClr3DLight > 15 THEN thmClr3DLight = 0
+          CASE 9
+            thmClr3DShadow = thmClr3DShadow + 1
+            IF thmClr3DShadow > 15 THEN thmClr3DShadow = 0
+          CASE 10
+            thmClrTitleBar = thmClrTitleBar + 1
+            IF thmClrTitleBar > 15 THEN thmClrTitleBar = 0
+          CASE 11
+            thmClrTitleBarText = thmClrTitleBarText + 1
+            IF thmClrTitleBarText > 15 THEN thmClrTitleBarText = 0
+          CASE 12
+            thmClrSelect = thmClrSelect + 1
+            IF thmClrSelect > 15 THEN thmClrSelect = 0
+          CASE 13
+            thmClrSelectText = thmClrSelectText + 1
+            IF thmClrSelectText > 15 THEN thmClrSelectText = 0
+        END SELECT
+
+        GOTO UpdateEditPreview
+      END IF
 
       IF Obj.BtnClick(btnObject) OR Key$ = "o" THEN
 
