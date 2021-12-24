@@ -1118,6 +1118,7 @@ SUB Desk.Main ()
 
   DIM DeskLinkCheck, ClickedX, ClickedY, ClickedB, DidEdit, Key$
   DIM TabCheck, btnTab AS ButtonType, imgTab AS ImageType
+  DIM DoubleClickTimer AS SINGLE, DidDoubleClick
   DIM dateLastLaunch AS STRING
 
   ON LOCAL ERROR RESUME NEXT
@@ -1189,9 +1190,9 @@ MainLoopStart:
             IF ClickedY >= DESKLINK(DeskLinkCheck).Top AND ClickedY <= DESKLINK(DeskLinkCheck).Top + 31 THEN
 
               'If we reach this point, the link was clicked.
-              GOSUB SlideUp
               IF ClickedB = mbRight THEN
                 'If the right mouse button was clicked, show the menu
+                GOSUB SlideUp
                 IF NOT TabCheck = -1 THEN
                     Mouse.Hide
                     LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), SystemTheme.Desktop, BF
@@ -1201,25 +1202,51 @@ MainLoopStart:
                 END IF
 
                 Desk.LinkMenu DeskLinkCheck, ClickedX, ClickedY
+                GOSUB SlideDown
               ELSE
                 'Depending on the configuration a left click on a link
                 'will either open/run the targetfile or show the menu
-                IF UserSettings.LinkMenuOnLeftClick THEN
-                    IF NOT TabCheck = -1 THEN
-                        Mouse.Hide
-                        LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), SystemTheme.Desktop, BF
-                        Mouse.Show
-                        Obj.DrawImg imgTab
-                        TabCheck = -1
+
+                'Check for double click - await button release first
+                DO: LOOP WHILE Mouse.Clicked
+
+                'Save current time, and loop until desired time has passed
+                DidDoubleClick = False
+                DoubleClickTimer = TIMER
+                DO
+                  'If mouse was clicked again within set time, and still within
+                  'icon, we have a doubleclick
+                  IF Mouse.Clicked = mbLeft THEN
+                    ClickedX = Mouse.X
+                    ClickedY = Mouse.Y
+                    IF ClickedX >= DESKLINK(DeskLinkCheck).Left AND ClickedX <= DESKLINK(DeskLinkCheck).Left + 31 THEN
+                      IF ClickedY >= DESKLINK(DeskLinkCheck).Top AND ClickedY <= DESKLINK(DeskLinkCheck).Top + 31 THEN
+                        DidDoubleClick = True
+                      END IF
                     END IF
+                    EXIT DO
+                  END IF
+                LOOP UNTIL TIMER > DoubleClickTimer + .3 OR TIMER < DoubleClickTimer
+
+                IF DidDoubleClick THEN
+                  GOSUB SlideUp
+                  IF UserSettings.LinkMenuOnLeftClick THEN
+                      IF NOT TabCheck = -1 THEN
+                          Mouse.Hide
+                          LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), SystemTheme.Desktop, BF
+                          Mouse.Show
+                          Obj.DrawImg imgTab
+                          TabCheck = -1
+                      END IF
                     
-                    Desk.LinkMenu DeskLinkCheck, ClickedX, ClickedY
-                ELSE
-                    Desk.LinkLaunch DeskLinkCheck
+                      Desk.LinkMenu DeskLinkCheck, ClickedX, ClickedY
+                  ELSE
+                      Desk.LinkLaunch DeskLinkCheck
+                  END IF
+                  GOSUB SlideDown
                 END IF
               END IF
 
-              GOSUB SlideDown
               GOTO MainLoopStart
 
             END IF
