@@ -20,11 +20,13 @@
    2.2 Exiting Costa
    2.3 Managing desktop links
    2.4 Running DOS commands
+   2.5 Using without a mouse
 3.0 Customizing Costa
-   3.1 Launching the Configuration program
-   3.2 The theme selector
-   3.3 File associations
-   3.4 Other settings
+   3.1 Profiles
+   3.2 Launching the Configuration program
+   3.3 The theme selector
+   3.4 File associations
+   3.5 Other settings
 
 
 ------------------------------------------------------------------------------
@@ -81,8 +83,8 @@
  ** 1.3 - News in the version **
 
     This version of Costa has many improvements over the last version, and
-   introduces a few new features. Among them are improved speed and
-   stability, more settings and other new features.
+   introduces a few new features. Among them are improved speed, full support 
+   for mouse-less scenarios and a whole new look and feel.
    
     For a complete listing of changes, see DOCS\CHANGES.TXT.
 
@@ -135,6 +137,9 @@
    up the path to Costas data. If so, simply launch the program as instructed
    and input the path to the directory in which you placed Costa.
 
+    Tip: If you have moved Costa, or it doesn't launch properly when running
+   COSTA.BAT, run SETUP.EXE again at any time to fix the issue.
+
 
  ** 2.2 - Exiting Costa **
 
@@ -148,12 +153,16 @@
 
  ** 2.3 - Managing desktop links **
     
+    To open a desktop link using the mouse, double-click it.
+
     Managing desktop links is as easy as it gets. To customize an existing
-   link or to open the file/program it points to, just click it using the
-   mouse. You can also use the TAB key on your keyboard to cycle through the
-   icons from left to right, and then press Enter when the desired icon is
-   highlighted. Use Shift+TAB to cycle right to left through links.
-   Once the icon has been clicked, you will get a menu with four choices: 
+   link or to open the file/program it points to, just right-click it using
+   the mouse. You can also use the TAB key on your keyboard to cycle through
+   the icons from left to right, and then press Enter when the desired icon
+   is highlighted. Use Shift+TAB to cycle through links in reverse order.
+   
+    Once the icon has been right-clicked, you will get a menu with four
+   choices: 
    
      -Open/run
       Run the program or open the target file specified for this desktop link
@@ -197,10 +206,73 @@
    and click "OK".
 
 
+ ** 2.5 Using without a mouse **
+
+    Costa can be used entirely without a mouse. Even if you do have a mouse,
+   it can be beneficial to know how to use Costa with the keyboard. Some
+   actions can be performed faster with the keyboard than the mouse.
+
+    All around in Costa, you will see underlined letters. For instance, all
+   buttons have an underlined letter. Labels above input fields also have an
+   underlined letter. To use a button, or to activate an inputfield, simply
+   press the underlined letter on the keyboard (unlike some other GUIs, you
+   don't need to hold down the ALT key at the same time).
+
+    In some places, you will see buttons with an arrow on them. To use these
+   buttons, simply press the corresponding arrow key on the keyboard.
+
+    While you are using an input field, all pressed keys will be entered into
+   the field. To finish editing, press the Enter key to save your input, or
+   press the ESC key to revert the input field to the previous value and
+   finish editing.
+
+    The open file in textviewer can be scrolled up and down using the arrow
+   up and arrow down keys - you can also use the Page Up and Page Down keys
+   to scroll entire pages.
+
+    In the icon editor, use the arror keys to select the pixel you want to
+   paint, and then press the space or Enter key to paint it. If the indicator
+   is hidden, pressing the space or Enter key will reveal it. Pressing again
+   will paint the selected pixel.
+
+    In Tic Tac Toe, you can use the numeric keypad to place an X or O on the
+   game board.
+
+    Lastly, the "Select object" dialog in the theme editor can be navigated
+   using the arrow up and arrow down keys, with the Enter key being used to
+   confirm the selection.
+
+
 ------------------------------------------------------------------------------
 | 3.0 - Customizing Costa                                                    |
 ------------------------------------------------------------------------------
- ** 3.1 Launching the Configuration program **
+ ** 3.1 Profiles **
+
+    Costa supports five different profiles. Each profile has it's one name
+   and icon, and it's own settings.
+   This feature can be used in several ways, depending on your needs. For
+   instance:
+
+    - If multiple users are using the same computer, each user can name a
+      profile for themselves, and have their own settings, color theme and
+      desktoop links.
+
+    - If you use the computer for both work and playing games, you could have
+      a profile with all your work links on the desktop, and another profile
+      with all your game links on the desktop.
+
+    - If you use Costa as a launcher for DOS games, you could make a profile
+      for each genre of games. For instance, seperate profiles named "RPGs",
+      "Platform", "Simulation and "Action".
+
+    So, how you use this feature is really up to you. If you don't see any
+   use in the feature, you can go to the Config dialog and set Costa to
+   always launch directly into the last used profile, rather than showing the
+   profile selection dialog at launch. See section 3.2 and 3.5 of this
+   document for more information.
+
+
+ ** 3.2 Launching the Configuration program **
 
     On the desktop you will find a built-in shortcut named "Configuration".
    This shortcut can be moved like any other shortcut, but cannot be removed
@@ -208,7 +280,7 @@
    allows you to change the appearance and behavior of Costa.
 
 
- ** 3.2 The theme selector **
+ ** 3.3 The theme selector **
 
     The theme selector can be used to change the appearance of Costa to a
    number of predefined themes, some made by myself and some submitted by
@@ -225,7 +297,7 @@
    editor to make your own. User submitted teams are always welcome!
 
 
- ** 3.3 File associations **
+ ** 3.4 File associations **
 
     When enabled, file associations allow you to open files in the right
    program automatically. For instance, if .TXT files are associated with
@@ -248,7 +320,7 @@
    file association editor.
 
 
- ** 3.4 Other settings **
+ ** 3.5 Other settings **
 
     The last option in the Configuration program, "Other settings", allows
    you to tweak various aspects of Costa to make it behave exactly like you
@@ -286,5 +358,10 @@
       If enabled, Costa will - once per day - show a messagebox with a tip.
       These tips help you discover features in Costa, or smarter ways to
       perform certain tasks.
+
+    - Use last profile on start-up without asking
+      If enabled, Costa will select the last used profile automatically at
+      launch, instead of showing the profile selection dialog. Useful if you
+      don't make use of the profile feature.
 
                            --- End of document ---
