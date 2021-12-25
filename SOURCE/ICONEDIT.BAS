@@ -1,3 +1,4 @@
+DECLARE SUB IconEdit.MoveIndicator (Direction%)
 DEFINT A-Z
 OPTION EXPLICIT
 
@@ -14,6 +15,13 @@ DECLARE SUB IconEdit.ShowLoadDialog ()
 CONST toolPencil = 0
 CONST toolFloodFill = 1
 
+CONST dirLeft = 0
+CONST dirRight = 1
+CONST dirUp = 2
+CONST dirDown = 3
+CONST dirStay = 4
+CONST dirHide = 5
+
 TYPE IconDataType
     Pixel(31, 31) AS STRING * 1
 END TYPE
@@ -28,6 +36,7 @@ END TYPE
 
 DIM SHARED IconData AS IconEditDataType
 DIM SHARED IconFileName AS STRING
+DIM SHARED KeyboardPosX, KeyboardPosY, KeyboardPosVisible
 DIM SHARED IconChanged
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
@@ -341,12 +350,14 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     
     Mouse.Show
 
+    KeyboardPosX = 16
+    KeyboardPosY = 16
+    
     IF IconToLoad = "" THEN
         IconEdit.NewIcon
     ELSE
         IconEdit.LoadIcon IconToLoad
     END IF
-
 
     'Main "event" loop
     DO
@@ -446,6 +457,45 @@ SUB IconEdit.Main (IconToLoad AS STRING)
               Mouse.Show
             END IF
 
+            IF Key$ = CHR$(0) + "h" THEN
+              KeyboardPosVisible = True
+              IconEdit.MoveIndicator dirUp
+            END IF
+
+            'Down arrow
+            IF Key$ = CHR$(0) + "p" THEN
+              KeyboardPosVisible = True
+              IconEdit.MoveIndicator dirDown
+            END IF
+
+            'Left arrow
+            IF Key$ = CHR$(0) + "k" THEN
+              KeyboardPosVisible = True
+              IconEdit.MoveIndicator dirLeft
+            END IF
+
+            'Right arrow
+            IF Key$ = CHR$(0) + "m" THEN
+              KeyboardPosVisible = True
+              IconEdit.MoveIndicator dirRight
+            END IF
+
+            'Enter or space
+            IF Key$ = CHR$(13) OR Key$ = CHR$(32) THEN
+              IF KeyboardPosVisible THEN
+                SELECT CASE CurrentTool
+                  CASE toolPencil
+                    IconEdit.DrawPixel KeyboardPosX, KeyboardPosY, DrawColor, False
+                  CASE toolFloodFill
+                    IconEdit.FillArea KeyboardPosX, KeyboardPosY, DrawColor
+                END SELECT
+                IconEdit.MoveIndicator dirStay
+              ELSE
+                KeyboardPosVisible = True
+                IconEdit.MoveIndicator dirStay
+              END IF
+            END IF
+
             FOR ColChk = -1 TO 15
                 IF Obj.TxtClick(txtColor(ColChk)) THEN
                     IF NOT DrawColor = ColChk THEN
@@ -480,6 +530,10 @@ SUB IconEdit.Main (IconToLoad AS STRING)
                 IconEdit.FillArea CursorX, CursorY, DrawColor
             END SELECT
 
+            IconEdit.MoveIndicator dirHide
+            KeyboardPosX = CursorX
+            KeyboardPosY = CursorY
+
         END IF
 
         'Used to make sure buttons etc. can not be clicked during drawing if
@@ -492,6 +546,64 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     LOOP
 
 
+END SUB
+
+SUB IconEdit.MoveIndicator (Direction)
+
+    DIM XPos, YPos, PerformMove
+
+    PerformMove = False
+    SELECT CASE Direction
+      CASE dirUp
+        IF KeyboardPosY > 0 THEN PerformMove = True
+      CASE dirDown
+        IF KeyboardPosY < 31 THEN PerformMove = True
+      CASE dirLeft
+        IF KeyboardPosX > 0 THEN PerformMove = True
+      CASE dirRight
+        IF KeyboardPosX < 31 THEN PerformMove = True
+    END SELECT
+
+
+    IF (PerformMove AND KeyboardPosVisible) OR Direction = dirHide THEN
+
+      XPos = 58 + (KeyboardPosX * 13)
+      YPos = 44 + (KeyboardPosY * 13)
+      Mouse.Hide
+      IF IconData.Pixel(KeyboardPosX, KeyboardPosY) > -1 THEN
+        LINE (XPos, YPos)-(XPos + 11, YPos + 11), IconData.Pixel(KeyboardPosX, KeyboardPosY), BF
+      ELSE
+        LINE (XPos, YPos)-(XPos + 11, YPos + 11), 15, BF
+        LINE (XPos, YPos + 11)-(XPos + 11, YPos), 7
+      END IF
+      Mouse.Show
+    END IF
+
+    IF PerformMove THEN
+      SELECT CASE Direction
+        CASE dirUp
+          KeyboardPosY = KeyboardPosY - 1
+        CASE dirDown
+          KeyboardPosY = KeyboardPosY + 1
+        CASE dirLeft
+          KeyboardPosX = KeyboardPosX - 1
+        CASE dirRight
+          KeyboardPosX = KeyboardPosX + 1
+      END SELECT
+    END IF
+
+    IF KeyboardPosVisible THEN
+      IF PerformMove OR Direction = dirStay THEN
+        XPos = 58 + (KeyboardPosX * 13)
+        YPos = 44 + (KeyboardPosY * 13)
+        Mouse.Hide
+        LINE (XPos + 3, YPos + 3)-(XPos + 9, YPos + 9), 8, B
+        LINE (XPos + 4, YPos + 4)-(XPos + 8, YPos + 8), 15, B
+        Mouse.Show
+      END IF
+    END IF
+
+    
 END SUB
 
 SUB IconEdit.NewIcon ()
