@@ -11,6 +11,9 @@ DECLARE SUB IconEdit.Preview ()
 DECLARE SUB IconEdit.SetTitle ()
 DECLARE SUB IconEdit.ShowLoadDialog ()
 
+CONST toolPencil = 0
+CONST toolFloodFill = 1
+
 TYPE IconDataType
     Pixel(31, 31) AS STRING * 1
 END TYPE
@@ -245,13 +248,14 @@ END SUB
 SUB IconEdit.Main (IconToLoad AS STRING)
 
     DIM winMain AS WindowType, txtDrawArea AS TextboxType
-    DIM btnPreview AS ButtonType
+    DIM btnPreview AS ButtonType, btnPencil AS ButtonType
+    DIM btnFloodFill AS ButtonType
     DIM btnNew AS ButtonType, btnOpen AS ButtonType, btnSave AS ButtonType
     DIM btnExit AS ButtonType
     DIM txtColor(-1 TO 15) AS TextboxType
     
     DIM Key$, YPos, XPos, CursorX, CursorY, DrawColor, void
-    DIM ColChk, FillColor, ClickedInDraw
+    DIM ColChk, FillColor, ClickedInDraw, CurrentTool
 
     Obj.SetSize winMain.Pos, 48, 11, 544, 458
     Obj.SetSize txtDrawArea.Pos, winMain.Pos.Left + 8, winMain.Pos.Top + 31, 418, 418
@@ -275,10 +279,20 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     btnExit.Caption = "Exit"
     btnExit.HotKey = 2
 
-    Obj.SetSize txtColor(-1).Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 36, txtDrawArea.Pos.Top + 153, 37, 18
+    Obj.SetSize btnPencil.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 60, txtDrawArea.Pos.Top + 14, 50, 22
+    btnPencil.Caption = "Pencil"
+    btnPencil.HotKey = 2
+
+    Obj.SetSize btnFloodFill.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 60, txtDrawArea.Pos.Top + 40, 50, 22
+    btnFloodFill.Caption = "Fill"
+    btnFloodFill.HotKey = 1
+
+    Obj.SetSize txtColor(-1).Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, txtDrawArea.Pos.Top + 166, 37, 18
     
     Obj.DrawWin winMain
     Obj.DrawTxt txtDrawArea, "", False
+    Obj.DrawBtn btnPencil, True
+    Obj.DrawBtn btnFloodFill, False
     Obj.DrawBtn btnPreview, False
     Obj.DrawBtn btnNew, False
     Obj.DrawBtn btnOpen, False
@@ -286,23 +300,32 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     Obj.DrawBtn btnExit, False
     Obj.DrawTxt txtColor(-1), "", False
 
+    Font.Print "Colors", txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, txtDrawArea.Pos.Top, SystemTheme.WindowText, fontHeading
+    Font.Print "Tools", txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 60, txtDrawArea.Pos.Top, SystemTheme.WindowText, fontHeading
     Mouse.Hide
-
+    LINE (txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 9, txtDrawArea.Pos.Top + 10)-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 16, txtDrawArea.Pos.Top + 10), SystemTheme.WindowText
+    
     FOR YPos = 0 TO 7
-        Obj.SetSize txtColor(YPos).Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 36, txtDrawArea.Pos.Top + (YPos * 19), 18, 18
+        Obj.SetSize txtColor(YPos).Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, txtDrawArea.Pos.Top + (YPos * 19) + 14, 18, 18
         Obj.DrawTxt txtColor(YPos), "", False
-        LINE (txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 38, txtDrawArea.Pos.Top + (YPos * 19) + 2)-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 52, txtDrawArea.Pos.Top + (YPos * 19) + 16), YPos, BF
+        LINE (txtColor(YPos).Pos.Left + 2, txtColor(YPos).Pos.Top + 2)-(txtColor(YPos).Pos.Left + txtColor(YPos).Pos.Width - 2, txtColor(YPos).Pos.Top + txtColor(YPos).Pos.Height - 2), YPos, BF
     NEXT
     FOR YPos = 8 TO 15
-        Obj.SetSize txtColor(YPos).Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 55, txtDrawArea.Pos.Top + ((YPos - 8) * 19), 18, 18
+        Obj.SetSize txtColor(YPos).Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 29, txtDrawArea.Pos.Top + ((YPos - 8) * 19) + 14, 18, 18
         Obj.DrawTxt txtColor(YPos), "", False
-        LINE (txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 57, txtDrawArea.Pos.Top + ((YPos - 8) * 19) + 2)-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 71, txtDrawArea.Pos.Top + ((YPos - 8) * 19) + 16), YPos, BF
+        LINE (txtColor(YPos).Pos.Left + 2, txtColor(YPos).Pos.Top + 2)-(txtColor(YPos).Pos.Left + txtColor(YPos).Pos.Width - 2, txtColor(YPos).Pos.Top + txtColor(YPos).Pos.Height - 2), YPos, BF
     NEXT
 
-    LINE (txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 38, txtDrawArea.Pos.Top + 155)-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 71, txtDrawArea.Pos.Top + 169), 15, BF
-    LINE (txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 38, txtDrawArea.Pos.Top + 169)-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 71, txtDrawArea.Pos.Top + 155), 7
+    'Selection marker in color 0
+    LINE (txtColor(DrawColor).Pos.Left + 4, txtColor(DrawColor).Pos.Top + 4)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 4, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 4), 8, B
+    LINE (txtColor(DrawColor).Pos.Left + 5, txtColor(DrawColor).Pos.Top + 5)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 5, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 5), 15, B
+                                
+    'Transparent color box
+    Obj.SetSize txtColor(-1).Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, txtDrawArea.Pos.Top + 166, 37, 18
+    LINE (txtColor(-1).Pos.Left + 2, txtColor(-1).Pos.Top + 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 2, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 2), 15, BF
+    LINE (txtColor(-1).Pos.Left + 2, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 2, txtColor(-1).Pos.Top + 2), 7
     
-    Font.Print "Preview", btnPreview.Pos.Left, btnPreview.Pos.Top - 15, SystemTheme.WindowText, FontHeading
+    Font.Print "Preview", btnPreview.Pos.Left, btnPreview.Pos.Top - 15, SystemTheme.WindowText, fontHeading
     LINE (btnPreview.Pos.Left - 1, btnPreview.Pos.Top - 4)-(btnPreview.Pos.Left + 5, btnPreview.Pos.Top - 4), SystemTheme.WindowText
     LINE (btnPreview.Pos.Left + 2, btnPreview.Pos.Top + 2)-(btnPreview.Pos.Left + btnPreview.Pos.Width - 2, btnPreview.Pos.Top + btnPreview.Pos.Height - 2), 15, BF
 
@@ -315,8 +338,7 @@ SUB IconEdit.Main (IconToLoad AS STRING)
         LINE (txtDrawArea.Pos.Left + 1 + (XPos * 13), txtDrawArea.Pos.Top + 2)-(txtDrawArea.Pos.Left + 1 + (XPos * 13), txtDrawArea.Pos.Top + txtDrawArea.Pos.Height - 2), 8
         LINE (txtDrawArea.Pos.Left + 1 + (XPos * 13), txtDrawArea.Pos.Top + 2)-(txtDrawArea.Pos.Left + 1 + (XPos * 13), txtDrawArea.Pos.Top + txtDrawArea.Pos.Height - 2), 0, , &HAAAA
     NEXT
-
-
+    
     Mouse.Show
 
     IF IconToLoad = "" THEN
@@ -382,14 +404,65 @@ SUB IconEdit.Main (IconToLoad AS STRING)
                 IconEdit.Preview
             END IF
 
-            IF Key$ = "t" THEN
+            IF (Mouse.Clicked AND Mouse.InArea(btnPencil.Pos)) OR Key$ = "e" THEN
+              IF NOT CurrentTool = toolPencil THEN
+                Obj.DrawBtn btnPencil, True
+                DO: LOOP WHILE Mouse.Clicked
+                CurrentTool = toolPencil
+                Obj.DrawBtn btnFloodFill, False
+              END IF
+            END IF
+
+            IF (Mouse.Clicked AND Mouse.InArea(btnFloodFill.Pos)) OR Key$ = "f" THEN
+              IF NOT CurrentTool = toolFloodFill THEN
+                Obj.DrawBtn btnFloodFill, True
+                DO: LOOP WHILE Mouse.Clicked
+                CurrentTool = toolFloodFill
+                Obj.DrawBtn btnPencil, False
+              END IF
+            END IF
+            
+            IF Key$ = "t" OR Key$ = "c" THEN
+              Mouse.Hide
+              'Remove selection marker from current color
+              IF DrawColor = -1 THEN
+                LINE (txtColor(-1).Pos.Left + 2, txtColor(-1).Pos.Top + 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 2, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 2), 15, BF
+                LINE (txtColor(-1).Pos.Left + 2, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 2, txtColor(-1).Pos.Top + 2), 7
+              ELSE
+                LINE (txtColor(DrawColor).Pos.Left + 4, txtColor(DrawColor).Pos.Top + 4)-(txtColor(DrawColor).Pos.Left + 14, txtColor(DrawColor).Pos.Top + 14), DrawColor, BF
+              END IF
+
+              'Change color according to key pressed
+              IF Key$ = "t" THEN
                 DrawColor = -1
+              ELSE
+                DrawColor = DrawColor + 1
+                IF DrawColor > 15 THEN DrawColor = -1
+              END IF
+
+              'Draw new selection marker
+              LINE (txtColor(DrawColor).Pos.Left + 4, txtColor(DrawColor).Pos.Top + 4)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 4, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 4), 8, B
+              LINE (txtColor(DrawColor).Pos.Left + 5, txtColor(DrawColor).Pos.Top + 5)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 5, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 5), 15, B
+              Mouse.Show
             END IF
 
             FOR ColChk = -1 TO 15
                 IF Obj.TxtClick(txtColor(ColChk)) THEN
                     IF NOT DrawColor = ColChk THEN
+                        Mouse.Hide
+                        'Remove selection marker
+                        IF DrawColor = -1 THEN
+                          LINE (txtColor(-1).Pos.Left + 2, txtColor(-1).Pos.Top + 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 2, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 2), 15, BF
+                          LINE (txtColor(-1).Pos.Left + 2, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 2, txtColor(-1).Pos.Top + 2), 7
+                        ELSE
+                          LINE (txtColor(DrawColor).Pos.Left + 4, txtColor(DrawColor).Pos.Top + 4)-(txtColor(DrawColor).Pos.Left + 14, txtColor(DrawColor).Pos.Top + 14), DrawColor, BF
+                        END IF
+                        
                         DrawColor = ColChk
+                        'Draw new selection marker
+                        LINE (txtColor(DrawColor).Pos.Left + 4, txtColor(DrawColor).Pos.Top + 4)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 4, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 4), 8, B
+                        LINE (txtColor(DrawColor).Pos.Left + 5, txtColor(DrawColor).Pos.Top + 5)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 5, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 5), 15, B
+                        Mouse.Show
                     END IF
                 END IF
             NEXT
@@ -399,12 +472,13 @@ SUB IconEdit.Main (IconToLoad AS STRING)
         IF Mouse.Clicked AND CursorX > -1 AND CursorY > -1 THEN
             
             'Mouse clicked in drawing area
-            IF Mouse.Clicked = mbLeft THEN
+            SELECT CASE CurrentTool
+              CASE toolPencil
                 ClickedInDraw = True
                 IconEdit.DrawPixel CursorX, CursorY, DrawColor, False
-            ELSEIF Mouse.Clicked = mbRight THEN
+              CASE toolFloodFill
                 IconEdit.FillArea CursorX, CursorY, DrawColor
-            END IF
+            END SELECT
 
         END IF
 
@@ -593,8 +667,8 @@ SUB IconEdit.SetTitle ()
 
     Mouse.Hide
     LINE (53, 16)-(587, 32), SystemTheme.TitleBar, BF
-    XPos = (640 - Font.GetWidth(WindowTitle, FontHeading)) / 2
-    Font.Print WindowTitle, XPos, 20, SystemTheme.TitleBarText, FontHeading
+    XPos = (640 - Font.GetWidth(WindowTitle, fontHeading)) / 2
+    Font.Print WindowTitle, XPos, 20, SystemTheme.TitleBarText, fontHeading
     Mouse.Show
 
 END SUB
@@ -643,7 +717,7 @@ SUB IconEdit.ShowLoadDialog ()
     Obj.DrawBtn BtnCancel, 0
     Obj.DrawImg imgPreview
 
-    Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 37, SystemTheme.WindowText, FontHeading
+    Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), fontHeading) / 2), winSelect.Pos.Top + 37, SystemTheme.WindowText, fontHeading
 
     DO
         REDIM PRESERVE IconFiles(0 TO UBOUND(IconFiles) + 1) AS STRING
@@ -672,7 +746,7 @@ SUB IconEdit.ShowLoadDialog ()
             LINE (winSelect.Pos.Left + 10, winSelect.Pos.Top + 33)-(winSelect.Pos.Left + 146, winSelect.Pos.Top + 50), SystemTheme.Window, BF
             Mouse.Show
             Obj.DrawImg imgPreview
-            Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 37, SystemTheme.WindowText, FontHeading
+            Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), fontHeading) / 2), winSelect.Pos.Top + 37, SystemTheme.WindowText, fontHeading
         END IF
 
         IF Obj.BtnClick(btnNext) OR Key$ = CHR$(0) + "m" THEN 'Right arrow
@@ -684,7 +758,7 @@ SUB IconEdit.ShowLoadDialog ()
             LINE (winSelect.Pos.Left + 10, winSelect.Pos.Top + 33)-(winSelect.Pos.Left + 146, winSelect.Pos.Top + 50), SystemTheme.Window, BF
             Mouse.Show
             Obj.DrawImg imgPreview
-            Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 37, SystemTheme.WindowText, FontHeading
+            Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), fontHeading) / 2), winSelect.Pos.Top + 37, SystemTheme.WindowText, fontHeading
         END IF
 
         IF Obj.BtnClick(btnLoad) OR Key$ = CHR$(13) THEN
