@@ -41,7 +41,7 @@ p {
 
 /* Links */
 a {
-	color: #00AAAA;
+	color: #5555FF;
 	word-wrap: break-word;
 	-webkit-transition: color 0.1s ease-in, background 0.1s ease-in;
 	-moz-transition: color 0.1s ease-in, background 0.1s ease-in;
@@ -94,7 +94,7 @@ a:after {
 
 
 .progress-bar-theme {
-	background-color: #00AAAA;
+	background-color: #5555FF;
 }
 
 .centerDropdown {
@@ -116,7 +116,7 @@ a:after {
 /* +++++ WRAP SECTIONS +++++ */
 
 #footer {
-	background-color: #2f2f2f;
+	background-color: #1f1f1f;
 	padding-top: 50px;
 	padding-bottom: 50px; 
 }
