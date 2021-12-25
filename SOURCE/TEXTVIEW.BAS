@@ -165,6 +165,12 @@ SUB TView.Main (FileToView AS STRING)
             FileOpened = TView.LoadFile(Filename)
         END IF
     END IF
+
+    Mouse.Hide
+    LINE (0, 0)-(639, 0), SystemTheme.Window
+    LINE (0, 1)-(639, 1), SystemTheme.Shadow
+    LINE (0, 2)-(639, 2), 0
+    Mouse.Show
     
 StartOfAll:
 
