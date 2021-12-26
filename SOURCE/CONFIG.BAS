@@ -158,7 +158,7 @@ SUB Conf.ConfMisc ()
     DIM frmDesktop AS FrameType, frmVarious AS FrameType
     DIM btnSave AS ButtonType, btnCancel AS ButtonType
     DIM chkShowLinkDesc AS CheckBoxType, chkShowLinkTarget AS CheckBoxType
-    DIM chkLinkMenuOnLeft AS CheckBoxType, chkConfLinkDel AS CheckBoxType
+    DIM chkDesktopInApps AS CheckBoxType, chkConfLinkDel AS CheckBoxType
     DIM chkConfExit AS CheckBoxType, chkGreyOutMsgBox AS CheckBoxType
     DIM chkAnimUI AS CheckBoxType, chkDailyTip AS CheckBoxType
     DIM chkUseLastProfile AS CheckBoxType
@@ -186,7 +186,7 @@ SUB Conf.ConfMisc ()
     Obj.SetSize frmVarious.Pos, winMisc.Pos.Left + 12, frmDesktop.Pos.Top + frmDesktop.Pos.Height + 12, frmDesktop.Pos.Width, 129
     Obj.SetSize chkShowLinkDesc.Pos, frmDesktop.Pos.Left + 12, frmDesktop.Pos.Top + 16, -1, -1
     Obj.SetSize chkShowLinkTarget.Pos, frmDesktop.Pos.Left + 34, frmDesktop.Pos.Top + 38, -1, -1
-    Obj.SetSize chkLinkMenuOnLeft.Pos, frmDesktop.Pos.Left + 12, frmDesktop.Pos.Top + 70, -1, -1
+    Obj.SetSize chkDesktopInApps.Pos, frmDesktop.Pos.Left + 12, frmDesktop.Pos.Top + 70, -1, -1
     Obj.SetSize chkConfLinkDel.Pos, frmDesktop.Pos.Left + 12, frmDesktop.Pos.Top + 92, -1, -1
     Obj.SetSize chkAnimUI.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 16, -1, -1
     Obj.SetSize chkConfExit.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 38, -1, -1
@@ -204,7 +204,7 @@ SUB Conf.ConfMisc ()
     btnSave.Caption = "Save": btnSave.HotKey = 1
     chkShowLinkDesc.Checked = UserSettings.ShowLinkDescriptions
     chkShowLinkTarget.Checked = UserSettings.ShowLinkTargetFiles
-    chkLinkMenuOnLeft.Checked = UserSettings.LinkMenuOnLeftClick
+    chkDesktopInApps.Checked = UserSettings.ShowDesktopInApps
     chkConfLinkDel.Checked = UserSettings.ConfirmLinkDelete
     chkAnimUI.Checked = UserSettings.Animations
     chkConfExit.Checked = UserSettings.ConfirmExit
@@ -224,7 +224,7 @@ SUB Conf.ConfMisc ()
     Font.Print "Various settings", frmVarious.Pos.Left + 10, frmVarious.Pos.Top - 3, SystemTheme.WindowText, 1
     Obj.DrawChk chkShowLinkDesc
     Obj.DrawChk chkShowLinkTarget
-    Obj.DrawChk chkLinkMenuOnLeft
+    Obj.DrawChk chkDesktopInApps
     Obj.DrawChk chkConfLinkDel
     Obj.DrawChk chkAnimUI
     Obj.DrawChk chkConfExit
@@ -247,7 +247,7 @@ SUB Conf.ConfMisc ()
         Mouse.Show
         Font.Print "Show link targets", chkShowLinkTarget.Pos.Left + 20, chkShowLinkTarget.Pos.Top + 3, SystemTheme.Shadow, 2
     END IF
-    Font.Print "Show link menu on both left and right click", chkLinkMenuOnLeft.Pos.Left + 20, chkLinkMenuOnLeft.Pos.Top + 3, SystemTheme.WindowText, 2
+    Font.Print "Show desktop links in accesories", chkDesktopInApps.Pos.Left + 20, chkDesktopInApps.Pos.Top + 3, SystemTheme.WindowText, 2
     Font.Print "Confirm link removal", chkConfLinkDel.Pos.Left + 20, chkConfLinkDel.Pos.Top + 3, SystemTheme.WindowText, 2
     Font.Print "Animate user interface (sliding menus)", chkAnimUI.Pos.Left + 20, chkAnimUI.Pos.Top + 3, SystemTheme.WindowText, 2
     Font.Print "Confirm when trying to exit Costa", chkConfExit.Pos.Left + 20, chkConfExit.Pos.Top + 3, SystemTheme.WindowText, 2
@@ -257,7 +257,7 @@ SUB Conf.ConfMisc ()
     
     Mouse.Hide
     LINE (chkShowLinkDesc.Pos.Left + 81, chkShowLinkDesc.Pos.Top + 14)-(chkShowLinkDesc.Pos.Left + 88, chkShowLinkDesc.Pos.Top + 14), SystemTheme.WindowText
-    LINE (chkLinkMenuOnLeft.Pos.Left + 81, chkLinkMenuOnLeft.Pos.Top + 14)-(chkLinkMenuOnLeft.Pos.Left + 91, chkLinkMenuOnLeft.Pos.Top + 14), SystemTheme.WindowText
+    LINE (chkDesktopInApps.Pos.Left + 106, chkDesktopInApps.Pos.Top + 14)-(chkDesktopInApps.Pos.Left + 110, chkDesktopInApps.Pos.Top + 14), SystemTheme.WindowText
     LINE (chkConfLinkDel.Pos.Left + 97, chkConfLinkDel.Pos.Top + 14)-(chkConfLinkDel.Pos.Left + 102, chkConfLinkDel.Pos.Top + 14), SystemTheme.WindowText
     LINE (chkConfExit.Pos.Left + 169, chkConfExit.Pos.Top + 14)-(chkConfExit.Pos.Left + 175, chkConfExit.Pos.Top + 14), SystemTheme.WindowText
     LINE (chkAnimUI.Pos.Left + 19, chkAnimUI.Pos.Top + 14)-(chkAnimUI.Pos.Left + 27, chkAnimUI.Pos.Top + 14), SystemTheme.WindowText
@@ -277,7 +277,7 @@ SUB Conf.ConfMisc ()
         END IF
 
         IF ShowTargetChk = True THEN Obj.ChkClick chkShowLinkTarget
-        Obj.ChkClick chkLinkMenuOnLeft
+        Obj.ChkClick chkDesktopInApps
         Obj.ChkClick chkConfLinkDel
         Obj.ChkClick chkConfExit
         Obj.ChkClick chkGreyOutMsgBox
@@ -290,7 +290,7 @@ SUB Conf.ConfMisc ()
         IF Obj.BtnClick(btnSave) OR Key$ = "s" THEN
             IF chkShowLinkDesc.Checked = True THEN ShowLinkDesc = 1:  ELSE ShowLinkDesc = False
             IF chkShowLinkTarget.Checked = True THEN ShowLinkTarget = 1:  ELSE ShowLinkTarget = False
-            IF chkLinkMenuOnLeft.Checked = True THEN LinkMenuOnLeft = 1:  ELSE LinkMenuOnLeft = False
+            IF chkDesktopInApps.Checked = True THEN LinkMenuOnLeft = 1:  ELSE LinkMenuOnLeft = False
             IF chkConfLinkDel.Checked = True THEN ConfLinkDel = 1:  ELSE ConfLinkDel = False
             IF chkAnimUI.Checked = True THEN AnimUI = 1:  ELSE AnimUI = False
             IF chkConfExit.Checked = True THEN ConfExit = 1:  ELSE ConfExit = False
@@ -303,7 +303,7 @@ SUB Conf.ConfMisc ()
             UserSettings.Animations = chkAnimUI.Checked
             UserSettings.ShowLinkDescriptions = chkShowLinkDesc.Checked
             UserSettings.ShowLinkTargetFiles = chkShowLinkTarget.Checked
-            UserSettings.LinkMenuOnLeftClick = chkLinkMenuOnLeft.Checked
+            UserSettings.ShowDesktopInApps = chkDesktopInApps.Checked
             UserSettings.ConfirmLinkDelete = chkConfLinkDel.Checked
             UserSettings.ConfirmExit = chkConfExit.Checked
             UserSettings.TipOfTheDay = chkDailyTip.Checked
@@ -334,7 +334,7 @@ SUB Conf.ConfMisc ()
         END IF
 
         IF Key$ = "t" AND chkShowLinkDesc.Checked = True THEN chkShowLinkTarget.Checked = NOT chkShowLinkTarget.Checked: Obj.DrawChk chkShowLinkTarget: DeskNeedsDraw = True
-        IF Key$ = "m" THEN chkLinkMenuOnLeft.Checked = NOT chkLinkMenuOnLeft.Checked: Obj.DrawChk chkLinkMenuOnLeft
+        IF Key$ = "l" THEN chkDesktopInApps.Checked = NOT chkDesktopInApps.Checked: Obj.DrawChk chkDesktopInApps
         IF Key$ = "r" THEN chkConfLinkDel.Checked = NOT chkConfLinkDel.Checked: Obj.DrawChk chkConfLinkDel
         IF Key$ = "a" THEN chkAnimUI.Checked = NOT chkAnimUI.Checked: Obj.DrawChk chkAnimUI
         IF Key$ = "x" THEN chkConfExit.Checked = NOT chkConfExit.Checked: Obj.DrawChk chkConfExit

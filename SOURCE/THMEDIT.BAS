@@ -1,3 +1,4 @@
+DECLARE SUB Theme.DrawIndicator (ActiveColor%)
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -15,6 +16,8 @@ DIM SHARED ThemeFile$, ThemeName$, ThemeAuthor$
 DIM SHARED OriginalTheme$
 DIM SHARED ThemeList() AS STRING
 
+'Shared because it is used in Theme.DrawIndicator
+DIM SHARED btnColor(0 TO 15) AS ButtonType
 
 IF NOT COMMAND$ = "/?" AND NOT COMMAND$ = "/VER" AND NOT COMMAND$ = "/DEV" THEN
     ThemeFile$ = COMMAND$
@@ -23,6 +26,25 @@ END IF
 Sys.Load
 
 Theme.Main
+
+SUB Theme.DrawIndicator (ActiveColor)
+
+  DIM DrawColor
+  
+  Mouse.Hide
+  FOR DrawColor = 0 TO 15
+    IF DrawColor = ActiveColor THEN
+      LINE (btnColor(DrawColor).Pos.Left + 4, btnColor(DrawColor).Pos.Top + 4)-(btnColor(DrawColor).Pos.Left + btnColor(DrawColor).Pos.Width - 4, btnColor(DrawColor).Pos.Top + btnColor(DrawColor).Pos.Height - 4), 8, B
+      LINE (btnColor(DrawColor).Pos.Left + 5, btnColor(DrawColor).Pos.Top + 5)-(btnColor(DrawColor).Pos.Left + btnColor(DrawColor).Pos.Width - 5, btnColor(DrawColor).Pos.Top + btnColor(DrawColor).Pos.Height - 5), 15, B
+    ELSE
+      LINE (btnColor(DrawColor).Pos.Left + 4, btnColor(DrawColor).Pos.Top + 4)-(btnColor(DrawColor).Pos.Left + btnColor(DrawColor).Pos.Width - 4, btnColor(DrawColor).Pos.Top + btnColor(DrawColor).Pos.Height - 4), DrawColor, BF
+    END IF
+  NEXT
+  Mouse.Show
+
+  DO: LOOP WHILE Mouse.Clicked
+
+END SUB
 
 ' =========================================================================
 '          NAME: Theme.Edit()
@@ -42,11 +64,9 @@ SUB Theme.Edit (BYVAL ThmFile AS STRING)
     DIM btnExit AS ButtonType, btnObject AS ButtonType
     DIM txtThemeName AS TextboxType, txtThemeAuthor AS TextboxType
 
-    DIM btnColor(0 TO 15) AS ButtonType
-
     DIM thmClrDesktop, thmClrDesktopText, thmClrWindow
     DIM thmClrButton, thmClrTextbox, thmClrTextboxText
-    DIM thmClrWindowText, thmClrTitleBar, thmClrTitleBarText
+    DIM thmClrWindowText, thmClrTitlebar, thmClrTitlebarText
     DIM thmClr3DLight, thmClr3DShadow, thmClrSelect, thmClrSelectText
     DIM I, YPos, XPos, SelectedObject, ThemeChanged
     DIM TargetFile$, OriginalText$
@@ -108,8 +128,8 @@ SUB Theme.Edit (BYVAL ThmFile AS STRING)
     thmClrTextbox = SystemTheme.Textbox
     thmClrTextboxText = SystemTheme.TextboxText
     thmClrWindowText = SystemTheme.WindowText
-    thmClrTitleBar = SystemTheme.TitleBar
-    thmClrTitleBarText = SystemTheme.TitleBarText
+    thmClrTitlebar = SystemTheme.TitleBar
+    thmClrTitlebarText = SystemTheme.TitleBarText
     thmClr3DLight = SystemTheme.Light
     thmClr3DShadow = SystemTheme.Shadow
     thmClrSelect = SystemTheme.Select
@@ -144,6 +164,10 @@ RedrawAll:
     LINE (425, 126)-(432, 126), SystemTheme.WindowText
     LINE (379, 222)-(386, 222), SystemTheme.WindowText
     LINE (379, 272)-(386, 272), SystemTheme.WindowText
+
+    'Color indicator
+    LINE (btnColor(thmClrDesktop).Pos.Left + 4, btnColor(thmClrDesktop).Pos.Top + 4)-(btnColor(thmClrDesktop).Pos.Left + btnColor(thmClrDesktop).Pos.Width - 4, btnColor(thmClrDesktop).Pos.Top + btnColor(thmClrDesktop).Pos.Height - 4), 8, B
+    LINE (btnColor(thmClrDesktop).Pos.Left + 5, btnColor(thmClrDesktop).Pos.Top + 5)-(btnColor(thmClrDesktop).Pos.Left + btnColor(thmClrDesktop).Pos.Width - 5, btnColor(thmClrDesktop).Pos.Top + btnColor(thmClrDesktop).Pos.Height - 5), 15, B
     Mouse.Show
 
 
@@ -189,8 +213,8 @@ UpdateEditPreview:
     SystemTheme.Textbox = thmClrTextbox
     SystemTheme.TextboxText = thmClrTextboxText
     SystemTheme.WindowText = thmClrWindowText
-    SystemTheme.TitleBar = thmClrTitleBar
-    SystemTheme.TitleBarText = thmClrTitleBarText
+    SystemTheme.TitleBar = thmClrTitlebar
+    SystemTheme.TitleBarText = thmClrTitlebarText
     SystemTheme.Light = thmClr3DLight
     SystemTheme.Shadow = thmClr3DShadow
     SystemTheme.Select = thmClrSelect
@@ -252,15 +276,15 @@ TopOfLoop:
               CASE 9
                 thmClr3DShadow = I
               CASE 10
-                thmClrTitleBar = I
+                thmClrTitlebar = I
               CASE 11
-                thmClrTitleBarText = I
+                thmClrTitlebarText = I
               CASE 12
                 thmClrSelect = I
               CASE 13
                 thmClrSelectText = I
             END SELECT
-
+            Theme.DrawIndicator I
             GOTO UpdateEditPreview
           END IF
         END IF
@@ -272,44 +296,57 @@ TopOfLoop:
           CASE 1
             thmClrDesktop = thmClrDesktop + 1
             IF thmClrDesktop > 15 THEN thmClrDesktop = 0
+            Theme.DrawIndicator thmClrDesktop
           CASE 2
             thmClrDesktopText = thmClrDesktopText + 1
             IF thmClrDesktopText > 15 THEN thmClrDesktopText = 0
+            Theme.DrawIndicator thmClrDesktopText
           CASE 3
             thmClrWindow = thmClrWindow + 1
             IF thmClrWindow > 15 THEN thmClrWindow = 0
+            Theme.DrawIndicator thmClrWindow
           CASE 4
             thmClrWindowText = thmClrWindowText + 1
             IF thmClrWindowText > 15 THEN thmClrWindowText = 0
+            Theme.DrawIndicator thmClrWindowText
           CASE 5
             thmClrButton = thmClrButton + 1
             IF thmClrButton > 15 THEN thmClrButton = 0
+            Theme.DrawIndicator thmClrButton
           CASE 6
             thmClrTextbox = thmClrTextbox + 1
             IF thmClrTextbox > 15 THEN thmClrTextbox = 0
+            Theme.DrawIndicator thmClrTextbox
           CASE 7
             thmClrTextboxText = thmClrTextboxText + 1
             IF thmClrTextboxText > 15 THEN thmClrTextboxText = 0
+            Theme.DrawIndicator thmClrTextboxText
           CASE 8
             thmClr3DLight = thmClr3DLight + 1
             IF thmClr3DLight > 15 THEN thmClr3DLight = 0
+            Theme.DrawIndicator thmClr3DLight
           CASE 9
             thmClr3DShadow = thmClr3DShadow + 1
             IF thmClr3DShadow > 15 THEN thmClr3DShadow = 0
+            Theme.DrawIndicator thmClr3DShadow
           CASE 10
-            thmClrTitleBar = thmClrTitleBar + 1
-            IF thmClrTitleBar > 15 THEN thmClrTitleBar = 0
+            thmClrTitlebar = thmClrTitlebar + 1
+            IF thmClrTitlebar > 15 THEN thmClrTitlebar = 0
+            Theme.DrawIndicator thmClrTitlebar
           CASE 11
-            thmClrTitleBarText = thmClrTitleBarText + 1
-            IF thmClrTitleBarText > 15 THEN thmClrTitleBarText = 0
+            thmClrTitlebarText = thmClrTitlebarText + 1
+            IF thmClrTitlebarText > 15 THEN thmClrTitlebarText = 0
+            Theme.DrawIndicator thmClrTitlebarText
           CASE 12
             thmClrSelect = thmClrSelect + 1
             IF thmClrSelect > 15 THEN thmClrSelect = 0
+            Theme.DrawIndicator thmClrSelect
           CASE 13
             thmClrSelectText = thmClrSelectText + 1
             IF thmClrSelectText > 15 THEN thmClrSelectText = 0
+            Theme.DrawIndicator thmClrSelectText
         END SELECT
-
+        ThemeChanged = True
         GOTO UpdateEditPreview
       END IF
 
@@ -319,30 +356,43 @@ TopOfLoop:
         SELECT CASE SelectedObject
           CASE 1
             btnObject.Caption = "Desktop"
+            Theme.DrawIndicator thmClrDesktop
           CASE 2
             btnObject.Caption = "Desktop text"
+            Theme.DrawIndicator thmClrDesktopText
           CASE 3
             btnObject.Caption = "Window"
+            Theme.DrawIndicator thmClrWindow
           CASE 4
             btnObject.Caption = "Window text"
+            Theme.DrawIndicator thmClrWindowText
           CASE 5
             btnObject.Caption = "Button"
+            Theme.DrawIndicator thmClrButton
           CASE 6
             btnObject.Caption = "Textbox"
+            Theme.DrawIndicator thmClrTextbox
           CASE 7
             btnObject.Caption = "Textbox text"
+            Theme.DrawIndicator thmClrTextboxText
           CASE 8
             btnObject.Caption = "3D light"
+            Theme.DrawIndicator thmClr3DLight
           CASE 9
             btnObject.Caption = "3D Shadow"
+            Theme.DrawIndicator thmClr3DShadow
           CASE 10
             btnObject.Caption = "Titlebar and border"
+            Theme.DrawIndicator thmClrTitlebar
           CASE 11
             btnObject.Caption = "Titlebar text"
+            Theme.DrawIndicator thmClrTitlebarText
           CASE 12
             btnObject.Caption = "Selection"
+            Theme.DrawIndicator thmClrSelect
           CASE 13
             btnObject.Caption = "Selection text"
+            Theme.DrawIndicator thmClrSelectText
         END SELECT
         Obj.DrawBtn btnObject, False
       END IF
@@ -400,8 +450,8 @@ TopOfLoop:
         ThemeToSave.Textbox = thmClrTextbox
         ThemeToSave.TextboxText = thmClrTextboxText
         ThemeToSave.WindowText = thmClrWindowText
-        ThemeToSave.TitleBar = thmClrTitleBar
-        ThemeToSave.TitleBarText = thmClrTitleBarText
+        ThemeToSave.TitleBar = thmClrTitlebar
+        ThemeToSave.TitleBarText = thmClrTitlebarText
         ThemeToSave.Light = thmClr3DLight
         ThemeToSave.Shadow = thmClr3DShadow
         ThemeToSave.Select = thmClrSelect

@@ -335,10 +335,12 @@
       If "Show link descriptions" is enabled, you can choose to have the
       filename the link points to shown underneath the description.
 
-    - Show link menu on both left and right click
-      When enabled, you will get a menu regardless of which mouse button you
-      use to click a link. If disabled, a menu will only be shown on right-
-      click, and a left click will simply execute the link.
+    - Show desktop links in apps
+      By default, Costa will show desktop links when running accessories.
+      To achieve this, a screenshot is save before the accessory is run,
+      which the accessory then loads and displays behind its own window. This
+      looks great, but on computers with slow disks it can be beneficial to
+      performance to disable this setting.
 
     - Animate user interface
       Makes the bar at the top of the desktop and link menus appear and

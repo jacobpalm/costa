@@ -115,7 +115,7 @@
     Animations AS INTEGER
     ShowLinkDescriptions AS INTEGER
     ShowLinkTargetFiles AS INTEGER
-    LinkMenuOnLeftClick AS INTEGER
+    ShowDesktopInApps AS INTEGER
     ConfirmLinkDelete AS INTEGER
     ConfirmExit AS INTEGER
     TipOfTheDay AS INTEGER

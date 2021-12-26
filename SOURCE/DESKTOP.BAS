@@ -521,7 +521,7 @@ SUB Desk.LinkLaunch (TargetLink AS INTEGER)
 
     TargetPath = RTRIM$(DESKLINK(TargetLink).Path)
 
-    Sys.VGASave "DESKTOP"
+    IF UserSettings.ShowDesktopInApps THEN Sys.VGASave "DESKTOP"
 
     Desk.Run RTRIM$(DESKLINK(TargetLink).Filename), RTRIM$(DESKLINK(TargetLink).Parameters), RTRIM$(DESKLINK(TargetLink).Path), DESKLINK(TargetLink).PauseOnExit
 
@@ -1142,7 +1142,7 @@ Desk.MainTop:
   'Check if "Tip of the Day" should be shown
   IF UserSettings.TipOfTheDay THEN
     'Only show a tip if this is the first time Costa is started today
-    IF UserSettings.TipLastShown = DAY(NOW) THEN
+    IF NOT UserSettings.TipLastShown = DAY(NOW) THEN
 
         DIM showTip, TipOfTheDay AS STRING
         TipOfTheDay = Desk.GetDailyTip
@@ -1230,20 +1230,7 @@ MainLoopStart:
 
                 IF DidDoubleClick THEN
                   GOSUB SlideUp
-                  IF UserSettings.LinkMenuOnLeftClick THEN
-                      IF NOT TabCheck = -1 THEN
-                          Mouse.Hide
-                          LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), SystemTheme.Desktop, BF
-                          Mouse.Show
-                          Obj.DrawImg imgTab
-                          TabCheck = -1
-                      END IF
-                    
-                      Desk.LinkMenu DeskLinkCheck, ClickedX, ClickedY
-                  ELSE
-                      Desk.LinkLaunch DeskLinkCheck
-                  END IF
-                  GOSUB SlideDown
+                  Desk.LinkLaunch DeskLinkCheck
                 END IF
               END IF
 
@@ -1293,7 +1280,7 @@ MainLoopStart:
             DIM FileToRun AS STRING
             FileToRun = Sys.InputBox("Execute program or command", "You can also use this dialog to open any file" + CHR$(13) + "associated with a program (like README.TXT).", "RUNPROG", "")
             IF LEN(FileToRun) AND NOT FileToRun = "C:\" THEN
-                Sys.VGASave "DESKTOP"
+                IF UserSettings.ShowDesktopInApps THEN Sys.VGASave "DESKTOP"
                 DIM RunFile AS STRING
                 Desk.Run FileToRun, "", "", True
             END IF

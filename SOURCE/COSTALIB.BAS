@@ -898,7 +898,7 @@ SUB Sys.Load ()
 
 		IF NOT DontDrawDesktop THEN
 
-			IF File.Exists(Sys.Path + "DATA\TEMP\DESKTOP.INT") THEN
+			IF File.Exists(Sys.Path + "DATA\TEMP\DESKTOP.INT") AND UserSettings.ShowDesktopInApps THEN
 				Sys.VGALoad "DESKTOP"
 			ELSE
 				Mouse.Hide
@@ -968,7 +968,7 @@ LoadDefaultProfile:
 	UserSettings.Animations = True
 	UserSettings.ShowLinkDescriptions = True
 	UserSettings.ShowLinkTargetFiles = True
-	UserSettings.LinkMenuOnLeftClick = False
+	UserSettings.ShowDesktopInApps = True
 	UserSettings.ConfirmLinkDelete = True
 	UserSettings.ConfirmExit = True
 	UserSettings.TipOfTheDay = True
