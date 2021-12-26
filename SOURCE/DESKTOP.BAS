@@ -1312,7 +1312,7 @@ MainLoopStart:
 
         IF Key$ = "c" THEN
             GOSUB SlideUp
-            Sys.VGASave "DESKTOP"
+            IF UserSettings.ShowDesktopInApps THEN Sys.VGASave "DESKTOP"
             Conf.Main
             GOSUB SlideDown
             GOTO MainLoopStart
