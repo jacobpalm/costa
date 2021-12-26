@@ -611,7 +611,14 @@ SUB Conf.Main ()
 
         IF Key$ = CHR$(27) OR Key$ = "c" THEN
             IF DeskNeedsDraw = False THEN
-                Sys.VGALoad "DESKTOP"
+                IF UserSettings.ShowDesktopInApps THEN
+                  Sys.VGALoad "DESKTOP"
+                ELSE
+                  Mouse.Hide
+                  LINE (0, 0)-(639, 479), SystemTheme.Desktop, BF
+                  Mouse.Show
+                  Desk.DrawDesktop
+                END IF
             ELSE
                 Mouse.Hide
                 LINE (0, 0)-(639, 479), SystemTheme.Desktop, BF

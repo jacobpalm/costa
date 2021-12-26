@@ -1257,10 +1257,10 @@ MainLoopStart:
             DESKLINK(UBOUND(DESKLINK)).Top = 45
 
             GOSUB SlideUp
-            Sys.VGASave "DESKTOP"
+            IF UserSettings.ShowDesktopInApps THEN Sys.VGASave "DESKTOP"
             Desk.LinkDialog UBOUND(DESKLINK), DidEdit, True
 
-            IF DidEdit THEN
+            IF DidEdit OR NOT UserSettings.ShowDesktopInApps THEN
                 TabCheck = -1
                 Desk.LinkLoad
                 Mouse.Hide
@@ -1290,9 +1290,16 @@ MainLoopStart:
 
         IF Key$ = "a" THEN
             GOSUB SlideUp
-            Sys.VGASave "DESKTOP"
+            IF UserSettings.ShowDesktopInApps THEN Sys.VGASave "DESKTOP"
             Desk.AboutBox
-            Sys.VGALoad "DESKTOP"
+            IF UserSettings.ShowDesktopInApps THEN
+              Sys.VGALoad "DESKTOP"
+            ELSE
+              Mouse.Hide
+              LINE (0, 29)-(639, 479), SystemTheme.Desktop, BF
+              Desk.DrawDesktop
+              Mouse.Show
+            END IF
             GOSUB SlideDown
             GOTO MainLoopStart
         END IF
