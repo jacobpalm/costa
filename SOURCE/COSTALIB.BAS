@@ -902,7 +902,7 @@ SUB Sys.Load ()
 				Sys.VGALoad "DESKTOP"
 			ELSE
 				Mouse.Hide
-				LINE (0, 0)-(639, 0), SystemTheme.WindowText
+				LINE (0, 0)-(639, 0), SystemTheme.Window
 				LINE (0, 1)-(639, 1), SystemTheme.Shadow
 				LINE (0, 2)-(639, 2), 0
 				LINE (0, 2)-(639, 479), SystemTheme.Desktop, BF
