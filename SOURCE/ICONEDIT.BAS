@@ -1,4 +1,3 @@
-DECLARE SUB IconEdit.MoveIndicator (Direction%)
 DEFINT A-Z
 OPTION EXPLICIT
 
@@ -7,6 +6,7 @@ DECLARE SUB IconEdit.DrawPixel (X%, Y%, DrawColor%, ForceDraw%)
 DECLARE SUB IconEdit.FillArea (X%, Y%, BYVAL FillColor)
 DECLARE SUB IconEdit.LoadIcon (IconFile AS STRING)
 DECLARE SUB IconEdit.Main (IconToLoad AS STRING)
+DECLARE SUB IconEdit.MoveIndicator (Direction%)
 DECLARE SUB IconEdit.NewIcon ()
 DECLARE SUB IconEdit.Preview ()
 DECLARE SUB IconEdit.SetTitle ()
@@ -522,6 +522,13 @@ SUB IconEdit.Main (IconToLoad AS STRING)
         IF Mouse.Clicked AND CursorX > -1 AND CursorY > -1 THEN
             
             'Mouse clicked in drawing area
+
+            IF NOT KeyboardPosX = CursorX OR NOT KeyboardPosY = CursorY THEN
+              IconEdit.MoveIndicator dirHide
+              KeyboardPosX = CursorX
+              KeyboardPosY = CursorY
+            END IF
+
             SELECT CASE CurrentTool
               CASE toolPencil
                 ClickedInDraw = True
@@ -529,10 +536,6 @@ SUB IconEdit.Main (IconToLoad AS STRING)
               CASE toolFloodFill
                 IconEdit.FillArea CursorX, CursorY, DrawColor
             END SELECT
-
-            IconEdit.MoveIndicator dirHide
-            KeyboardPosX = CursorX
-            KeyboardPosY = CursorY
 
         END IF
 
