@@ -56,6 +56,8 @@ SUB IconEdit.DrawPixel (X, Y, DrawColor, ForceDraw)
 
     DIM XPos, YPos
 
+    IF X = -1 OR Y = -1 THEN EXIT SUB
+
     IF NOT IconData.Pixel(X, Y) = DrawColor OR ForceDraw = True THEN
 
         '58 and 44 are the coords for the top-left corner of the drawing area
@@ -264,7 +266,7 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     DIM txtColor(-1 TO 15) AS TextboxType
     
     DIM Key$, YPos, XPos, CursorX, CursorY, DrawColor, void
-    DIM ColChk, FillColor, ClickedInDraw, CurrentTool
+    DIM ColChk, FillColor, CurrentTool
 
     Obj.SetSize winMain.Pos, 48, 11, 544, 458
     Obj.SetSize txtDrawArea.Pos, winMain.Pos.Left + 8, winMain.Pos.Top + 31, 418, 418
@@ -375,149 +377,147 @@ SUB IconEdit.Main (IconToLoad AS STRING)
             CursorY = -1
         END IF
 
-        IF NOT ClickedInDraw THEN
-
-            IF Obj.BtnClick(btnNew) OR Key$ = "n" THEN
-                IF IconChanged = True THEN
-                    IF Sys.MsgBox("Icon has been modified", "This icon contains unsaved changes. Do you" + CHR$(13) + "want to save it before you make a new?", msgQuest) = True THEN
-                        IF IconEdit.SaveIcon THEN
-                            IconEdit.NewIcon
-                        END IF
-                    ELSE
+        IF Obj.BtnClick(btnNew) OR Key$ = "n" THEN
+            IF IconChanged = True THEN
+                IF Sys.MsgBox("Icon has been modified", "This icon contains unsaved changes. Do you" + CHR$(13) + "want to save it before you make a new?", msgQuest) = True THEN
+                    IF IconEdit.SaveIcon THEN
                         IconEdit.NewIcon
                     END IF
                 ELSE
                     IconEdit.NewIcon
                 END IF
+            ELSE
+                IconEdit.NewIcon
             END IF
+        END IF
 
-            IF Obj.BtnClick(btnSave) OR Key$ = "s" THEN
-                void = IconEdit.SaveIcon
-            END IF
+        IF Obj.BtnClick(btnSave) OR Key$ = "s" THEN
+            void = IconEdit.SaveIcon
+        END IF
 
-            IF Obj.BtnClick(btnOpen) OR Key$ = "l" THEN
-                IconEdit.ShowLoadDialog
-            END IF
+        IF Obj.BtnClick(btnOpen) OR Key$ = "l" THEN
+            IconEdit.ShowLoadDialog
+        END IF
 
-            IF Obj.BtnClick(btnExit) OR Key$ = "x" THEN
-                IF IconChanged = True THEN
-                    IF Sys.MsgBox("Icon has been modified", "This icon contains unsaved changes. Do you" + CHR$(13) + "want to save it before you exit?", msgQuest) = True THEN
-                        IF IconEdit.SaveIcon = True THEN END
-                    ELSE
-                        END
-                    END IF
+        IF Obj.BtnClick(btnExit) OR Key$ = "x" THEN
+            IF IconChanged = True THEN
+                IF Sys.MsgBox("Icon has been modified", "This icon contains unsaved changes. Do you" + CHR$(13) + "want to save it before you exit?", msgQuest) = True THEN
+                    IF IconEdit.SaveIcon = True THEN END
                 ELSE
                     END
                 END IF
+            ELSE
+                END
             END IF
-        
-            IF Obj.BtnClick(btnPreview) OR Key$ = "p" THEN
-                IconEdit.Preview
-            END IF
-
-            IF (Mouse.Clicked AND Mouse.InArea(btnPencil.Pos)) OR Key$ = "e" THEN
-              IF NOT CurrentTool = toolPencil THEN
-                Obj.DrawBtn btnPencil, True
-                DO: LOOP WHILE Mouse.Clicked
-                CurrentTool = toolPencil
-                Obj.DrawBtn btnFloodFill, False
-              END IF
-            END IF
-
-            IF (Mouse.Clicked AND Mouse.InArea(btnFloodFill.Pos)) OR Key$ = "f" THEN
-              IF NOT CurrentTool = toolFloodFill THEN
-                Obj.DrawBtn btnFloodFill, True
-                DO: LOOP WHILE Mouse.Clicked
-                CurrentTool = toolFloodFill
-                Obj.DrawBtn btnPencil, False
-              END IF
-            END IF
-            
-            IF Key$ = "t" OR Key$ = "c" THEN
-              Mouse.Hide
-              'Remove selection marker from current color
-              IF DrawColor = -1 THEN
-                LINE (txtColor(-1).Pos.Left + 2, txtColor(-1).Pos.Top + 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 2, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 2), 15, BF
-                LINE (txtColor(-1).Pos.Left + 2, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 2, txtColor(-1).Pos.Top + 2), 7
-              ELSE
-                LINE (txtColor(DrawColor).Pos.Left + 4, txtColor(DrawColor).Pos.Top + 4)-(txtColor(DrawColor).Pos.Left + 14, txtColor(DrawColor).Pos.Top + 14), DrawColor, BF
-              END IF
-
-              'Change color according to key pressed
-              IF Key$ = "t" THEN
-                DrawColor = -1
-              ELSE
-                DrawColor = DrawColor + 1
-                IF DrawColor > 15 THEN DrawColor = -1
-              END IF
-
-              'Draw new selection marker
-              LINE (txtColor(DrawColor).Pos.Left + 4, txtColor(DrawColor).Pos.Top + 4)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 4, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 4), 8, B
-              LINE (txtColor(DrawColor).Pos.Left + 5, txtColor(DrawColor).Pos.Top + 5)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 5, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 5), 15, B
-              Mouse.Show
-            END IF
-
-            IF Key$ = CHR$(0) + "h" THEN
-              KeyboardPosVisible = True
-              IconEdit.MoveIndicator dirUp
-            END IF
-
-            'Down arrow
-            IF Key$ = CHR$(0) + "p" THEN
-              KeyboardPosVisible = True
-              IconEdit.MoveIndicator dirDown
-            END IF
-
-            'Left arrow
-            IF Key$ = CHR$(0) + "k" THEN
-              KeyboardPosVisible = True
-              IconEdit.MoveIndicator dirLeft
-            END IF
-
-            'Right arrow
-            IF Key$ = CHR$(0) + "m" THEN
-              KeyboardPosVisible = True
-              IconEdit.MoveIndicator dirRight
-            END IF
-
-            'Enter or space
-            IF Key$ = CHR$(13) OR Key$ = CHR$(32) THEN
-              IF KeyboardPosVisible THEN
-                SELECT CASE CurrentTool
-                  CASE toolPencil
-                    IconEdit.DrawPixel KeyboardPosX, KeyboardPosY, DrawColor, False
-                  CASE toolFloodFill
-                    IconEdit.FillArea KeyboardPosX, KeyboardPosY, DrawColor
-                END SELECT
-                IconEdit.MoveIndicator dirStay
-              ELSE
-                KeyboardPosVisible = True
-                IconEdit.MoveIndicator dirStay
-              END IF
-            END IF
-
-            FOR ColChk = -1 TO 15
-                IF Obj.TxtClick(txtColor(ColChk)) THEN
-                    IF NOT DrawColor = ColChk THEN
-                        Mouse.Hide
-                        'Remove selection marker
-                        IF DrawColor = -1 THEN
-                          LINE (txtColor(-1).Pos.Left + 2, txtColor(-1).Pos.Top + 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 2, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 2), 15, BF
-                          LINE (txtColor(-1).Pos.Left + 2, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 2, txtColor(-1).Pos.Top + 2), 7
-                        ELSE
-                          LINE (txtColor(DrawColor).Pos.Left + 4, txtColor(DrawColor).Pos.Top + 4)-(txtColor(DrawColor).Pos.Left + 14, txtColor(DrawColor).Pos.Top + 14), DrawColor, BF
-                        END IF
-                        
-                        DrawColor = ColChk
-                        'Draw new selection marker
-                        LINE (txtColor(DrawColor).Pos.Left + 4, txtColor(DrawColor).Pos.Top + 4)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 4, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 4), 8, B
-                        LINE (txtColor(DrawColor).Pos.Left + 5, txtColor(DrawColor).Pos.Top + 5)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 5, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 5), 15, B
-                        Mouse.Show
-                    END IF
-                END IF
-            NEXT
-
         END IF
+
+        IF Obj.BtnClick(btnPreview) OR Key$ = "p" THEN
+            IconEdit.Preview
+        END IF
+
+        IF (Mouse.Clicked AND Mouse.InArea(btnPencil.Pos)) OR Key$ = "e" THEN
+          IF NOT CurrentTool = toolPencil THEN
+            Obj.DrawBtn btnPencil, True
+            DO: LOOP WHILE Mouse.Clicked
+            CurrentTool = toolPencil
+            Obj.DrawBtn btnFloodFill, False
+          END IF
+        END IF
+
+        IF (Mouse.Clicked AND Mouse.InArea(btnFloodFill.Pos)) OR Key$ = "f" THEN
+          IF NOT CurrentTool = toolFloodFill THEN
+            Obj.DrawBtn btnFloodFill, True
+            DO: LOOP WHILE Mouse.Clicked
+            CurrentTool = toolFloodFill
+            Obj.DrawBtn btnPencil, False
+          END IF
+        END IF
+
+        IF Key$ = "t" OR Key$ = "c" THEN
+          Mouse.Hide
+          'Remove selection marker from current color
+          IF DrawColor = -1 THEN
+            LINE (txtColor(-1).Pos.Left + 2, txtColor(-1).Pos.Top + 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 2, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 2), 15, BF
+            LINE (txtColor(-1).Pos.Left + 2, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 2, txtColor(-1).Pos.Top + 2), 7
+          ELSE
+            LINE (txtColor(DrawColor).Pos.Left + 4, txtColor(DrawColor).Pos.Top + 4)-(txtColor(DrawColor).Pos.Left + 14, txtColor(DrawColor).Pos.Top + 14), DrawColor, BF
+          END IF
+
+          'Change color according to key pressed
+          IF Key$ = "t" THEN
+            DrawColor = -1
+          ELSE
+            DrawColor = DrawColor + 1
+            IF DrawColor > 15 THEN DrawColor = -1
+          END IF
+
+          'Draw new selection marker
+          LINE (txtColor(DrawColor).Pos.Left + 4, txtColor(DrawColor).Pos.Top + 4)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 4, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 4), 8, B
+          LINE (txtColor(DrawColor).Pos.Left + 5, txtColor(DrawColor).Pos.Top + 5)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 5, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 5), 15, B
+          Mouse.Show
+        END IF
+
+        IF Key$ = CHR$(0) + "h" THEN
+          KeyboardPosVisible = True
+          IconEdit.MoveIndicator dirUp
+        END IF
+
+        'Down arrow
+        IF Key$ = CHR$(0) + "p" THEN
+          KeyboardPosVisible = True
+          IconEdit.MoveIndicator dirDown
+        END IF
+
+        'Left arrow
+        IF Key$ = CHR$(0) + "k" THEN
+          KeyboardPosVisible = True
+          IconEdit.MoveIndicator dirLeft
+        END IF
+
+        'Right arrow
+        IF Key$ = CHR$(0) + "m" THEN
+          KeyboardPosVisible = True
+          IconEdit.MoveIndicator dirRight
+        END IF
+
+        'Enter or space
+        IF Key$ = CHR$(13) OR Key$ = CHR$(32) THEN
+          IF KeyboardPosVisible THEN
+            SELECT CASE CurrentTool
+              CASE toolPencil
+                IconEdit.DrawPixel KeyboardPosX, KeyboardPosY, DrawColor, False
+              CASE toolFloodFill
+                IconEdit.FillArea KeyboardPosX, KeyboardPosY, DrawColor
+            END SELECT
+            IconEdit.MoveIndicator dirStay
+          ELSE
+            KeyboardPosVisible = True
+            IconEdit.MoveIndicator dirStay
+          END IF
+        END IF
+
+        FOR ColChk = -1 TO 15
+            IF Obj.TxtClick(txtColor(ColChk)) THEN
+                IF NOT DrawColor = ColChk THEN
+                    Mouse.Hide
+                    'Remove selection marker
+                    IF DrawColor = -1 THEN
+                      LINE (txtColor(-1).Pos.Left + 2, txtColor(-1).Pos.Top + 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 2, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 2), 15, BF
+                      LINE (txtColor(-1).Pos.Left + 2, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 2, txtColor(-1).Pos.Top + 2), 7
+                    ELSE
+                      LINE (txtColor(DrawColor).Pos.Left + 4, txtColor(DrawColor).Pos.Top + 4)-(txtColor(DrawColor).Pos.Left + 14, txtColor(DrawColor).Pos.Top + 14), DrawColor, BF
+                    END IF
+
+                    DrawColor = ColChk
+                    'Draw new selection marker
+                    LINE (txtColor(DrawColor).Pos.Left + 4, txtColor(DrawColor).Pos.Top + 4)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 4, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 4), 8, B
+                    LINE (txtColor(DrawColor).Pos.Left + 5, txtColor(DrawColor).Pos.Top + 5)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 5, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 5), 15, B
+                    Mouse.Show
+                END IF
+            END IF
+        NEXT
+
+        
 
         IF Mouse.Clicked AND CursorX > -1 AND CursorY > -1 THEN
             
@@ -525,25 +525,35 @@ SUB IconEdit.Main (IconToLoad AS STRING)
 
             IF NOT KeyboardPosX = CursorX OR NOT KeyboardPosY = CursorY THEN
               IconEdit.MoveIndicator dirHide
-              KeyboardPosX = CursorX
-              KeyboardPosY = CursorY
             END IF
 
             SELECT CASE CurrentTool
               CASE toolPencil
-                ClickedInDraw = True
-                IconEdit.DrawPixel CursorX, CursorY, DrawColor, False
+                DO
+                  IconEdit.DrawPixel CursorX, CursorY, DrawColor, False
+
+                  IF Mouse.InArea(txtDrawArea.Pos) THEN
+                      CursorX = (Mouse.X - (txtDrawArea.Pos.Left + 7)) / 13
+                      CursorY = (Mouse.Y - (txtDrawArea.Pos.Top + 7)) / 13
+                      IF CursorX < 0 THEN CursorX = 0
+                      IF CursorY < 0 THEN CursorY = 0
+                      IF CursorX > 31 THEN CursorX = 31
+                      IF CursorY > 31 THEN CursorY = 31
+                  ELSE
+                      CursorX = -1
+                      CursorY = -1
+                  END IF
+                LOOP WHILE Mouse.Clicked
+
+                'Make sure indicator will appear where mouse was lifted
+                KeyboardPosX = CursorX
+                KeyboardPosY = CursorY
+
               CASE toolFloodFill
                 IconEdit.FillArea CursorX, CursorY, DrawColor
+
             END SELECT
 
-        END IF
-
-        'Used to make sure buttons etc. can not be clicked during drawing if
-        'the cursor trips outside the drawing field while still clicked.
-        'Reset when mouse is no longer clicked.
-        IF ClickedInDraw AND NOT Mouse.Clicked THEN
-            ClickedInDraw = False
         END IF
     
     LOOP
