@@ -1,17 +1,22 @@
-DECLARE SUB TView.Main (FileToView AS STRING)
 OPTION EXPLICIT
 DEFINT A-Z
 
 DECLARE FUNCTION TView.LoadFile% (TargetFile AS STRING)
 DECLARE SUB TView.DrawText (StartLine%)
+DECLARE SUB TView.Main (FileToView AS STRING)
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
 COMMON SHARED FileData() AS STRING
 
+'Window is full screen, so no need to load desktop background
+ON ERROR RESUME NEXT
+KILL Sys.Path + "\DATA\TEMP\DESKTOP.*"
+ON ERROR GOTO 0
+
 Sys.Load
 
-IF NOT INSTR(COMMAND$, "/DEV") THEN
+IF NOT COMMAND$ = "/DEV" THEN
     TView.Main COMMAND$
 ELSE
     TView.Main ""
@@ -33,8 +38,8 @@ SUB TView.DrawText (StartLine)
     Mouse.Hide
     FOR LineCount = StartLine TO StartLine + 26
         IF NOT LineCount > UBOUND(FileData) THEN
-            LINE (7, (15 * (LineCount - StartLine + 1)) + 54)-(633, 15 * (LineCount - StartLine + 1) + 68), ClrTextbox, BF
-            Font.Print FileData(LineCount), 9, (15 * (LineCount - StartLine + 1)) + 56, ClrTextboxText, FontSystem
+            LINE (7, (15 * (LineCount - StartLine + 1)) + 54)-(633, 15 * (LineCount - StartLine + 1) + 68), SystemTheme.Textbox, BF
+            Font.Print FileData(LineCount), 9, (15 * (LineCount - StartLine + 1)) + 56, SystemTheme.TextboxText, FontSystem
         END IF
     NEXT
     Mouse.Show
@@ -107,7 +112,7 @@ TViewLoadErr:
     END IF
     Dummy = Sys.MsgBox("Could not load file", ErrMsg, msgError)
     Mouse.Hide
-    LINE (265, 223)-(375, 257), ClrTextbox, BF
+    LINE (265, 223)-(375, 257), SystemTheme.Textbox, BF
     Mouse.Show
     TView.LoadFile = False
     EXIT FUNCTION
@@ -160,7 +165,7 @@ SUB TView.Main (FileToView AS STRING)
             FileOpened = TView.LoadFile(Filename)
         END IF
     END IF
-    
+
 StartOfAll:
 
     IF FileOpened THEN
@@ -203,8 +208,8 @@ StartOfAll:
                     PUT (7, (15 * (LineMove + 1)) + 54), LineData, PSET
                     'SLEEP
                 NEXT
-                LINE (7, (15 * (1)) + 54)-(633, 15 * (1) + 68), ClrTextbox, BF
-                Font.Print FileData(StartLine), 9, (15 * (1)) + 56, ClrTextboxText, FontSystem
+                LINE (7, (15 * (1)) + 54)-(633, 15 * (1) + 68), SystemTheme.Textbox, BF
+                Font.Print FileData(StartLine), 9, (15 * (1)) + 56, SystemTheme.TextboxText, FontSystem
 
                 Mouse.Show
             END IF
@@ -225,8 +230,8 @@ StartOfAll:
                     PUT (7, (15 * (LineMove)) + 54), LineData, PSET
                     'SLEEP
                 NEXT
-                LINE (7, (15 * (27)) + 54)-(633, 15 * (27) + 68), ClrTextbox, BF
-                Font.Print FileData(StartLine + 26), 9, (15 * (27)) + 56, ClrTextboxText, FontSystem
+                LINE (7, (15 * (27)) + 54)-(633, 15 * (27) + 68), SystemTheme.Textbox, BF
+                Font.Print FileData(StartLine + 26), 9, (15 * (27)) + 56, SystemTheme.TextboxText, FontSystem
                 Mouse.Show
             END IF
         END IF
@@ -284,7 +289,6 @@ StartOfAll:
 
         IF Obj.BtnClick(btnExit) OR Key$ = "c" OR Key$ = CHR$(27) THEN
             REDIM FileData(1) AS STRING
-            Sys.VGALoad "DESKTOP"
             EXIT SUB
         END IF
 

@@ -1,9 +1,7 @@
 'Procedure declarations
-    DECLARE FUNCTION File.CfgRead (BYVAL CfgFile AS STRING, Setting AS STRING, DefaultValue AS STRING) AS STRING
     DECLARE FUNCTION File.Exists% (TargetFile AS STRING)
-    DECLARE SUB File.CfgWrite (BYVAL CfgFile AS STRING, Setting AS STRING, Value AS STRING)
-    DECLARE SUB File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVAL TargetPath AS STRING, PauseOnExit AS INTEGER)
-
+    DECLARE FUNCTION File.GetAssociation (FileType AS STRING) AS STRING
+    
     DECLARE FUNCTION Font.GetWidth% (TargetText AS STRING, FontID%)
     DECLARE SUB Font.Print (BYVAL Text AS STRING, X%, Y%, Col%, FontID%)
 
@@ -11,8 +9,8 @@
     DECLARE FUNCTION Mouse.InArea% (TargetArea AS ANY)
     DECLARE FUNCTION Mouse.X% ()
     DECLARE FUNCTION Mouse.Y% ()
-    DECLARE SUB Mouse.Driver (M0%, M1%, M2%, M3%)
     DECLARE SUB Mouse.Hide ()
+    DECLARE SUB Mouse.SetPos (XPos%, YPos%)
     DECLARE SUB Mouse.Show ()
 
     DECLARE FUNCTION Obj.BtnClick% (TargetBtn AS ANY)
@@ -32,7 +30,11 @@
     DECLARE FUNCTION Sys.Path () AS STRING
     DECLARE SUB Sys.Delay (Seconds AS SINGLE)
     DECLARE SUB Sys.Load ()
+    DECLARE SUB Sys.LoadProfile (ProfileNum%)
+    DECLARE SUB Sys.LoadSettings ()
     DECLARE SUB Sys.LoadTheme ()
+    DECLARE SUB Sys.SaveProfile (ProfileNum%)
+    DECLARE SUB Sys.SaveSettings ()
     DECLARE SUB Sys.VGALoad (TargetFile AS STRING)
     DECLARE SUB Sys.VGASave (TargetFile AS STRING)
 
@@ -44,9 +46,9 @@
     CONST True = NOT False
 
 'Mouse constants
-    CONST mbLeft = -1
-    CONST mbRight = -2
-    CONST mbBoth = -3
+    CONST mbLeft = 1
+    CONST mbRight = 2
+    CONST mbBoth = 3
 
 'Font type constants
     CONST FontHeading = 1
@@ -102,22 +104,54 @@
     Checked AS INTEGER
   END TYPE
 
+  TYPE SystemSettingsType
+    UseLastProfile AS INTEGER
+    LastUsedProfile AS INTEGER
+  END TYPE
+
+  TYPE UserSettingsType
+    ProfileName AS STRING * 25
+    ProfileImage AS STRING * 8
+    Animations AS INTEGER
+    ShowLinkDescriptions AS INTEGER
+    ShowLinkTargetFiles AS INTEGER
+    ShowDesktopInApps AS INTEGER
+    ConfirmLinkDelete AS INTEGER
+    ConfirmExit AS INTEGER
+    TipOfTheDay AS INTEGER
+    TipLastShown AS INTEGER
+    AssignFileTypes AS INTEGER
+    GreyoutOnMsgBox AS INTEGER
+    ThemeFile AS STRING * 8
+  END TYPE
+
+  TYPE ThemeType
+    Name AS STRING * 25
+    Author AS STRING * 25
+    Desktop AS INTEGER
+    DesktopText AS INTEGER
+    Window AS INTEGER
+    WindowText AS INTEGER
+    Button AS INTEGER
+    Textbox AS INTEGER
+    TextboxText AS INTEGER
+    Light AS INTEGER
+    Shadow AS INTEGER
+    TitleBar AS INTEGER
+    TitleBarText AS INTEGER
+    Select AS INTEGER
+    SelectText AS INTEGER
+  END TYPE
+
+  TYPE FileAssociationType
+    FileType AS STRING * 3
+    Command AS STRING * 50
+  END TYPE
+
 'Common shared variables
-  COMMON SHARED ProfileID AS STRING
+  COMMON SHARED ProfileID AS INTEGER
 
-  COMMON SHARED ClrThemeFile AS STRING
-
-  COMMON SHARED ClrDesktop AS INTEGER
-  COMMON SHARED ClrDesktopText AS INTEGER
-  COMMON SHARED ClrWindow AS INTEGER
-  COMMON SHARED ClrWindowText AS INTEGER
-  COMMON SHARED ClrButton AS INTEGER
-  COMMON SHARED ClrTextbox AS INTEGER
-  COMMON SHARED ClrTextboxText AS INTEGER
-  COMMON SHARED Clr3DLight AS INTEGER
-  COMMON SHARED Clr3DShadow AS INTEGER
-  COMMON SHARED ClrTitleBar AS INTEGER
-  COMMON SHARED ClrTitleBarText AS INTEGER
-  COMMON SHARED ClrSelect AS INTEGER
-  COMMON SHARED ClrSelectText AS INTEGER
+  COMMON SHARED SystemSettings AS SystemSettingsType
+  COMMON SHARED UserSettings AS UserSettingsType
+  COMMON SHARED SystemTheme AS ThemeType
 

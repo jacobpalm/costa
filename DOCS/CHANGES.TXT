@@ -1,9 +1,36 @@
 
                          The Costa Graphical Shell
-                               Version 1.4.0
+                               Version 1.5.0
                                By Jacob Palm                   
 
                                  Changelog
+
+
+*1.5.0*
+This version comes with many minor improvements and changes, but three stand
+out from the rest: A new UI design based on Costa 0.9.4, massive speed
+improvements to handling of data files, and full keyboard support in all
+accessories.
+Code optimizations has also helped reduced the combined size of Costas 
+executables significantly.
+  -UI layout from Costa 0.9.4 brought to life again, and all themes have been
+   converted to fit this change. Costa now has a much more unique look, based
+   on old sketches I drew in Microsoft Paint 14 years ago. Oh, nostalgia!
+  -Data formats from config files and theme files changed from INI format to
+   binary format, massively improving loading/saving times.
+  -Icon files converted to raw memory format, major speed improvements
+  -More data cached in memory (for instance, all settings) to reduce disk I/O
+   and improve performance on older machines
+  -Added sounds and save state to Tic Tac Toe - pick up your game where you
+   left off!
+  -Desk links are now opened with double click, like in almost any other GUI
+  -Full keyboard support in theme editor and icon editor
+  -Fixed minor graphical glitches, and removed superfluous drawing calls
+  -Heavily reduced interrupt calls to mouse driver, while also reducing
+   amount of mouse function calls in code, to improve performance further
+  -Having read up on compiler options and optimizations, I was able to reduce
+   the size of executables by a combined size of around 130 KB
+  -Better error handling whenever working with files
 
 
 *1.4.0*

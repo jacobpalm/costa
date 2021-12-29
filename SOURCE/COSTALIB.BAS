@@ -7,113 +7,12 @@ DEFINT A-Z
 'This is dimmed here, and not in LIBRARY.BI, because only this module uses
 'it
 	TYPE IconDataType
-		'Pixel(31, 31) AS INTEGER
-		Pixel(31, 31) AS STRING * 1
+		Pixel(31, 31) AS INTEGER
 	END TYPE
 	
 	DIM SHARED FontData(1 TO 3, 32 TO 127) AS STRING
 	DIM SHARED FontWidth(1 TO 2, 32 TO 127) AS INTEGER
 
-FUNCTION File.CfgRead (BYVAL CfgFile AS STRING, Setting AS STRING, DefaultValue AS STRING) AS STRING
-
-	IF LEN(CfgFile) > LEN(Sys.Path) THEN
-		IF LEFT$(CfgFile, LEN(Sys.Path)) = Sys.Path THEN CfgFile = RIGHT$(CfgFile, LEN(CfgFile) - LEN(Sys.Path))
-	END IF
-
-	IF NOT File.Exists(Sys.Path + CfgFile) THEN
-		File.CfgRead = DefaultValue
-		EXIT FUNCTION
-	END IF
-
-	DIM CfgHandle
-	DIM TmpSetting AS STRING, TmpValue AS STRING
-	CfgHandle = FREEFILE
-	OPEN Sys.Path + CfgFile FOR INPUT AS #CfgHandle
-
-	DO WHILE NOT EOF(CfgHandle)
-		INPUT #CfgHandle, TmpSetting
-		IF LEFT$(TmpSetting, 1) = "$" THEN
-			INPUT #CfgHandle, TmpValue
-
-			IF LCASE$(TmpSetting) = "$" + LCASE$(Setting) THEN
-				File.CfgRead = TmpValue
-				CLOSE #CfgHandle
-				EXIT FUNCTION
-			END IF
-		END IF
-	LOOP
-
-	CLOSE #CfgHandle
-	File.CfgRead = DefaultValue
-	
-END FUNCTION
-
-DEFSNG A-Z
-SUB File.CfgWrite (BYVAL CfgFile AS STRING, Setting AS STRING, Value AS STRING)
-
-	DIM CfgOut, CfgIn, DidWrite
-	DIM RenCfgFile AS STRING
-
-	IF LEN(CfgFile) > LEN(Sys.Path) THEN
-		IF LEFT$(CfgFile, LEN(Sys.Path)) = Sys.Path THEN CfgFile = RIGHT$(CfgFile, LEN(CfgFile) - LEN(Sys.Path))
-	END IF
-	
-	IF NOT File.Exists(Sys.Path + CfgFile) THEN
-		CfgOut = FREEFILE
-		OPEN Sys.Path + CfgFile FOR OUTPUT AS #CfgOut
-		PRINT #CfgOut, "$" + Setting + ",""" + Value + """"
-		CLOSE #CfgOut
-		EXIT SUB
-	END IF
-
-	DidWrite = False
-
-	DIM TmpSetting AS STRING, TmpValue AS STRING
-	CfgIn = FREEFILE
-	OPEN Sys.Path + CfgFile FOR INPUT AS #CfgIn
-	CfgOut = FREEFILE
-	OPEN Sys.Path + LEFT$(CfgFile, LEN(CfgFile) - 3) + "TMP" FOR OUTPUT AS #CfgOut
-
-	DO WHILE NOT EOF(CfgIn)
-		INPUT #CfgIn, TmpSetting
-
-		IF LEFT$(TmpSetting, 1) = "$" THEN
-			INPUT #CfgIn, TmpValue
-
-			IF LCASE$(TmpSetting) = "$" + LCASE$(Setting) THEN
-				DidWrite = True
-				'Only write the entry if Value is not empty. This will remove
-				'the entry instead of leaving a blank entry in the file
-				IF NOT Value = "" THEN PRINT #CfgOut, TmpSetting + ",""" + Value + """"
-			ELSE
-				PRINT #CfgOut, TmpSetting + ",""" + TmpValue + """"
-			END IF
-		ELSE
-			PRINT #CfgOut, TmpSetting
-		END IF
-	LOOP
-
-	IF DidWrite = False AND LEN(Value) THEN PRINT #CfgOut, "$" + Setting + ",""" + Value + """"
-
-	CLOSE #CfgIn
-	CLOSE #CfgOut
-
-	ON LOCAL ERROR RESUME NEXT
-	KILL Sys.Path + CfgFile
-	RenCfgFile = CfgFile
-
-	DO WHILE INSTR(RenCfgFile, "\")
-		RenCfgFile = RIGHT$(RenCfgFile, LEN(RenCfgFile) - INSTR(RenCfgFile, "\"))
-	LOOP
-
-	SHELL "ren " + Sys.Path + LEFT$(CfgFile, LEN(CfgFile) - 3) + "TMP " + RenCfgFile
-	CHDIR LEFT$(Sys.Path, LEN(Sys.Path) - 1)
-
-	ON LOCAL ERROR GOTO 0
-	
-END SUB
-
-DEFINT A-Z
 FUNCTION File.Exists (TargetFile AS STRING)
 
 	DIM FileHandle
@@ -135,80 +34,34 @@ FUNCTION File.Exists (TargetFile AS STRING)
 
 END FUNCTION
 
-'Runs an external program.
-'Also checks for a file association if passed a file, and passes the
-'filename to the relevant program as a parameter.
-SUB File.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVAL TargetPath AS STRING, PauseOnExit AS INTEGER)
+FUNCTION File.GetAssociation (FileType AS STRING) AS STRING
 
-	DIM RunHandle, DotPos, AssignFileTypes
-	DIM TargetDrive AS STRING, SysDrive AS STRING
+	DIM OpenWith AS STRING, FileAssociation AS FileAssociationType
+	DIM FileHandle
 
-	TargetFile = LTRIM$(RTRIM$(TargetFile))
-	TargetParameters = LTRIM$(RTRIM$(TargetParameters))
-	IF MID$(TargetPath, 2, 2) = ":\" THEN TargetDrive = LEFT$(TargetPath, 2)
+	IF File.Exists(Sys.Path + "\DATA\CONFIG\FILETYPE.DAT") THEN
+		FileHandle = FREEFILE
+		OPEN Sys.Path + "\DATA\CONFIG\FILETYPE.DAT" FOR BINARY AS #FileHandle
 
-	IF LEN(TargetPath) THEN
-		IF RIGHT$(TargetPath, 1) = "\" AND LEN(TargetPath) > 1 THEN TargetPath = LEFT$(TargetPath, LEN(TargetPath) - 1)
-	END IF
-	IF INSTR(UCASE$(TargetPath), appEnviron) THEN
-		DIM TmpPath AS STRING
-		IF INSTR(UCASE$(TargetPath), appEnviron) > 1 THEN
-			TmpPath = LEFT$(TargetPath, INSTR(UCASE$(TargetPath), appEnviron) - 1)
-		END IF
-		TmpPath = TmpPath + Sys.Path
-		IF LEN(TargetPath) > INSTR(UCASE$(TargetPath), appEnviron) + 9 THEN
-			TmpPath = TmpPath + RIGHT$(TargetPath, LEN(TargetPath) - 9 - INSTR(UCASE$(TargetPath), appEnviron))
-		END IF
-		TargetPath = TmpPath
-		IF LEN(TargetPath) THEN IF RIGHT$(TargetPath, 1) = "\" AND LEN(TargetPath) > 1 THEN TargetPath = LEFT$(TargetPath, LEN(TargetPath) - 1)
-	END IF
-	
+		'ON LOCAL ERROR RESUME NEXT
+		DO WHILE NOT EOF(FileHandle)
 
-	
-	'Get the file extension, and see if it's associated with a program
-	DotPos = INSTR(TargetFile, ".")
-	AssignFileTypes = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "AssignFileTypes", "1"))
-	IF DotPos > 0 AND AssignFileTypes = 1 THEN
-
-		DIM FileType AS STRING, OpenWith AS STRING
-		FileType = RIGHT$(TargetFile, LEN(TargetFile) - DotPos)
-
-		OpenWith = File.CfgRead("DATA\CONFIG\FILETYPE.CFG", FileType, "")
+			GET #FileHandle, , FileAssociation
 		
-		IF NOT OpenWith = "" AND NOT INSTR(TargetFile, " ") THEN
-			TargetFile = OpenWith + " " + TargetFile
-		END IF
+			IF UCASE$(FileType) = RTRIM$(FileAssociation.FileType) THEN
+				OpenWith = RTRIM$(FileAssociation.Command)
+				EXIT DO
+			END IF
+
+		LOOP
+		CLOSE #FileHandle
+		ON LOCAL ERROR GOTO 0
 
 	END IF
-	
 
-	'Print the filename, parameters, path and wether to pause on exit to
-	'RUN.DAT, and exit. COSTA.EXE will look at the file and run the program
-	RunHandle = FREEFILE
+	File.GetAssociation = OpenWith
 
-	OPEN Sys.Path + "DATA\TEMP\RUN.BAT" FOR OUTPUT AS #RunHandle
-	PRINT #RunHandle, "@ECHO OFF"
-	IF LEN(TargetDrive) THEN PRINT #RunHandle, TargetDrive
-	IF LEN(TargetPath) THEN
-		IF LEN(TargetPath) > 1 THEN
-			IF RIGHT$(TargetPath, 1) = "\" AND LEN(TargetPath) > 1 THEN TargetPath = LEFT$(TargetPath, LEN(TargetPath) - 1)
-		END IF
-		PRINT #RunHandle, "CD\"
-		PRINT #RunHandle, "CD " + TargetPath
-	END IF
-	PRINT #RunHandle, TargetFile + " " + TargetParameters
-	IF PauseOnExit = True THEN PRINT #RunHandle, "PAUSE"
-
-	IF MID$(Sys.Path, 2, 2) = ":\" THEN SysDrive = LEFT$(Sys.Path, 2)
-	IF LEN(SysDrive) THEN PRINT #RunHandle, SysDrive
-	PRINT #RunHandle, "CD " + LEFT$(Sys.Path, LEN(Sys.Path) - 1)
-
-	CLOSE #RunHandle
-
-	DO: LOOP WHILE LEN(INKEY$)
-	END 2
-
-END SUB
+END FUNCTION
 
 FUNCTION Font.GetWidth (TargetText AS STRING, FontID AS INTEGER)
 
@@ -267,100 +120,27 @@ FUNCTION Mouse.Clicked ()
 	'  Returns a value according to which mouse buttons are clicked.
 	'
 	'Returns:
-	'  False    0 if no button is clicked
-	'  mbLeft  -1 if left button is clicked
-	'  mbRight -2 if right button is clicked
-	'  mbBoth  -3 if both buttons are clicked
+	'          0 if no button is clicked
+	'  mbLeft  1 if left button is clicked
+	'  mbRight 2 if right button is clicked
+	'  mbBoth  3 if both buttons are clicked
 
-	DIM ButtonMouse, Col, Row
-	Mouse.Driver 3, ButtonMouse, Col, Row
-
-	DIM lButton, RButton
-	IF ButtonMouse AND 1 THEN
-		lButton = -1
-	ELSE
-		lButton = 0
-	END IF
-
-	IF ButtonMouse AND 2 THEN
-		RButton = -1
-	ELSE
-		RButton = 0
-	END IF
-
-	IF lButton = -1 THEN
-		IF RButton = -1 THEN
-			Mouse.Clicked = mbBoth
-		ELSE
-			Mouse.Clicked = mbLeft
-		END IF
-	ELSEIF RButton = -1 THEN
-		Mouse.Clicked = mbRight
-	END IF
-	IF lButton = 0 AND RButton = 0 THEN Mouse.Clicked = 0
-END FUNCTION
-
-STATIC SUB Mouse.Driver (M0, M1, M2, M3)
-	'  To check if a mouse is present, use this call:
-	'    MouseDriver MousePresent%, 0, 0, 0
-	'
-	'  If a mouse is present, MousePresent% will be True. Otherwise it will
-	'  be False.
-	'
-
+	DIM lButton, RButton, ButtonMouse
 	DIM regs AS RegType
-	DIM MouseSegment&, MouseOffset&
-	DIM MousePresent, MouseChecked
 
-	IF MouseChecked = False THEN
-		DEF SEG = 0
-
-		MouseSegment& = 256& * PEEK(207) + PEEK(206)
-		MouseOffset& = 256& * PEEK(205) + PEEK(204)
-
-		DEF SEG = MouseSegment&
-
-		IF (MouseSegment& = 0 AND MouseOffset& = 0) OR PEEK(MouseOffset&) = 207 THEN
-			MousePresent = False
-			MouseChecked = True
-			DEF SEG
-		END IF
-	END IF
-
-	IF MousePresent = False AND MouseChecked = True THEN
-		EXIT SUB
-	END IF
-
-	' Calls interrupt 51 to invoke mouse functions in the MS Mouse Driver.
-	
-	regs.ax = M0
-	regs.bx = M1
-	regs.cx = M2
-	regs.dx = M3
-
+	regs.ax = 3
 	INTERRUPT 51, regs, regs
+	ButtonMouse = regs.bx
 
-	M0 = regs.ax
-	M1 = regs.bx
-	M2 = regs.cx
-	M3 = regs.dx
+	Mouse.Clicked = ButtonMouse
 
-	IF MouseChecked THEN EXIT SUB
-
-	' Check for successful mouse initialization
-
-	IF M0 AND NOT MouseChecked THEN
-		MousePresent = True
-		DEF SEG
-	END IF
-
-	MouseChecked = True
-	
-END SUB
+END FUNCTION
 
 SUB Mouse.Hide ()
 
-	Mouse.Driver 2, 0, 0, 0
+	DIM regs AS RegType
+	regs.ax = 2
+	INTERRUPT 51, regs, regs
 
 END SUB
 
@@ -368,35 +148,57 @@ FUNCTION Mouse.InArea (TargetArea AS PosType)
 
 	'Returns True if the mouse cursor is within the area
 
-	IF Mouse.X > TargetArea.Left AND Mouse.X < TargetArea.Left + TargetArea.Width THEN
-		IF Mouse.Y > TargetArea.Top AND Mouse.Y < TargetArea.Top + TargetArea.Height THEN
+	DIM XPos, YPos
+
+	'Get mouse pos to variables, cuts interrupt calls in half
+	XPos = Mouse.X
+	YPos = Mouse.Y
+
+	IF XPos >= TargetArea.Left AND XPos <= TargetArea.Left + TargetArea.Width THEN
+		IF YPos >= TargetArea.Top AND YPos <= TargetArea.Top + TargetArea.Height THEN
 			Mouse.InArea = True
 		END IF
 	END IF
 	
 END FUNCTION
 
+SUB Mouse.SetPos (XPos, YPos)
+
+	DIM regs AS RegType
+	regs.ax = 4
+	regs.cx = XPos
+	regs.dx = YPos
+	INTERRUPT 51, regs, regs
+
+END SUB
+
 SUB Mouse.Show ()
 
-	Mouse.Driver 1, 0, 0, 0
+	DIM regs AS RegType
+	regs.ax = 1
+	INTERRUPT 51, regs, regs
 
 END SUB
 
 FUNCTION Mouse.X ()
 	'Returns the X coordinate of the mouse.
 
-	DIM ButtonMouse, Col, Row
-	Mouse.Driver 3, ButtonMouse, Col, Row
-	Mouse.X = Col
+	DIM regs AS RegType
+
+	regs.ax = 3
+	INTERRUPT 51, regs, regs
+	Mouse.X = regs.cx
 
 END FUNCTION
 
 FUNCTION Mouse.Y ()
 	'Returns the Y coordinate of the mouse.
 
-	DIM ButtonMouse, Col, Row
-	Mouse.Driver 3, ButtonMouse, Col, Row
-	Mouse.Y = Row
+	DIM regs AS RegType
+	regs.ax = 3
+	INTERRUPT 51, regs, regs
+	Mouse.Y = regs.dx
+
 END FUNCTION
 
 FUNCTION Obj.BtnClick (TargetBtn AS ButtonType)
@@ -466,30 +268,49 @@ SUB Obj.DrawBtn (TargetBtn AS ButtonType, Pressed AS INTEGER)
 	DIM Color1, Color2, Color3, Color4
 	IF Pressed = False THEN
 		Color1 = 15
-		Color2 = Clr3DLight
-		Color3 = Clr3DShadow
-		Color4 = 0
+		Color2 = SystemTheme.Button
+		Color3 = SystemTheme.Shadow
+		Color4 = SystemTheme.WindowText
 	ELSE
 		Color1 = 0
-		Color2 = Clr3DShadow
-		Color3 = Clr3DLight
+		Color2 = SystemTheme.Shadow
+		Color3 = SystemTheme.Light
 		Color4 = 15
 	END IF
 
 	Mouse.Hide
-	IF TargetBtn.Transparent = False THEN LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 2), ClrButton, BF
+	IF TargetBtn.Transparent = False THEN
+		IF Color1 = SystemTheme.Window THEN
+			IF SystemTheme.Window >= 8 THEN
+				Color1 = SystemTheme.Window - 8
+			ELSE
+				Color1 = SystemTheme.Window + 8
+			END IF
+		END IF
+		IF Color3 = SystemTheme.Window THEN
+			IF SystemTheme.Window >= 8 THEN
+				Color3 = SystemTheme.Window - 8
+			ELSE
+				Color3 = SystemTheme.Window + 8
+			END IF
+		END IF
+		IF Color4 = Color2 THEN
+			IF Color2 >= 8 THEN
+				Color4 = Color2 - 8
+			ELSE
+				Color4 = Color2 + 8
+			END IF
+		END IF
+		LINE (x1, y1)-(x2 - 1, y2 - 1), Color2, BF
+	ELSE
+		LINE (x1, y1)-(x2 - 1, y2 - 1), Color2, B
+	END IF
 
-	LINE (x1, y1)-(x1, y2), Color1
-	LINE (x1 + 1, y1)-(x2, y1), Color1
+	LINE (x1 + 1, y1 + 1)-(x2 - 2, y1 + 1), Color1
+	LINE (x1 + 1, y1 + 2)-(x1 + 1, y2 - 2), Color1
 
-	LINE (x1 + 1, y1 + 1)-(x1 + 1, y2 - 1), Color2
-	LINE (x1 + 2, y1 + 1)-(x2 - 1, y1 + 1), Color2
-	
-	LINE (x1 + 2, y2 - 1)-(x2 - 1, y2 - 1), Color3
-	LINE (x2 - 1, y1 + 2)-(x2 - 1, y2 - 2), Color3
-
-	LINE (x1 + 1, y2)-(x2, y2), Color4
-	LINE (x2, y1 + 1)-(x2, y2 - 1), Color4
+	LINE (x1, y2)-(x2, y2), Color3
+	LINE (x2, y1)-(x2, y2 - 1), Color3
 
 	IF NOT RTRIM$(TargetBtn.Caption) = "" THEN
 		'Draw the caption centered on the button, and underline the hotkey
@@ -497,14 +318,14 @@ SUB Obj.DrawBtn (TargetBtn AS ButtonType, Pressed AS INTEGER)
 		y1 = ((y2 - y1) - 9) / 2 + y1
 		IF Pressed = True THEN x1 = x1 + 1: y1 = y1 + 1
 		
-		Font.Print TargetBtn.Caption, x1, y1, ClrWindowText, FontHeading
+		Font.Print TargetBtn.Caption, x1, y1, Color4, FontHeading
 
 		
 		IF TargetBtn.HotKey > 0 AND TargetBtn.HotKey <= LEN(RTRIM$(TargetBtn.Caption)) THEN
 			DIM XStart, XEnd
 			XStart = x1 + Font.GetWidth(LEFT$(TargetBtn.Caption, TargetBtn.HotKey - 1), FontHeading) - 1
 			XEnd = x1 + Font.GetWidth(LEFT$(TargetBtn.Caption, TargetBtn.HotKey), FontHeading) + 1
-			LINE (x1 + Font.GetWidth(LEFT$(TargetBtn.Caption, TargetBtn.HotKey - 1), FontHeading) - 1, y1 + 11)-(x1 + Font.GetWidth(LEFT$(TargetBtn.Caption, TargetBtn.HotKey), FontHeading), y1 + 11), ClrWindowText
+			LINE (x1 + Font.GetWidth(LEFT$(TargetBtn.Caption, TargetBtn.HotKey - 1), FontHeading) - 1, y1 + 11)-(x1 + Font.GetWidth(LEFT$(TargetBtn.Caption, TargetBtn.HotKey), FontHeading), y1 + 11), Color4
 		END IF
 		
 	END IF
@@ -527,29 +348,28 @@ SUB Obj.DrawChk (TargetChk AS CheckBoxType)
 	IF TargetChk.Pos.Height = 0 THEN TargetChk.Pos.Height = 14
 
 	Mouse.Hide
-	LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 2), ClrTextbox, BF
+	LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 2), SystemTheme.Textbox, BF
 
-	LINE (x1, y1)-(x1, y2), 0
-	LINE (x1 + 1, y1)-(x2, y1), 0
-
-	LINE (x1 + 1, y1 + 1)-(x1 + 1, y2 - 1), Clr3DShadow
-	LINE (x1 + 2, y1 + 1)-(x2 - 1, y1 + 1), Clr3DShadow
-
-	LINE (x1 + 2, y2 - 1)-(x2 - 1, y2 - 1), Clr3DLight
-	LINE (x2 - 1, y1 + 2)-(x2 - 1, y2 - 2), Clr3DLight
-
-	LINE (x1 + 1, y2)-(x2, y2), 15
-	LINE (x2, y1 + 1)-(x2, y2 - 1), 15
+	LINE (x1 + 1, y1 + 1)-(x2, y2), 0, B
+	LINE (x2 - 1, y1 + 2)-(x2 - 1, y2 - 1), 0
+	LINE (x1 + 2, y2 - 1)-(x2 - 2, y2 - 1), 0
+	
+	LINE (x1, y1)-(x1, y2), SystemTheme.Shadow
+	LINE (x1 + 1, y1)-(x2, y1), SystemTheme.Shadow
 
 	IF TargetChk.Checked = True THEN
-		LINE (x1 + 4, y1 + 7)-(x1 + 4, y1 + 9), ClrTextboxText
-		LINE (x1 + 5, y1 + 8)-(x1 + 5, y1 + 10), ClrTextboxText
-		LINE (x1 + 6, y1 + 9)-(x1 + 6, y1 + 11), ClrTextboxText
 
-		LINE (x1 + 7, y1 + 8)-(x1 + 7, y1 + 10), ClrTextboxText
-		LINE (x1 + 8, y1 + 7)-(x1 + 8, y1 + 9), ClrTextboxText
-		LINE (x1 + 9, y1 + 6)-(x1 + 9, y1 + 8), ClrTextboxText
-		LINE (x1 + 10, y1 + 5)-(x1 + 10, y1 + 7), ClrTextboxText
+		LINE (x1 + 5, y1 + 8)-(x1 + 7, y1 + 10), SystemTheme.TextboxText
+		LINE (x1 + 5, y1 + 9)-(x1 + 7, y1 + 11), SystemTheme.TextboxText
+		LINE (x1 + 8, y1 + 9)-(x1 + 11, y1 + 6), SystemTheme.TextboxText
+		LINE (x1 + 8, y1 + 10)-(x1 + 11, y1 + 7), SystemTheme.TextboxText
+
+		LINE (x1 + 5, y1 + 7)-(x1 + 7, y1 + 9), SystemTheme.Shadow
+		LINE (x1 + 8, y1 + 8)-(x1 + 11, y1 + 5), SystemTheme.Shadow
+
+		LINE (x1 + 5, y1 + 10)-(x1 + 6, y1 + 11), SystemTheme.Light
+		LINE (x1 + 8, y1 + 11)-(x1 + 11, y1 + 8), SystemTheme.Light
+
 	END IF
 
 	Mouse.Show
@@ -583,8 +403,7 @@ SUB Obj.DrawImg (TargetImg AS ImageType)
 	TargetImg.Pos.Width = 31
 	TargetImg.Pos.Height = 31
 
-
-	IF NOT File.Exists(Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".CIF") THEN
+	IF NOT File.Exists(Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".BSV") THEN
 		'Draw a red box with the text "IMG ERR" to indicate a missing file
 		Mouse.Hide
 		LINE (X + 1, Y + 1)-(X + 30, Y + 30), 4, BF
@@ -595,31 +414,33 @@ SUB Obj.DrawImg (TargetImg AS ImageType)
 		EXIT SUB
 	END IF
 
-
-
-	DIM CifHandle
 	DIM IconData AS IconDataType
 
-	CifHandle = FREEFILE
-	
-	'DEBUG DEBUG
-	'Check stoerrelse, kontroller header m.m.
-
-	OPEN Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".CIF" FOR BINARY AS #CifHandle
-	GET #CifHandle, , Header
-	GET #CifHandle, , IconData
-	CLOSE #CifHandle
+	'Load saved memory back to address of IconData.Pixel array
+	ON LOCAL ERROR GOTO DrawImgError
+	DEF SEG = VARSEG(IconData.Pixel(0, 0))
+	BLOAD Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".BSV", VARPTR(IconData.Pixel(0, 0))
+	DEF SEG
 	
 	Mouse.Hide
 	FOR XPos = 0 TO 31
 		FOR YPos = 0 TO 31
-			IF ASC(IconData.Pixel(XPos, YPos)) > 0 THEN
-				PSET (X + XPos, Y + YPos), ASC(IconData.Pixel(XPos, YPos)) - 1
-			END IF
+			IF IconData.Pixel(XPos, YPos) > -1 THEN PSET (X + XPos, Y + YPos), IconData.Pixel(XPos, YPos)
 		NEXT
 	NEXT
 	Mouse.Show
+	EXIT SUB
 
+DrawImgError:
+	'Draw a red box with the text "IMG ERR" to indicate a missing file
+	Mouse.Hide
+	LINE (X + 1, Y + 1)-(X + 30, Y + 30), 4, BF
+	LINE (X, Y)-(X + 31, Y + 31), 0, B
+	Mouse.Show
+	Font.Print "IMG", X + 6, Y + 4, 15, FontNormal
+	Font.Print "ERR", X + 6, Y + 19, 15, FontNormal
+	EXIT SUB
+	RESUME NEXT
 END SUB
 
 SUB Obj.DrawTxt (TargetTxt AS TextboxType, BYVAL Text AS STRING, IsEditing AS INTEGER)
@@ -634,19 +455,11 @@ SUB Obj.DrawTxt (TargetTxt AS TextboxType, BYVAL Text AS STRING, IsEditing AS IN
 	y2 = TargetTxt.Pos.Top + TargetTxt.Pos.Height
 
 	Mouse.Hide
-	LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 2), ClrTextbox, BF
+	LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 2), SystemTheme.Textbox, BF
 
-	LINE (x1, y1)-(x1, y2), 0
-	LINE (x1 + 1, y1)-(x2, y1), 0
+	LINE (x1, y1)-(x2 - 1, y2 - 1), SystemTheme.Light, B
+	LINE (x1 + 1, y1 + 1)-(x2, y2), SystemTheme.Shadow, B
 
-	LINE (x1 + 1, y1 + 1)-(x1 + 1, y2 - 1), Clr3DShadow
-	LINE (x1 + 2, y1 + 1)-(x2 - 1, y1 + 1), Clr3DShadow
-
-	LINE (x1 + 2, y2 - 1)-(x2 - 1, y2 - 1), Clr3DLight
-	LINE (x2 - 1, y1 + 2)-(x2 - 1, y2 - 2), Clr3DLight
-
-	LINE (x1 + 1, y2)-(x2, y2), 15
-	LINE (x2, y1 + 1)-(x2, y2 - 1), 15
 
 	Mouse.Show
 
@@ -659,13 +472,13 @@ SUB Obj.DrawTxt (TargetTxt AS TextboxType, BYVAL Text AS STRING, IsEditing AS IN
 			Text = RIGHT$(Text, LEN(Text) - 1)
 		LOOP
 		
-		Font.Print Text, x1 + 5, y1 + 5, ClrTextboxText, FontHeading
+		Font.Print Text, x1 + 5, y1 + 5, SystemTheme.TextboxText, FontHeading
 	END IF
 
 	IF IsEditing = True THEN
 		Mouse.Hide
 		x1 = x1 + 7 + Font.GetWidth(Text, FontHeading)
-		LINE (x1, y1 + 4)-(x1, y1 + 15), ClrTextboxText
+		LINE (x1, y1 + 4)-(x1, y1 + 15), SystemTheme.TextboxText
 		Mouse.Show
 	END IF
 
@@ -680,32 +493,30 @@ SUB Obj.DrawWin (TargetWin AS WindowType)
 
 	Mouse.Hide
 
-	'Window interior and borders
-	LINE (x1 + 2, y1 + 2)-(x2 - 1, y2 - 1), ClrWindow, BF
+	'Window titlebar and borders
+	LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 1), SystemTheme.TitleBar, BF
 	
-
 	'Outer border
-	LINE (x1 + 1, y1 + 1)-(x1 + 1, y2 - 1), 15
-	LINE (x1 + 2, y1 + 1)-(x2 - 1, y1 + 1), 15
-	LINE (x2 + 1, y1 + 2)-(x2 + 1, y2 + 1), 0
-	LINE (x1 + 1, y2 + 1)-(x2, y2 + 1), 0
+	LINE (x1, y1)-(x2 - 1, y1), 15
+	LINE (x1, y1 + 1)-(x1, y2 - 1), 15
+	LINE (x2, y1)-(x2, y2), 0
+	LINE (x1, y2)-(x2 - 1, y2), 0
+	LINE (x2 - 1, y1 + 1)-(x2 - 1, y2 - 1), SystemTheme.Shadow
+	LINE (x1 + 1, y2 - 1)-(x2 - 2, y2 - 1), SystemTheme.Shadow
+	LINE (x1 + 1, y1 + 1)-(x2 - 2, y1 + 1), SystemTheme.Light
+	LINE (x1 + 1, y1 + 2)-(x1 + 1, y2 - 2), SystemTheme.Light
 
 	'Inner border
-	LINE (x1, y1)-(x2, y1), Clr3DLight
-	LINE (x1, y1)-(x1, y2), Clr3DLight
-	LINE (x1 + 1, y2)-(x2, y2), Clr3DShadow
-	LINE (x2, y1 + 1)-(x2, y2 - 1), Clr3DShadow
+	LINE (x1 + 5, y1 + 23)-(x2 - 5, y2 - 5), SystemTheme.Shadow, B
+	LINE (x1 + 6, y1 + 24)-(x2 - 6, y2 - 6), SystemTheme.Light, B
 
 	'Titlebar
-	LINE (x1 + 4, y1 + 4)-(x2 - 4, y1 + 22), Clr3DShadow, B
-	LINE (x1 + 5, y1 + 5)-(x2 - 5, y1 + 21), ClrTitleBar, BF
-	LINE (x1 + 4, y1 + 23)-(x2 - 4, y1 + 23), 15
-	LINE (x2 - 3, y1 + 4)-(x2 - 3, y1 + 22), 15
+	LINE (x1 + 7, y1 + 25)-(x2 - 7, y2 - 7), SystemTheme.Window, BF
 
 	IF NOT RTRIM$(TargetWin.Caption) = "" THEN
 		'Draw caption centered on titlebar
 		x1 = ((x2 - x1) - Font.GetWidth(RTRIM$(TargetWin.Caption), FontHeading)) / 2 + x1
-		Font.Print TargetWin.Caption, x1, y1 + 9, ClrTitleBarText, FontHeading
+		Font.Print TargetWin.Caption, x1, y1 + 9, SystemTheme.TitleBarText, FontHeading
 	END IF
 
 	Mouse.Show
@@ -736,7 +547,7 @@ SUB Obj.EditTxt (TargetTxt AS TextboxType, Text AS STRING)
 	IF Font.GetWidth(TempTxt + Key$, FontHeading) + 2 < MaxShow THEN
 		LineX1 = x1 + Font.GetWidth(Text, FontHeading) + 2
 		Mouse.Hide
-		LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), ClrTextboxText
+		LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), SystemTheme.TextboxText
 		Mouse.Show
 	ELSE
 		Obj.DrawTxt TargetTxt, TempTxt, True
@@ -756,12 +567,12 @@ SUB Obj.EditTxt (TargetTxt AS TextboxType, Text AS STRING)
 							'Erase only the last char
 							LineX1 = x1 + Font.GetWidth(TempTxt, FontHeading)
 							Mouse.Hide
-							LINE (LineX1 + 2, y1 - 2)-(LineX1 - Font.GetWidth(RIGHT$(TempTxt, 1), FontHeading), y1 + 11), ClrTextbox, BF
+							LINE (LineX1 + 2, y1 - 2)-(LineX1 - Font.GetWidth(RIGHT$(TempTxt, 1), FontHeading), y1 + 11), SystemTheme.Textbox, BF
 							Mouse.Show
 							TempTxt = LEFT$(TempTxt, LEN(TempTxt) - 1)
 							LineX1 = x1 + Font.GetWidth(TempTxt, FontHeading) + 2
 							Mouse.Hide
-							LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), ClrTextboxText
+							LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), SystemTheme.TextboxText
 							Mouse.Show
 						ELSE
 							'There's more text that's not shown, so we'll
@@ -776,7 +587,7 @@ SUB Obj.EditTxt (TargetTxt AS TextboxType, Text AS STRING)
 					Text = TempTxt
 					LineX1 = x1 + Font.GetWidth(Text, FontHeading) + 2
 					Mouse.Hide
-					LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), ClrTextbox
+					LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), SystemTheme.Textbox
 					Mouse.Show
 					EXIT SUB
 
@@ -785,13 +596,13 @@ SUB Obj.EditTxt (TargetTxt AS TextboxType, Text AS STRING)
 						IF Font.GetWidth(TempTxt + Key$, FontHeading) + 2 < MaxShow THEN
 							LineX1 = x1 + Font.GetWidth(TempTxt, FontHeading) + 2
 							Mouse.Hide
-							LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), ClrTextbox
+							LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), SystemTheme.Textbox
 							Mouse.Show
 							TempTxt = TempTxt + Key$
-							Font.Print TempTxt, x1, y1, ClrTextboxText, FontHeading
+							Font.Print TempTxt, x1, y1, SystemTheme.TextboxText, FontHeading
 							LineX1 = x1 + Font.GetWidth(TempTxt, FontHeading) + 2
 							Mouse.Hide
-							LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), ClrTextboxText
+							LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), SystemTheme.TextboxText
 							Mouse.Show
 						ELSE
 							TempTxt = TempTxt + Key$
@@ -855,7 +666,6 @@ DEFINT A-Z
 FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS STRING, msgDefault AS STRING) AS STRING
 
 	DIM msgLines() AS STRING, msgLineCount, msgTextWidth
-	DIM GreyoutScreen
 
 	IF RIGHT$(msgText, 1) = CHR$(13) THEN msgText = LEFT$(msgText, LEN(msgText) - 1)
 	IF INSTR(msgText, CHR$(13)) = 0 THEN
@@ -885,7 +695,7 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 	DIM winInputBox AS WindowType
 	winInputBox.Pos.Width = msgTextWidth + 76
 	IF winInputBox.Pos.Width < 194 THEN winInputBox.Pos.Width = 194
-	winInputBox.Pos.Height = msgLineCount * 15 + 134
+	winInputBox.Pos.Height = msgLineCount * 15 + 138
 	winInputBox.Pos.Left = (640 - winInputBox.Pos.Width) / 2
 	winInputBox.Pos.Top = (480 - winInputBox.Pos.Height) / 2
 	winInputBox.Caption = "Input required"
@@ -912,13 +722,12 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 
 	Sys.VGASave "INPUTBOX"
 
-	GreyoutScreen = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "GreyOutOnMsgBox", "0"))
-	IF GreyoutScreen = 1 THEN
+	IF UserSettings.GreyoutOnMsgBox THEN
 		DIM LX, LY
 		LY = 0
 		Mouse.Hide
 		FOR LX = 0 TO 639
-			LINE (LX, LY)-(LX, 479), Clr3DShadow, , &HAAAA
+			LINE (LX, LY)-(LX, 479), SystemTheme.Shadow, , &HAAAA
 			IF LY = 0 THEN
 				LY = 1
 			ELSE
@@ -934,23 +743,24 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 	Obj.DrawTxt txtInput, txtInputText, False
 
 	IF LEN(msgIcon) THEN
-		Obj.DrawImg imgIcon
-		Font.Print msgTitle, winInputBox.Pos.Left + 53, winInputBox.Pos.Top + 33, ClrWindowText, 1
+		Font.Print msgTitle, winInputBox.Pos.Left + 53, winInputBox.Pos.Top + 33, SystemTheme.WindowText, 1
 	ELSE
-		Font.Print msgTitle, winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 33, ClrWindowText, 1
+		Font.Print msgTitle, winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 33, SystemTheme.WindowText, 1
 	END IF
 
 	DIM PrintLine
 	FOR PrintLine = 1 TO msgLineCount
 		IF PrintLine < 3 AND LEN(msgIcon) THEN
-			Font.Print msgLines(PrintLine), winInputBox.Pos.Left + 53, winInputBox.Pos.Top + 35 + (15 * PrintLine), ClrWindowText, 2
+			Font.Print msgLines(PrintLine), winInputBox.Pos.Left + 53, winInputBox.Pos.Top + 35 + (15 * PrintLine), SystemTheme.WindowText, 2
 		ELSE
-			Font.Print msgLines(PrintLine), winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 35 + (15 * PrintLine), ClrWindowText, 2
+			Font.Print msgLines(PrintLine), winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 35 + (15 * PrintLine), SystemTheme.WindowText, 2
 		END IF
 	NEXT
 
-	Font.Print "Input:", txtInput.Pos.Left, txtInput.Pos.Top - 16, ClrWindowText, FontHeading
-	LINE (txtInput.Pos.Left + 5, txtInput.Pos.Top - 6)-(txtInput.Pos.Left + 12, txtInput.Pos.Top - 6), ClrWindowText
+	Font.Print "Input:", txtInput.Pos.Left, txtInput.Pos.Top - 16, SystemTheme.WindowText, FontHeading
+	LINE (txtInput.Pos.Left + 5, txtInput.Pos.Top - 6)-(txtInput.Pos.Left + 12, txtInput.Pos.Top - 6), SystemTheme.WindowText
+
+	IF LEN(msgIcon) THEN Obj.DrawImg imgIcon
 
 	DIM Key$
 	DO
@@ -963,7 +773,7 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 		END IF
 
 		IF Obj.BtnClick(btnCancel) OR Key$ = "c" OR Key$ = CHR$(27) THEN
-			Sys.InputBox = "" 'DEBUG - changed - any effect?   msgDefault
+			Sys.InputBox = ""
 			EXIT DO
 		END IF
 		
@@ -977,6 +787,8 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 END FUNCTION
 
 SUB Sys.Load ()
+
+	DIM DontDrawDesktop
 
 	'If the parameters /VER or /? are used, just show version info and exit
 		IF INSTR(COMMAND$, "/VER") OR INSTR(COMMAND$, "/?") THEN
@@ -992,7 +804,7 @@ SUB Sys.Load ()
 	'Make sure Costa is running, by checking if RUNSTAT.TMP created by the
 	'/BOOT parameter exists
 		IF File.Exists(Sys.Path + "DATA\TEMP\RUNSTAT.TMP") = False THEN
-			IF INSTR(COMMAND$, "/DEV") = 0 THEN 'DEBUG! Not for final release
+			IF INSTR(COMMAND$, "/DEV") = 0 THEN
 				CLS
 				PRINT "This program is a part of " + appName + " and should not be executed"
 				PRINT "directly from the command prompt."
@@ -1008,9 +820,17 @@ SUB Sys.Load ()
 			DIM ProfileFileHandle
 			ProfileFileHandle = FREEFILE
 			OPEN Sys.Path + "DATA\TEMP\PROFILE.TMP" FOR INPUT AS #ProfileFileHandle
-			IF LOF(ProfileFileHandle) > 0 THEN LINE INPUT #ProfileFileHandle, ProfileID
+			IF LOF(ProfileFileHandle) > 0 THEN INPUT #ProfileFileHandle, ProfileID
 			CLOSE #ProfileFileHandle
 		END IF
+
+		'When running with /DEV parameter, always use profile 1 if none is
+		'specified. Otherwise, config files from accessories will end up in the
+		'wrong path
+		IF (ProfileID < 1 OR ProfileID > 5) AND INSTR(COMMAND$, "/DEV") THEN
+			ProfileID = 1
+		END IF
+
 	
 
 	'Prepare fonts for use
@@ -1052,41 +872,49 @@ SUB Sys.Load ()
 			NEXT
 			CLOSE #FontFileHandle
 
-	'DEBUG - If a session is active, load ProfileID!
+	
+	'Load settings
+		Sys.LoadSettings
+		
+	'Load user profile - if profile has not yet been selected, load default
+		IF ProfileID THEN
+			Sys.LoadProfile ProfileID
+		ELSE
+			DontDrawDesktop = True 'If no profile loaded, don't draw desktop as
+														 'that will cause flicker once theme is loaded
+														 'and proper desktop color is drawn
+			Sys.LoadProfile 0
+		END IF
 
 	'Load colors for the interface
 		Sys.LoadTheme
-
+	
 	'Clear the keyboard buffer, DOSBox has some issues with leaving keys in it
-			DO: LOOP WHILE LEN(INKEY$)
+		DO: LOOP WHILE LEN(INKEY$)
 			
 
 	'VGA 640x480, 16 colors
-	SCREEN 12
+		SCREEN 12
 
-	'If DESKTOP.INT exists we can load the desktop, and skip drawing it
-	'manually
-		IF File.Exists(Sys.Path + "DATA\TEMP\DESKTOP.INT") THEN
-			Mouse.Hide
-			Sys.VGALoad "DESKTOP"
-			Mouse.Show
-		ELSE
-			Mouse.Hide
-			PAINT (0, 0), ClrDesktop
-			Mouse.Show
+		IF NOT DontDrawDesktop THEN
+
+			IF File.Exists(Sys.Path + "DATA\TEMP\DESKTOP.INT") AND UserSettings.ShowDesktopInApps THEN
+				Sys.VGALoad "DESKTOP"
+			ELSE
+				Mouse.Hide
+				LINE (0, 0)-(639, 0), SystemTheme.Window
+				LINE (0, 1)-(639, 1), SystemTheme.Shadow
+				LINE (0, 2)-(639, 2), 0
+				LINE (0, 2)-(639, 479), SystemTheme.Desktop, BF
+				Mouse.Show
+			END IF
 		END IF
-
 
 	'Set the right colors for the palette
 		OUT &H3C8, 6
 		OUT &H3C9, 31
 		OUT &H3C9, 31
 		OUT &H3C9, 0
-
-		OUT &H3C8, 9
-		OUT &H3C9, 0
-		OUT &H3C9, 0
-		OUT &H3C9, 255
 
 		OUT &H3C8, 10
 		OUT &H3C9, 0
@@ -1107,21 +935,86 @@ SUB Sys.Load ()
 
 END SUB
 
+SUB Sys.LoadProfile (ProfileNum)
+
+	DIM FileHandle
+
+	IF ProfileNum > 0 AND ProfileNum < 6 THEN
+
+		IF File.Exists(Sys.Path + "\DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileNum)) + ".DAT") THEN
+			FileHandle = FREEFILE
+			ON LOCAL ERROR GOTO LoadDefaultProfile
+			OPEN Sys.Path + "\DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileNum)) + ".DAT" FOR BINARY AS #FileHandle
+			GET #FileHandle, , UserSettings
+			CLOSE #FileHandle
+		ELSE
+			GOTO LoadDefaultProfile
+		END IF
+
+	ELSE
+		GOTO LoadDefaultProfile
+	END IF
+
+	IF RTRIM$(UserSettings.ProfileName) = "" THEN UserSettings.ProfileName = "Profile" + STR$(ProfileNum)
+	IF RTRIM$(UserSettings.ProfileImage) = "" THEN UserSettings.ProfileImage = "USERS"
+	IF RTRIM$(UserSettings.ThemeFile) = "" THEN UserSettings.ThemeFile = "DEFAULT"
+
+	EXIT SUB
+
+LoadDefaultProfile:
+	UserSettings.ProfileName = "Profile" + STR$(ProfileNum)
+	UserSettings.ProfileImage = "USERS"
+	UserSettings.ThemeFile = "DEFAULT"
+	UserSettings.Animations = True
+	UserSettings.ShowLinkDescriptions = True
+	UserSettings.ShowLinkTargetFiles = True
+	UserSettings.ShowDesktopInApps = True
+	UserSettings.ConfirmLinkDelete = True
+	UserSettings.ConfirmExit = True
+	UserSettings.TipOfTheDay = True
+	UserSettings.TipLastShown = 0
+	UserSettings.AssignFileTypes = True
+	UserSettings.GreyoutOnMsgBox = False
+END SUB
+
+SUB Sys.LoadSettings ()
+
+	DIM FileHandle
+	FileHandle = FREEFILE
+	OPEN Sys.Path + "\DATA\CONFIG\COSTA.DAT" FOR BINARY AS #FileHandle
+	GET #FileHandle, , SystemSettings
+	CLOSE #FileHandle
+
+END SUB
+
 SUB Sys.LoadTheme ()
-	ClrThemeFile = File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "ThemeFile", "Default")
-	ClrDesktop = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrDesktop", "3"))
-	ClrDesktopText = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrDesktopText", "0"))
-	ClrWindow = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrWindow", "7"))
-	ClrButton = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrButton", "7"))
-	ClrTextbox = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrTextbox", "15"))
-	ClrTextboxText = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrTextboxText", "0"))
-	ClrWindowText = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrWindowText", "0"))
-	ClrTitleBar = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrTitlebar", "0"))
-	ClrTitleBarText = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrTitlebarText", "15"))
-	Clr3DLight = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "Clr3DLight", "7"))
-	Clr3DShadow = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "Clr3DShadow", "8"))
-	ClrSelect = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrSelect", "1"))
-	ClrSelectText = VAL(File.CfgRead("DATA\THEMES\" + ClrThemeFile + ".THM", "ClrSelectText", "15"))
+
+	DIM ThemeFile AS STRING
+	ThemeFile = RTRIM$(UserSettings.ThemeFile)
+
+	DIM FileHandle
+	FileHandle = FREEFILE
+
+	IF File.Exists(Sys.Path + "\DATA\THEMES\" + ThemeFile + ".DAT") THEN
+		OPEN Sys.Path + "\DATA\THEMES\" + ThemeFile + ".DAT" FOR BINARY AS #FileHandle
+		GET #FileHandle, , SystemTheme
+		CLOSE #FileHandle
+	ELSE
+		SystemTheme.Desktop = 9
+		SystemTheme.DesktopText = 0
+		SystemTheme.Window = 15
+		SystemTheme.Button = 7
+		SystemTheme.Textbox = 15
+		SystemTheme.TextboxText = 0
+		SystemTheme.WindowText = 0
+		SystemTheme.TitleBar = 0
+		SystemTheme.TitleBarText = 15
+		SystemTheme.Light = 7
+		SystemTheme.Shadow = 8
+		SystemTheme.Select = 8
+		SystemTheme.SelectText = 15
+	END IF
+
 END SUB
 
 FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
@@ -1130,8 +1023,7 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	DIM btnFirst AS ButtonType, btnSecond AS ButtonType
 	DIM imgIcon AS ImageType
 	DIM winMsgBox AS WindowType
-	DIM GreyoutScreen
-
+	
 	IF RIGHT$(msgText, 1) = CHR$(13) THEN msgText = LEFT$(msgText, LEN(msgText) - 1)
 	IF INSTR(msgText, CHR$(13)) = 0 THEN
 		msgLineCount = 1
@@ -1162,7 +1054,7 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	ELSE
 		IF winMsgBox.Pos.Width < 102 THEN winMsgBox.Pos.Width = 102
 	END IF
-	winMsgBox.Pos.Height = msgLineCount * 15 + 92
+	winMsgBox.Pos.Height = msgLineCount * 15 + 96
 	winMsgBox.Pos.Left = (640 - winMsgBox.Pos.Width) / 2
 	winMsgBox.Pos.Top = (480 - winMsgBox.Pos.Height) / 2
 	IF msgType = msgInfo THEN winMsgBox.Caption = "Information"
@@ -1196,13 +1088,12 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	
 	Sys.VGASave "MSGBOX"
 
-	GreyoutScreen = VAL(File.CfgRead("DATA\CONFIG\" + ProfileID + "\PROFILE.CFG", "GreyOutOnMsgBox", "0"))
-	IF GreyoutScreen = 1 THEN
+	IF UserSettings.GreyoutOnMsgBox THEN
 		DIM LX, LY
 		LY = 0
 		Mouse.Hide
 		FOR LX = 0 TO 639
-			LINE (LX, LY)-(LX, 479), Clr3DShadow, , &HAAAA
+			LINE (LX, LY)-(LX, 479), SystemTheme.Shadow, , &HAAAA
 			IF LY = 0 THEN
 				LY = 1
 			ELSE
@@ -1213,17 +1104,18 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	END IF
 
 	Obj.DrawWin winMsgBox
-	Obj.DrawImg imgIcon
 	Obj.DrawBtn btnFirst, False
 	IF msgType = msgQuest THEN Obj.DrawBtn btnSecond, False
 
-	Font.Print msgTitle, winMsgBox.Pos.Left + 56, winMsgBox.Pos.Top + 33, ClrWindowText, 1
+	Font.Print msgTitle, winMsgBox.Pos.Left + 56, winMsgBox.Pos.Top + 33, SystemTheme.WindowText, 1
 	
 	DIM PrintLine
 	FOR PrintLine = 1 TO msgLineCount
-		Font.Print msgLines(PrintLine), winMsgBox.Pos.Left + 56, winMsgBox.Pos.Top + 35 + (15 * PrintLine), ClrWindowText, 2
+		Font.Print msgLines(PrintLine), winMsgBox.Pos.Left + 56, winMsgBox.Pos.Top + 35 + (15 * PrintLine), SystemTheme.WindowText, 2
 	NEXT
 	
+	Obj.DrawImg imgIcon
+
 	DIM Key$
 	DO
 
@@ -1264,7 +1156,6 @@ END FUNCTION
 
 FUNCTION Sys.Path () AS STRING
 
-	'DEBUG
 	IF COMMAND$ = "/DEV" THEN
 		Sys.Path = "C:\COSTA\"
 		EXIT FUNCTION
@@ -1281,6 +1172,40 @@ FUNCTION Sys.Path () AS STRING
 	Sys.Path = SysPath
 
 END FUNCTION
+
+SUB Sys.SaveProfile (ProfileNum)
+
+	DIM FileHandle
+
+	ON LOCAL ERROR GOTO SaveProfileError
+	FileHandle = FREEFILE
+	OPEN Sys.Path + "\DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileNum)) + ".DAT" FOR BINARY AS #FileHandle
+	PUT #FileHandle, , UserSettings
+	CLOSE #FileHandle
+
+	EXIT SUB
+
+SaveProfileError:
+	FileHandle = Sys.MsgBox("Could not save settings", "An error occured while saving your settings, and they were not saved." + CHR$(13) + "Make sure the disk is not full or write-protected, and try again.", msgError)
+	EXIT SUB
+	RESUME NEXT
+END SUB
+
+SUB Sys.SaveSettings ()
+
+	ON LOCAL ERROR GOTO SaveSettingsError
+	DIM FileHandle
+	FileHandle = FREEFILE
+	OPEN Sys.Path + "\DATA\CONFIG\COSTA.DAT" FOR BINARY AS #FileHandle
+	PUT #FileHandle, , SystemSettings
+	CLOSE #FileHandle
+	EXIT SUB
+
+SaveSettingsError:
+	FileHandle = Sys.MsgBox("Could not save settings", "An error occured while saving your settings, and they were not saved." + CHR$(13) + "Make sure the disk is not full or write-protected, and try again.", msgError)
+	EXIT SUB
+	RESUME NEXT
+END SUB
 
 STATIC SUB Sys.VGALoad (TargetFile AS STRING)
 	'BLOADs a VGA screen saved by Sys.VGASave
