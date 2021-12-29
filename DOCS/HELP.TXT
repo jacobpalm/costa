@@ -64,7 +64,7 @@
       program, the resident part of Costa will use only a few hundred bytes
       of RAM
     - 2 MB free hard drive space on the installation drive recommended
-    - VGA capable monitor and graphics card (640x480 pixels, 16 colours)
+    - VGA capable monitor and graphics card (640x480 pixels, 16 colors)
     - DOS 3.1 or newer
     
      If your computer doesn't meet one or more of the above requirements,
@@ -171,7 +171,7 @@
       Opens a dialog where you can change the target filename, path, icon and
       more. If the "Pause after execution" checkbox is selected, Costa will
       wait for a key press before returning to the desktop once the program
-      is ends. This is usefull if you need to see the output of a program
+      is ends. This is useful if you need to see the output of a program
       before returning to the desktop.
 
      -Move
@@ -214,7 +214,7 @@
 
     All around in Costa, you will see underlined letters. For instance, all
    buttons have an underlined letter. Labels above input fields also have an
-   underlined letter. To use a button, or to activate an inputfield, simply
+   underlined letter. To use a button, or to activate an input field, simply
    press the underlined letter on the keyboard (unlike some other GUIs, you
    don't need to hold down the ALT key at the same time).
 
@@ -230,7 +230,7 @@
    up and arrow down keys - you can also use the Page Up and Page Down keys
    to scroll entire pages.
 
-    In the icon editor, use the arror keys to select the pixel you want to
+    In the icon editor, use the arrow keys to select the pixel you want to
    paint, and then press the space or Enter key to paint it. If the indicator
    is hidden, pressing the space or Enter key will reveal it. Pressing again
    will paint the selected pixel.
@@ -249,20 +249,20 @@
  ** 3.1 Profiles **
 
     Costa supports five different profiles. Each profile has it's one name
-   and icon, and it's own settings.
+   and icon, it's own settings, and it's own desktop.
    This feature can be used in several ways, depending on your needs. For
    instance:
 
     - If multiple users are using the same computer, each user can name a
       profile for themselves, and have their own settings, color theme and
-      desktoop links.
+      desktop links.
 
     - If you use the computer for both work and playing games, you could have
       a profile with all your work links on the desktop, and another profile
       with all your game links on the desktop.
 
     - If you use Costa as a launcher for DOS games, you could make a profile
-      for each genre of games. For instance, seperate profiles named "RPGs",
+      for each genre of games. For instance, separate profiles named "RPGs",
       "Platform", "Simulation and "Action".
 
     So, how you use this feature is really up to you. If you don't see any
@@ -335,12 +335,14 @@
       If "Show link descriptions" is enabled, you can choose to have the
       filename the link points to shown underneath the description.
 
-    - Show desktop links in apps
+    - Reduce screen redraws by using disk cache
       By default, Costa will show desktop links when running accessories.
       To achieve this, a screenshot is save before the accessory is run,
-      which the accessory then loads and displays behind its own window. This
-      looks great, but on computers with slow disks it can be beneficial to
-      performance to disable this setting.
+      which the accessory then loads and displays behind its own window.
+      The same method is used to save the state of the screen before certain
+      windows are shown within Costa.
+      This looks great, but on computers with slow disks it can be beneficial 
+      to performance to disable this setting.
 
     - Animate user interface
       Makes the bar at the top of the desktop and link menus appear and
