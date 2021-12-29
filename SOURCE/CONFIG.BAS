@@ -247,7 +247,7 @@ SUB Conf.ConfMisc ()
         Mouse.Show
         Font.Print "Show link targets", chkShowLinkTarget.Pos.Left + 20, chkShowLinkTarget.Pos.Top + 3, SystemTheme.Shadow, 2
     END IF
-    Font.Print "Show desktop links in accesories", chkDesktopInApps.Pos.Left + 20, chkDesktopInApps.Pos.Top + 3, SystemTheme.WindowText, 2
+    Font.Print "Reduce screen redraws by using disk cache", chkDesktopInApps.Pos.Left + 20, chkDesktopInApps.Pos.Top + 3, SystemTheme.WindowText, 2
     Font.Print "Confirm link removal", chkConfLinkDel.Pos.Left + 20, chkConfLinkDel.Pos.Top + 3, SystemTheme.WindowText, 2
     Font.Print "Animate user interface (sliding menus)", chkAnimUI.Pos.Left + 20, chkAnimUI.Pos.Top + 3, SystemTheme.WindowText, 2
     Font.Print "Confirm when trying to exit Costa", chkConfExit.Pos.Left + 20, chkConfExit.Pos.Top + 3, SystemTheme.WindowText, 2
@@ -257,7 +257,7 @@ SUB Conf.ConfMisc ()
     
     Mouse.Hide
     LINE (chkShowLinkDesc.Pos.Left + 81, chkShowLinkDesc.Pos.Top + 14)-(chkShowLinkDesc.Pos.Left + 88, chkShowLinkDesc.Pos.Top + 14), SystemTheme.WindowText
-    LINE (chkDesktopInApps.Pos.Left + 106, chkDesktopInApps.Pos.Top + 14)-(chkDesktopInApps.Pos.Left + 110, chkDesktopInApps.Pos.Top + 14), SystemTheme.WindowText
+    LINE (chkDesktopInApps.Pos.Left + 100, chkDesktopInApps.Pos.Top + 14)-(chkDesktopInApps.Pos.Left + 106, chkDesktopInApps.Pos.Top + 14), SystemTheme.WindowText
     LINE (chkConfLinkDel.Pos.Left + 97, chkConfLinkDel.Pos.Top + 14)-(chkConfLinkDel.Pos.Left + 102, chkConfLinkDel.Pos.Top + 14), SystemTheme.WindowText
     LINE (chkConfExit.Pos.Left + 169, chkConfExit.Pos.Top + 14)-(chkConfExit.Pos.Left + 175, chkConfExit.Pos.Top + 14), SystemTheme.WindowText
     LINE (chkAnimUI.Pos.Left + 19, chkAnimUI.Pos.Top + 14)-(chkAnimUI.Pos.Left + 27, chkAnimUI.Pos.Top + 14), SystemTheme.WindowText
@@ -334,7 +334,7 @@ SUB Conf.ConfMisc ()
         END IF
 
         IF Key$ = "t" AND chkShowLinkDesc.Checked = True THEN chkShowLinkTarget.Checked = NOT chkShowLinkTarget.Checked: Obj.DrawChk chkShowLinkTarget: DeskNeedsDraw = True
-        IF Key$ = "l" THEN chkDesktopInApps.Checked = NOT chkDesktopInApps.Checked: Obj.DrawChk chkDesktopInApps
+        IF Key$ = "n" THEN chkDesktopInApps.Checked = NOT chkDesktopInApps.Checked: Obj.DrawChk chkDesktopInApps
         IF Key$ = "r" THEN chkConfLinkDel.Checked = NOT chkConfLinkDel.Checked: Obj.DrawChk chkConfLinkDel
         IF Key$ = "a" THEN chkAnimUI.Checked = NOT chkAnimUI.Checked: Obj.DrawChk chkAnimUI
         IF Key$ = "x" THEN chkConfExit.Checked = NOT chkConfExit.Checked: Obj.DrawChk chkConfExit
