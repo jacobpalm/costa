@@ -3,11 +3,7 @@ layout: post
 title:  "New release of Costa - version 1.5.0"
 image: 2021-12-29.png
 ---
-Just in time before the new year, Costa version 1.5.0 has finished testing and has been released.
-
-This version comes with many improvements and changes, but three stand out from the rest: A new UI design based on [Costa 0.9.4](https://costa.jacobpalm.dk/archive.html#version094), massive speed improvements to handling of data files, and full keyboard support in all accessories.
-
-Code optimizations has also helped reduced the combined size of Costas executables significantly.
+Just in time before the new year, Costa version 1.5.0 has finished testing and has been released. This version comes with many improvements and changes, but three stand out from the rest: A new UI design based on [Costa 0.9.4](https://costa.jacobpalm.dk/archive.html#version094), massive speed improvements to handling of data files, and full keyboard support in all accessories. Code optimizations has also helped reduced the combined size of Costas executables significantly.
 <!--more-->
 
 To give Costa it's own unique look, and separate it from the countless Windows clones out there, the [UI](https://en.wikipedia.org/wiki/Graphical_user_interface) I designed myself for Costa 0.9.4 has been brought back to life, with some improvements. In Costa 0.9.4, the colors of the UI were predefined and could not be customized, but now, everything can be customized. Every one of the 27 themes that comes with Costa have been adaped to work with the new UI. Fun fact: The basis of this new UI was initially designed by me using [Microsoft Paint](https://en.wikipedia.org/wiki/Microsoft_Paint) 14 years ago!
