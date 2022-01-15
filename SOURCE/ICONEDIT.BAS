@@ -22,6 +22,9 @@ CONST dirDown = 3
 CONST dirStay = 4
 CONST dirHide = 5
 
+CONST FilledNeedsCheck = 1
+CONST FilledChecked = 2
+
 TYPE IconDataType
     Pixel(31, 31) AS STRING * 1
 END TYPE
@@ -99,10 +102,6 @@ SUB IconEdit.FillArea (X, Y, BYVAL FillColor)
     'Used for redrawing - if true, draw white pixel with "T"
     DIM FillTransParent
 
-    'Used to keep track of filled pixels in FillMask
-    DIM Filled
-    Filled = 1
-
     'If the pixel already has the current color, there's nothing to paint.
     'Wait mouse release and exit.
     IF IconData.Pixel(X, Y) = FillColor THEN
@@ -120,7 +119,7 @@ SUB IconEdit.FillArea (X, Y, BYVAL FillColor)
 
     'Fill the specified pixel
     IconEdit.DrawPixel X, Y, FillColor, False
-    FillMask.Pixel(X, Y) = Filled
+    FillMask.Pixel(X, Y) = FilledNeedsCheck
     PixelsFilled = True
     
 
@@ -133,7 +132,7 @@ SUB IconEdit.FillArea (X, Y, BYVAL FillColor)
         FOR CheckX = 0 TO 31
             FOR CheckY = 0 TO 31
 
-                IF FillMask.Pixel(CheckX, CheckY) = Filled THEN
+                IF FillMask.Pixel(CheckX, CheckY) = FilledNeedsCheck THEN
 
                     'Pixel was filled, check neighbours in all directions
 
@@ -141,7 +140,7 @@ SUB IconEdit.FillArea (X, Y, BYVAL FillColor)
                     IF CheckX > 0 THEN
                         IF IconData.Pixel(CheckX - 1, CheckY) = ReplaceColor THEN
                             IconEdit.DrawPixel CheckX - 1, CheckY, FillColor, False
-                            FillMask.Pixel(CheckX - 1, CheckY) = Filled
+                            FillMask.Pixel(CheckX - 1, CheckY) = FilledNeedsCheck
                             PixelsFilled = True
                         END IF
                     END IF
@@ -150,7 +149,7 @@ SUB IconEdit.FillArea (X, Y, BYVAL FillColor)
                     IF CheckX < 31 THEN
                         IF IconData.Pixel(CheckX + 1, CheckY) = ReplaceColor THEN
                             IconEdit.DrawPixel CheckX + 1, CheckY, FillColor, False
-                            FillMask.Pixel(CheckX + 1, CheckY) = Filled
+                            FillMask.Pixel(CheckX + 1, CheckY) = FilledNeedsCheck
                             PixelsFilled = True
                         END IF
                     END IF
@@ -159,7 +158,7 @@ SUB IconEdit.FillArea (X, Y, BYVAL FillColor)
                     IF CheckY > 0 THEN
                         IF IconData.Pixel(CheckX, CheckY - 1) = ReplaceColor THEN
                             IconEdit.DrawPixel CheckX, CheckY - 1, FillColor, False
-                            FillMask.Pixel(CheckX, CheckY - 1) = Filled
+                            FillMask.Pixel(CheckX, CheckY - 1) = FilledNeedsCheck
                             PixelsFilled = True
                         END IF
                     END IF
@@ -168,10 +167,14 @@ SUB IconEdit.FillArea (X, Y, BYVAL FillColor)
                     IF CheckY < 31 THEN
                         IF IconData.Pixel(CheckX, CheckY + 1) = ReplaceColor THEN
                             IconEdit.DrawPixel CheckX, CheckY + 1, FillColor, False
-                            FillMask.Pixel(CheckX, CheckY + 1) = Filled
+                            FillMask.Pixel(CheckX, CheckY + 1) = FilledNeedsCheck
                             PixelsFilled = True
                         END IF
                     END IF
+
+                    'Now that neighbours have been checked, set fill mask to
+                    'FilledChecked so that neighbours won't be checked again
+                    FillMask.Pixel(CheckX, CheckY) = FilledChecked
 
                 END IF
 
