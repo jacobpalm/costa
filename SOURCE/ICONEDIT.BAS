@@ -583,16 +583,18 @@ SUB IconEdit.MoveIndicator (Direction)
 
     IF (PerformMove AND KeyboardPosVisible) OR Direction = dirHide THEN
 
-      XPos = 58 + (KeyboardPosX * 13)
-      YPos = 44 + (KeyboardPosY * 13)
-      Mouse.Hide
-      IF IconData.Pixel(KeyboardPosX, KeyboardPosY) > -1 THEN
-        LINE (XPos, YPos)-(XPos + 11, YPos + 11), IconData.Pixel(KeyboardPosX, KeyboardPosY), BF
-      ELSE
-        LINE (XPos, YPos)-(XPos + 11, YPos + 11), 15, BF
-        LINE (XPos, YPos + 11)-(XPos + 11, YPos), 7
+      IF KeyboardPosX > -1 AND KeyboardPosY > -1 THEN
+        XPos = 58 + (KeyboardPosX * 13)
+        YPos = 44 + (KeyboardPosY * 13)
+        Mouse.Hide
+        IF IconData.Pixel(KeyboardPosX, KeyboardPosY) > -1 THEN
+          LINE (XPos, YPos)-(XPos + 11, YPos + 11), IconData.Pixel(KeyboardPosX, KeyboardPosY), BF
+        ELSE
+          LINE (XPos, YPos)-(XPos + 11, YPos + 11), 15, BF
+          LINE (XPos, YPos + 11)-(XPos + 11, YPos), 7
+        END IF
+        Mouse.Show
       END IF
-      Mouse.Show
     END IF
 
     IF PerformMove THEN
@@ -771,6 +773,7 @@ TopOfSave:
     IconEdit.SetTitle
 
     IconEdit.SaveIcon = True
+    IconChanged = False
     EXIT FUNCTION
 
 SaveIconError:
