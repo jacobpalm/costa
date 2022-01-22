@@ -40,7 +40,8 @@ END TYPE
 DIM SHARED IconData AS IconEditDataType
 DIM SHARED IconFileName AS STRING
 DIM SHARED KeyboardPosX, KeyboardPosY, KeyboardPosVisible
-DIM SHARED IconChanged
+DIM SHARED IconChanged, PixelSize, PreviewOffsetX, PreviewOffsetY
+DIM SHARED DrawAreaOffsetX, DrawAreaOffsetY
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
@@ -63,22 +64,23 @@ SUB IconEdit.DrawPixel (X, Y, DrawColor, ForceDraw)
 
     IF NOT IconData.Pixel(X, Y) = DrawColor OR ForceDraw = True THEN
 
-        '58 and 44 are the coords for the top-left corner of the drawing area
-        'and each "pixel" in it is 13x13 pixels
-        XPos = 58 + (X * 13)
-        YPos = 44 + (Y * 13)
+        'DrawAreaOffSet variables are the coords for the top-left corner of
+        'the drawing area, and each "pixel" in it is PixelSize times
+        'PixelSize pixels in size
+        XPos = DrawAreaOffsetX + (X * PixelSize)
+        YPos = DrawAreaOffsetY + (Y * PixelSize)
 
         IconChanged = True
         IconData.Pixel(X, Y) = DrawColor
 
         Mouse.Hide
         IF DrawColor > -1 THEN
-            LINE (XPos, YPos)-(XPos + 11, YPos + 11), DrawColor, BF
-            PSET (514 + X, 269 + Y), DrawColor
+            LINE (XPos, YPos)-(XPos + PixelSize - 2, YPos + PixelSize - 2), DrawColor, BF
+            PSET (PreviewOffsetX + X, PreviewOffsetY + Y), DrawColor
         ELSE
-            LINE (XPos, YPos)-(XPos + 11, YPos + 11), 15, BF
-            LINE (XPos, YPos + 11)-(XPos + 11, YPos), 7
-            PSET (514 + X, 269 + Y), 15
+            LINE (XPos, YPos)-(XPos + PixelSize - 2, YPos + PixelSize - 2), 15, BF
+            LINE (XPos, YPos + PixelSize - 2)-(XPos + PixelSize - 2, YPos), 7
+            PSET (PreviewOffsetX + X, PreviewOffsetY + Y), 15
         END IF
         Mouse.Show
 
@@ -271,25 +273,38 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     DIM Key$, YPos, XPos, CursorX, CursorY, DrawColor, void
     DIM ColChk, FillColor, CurrentTool
 
-    Obj.SetSize winMain.Pos, 48, 11, 544, 458
-    Obj.SetSize txtDrawArea.Pos, winMain.Pos.Left + 8, winMain.Pos.Top + 31, 418, 418
+    IF scrMode = scrVGA THEN
+      PixelSize = 13
+      Obj.SetSize winMain.Pos, 48, 11, 544, 458
+      Obj.SetSize txtDrawArea.Pos, winMain.Pos.Left + 8, winMain.Pos.Top + 31, 418, 418
+      Obj.SetSize btnNew.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, winMain.Pos.Top + winMain.Pos.Height - 127, 100, 22
+      Obj.SetSize btnOpen.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, winMain.Pos.Top + winMain.Pos.Height - 95, 100, 22
+      Obj.SetSize btnSave.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, winMain.Pos.Top + winMain.Pos.Height - 63, 100, 22
+      Obj.SetSize btnExit.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, winMain.Pos.Top + winMain.Pos.Height - 31, 100, 22
+    ELSE
+      PixelSize = 9
+      Obj.SetSize winMain.Pos, 111, 11, 418, 334
+      Obj.SetSize txtDrawArea.Pos, winMain.Pos.Left + 8, winMain.Pos.Top + 31, 290, 290
+      Obj.SetSize btnNew.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 60, txtDrawArea.Pos.Top + 84, 50, 22
+      Obj.SetSize btnOpen.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 60, txtDrawArea.Pos.Top + 110, 50, 22
+      Obj.SetSize btnSave.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 60, txtDrawArea.Pos.Top + 136, 50, 22
+      Obj.SetSize btnExit.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 60, txtDrawArea.Pos.Top + 162, 50, 22
+    END IF
+
+    PreviewOffsetX = winMain.Pos.Left + txtDrawArea.Pos.Width + 48
+    PreviewOffsetY = winMain.Pos.Top + 258
+    DrawAreaOffsetX = txtDrawArea.Pos.Left + 2
+    DrawAreaOffsetY = txtDrawArea.Pos.Top + 2
 
     Obj.SetSize btnPreview.Pos, winMain.Pos.Left + txtDrawArea.Pos.Width + 38, winMain.Pos.Top + 248, 52, 52
     btnPreview.Transparent = True
 
-    Obj.SetSize btnNew.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, winMain.Pos.Top + winMain.Pos.Height - 127, 100, 22
     btnNew.Caption = "New"
     btnNew.HotKey = 1
-    
-    Obj.SetSize btnOpen.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, winMain.Pos.Top + winMain.Pos.Height - 95, 100, 22
     btnOpen.Caption = "Load"
     btnOpen.HotKey = 1
-
-    Obj.SetSize btnSave.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, winMain.Pos.Top + winMain.Pos.Height - 63, 100, 22
     btnSave.Caption = "Save"
     btnSave.HotKey = 1
-
-    Obj.SetSize btnExit.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, winMain.Pos.Top + winMain.Pos.Height - 31, 100, 22
     btnExit.Caption = "Exit"
     btnExit.HotKey = 2
 
@@ -345,12 +360,12 @@ SUB IconEdit.Main (IconToLoad AS STRING)
 
     'Draw grid in drawing area
     FOR YPos = 0 TO 31
-        LINE (txtDrawArea.Pos.Left + 2, txtDrawArea.Pos.Top + 1 + (YPos * 13))-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width - 2, 43 + (YPos * 13)), 8
-        LINE (txtDrawArea.Pos.Left + 2, txtDrawArea.Pos.Top + 1 + (YPos * 13))-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width - 2, 43 + (YPos * 13)), 0, , &HAAAA
+        LINE (txtDrawArea.Pos.Left + 2, txtDrawArea.Pos.Top + 1 + (YPos * PixelSize))-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width - 2, 43 + (YPos * PixelSize)), 8
+        LINE (txtDrawArea.Pos.Left + 2, txtDrawArea.Pos.Top + 1 + (YPos * PixelSize))-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width - 2, 43 + (YPos * PixelSize)), 0, , &HAAAA
     NEXT
     FOR XPos = 0 TO 31
-        LINE (txtDrawArea.Pos.Left + 1 + (XPos * 13), txtDrawArea.Pos.Top + 2)-(txtDrawArea.Pos.Left + 1 + (XPos * 13), txtDrawArea.Pos.Top + txtDrawArea.Pos.Height - 2), 8
-        LINE (txtDrawArea.Pos.Left + 1 + (XPos * 13), txtDrawArea.Pos.Top + 2)-(txtDrawArea.Pos.Left + 1 + (XPos * 13), txtDrawArea.Pos.Top + txtDrawArea.Pos.Height - 2), 0, , &HAAAA
+        LINE (txtDrawArea.Pos.Left + 1 + (XPos * PixelSize), txtDrawArea.Pos.Top + 2)-(txtDrawArea.Pos.Left + 1 + (XPos * PixelSize), txtDrawArea.Pos.Top + txtDrawArea.Pos.Height - 2), 8
+        LINE (txtDrawArea.Pos.Left + 1 + (XPos * PixelSize), txtDrawArea.Pos.Top + 2)-(txtDrawArea.Pos.Left + 1 + (XPos * PixelSize), txtDrawArea.Pos.Top + txtDrawArea.Pos.Height - 2), 0, , &HAAAA
     NEXT
     
     Mouse.Show
@@ -369,8 +384,8 @@ SUB IconEdit.Main (IconToLoad AS STRING)
         Key$ = LCASE$(INKEY$)
         
         IF Mouse.InArea(txtDrawArea.Pos) THEN
-            CursorX = (Mouse.X - (txtDrawArea.Pos.Left + 7)) / 13
-            CursorY = (Mouse.Y - (txtDrawArea.Pos.Top + 7)) / 13
+            CursorX = (Mouse.X - (txtDrawArea.Pos.Left + 7)) / PixelSize
+            CursorY = (Mouse.Y - (txtDrawArea.Pos.Top + 7)) / PixelSize
             IF CursorX < 0 THEN CursorX = 0
             IF CursorY < 0 THEN CursorY = 0
             IF CursorX > 31 THEN CursorX = 31
@@ -536,8 +551,8 @@ SUB IconEdit.Main (IconToLoad AS STRING)
                   IconEdit.DrawPixel CursorX, CursorY, DrawColor, False
 
                   IF Mouse.InArea(txtDrawArea.Pos) THEN
-                      CursorX = (Mouse.X - (txtDrawArea.Pos.Left + 7)) / 13
-                      CursorY = (Mouse.Y - (txtDrawArea.Pos.Top + 7)) / 13
+                      CursorX = (Mouse.X - (txtDrawArea.Pos.Left + 7)) / PixelSize
+                      CursorY = (Mouse.Y - (txtDrawArea.Pos.Top + 7)) / PixelSize
                       IF CursorX < 0 THEN CursorX = 0
                       IF CursorY < 0 THEN CursorY = 0
                       IF CursorX > 31 THEN CursorX = 31
@@ -584,14 +599,14 @@ SUB IconEdit.MoveIndicator (Direction)
     IF (PerformMove AND KeyboardPosVisible) OR Direction = dirHide THEN
 
       IF KeyboardPosX > -1 AND KeyboardPosY > -1 THEN
-        XPos = 58 + (KeyboardPosX * 13)
-        YPos = 44 + (KeyboardPosY * 13)
+        XPos = DrawAreaOffsetX + (KeyboardPosX * PixelSize)
+        YPos = DrawAreaOffsetY + (KeyboardPosY * PixelSize)
         Mouse.Hide
         IF IconData.Pixel(KeyboardPosX, KeyboardPosY) > -1 THEN
-          LINE (XPos, YPos)-(XPos + 11, YPos + 11), IconData.Pixel(KeyboardPosX, KeyboardPosY), BF
+          LINE (XPos, YPos)-(XPos + PixelSize - 2, YPos + PixelSize - 2), IconData.Pixel(KeyboardPosX, KeyboardPosY), BF
         ELSE
-          LINE (XPos, YPos)-(XPos + 11, YPos + 11), 15, BF
-          LINE (XPos, YPos + 11)-(XPos + 11, YPos), 7
+          LINE (XPos, YPos)-(XPos + PixelSize - 2, YPos + PixelSize - 2), 15, BF
+          LINE (XPos, YPos + PixelSize - 2)-(XPos + PixelSize - 2, YPos), 7
         END IF
         Mouse.Show
       END IF
@@ -612,11 +627,16 @@ SUB IconEdit.MoveIndicator (Direction)
 
     IF KeyboardPosVisible THEN
       IF PerformMove OR Direction = dirStay THEN
-        XPos = 58 + (KeyboardPosX * 13)
-        YPos = 44 + (KeyboardPosY * 13)
+        XPos = DrawAreaOffsetX + (KeyboardPosX * PixelSize)
+        YPos = DrawAreaOffsetY + (KeyboardPosY * PixelSize)
         Mouse.Hide
-        LINE (XPos + 3, YPos + 3)-(XPos + 9, YPos + 9), 8, B
-        LINE (XPos + 4, YPos + 4)-(XPos + 8, YPos + 8), 15, B
+        IF PixelSize = 13 THEN
+          LINE (XPos + 3, YPos + 3)-(XPos + 9, YPos + 9), 8, B
+          LINE (XPos + 4, YPos + 4)-(XPos + 8, YPos + 8), 15, B
+        ELSE
+          LINE (XPos + 1, YPos + 1)-(XPos + 6, YPos + 6), 8, B
+          LINE (XPos + 2, YPos + 2)-(XPos + 5, YPos + 5), 15, B
+        END IF
         Mouse.Show
       END IF
     END IF
@@ -656,7 +676,7 @@ SUB IconEdit.Preview ()
     DIM Header AS STRING * 9
     Header = "JACOBPALM"
     
-    Obj.SetSize winPreview.Pos, 132, 90, 267, 321
+    Obj.SetSize winPreview.Pos, 186, (scrHeight - 321) / 2, 267, 321
     winPreview.Caption = "Preview Icon"
 
     Obj.SetSize btnClose.Pos, winPreview.Pos.Left + winPreview.Pos.Width - 110, winPreview.Pos.Top + winPreview.Pos.Height - 32, 100, 22
@@ -795,10 +815,14 @@ SUB IconEdit.SetTitle ()
     END IF
 
     WindowTitle = "Icon Editor for Costa - " + WindowTitle
+    XPos = (640 - Font.GetWidth(WindowTitle, fontHeading)) / 2
 
     Mouse.Hide
-    LINE (53, 16)-(587, 32), SystemTheme.TitleBar, BF
-    XPos = (640 - Font.GetWidth(WindowTitle, fontHeading)) / 2
+    IF scrMode = scrVGA THEN
+      LINE (53, 16)-(587, 32), SystemTheme.TitleBar, BF
+    ELSE
+      LINE (113, 16)-(527, 32), SystemTheme.TitleBar, BF
+    END IF
     Font.Print WindowTitle, XPos, 20, SystemTheme.TitleBarText, fontHeading
     Mouse.Show
 
@@ -825,7 +849,7 @@ SUB IconEdit.ShowLoadDialog ()
     IconFiles(0) = LEFT$(IconFiles(0), LEN(IconFiles(0)) - 4)
     IconIndex = 0
 
-    Obj.SetSize winSelect.Pos, 243, 160, 153, 160
+    Obj.SetSize winSelect.Pos, 243, (scrHeight - 160) / 2, 153, 160
     Obj.SetSize btnLoad.Pos, winSelect.Pos.Left + 51, winSelect.Pos.Top + 58, 52, 52
     Obj.SetSize btnPrev.Pos, winSelect.Pos.Left + 15, winSelect.Pos.Top + 73, 22, 22
     Obj.SetSize btnNext.Pos, winSelect.Pos.Left + 117, winSelect.Pos.Top + 73, 22, 22
