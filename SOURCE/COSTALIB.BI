@@ -61,7 +61,12 @@
     CONST msgQuest = 3
     CONST msgError = 4
     CONST msgTip = 5
-    
+
+'Screen resolution constants
+  CONST scrEGA = 9
+  CONST scrVGA = 12
+
+  CONST scrMode = scrEGA 'Temp - to be replaced by setting
 
 'Type declarations
   TYPE PosType
@@ -154,4 +159,6 @@
   COMMON SHARED SystemSettings AS SystemSettingsType
   COMMON SHARED UserSettings AS UserSettingsType
   COMMON SHARED SystemTheme AS ThemeType
+
+  COMMON SHARED scrHeight AS INTEGER
 

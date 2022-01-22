@@ -697,7 +697,7 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 	IF winInputBox.Pos.Width < 194 THEN winInputBox.Pos.Width = 194
 	winInputBox.Pos.Height = msgLineCount * 15 + 138
 	winInputBox.Pos.Left = (640 - winInputBox.Pos.Width) / 2
-	winInputBox.Pos.Top = (480 - winInputBox.Pos.Height) / 2
+	winInputBox.Pos.Top = (scrHeight - winInputBox.Pos.Height) / 2
 	winInputBox.Caption = "Input required"
 
 	DIM txtInput AS TextboxType, txtInputText AS STRING
@@ -727,7 +727,7 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 		LY = 0
 		Mouse.Hide
 		FOR LX = 0 TO 639
-			LINE (LX, LY)-(LX, 479), SystemTheme.Shadow, , &HAAAA
+			LINE (LX, LY)-(LX, scrHeight - 1), SystemTheme.Shadow, , &HAAAA
 			IF LY = 0 THEN
 				LY = 1
 			ELSE
@@ -894,7 +894,11 @@ SUB Sys.Load ()
 			
 
 	'VGA 640x480, 16 colors
-		SCREEN 12
+		IF scrHeight = 480 THEN
+			SCREEN 12
+		ELSE
+			SCREEN 9
+		END IF
 
 		IF NOT DontDrawDesktop THEN
 
@@ -905,7 +909,7 @@ SUB Sys.Load ()
 				LINE (0, 0)-(639, 0), SystemTheme.Window
 				LINE (0, 1)-(639, 1), SystemTheme.Shadow
 				LINE (0, 2)-(639, 2), 0
-				LINE (0, 2)-(639, 479), SystemTheme.Desktop, BF
+				LINE (0, 2)-(639, scrHeight - 1), SystemTheme.Desktop, BF
 				Mouse.Show
 			END IF
 		END IF
@@ -1056,7 +1060,7 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	END IF
 	winMsgBox.Pos.Height = msgLineCount * 15 + 96
 	winMsgBox.Pos.Left = (640 - winMsgBox.Pos.Width) / 2
-	winMsgBox.Pos.Top = (480 - winMsgBox.Pos.Height) / 2
+	winMsgBox.Pos.Top = (scrHeight - winMsgBox.Pos.Height) / 2
 	IF msgType = msgInfo THEN winMsgBox.Caption = "Information"
 	IF msgType = msgWarn THEN winMsgBox.Caption = "Warning"
 	IF msgType = msgQuest THEN winMsgBox.Caption = "Question"
@@ -1093,7 +1097,7 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 		LY = 0
 		Mouse.Hide
 		FOR LX = 0 TO 639
-			LINE (LX, LY)-(LX, 479), SystemTheme.Shadow, , &HAAAA
+			LINE (LX, LY)-(LX, scrHeight - 1), SystemTheme.Shadow, , &HAAAA
 			IF LY = 0 THEN
 				LY = 1
 			ELSE
