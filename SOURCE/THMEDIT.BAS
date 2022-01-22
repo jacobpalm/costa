@@ -77,7 +77,7 @@ SUB Theme.Edit (BYVAL ThmFile AS STRING)
     winThemeEdit.Pos.Width = 528
     winThemeEdit.Pos.Height = 315
     winThemeEdit.Pos.Left = (640 - winThemeEdit.Pos.Width) / 2
-    winThemeEdit.Pos.Top = (480 - winThemeEdit.Pos.Height) / 2
+    winThemeEdit.Pos.Top = (scrHeight - winThemeEdit.Pos.Height) / 2
     winThemeEdit.Caption = "Theme editor - " + ThmFile
 
     frmPreview.Pos.Left = winThemeEdit.Pos.Left + 12
@@ -160,10 +160,10 @@ RedrawAll:
     Font.Print "Color for object:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 180, SystemTheme.WindowText, 1
 
     Mouse.Hide
-    LINE (433, 174)-(440, 174), SystemTheme.WindowText
-    LINE (425, 126)-(432, 126), SystemTheme.WindowText
-    LINE (379, 222)-(386, 222), SystemTheme.WindowText
-    LINE (379, 272)-(386, 272), SystemTheme.WindowText
+    LINE (433, winThemeEdit.Pos.Top + 92)-(440, winThemeEdit.Pos.Top + 92), SystemTheme.WindowText
+    LINE (425, winThemeEdit.Pos.Top + 44)-(432, winThemeEdit.Pos.Top + 44), SystemTheme.WindowText
+    LINE (379, winThemeEdit.Pos.Top + 140)-(386, winThemeEdit.Pos.Top + 140), SystemTheme.WindowText
+    LINE (379, winThemeEdit.Pos.Top + 190)-(386, winThemeEdit.Pos.Top + 190), SystemTheme.WindowText
 
     'Color indicator
     LINE (btnColor(thmClrDesktop).Pos.Left + 4, btnColor(thmClrDesktop).Pos.Top + 4)-(btnColor(thmClrDesktop).Pos.Left + btnColor(thmClrDesktop).Pos.Width - 4, btnColor(thmClrDesktop).Pos.Top + btnColor(thmClrDesktop).Pos.Height - 4), 8, B
@@ -556,7 +556,7 @@ FUNCTION Theme.Select () AS STRING
     winTheme.Pos.Width = 324
     winTheme.Pos.Height = 347
     winTheme.Pos.Left = (640 - winTheme.Pos.Width) / 2
-    winTheme.Pos.Top = (480 - winTheme.Pos.Height) / 2
+    winTheme.Pos.Top = (scrHeight - winTheme.Pos.Height) / 2
     winTheme.Caption = "Select theme to edit"
       
     frmPreview.Pos.Left = winTheme.Pos.Left + 12
@@ -643,10 +643,10 @@ FUNCTION Theme.Select () AS STRING
 UpdatePreview:
     Mouse.Hide
     LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 2)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + frmPreview.Pos.Height - 2), SystemTheme.Desktop, BF
-    LINE (winTheme.Pos.Left + 110, winTheme.Pos.Top + 29)-(winTheme.Pos.Left + 312, winTheme.Pos.Top + 59), POINT(170, 93), BF
+    LINE (winTheme.Pos.Left + 110, winTheme.Pos.Top + 29)-(winTheme.Pos.Left + 312, winTheme.Pos.Top + 59), POINT(170, winTheme.Pos.Top + 50), BF
     Mouse.Show
-    Font.Print RTRIM$(SystemTheme.Name), winTheme.Pos.Left + 115, winTheme.Pos.Top + 32, POINT(178, 100), 2
-    Font.Print RTRIM$(SystemTheme.Author), winTheme.Pos.Left + 115, winTheme.Pos.Top + 47, POINT(178, 100), 2
+    Font.Print RTRIM$(SystemTheme.Name), winTheme.Pos.Left + 115, winTheme.Pos.Top + 32, POINT(178, winTheme.Pos.Top + 18), 2
+    Font.Print RTRIM$(SystemTheme.Author), winTheme.Pos.Left + 115, winTheme.Pos.Top + 47, POINT(178, winTheme.Pos.Top + 18), 2
 
     Obj.DrawWin winPreview
     Obj.DrawTxt txtPreview, txtPreviewText, True
@@ -727,7 +727,7 @@ FUNCTION Theme.SelectObject (BYVAL CurrentSelection) AS INTEGER
     winSelectObject.Pos.Width = 224
     winSelectObject.Pos.Height = 343
     winSelectObject.Pos.Left = (640 - winSelectObject.Pos.Width) / 2
-    winSelectObject.Pos.Top = (480 - winSelectObject.Pos.Height) / 2
+    winSelectObject.Pos.Top = (scrHeight - winSelectObject.Pos.Height) / 2
     winSelectObject.Caption = "Select Object"
 
     FOR I = 1 TO 13
