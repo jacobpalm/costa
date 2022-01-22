@@ -1,3 +1,4 @@
+DECLARE SUB Sys.ShowLoading ()
 DEFINT A-Z
 OPTION EXPLICIT
 
@@ -846,9 +847,18 @@ SUB IconEdit.ShowLoadDialog ()
 
     DIM winSelect AS WindowType
     DIM imgPreview AS ImageType
-    DIM btnNext AS ButtonType, btnPrev AS ButtonType, BtnCancel AS ButtonType
+    DIM btnNext AS ButtonType, btnPrev AS ButtonType, btnCancel AS ButtonType
     DIM btnLoad AS ButtonType
                                      
+    IF scrMode = scrEGA THEN
+      Mouse.Hide
+      PCOPY 0, 1
+      Mouse.Show
+    ELSE
+      Sys.VGASave "LoadIcon"
+    END IF
+    Sys.ShowLoading
+
     REDIM IconFiles(0) AS STRING
     IconFiles(0) = DIR$(Sys.Path + "DATA\IMAGES\*.BSV")
 
@@ -864,22 +874,14 @@ SUB IconEdit.ShowLoadDialog ()
     Obj.SetSize btnLoad.Pos, winSelect.Pos.Left + 51, winSelect.Pos.Top + 58, 52, 52
     Obj.SetSize btnPrev.Pos, winSelect.Pos.Left + 15, winSelect.Pos.Top + 73, 22, 22
     Obj.SetSize btnNext.Pos, winSelect.Pos.Left + 117, winSelect.Pos.Top + 73, 22, 22
-    Obj.SetSize BtnCancel.Pos, winSelect.Pos.Left + 15, winSelect.Pos.Top + 124, 124, 22
+    Obj.SetSize btnCancel.Pos, winSelect.Pos.Left + 15, winSelect.Pos.Top + 124, 124, 22
     Obj.SetSize imgPreview.Pos, btnLoad.Pos.Left + 11, btnLoad.Pos.Top + 11, -1, -1
-
-    IF scrMode = scrEGA THEN
-      Mouse.Hide
-      PCOPY 0, 1
-      Mouse.Show
-    ELSE
-      Sys.VGASave "LoadIcon"
-    END IF
 
     winSelect.Caption = "Load icon"
     btnPrev.Caption = "<"
     btnNext.Caption = ">"
-    BtnCancel.Caption = "Cancel"
-    BtnCancel.HotKey = 1
+    btnCancel.Caption = "Cancel"
+    btnCancel.HotKey = 1
     btnLoad.Transparent = True
     imgPreview.ImageFile = IconFiles(0)
     
@@ -887,7 +889,7 @@ SUB IconEdit.ShowLoadDialog ()
     Obj.DrawBtn btnPrev, 0
     Obj.DrawBtn btnLoad, 0
     Obj.DrawBtn btnNext, 0
-    Obj.DrawBtn BtnCancel, 0
+    Obj.DrawBtn btnCancel, 0
     Obj.DrawImg imgPreview
 
     Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 37, SystemTheme.WindowText, FontHeading
@@ -905,7 +907,7 @@ SUB IconEdit.ShowLoadDialog ()
     DO
         Key$ = LCASE$(INKEY$)
 
-        IF Obj.BtnClick(BtnCancel) OR Key$ = CHR$(27) OR Key$ = "c" THEN
+        IF Obj.BtnClick(btnCancel) OR Key$ = CHR$(27) OR Key$ = "c" THEN
             IF scrMode = scrEGA THEN
               Mouse.Hide
               PCOPY 1, 0

@@ -1,9 +1,9 @@
-DECLARE SUB Theme.DrawIndicator (ActiveColor%)
 OPTION EXPLICIT
 DEFINT A-Z
 
 DECLARE FUNCTION Theme.SelectObject (BYVAL CurrentSelection%) AS INTEGER
 DECLARE FUNCTION Theme.Select () AS STRING
+DECLARE SUB Theme.DrawIndicator (ActiveColor%)
 DECLARE SUB Theme.Main ()
 DECLARE SUB Theme.Load (BYVAL ThmFile AS STRING)
 DECLARE SUB Theme.Edit (BYVAL ThmFile AS STRING)
@@ -749,7 +749,14 @@ FUNCTION Theme.SelectObject (BYVAL CurrentSelection) AS INTEGER
 
     ActiveSelection = CurrentSelection
 
-    Sys.VGASave "THMOBJ"
+    IF scrMode = scrEGA THEN
+      Mouse.Hide
+      PCOPY 0, 1
+      Mouse.Show
+    ELSE
+      Sys.VGASave "THMOBJ"
+    END IF
+
     Obj.DrawWin winSelectObject
     FOR I = 1 TO 13
       IF I = CurrentSelection THEN
@@ -765,13 +772,25 @@ FUNCTION Theme.SelectObject (BYVAL CurrentSelection) AS INTEGER
 
       IF Key$ = CHR$(13) THEN
         Theme.SelectObject = ActiveSelection
-        Sys.VGALoad "THMOBJ"
+        IF scrMode = scrEGA THEN
+          Mouse.Hide
+          PCOPY 1, 0
+          Mouse.Show
+        ELSE
+          Sys.VGALoad "THMOBJ"
+        END IF
         EXIT FUNCTION
       END IF
 
       IF Key$ = CHR$(27) THEN
         Theme.SelectObject = CurrentSelection
-        Sys.VGALoad "THMOBJ"
+        IF scrMode = scrEGA THEN
+          Mouse.Hide
+          PCOPY 1, 0
+          Mouse.Show
+        ELSE
+          Sys.VGALoad "THMOBJ"
+        END IF
         EXIT FUNCTION
       END IF
 
@@ -780,7 +799,13 @@ FUNCTION Theme.SelectObject (BYVAL CurrentSelection) AS INTEGER
         FOR I = 1 TO 13
           IF Obj.BtnClick(btnObject(I)) THEN
             Theme.SelectObject = I
-            Sys.VGALoad "THMOBJ"
+            IF scrMode = scrEGA THEN
+              Mouse.Hide
+              PCOPY 1, 0
+              Mouse.Show
+            ELSE
+              Sys.VGALoad "THMOBJ"
+            END IF
             EXIT FUNCTION
           END IF
         NEXT

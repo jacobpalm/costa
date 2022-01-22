@@ -1,3 +1,4 @@
+DECLARE SUB Sys.ShowLoading ()
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -66,14 +67,8 @@ FUNCTION TView.LoadFile (TargetFile AS STRING)
         EXIT FUNCTION
     END IF
 
-    DIM btnLoading AS ButtonType
-    btnLoading.Pos.Width = 110
-    btnLoading.Pos.Height = 34
-    btnLoading.Pos.Left = 265
-    btnLoading.Pos.Top = (scrHeight - btnLoading.Pos.Height) / 2
-    btnLoading.Caption = "Loading file..."
-    Obj.DrawBtn btnLoading, False
-    
+    Sys.ShowLoading
+
     FileHandle = FREEFILE
     OPEN TargetFile FOR INPUT AS #FileHandle
 

@@ -1,3 +1,4 @@
+DECLARE SUB Sys.ShowLoading ()
 DECLARE SUB Conf.SaveAssoc (FileType AS STRING, Command AS STRING)
 OPTION EXPLICIT
 DEFINT A-Z
@@ -367,6 +368,28 @@ SUB Conf.ConfTheme ()
     DIM OriginalTheme AS STRING
     DIM ThemeList() AS STRING
 
+    Sys.ShowLoading
+
+    'Load theme filenames into array
+    DIM TmpName$, TmpCount, ActiveTheme
+    REDIM ThemeList(0 TO 0) AS STRING
+    TmpName$ = DIR$(Sys.Path + "DATA\THEMES\*.DAT")
+    TmpCount = 0
+    DO WHILE NOT TmpName$ = ""
+        TmpName$ = LEFT$(TmpName$, LEN(TmpName$) - 4)
+        REDIM PRESERVE ThemeList(0 TO TmpCount) AS STRING
+        ThemeList(UBOUND(ThemeList)) = TmpName$
+        IF UCASE$(TmpName$) = UCASE$(RTRIM$(UserSettings.ThemeFile)) THEN ActiveTheme = TmpCount
+        TmpName$ = DIR$
+        TmpCount = TmpCount + 1
+    LOOP
+
+    IF TmpCount = 0 THEN
+        TmpCount = Sys.MsgBox("No theme files found.", "Costa could not find any theme files. Make sure that the" + CHR$(13) + "themes are in DATA\THEMES, and try again.", msgError)
+        EXIT SUB
+    END IF
+
+
     winTheme.Pos.Width = 324
     winTheme.Pos.Height = 347
     winTheme.Pos.Left = (640 - winTheme.Pos.Width) / 2
@@ -434,25 +457,6 @@ SUB Conf.ConfTheme ()
     btnMenuPreview.Transparent = True
 
 
-    'Load theme filenames into array
-    DIM TmpName$, TmpCount, ActiveTheme
-    REDIM ThemeList(0 TO 0) AS STRING
-    TmpName$ = DIR$(Sys.Path + "DATA\THEMES\*.DAT")
-    TmpCount = 0
-    DO WHILE NOT TmpName$ = ""
-        TmpName$ = LEFT$(TmpName$, LEN(TmpName$) - 4)
-        REDIM PRESERVE ThemeList(0 TO TmpCount) AS STRING
-        ThemeList(UBOUND(ThemeList)) = TmpName$
-        IF UCASE$(TmpName$) = UCASE$(RTRIM$(UserSettings.ThemeFile)) THEN ActiveTheme = TmpCount
-        TmpName$ = DIR$
-        TmpCount = TmpCount + 1
-    LOOP
-
-    IF TmpCount = 0 THEN
-        TmpCount = Sys.MsgBox("No theme files found.", "Costa could not find any theme files. Make sure that the" + CHR$(13) + "themes are in DATA\THEMES, and try again.", msgError)
-        EXIT SUB
-    END IF
-    
     OriginalTheme = RTRIM$(UserSettings.ThemeFile)
     UserSettings.ThemeFile = ThemeList(ActiveTheme)
     Sys.LoadTheme

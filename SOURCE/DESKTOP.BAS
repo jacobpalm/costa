@@ -1,3 +1,4 @@
+DECLARE SUB Sys.ShowLoading ()
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -331,6 +332,8 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
 
   DIM AllIcons() AS STRING
   DIM IconCount AS INTEGER, CurrentIcon AS INTEGER, IconFile AS STRING
+
+  Sys.ShowLoading
 
   IconFile = DIR$(Sys.Path + "DATA\IMAGES\*.BSV")
   IconCount = 0
@@ -763,7 +766,13 @@ LinkMenuRefresh:
             Mouse.Show
             DO: LOOP WHILE Mouse.Clicked
 
-            Sys.VGASave "DESKTOP"
+            IF scrMode = scrEGA THEN
+              Mouse.Hide
+              PCOPY 0, 1
+              Mouse.Show
+            ELSE
+              Sys.VGASave "DESKTOP"
+            END IF
             Desk.LinkDialog TargetLink, DidEdit, False
 
             IF DidEdit THEN
@@ -772,7 +781,13 @@ LinkMenuRefresh:
                 Desk.DrawDesktop
                 Mouse.Show
             ELSE
+              IF scrMode = scrEGA THEN
+                Mouse.Hide
+                PCOPY 1, 0
+                Mouse.Show
+              ELSE
                 Sys.VGALoad "DESKTOP"
+              END IF
             END IF
 
             EXIT SUB
@@ -1263,10 +1278,16 @@ MainLoopStart:
             DESKLINK(UBOUND(DESKLINK)).Top = 45
 
             GOSUB SlideUp
-            IF UserSettings.ShowDesktopInApps THEN Sys.VGASave "DESKTOP"
+            IF scrMode = scrEGA THEN
+              Mouse.Hide
+              PCOPY 0, 1
+              Mouse.Show
+            ELSE
+              IF UserSettings.ShowDesktopInApps THEN Sys.VGASave "DESKTOP"
+            END IF
             Desk.LinkDialog UBOUND(DESKLINK), DidEdit, True
 
-            IF DidEdit OR NOT UserSettings.ShowDesktopInApps THEN
+            IF DidEdit OR (NOT UserSettings.ShowDesktopInApps AND scrMode = scrVGA) THEN
                 TabCheck = -1
                 Desk.LinkLoad
                 Mouse.Hide
@@ -1275,7 +1296,13 @@ MainLoopStart:
                 Mouse.Show
             ELSE
                 REDIM PRESERVE DESKLINK(0 TO UBOUND(DESKLINK) - 1) AS DeskLinkType
-                Sys.VGALoad "DESKTOP"
+                IF scrMode = scrEGA THEN
+                  Mouse.Hide
+                  PCOPY 1, 0
+                  Mouse.Show
+                ELSE
+                  Sys.VGALoad "DESKTOP"
+                END IF
             END IF
 
             GOSUB SlideDown
@@ -1296,15 +1323,27 @@ MainLoopStart:
 
         IF Key$ = "a" THEN
             GOSUB SlideUp
-            IF UserSettings.ShowDesktopInApps THEN Sys.VGASave "DESKTOP"
-            Desk.AboutBox
-            IF UserSettings.ShowDesktopInApps THEN
-              Sys.VGALoad "DESKTOP"
-            ELSE
+            IF scrMode = scrEGA THEN
               Mouse.Hide
-              LINE (0, 29)-(639, scrHeight - 1), SystemTheme.Desktop, BF
-              Desk.DrawDesktop
+              PCOPY 0, 1
               Mouse.Show
+            ELSE
+              IF UserSettings.ShowDesktopInApps THEN Sys.VGASave "DESKTOP"
+            END IF
+            Desk.AboutBox
+            IF scrMode = scrEGA THEN
+              Mouse.Hide
+              PCOPY 1, 0
+              Mouse.Show
+            ELSE
+              IF UserSettings.ShowDesktopInApps THEN
+                Sys.VGALoad "DESKTOP"
+              ELSE
+                Mouse.Hide
+                LINE (0, 29)-(639, scrHeight - 1), SystemTheme.Desktop, BF
+                Desk.DrawDesktop
+                Mouse.Show
+              END IF
             END IF
             GOSUB SlideDown
             GOTO MainLoopStart
@@ -1448,6 +1487,8 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
     DIM AllIcons() AS STRING
     DIM IconCount AS INTEGER, CurrentIcon AS INTEGER, IconFile AS STRING
     DIM CurrentIconFilename AS STRING
+
+    Sys.ShowLoading
 
     IconFile = DIR$(Sys.Path + "DATA\IMAGES\*.BSV")
     IconCount = 0

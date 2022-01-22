@@ -720,7 +720,13 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 		IF msgLineCount > 1 THEN imgIcon.Pos.Top = imgIcon.Pos.Top + 5
 	END IF
 
-	Sys.VGASave "INPUTBOX"
+	IF scrMode = scrEGA THEN
+		Mouse.Hide
+		PCOPY 0, 1
+		Mouse.Show
+	ELSE
+		Sys.VGASave "INPUTBOX"
+	END IF
 
 	IF UserSettings.GreyoutOnMsgBox THEN
 		DIM LX, LY
@@ -781,7 +787,13 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 
 	LOOP
 
-	Sys.VGALoad "INPUTBOX"
+	IF scrMode = scrEGA THEN
+		Mouse.Hide
+		PCOPY 1, 0
+		Mouse.Show
+	ELSE
+		Sys.VGALoad "INPUTBOX"
+	END IF
 
 
 END FUNCTION
@@ -1092,7 +1104,13 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	Obj.SetSize btnSecond.Pos, 326, btnFirst.Pos.Top, 80, 22
 	btnSecond.Caption = "No": btnSecond.HotKey = 1
 	
-	Sys.VGASave "MSGBOX"
+	IF scrMode = scrEGA THEN
+		Mouse.Hide
+		PCOPY 0, 1
+		Mouse.Show
+	ELSE
+		Sys.VGASave "MSGBOX"
+	END IF
 
 	IF UserSettings.GreyoutOnMsgBox THEN
 		DIM LX, LY
@@ -1156,7 +1174,13 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	
 	LOOP
 
-	Sys.VGALoad "MSGBOX"
+	IF scrMode = scrEGA THEN
+		Mouse.Hide
+		PCOPY 1, 0
+		Mouse.Show
+	ELSE
+		Sys.VGALoad "MSGBOX"
+	END IF
 
 END FUNCTION
 
@@ -1211,6 +1235,18 @@ SaveSettingsError:
 	FileHandle = Sys.MsgBox("Could not save settings", "An error occured while saving your settings, and they were not saved." + CHR$(13) + "Make sure the disk is not full or write-protected, and try again.", msgError)
 	EXIT SUB
 	RESUME NEXT
+END SUB
+
+SUB Sys.ShowLoading ()
+
+		DIM btnLoading AS ButtonType
+		btnLoading.Pos.Width = 110
+		btnLoading.Pos.Height = 34
+		btnLoading.Pos.Left = 265
+		btnLoading.Pos.Top = (scrHeight - btnLoading.Pos.Height) / 2
+		btnLoading.Caption = "Loading..."
+		Obj.DrawBtn btnLoading, False
+
 END SUB
 
 STATIC SUB Sys.VGALoad (TargetFile AS STRING)
