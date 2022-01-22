@@ -70,7 +70,7 @@ FUNCTION TView.LoadFile (TargetFile AS STRING)
     btnLoading.Pos.Width = 110
     btnLoading.Pos.Height = 34
     btnLoading.Pos.Left = 265
-    btnLoading.Pos.Top = 223
+    btnLoading.Pos.Top = (scrHeight - btnLoading.Pos.Height) / 2
     btnLoading.Caption = "Loading file..."
     Obj.DrawBtn btnLoading, False
     
@@ -170,7 +170,7 @@ SUB TView.Main (FileToView AS STRING)
     IF scrHeight = 480 THEN
       MaxLinesShown = 26
     ELSE
-      MaxLinesShown = 13
+      MaxLinesShown = 17
     END IF
 
 StartOfAll:
@@ -192,6 +192,8 @@ StartOfAll:
     END IF
     Obj.DrawBtn btnExit, False
     Obj.DrawTxt txtEditor, "", False
+    Mouse.Hide
+    LINE (7, txtEditor.Pos.Top + 2)-(633, txtEditor.Pos.Top + txtEditor.Pos.Height - 2), SystemTheme.Textbox, BF
 
     IF FileOpened THEN
         StartLine = 1
@@ -237,8 +239,8 @@ StartOfAll:
                     PUT (7, (15 * (LineMove)) + 54), LineData, PSET
                     'SLEEP
                 NEXT
-                LINE (7, (15 * (27)) + 54)-(633, 15 * (27) + 68), SystemTheme.Textbox, BF
-                Font.Print FileData(StartLine + 26), 9, (15 * (27)) + 56, SystemTheme.TextboxText, FontSystem
+                LINE (7, (15 * (MaxLinesShown + 1)) + 54)-(633, 15 * (MaxLinesShown + 1) + 68), SystemTheme.Textbox, BF
+                Font.Print FileData(StartLine + MaxLinesShown), 9, (15 * (MaxLinesShown + 1)) + 56, SystemTheme.TextboxText, FontSystem
                 Mouse.Show
             END IF
         END IF

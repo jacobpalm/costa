@@ -894,9 +894,11 @@ SUB Sys.Load ()
 			
 
 	'VGA 640x480, 16 colors
-		IF scrHeight = 480 THEN
+		IF scrMode = scrVGA THEN
+			scrHeight = 480
 			SCREEN 12
 		ELSE
+			scrHeight = 350
 			SCREEN 9
 		END IF
 
