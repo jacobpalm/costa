@@ -133,9 +133,9 @@ SUB Desk.AboutBox ()
   DIM imgLogo AS ImageType
   DIM Key$
 
-  Obj.SetSize winAboutBox.Pos, 156, 100, 328, 278
-  Obj.SetSize btnClose.Pos, 274, 343, 92, 22
-  Obj.SetSize imgLogo.Pos, 168, 111, -1, -1
+  Obj.SetSize winAboutBox.Pos, 156, (scrHeight - 278) / 2, 328, 278
+  Obj.SetSize btnClose.Pos, 274, winAboutBox.Pos.Top + 243, 92, 22
+  Obj.SetSize imgLogo.Pos, 168, winAboutBox.Pos.Top + 11, -1, -1
   btnClose.Caption = "Close"
   btnClose.HotKey = 1
   imgLogo.ImageFile = "LOGO"
@@ -148,18 +148,18 @@ SUB Desk.AboutBox ()
   Mouse.Show
   Obj.DrawBtn btnClose, False
   
-  Font.Print appName, 210, 117, 0, 1
-  Font.Print "Version " + appVersion, 210, 131, 0, 2
-  Font.Print "Made in 2004-" + appYear + " by Jacob Palm.", 168, 153, 0, 2
-  Font.Print "Released under the MIT License.", 168, 167, 0, 2
-  Font.Print "Font files made in 1998-1999 by Rush Soft.", 168, 195, 0, 2
-  Font.Print "Costa is open source and may be freely distributed", 168, 223, 0, 2
-  Font.Print "as long as the terms of the MIT License is upheld -", 168, 237, 0, 2
-  Font.Print "more info can be found in the LICENSE file.", 168, 251, 0, 2
-  Font.Print "Special thanks to Todd Suess, who helped during", 168, 279, 0, 2
-  Font.Print "the development with useful tips and ideas. Also", 168, 293, 0, 2
-  Font.Print "thanks to those people who were part of the QB", 168, 307, 0, 2
-  Font.Print "GUI community - every one of you.", 168, 321, 0, 2
+  Font.Print appName, 210, winAboutBox.Pos.Top + 17, 0, 1
+  Font.Print "Version " + appVersion, 210, winAboutBox.Pos.Top + 31, 0, 2
+  Font.Print "Made in 2004-" + appYear + " by Jacob Palm.", 168, winAboutBox.Pos.Top + 53, 0, 2
+  Font.Print "Released under the MIT License.", 168, winAboutBox.Pos.Top + 67, 0, 2
+  Font.Print "Font files made in 1998-1999 by Rush Soft.", 168, winAboutBox.Pos.Top + 95, 0, 2
+  Font.Print "Costa is open source and may be freely distributed", 168, winAboutBox.Pos.Top + 123, 0, 2
+  Font.Print "as long as the terms of the MIT License is upheld -", 168, winAboutBox.Pos.Top + 137, 0, 2
+  Font.Print "more info can be found in the LICENSE file.", 168, winAboutBox.Pos.Top + 151, 0, 2
+  Font.Print "Special thanks to Todd Suess, who helped during", 168, winAboutBox.Pos.Top + 179, 0, 2
+  Font.Print "the development with useful tips and ideas. Also", 168, winAboutBox.Pos.Top + 193, 0, 2
+  Font.Print "thanks to those people who were part of the QB", 168, winAboutBox.Pos.Top + 207, 0, 2
+  Font.Print "GUI community - every one of you.", 168, winAboutBox.Pos.Top + 221, 0, 2
 
   Obj.DrawImg imgLogo
 
@@ -362,24 +362,24 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
   DIM imgIcon AS ImageType
   DIM chkPauseOnExit AS CheckBoxType
 
-  Obj.SetSize ConfWin.Pos, 210, 65, 220, 350
+  Obj.SetSize ConfWin.Pos, 210, (scrHeight - 350) / 2, 220, 350
 
   IF NewLink = False THEN
     ConfWin.Caption = "Customize desktop link"
   ELSE
     ConfWin.Caption = "Add desktop link"
   END IF
-  Obj.SetSize txtLinkCapt.Pos, 222, 111, 196, 19
-  Obj.SetSize btnIconPrev.Pos, 262, 163, 22, 22
-  Obj.SetSize frmIconFrame.Pos, 296, 150, 48, 48
-  Obj.SetSize imgIcon.Pos, 304, 158, 32, 32
-  Obj.SetSize btnIconNext.Pos, 356, 163, 22, 22
-  Obj.SetSize txtFileName.Pos, 222, 230, 196, 19
-  Obj.SetSize txtParams.Pos, 222, 276, 196, 19
-  Obj.SetSize txtPath.Pos, 222, 325, 196, 19
-  Obj.SetSize chkPauseOnExit.Pos, 222, 357, -1, -1
-  Obj.SetSize btnOK.Pos, 229, 384, 84, 22
-  Obj.SetSize btnCancel.Pos, 326, 384, 84, 22
+  Obj.SetSize txtLinkCapt.Pos, 222, ConfWin.Pos.Top + 46, 196, 19
+  Obj.SetSize btnIconPrev.Pos, 262, ConfWin.Pos.Top + 98, 22, 22
+  Obj.SetSize frmIconFrame.Pos, 296, ConfWin.Pos.Top + 85, 48, 48
+  Obj.SetSize imgIcon.Pos, 304, ConfWin.Pos.Top + 93, 32, 32
+  Obj.SetSize btnIconNext.Pos, 356, ConfWin.Pos.Top + 98, 22, 22
+  Obj.SetSize txtFileName.Pos, 222, ConfWin.Pos.Top + 165, 196, 19
+  Obj.SetSize txtParams.Pos, 222, ConfWin.Pos.Top + 211, 196, 19
+  Obj.SetSize txtPath.Pos, 222, ConfWin.Pos.Top + 260, 196, 19
+  Obj.SetSize chkPauseOnExit.Pos, 222, ConfWin.Pos.Top + 292, -1, -1
+  Obj.SetSize btnOK.Pos, 229, ConfWin.Pos.Top + 319, 84, 22
+  Obj.SetSize btnCancel.Pos, 326, ConfWin.Pos.Top + 319, 84, 22
 
   txtLinkCapt.MaxLen = 25
   txtFileName.MaxLen = 50
@@ -413,18 +413,18 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
   Obj.DrawChk chkPauseOnExit
   Obj.DrawBtn btnOK, False
   Obj.DrawBtn btnCancel, False
-  Font.Print "Description (caption):", 222, 97, SystemTheme.WindowText, 1
-  Font.Print "Program or DOS command:", 222, 213, SystemTheme.WindowText, 1
-  Font.Print "Parameters:", 222, 262, SystemTheme.WindowText, 1
-  Font.Print "Path (including drive):", 222, 311, SystemTheme.WindowText, 1
-  Font.Print "Pause after execution", 242, 360, SystemTheme.WindowText, 2
+  Font.Print "Description (caption):", 222, ConfWin.Pos.Top + 32, SystemTheme.WindowText, 1
+  Font.Print "Program or DOS command:", 222, ConfWin.Pos.Top + 148, SystemTheme.WindowText, 1
+  Font.Print "Parameters:", 222, ConfWin.Pos.Top + 197, SystemTheme.WindowText, 1
+  Font.Print "Path (including drive):", 222, ConfWin.Pos.Top + 246, SystemTheme.WindowText, 1
+  Font.Print "Pause after execution", 242, ConfWin.Pos.Top + 295, SystemTheme.WindowText, 2
   Mouse.Hide
-  LINE (221, 108)-(228, 108), SystemTheme.WindowText
-  LINE (298, 152)-(342, 196), SystemTheme.Desktop, BF
-  LINE (221, 224)-(228, 224), SystemTheme.WindowText
-  LINE (237, 322)-(244, 322), SystemTheme.WindowText
-  LINE (321, 371)-(327, 371), SystemTheme.WindowText
-  LINE (236, 273)-(243, 273), SystemTheme.WindowText
+  LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), SystemTheme.Desktop, BF
+  LINE (221, ConfWin.Pos.Top + 43)-(228, ConfWin.Pos.Top + 43), SystemTheme.WindowText
+  LINE (221, ConfWin.Pos.Top + 159)-(228, ConfWin.Pos.Top + 159), SystemTheme.WindowText
+  LINE (237, ConfWin.Pos.Top + 257)-(244, ConfWin.Pos.Top + 257), SystemTheme.WindowText
+  LINE (321, ConfWin.Pos.Top + 306)-(327, ConfWin.Pos.Top + 306), SystemTheme.WindowText
+  LINE (236, ConfWin.Pos.Top + 208)-(243, ConfWin.Pos.Top + 208), SystemTheme.WindowText
   Mouse.Show
   Obj.DrawImg imgIcon
 
@@ -561,6 +561,12 @@ SUB Desk.LinkLoad ()
 
         GET #FileHandle, , DESKLINK(LinkLoad)
 
+        'If screen resolution has been reduced, make sure icons aren't out
+        'of vertical view
+        IF DESKLINK(LinkLoad).Top > scrHeight - 32 THEN
+          DESKLINK(LinkLoad).Top = scrHeight - 32
+        END IF
+
     NEXT
     
     CLOSE #FileHandle
@@ -596,7 +602,7 @@ SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
     DrawFromLeft = True
   END IF
 
-  IF MenuY + MenuBack.Pos.Height > 479 THEN
+  IF MenuY + MenuBack.Pos.Height > (scrHeight - 1) THEN
     MenuBack.Pos.Top = MenuY - MenuBack.Pos.Height
     DrawFromTop = False
   ELSE
@@ -762,7 +768,7 @@ LinkMenuRefresh:
 
             IF DidEdit THEN
                 Mouse.Hide
-                LINE (0, 29)-(639, 479), SystemTheme.Desktop, BF
+                LINE (0, 29)-(639, scrHeight - 1), SystemTheme.Desktop, BF
                 Desk.DrawDesktop
                 Mouse.Show
             ELSE
@@ -779,7 +785,7 @@ LinkMenuRefresh:
             Mouse.Show
             Desk.LinkMove TargetLink
             Mouse.Hide
-            LINE (0, 2)-(639, 479), SystemTheme.Desktop, BF
+            LINE (0, 2)-(639, scrHeight - 1), SystemTheme.Desktop, BF
             Desk.DrawDesktop
             Mouse.Show
             EXIT SUB
@@ -803,7 +809,7 @@ LinkMenuRefresh:
                 Desk.LinkSave
                 Desk.LinkLoad
                 Mouse.Hide
-                LINE (0, 2)-(639, 479), SystemTheme.Desktop, BF
+                LINE (0, 2)-(639, scrHeight - 1), SystemTheme.Desktop, BF
                 Desk.DrawDesktop
                 Mouse.Show
                 DO: LOOP WHILE Mouse.Clicked
@@ -877,7 +883,7 @@ SUB Desk.LinkMove (TargetLink)
         KeyX = Mouse.X + 15
         KeyY = Mouse.Y
         IF KeyX > 624 THEN KeyX = 624
-        IF KeyY > 464 THEN KeyY = 464
+        IF KeyY > scrHeight - 16 THEN KeyY = scrHeight - 16
         Mouse.SetPos KeyX, KeyY
     END IF
     IF Key$ = CHR$(0) + "h" THEN
@@ -890,7 +896,7 @@ SUB Desk.LinkMove (TargetLink)
     IF Key$ = CHR$(0) + "p" THEN
         KeyY = Mouse.Y + 15
         KeyX = Mouse.X
-        IF KeyY > 464 THEN KeyY = 464
+        IF KeyY > scrHeight - 16 THEN KeyY = scrHeight - 16
         IF KeyX > 624 THEN KeyX = 624
         Mouse.SetPos KeyX, KeyY
     END IF
@@ -908,7 +914,7 @@ SUB Desk.LinkMove (TargetLink)
       IF LastX < 16 THEN LastX = 16
       IF LastY < 46 THEN LastY = 46
       IF LastX > 624 THEN LastX = 624
-      IF LastY > 464 THEN LastY = 464
+      IF LastY > scrHeight - 16 THEN LastY = scrHeight - 16
       GET (LastX - 16, LastY - 16)-(LastX + 15, LastY + 15), LinkIconBack
       PUT (LastX - 16, LastY - 16), LinkIcon, PSET
       Mouse.Show
@@ -1128,7 +1134,7 @@ SUB Desk.Main ()
   
 Desk.MainTop:
   Mouse.Hide
-  LINE (0, 2)-(639, 479), SystemTheme.Desktop, BF
+  LINE (0, 2)-(639, scrHeight - 1), SystemTheme.Desktop, BF
   Desk.LinkLoad
   Desk.DrawDesktop
   Mouse.Show
@@ -1264,7 +1270,7 @@ MainLoopStart:
                 TabCheck = -1
                 Desk.LinkLoad
                 Mouse.Hide
-                LINE (0, 29)-(639, 479), SystemTheme.Desktop, BF
+                LINE (0, 29)-(639, scrHeight - 1), SystemTheme.Desktop, BF
                 Desk.DrawDesktop
                 Mouse.Show
             ELSE
@@ -1296,7 +1302,7 @@ MainLoopStart:
               Sys.VGALoad "DESKTOP"
             ELSE
               Mouse.Hide
-              LINE (0, 29)-(639, 479), SystemTheme.Desktop, BF
+              LINE (0, 29)-(639, scrHeight - 1), SystemTheme.Desktop, BF
               Desk.DrawDesktop
               Mouse.Show
             END IF
@@ -1475,7 +1481,7 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
     winProfEdit.Pos.Width = 220
     winProfEdit.Pos.Height = 208
     winProfEdit.Pos.Left = (640 - winProfEdit.Pos.Width) / 2
-    winProfEdit.Pos.Top = (480 - winProfEdit.Pos.Height) / 2
+    winProfEdit.Pos.Top = (scrHeight - winProfEdit.Pos.Height) / 2
     winProfEdit.Caption = "Edit profile"
 
     Obj.SetSize frmIconFrame.Pos, 296, winProfEdit.Pos.Top + 46, 48, 48
@@ -1564,13 +1570,13 @@ SUB Desk.ProfileSelect ()
     UserSettings.ThemeFile = "DEFAULT"
     Sys.LoadTheme
     Mouse.Hide
-    LINE (0, 0)-(639, 479), SystemTheme.Desktop, BF
+    LINE (0, 0)-(639, scrHeight - 1), SystemTheme.Desktop, BF
     Mouse.Show
     
     winProfiles.Pos.Width = 338
     winProfiles.Pos.Height = 220
     winProfiles.Pos.Left = (640 - winProfiles.Pos.Width) / 2
-    winProfiles.Pos.Top = (480 - winProfiles.Pos.Height) / 2
+    winProfiles.Pos.Top = (scrHeight - winProfiles.Pos.Height) / 2
     winProfiles.Caption = "Profile selection"
 
     Obj.SetSize btnProfile(1).Pos, winProfiles.Pos.Left + 18, winProfiles.Pos.Top + 84, 46, 46
