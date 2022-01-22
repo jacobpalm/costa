@@ -45,13 +45,13 @@ SUB Conf.ConfAssoc ()
     DIM Key$
 
     
-    Obj.SetSize winAssoc.Pos, 92, 100, 455, 280
-    Obj.SetSize imgIcon.Pos, 105, 138, -1, -1
-    Obj.SetSize txtFileType.Pos, 105, 310, 50, -1
-    Obj.SetSize txtOpenWith.Pos, 182, 310, 353, -1
-    Obj.SetSize btnClose.Pos, 451, 346, 84, 23
-    Obj.SetSize btnSave.Pos, 351, 346, 84, 23
-    Obj.SetSize btnDisable.Pos, 105, 346, 84, 23
+    Obj.SetSize winAssoc.Pos, 92, (scrHeight - 280) / 2, 455, 280
+    Obj.SetSize imgIcon.Pos, 105, winAssoc.Pos.Top + 38, -1, -1
+    Obj.SetSize txtFileType.Pos, 105, winAssoc.Pos.Top + 210, 50, -1
+    Obj.SetSize txtOpenWith.Pos, 182, winAssoc.Pos.Top + 210, 353, -1
+    Obj.SetSize btnClose.Pos, 451, winAssoc.Pos.Top + 246, 84, 23
+    Obj.SetSize btnSave.Pos, 351, winAssoc.Pos.Top + 246, 84, 23
+    Obj.SetSize btnDisable.Pos, 105, winAssoc.Pos.Top + 246, 84, 23
 
     winAssoc.Caption = "File association editor"
     btnClose.Caption = "Close": btnClose.HotKey = 1
@@ -69,19 +69,19 @@ SUB Conf.ConfAssoc ()
     Obj.DrawBtn btnDisable, False
     
     Font.Print "Edit file associations", 148, winAssoc.Pos.Top + 33, SystemTheme.WindowText, 1
-    Font.Print "Using this editor you can associate files with programs, meaning", 148, 150, SystemTheme.WindowText, 2
-    Font.Print "that if you for example run README.TXT, and TXT is associated", 148, 166, SystemTheme.WindowText, 2
-    Font.Print "with EDIT.COM, EDIT.COM will run and open README.TXT for you.", 105, 182, SystemTheme.WindowText, 2
-    Font.Print "To associate a filetype with a program, type the filetype below. If a", 105, 214, SystemTheme.WindowText, 2
-    Font.Print "program is already assigned with this filetype, it will automatically", 105, 230, SystemTheme.WindowText, 2
-    Font.Print "show up in the ""Open with"" field. To remove an association, leave the", 105, 246, SystemTheme.WindowText, 2
-    Font.Print """Open with"" field blank.", 105, 262, SystemTheme.WindowText, 2
+    Font.Print "Using this editor you can associate files with programs, meaning", 148, winAssoc.Pos.Top + 50, SystemTheme.WindowText, 2
+    Font.Print "that if you for example run README.TXT, and TXT is associated", 148, winAssoc.Pos.Top + 66, SystemTheme.WindowText, 2
+    Font.Print "with EDIT.COM, EDIT.COM will run and open README.TXT for you.", 105, winAssoc.Pos.Top + 82, SystemTheme.WindowText, 2
+    Font.Print "To associate a filetype with a program, type the filetype below. If a", 105, winAssoc.Pos.Top + 114, SystemTheme.WindowText, 2
+    Font.Print "program is already assigned with this filetype, it will automatically", 105, winAssoc.Pos.Top + 130, SystemTheme.WindowText, 2
+    Font.Print "show up in the ""Open with"" field. To remove an association, leave the", 105, winAssoc.Pos.Top + 146, SystemTheme.WindowText, 2
+    Font.Print """Open with"" field blank.", 105, winAssoc.Pos.Top + 162, SystemTheme.WindowText, 2
 
-    Font.Print "Filetype", 105, 294, SystemTheme.WindowText, 1
-    Font.Print "Open with", 182, 294, SystemTheme.WindowText, 1
+    Font.Print "Filetype", 105, winAssoc.Pos.Top + 194, SystemTheme.WindowText, 1
+    Font.Print "Open with", 182, winAssoc.Pos.Top + 194, SystemTheme.WindowText, 1
     Mouse.Hide
-    LINE (104, 305)-(110, 305), SystemTheme.WindowText
-    LINE (181, 305)-(188, 305), SystemTheme.WindowText
+    LINE (104, winAssoc.Pos.Top + 205)-(110, winAssoc.Pos.Top + 205), SystemTheme.WindowText
+    LINE (181, winAssoc.Pos.Top + 205)-(188, winAssoc.Pos.Top + 205), SystemTheme.WindowText
     Mouse.Show
 
     Obj.DrawImg imgIcon
@@ -181,7 +181,7 @@ SUB Conf.ConfMisc ()
     winMisc.Pos.Width = 390
     winMisc.Pos.Height = 340
     winMisc.Pos.Left = (640 - winMisc.Pos.Width) / 2
-    winMisc.Pos.Top = (480 - winMisc.Pos.Height) / 2
+    winMisc.Pos.Top = (scrHeight - winMisc.Pos.Height) / 2
     Obj.SetSize frmDesktop.Pos, winMisc.Pos.Left + 12, winMisc.Pos.Top + 34, winMisc.Pos.Width - 24, 118
     Obj.SetSize frmVarious.Pos, winMisc.Pos.Left + 12, frmDesktop.Pos.Top + frmDesktop.Pos.Height + 12, frmDesktop.Pos.Width, 129
     Obj.SetSize chkShowLinkDesc.Pos, frmDesktop.Pos.Left + 12, frmDesktop.Pos.Top + 16, -1, -1
@@ -370,7 +370,7 @@ SUB Conf.ConfTheme ()
     winTheme.Pos.Width = 324
     winTheme.Pos.Height = 347
     winTheme.Pos.Left = (640 - winTheme.Pos.Width) / 2
-    winTheme.Pos.Top = (480 - winTheme.Pos.Height) / 2
+    winTheme.Pos.Top = (scrHeight - winTheme.Pos.Height) / 2
     winTheme.Caption = "Theme selector"
       
     frmPreview.Pos.Left = winTheme.Pos.Left + 12
@@ -461,19 +461,19 @@ SUB Conf.ConfTheme ()
 UpdatePreview:
     Mouse.Hide
     LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 2)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + frmPreview.Pos.Height - 2), SystemTheme.Desktop, BF
-    LINE (winTheme.Pos.Left + 110, winTheme.Pos.Top + 29)-(winTheme.Pos.Left + 312, winTheme.Pos.Top + 59), POINT(168, 94), BF
-    Font.Print RTRIM$(SystemTheme.Name), winTheme.Pos.Left + 115, winTheme.Pos.Top + 32, POINT(178, 100), 2
-    Font.Print RTRIM$(SystemTheme.Author), winTheme.Pos.Left + 115, winTheme.Pos.Top + 47, POINT(178, 100), 2
+    LINE (winTheme.Pos.Left + 110, winTheme.Pos.Top + 29)-(winTheme.Pos.Left + 312, winTheme.Pos.Top + 59), POINT(168, frmPreview.Pos.Top + 50), BF
+    Font.Print RTRIM$(SystemTheme.Name), winTheme.Pos.Left + 115, winTheme.Pos.Top + 32, POINT(winTheme.Pos.Left + 12, winTheme.Pos.Top + 32), fontNormal
+    Font.Print RTRIM$(SystemTheme.Author), winTheme.Pos.Left + 115, winTheme.Pos.Top + 47, POINT(winTheme.Pos.Left + 12, winTheme.Pos.Top + 32), fontNormal
     Mouse.Show
     Obj.DrawWin winPreview
     Obj.DrawTxt txtPreview, txtPreviewText, True
     Obj.DrawBtn btnPreview1, False
     Obj.DrawBtn btnPreview2, True
     
-    Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 32, SystemTheme.WindowText, 1
-    Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 48, SystemTheme.WindowText, 2
-    Font.Print "Preview link", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 4, SystemTheme.DesktopText, 1
-    Font.Print "preview.exe", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 18, SystemTheme.DesktopText, 2
+    Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 32, SystemTheme.WindowText, fontHeading
+    Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 48, SystemTheme.WindowText, fontNormal
+    Font.Print "Preview link", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 4, SystemTheme.DesktopText, fontHeading
+    Font.Print "preview.exe", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 18, SystemTheme.DesktopText, fontNormal
 
     Obj.DrawImg imgPreview
     Obj.DrawBtn btnMenuPreview, False
@@ -484,8 +484,8 @@ UpdatePreview:
     LINE (btnMenuPreview.Pos.Left + 5, btnMenuPreview.Pos.Top + 17)-(btnMenuPreview.Pos.Left + 12, btnMenuPreview.Pos.Top + 17), SystemTheme.SelectText
     LINE (btnMenuPreview.Pos.Left + 5, btnMenuPreview.Pos.Top + 33)-(btnMenuPreview.Pos.Left + 12, btnMenuPreview.Pos.Top + 33), SystemTheme.WindowText
     Mouse.Show
-    Font.Print "Selected item", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 6, SystemTheme.SelectText, 1
-    Font.Print "Unselected", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 22, SystemTheme.WindowText, 1
+    Font.Print "Selected item", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 6, SystemTheme.SelectText, fontHeading
+    Font.Print "Unselected", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 22, SystemTheme.WindowText, fontHeading
 
     Sys.LoadTheme
 
@@ -547,7 +547,7 @@ SUB Conf.Main ()
     winConfig.Pos.Width = 410
     winConfig.Pos.Height = 245
     winConfig.Pos.Left = (640 - winConfig.Pos.Width) / 2
-    winConfig.Pos.Top = (480 - winConfig.Pos.Height) / 2
+    winConfig.Pos.Top = (scrHeight - winConfig.Pos.Height) / 2
     winConfig.Caption = "Configuration"
 
     Obj.SetSize btnThemes.Pos, winConfig.Pos.Left + 14, winConfig.Pos.Top + 36, 46, 46
