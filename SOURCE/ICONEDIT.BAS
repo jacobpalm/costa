@@ -45,7 +45,7 @@ DIM SHARED DrawAreaOffsetX, DrawAreaOffsetY
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
-STACK 5120
+STACK 6144
 
 Sys.Load
 
@@ -329,8 +329,8 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     Obj.DrawBtn btnExit, False
     Obj.DrawTxt txtColor(-1), "", False
 
-    Font.Print "Colors", txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, txtDrawArea.Pos.Top, SystemTheme.WindowText, fontHeading
-    Font.Print "Tools", txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 60, txtDrawArea.Pos.Top, SystemTheme.WindowText, fontHeading
+    Font.Print "Colors", txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, txtDrawArea.Pos.Top, SystemTheme.WindowText, FontHeading
+    Font.Print "Tools", txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 60, txtDrawArea.Pos.Top, SystemTheme.WindowText, FontHeading
     Mouse.Hide
     LINE (txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 9, txtDrawArea.Pos.Top + 10)-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 16, txtDrawArea.Pos.Top + 10), SystemTheme.WindowText
     
@@ -354,7 +354,7 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     LINE (txtColor(-1).Pos.Left + 2, txtColor(-1).Pos.Top + 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 2, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 2), 15, BF
     LINE (txtColor(-1).Pos.Left + 2, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 2, txtColor(-1).Pos.Top + 2), 7
     
-    Font.Print "Preview", btnPreview.Pos.Left, btnPreview.Pos.Top - 15, SystemTheme.WindowText, fontHeading
+    Font.Print "Preview", btnPreview.Pos.Left, btnPreview.Pos.Top - 15, SystemTheme.WindowText, FontHeading
     LINE (btnPreview.Pos.Left - 1, btnPreview.Pos.Top - 4)-(btnPreview.Pos.Left + 5, btnPreview.Pos.Top - 4), SystemTheme.WindowText
     LINE (btnPreview.Pos.Left + 2, btnPreview.Pos.Top + 2)-(btnPreview.Pos.Left + btnPreview.Pos.Width - 2, btnPreview.Pos.Top + btnPreview.Pos.Height - 2), 15, BF
 
@@ -685,8 +685,13 @@ SUB IconEdit.Preview ()
 
     Obj.SetSize txtPreview.Pos, winPreview.Pos.Left + 10, winPreview.Pos.Top + 32, 247, 247
 
-    
-    Sys.VGASave "ICONPREW"
+    IF scrMode = scrEGA THEN
+      Mouse.Hide
+      PCOPY 0, 1
+      Mouse.Show
+    ELSE
+      Sys.VGASave "ICONPREW"
+    END IF
 
     Obj.DrawWin winPreview
     Obj.DrawBtn btnClose, False
@@ -741,7 +746,13 @@ SUB IconEdit.Preview ()
 
     LOOP
 
-    Sys.VGALoad "ICONPREW"
+    IF scrMode = scrEGA THEN
+      Mouse.Hide
+      PCOPY 1, 0
+      Mouse.Show
+    ELSE
+      Sys.VGALoad "ICONPREW"
+    END IF
     EXIT SUB
 
 PreviewError:
@@ -815,7 +826,7 @@ SUB IconEdit.SetTitle ()
     END IF
 
     WindowTitle = "Icon Editor for Costa - " + WindowTitle
-    XPos = (640 - Font.GetWidth(WindowTitle, fontHeading)) / 2
+    XPos = (640 - Font.GetWidth(WindowTitle, FontHeading)) / 2
 
     Mouse.Hide
     IF scrMode = scrVGA THEN
@@ -823,7 +834,7 @@ SUB IconEdit.SetTitle ()
     ELSE
       LINE (113, 16)-(527, 32), SystemTheme.TitleBar, BF
     END IF
-    Font.Print WindowTitle, XPos, 20, SystemTheme.TitleBarText, fontHeading
+    Font.Print WindowTitle, XPos, 20, SystemTheme.TitleBarText, FontHeading
     Mouse.Show
 
 END SUB
@@ -856,7 +867,14 @@ SUB IconEdit.ShowLoadDialog ()
     Obj.SetSize BtnCancel.Pos, winSelect.Pos.Left + 15, winSelect.Pos.Top + 124, 124, 22
     Obj.SetSize imgPreview.Pos, btnLoad.Pos.Left + 11, btnLoad.Pos.Top + 11, -1, -1
 
-    Sys.VGASave "LoadIcon"
+    IF scrMode = scrEGA THEN
+      Mouse.Hide
+      PCOPY 0, 1
+      Mouse.Show
+    ELSE
+      Sys.VGASave "LoadIcon"
+    END IF
+
     winSelect.Caption = "Load icon"
     btnPrev.Caption = "<"
     btnNext.Caption = ">"
@@ -872,7 +890,7 @@ SUB IconEdit.ShowLoadDialog ()
     Obj.DrawBtn BtnCancel, 0
     Obj.DrawImg imgPreview
 
-    Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), fontHeading) / 2), winSelect.Pos.Top + 37, SystemTheme.WindowText, fontHeading
+    Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 37, SystemTheme.WindowText, FontHeading
 
     DO
         REDIM PRESERVE IconFiles(0 TO UBOUND(IconFiles) + 1) AS STRING
@@ -888,7 +906,13 @@ SUB IconEdit.ShowLoadDialog ()
         Key$ = LCASE$(INKEY$)
 
         IF Obj.BtnClick(BtnCancel) OR Key$ = CHR$(27) OR Key$ = "c" THEN
-            Sys.VGALoad "LoadIcon"
+            IF scrMode = scrEGA THEN
+              Mouse.Hide
+              PCOPY 1, 0
+              Mouse.Show
+            ELSE
+              Sys.VGALoad "LoadIcon"
+            END IF
             EXIT SUB
         END IF
 
@@ -901,7 +925,7 @@ SUB IconEdit.ShowLoadDialog ()
             LINE (winSelect.Pos.Left + 10, winSelect.Pos.Top + 33)-(winSelect.Pos.Left + 146, winSelect.Pos.Top + 50), SystemTheme.Window, BF
             Mouse.Show
             Obj.DrawImg imgPreview
-            Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), fontHeading) / 2), winSelect.Pos.Top + 37, SystemTheme.WindowText, fontHeading
+            Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 37, SystemTheme.WindowText, FontHeading
         END IF
 
         IF Obj.BtnClick(btnNext) OR Key$ = CHR$(0) + "m" THEN 'Right arrow
@@ -913,11 +937,17 @@ SUB IconEdit.ShowLoadDialog ()
             LINE (winSelect.Pos.Left + 10, winSelect.Pos.Top + 33)-(winSelect.Pos.Left + 146, winSelect.Pos.Top + 50), SystemTheme.Window, BF
             Mouse.Show
             Obj.DrawImg imgPreview
-            Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), fontHeading) / 2), winSelect.Pos.Top + 37, SystemTheme.WindowText, fontHeading
+            Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 37, SystemTheme.WindowText, FontHeading
         END IF
 
         IF Obj.BtnClick(btnLoad) OR Key$ = CHR$(13) THEN
-            Sys.VGALoad "LoadIcon"
+            IF scrMode = scrEGA THEN
+              Mouse.Hide
+              PCOPY 1, 0
+              Mouse.Show
+            ELSE
+              Sys.VGALoad "LoadIcon"
+            END IF
             IconEdit.LoadIcon (IconFiles(IconIndex))
             EXIT SUB
         END IF
