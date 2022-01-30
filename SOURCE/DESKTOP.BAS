@@ -979,7 +979,7 @@ SUB Desk.LinkReset ()
     DESKLINK(0).Parameters = ""
     DESKLINK(0).ImageFile = "TICTAC"
     DESKLINK(0).Left = 15
-    DESKLINK(0).Top = 253
+    DESKLINK(0).Top = 45
 
     DESKLINK(1).Caption = "Text Viewer"
     DESKLINK(1).Filename = "TEXTVIEW.EXE"
@@ -987,7 +987,7 @@ SUB Desk.LinkReset ()
     DESKLINK(1).Parameters = ""
     DESKLINK(1).ImageFile = "DOCUMENT"
     DESKLINK(1).Left = 15
-    DESKLINK(1).Top = 298
+    DESKLINK(1).Top = 90
 
     DESKLINK(2).Caption = "Calculator"
     DESKLINK(2).Filename = "CALC.EXE"
@@ -995,7 +995,7 @@ SUB Desk.LinkReset ()
     DESKLINK(2).Parameters = ""
     DESKLINK(2).ImageFile = "CALC"
     DESKLINK(2).Left = 15
-    DESKLINK(2).Top = 343
+    DESKLINK(2).Top = 135
 
     DESKLINK(3).Caption = "Theme Editor"
     DESKLINK(3).Filename = "THMEDIT.EXE"
@@ -1003,7 +1003,7 @@ SUB Desk.LinkReset ()
     DESKLINK(3).Parameters = ""
     DESKLINK(3).ImageFile = "THEMES"
     DESKLINK(3).Left = 15
-    DESKLINK(3).Top = 388
+    DESKLINK(3).Top = 180
 
     DESKLINK(4).Caption = "Icon Editor"
     DESKLINK(4).Filename = "ICONEDIT.EXE"
@@ -1011,7 +1011,7 @@ SUB Desk.LinkReset ()
     DESKLINK(4).Parameters = ""
     DESKLINK(4).ImageFile = "PAINT"
     DESKLINK(4).Left = 15
-    DESKLINK(4).Top = 433
+    DESKLINK(4).Top = 225
 
     DESKLINK(5).Caption = "DOS-prompt"
     DESKLINK(5).Filename = "COMMAND.COM"
@@ -1028,7 +1028,7 @@ SUB Desk.LinkReset ()
     DESKLINK(6).Parameters = ""
     DESKLINK(6).ImageFile = "NEWSPAPE"
     DESKLINK(6).Left = 480
-    DESKLINK(6).Top = 388
+    DESKLINK(6).Top = 90
 
     DESKLINK(7).Caption = "User's guide"
     DESKLINK(7).Filename = "DOCS\HELP.TXT"
@@ -1036,7 +1036,7 @@ SUB Desk.LinkReset ()
     DESKLINK(7).Parameters = ""
     DESKLINK(7).ImageFile = "HELP"
     DESKLINK(7).Left = 480
-    DESKLINK(7).Top = 433
+    DESKLINK(7).Top = 135
 
     Desk.LinkSave
 
