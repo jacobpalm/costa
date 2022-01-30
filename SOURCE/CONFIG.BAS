@@ -486,6 +486,7 @@ UpdatePreview:
     Font.Print "Selected item", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 6, SystemTheme.SelectText, FontHeading
     Font.Print "Unselected", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 22, SystemTheme.WindowText, FontHeading
 
+    UserSettings.ThemeFile = OriginalTheme
     Sys.LoadTheme
 
 
