@@ -274,7 +274,7 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     DIM Key$, YPos, XPos, CursorX, CursorY, DrawColor, void
     DIM ColChk, FillColor, CurrentTool
 
-    IF scrMode = scrVGA THEN
+    IF UserSettings.ScreenMode = scrVGA THEN
       PixelSize = 13
       Obj.SetSize winMain.Pos, 48, 11, 544, 458
       Obj.SetSize txtDrawArea.Pos, winMain.Pos.Left + 8, winMain.Pos.Top + 31, 418, 418
@@ -686,7 +686,7 @@ SUB IconEdit.Preview ()
 
     Obj.SetSize txtPreview.Pos, winPreview.Pos.Left + 10, winPreview.Pos.Top + 32, 247, 247
 
-    IF scrMode = scrEGA THEN
+    IF UserSettings.ScreenMode = scrEGA THEN
       Mouse.Hide
       PCOPY 0, 1
       Mouse.Show
@@ -747,7 +747,7 @@ SUB IconEdit.Preview ()
 
     LOOP
 
-    IF scrMode = scrEGA THEN
+    IF UserSettings.ScreenMode = scrEGA THEN
       Mouse.Hide
       PCOPY 1, 0
       Mouse.Show
@@ -830,7 +830,7 @@ SUB IconEdit.SetTitle ()
     XPos = (640 - Font.GetWidth(WindowTitle, FontHeading)) / 2
 
     Mouse.Hide
-    IF scrMode = scrVGA THEN
+    IF UserSettings.ScreenMode = scrVGA THEN
       LINE (53, 16)-(587, 32), SystemTheme.TitleBar, BF
     ELSE
       LINE (113, 16)-(527, 32), SystemTheme.TitleBar, BF
@@ -850,7 +850,7 @@ SUB IconEdit.ShowLoadDialog ()
     DIM btnNext AS ButtonType, btnPrev AS ButtonType, btnCancel AS ButtonType
     DIM btnLoad AS ButtonType
                                      
-    IF scrMode = scrEGA THEN
+    IF UserSettings.ScreenMode = scrEGA THEN
       Mouse.Hide
       PCOPY 0, 1
       Mouse.Show
@@ -908,7 +908,7 @@ SUB IconEdit.ShowLoadDialog ()
         Key$ = LCASE$(INKEY$)
 
         IF Obj.BtnClick(btnCancel) OR Key$ = CHR$(27) OR Key$ = "c" THEN
-            IF scrMode = scrEGA THEN
+            IF UserSettings.ScreenMode = scrEGA THEN
               Mouse.Hide
               PCOPY 1, 0
               Mouse.Show
@@ -943,7 +943,7 @@ SUB IconEdit.ShowLoadDialog ()
         END IF
 
         IF Obj.BtnClick(btnLoad) OR Key$ = CHR$(13) THEN
-            IF scrMode = scrEGA THEN
+            IF UserSettings.ScreenMode = scrEGA THEN
               Mouse.Hide
               PCOPY 1, 0
               Mouse.Show

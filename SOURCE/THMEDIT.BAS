@@ -749,7 +749,7 @@ FUNCTION Theme.SelectObject (BYVAL CurrentSelection) AS INTEGER
 
     ActiveSelection = CurrentSelection
 
-    IF scrMode = scrEGA THEN
+    IF UserSettings.ScreenMode = scrEGA THEN
       Mouse.Hide
       PCOPY 0, 1
       Mouse.Show
@@ -772,7 +772,7 @@ FUNCTION Theme.SelectObject (BYVAL CurrentSelection) AS INTEGER
 
       IF Key$ = CHR$(13) THEN
         Theme.SelectObject = ActiveSelection
-        IF scrMode = scrEGA THEN
+        IF UserSettings.ScreenMode = scrEGA THEN
           Mouse.Hide
           PCOPY 1, 0
           Mouse.Show
@@ -784,7 +784,7 @@ FUNCTION Theme.SelectObject (BYVAL CurrentSelection) AS INTEGER
 
       IF Key$ = CHR$(27) THEN
         Theme.SelectObject = CurrentSelection
-        IF scrMode = scrEGA THEN
+        IF UserSettings.ScreenMode = scrEGA THEN
           Mouse.Hide
           PCOPY 1, 0
           Mouse.Show
@@ -799,7 +799,7 @@ FUNCTION Theme.SelectObject (BYVAL CurrentSelection) AS INTEGER
         FOR I = 1 TO 13
           IF Obj.BtnClick(btnObject(I)) THEN
             Theme.SelectObject = I
-            IF scrMode = scrEGA THEN
+            IF UserSettings.ScreenMode = scrEGA THEN
               Mouse.Hide
               PCOPY 1, 0
               Mouse.Show

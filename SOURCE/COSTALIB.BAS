@@ -720,7 +720,7 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 		IF msgLineCount > 1 THEN imgIcon.Pos.Top = imgIcon.Pos.Top + 5
 	END IF
 
-	IF scrMode = scrEGA THEN
+	IF UserSettings.ScreenMode = scrEGA THEN
 		Mouse.Hide
 		PCOPY 0, 1
 		Mouse.Show
@@ -787,7 +787,7 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 
 	LOOP
 
-	IF scrMode = scrEGA THEN
+	IF UserSettings.ScreenMode = scrEGA THEN
 		Mouse.Hide
 		PCOPY 1, 0
 		Mouse.Show
@@ -906,7 +906,7 @@ SUB Sys.Load ()
 			
 
 	'VGA 640x480, 16 colors
-		IF scrMode = scrVGA THEN
+		IF UserSettings.ScreenMode = scrVGA THEN
 			scrHeight = 480
 			SCREEN 12
 		ELSE
@@ -915,17 +915,9 @@ SUB Sys.Load ()
 		END IF
 
 		IF NOT DontDrawDesktop THEN
-
-			IF File.Exists(Sys.Path + "DATA\TEMP\DESKTOP.INT") AND UserSettings.ShowDesktopInApps THEN
-				Sys.VGALoad "DESKTOP"
-			ELSE
-				Mouse.Hide
-				LINE (0, 0)-(639, 0), SystemTheme.Window
-				LINE (0, 1)-(639, 1), SystemTheme.Shadow
-				LINE (0, 2)-(639, 2), 0
-				LINE (0, 2)-(639, scrHeight - 1), SystemTheme.Desktop, BF
-				Mouse.Show
-			END IF
+			Mouse.Hide
+			LINE (0, 0)-(639, scrHeight - 1), SystemTheme.Desktop, BF
+			Mouse.Show
 		END IF
 
 	'Set the right colors for the palette
@@ -976,6 +968,7 @@ SUB Sys.LoadProfile (ProfileNum)
 	IF RTRIM$(UserSettings.ProfileName) = "" THEN UserSettings.ProfileName = "Profile" + STR$(ProfileNum)
 	IF RTRIM$(UserSettings.ProfileImage) = "" THEN UserSettings.ProfileImage = "USERS"
 	IF RTRIM$(UserSettings.ThemeFile) = "" THEN UserSettings.ThemeFile = "DEFAULT"
+	IF NOT UserSettings.ScreenMode = scrVGA AND NOT UserSettings.ScreenMode = scrEGA THEN UserSettings.ScreenMode = scrEGA
 
 	EXIT SUB
 
@@ -986,7 +979,7 @@ LoadDefaultProfile:
 	UserSettings.Animations = True
 	UserSettings.ShowLinkDescriptions = True
 	UserSettings.ShowLinkTargetFiles = True
-	UserSettings.ShowDesktopInApps = True
+	UserSettings.ScreenMode = scrEGA
 	UserSettings.ConfirmLinkDelete = True
 	UserSettings.ConfirmExit = True
 	UserSettings.TipOfTheDay = True
@@ -1104,7 +1097,7 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	Obj.SetSize btnSecond.Pos, 326, btnFirst.Pos.Top, 80, 22
 	btnSecond.Caption = "No": btnSecond.HotKey = 1
 	
-	IF scrMode = scrEGA THEN
+	IF UserSettings.ScreenMode = scrEGA THEN
 		Mouse.Hide
 		PCOPY 0, 1
 		Mouse.Show
@@ -1174,7 +1167,7 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	
 	LOOP
 
-	IF scrMode = scrEGA THEN
+	IF UserSettings.ScreenMode = scrEGA THEN
 		Mouse.Hide
 		PCOPY 1, 0
 		Mouse.Show

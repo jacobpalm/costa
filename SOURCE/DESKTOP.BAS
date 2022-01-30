@@ -1,4 +1,3 @@
-DECLARE SUB Sys.ShowLoading ()
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -19,7 +18,6 @@ DECLARE SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
 DECLARE SUB Desk.ProfileSelect ()
 DECLARE SUB Desk.RunDialog ()
 DECLARE SUB Desk.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVAL TargetPath AS STRING, PauseOnExit AS INTEGER)
-
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
@@ -141,6 +139,12 @@ SUB Desk.AboutBox ()
   btnClose.HotKey = 1
   imgLogo.ImageFile = "LOGO"
   
+  IF UserSettings.ScreenMode = scrEGA THEN
+    Mouse.Hide
+    PCOPY 0, 1
+    Mouse.Show
+  END IF
+
   Obj.DrawWin winAboutBox
   Mouse.Hide
   LINE (winAboutBox.Pos.Left + 5, winAboutBox.Pos.Top + 5)-(winAboutBox.Pos.Left + winAboutBox.Pos.Width - 5, winAboutBox.Pos.Top + winAboutBox.Pos.Height - 5), SystemTheme.Shadow, B
@@ -168,9 +172,20 @@ SUB Desk.AboutBox ()
   DO
 
     Key$ = LCASE$(INKEY$)
-    IF Obj.BtnClick(btnClose) OR Key$ = CHR$(13) OR Key$ = CHR$(27) OR Key$ = "c" THEN EXIT SUB
+    IF Obj.BtnClick(btnClose) OR Key$ = CHR$(13) OR Key$ = CHR$(27) OR Key$ = "c" THEN EXIT DO
 
   LOOP
+
+  IF UserSettings.ScreenMode = scrEGA THEN
+    Mouse.Hide
+    PCOPY 1, 0
+    Mouse.Show
+  ELSE
+    Mouse.Hide
+    LINE (0, 0)-(639, scrHeight - 1), SystemTheme.Desktop, BF
+    Mouse.Show
+    Desk.DrawDesktop
+  END IF
   
 END SUB
 
@@ -187,6 +202,10 @@ END SUB
 ' =========================================================================
 SUB Desk.DrawDesktop ()
    
+  Mouse.Hide
+  LINE (0, 0)-(639, 479), SystemTheme.Desktop, BF
+  Mouse.Show
+  
   'All desklinks will always have an imagefile. Use this to check if any
   'desklinks exist
   IF RTRIM$(DESKLINK(0).ImageFile) = "" OR DESKLINK(0).Caption = STRING$(25, 0) THEN EXIT SUB
@@ -199,10 +218,16 @@ SUB Desk.DrawDesktop ()
   'each desklink
   FOR TargetLink = 0 TO UBOUND(DESKLINK)
 
+    'If screen resolution has been reduced, make sure icons aren't out
+    'of vertical view
+    IF DESKLINK(TargetLink).Top > scrHeight - 32 THEN
+      DESKLINK(TargetLink).Top = scrHeight - 32
+    END IF
+
     imgDeskLinkIcon.ImageFile = DESKLINK(TargetLink).ImageFile
     imgDeskLinkIcon.Pos.Left = DESKLINK(TargetLink).Left
     imgDeskLinkIcon.Pos.Top = DESKLINK(TargetLink).Top
-
+    
     Obj.DrawImg imgDeskLinkIcon
 
     'Description (caption) and target file
@@ -524,8 +549,6 @@ SUB Desk.LinkLaunch (TargetLink AS INTEGER)
 
     TargetPath = RTRIM$(DESKLINK(TargetLink).Path)
 
-    IF UserSettings.ShowDesktopInApps THEN Sys.VGASave "DESKTOP"
-
     Desk.Run RTRIM$(DESKLINK(TargetLink).Filename), RTRIM$(DESKLINK(TargetLink).Parameters), RTRIM$(DESKLINK(TargetLink).Path), DESKLINK(TargetLink).PauseOnExit
 
 
@@ -766,28 +789,19 @@ LinkMenuRefresh:
             Mouse.Show
             DO: LOOP WHILE Mouse.Clicked
 
-            IF scrMode = scrEGA THEN
+            IF UserSettings.ScreenMode = scrEGA THEN
               Mouse.Hide
               PCOPY 0, 1
               Mouse.Show
-            ELSE
-              Sys.VGASave "DESKTOP"
             END IF
             Desk.LinkDialog TargetLink, DidEdit, False
 
-            IF DidEdit THEN
-                Mouse.Hide
-                LINE (0, 29)-(639, scrHeight - 1), SystemTheme.Desktop, BF
+            IF DidEdit OR UserSettings.ScreenMode = scrVGA THEN
                 Desk.DrawDesktop
-                Mouse.Show
             ELSE
-              IF scrMode = scrEGA THEN
-                Mouse.Hide
-                PCOPY 1, 0
-                Mouse.Show
-              ELSE
-                Sys.VGALoad "DESKTOP"
-              END IF
+              Mouse.Hide
+              PCOPY 1, 0
+              Mouse.Show
             END IF
 
             EXIT SUB
@@ -891,7 +905,7 @@ SUB Desk.LinkMove (TargetLink)
         KeyX = Mouse.X - 15
         KeyY = Mouse.Y
         IF KeyX < 16 THEN KeyX = 16
-        IF KeyY < 46 THEN KeyY = 46
+        IF KeyY < 48 THEN KeyY = 48
         Mouse.SetPos KeyX, KeyY
     END IF
     IF Key$ = CHR$(0) + "m" THEN
@@ -927,7 +941,7 @@ SUB Desk.LinkMove (TargetLink)
       FlickerY = Mouse.Y
 
       IF LastX < 16 THEN LastX = 16
-      IF LastY < 46 THEN LastY = 46
+      IF LastY < 48 THEN LastY = 48
       IF LastX > 624 THEN LastX = 624
       IF LastY > scrHeight - 16 THEN LastY = scrHeight - 16
       GET (LastX - 16, LastY - 16)-(LastX + 15, LastY + 15), LinkIconBack
@@ -1147,10 +1161,10 @@ SUB Desk.Main ()
   CHDIR Sys.Path
   ON LOCAL ERROR GOTO 0
   
+  Desk.LinkLoad
+
 Desk.MainTop:
   Mouse.Hide
-  LINE (0, 2)-(639, scrHeight - 1), SystemTheme.Desktop, BF
-  Desk.LinkLoad
   Desk.DrawDesktop
   Mouse.Show
   TabCheck = -1
@@ -1225,18 +1239,18 @@ MainLoopStart:
                 Desk.LinkMenu DeskLinkCheck, ClickedX, ClickedY
                 GOSUB SlideDown
               ELSE
-                'Depending on the configuration a left click on a link
-                'will either open/run the targetfile or show the menu
 
-                'Check for double click - await button release first
+                'Left click. Check for double click - await button release
+                'first
                 DO: LOOP WHILE Mouse.Clicked
 
                 'Save current time, and loop until desired time has passed
+                'while checking for mouse click
                 DidDoubleClick = False
                 DoubleClickTimer = TIMER
                 DO
-                  'If mouse was clicked again within set time, and still within
-                  'icon, we have a doubleclick
+                  'If mouse was clicked again within set time, and still
+                  'within icon, we have a doubleclick
                   IF Mouse.Clicked = mbLeft THEN
                     ClickedX = Mouse.X
                     ClickedY = Mouse.Y
@@ -1278,16 +1292,14 @@ MainLoopStart:
             DESKLINK(UBOUND(DESKLINK)).Top = 45
 
             GOSUB SlideUp
-            IF scrMode = scrEGA THEN
+            IF UserSettings.ScreenMode = scrEGA THEN
               Mouse.Hide
               PCOPY 0, 1
               Mouse.Show
-            ELSE
-              IF UserSettings.ShowDesktopInApps THEN Sys.VGASave "DESKTOP"
             END IF
             Desk.LinkDialog UBOUND(DESKLINK), DidEdit, True
 
-            IF DidEdit OR (NOT UserSettings.ShowDesktopInApps AND scrMode = scrVGA) THEN
+            IF DidEdit OR (NOT UserSettings.ScreenMode AND UserSettings.ScreenMode = scrVGA) THEN
                 TabCheck = -1
                 Desk.LinkLoad
                 Mouse.Hide
@@ -1296,12 +1308,12 @@ MainLoopStart:
                 Mouse.Show
             ELSE
                 REDIM PRESERVE DESKLINK(0 TO UBOUND(DESKLINK) - 1) AS DeskLinkType
-                IF scrMode = scrEGA THEN
+                IF UserSettings.ScreenMode = scrEGA THEN
                   Mouse.Hide
                   PCOPY 1, 0
                   Mouse.Show
                 ELSE
-                  Sys.VGALoad "DESKTOP"
+                  Desk.DrawDesktop
                 END IF
             END IF
 
@@ -1313,7 +1325,6 @@ MainLoopStart:
             DIM FileToRun AS STRING
             FileToRun = Sys.InputBox("Execute program or command", "You can also use this dialog to open any file" + CHR$(13) + "associated with a program (like README.TXT).", "RUNPROG", "")
             IF LEN(FileToRun) AND NOT FileToRun = "C:\" THEN
-                IF UserSettings.ShowDesktopInApps THEN Sys.VGASave "DESKTOP"
                 DIM RunFile AS STRING
                 Desk.Run FileToRun, "", "", True
             END IF
@@ -1323,28 +1334,7 @@ MainLoopStart:
 
         IF Key$ = "a" THEN
             GOSUB SlideUp
-            IF scrMode = scrEGA THEN
-              Mouse.Hide
-              PCOPY 0, 1
-              Mouse.Show
-            ELSE
-              IF UserSettings.ShowDesktopInApps THEN Sys.VGASave "DESKTOP"
-            END IF
             Desk.AboutBox
-            IF scrMode = scrEGA THEN
-              Mouse.Hide
-              PCOPY 1, 0
-              Mouse.Show
-            ELSE
-              IF UserSettings.ShowDesktopInApps THEN
-                Sys.VGALoad "DESKTOP"
-              ELSE
-                Mouse.Hide
-                LINE (0, 29)-(639, scrHeight - 1), SystemTheme.Desktop, BF
-                Desk.DrawDesktop
-                Mouse.Show
-              END IF
-            END IF
             GOSUB SlideDown
             GOTO MainLoopStart
         END IF
@@ -1352,15 +1342,14 @@ MainLoopStart:
         IF Key$ = "p" THEN
             GOSUB SlideUp
             Desk.ProfileSelect
-            GOSUB Desk.MainTop
+            Desk.LinkLoad
+            GOTO Desk.MainTop
         END IF
 
         IF Key$ = "c" THEN
             GOSUB SlideUp
-            IF UserSettings.ShowDesktopInApps THEN Sys.VGASave "DESKTOP"
             Conf.Main
-            GOSUB SlideDown
-            GOTO MainLoopStart
+            GOTO Desk.MainTop
         END IF
 
 
@@ -1678,7 +1667,7 @@ TopOfProfile:
     FOR Counter = 1 TO 5
       Obj.DrawImg imgProfile(Counter)
     NEXT
-
+             
     DO
         Key$ = LCASE$(INKEY$)
 
@@ -1717,6 +1706,16 @@ TopOfProfile:
             Sys.SaveSettings
             Sys.LoadProfile SelectedProfile
             Sys.LoadTheme
+
+            Mouse.Hide
+            IF UserSettings.ScreenMode = scrVGA THEN
+              scrHeight = 480
+              SCREEN 12
+            ELSE
+              scrHeight = 350
+              SCREEN 9
+            END IF
+            Mouse.Show
             
             EXIT SUB
         END IF
