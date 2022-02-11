@@ -4,7 +4,8 @@ command line as a shell.
 
 It is designed for MS-DOS, but tested with PC-DOS, FreeDOS and DOSBox as
 well. In theory it should run on any MS-DOS compatible operating system with
-a 286 or better CPU, VGA graphics and a recommended minimum of 250 KB RAM.
+a 286 or better CPU, EGA (64K+ memory adapter required) or VGA graphics and
+a recommended minimum of 250 KB RAM.
 
 Although not required, a 386 or better CPU is recommended, as well as disk
 caching software (SmartDrive or similar) when running on older machines,
@@ -23,9 +24,12 @@ perhaps a nifty theme, feel free to drop me a message. I am always looking
 to add more to Costa, and credit will of course be given! 
 
 ## Using this code
-When opening project files (.MAK), use the /L parameter for all files except SETUP.MAK - as such:
+When opening project files (.MAK), use the /L parameter for all files except
+SETUP.MAK - as such:
 
+```
 VBDOS.EXE DESKTOP.MAK /L
+```
 
 This will cause VBDOS to load the libraries neccesary for Costa to work.
 If you get an error relating to "CALL ABSOLUTE" or "CALL INTERRUPT", you have 
