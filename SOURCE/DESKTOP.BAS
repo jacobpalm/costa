@@ -106,6 +106,14 @@ IF ProfileID < 1 OR ProfileID > 5 THEN
         Desk.ProfileSelect
     END IF
 
+    IF UserSettings.ScreenMode = scrVGA THEN
+      scrHeight = 480
+      SCREEN 12
+    ELSE
+      scrHeight = 350
+      SCREEN 9
+    END IF
+    
 END IF
 
 ON ERROR RESUME NEXT
