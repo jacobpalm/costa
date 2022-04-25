@@ -10,7 +10,7 @@ DEFINT A-Z
 		Pixel(31, 31) AS INTEGER
 	END TYPE
 	
-	DIM SHARED FontData(1 TO 3, 32 TO 127) AS STRING
+	DIM SHARED FontData(1 TO 3, 32 TO 127) AS STRING * 54
 	DIM SHARED FontWidth(1 TO 2, 32 TO 127) AS INTEGER
 
 FUNCTION File.Exists (TargetFile AS STRING)
@@ -842,15 +842,13 @@ SUB Sys.Load ()
 		IF (ProfileID < 1 OR ProfileID > 5) AND INSTR(COMMAND$, "/DEV") THEN
 			ProfileID = 1
 		END IF
-
-	
+		
 
 	'Prepare fonts for use
 		DIM FontErr
-		IF NOT File.Exists(Sys.Path + "DATA\FONTS\HEADING.FNT") THEN FontErr = True
-		IF NOT File.Exists(Sys.Path + "DATA\FONTS\NORMAL.FNT") THEN FontErr = True
-		IF NOT File.Exists(Sys.Path + "DATA\FONTS\SYSTEM.FNT") THEN FontErr = True
-
+		IF NOT File.Exists(Sys.Path + "DATA\FONTDATA.BSV") THEN FontErr = True
+		IF NOT File.Exists(Sys.Path + "DATA\FONTINFO.BSV") THEN FontErr = True
+		
 		IF FontErr THEN
 			CLS
 			PRINT "One or more font files were not found."
@@ -861,30 +859,17 @@ SUB Sys.Load ()
 			END 1
 		END IF
 
-		DIM CharAscii, FontFileHandle
-		'Chicago font
-			FontFileHandle = FREEFILE
-			OPEN Sys.Path + "DATA\FONTS\HEADING.FNT" FOR INPUT AS #FontFileHandle
-			FOR CharAscii = 32 TO 126
-				LINE INPUT #FontFileHandle, FontData(1, CharAscii)
-				INPUT #FontFileHandle, FontWidth(1, CharAscii)
-			NEXT
-			CLOSE #FontFileHandle
-		'Geneva font
-			OPEN Sys.Path + "DATA\FONTS\NORMAL.FNT" FOR INPUT AS #FontFileHandle
-			FOR CharAscii = 32 TO 126
-				LINE INPUT #FontFileHandle, FontData(2, CharAscii)
-				INPUT #FontFileHandle, FontWidth(2, CharAscii)
-			NEXT
-			CLOSE #FontFileHandle
-		'System (monospaced) font
-			OPEN Sys.Path + "DATA\FONTS\SYSTEM.FNT" FOR INPUT AS #FontFileHandle
-			FOR CharAscii = 32 TO 126
-				LINE INPUT #FontFileHandle, FontData(3, CharAscii)
-			NEXT
-			CLOSE #FontFileHandle
+		DEF SEG = VARSEG(FontData(1, 32))
+		'BSAVE Sys.Path + "DATA\FONTDATA.BSV", VARPTR(FontData(1, 32)), 15552
+		BLOAD Sys.Path + "DATA\FONTDATA.BSV", VARPTR(FontData(1, 32))
+		DEF SEG
 
-	
+		DEF SEG = VARSEG(FontWidth(1, 32))
+		'BSAVE Sys.Path + "DATA\FONTINFO.BSV", VARPTR(FontWidth(1, 32)), 384
+		BLOAD Sys.Path + "DATA\FONTINFO.BSV", VARPTR(FontWidth(1, 32))
+		DEF SEG
+
+		
 	'Load settings
 		Sys.LoadSettings
 		
