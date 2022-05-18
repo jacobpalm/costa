@@ -7,12 +7,8 @@ COSTA.BAT
 ~ELNK.TMP
 
 # Costa run-time data
-DATA/TEMP/*.INT
-DATA/TEMP/*.RED
-DATA/TEMP/*.GRN
-DATA/TEMP/*.BLU
-DATA/TEMP/*.TMP
-DATA/TEMP/*.BAT
+DATA/TEMP/
+!DATA/TEMP/INFO.TXT
 
 # Costa profile and configuration data
 DATA/CONFIG/
