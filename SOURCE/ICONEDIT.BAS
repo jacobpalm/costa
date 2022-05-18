@@ -574,6 +574,7 @@ SUB IconEdit.Main (IconToLoad AS STRING)
 
         END IF
     
+        DO: LOOP WHILE Mouse.Clicked
     LOOP
 
 
@@ -641,7 +642,6 @@ SUB IconEdit.MoveIndicator (Direction)
       END IF
     END IF
 
-    
 END SUB
 
 SUB IconEdit.NewIcon ()

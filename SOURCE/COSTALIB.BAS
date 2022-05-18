@@ -987,7 +987,7 @@ SUB Sys.LoadSettings ()
 
 LoadDefaultSettings:
 	SystemSettings.LastUsedProfile = 0
-	SystemSettings.UseLastProfile = False
+	SystemSettings.UseLastProfile = True
 
 END SUB
 
