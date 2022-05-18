@@ -976,10 +976,18 @@ END SUB
 SUB Sys.LoadSettings ()
 
 	DIM FileHandle
+
+	ON LOCAL ERROR GOTO LoadDefaultSettings
 	FileHandle = FREEFILE
 	OPEN Sys.Path + "\DATA\CONFIG\COSTA.DAT" FOR BINARY AS #FileHandle
 	GET #FileHandle, , SystemSettings
 	CLOSE #FileHandle
+
+	EXIT SUB
+
+LoadDefaultSettings:
+	SystemSettings.LastUsedProfile = 0
+	SystemSettings.UseLastProfile = False
 
 END SUB
 
