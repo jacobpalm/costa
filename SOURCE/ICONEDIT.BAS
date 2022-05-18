@@ -1,4 +1,3 @@
-DECLARE SUB Sys.ShowLoading ()
 DEFINT A-Z
 OPTION EXPLICIT
 
