@@ -1004,15 +1004,15 @@ SUB Sys.LoadTheme ()
 		GET #FileHandle, , SystemTheme
 		CLOSE #FileHandle
 	ELSE
-		SystemTheme.Desktop = 9
+		SystemTheme.Desktop = 7
 		SystemTheme.DesktopText = 0
 		SystemTheme.Window = 15
 		SystemTheme.Button = 7
 		SystemTheme.Textbox = 15
 		SystemTheme.TextboxText = 0
 		SystemTheme.WindowText = 0
-		SystemTheme.TitleBar = 0
-		SystemTheme.TitleBarText = 15
+		SystemTheme.TitleBar = 3
+		SystemTheme.TitleBarText = 0
 		SystemTheme.Light = 7
 		SystemTheme.Shadow = 8
 		SystemTheme.Select = 8
