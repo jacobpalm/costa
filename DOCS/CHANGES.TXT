@@ -6,6 +6,29 @@
                                  Changelog
 
 
+*1.6.0*
+The most notable change of 1.6.0 is the addiction of EGA support. Now, Costa
+will run on computers with an Enhanced Graphics Adapter with at least 64 KB
+memory, broadening the range of computers on which Costa is supported. The
+new EGA mode is also considerably faster on older machines (pre-1990).
+  -Support for both EGA/VGA (640x350) and VGA (640x480) graphics, and the
+   ability to switch between them on the fly
+  -New default theme - more lively than the one used in 1.5.0.
+  -New logo, for the first time ever. Since most other icons have changed,
+   I gave the logo an overhaul as well, to now feature a blue floppy disk
+   instead of the old black one.
+  -Font files converted from text format to binary format, reducing load time
+   by 88%
+  -Proprietary icons from Windows and games removed, and replaced with icons
+   drawn by myself. There are two reasons for this - for starters, I don't
+   own these icons, and won't be using them without permission. I also want
+   to make as much as possible myself, rather than using things others have
+   made
+  -FILETYPE.DAT, which hold file association configuration data, will now be
+   recreated automatically if missing. Now, as long as the font files and all
+   EXE files are present, Costa will run even if all other files are deleted
+  -Bug fixes, mostly graphical.
+
 *1.5.0*
 This version comes with many minor improvements and changes, but three stand
 out from the rest: A new UI design based on Costa 0.9.4, massive speed
