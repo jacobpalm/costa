@@ -1,5 +1,0 @@
-This directory is used by Costa to hold the cache and the temporary files
-used by Costa and its accessories.
-
-It is safe to delete the contents of this folder, but only when Costa is NOT
-running!

@@ -8,10 +8,10 @@ COSTA.BAT
 
 # Costa run-time data
 DATA/TEMP/
-!DATA/TEMP/INFO.TXT
 
 # Costa profile and configuration data
 DATA/CONFIG/
+!DATA/CONFIG/FILETYPE.DAT
 
 # Mac system files
 .DS_Store
