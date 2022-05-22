@@ -561,13 +561,13 @@ TopOfConf:
   btnFileAssoc.Transparent = True
   imgFileAssoc.Pos.Left = btnFileAssoc.Pos.Left + 7
   imgFileAssoc.Pos.Top = btnFileAssoc.Pos.Top + 7
-  imgFileAssoc.ImageFile = "UNKNOWN"
+  imgFileAssoc.ImageFile = "DOCUMENT"
 
   Obj.SetSize btnMisc.Pos, winConfig.Pos.Left + 14, winConfig.Pos.Top + 156, 46, 46
   btnMisc.Transparent = True
   imgMisc.Pos.Left = btnMisc.Pos.Left + 7
   imgMisc.Pos.Top = btnMisc.Pos.Top + 7
-  imgMisc.ImageFile = "MISCOPT"
+  imgMisc.ImageFile = "CONFIG"
 
   Obj.SetSize btnClose.Pos, winConfig.Pos.Left + winConfig.Pos.Width - 105, winConfig.Pos.Top + winConfig.Pos.Height - 35, 92, 22
   btnClose.Caption = "Close": btnClose.HotKey = 1
