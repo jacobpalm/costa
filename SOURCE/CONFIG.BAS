@@ -1,3 +1,4 @@
+DECLARE SUB Conf.RestoreAssoc ()
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -32,6 +33,10 @@ SUB Conf.ConfAssoc ()
         ELSE
             EXIT SUB
         END IF
+    END IF
+
+    IF NOT File.Exists(Sys.Path + "\DATA\CONFIG\FILETYPE.DAT") THEN
+      Conf.RestoreAssoc
     END IF
 
     DIM winAssoc AS WindowType
@@ -633,6 +638,49 @@ TopOfConf:
     END IF
 
   LOOP
+
+END SUB
+
+SUB Conf.RestoreAssoc ()
+
+    DIM DefaultAssoc(0 TO 6) AS FileAssociationType
+    DIM AssocFile
+
+    ON LOCAL ERROR RESUME NEXT
+    KILL Sys.Path + "\DATA\CONFIG\FILETYPE.DAT"
+    
+    AssocFile = FREEFILE
+    OPEN Sys.Path + "\DATA\CONFIG\FILETYPE.DAT" FOR BINARY AS #AssocFile
+
+    DefaultAssoc(0).FileType = "TXT"
+    DefaultAssoc(0).Command = "TEXTVIEW.EXE"
+    PUT #AssocFile, , DefaultAssoc(0)
+
+    DefaultAssoc(1).FileType = "INI"
+    DefaultAssoc(1).Command = "TEXTVIEW.EXE"
+    PUT #AssocFile, , DefaultAssoc(1)
+
+    DefaultAssoc(2).FileType = "THM"
+    DefaultAssoc(2).Command = "THMEDIT.EXE"
+    PUT #AssocFile, , DefaultAssoc(2)
+
+    DefaultAssoc(3).FileType = "DOC"
+    DefaultAssoc(3).Command = "TEXTVIEW.EXE"
+    PUT #AssocFile, , DefaultAssoc(3)
+
+    DefaultAssoc(4).FileType = "ME"
+    DefaultAssoc(4).Command = "TEXTEDIT.EXE"
+    PUT #AssocFile, , DefaultAssoc(4)
+
+    DefaultAssoc(5).FileType = "1ST"
+    DefaultAssoc(5).Command = "TEXTEDIT.EXE"
+    PUT #AssocFile, , DefaultAssoc(5)
+
+    DefaultAssoc(6).FileType = "CFG"
+    DefaultAssoc(6).Command = "TEXTEDIT.EXE"
+    PUT #AssocFile, , DefaultAssoc(6)
+                                    
+    CLOSE #AssocFile
 
 END SUB
 
