@@ -574,7 +574,6 @@ SUB IconEdit.Main (IconToLoad AS STRING)
 
         END IF
     
-        DO: LOOP WHILE Mouse.Clicked
     LOOP
 
 
