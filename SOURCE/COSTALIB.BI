@@ -35,6 +35,7 @@
     DECLARE SUB Sys.LoadTheme ()
     DECLARE SUB Sys.SaveProfile (ProfileNum%)
     DECLARE SUB Sys.SaveSettings ()
+    DECLARE SUB Sys.ShowLoading ()
     DECLARE SUB Sys.VGALoad (TargetFile AS STRING)
     DECLARE SUB Sys.VGASave (TargetFile AS STRING)
 
@@ -61,7 +62,10 @@
     CONST msgQuest = 3
     CONST msgError = 4
     CONST msgTip = 5
-    
+
+'Screen resolution constants
+  CONST scrEGA = 9
+  CONST scrVGA = 12
 
 'Type declarations
   TYPE PosType
@@ -115,7 +119,7 @@
     Animations AS INTEGER
     ShowLinkDescriptions AS INTEGER
     ShowLinkTargetFiles AS INTEGER
-    ShowDesktopInApps AS INTEGER
+    ScreenMode AS INTEGER
     ConfirmLinkDelete AS INTEGER
     ConfirmExit AS INTEGER
     TipOfTheDay AS INTEGER
@@ -154,4 +158,6 @@
   COMMON SHARED SystemSettings AS SystemSettingsType
   COMMON SHARED UserSettings AS UserSettingsType
   COMMON SHARED SystemTheme AS ThemeType
+
+  COMMON SHARED scrHeight AS INTEGER
 

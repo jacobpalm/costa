@@ -1,3 +1,4 @@
+DECLARE SUB Sys.ShowLoading ()
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -8,6 +9,7 @@ DECLARE SUB TView.Main (FileToView AS STRING)
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
 COMMON SHARED FileData() AS STRING
+COMMON SHARED MaxLinesShown
 
 'Window is full screen, so no need to load desktop background
 ON ERROR RESUME NEXT
@@ -36,7 +38,7 @@ SUB TView.DrawText (StartLine)
     DIM LineCount
 
     Mouse.Hide
-    FOR LineCount = StartLine TO StartLine + 26
+    FOR LineCount = StartLine TO StartLine + MaxLinesShown
         IF NOT LineCount > UBOUND(FileData) THEN
             LINE (7, (15 * (LineCount - StartLine + 1)) + 54)-(633, 15 * (LineCount - StartLine + 1) + 68), SystemTheme.Textbox, BF
             Font.Print FileData(LineCount), 9, (15 * (LineCount - StartLine + 1)) + 56, SystemTheme.TextboxText, FontSystem
@@ -65,14 +67,8 @@ FUNCTION TView.LoadFile (TargetFile AS STRING)
         EXIT FUNCTION
     END IF
 
-    DIM btnLoading AS ButtonType
-    btnLoading.Pos.Width = 110
-    btnLoading.Pos.Height = 34
-    btnLoading.Pos.Left = 265
-    btnLoading.Pos.Top = 223
-    btnLoading.Caption = "Loading file..."
-    Obj.DrawBtn btnLoading, False
-    
+    Sys.ShowLoading
+
     FileHandle = FREEFILE
     OPEN TargetFile FOR INPUT AS #FileHandle
 
@@ -139,7 +135,7 @@ SUB TView.Main (FileToView AS STRING)
     DIM StartLine, OldStartLine, FileOpened, OldFileOpened
     DIM LineMove, LineData(2371)
 
-    Obj.SetSize FileWin.Pos, 0, 3, 639, 476
+    Obj.SetSize FileWin.Pos, 0, 3, 639, scrHeight - 4
     FileWin.Caption = "Textviewer"
 
     Obj.SetSize btnOpen.Pos, 11, 35, -1, -1
@@ -154,7 +150,7 @@ SUB TView.Main (FileToView AS STRING)
     Obj.SetSize btnExit.Pos, 537, 35, -1, -1
     btnExit.Caption = "Close": btnExit.HotKey = 1
 
-    Obj.SetSize txtEditor.Pos, 5, 67, 630, 408
+    Obj.SetSize txtEditor.Pos, 6, 67, 627, FileWin.Pos.Height - 69
     
     IF LEN(LTRIM$(RTRIM$(FileToView))) THEN
         Filename = LTRIM$(RTRIM$(FileToView))
@@ -164,6 +160,12 @@ SUB TView.Main (FileToView AS STRING)
         ELSE
             FileOpened = TView.LoadFile(Filename)
         END IF
+    END IF
+
+    IF scrHeight = 480 THEN
+      MaxLinesShown = 26
+    ELSE
+      MaxLinesShown = 17
     END IF
 
 StartOfAll:
@@ -185,6 +187,9 @@ StartOfAll:
     END IF
     Obj.DrawBtn btnExit, False
     Obj.DrawTxt txtEditor, "", False
+    Mouse.Hide
+    LINE (7, txtEditor.Pos.Top + 2)-(633, txtEditor.Pos.Top + txtEditor.Pos.Height - 2), SystemTheme.Textbox, BF
+    Mouse.Show
 
     IF FileOpened THEN
         StartLine = 1
@@ -203,7 +208,7 @@ StartOfAll:
             IF NOT StartLine = OldStartLine THEN
                 Mouse.Hide
 
-                FOR LineMove = 26 TO 1 STEP -1
+                FOR LineMove = MaxLinesShown TO 1 STEP -1
                     GET (7, (15 * (LineMove)) + 54)-(633, 15 * (LineMove) + 68), LineData
                     PUT (7, (15 * (LineMove + 1)) + 54), LineData, PSET
                     'SLEEP
@@ -225,13 +230,13 @@ StartOfAll:
             END IF
             IF NOT StartLine = OldStartLine THEN
                 Mouse.Hide
-                FOR LineMove = 1 TO 26
+                FOR LineMove = 1 TO MaxLinesShown
                     GET (7, (15 * (LineMove + 1)) + 54)-(633, 15 * (LineMove + 1) + 68), LineData
                     PUT (7, (15 * (LineMove)) + 54), LineData, PSET
                     'SLEEP
                 NEXT
-                LINE (7, (15 * (27)) + 54)-(633, 15 * (27) + 68), SystemTheme.Textbox, BF
-                Font.Print FileData(StartLine + 26), 9, (15 * (27)) + 56, SystemTheme.TextboxText, FontSystem
+                LINE (7, (15 * (MaxLinesShown + 1)) + 54)-(633, 15 * (MaxLinesShown + 1) + 68), SystemTheme.Textbox, BF
+                Font.Print FileData(StartLine + MaxLinesShown), 9, (15 * (MaxLinesShown + 1)) + 56, SystemTheme.TextboxText, FontSystem
                 Mouse.Show
             END IF
         END IF
@@ -239,7 +244,7 @@ StartOfAll:
         'Page up
         IF (Obj.BtnClick(btnPageUp) OR Key$ = "u" OR Key$ = CHR$(0) + "i") AND FileOpened THEN
             OldStartLine = StartLine
-            StartLine = StartLine - 27
+            StartLine = StartLine - (MaxLinesShown + 1)
             IF StartLine < 1 THEN StartLine = 1
             IF NOT StartLine = OldStartLine THEN TView.DrawText StartLine
         END IF
@@ -247,9 +252,9 @@ StartOfAll:
         'Page down
         IF (Obj.BtnClick(btnPageDown) OR Key$ = "d" OR Key$ = CHR$(0) + "q") AND FileOpened THEN
             OldStartLine = StartLine
-            StartLine = StartLine + 27
-            IF StartLine > UBOUND(FileData) - 26 THEN
-                StartLine = UBOUND(FileData) - 26
+            StartLine = StartLine + MaxLinesShown + 1
+            IF StartLine > UBOUND(FileData) - MaxLinesShown THEN
+                StartLine = UBOUND(FileData) - MaxLinesShown
                 IF StartLine < 1 THEN StartLine = 1
             END IF
             IF NOT StartLine = OldStartLine THEN TView.DrawText StartLine
@@ -263,7 +268,7 @@ StartOfAll:
         'End
         IF Key$ = CHR$(0) + "o" THEN
             OldStartLine = StartLine
-            StartLine = UBOUND(FileData) - 26
+            StartLine = UBOUND(FileData) - MaxLinesShown
             IF StartLine < 1 THEN StartLine = 1
             IF NOT StartLine = OldStartLine THEN TView.DrawText StartLine
         END IF

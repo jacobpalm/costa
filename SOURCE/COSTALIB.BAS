@@ -10,7 +10,7 @@ DEFINT A-Z
 		Pixel(31, 31) AS INTEGER
 	END TYPE
 	
-	DIM SHARED FontData(1 TO 3, 32 TO 127) AS STRING
+	DIM SHARED FontData(1 TO 3, 32 TO 127) AS STRING * 54
 	DIM SHARED FontWidth(1 TO 2, 32 TO 127) AS INTEGER
 
 FUNCTION File.Exists (TargetFile AS STRING)
@@ -697,7 +697,7 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 	IF winInputBox.Pos.Width < 194 THEN winInputBox.Pos.Width = 194
 	winInputBox.Pos.Height = msgLineCount * 15 + 138
 	winInputBox.Pos.Left = (640 - winInputBox.Pos.Width) / 2
-	winInputBox.Pos.Top = (480 - winInputBox.Pos.Height) / 2
+	winInputBox.Pos.Top = (scrHeight - winInputBox.Pos.Height) / 2
 	winInputBox.Caption = "Input required"
 
 	DIM txtInput AS TextboxType, txtInputText AS STRING
@@ -720,14 +720,20 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 		IF msgLineCount > 1 THEN imgIcon.Pos.Top = imgIcon.Pos.Top + 5
 	END IF
 
-	Sys.VGASave "INPUTBOX"
+	IF UserSettings.ScreenMode = scrEGA THEN
+		Mouse.Hide
+		PCOPY 0, 1
+		Mouse.Show
+	ELSE
+		Sys.VGASave "INPUTBOX"
+	END IF
 
 	IF UserSettings.GreyoutOnMsgBox THEN
 		DIM LX, LY
 		LY = 0
 		Mouse.Hide
 		FOR LX = 0 TO 639
-			LINE (LX, LY)-(LX, 479), SystemTheme.Shadow, , &HAAAA
+			LINE (LX, LY)-(LX, scrHeight - 1), SystemTheme.Shadow, , &HAAAA
 			IF LY = 0 THEN
 				LY = 1
 			ELSE
@@ -781,7 +787,13 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 
 	LOOP
 
-	Sys.VGALoad "INPUTBOX"
+	IF UserSettings.ScreenMode = scrEGA THEN
+		Mouse.Hide
+		PCOPY 1, 0
+		Mouse.Show
+	ELSE
+		Sys.VGALoad "INPUTBOX"
+	END IF
 
 
 END FUNCTION
@@ -830,15 +842,13 @@ SUB Sys.Load ()
 		IF (ProfileID < 1 OR ProfileID > 5) AND INSTR(COMMAND$, "/DEV") THEN
 			ProfileID = 1
 		END IF
-
-	
+		
 
 	'Prepare fonts for use
 		DIM FontErr
-		IF NOT File.Exists(Sys.Path + "DATA\FONTS\HEADING.FNT") THEN FontErr = True
-		IF NOT File.Exists(Sys.Path + "DATA\FONTS\NORMAL.FNT") THEN FontErr = True
-		IF NOT File.Exists(Sys.Path + "DATA\FONTS\SYSTEM.FNT") THEN FontErr = True
-
+		IF NOT File.Exists(Sys.Path + "DATA\FONTDATA.BSV") THEN FontErr = True
+		IF NOT File.Exists(Sys.Path + "DATA\FONTINFO.BSV") THEN FontErr = True
+		
 		IF FontErr THEN
 			CLS
 			PRINT "One or more font files were not found."
@@ -849,30 +859,17 @@ SUB Sys.Load ()
 			END 1
 		END IF
 
-		DIM CharAscii, FontFileHandle
-		'Chicago font
-			FontFileHandle = FREEFILE
-			OPEN Sys.Path + "DATA\FONTS\HEADING.FNT" FOR INPUT AS #FontFileHandle
-			FOR CharAscii = 32 TO 126
-				LINE INPUT #FontFileHandle, FontData(1, CharAscii)
-				INPUT #FontFileHandle, FontWidth(1, CharAscii)
-			NEXT
-			CLOSE #FontFileHandle
-		'Geneva font
-			OPEN Sys.Path + "DATA\FONTS\NORMAL.FNT" FOR INPUT AS #FontFileHandle
-			FOR CharAscii = 32 TO 126
-				LINE INPUT #FontFileHandle, FontData(2, CharAscii)
-				INPUT #FontFileHandle, FontWidth(2, CharAscii)
-			NEXT
-			CLOSE #FontFileHandle
-		'System (monospaced) font
-			OPEN Sys.Path + "DATA\FONTS\SYSTEM.FNT" FOR INPUT AS #FontFileHandle
-			FOR CharAscii = 32 TO 126
-				LINE INPUT #FontFileHandle, FontData(3, CharAscii)
-			NEXT
-			CLOSE #FontFileHandle
+		DEF SEG = VARSEG(FontData(1, 32))
+		'BSAVE Sys.Path + "DATA\FONTDATA.BSV", VARPTR(FontData(1, 32)), 15552
+		BLOAD Sys.Path + "DATA\FONTDATA.BSV", VARPTR(FontData(1, 32))
+		DEF SEG
 
-	
+		DEF SEG = VARSEG(FontWidth(1, 32))
+		'BSAVE Sys.Path + "DATA\FONTINFO.BSV", VARPTR(FontWidth(1, 32)), 384
+		BLOAD Sys.Path + "DATA\FONTINFO.BSV", VARPTR(FontWidth(1, 32))
+		DEF SEG
+
+		
 	'Load settings
 		Sys.LoadSettings
 		
@@ -894,20 +891,18 @@ SUB Sys.Load ()
 			
 
 	'VGA 640x480, 16 colors
-		SCREEN 12
+		IF UserSettings.ScreenMode = scrVGA THEN
+			scrHeight = 480
+			SCREEN 12
+		ELSE
+			scrHeight = 350
+			SCREEN 9
+		END IF
 
 		IF NOT DontDrawDesktop THEN
-
-			IF File.Exists(Sys.Path + "DATA\TEMP\DESKTOP.INT") AND UserSettings.ShowDesktopInApps THEN
-				Sys.VGALoad "DESKTOP"
-			ELSE
-				Mouse.Hide
-				LINE (0, 0)-(639, 0), SystemTheme.Window
-				LINE (0, 1)-(639, 1), SystemTheme.Shadow
-				LINE (0, 2)-(639, 2), 0
-				LINE (0, 2)-(639, 479), SystemTheme.Desktop, BF
-				Mouse.Show
-			END IF
+			Mouse.Hide
+			LINE (0, 0)-(639, scrHeight - 1), SystemTheme.Desktop, BF
+			Mouse.Show
 		END IF
 
 	'Set the right colors for the palette
@@ -958,6 +953,7 @@ SUB Sys.LoadProfile (ProfileNum)
 	IF RTRIM$(UserSettings.ProfileName) = "" THEN UserSettings.ProfileName = "Profile" + STR$(ProfileNum)
 	IF RTRIM$(UserSettings.ProfileImage) = "" THEN UserSettings.ProfileImage = "USERS"
 	IF RTRIM$(UserSettings.ThemeFile) = "" THEN UserSettings.ThemeFile = "DEFAULT"
+	IF NOT UserSettings.ScreenMode = scrVGA AND NOT UserSettings.ScreenMode = scrEGA THEN UserSettings.ScreenMode = scrEGA
 
 	EXIT SUB
 
@@ -968,7 +964,7 @@ LoadDefaultProfile:
 	UserSettings.Animations = True
 	UserSettings.ShowLinkDescriptions = True
 	UserSettings.ShowLinkTargetFiles = True
-	UserSettings.ShowDesktopInApps = True
+	UserSettings.ScreenMode = scrEGA
 	UserSettings.ConfirmLinkDelete = True
 	UserSettings.ConfirmExit = True
 	UserSettings.TipOfTheDay = True
@@ -980,10 +976,18 @@ END SUB
 SUB Sys.LoadSettings ()
 
 	DIM FileHandle
+
+	ON LOCAL ERROR GOTO LoadDefaultSettings
 	FileHandle = FREEFILE
 	OPEN Sys.Path + "\DATA\CONFIG\COSTA.DAT" FOR BINARY AS #FileHandle
 	GET #FileHandle, , SystemSettings
 	CLOSE #FileHandle
+
+	EXIT SUB
+
+LoadDefaultSettings:
+	SystemSettings.LastUsedProfile = 0
+	SystemSettings.UseLastProfile = True
 
 END SUB
 
@@ -1000,15 +1004,15 @@ SUB Sys.LoadTheme ()
 		GET #FileHandle, , SystemTheme
 		CLOSE #FileHandle
 	ELSE
-		SystemTheme.Desktop = 9
+		SystemTheme.Desktop = 7
 		SystemTheme.DesktopText = 0
 		SystemTheme.Window = 15
 		SystemTheme.Button = 7
 		SystemTheme.Textbox = 15
 		SystemTheme.TextboxText = 0
 		SystemTheme.WindowText = 0
-		SystemTheme.TitleBar = 0
-		SystemTheme.TitleBarText = 15
+		SystemTheme.TitleBar = 3
+		SystemTheme.TitleBarText = 0
 		SystemTheme.Light = 7
 		SystemTheme.Shadow = 8
 		SystemTheme.Select = 8
@@ -1056,7 +1060,7 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	END IF
 	winMsgBox.Pos.Height = msgLineCount * 15 + 96
 	winMsgBox.Pos.Left = (640 - winMsgBox.Pos.Width) / 2
-	winMsgBox.Pos.Top = (480 - winMsgBox.Pos.Height) / 2
+	winMsgBox.Pos.Top = (scrHeight - winMsgBox.Pos.Height) / 2
 	IF msgType = msgInfo THEN winMsgBox.Caption = "Information"
 	IF msgType = msgWarn THEN winMsgBox.Caption = "Warning"
 	IF msgType = msgQuest THEN winMsgBox.Caption = "Question"
@@ -1086,14 +1090,20 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	Obj.SetSize btnSecond.Pos, 326, btnFirst.Pos.Top, 80, 22
 	btnSecond.Caption = "No": btnSecond.HotKey = 1
 	
-	Sys.VGASave "MSGBOX"
+	IF UserSettings.ScreenMode = scrEGA THEN
+		Mouse.Hide
+		PCOPY 0, 1
+		Mouse.Show
+	ELSE
+		Sys.VGASave "MSGBOX"
+	END IF
 
 	IF UserSettings.GreyoutOnMsgBox THEN
 		DIM LX, LY
 		LY = 0
 		Mouse.Hide
 		FOR LX = 0 TO 639
-			LINE (LX, LY)-(LX, 479), SystemTheme.Shadow, , &HAAAA
+			LINE (LX, LY)-(LX, scrHeight - 1), SystemTheme.Shadow, , &HAAAA
 			IF LY = 0 THEN
 				LY = 1
 			ELSE
@@ -1150,7 +1160,13 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	
 	LOOP
 
-	Sys.VGALoad "MSGBOX"
+	IF UserSettings.ScreenMode = scrEGA THEN
+		Mouse.Hide
+		PCOPY 1, 0
+		Mouse.Show
+	ELSE
+		Sys.VGALoad "MSGBOX"
+	END IF
 
 END FUNCTION
 
@@ -1205,6 +1221,18 @@ SaveSettingsError:
 	FileHandle = Sys.MsgBox("Could not save settings", "An error occured while saving your settings, and they were not saved." + CHR$(13) + "Make sure the disk is not full or write-protected, and try again.", msgError)
 	EXIT SUB
 	RESUME NEXT
+END SUB
+
+SUB Sys.ShowLoading ()
+
+		DIM btnLoading AS ButtonType
+		btnLoading.Pos.Width = 110
+		btnLoading.Pos.Height = 34
+		btnLoading.Pos.Left = 265
+		btnLoading.Pos.Top = (scrHeight - btnLoading.Pos.Height) / 2
+		btnLoading.Caption = "Loading..."
+		Obj.DrawBtn btnLoading, False
+
 END SUB
 
 STATIC SUB Sys.VGALoad (TargetFile AS STRING)

@@ -1,6 +1,6 @@
 
                           The Costa Graphical Shell
-                                Version 1.5.0
+                                Version 1.6.0
                                 By Jacob Palm                   
 
                           User's guide and reference 
@@ -64,7 +64,9 @@
       program, the resident part of Costa will use only a few hundred bytes
       of RAM
     - 2 MB free hard drive space on the installation drive recommended
-    - VGA capable monitor and graphics card (640x480 pixels, 16 colors)
+    - VGA capable monitor and graphics card (640x480 pixels, 16 colors), or
+      EGA capapble monitor and graphics card with at least 64KB memory
+      (640x350 pixels, 16 colors)
     - DOS 3.1 or newer
     
      If your computer doesn't meet one or more of the above requirements,
@@ -83,8 +85,8 @@
  ** 1.3 - News in the version **
 
     This version of Costa has many improvements over the last version, and
-   introduces a few new features. Among them are improved speed, full support 
-   for mouse-less scenarios and a whole new look and feel.
+   introduces a few new features. Among them are improved speed, support for
+   EGA graphics and more.
    
     For a complete listing of changes, see DOCS\CHANGES.TXT.
 
@@ -139,6 +141,10 @@
 
     Tip: If you have moved Costa, or it doesn't launch properly when running
    COSTA.BAT, run SETUP.EXE again at any time to fix the issue.
+
+    If you are unable to start Costa because your computer doesn't support
+   VGA graphics, delete DATA\CONFIG\COSTA.DAT. This will reset some settings
+   to their defaults, including graphic mode selection.
 
 
  ** 2.2 - Exiting Costa **
@@ -335,14 +341,17 @@
       If "Show link descriptions" is enabled, you can choose to have the
       filename the link points to shown underneath the description.
 
-    - Reduce screen redraws by using disk cache
-      By default, Costa will show desktop links when running accessories.
-      To achieve this, a screenshot is save before the accessory is run,
-      which the accessory then loads and displays behind its own window.
-      The same method is used to save the state of the screen before certain
-      windows are shown within Costa.
-      This looks great, but on computers with slow disks it can be beneficial 
-      to performance to disable this setting.
+    - Use VGA mode
+      Costa can run in VGA mode or EGA mode. When running in VGA mode, you
+      have more space available on the screen, and graphics appear smoother.
+      But, due to the way the VGA mode works on PCs, it can be slow on older
+      computers. Disabling this setting will cause Costa to use EGA mode
+      instead, which is faster. You can change this setting on the fly, and
+      choose whichever mode suits you best.
+
+    - Confirm link removal
+      When enabled, Costa will prompt for confirmation before removing any
+      link on the desktop.
 
     - Animate user interface
       Makes the bar at the top of the desktop and link menus appear and

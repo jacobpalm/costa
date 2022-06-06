@@ -71,27 +71,27 @@ SUB Calc.Main ()
     DIM TotalSum AS CURRENCY, Op1 AS CURRENCY, Op2 AS CURRENCY, NumOps
     DIM Key$, txtCalcText AS STRING, LastClick AS STRING
                                      
-    Obj.SetSize winCalc.Pos, 213, 125, 214, 233
-    Obj.SetSize txtCalc.Pos, 225, 160, 190, -1
-    Obj.SetSize btnNumb(7).Pos, 226, 226, 40, -1
-    Obj.SetSize btnNumb(0).Pos, 226, 325, 40, -1
-    Obj.SetSize btnNumb(1).Pos, 226, 292, 40, -1
-    Obj.SetSize btnNumb(2).Pos, 276, 292, 40, -1
-    Obj.SetSize btnNumb(3).Pos, 326, 292, 40, -1
-    Obj.SetSize btnNumb(4).Pos, 226, 259, 40, -1
-    Obj.SetSize btnNumb(5).Pos, 276, 259, 40, -1
-    Obj.SetSize btnNumb(6).Pos, 326, 259, 40, -1
-    Obj.SetSize btnNumb(8).Pos, 276, 226, 40, -1
-    Obj.SetSize btnNumb(9).Pos, 326, 226, 40, -1
-    Obj.SetSize btnC.Pos, 226, 193, 40, -1
-    Obj.SetSize btnCE.Pos, 276, 193, 40, -1
-    Obj.SetSize btnDivide.Pos, 326, 193, 40, -1
-    Obj.SetSize btnDot.Pos, 276, 325, 40, -1
-    Obj.SetSize btnMulti.Pos, 376, 193, 40, -1
-    Obj.SetSize btnMinus.Pos, 376, 226, 40, -1
-    Obj.SetSize btnPlus.Pos, 376, 259, 40, -1
-    Obj.SetSize btnEquals.Pos, 376, 292, 40, -1
-    Obj.SetSize btnClose.Pos, 326, 325, 90, -1
+    Obj.SetSize winCalc.Pos, 213, (scrHeight - 233) / 2, 214, 233
+    Obj.SetSize txtCalc.Pos, 225, winCalc.Pos.Top + 35, 190, -1
+    Obj.SetSize btnNumb(0).Pos, 226, winCalc.Pos.Top + 200, 40, -1
+    Obj.SetSize btnNumb(1).Pos, 226, winCalc.Pos.Top + 167, 40, -1
+    Obj.SetSize btnNumb(2).Pos, 276, winCalc.Pos.Top + 167, 40, -1
+    Obj.SetSize btnNumb(3).Pos, 326, winCalc.Pos.Top + 167, 40, -1
+    Obj.SetSize btnNumb(4).Pos, 226, winCalc.Pos.Top + 134, 40, -1
+    Obj.SetSize btnNumb(5).Pos, 276, winCalc.Pos.Top + 134, 40, -1
+    Obj.SetSize btnNumb(6).Pos, 326, winCalc.Pos.Top + 134, 40, -1
+    Obj.SetSize btnNumb(7).Pos, 226, winCalc.Pos.Top + 101, 40, -1
+    Obj.SetSize btnNumb(8).Pos, 276, winCalc.Pos.Top + 101, 40, -1
+    Obj.SetSize btnNumb(9).Pos, 326, winCalc.Pos.Top + 101, 40, -1
+    Obj.SetSize btnC.Pos, 226, winCalc.Pos.Top + 68, 40, -1
+    Obj.SetSize btnCE.Pos, 276, winCalc.Pos.Top + 68, 40, -1
+    Obj.SetSize btnDivide.Pos, 326, winCalc.Pos.Top + 68, 40, -1
+    Obj.SetSize btnDot.Pos, 276, winCalc.Pos.Top + 200, 40, -1
+    Obj.SetSize btnMulti.Pos, 376, winCalc.Pos.Top + 68, 40, -1
+    Obj.SetSize btnMinus.Pos, 376, winCalc.Pos.Top + 101, 40, -1
+    Obj.SetSize btnPlus.Pos, 376, winCalc.Pos.Top + 134, 40, -1
+    Obj.SetSize btnEquals.Pos, 376, winCalc.Pos.Top + 167, 40, -1
+    Obj.SetSize btnClose.Pos, 326, winCalc.Pos.Top + 200, 90, -1
     
     winCalc.Caption = "Calculator"
     btnNumb(0).Caption = "0"

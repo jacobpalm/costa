@@ -1,0 +1,17 @@
+Original fonts copyright 1998-1999 Rush Soft.
+
+All fonts were borrowed from another graphical DOS shell, Rush. I've
+been unable to contact the authors of Rush to ask for permission to use their
+fonts in Costa, but I don't think they have a problem with it as long as I
+give proper credit, which I'll do here.
+
+The fonts have been slightly modified for use with Costa, and converted to
+another file format, but proper credit is certainly still due.
+
+The authors of Rush are:
+
+Joran Kok (design, programming, webdesign)
+Peter Jonk (programming, source developers kit)
+Wouter Lenis (programming)
+With help from Donovan Kerssenberg and Ruber Beemsterboer (whom were both
+BETA testers of Rush).

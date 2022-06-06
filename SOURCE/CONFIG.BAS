@@ -1,16 +1,15 @@
-DECLARE SUB Conf.SaveAssoc (FileType AS STRING, Command AS STRING)
+DECLARE SUB Conf.RestoreAssoc ()
 OPTION EXPLICIT
 DEFINT A-Z
 
 DECLARE SUB Conf.ConfAssoc ()
 DECLARE SUB Conf.ConfMisc ()
+DECLARE SUB Conf.SaveAssoc (FileType AS STRING, Command AS STRING)
 DECLARE SUB Conf.ConfTheme ()
 DECLARE SUB Conf.Main ()
 DECLARE SUB Desk.DrawDesktop ()
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
-
-DIM SHARED DeskNeedsDraw
 
 Sys.Load
 
@@ -36,6 +35,10 @@ SUB Conf.ConfAssoc ()
         END IF
     END IF
 
+    IF NOT File.Exists(Sys.Path + "\DATA\CONFIG\FILETYPE.DAT") THEN
+      Conf.RestoreAssoc
+    END IF
+
     DIM winAssoc AS WindowType
     DIM imgIcon AS ImageType
     DIM txtFileType AS TextboxType, txtFileTypeText AS STRING
@@ -45,13 +48,13 @@ SUB Conf.ConfAssoc ()
     DIM Key$
 
     
-    Obj.SetSize winAssoc.Pos, 92, 100, 455, 280
-    Obj.SetSize imgIcon.Pos, 105, 138, -1, -1
-    Obj.SetSize txtFileType.Pos, 105, 310, 50, -1
-    Obj.SetSize txtOpenWith.Pos, 182, 310, 353, -1
-    Obj.SetSize btnClose.Pos, 451, 346, 84, 23
-    Obj.SetSize btnSave.Pos, 351, 346, 84, 23
-    Obj.SetSize btnDisable.Pos, 105, 346, 84, 23
+    Obj.SetSize winAssoc.Pos, 92, (scrHeight - 280) / 2, 455, 280
+    Obj.SetSize imgIcon.Pos, 105, winAssoc.Pos.Top + 38, -1, -1
+    Obj.SetSize txtFileType.Pos, 105, winAssoc.Pos.Top + 210, 50, -1
+    Obj.SetSize txtOpenWith.Pos, 182, winAssoc.Pos.Top + 210, 353, -1
+    Obj.SetSize btnClose.Pos, 451, winAssoc.Pos.Top + 246, 84, 23
+    Obj.SetSize btnSave.Pos, 351, winAssoc.Pos.Top + 246, 84, 23
+    Obj.SetSize btnDisable.Pos, 105, winAssoc.Pos.Top + 246, 84, 23
 
     winAssoc.Caption = "File association editor"
     btnClose.Caption = "Close": btnClose.HotKey = 1
@@ -69,19 +72,19 @@ SUB Conf.ConfAssoc ()
     Obj.DrawBtn btnDisable, False
     
     Font.Print "Edit file associations", 148, winAssoc.Pos.Top + 33, SystemTheme.WindowText, 1
-    Font.Print "Using this editor you can associate files with programs, meaning", 148, 150, SystemTheme.WindowText, 2
-    Font.Print "that if you for example run README.TXT, and TXT is associated", 148, 166, SystemTheme.WindowText, 2
-    Font.Print "with EDIT.COM, EDIT.COM will run and open README.TXT for you.", 105, 182, SystemTheme.WindowText, 2
-    Font.Print "To associate a filetype with a program, type the filetype below. If a", 105, 214, SystemTheme.WindowText, 2
-    Font.Print "program is already assigned with this filetype, it will automatically", 105, 230, SystemTheme.WindowText, 2
-    Font.Print "show up in the ""Open with"" field. To remove an association, leave the", 105, 246, SystemTheme.WindowText, 2
-    Font.Print """Open with"" field blank.", 105, 262, SystemTheme.WindowText, 2
+    Font.Print "Using this editor you can associate files with programs, meaning", 148, winAssoc.Pos.Top + 50, SystemTheme.WindowText, 2
+    Font.Print "that if you for example run README.TXT, and TXT is associated", 148, winAssoc.Pos.Top + 66, SystemTheme.WindowText, 2
+    Font.Print "with EDIT.COM, EDIT.COM will run and open README.TXT for you.", 105, winAssoc.Pos.Top + 82, SystemTheme.WindowText, 2
+    Font.Print "To associate a filetype with a program, type the filetype below. If a", 105, winAssoc.Pos.Top + 114, SystemTheme.WindowText, 2
+    Font.Print "program is already assigned with this filetype, it will automatically", 105, winAssoc.Pos.Top + 130, SystemTheme.WindowText, 2
+    Font.Print "show up in the ""Open with"" field. To remove an association, leave the", 105, winAssoc.Pos.Top + 146, SystemTheme.WindowText, 2
+    Font.Print """Open with"" field blank.", 105, winAssoc.Pos.Top + 162, SystemTheme.WindowText, 2
 
-    Font.Print "Filetype", 105, 294, SystemTheme.WindowText, 1
-    Font.Print "Open with", 182, 294, SystemTheme.WindowText, 1
+    Font.Print "Filetype", 105, winAssoc.Pos.Top + 194, SystemTheme.WindowText, 1
+    Font.Print "Open with", 182, winAssoc.Pos.Top + 194, SystemTheme.WindowText, 1
     Mouse.Hide
-    LINE (104, 305)-(110, 305), SystemTheme.WindowText
-    LINE (181, 305)-(188, 305), SystemTheme.WindowText
+    LINE (104, winAssoc.Pos.Top + 205)-(110, winAssoc.Pos.Top + 205), SystemTheme.WindowText
+    LINE (181, winAssoc.Pos.Top + 205)-(188, winAssoc.Pos.Top + 205), SystemTheme.WindowText
     Mouse.Show
 
     Obj.DrawImg imgIcon
@@ -158,35 +161,25 @@ SUB Conf.ConfMisc ()
     DIM frmDesktop AS FrameType, frmVarious AS FrameType
     DIM btnSave AS ButtonType, btnCancel AS ButtonType
     DIM chkShowLinkDesc AS CheckBoxType, chkShowLinkTarget AS CheckBoxType
-    DIM chkDesktopInApps AS CheckBoxType, chkConfLinkDel AS CheckBoxType
+    DIM chkUseVGAMode AS CheckBoxType, chkConfLinkDel AS CheckBoxType
     DIM chkConfExit AS CheckBoxType, chkGreyOutMsgBox AS CheckBoxType
     DIM chkAnimUI AS CheckBoxType, chkDailyTip AS CheckBoxType
     DIM chkUseLastProfile AS CheckBoxType
-
-    DIM ShowLinkDesc, ShowLinkTarget, LinkMenuOnLeft, ConfLinkDel
-    DIM AnimUI, ConfExit, GreyOutMsgbox, ShowTargetChk, DailyTip, UseLastProfile
+    
+    DIM ShowTargetChk, CurrentScreenMode
     DIM Key$
 
-    IF ShowLinkDesc = 1 THEN ShowLinkDesc = True: ShowTargetChk = True
-    IF ShowLinkTarget = 1 THEN ShowLinkTarget = True
-    IF LinkMenuOnLeft = 1 THEN LinkMenuOnLeft = True
-    IF ConfLinkDel = 1 THEN ConfLinkDel = True
-    IF AnimUI = 1 THEN AnimUI = True
-    IF ConfExit = 1 THEN ConfExit = True
-    IF GreyOutMsgbox = 1 THEN GreyOutMsgbox = True
-    IF DailyTip = 1 THEN DailyTip = True
-    IF UseLastProfile = 1 THEN UseLastProfile = True
-
+    CurrentScreenMode = UserSettings.ScreenMode
 
     winMisc.Pos.Width = 390
     winMisc.Pos.Height = 340
     winMisc.Pos.Left = (640 - winMisc.Pos.Width) / 2
-    winMisc.Pos.Top = (480 - winMisc.Pos.Height) / 2
+    winMisc.Pos.Top = (scrHeight - winMisc.Pos.Height) / 2
     Obj.SetSize frmDesktop.Pos, winMisc.Pos.Left + 12, winMisc.Pos.Top + 34, winMisc.Pos.Width - 24, 118
     Obj.SetSize frmVarious.Pos, winMisc.Pos.Left + 12, frmDesktop.Pos.Top + frmDesktop.Pos.Height + 12, frmDesktop.Pos.Width, 129
     Obj.SetSize chkShowLinkDesc.Pos, frmDesktop.Pos.Left + 12, frmDesktop.Pos.Top + 16, -1, -1
     Obj.SetSize chkShowLinkTarget.Pos, frmDesktop.Pos.Left + 34, frmDesktop.Pos.Top + 38, -1, -1
-    Obj.SetSize chkDesktopInApps.Pos, frmDesktop.Pos.Left + 12, frmDesktop.Pos.Top + 70, -1, -1
+    Obj.SetSize chkUseVGAMode.Pos, frmDesktop.Pos.Left + 12, frmDesktop.Pos.Top + 70, -1, -1
     Obj.SetSize chkConfLinkDel.Pos, frmDesktop.Pos.Left + 12, frmDesktop.Pos.Top + 92, -1, -1
     Obj.SetSize chkAnimUI.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 16, -1, -1
     Obj.SetSize chkConfExit.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 38, -1, -1
@@ -204,7 +197,9 @@ SUB Conf.ConfMisc ()
     btnSave.Caption = "Save": btnSave.HotKey = 1
     chkShowLinkDesc.Checked = UserSettings.ShowLinkDescriptions
     chkShowLinkTarget.Checked = UserSettings.ShowLinkTargetFiles
-    chkDesktopInApps.Checked = UserSettings.ShowDesktopInApps
+    IF UserSettings.ScreenMode = scrVGA THEN
+      chkUseVGAMode.Checked = True
+    END IF
     chkConfLinkDel.Checked = UserSettings.ConfirmLinkDelete
     chkAnimUI.Checked = UserSettings.Animations
     chkConfExit.Checked = UserSettings.ConfirmExit
@@ -224,7 +219,7 @@ SUB Conf.ConfMisc ()
     Font.Print "Various settings", frmVarious.Pos.Left + 10, frmVarious.Pos.Top - 3, SystemTheme.WindowText, 1
     Obj.DrawChk chkShowLinkDesc
     Obj.DrawChk chkShowLinkTarget
-    Obj.DrawChk chkDesktopInApps
+    Obj.DrawChk chkUseVGAMode
     Obj.DrawChk chkConfLinkDel
     Obj.DrawChk chkAnimUI
     Obj.DrawChk chkConfExit
@@ -236,7 +231,7 @@ SUB Conf.ConfMisc ()
 
 
     Font.Print "Show link descriptions", chkShowLinkDesc.Pos.Left + 20, chkShowLinkDesc.Pos.Top + 3, SystemTheme.WindowText, 2
-    IF ShowTargetChk = True THEN
+    IF chkShowLinkDesc.Checked = True THEN
         Font.Print "Show link targets", chkShowLinkTarget.Pos.Left + 20, chkShowLinkTarget.Pos.Top + 3, SystemTheme.WindowText, 2
         Mouse.Hide
         LINE (chkShowLinkTarget.Pos.Left + 81, chkShowLinkTarget.Pos.Top + 14)-(chkShowLinkTarget.Pos.Left + 87, chkShowLinkTarget.Pos.Top + 14), SystemTheme.WindowText
@@ -247,7 +242,7 @@ SUB Conf.ConfMisc ()
         Mouse.Show
         Font.Print "Show link targets", chkShowLinkTarget.Pos.Left + 20, chkShowLinkTarget.Pos.Top + 3, SystemTheme.Shadow, 2
     END IF
-    Font.Print "Reduce screen redraws by using disk cache", chkDesktopInApps.Pos.Left + 20, chkDesktopInApps.Pos.Top + 3, SystemTheme.WindowText, 2
+    Font.Print "Use VGA mode (higher resolution, but slower)", chkUseVGAMode.Pos.Left + 20, chkUseVGAMode.Pos.Top + 3, SystemTheme.WindowText, 2
     Font.Print "Confirm link removal", chkConfLinkDel.Pos.Left + 20, chkConfLinkDel.Pos.Top + 3, SystemTheme.WindowText, 2
     Font.Print "Animate user interface (sliding menus)", chkAnimUI.Pos.Left + 20, chkAnimUI.Pos.Top + 3, SystemTheme.WindowText, 2
     Font.Print "Confirm when trying to exit Costa", chkConfExit.Pos.Left + 20, chkConfExit.Pos.Top + 3, SystemTheme.WindowText, 2
@@ -257,7 +252,7 @@ SUB Conf.ConfMisc ()
     
     Mouse.Hide
     LINE (chkShowLinkDesc.Pos.Left + 81, chkShowLinkDesc.Pos.Top + 14)-(chkShowLinkDesc.Pos.Left + 88, chkShowLinkDesc.Pos.Top + 14), SystemTheme.WindowText
-    LINE (chkDesktopInApps.Pos.Left + 100, chkDesktopInApps.Pos.Top + 14)-(chkDesktopInApps.Pos.Left + 106, chkDesktopInApps.Pos.Top + 14), SystemTheme.WindowText
+    LINE (chkUseVGAMode.Pos.Left + 44, chkUseVGAMode.Pos.Top + 14)-(chkUseVGAMode.Pos.Left + 52, chkUseVGAMode.Pos.Top + 14), SystemTheme.WindowText
     LINE (chkConfLinkDel.Pos.Left + 97, chkConfLinkDel.Pos.Top + 14)-(chkConfLinkDel.Pos.Left + 102, chkConfLinkDel.Pos.Top + 14), SystemTheme.WindowText
     LINE (chkConfExit.Pos.Left + 169, chkConfExit.Pos.Top + 14)-(chkConfExit.Pos.Left + 175, chkConfExit.Pos.Top + 14), SystemTheme.WindowText
     LINE (chkAnimUI.Pos.Left + 19, chkAnimUI.Pos.Top + 14)-(chkAnimUI.Pos.Left + 27, chkAnimUI.Pos.Top + 14), SystemTheme.WindowText
@@ -277,7 +272,7 @@ SUB Conf.ConfMisc ()
         END IF
 
         IF ShowTargetChk = True THEN Obj.ChkClick chkShowLinkTarget
-        Obj.ChkClick chkDesktopInApps
+        Obj.ChkClick chkUseVGAMode
         Obj.ChkClick chkConfLinkDel
         Obj.ChkClick chkConfExit
         Obj.ChkClick chkGreyOutMsgBox
@@ -288,22 +283,17 @@ SUB Conf.ConfMisc ()
         IF Obj.BtnClick(btnCancel) OR Key$ = "c" OR Key$ = CHR$(27) THEN EXIT SUB
 
         IF Obj.BtnClick(btnSave) OR Key$ = "s" THEN
-            IF chkShowLinkDesc.Checked = True THEN ShowLinkDesc = 1:  ELSE ShowLinkDesc = False
-            IF chkShowLinkTarget.Checked = True THEN ShowLinkTarget = 1:  ELSE ShowLinkTarget = False
-            IF chkDesktopInApps.Checked = True THEN LinkMenuOnLeft = 1:  ELSE LinkMenuOnLeft = False
-            IF chkConfLinkDel.Checked = True THEN ConfLinkDel = 1:  ELSE ConfLinkDel = False
-            IF chkAnimUI.Checked = True THEN AnimUI = 1:  ELSE AnimUI = False
-            IF chkConfExit.Checked = True THEN ConfExit = 1:  ELSE ConfExit = False
-            IF chkGreyOutMsgBox.Checked = True THEN GreyOutMsgbox = 1:  ELSE GreyOutMsgbox = False
-            IF chkDailyTip.Checked = True THEN DailyTip = 1:  ELSE DailyTip = False
-            IF chkUseLastProfile.Checked = True THEN UseLastProfile = 1:  ELSE UseLastProfile = False
             
             SystemSettings.UseLastProfile = chkUseLastProfile.Checked
             
             UserSettings.Animations = chkAnimUI.Checked
             UserSettings.ShowLinkDescriptions = chkShowLinkDesc.Checked
             UserSettings.ShowLinkTargetFiles = chkShowLinkTarget.Checked
-            UserSettings.ShowDesktopInApps = chkDesktopInApps.Checked
+            IF chkUseVGAMode.Checked THEN
+              UserSettings.ScreenMode = scrVGA
+            ELSE
+              UserSettings.ScreenMode = scrEGA
+            END IF
             UserSettings.ConfirmLinkDelete = chkConfLinkDel.Checked
             UserSettings.ConfirmExit = chkConfExit.Checked
             UserSettings.TipOfTheDay = chkDailyTip.Checked
@@ -311,13 +301,24 @@ SUB Conf.ConfMisc ()
             
             Sys.SaveSettings
             Sys.SaveProfile ProfileID
+
+            IF NOT UserSettings.ScreenMode = CurrentScreenMode THEN
+              Mouse.Hide
+              IF UserSettings.ScreenMode = scrVGA THEN
+                scrHeight = 480
+                SCREEN 12
+              ELSE
+                scrHeight = 350
+                SCREEN 9
+              END IF
+              Mouse.Show
+            END IF
                            
             EXIT SUB
         END IF
 
         IF Key$ = "d" THEN
             chkShowLinkDesc.Checked = NOT chkShowLinkDesc.Checked: Obj.DrawChk chkShowLinkDesc
-            DeskNeedsDraw = True
             IF chkShowLinkDesc.Checked = True THEN
                 Obj.DrawChk chkShowLinkTarget
                 Font.Print "Show link targets", chkShowLinkTarget.Pos.Left + 20, chkShowLinkTarget.Pos.Top + 3, SystemTheme.WindowText, 2
@@ -333,8 +334,8 @@ SUB Conf.ConfMisc ()
             END IF
         END IF
 
-        IF Key$ = "t" AND chkShowLinkDesc.Checked = True THEN chkShowLinkTarget.Checked = NOT chkShowLinkTarget.Checked: Obj.DrawChk chkShowLinkTarget: DeskNeedsDraw = True
-        IF Key$ = "n" THEN chkDesktopInApps.Checked = NOT chkDesktopInApps.Checked: Obj.DrawChk chkDesktopInApps
+        IF Key$ = "t" AND chkShowLinkDesc.Checked = True THEN chkShowLinkTarget.Checked = NOT chkShowLinkTarget.Checked: Obj.DrawChk chkShowLinkTarget
+        IF Key$ = "v" THEN chkUseVGAMode.Checked = NOT chkUseVGAMode.Checked: Obj.DrawChk chkUseVGAMode
         IF Key$ = "r" THEN chkConfLinkDel.Checked = NOT chkConfLinkDel.Checked: Obj.DrawChk chkConfLinkDel
         IF Key$ = "a" THEN chkAnimUI.Checked = NOT chkAnimUI.Checked: Obj.DrawChk chkAnimUI
         IF Key$ = "x" THEN chkConfExit.Checked = NOT chkConfExit.Checked: Obj.DrawChk chkConfExit
@@ -367,10 +368,32 @@ SUB Conf.ConfTheme ()
     DIM OriginalTheme AS STRING
     DIM ThemeList() AS STRING
 
+    Sys.ShowLoading
+
+    'Load theme filenames into array
+    DIM TmpName$, TmpCount, ActiveTheme
+    REDIM ThemeList(0 TO 0) AS STRING
+    TmpName$ = DIR$(Sys.Path + "DATA\THEMES\*.DAT")
+    TmpCount = 0
+    DO WHILE NOT TmpName$ = ""
+        TmpName$ = LEFT$(TmpName$, LEN(TmpName$) - 4)
+        REDIM PRESERVE ThemeList(0 TO TmpCount) AS STRING
+        ThemeList(UBOUND(ThemeList)) = TmpName$
+        IF UCASE$(TmpName$) = UCASE$(RTRIM$(UserSettings.ThemeFile)) THEN ActiveTheme = TmpCount
+        TmpName$ = DIR$
+        TmpCount = TmpCount + 1
+    LOOP
+
+    IF TmpCount = 0 THEN
+        TmpCount = Sys.MsgBox("No theme files found.", "Costa could not find any theme files. Make sure that the" + CHR$(13) + "themes are in DATA\THEMES, and try again.", msgError)
+        EXIT SUB
+    END IF
+
+
     winTheme.Pos.Width = 324
     winTheme.Pos.Height = 347
     winTheme.Pos.Left = (640 - winTheme.Pos.Width) / 2
-    winTheme.Pos.Top = (480 - winTheme.Pos.Height) / 2
+    winTheme.Pos.Top = (scrHeight - winTheme.Pos.Height) / 2
     winTheme.Caption = "Theme selector"
       
     frmPreview.Pos.Left = winTheme.Pos.Left + 12
@@ -434,25 +457,6 @@ SUB Conf.ConfTheme ()
     btnMenuPreview.Transparent = True
 
 
-    'Load theme filenames into array
-    DIM TmpName$, TmpCount, ActiveTheme
-    REDIM ThemeList(0 TO 0) AS STRING
-    TmpName$ = DIR$(Sys.Path + "DATA\THEMES\*.DAT")
-    TmpCount = 0
-    DO WHILE NOT TmpName$ = ""
-        TmpName$ = LEFT$(TmpName$, LEN(TmpName$) - 4)
-        REDIM PRESERVE ThemeList(0 TO TmpCount) AS STRING
-        ThemeList(UBOUND(ThemeList)) = TmpName$
-        IF UCASE$(TmpName$) = UCASE$(RTRIM$(UserSettings.ThemeFile)) THEN ActiveTheme = TmpCount
-        TmpName$ = DIR$
-        TmpCount = TmpCount + 1
-    LOOP
-
-    IF TmpCount = 0 THEN
-        TmpCount = Sys.MsgBox("No theme files found.", "Costa could not find any theme files. Make sure that the" + CHR$(13) + "themes are in DATA\THEMES, and try again.", msgError)
-        EXIT SUB
-    END IF
-    
     OriginalTheme = RTRIM$(UserSettings.ThemeFile)
     UserSettings.ThemeFile = ThemeList(ActiveTheme)
     Sys.LoadTheme
@@ -461,19 +465,19 @@ SUB Conf.ConfTheme ()
 UpdatePreview:
     Mouse.Hide
     LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 2)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + frmPreview.Pos.Height - 2), SystemTheme.Desktop, BF
-    LINE (winTheme.Pos.Left + 110, winTheme.Pos.Top + 29)-(winTheme.Pos.Left + 312, winTheme.Pos.Top + 59), POINT(168, 94), BF
-    Font.Print RTRIM$(SystemTheme.Name), winTheme.Pos.Left + 115, winTheme.Pos.Top + 32, POINT(178, 100), 2
-    Font.Print RTRIM$(SystemTheme.Author), winTheme.Pos.Left + 115, winTheme.Pos.Top + 47, POINT(178, 100), 2
+    LINE (winTheme.Pos.Left + 110, winTheme.Pos.Top + 29)-(winTheme.Pos.Left + 312, winTheme.Pos.Top + 59), POINT(168, frmPreview.Pos.Top + 50), BF
+    Font.Print RTRIM$(SystemTheme.Name), winTheme.Pos.Left + 115, winTheme.Pos.Top + 32, POINT(winTheme.Pos.Left + 12, winTheme.Pos.Top + 32), FontNormal
+    Font.Print RTRIM$(SystemTheme.Author), winTheme.Pos.Left + 115, winTheme.Pos.Top + 47, POINT(winTheme.Pos.Left + 12, winTheme.Pos.Top + 32), FontNormal
     Mouse.Show
     Obj.DrawWin winPreview
     Obj.DrawTxt txtPreview, txtPreviewText, True
     Obj.DrawBtn btnPreview1, False
     Obj.DrawBtn btnPreview2, True
     
-    Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 32, SystemTheme.WindowText, 1
-    Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 48, SystemTheme.WindowText, 2
-    Font.Print "Preview link", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 4, SystemTheme.DesktopText, 1
-    Font.Print "preview.exe", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 18, SystemTheme.DesktopText, 2
+    Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 32, SystemTheme.WindowText, FontHeading
+    Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 48, SystemTheme.WindowText, FontNormal
+    Font.Print "Preview link", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 4, SystemTheme.DesktopText, FontHeading
+    Font.Print "preview.exe", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 18, SystemTheme.DesktopText, FontNormal
 
     Obj.DrawImg imgPreview
     Obj.DrawBtn btnMenuPreview, False
@@ -484,9 +488,10 @@ UpdatePreview:
     LINE (btnMenuPreview.Pos.Left + 5, btnMenuPreview.Pos.Top + 17)-(btnMenuPreview.Pos.Left + 12, btnMenuPreview.Pos.Top + 17), SystemTheme.SelectText
     LINE (btnMenuPreview.Pos.Left + 5, btnMenuPreview.Pos.Top + 33)-(btnMenuPreview.Pos.Left + 12, btnMenuPreview.Pos.Top + 33), SystemTheme.WindowText
     Mouse.Show
-    Font.Print "Selected item", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 6, SystemTheme.SelectText, 1
-    Font.Print "Unselected", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 22, SystemTheme.WindowText, 1
+    Font.Print "Selected item", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 6, SystemTheme.SelectText, FontHeading
+    Font.Print "Unselected", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 22, SystemTheme.WindowText, FontHeading
 
+    UserSettings.ThemeFile = OriginalTheme
     Sys.LoadTheme
 
 
@@ -494,7 +499,6 @@ UpdatePreview:
         Key$ = LCASE$(INKEY$)
 
         IF Obj.BtnClick(btnSave) OR Key$ = "s" OR Key$ = CHR$(13) THEN
-            DeskNeedsDraw = True
             UserSettings.ThemeFile = ThemeList(ActiveTheme)
             Sys.SaveProfile ProfileID
             EXIT SUB
@@ -539,106 +543,144 @@ END SUB
 ' =========================================================================
 SUB Conf.Main ()
 
-    DIM winConfig AS WindowType
-    DIM btnThemes AS ButtonType, btnFileAssoc AS ButtonType, btnMisc AS ButtonType
-    DIM imgThemes AS ImageType, imgFileAssoc AS ImageType, imgMisc AS ImageType
-    DIM btnClose AS ButtonType
+  DIM winConfig AS WindowType
+  DIM btnThemes AS ButtonType, btnFileAssoc AS ButtonType, btnMisc AS ButtonType
+  DIM imgThemes AS ImageType, imgFileAssoc AS ImageType, imgMisc AS ImageType
+  DIM btnClose AS ButtonType
 
-    winConfig.Pos.Width = 410
-    winConfig.Pos.Height = 245
-    winConfig.Pos.Left = (640 - winConfig.Pos.Width) / 2
-    winConfig.Pos.Top = (480 - winConfig.Pos.Height) / 2
-    winConfig.Caption = "Configuration"
+TopOfConf:
 
-    Obj.SetSize btnThemes.Pos, winConfig.Pos.Left + 14, winConfig.Pos.Top + 36, 46, 46
-    btnThemes.Transparent = True
-    imgThemes.Pos.Left = btnThemes.Pos.Left + 7
-    imgThemes.Pos.Top = btnThemes.Pos.Top + 7
-    imgThemes.ImageFile = "THEMES"
+  winConfig.Pos.Width = 410
+  winConfig.Pos.Height = 245
+  winConfig.Pos.Left = (640 - winConfig.Pos.Width) / 2
+  winConfig.Pos.Top = (scrHeight - winConfig.Pos.Height) / 2
+  winConfig.Caption = "Configuration"
 
-    Obj.SetSize btnFileAssoc.Pos, winConfig.Pos.Left + 14, winConfig.Pos.Top + 96, 46, 46
-    btnFileAssoc.Transparent = True
-    imgFileAssoc.Pos.Left = btnFileAssoc.Pos.Left + 7
-    imgFileAssoc.Pos.Top = btnFileAssoc.Pos.Top + 7
-    imgFileAssoc.ImageFile = "UNKNOWN"
+  Obj.SetSize btnThemes.Pos, winConfig.Pos.Left + 14, winConfig.Pos.Top + 36, 46, 46
+  btnThemes.Transparent = True
+  imgThemes.Pos.Left = btnThemes.Pos.Left + 7
+  imgThemes.Pos.Top = btnThemes.Pos.Top + 7
+  imgThemes.ImageFile = "THEMES"
 
-    Obj.SetSize btnMisc.Pos, winConfig.Pos.Left + 14, winConfig.Pos.Top + 156, 46, 46
-    btnMisc.Transparent = True
-    imgMisc.Pos.Left = btnMisc.Pos.Left + 7
-    imgMisc.Pos.Top = btnMisc.Pos.Top + 7
-    imgMisc.ImageFile = "MISCOPT"
+  Obj.SetSize btnFileAssoc.Pos, winConfig.Pos.Left + 14, winConfig.Pos.Top + 96, 46, 46
+  btnFileAssoc.Transparent = True
+  imgFileAssoc.Pos.Left = btnFileAssoc.Pos.Left + 7
+  imgFileAssoc.Pos.Top = btnFileAssoc.Pos.Top + 7
+  imgFileAssoc.ImageFile = "DOCUMENT"
 
-    Obj.SetSize btnClose.Pos, winConfig.Pos.Left + winConfig.Pos.Width - 105, winConfig.Pos.Top + winConfig.Pos.Height - 35, 92, 22
-    btnClose.Caption = "Close": btnClose.HotKey = 1
+  Obj.SetSize btnMisc.Pos, winConfig.Pos.Left + 14, winConfig.Pos.Top + 156, 46, 46
+  btnMisc.Transparent = True
+  imgMisc.Pos.Left = btnMisc.Pos.Left + 7
+  imgMisc.Pos.Top = btnMisc.Pos.Top + 7
+  imgMisc.ImageFile = "CONFIG"
 
-    Obj.DrawWin winConfig
-    Obj.DrawBtn btnThemes, False
-    Obj.DrawBtn btnFileAssoc, False
-    Obj.DrawBtn btnMisc, False
-    Obj.DrawBtn btnClose, False
+  Obj.SetSize btnClose.Pos, winConfig.Pos.Left + winConfig.Pos.Width - 105, winConfig.Pos.Top + winConfig.Pos.Height - 35, 92, 22
+  btnClose.Caption = "Close": btnClose.HotKey = 1
+
+  Obj.DrawWin winConfig
+  Obj.DrawBtn btnThemes, False
+  Obj.DrawBtn btnFileAssoc, False
+  Obj.DrawBtn btnMisc, False
+  Obj.DrawBtn btnClose, False
+
+  Font.Print "Theme selector", btnThemes.Pos.Left + 60, btnThemes.Pos.Top, SystemTheme.WindowText, 1
+  Font.Print "Change the colors of the user interface. Costa comes", btnThemes.Pos.Left + 60, btnThemes.Pos.Top + 15, SystemTheme.WindowText, 2
+  Font.Print "with a collection of themes for you to choose from.", btnThemes.Pos.Left + 60, btnThemes.Pos.Top + 29, SystemTheme.WindowText, 2
+
+  Font.Print "File associations", btnFileAssoc.Pos.Left + 60, btnFileAssoc.Pos.Top, SystemTheme.WindowText, 1
+  Font.Print "Enable or disable file associations, and define which", btnFileAssoc.Pos.Left + 60, btnFileAssoc.Pos.Top + 15, SystemTheme.WindowText, 2
+  Font.Print "programs should open different file types.", btnFileAssoc.Pos.Left + 60, btnFileAssoc.Pos.Top + 29, SystemTheme.WindowText, 2
+
+  Font.Print "Other settings", btnMisc.Pos.Left + 60, btnMisc.Pos.Top, SystemTheme.WindowText, 1
+  Font.Print "Tweak various aspects of Costa, like how the desktop", btnMisc.Pos.Left + 60, btnMisc.Pos.Top + 15, SystemTheme.WindowText, 2
+  Font.Print "acts and if certain things require confirmation.", btnMisc.Pos.Left + 60, btnMisc.Pos.Top + 29, SystemTheme.WindowText, 2
+
+  Mouse.Hide
+  LINE (btnMisc.Pos.Left + 59, btnMisc.Pos.Top + 11)-(btnMisc.Pos.Left + 66, btnMisc.Pos.Top + 11), SystemTheme.WindowText
+  LINE (btnThemes.Pos.Left + 59, btnThemes.Pos.Top + 11)-(btnThemes.Pos.Left + 66, btnThemes.Pos.Top + 11), SystemTheme.WindowText
+  LINE (btnFileAssoc.Pos.Left + 59, btnFileAssoc.Pos.Top + 11)-(btnFileAssoc.Pos.Left + 64, btnFileAssoc.Pos.Top + 11), SystemTheme.WindowText
+  Mouse.Show
+
+  Obj.DrawImg imgThemes
+  Obj.DrawImg imgFileAssoc
+  Obj.DrawImg imgMisc
+
+
+  DIM Key$
+  DO
+    Key$ = LCASE$(INKEY$)
+
+    IF Obj.BtnClick(btnThemes) THEN Key$ = "t"
+    IF Obj.BtnClick(btnFileAssoc) THEN Key$ = "f"
+    IF Obj.BtnClick(btnMisc) THEN Key$ = "o"
+    IF Obj.BtnClick(btnClose) THEN Key$ = "c"
+
+    IF Key$ = CHR$(27) OR Key$ = "c" THEN
+      EXIT SUB
+    END IF
+
+    IF Key$ = "t" THEN
+      Conf.ConfTheme
+      Desk.DrawDesktop
+      GOTO TopOfConf
+    END IF
+
+    IF Key$ = "f" THEN
+      Conf.ConfAssoc
+      Desk.DrawDesktop
+      GOTO TopOfConf
+    END IF
+
+    IF Key$ = "o" THEN
+      Conf.ConfMisc
+      Desk.DrawDesktop
+      GOTO TopOfConf
+    END IF
+
+  LOOP
+
+END SUB
+
+SUB Conf.RestoreAssoc ()
+
+    DIM DefaultAssoc(0 TO 6) AS FileAssociationType
+    DIM AssocFile
+
+    ON LOCAL ERROR RESUME NEXT
+    KILL Sys.Path + "\DATA\CONFIG\FILETYPE.DAT"
     
-    Font.Print "Theme selector", btnThemes.Pos.Left + 60, btnThemes.Pos.Top, SystemTheme.WindowText, 1
-    Font.Print "Change the colors of the user interface. Costa comes", btnThemes.Pos.Left + 60, btnThemes.Pos.Top + 15, SystemTheme.WindowText, 2
-    Font.Print "with a collection of themes for you to choose from.", btnThemes.Pos.Left + 60, btnThemes.Pos.Top + 29, SystemTheme.WindowText, 2
-    
-    Font.Print "File associations", btnFileAssoc.Pos.Left + 60, btnFileAssoc.Pos.Top, SystemTheme.WindowText, 1
-    Font.Print "Enable or disable file associations, and define which", btnFileAssoc.Pos.Left + 60, btnFileAssoc.Pos.Top + 15, SystemTheme.WindowText, 2
-    Font.Print "programs should open different file types.", btnFileAssoc.Pos.Left + 60, btnFileAssoc.Pos.Top + 29, SystemTheme.WindowText, 2
+    AssocFile = FREEFILE
+    OPEN Sys.Path + "\DATA\CONFIG\FILETYPE.DAT" FOR BINARY AS #AssocFile
 
-    Font.Print "Other settings", btnMisc.Pos.Left + 60, btnMisc.Pos.Top, SystemTheme.WindowText, 1
-    Font.Print "Tweak various aspects of Costa, like how the desktop", btnMisc.Pos.Left + 60, btnMisc.Pos.Top + 15, SystemTheme.WindowText, 2
-    Font.Print "acts and if certain things require confirmation.", btnMisc.Pos.Left + 60, btnMisc.Pos.Top + 29, SystemTheme.WindowText, 2
+    DefaultAssoc(0).FileType = "TXT"
+    DefaultAssoc(0).Command = "TEXTVIEW.EXE"
+    PUT #AssocFile, , DefaultAssoc(0)
 
-    Mouse.Hide
-    LINE (btnMisc.Pos.Left + 59, btnMisc.Pos.Top + 11)-(btnMisc.Pos.Left + 66, btnMisc.Pos.Top + 11), SystemTheme.WindowText
-    LINE (btnThemes.Pos.Left + 59, btnThemes.Pos.Top + 11)-(btnThemes.Pos.Left + 66, btnThemes.Pos.Top + 11), SystemTheme.WindowText
-    LINE (btnFileAssoc.Pos.Left + 59, btnFileAssoc.Pos.Top + 11)-(btnFileAssoc.Pos.Left + 64, btnFileAssoc.Pos.Top + 11), SystemTheme.WindowText
-    Mouse.Show
+    DefaultAssoc(1).FileType = "INI"
+    DefaultAssoc(1).Command = "TEXTVIEW.EXE"
+    PUT #AssocFile, , DefaultAssoc(1)
 
-    Obj.DrawImg imgThemes
-    Obj.DrawImg imgFileAssoc
-    Obj.DrawImg imgMisc
+    DefaultAssoc(2).FileType = "THM"
+    DefaultAssoc(2).Command = "THMEDIT.EXE"
+    PUT #AssocFile, , DefaultAssoc(2)
 
-    
-    DIM Key$
-    DO
-        Key$ = LCASE$(INKEY$)
+    DefaultAssoc(3).FileType = "DOC"
+    DefaultAssoc(3).Command = "TEXTVIEW.EXE"
+    PUT #AssocFile, , DefaultAssoc(3)
 
-        IF Obj.BtnClick(btnThemes) THEN Key$ = "t"
-        IF Obj.BtnClick(btnFileAssoc) THEN Key$ = "f"
-        IF Obj.BtnClick(btnMisc) THEN Key$ = "o"
-        IF Obj.BtnClick(btnClose) THEN Key$ = "c"
+    DefaultAssoc(4).FileType = "ME"
+    DefaultAssoc(4).Command = "TEXTEDIT.EXE"
+    PUT #AssocFile, , DefaultAssoc(4)
 
-        IF Key$ = CHR$(27) OR Key$ = "c" THEN
-            IF DeskNeedsDraw = False THEN
-                IF UserSettings.ShowDesktopInApps THEN
-                  Sys.VGALoad "DESKTOP"
-                ELSE
-                  Mouse.Hide
-                  LINE (0, 0)-(639, 479), SystemTheme.Desktop, BF
-                  Mouse.Show
-                  Desk.DrawDesktop
-                END IF
-            ELSE
-                Mouse.Hide
-                LINE (0, 0)-(639, 479), SystemTheme.Desktop, BF
-                Mouse.Show
-                Desk.DrawDesktop
-            END IF
-            EXIT SUB
-        END IF
+    DefaultAssoc(5).FileType = "1ST"
+    DefaultAssoc(5).Command = "TEXTEDIT.EXE"
+    PUT #AssocFile, , DefaultAssoc(5)
 
-        IF Key$ = "t" THEN
-            Sys.VGASave "CONF"
-            Conf.ConfTheme
-            Sys.VGALoad "CONF"
-        END IF
-
-        IF Key$ = "f" THEN Sys.VGASave "CONF": Conf.ConfAssoc: Sys.VGALoad "CONF"
-
-        IF Key$ = "o" THEN Sys.VGASave "CONF": Conf.ConfMisc: Sys.VGALoad "CONF"
-
-    LOOP
+    DefaultAssoc(6).FileType = "CFG"
+    DefaultAssoc(6).Command = "TEXTEDIT.EXE"
+    PUT #AssocFile, , DefaultAssoc(6)
+                                    
+    CLOSE #AssocFile
 
 END SUB
 

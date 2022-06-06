@@ -40,11 +40,12 @@ END TYPE
 DIM SHARED IconData AS IconEditDataType
 DIM SHARED IconFileName AS STRING
 DIM SHARED KeyboardPosX, KeyboardPosY, KeyboardPosVisible
-DIM SHARED IconChanged
+DIM SHARED IconChanged, PixelSize, PreviewOffsetX, PreviewOffsetY
+DIM SHARED DrawAreaOffsetX, DrawAreaOffsetY
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
-STACK 5120
+STACK 6144
 
 Sys.Load
 
@@ -63,22 +64,23 @@ SUB IconEdit.DrawPixel (X, Y, DrawColor, ForceDraw)
 
     IF NOT IconData.Pixel(X, Y) = DrawColor OR ForceDraw = True THEN
 
-        '58 and 44 are the coords for the top-left corner of the drawing area
-        'and each "pixel" in it is 13x13 pixels
-        XPos = 58 + (X * 13)
-        YPos = 44 + (Y * 13)
+        'DrawAreaOffSet variables are the coords for the top-left corner of
+        'the drawing area, and each "pixel" in it is PixelSize times
+        'PixelSize pixels in size
+        XPos = DrawAreaOffsetX + (X * PixelSize)
+        YPos = DrawAreaOffsetY + (Y * PixelSize)
 
         IconChanged = True
         IconData.Pixel(X, Y) = DrawColor
 
         Mouse.Hide
         IF DrawColor > -1 THEN
-            LINE (XPos, YPos)-(XPos + 11, YPos + 11), DrawColor, BF
-            PSET (514 + X, 269 + Y), DrawColor
+            LINE (XPos, YPos)-(XPos + PixelSize - 2, YPos + PixelSize - 2), DrawColor, BF
+            PSET (PreviewOffsetX + X, PreviewOffsetY + Y), DrawColor
         ELSE
-            LINE (XPos, YPos)-(XPos + 11, YPos + 11), 15, BF
-            LINE (XPos, YPos + 11)-(XPos + 11, YPos), 7
-            PSET (514 + X, 269 + Y), 15
+            LINE (XPos, YPos)-(XPos + PixelSize - 2, YPos + PixelSize - 2), 15, BF
+            LINE (XPos, YPos + PixelSize - 2)-(XPos + PixelSize - 2, YPos), 7
+            PSET (PreviewOffsetX + X, PreviewOffsetY + Y), 15
         END IF
         Mouse.Show
 
@@ -271,25 +273,38 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     DIM Key$, YPos, XPos, CursorX, CursorY, DrawColor, void
     DIM ColChk, FillColor, CurrentTool
 
-    Obj.SetSize winMain.Pos, 48, 11, 544, 458
-    Obj.SetSize txtDrawArea.Pos, winMain.Pos.Left + 8, winMain.Pos.Top + 31, 418, 418
+    IF UserSettings.ScreenMode = scrVGA THEN
+      PixelSize = 13
+      Obj.SetSize winMain.Pos, 48, 11, 544, 458
+      Obj.SetSize txtDrawArea.Pos, winMain.Pos.Left + 8, winMain.Pos.Top + 31, 418, 418
+      Obj.SetSize btnNew.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, winMain.Pos.Top + winMain.Pos.Height - 127, 100, 22
+      Obj.SetSize btnOpen.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, winMain.Pos.Top + winMain.Pos.Height - 95, 100, 22
+      Obj.SetSize btnSave.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, winMain.Pos.Top + winMain.Pos.Height - 63, 100, 22
+      Obj.SetSize btnExit.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, winMain.Pos.Top + winMain.Pos.Height - 31, 100, 22
+    ELSE
+      PixelSize = 9
+      Obj.SetSize winMain.Pos, 111, 11, 418, 334
+      Obj.SetSize txtDrawArea.Pos, winMain.Pos.Left + 8, winMain.Pos.Top + 31, 290, 290
+      Obj.SetSize btnNew.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 60, txtDrawArea.Pos.Top + 84, 50, 22
+      Obj.SetSize btnOpen.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 60, txtDrawArea.Pos.Top + 110, 50, 22
+      Obj.SetSize btnSave.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 60, txtDrawArea.Pos.Top + 136, 50, 22
+      Obj.SetSize btnExit.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 60, txtDrawArea.Pos.Top + 162, 50, 22
+    END IF
+
+    PreviewOffsetX = winMain.Pos.Left + txtDrawArea.Pos.Width + 48
+    PreviewOffsetY = winMain.Pos.Top + 258
+    DrawAreaOffsetX = txtDrawArea.Pos.Left + 2
+    DrawAreaOffsetY = txtDrawArea.Pos.Top + 2
 
     Obj.SetSize btnPreview.Pos, winMain.Pos.Left + txtDrawArea.Pos.Width + 38, winMain.Pos.Top + 248, 52, 52
     btnPreview.Transparent = True
 
-    Obj.SetSize btnNew.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, winMain.Pos.Top + winMain.Pos.Height - 127, 100, 22
     btnNew.Caption = "New"
     btnNew.HotKey = 1
-    
-    Obj.SetSize btnOpen.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, winMain.Pos.Top + winMain.Pos.Height - 95, 100, 22
     btnOpen.Caption = "Load"
     btnOpen.HotKey = 1
-
-    Obj.SetSize btnSave.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, winMain.Pos.Top + winMain.Pos.Height - 63, 100, 22
     btnSave.Caption = "Save"
     btnSave.HotKey = 1
-
-    Obj.SetSize btnExit.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, winMain.Pos.Top + winMain.Pos.Height - 31, 100, 22
     btnExit.Caption = "Exit"
     btnExit.HotKey = 2
 
@@ -314,8 +329,8 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     Obj.DrawBtn btnExit, False
     Obj.DrawTxt txtColor(-1), "", False
 
-    Font.Print "Colors", txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, txtDrawArea.Pos.Top, SystemTheme.WindowText, fontHeading
-    Font.Print "Tools", txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 60, txtDrawArea.Pos.Top, SystemTheme.WindowText, fontHeading
+    Font.Print "Colors", txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, txtDrawArea.Pos.Top, SystemTheme.WindowText, FontHeading
+    Font.Print "Tools", txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 60, txtDrawArea.Pos.Top, SystemTheme.WindowText, FontHeading
     Mouse.Hide
     LINE (txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 9, txtDrawArea.Pos.Top + 10)-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 16, txtDrawArea.Pos.Top + 10), SystemTheme.WindowText
     
@@ -339,18 +354,18 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     LINE (txtColor(-1).Pos.Left + 2, txtColor(-1).Pos.Top + 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 2, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 2), 15, BF
     LINE (txtColor(-1).Pos.Left + 2, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 2, txtColor(-1).Pos.Top + 2), 7
     
-    Font.Print "Preview", btnPreview.Pos.Left, btnPreview.Pos.Top - 15, SystemTheme.WindowText, fontHeading
+    Font.Print "Preview", btnPreview.Pos.Left, btnPreview.Pos.Top - 15, SystemTheme.WindowText, FontHeading
     LINE (btnPreview.Pos.Left - 1, btnPreview.Pos.Top - 4)-(btnPreview.Pos.Left + 5, btnPreview.Pos.Top - 4), SystemTheme.WindowText
     LINE (btnPreview.Pos.Left + 2, btnPreview.Pos.Top + 2)-(btnPreview.Pos.Left + btnPreview.Pos.Width - 2, btnPreview.Pos.Top + btnPreview.Pos.Height - 2), 15, BF
 
     'Draw grid in drawing area
     FOR YPos = 0 TO 31
-        LINE (txtDrawArea.Pos.Left + 2, txtDrawArea.Pos.Top + 1 + (YPos * 13))-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width - 2, 43 + (YPos * 13)), 8
-        LINE (txtDrawArea.Pos.Left + 2, txtDrawArea.Pos.Top + 1 + (YPos * 13))-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width - 2, 43 + (YPos * 13)), 0, , &HAAAA
+        LINE (txtDrawArea.Pos.Left + 2, txtDrawArea.Pos.Top + 1 + (YPos * PixelSize))-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width - 2, 43 + (YPos * PixelSize)), 8
+        LINE (txtDrawArea.Pos.Left + 2, txtDrawArea.Pos.Top + 1 + (YPos * PixelSize))-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width - 2, 43 + (YPos * PixelSize)), 0, , &HAAAA
     NEXT
     FOR XPos = 0 TO 31
-        LINE (txtDrawArea.Pos.Left + 1 + (XPos * 13), txtDrawArea.Pos.Top + 2)-(txtDrawArea.Pos.Left + 1 + (XPos * 13), txtDrawArea.Pos.Top + txtDrawArea.Pos.Height - 2), 8
-        LINE (txtDrawArea.Pos.Left + 1 + (XPos * 13), txtDrawArea.Pos.Top + 2)-(txtDrawArea.Pos.Left + 1 + (XPos * 13), txtDrawArea.Pos.Top + txtDrawArea.Pos.Height - 2), 0, , &HAAAA
+        LINE (txtDrawArea.Pos.Left + 1 + (XPos * PixelSize), txtDrawArea.Pos.Top + 2)-(txtDrawArea.Pos.Left + 1 + (XPos * PixelSize), txtDrawArea.Pos.Top + txtDrawArea.Pos.Height - 2), 8
+        LINE (txtDrawArea.Pos.Left + 1 + (XPos * PixelSize), txtDrawArea.Pos.Top + 2)-(txtDrawArea.Pos.Left + 1 + (XPos * PixelSize), txtDrawArea.Pos.Top + txtDrawArea.Pos.Height - 2), 0, , &HAAAA
     NEXT
     
     Mouse.Show
@@ -369,8 +384,8 @@ SUB IconEdit.Main (IconToLoad AS STRING)
         Key$ = LCASE$(INKEY$)
         
         IF Mouse.InArea(txtDrawArea.Pos) THEN
-            CursorX = (Mouse.X - (txtDrawArea.Pos.Left + 7)) / 13
-            CursorY = (Mouse.Y - (txtDrawArea.Pos.Top + 7)) / 13
+            CursorX = (Mouse.X - (txtDrawArea.Pos.Left + 7)) / PixelSize
+            CursorY = (Mouse.Y - (txtDrawArea.Pos.Top + 7)) / PixelSize
             IF CursorX < 0 THEN CursorX = 0
             IF CursorY < 0 THEN CursorY = 0
             IF CursorX > 31 THEN CursorX = 31
@@ -491,6 +506,10 @@ SUB IconEdit.Main (IconToLoad AS STRING)
                 IconEdit.DrawPixel KeyboardPosX, KeyboardPosY, DrawColor, False
               CASE toolFloodFill
                 IconEdit.FillArea KeyboardPosX, KeyboardPosY, DrawColor
+                'After flood fill, switch back to the pencil tools
+                Obj.DrawBtn btnPencil, True
+                Obj.DrawBtn btnFloodFill, False
+                CurrentTool = toolPencil
             END SELECT
             IconEdit.MoveIndicator dirStay
           ELSE
@@ -536,8 +555,8 @@ SUB IconEdit.Main (IconToLoad AS STRING)
                   IconEdit.DrawPixel CursorX, CursorY, DrawColor, False
 
                   IF Mouse.InArea(txtDrawArea.Pos) THEN
-                      CursorX = (Mouse.X - (txtDrawArea.Pos.Left + 7)) / 13
-                      CursorY = (Mouse.Y - (txtDrawArea.Pos.Top + 7)) / 13
+                      CursorX = (Mouse.X - (txtDrawArea.Pos.Left + 7)) / PixelSize
+                      CursorY = (Mouse.Y - (txtDrawArea.Pos.Top + 7)) / PixelSize
                       IF CursorX < 0 THEN CursorX = 0
                       IF CursorY < 0 THEN CursorY = 0
                       IF CursorX > 31 THEN CursorX = 31
@@ -554,6 +573,10 @@ SUB IconEdit.Main (IconToLoad AS STRING)
 
               CASE toolFloodFill
                 IconEdit.FillArea CursorX, CursorY, DrawColor
+                'After flood fill, switch back to the pencil tools
+                Obj.DrawBtn btnPencil, True
+                Obj.DrawBtn btnFloodFill, False
+                CurrentTool = toolPencil
 
             END SELECT
 
@@ -584,14 +607,14 @@ SUB IconEdit.MoveIndicator (Direction)
     IF (PerformMove AND KeyboardPosVisible) OR Direction = dirHide THEN
 
       IF KeyboardPosX > -1 AND KeyboardPosY > -1 THEN
-        XPos = 58 + (KeyboardPosX * 13)
-        YPos = 44 + (KeyboardPosY * 13)
+        XPos = DrawAreaOffsetX + (KeyboardPosX * PixelSize)
+        YPos = DrawAreaOffsetY + (KeyboardPosY * PixelSize)
         Mouse.Hide
         IF IconData.Pixel(KeyboardPosX, KeyboardPosY) > -1 THEN
-          LINE (XPos, YPos)-(XPos + 11, YPos + 11), IconData.Pixel(KeyboardPosX, KeyboardPosY), BF
+          LINE (XPos, YPos)-(XPos + PixelSize - 2, YPos + PixelSize - 2), IconData.Pixel(KeyboardPosX, KeyboardPosY), BF
         ELSE
-          LINE (XPos, YPos)-(XPos + 11, YPos + 11), 15, BF
-          LINE (XPos, YPos + 11)-(XPos + 11, YPos), 7
+          LINE (XPos, YPos)-(XPos + PixelSize - 2, YPos + PixelSize - 2), 15, BF
+          LINE (XPos, YPos + PixelSize - 2)-(XPos + PixelSize - 2, YPos), 7
         END IF
         Mouse.Show
       END IF
@@ -612,16 +635,20 @@ SUB IconEdit.MoveIndicator (Direction)
 
     IF KeyboardPosVisible THEN
       IF PerformMove OR Direction = dirStay THEN
-        XPos = 58 + (KeyboardPosX * 13)
-        YPos = 44 + (KeyboardPosY * 13)
+        XPos = DrawAreaOffsetX + (KeyboardPosX * PixelSize)
+        YPos = DrawAreaOffsetY + (KeyboardPosY * PixelSize)
         Mouse.Hide
-        LINE (XPos + 3, YPos + 3)-(XPos + 9, YPos + 9), 8, B
-        LINE (XPos + 4, YPos + 4)-(XPos + 8, YPos + 8), 15, B
+        IF PixelSize = 13 THEN
+          LINE (XPos + 3, YPos + 3)-(XPos + 9, YPos + 9), 8, B
+          LINE (XPos + 4, YPos + 4)-(XPos + 8, YPos + 8), 15, B
+        ELSE
+          LINE (XPos + 1, YPos + 1)-(XPos + 6, YPos + 6), 8, B
+          LINE (XPos + 2, YPos + 2)-(XPos + 5, YPos + 5), 15, B
+        END IF
         Mouse.Show
       END IF
     END IF
 
-    
 END SUB
 
 SUB IconEdit.NewIcon ()
@@ -656,7 +683,7 @@ SUB IconEdit.Preview ()
     DIM Header AS STRING * 9
     Header = "JACOBPALM"
     
-    Obj.SetSize winPreview.Pos, 132, 90, 267, 321
+    Obj.SetSize winPreview.Pos, 186, (scrHeight - 321) / 2, 267, 321
     winPreview.Caption = "Preview Icon"
 
     Obj.SetSize btnClose.Pos, winPreview.Pos.Left + winPreview.Pos.Width - 110, winPreview.Pos.Top + winPreview.Pos.Height - 32, 100, 22
@@ -665,8 +692,13 @@ SUB IconEdit.Preview ()
 
     Obj.SetSize txtPreview.Pos, winPreview.Pos.Left + 10, winPreview.Pos.Top + 32, 247, 247
 
-    
-    Sys.VGASave "ICONPREW"
+    IF UserSettings.ScreenMode = scrEGA THEN
+      Mouse.Hide
+      PCOPY 0, 1
+      Mouse.Show
+    ELSE
+      Sys.VGASave "ICONPREW"
+    END IF
 
     Obj.DrawWin winPreview
     Obj.DrawBtn btnClose, False
@@ -721,7 +753,13 @@ SUB IconEdit.Preview ()
 
     LOOP
 
-    Sys.VGALoad "ICONPREW"
+    IF UserSettings.ScreenMode = scrEGA THEN
+      Mouse.Hide
+      PCOPY 1, 0
+      Mouse.Show
+    ELSE
+      Sys.VGALoad "ICONPREW"
+    END IF
     EXIT SUB
 
 PreviewError:
@@ -795,11 +833,15 @@ SUB IconEdit.SetTitle ()
     END IF
 
     WindowTitle = "Icon Editor for Costa - " + WindowTitle
+    XPos = (640 - Font.GetWidth(WindowTitle, FontHeading)) / 2
 
     Mouse.Hide
-    LINE (53, 16)-(587, 32), SystemTheme.TitleBar, BF
-    XPos = (640 - Font.GetWidth(WindowTitle, fontHeading)) / 2
-    Font.Print WindowTitle, XPos, 20, SystemTheme.TitleBarText, fontHeading
+    IF UserSettings.ScreenMode = scrVGA THEN
+      LINE (53, 16)-(587, 32), SystemTheme.TitleBar, BF
+    ELSE
+      LINE (113, 16)-(527, 32), SystemTheme.TitleBar, BF
+    END IF
+    Font.Print WindowTitle, XPos, 20, SystemTheme.TitleBarText, FontHeading
     Mouse.Show
 
 END SUB
@@ -811,9 +853,18 @@ SUB IconEdit.ShowLoadDialog ()
 
     DIM winSelect AS WindowType
     DIM imgPreview AS ImageType
-    DIM btnNext AS ButtonType, btnPrev AS ButtonType, BtnCancel AS ButtonType
+    DIM btnNext AS ButtonType, btnPrev AS ButtonType, btnCancel AS ButtonType
     DIM btnLoad AS ButtonType
                                      
+    IF UserSettings.ScreenMode = scrEGA THEN
+      Mouse.Hide
+      PCOPY 0, 1
+      Mouse.Show
+    ELSE
+      Sys.VGASave "LoadIcon"
+    END IF
+    Sys.ShowLoading
+
     REDIM IconFiles(0) AS STRING
     IconFiles(0) = DIR$(Sys.Path + "DATA\IMAGES\*.BSV")
 
@@ -825,19 +876,18 @@ SUB IconEdit.ShowLoadDialog ()
     IconFiles(0) = LEFT$(IconFiles(0), LEN(IconFiles(0)) - 4)
     IconIndex = 0
 
-    Obj.SetSize winSelect.Pos, 243, 160, 153, 160
+    Obj.SetSize winSelect.Pos, 243, (scrHeight - 160) / 2, 153, 160
     Obj.SetSize btnLoad.Pos, winSelect.Pos.Left + 51, winSelect.Pos.Top + 58, 52, 52
     Obj.SetSize btnPrev.Pos, winSelect.Pos.Left + 15, winSelect.Pos.Top + 73, 22, 22
     Obj.SetSize btnNext.Pos, winSelect.Pos.Left + 117, winSelect.Pos.Top + 73, 22, 22
-    Obj.SetSize BtnCancel.Pos, winSelect.Pos.Left + 15, winSelect.Pos.Top + 124, 124, 22
+    Obj.SetSize btnCancel.Pos, winSelect.Pos.Left + 15, winSelect.Pos.Top + 124, 124, 22
     Obj.SetSize imgPreview.Pos, btnLoad.Pos.Left + 11, btnLoad.Pos.Top + 11, -1, -1
 
-    Sys.VGASave "LoadIcon"
     winSelect.Caption = "Load icon"
     btnPrev.Caption = "<"
     btnNext.Caption = ">"
-    BtnCancel.Caption = "Cancel"
-    BtnCancel.HotKey = 1
+    btnCancel.Caption = "Cancel"
+    btnCancel.HotKey = 1
     btnLoad.Transparent = True
     imgPreview.ImageFile = IconFiles(0)
     
@@ -845,10 +895,10 @@ SUB IconEdit.ShowLoadDialog ()
     Obj.DrawBtn btnPrev, 0
     Obj.DrawBtn btnLoad, 0
     Obj.DrawBtn btnNext, 0
-    Obj.DrawBtn BtnCancel, 0
+    Obj.DrawBtn btnCancel, 0
     Obj.DrawImg imgPreview
 
-    Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), fontHeading) / 2), winSelect.Pos.Top + 37, SystemTheme.WindowText, fontHeading
+    Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 37, SystemTheme.WindowText, FontHeading
 
     DO
         REDIM PRESERVE IconFiles(0 TO UBOUND(IconFiles) + 1) AS STRING
@@ -863,8 +913,14 @@ SUB IconEdit.ShowLoadDialog ()
     DO
         Key$ = LCASE$(INKEY$)
 
-        IF Obj.BtnClick(BtnCancel) OR Key$ = CHR$(27) OR Key$ = "c" THEN
-            Sys.VGALoad "LoadIcon"
+        IF Obj.BtnClick(btnCancel) OR Key$ = CHR$(27) OR Key$ = "c" THEN
+            IF UserSettings.ScreenMode = scrEGA THEN
+              Mouse.Hide
+              PCOPY 1, 0
+              Mouse.Show
+            ELSE
+              Sys.VGALoad "LoadIcon"
+            END IF
             EXIT SUB
         END IF
 
@@ -877,7 +933,7 @@ SUB IconEdit.ShowLoadDialog ()
             LINE (winSelect.Pos.Left + 10, winSelect.Pos.Top + 33)-(winSelect.Pos.Left + 146, winSelect.Pos.Top + 50), SystemTheme.Window, BF
             Mouse.Show
             Obj.DrawImg imgPreview
-            Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), fontHeading) / 2), winSelect.Pos.Top + 37, SystemTheme.WindowText, fontHeading
+            Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 37, SystemTheme.WindowText, FontHeading
         END IF
 
         IF Obj.BtnClick(btnNext) OR Key$ = CHR$(0) + "m" THEN 'Right arrow
@@ -889,11 +945,17 @@ SUB IconEdit.ShowLoadDialog ()
             LINE (winSelect.Pos.Left + 10, winSelect.Pos.Top + 33)-(winSelect.Pos.Left + 146, winSelect.Pos.Top + 50), SystemTheme.Window, BF
             Mouse.Show
             Obj.DrawImg imgPreview
-            Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), fontHeading) / 2), winSelect.Pos.Top + 37, SystemTheme.WindowText, fontHeading
+            Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 37, SystemTheme.WindowText, FontHeading
         END IF
 
         IF Obj.BtnClick(btnLoad) OR Key$ = CHR$(13) THEN
-            Sys.VGALoad "LoadIcon"
+            IF UserSettings.ScreenMode = scrEGA THEN
+              Mouse.Hide
+              PCOPY 1, 0
+              Mouse.Show
+            ELSE
+              Sys.VGALoad "LoadIcon"
+            END IF
             IconEdit.LoadIcon (IconFiles(IconIndex))
             EXIT SUB
         END IF

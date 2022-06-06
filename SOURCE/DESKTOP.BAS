@@ -19,7 +19,6 @@ DECLARE SUB Desk.ProfileSelect ()
 DECLARE SUB Desk.RunDialog ()
 DECLARE SUB Desk.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVAL TargetPath AS STRING, PauseOnExit AS INTEGER)
 
-
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
 TYPE DeskLinkType
@@ -57,7 +56,6 @@ IF COMMAND$ = "/BOOT" THEN
     CHDIR "DATA"
     MKDIR "TEMP"
     MKDIR "CONFIG"
-    MKDIR "FONTS"
     MKDIR "IMAGES"
     MKDIR "THEMES"
     CHDIR ".."
@@ -107,6 +105,14 @@ IF ProfileID < 1 OR ProfileID > 5 THEN
         Desk.ProfileSelect
     END IF
 
+    IF UserSettings.ScreenMode = scrVGA THEN
+      scrHeight = 480
+      SCREEN 12
+    ELSE
+      scrHeight = 350
+      SCREEN 9
+    END IF
+    
 END IF
 
 ON ERROR RESUME NEXT
@@ -133,13 +139,19 @@ SUB Desk.AboutBox ()
   DIM imgLogo AS ImageType
   DIM Key$
 
-  Obj.SetSize winAboutBox.Pos, 156, 100, 328, 278
-  Obj.SetSize btnClose.Pos, 274, 343, 92, 22
-  Obj.SetSize imgLogo.Pos, 168, 111, -1, -1
+  Obj.SetSize winAboutBox.Pos, 156, (scrHeight - 278) / 2, 328, 278
+  Obj.SetSize btnClose.Pos, 274, winAboutBox.Pos.Top + 243, 92, 22
+  Obj.SetSize imgLogo.Pos, 168, winAboutBox.Pos.Top + 11, -1, -1
   btnClose.Caption = "Close"
   btnClose.HotKey = 1
   imgLogo.ImageFile = "LOGO"
   
+  IF UserSettings.ScreenMode = scrEGA THEN
+    Mouse.Hide
+    PCOPY 0, 1
+    Mouse.Show
+  END IF
+
   Obj.DrawWin winAboutBox
   Mouse.Hide
   LINE (winAboutBox.Pos.Left + 5, winAboutBox.Pos.Top + 5)-(winAboutBox.Pos.Left + winAboutBox.Pos.Width - 5, winAboutBox.Pos.Top + winAboutBox.Pos.Height - 5), SystemTheme.Shadow, B
@@ -148,18 +160,18 @@ SUB Desk.AboutBox ()
   Mouse.Show
   Obj.DrawBtn btnClose, False
   
-  Font.Print appName, 210, 117, 0, 1
-  Font.Print "Version " + appVersion, 210, 131, 0, 2
-  Font.Print "Made in 2004-" + appYear + " by Jacob Palm.", 168, 153, 0, 2
-  Font.Print "Released under the MIT License.", 168, 167, 0, 2
-  Font.Print "Font files made in 1998-1999 by Rush Soft.", 168, 195, 0, 2
-  Font.Print "Costa is open source and may be freely distributed", 168, 223, 0, 2
-  Font.Print "as long as the terms of the MIT License is upheld -", 168, 237, 0, 2
-  Font.Print "more info can be found in the LICENSE file.", 168, 251, 0, 2
-  Font.Print "Special thanks to Todd Suess, who helped during", 168, 279, 0, 2
-  Font.Print "the development with useful tips and ideas. Also", 168, 293, 0, 2
-  Font.Print "thanks to those people who were part of the QB", 168, 307, 0, 2
-  Font.Print "GUI community - every one of you.", 168, 321, 0, 2
+  Font.Print appName, 210, winAboutBox.Pos.Top + 17, 0, 1
+  Font.Print "Version " + appVersion, 210, winAboutBox.Pos.Top + 31, 0, 2
+  Font.Print "Made in 2004-" + appYear + " by Jacob Palm.", 168, winAboutBox.Pos.Top + 53, 0, 2
+  Font.Print "Released under the MIT License.", 168, winAboutBox.Pos.Top + 67, 0, 2
+  Font.Print "Font files made in 1998-1999 by Rush Soft.", 168, winAboutBox.Pos.Top + 95, 0, 2
+  Font.Print "Costa is open source and may be freely distributed", 168, winAboutBox.Pos.Top + 123, 0, 2
+  Font.Print "as long as the terms of the MIT License is upheld -", 168, winAboutBox.Pos.Top + 137, 0, 2
+  Font.Print "more info can be found in the LICENSE file.", 168, winAboutBox.Pos.Top + 151, 0, 2
+  Font.Print "Special thanks to Todd Suess, who helped during", 168, winAboutBox.Pos.Top + 179, 0, 2
+  Font.Print "the development with useful tips and ideas. Also", 168, winAboutBox.Pos.Top + 193, 0, 2
+  Font.Print "thanks to those people who were part of the QB", 168, winAboutBox.Pos.Top + 207, 0, 2
+  Font.Print "GUI community - every one of you.", 168, winAboutBox.Pos.Top + 221, 0, 2
 
   Obj.DrawImg imgLogo
 
@@ -167,9 +179,20 @@ SUB Desk.AboutBox ()
   DO
 
     Key$ = LCASE$(INKEY$)
-    IF Obj.BtnClick(btnClose) OR Key$ = CHR$(13) OR Key$ = CHR$(27) OR Key$ = "c" THEN EXIT SUB
+    IF Obj.BtnClick(btnClose) OR Key$ = CHR$(13) OR Key$ = CHR$(27) OR Key$ = "c" THEN EXIT DO
 
   LOOP
+
+  IF UserSettings.ScreenMode = scrEGA THEN
+    Mouse.Hide
+    PCOPY 1, 0
+    Mouse.Show
+  ELSE
+    Mouse.Hide
+    LINE (0, 0)-(639, scrHeight - 1), SystemTheme.Desktop, BF
+    Mouse.Show
+    Desk.DrawDesktop
+  END IF
   
 END SUB
 
@@ -186,6 +209,10 @@ END SUB
 ' =========================================================================
 SUB Desk.DrawDesktop ()
    
+  Mouse.Hide
+  LINE (0, 0)-(639, 479), SystemTheme.Desktop, BF
+  Mouse.Show
+  
   'All desklinks will always have an imagefile. Use this to check if any
   'desklinks exist
   IF RTRIM$(DESKLINK(0).ImageFile) = "" OR DESKLINK(0).Caption = STRING$(25, 0) THEN EXIT SUB
@@ -198,10 +225,16 @@ SUB Desk.DrawDesktop ()
   'each desklink
   FOR TargetLink = 0 TO UBOUND(DESKLINK)
 
+    'If screen resolution has been reduced, make sure icons aren't out
+    'of vertical view
+    IF DESKLINK(TargetLink).Top > scrHeight - 32 THEN
+      DESKLINK(TargetLink).Top = scrHeight - 32
+    END IF
+
     imgDeskLinkIcon.ImageFile = DESKLINK(TargetLink).ImageFile
     imgDeskLinkIcon.Pos.Left = DESKLINK(TargetLink).Left
     imgDeskLinkIcon.Pos.Top = DESKLINK(TargetLink).Top
-
+    
     Obj.DrawImg imgDeskLinkIcon
 
     'Description (caption) and target file
@@ -332,6 +365,8 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
   DIM AllIcons() AS STRING
   DIM IconCount AS INTEGER, CurrentIcon AS INTEGER, IconFile AS STRING
 
+  Sys.ShowLoading
+
   IconFile = DIR$(Sys.Path + "DATA\IMAGES\*.BSV")
   IconCount = 0
 
@@ -362,24 +397,24 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
   DIM imgIcon AS ImageType
   DIM chkPauseOnExit AS CheckBoxType
 
-  Obj.SetSize ConfWin.Pos, 210, 65, 220, 350
+  Obj.SetSize ConfWin.Pos, 210, (scrHeight - 350) / 2, 220, 350
 
   IF NewLink = False THEN
     ConfWin.Caption = "Customize desktop link"
   ELSE
     ConfWin.Caption = "Add desktop link"
   END IF
-  Obj.SetSize txtLinkCapt.Pos, 222, 111, 196, 19
-  Obj.SetSize btnIconPrev.Pos, 262, 163, 22, 22
-  Obj.SetSize frmIconFrame.Pos, 296, 150, 48, 48
-  Obj.SetSize imgIcon.Pos, 304, 158, 32, 32
-  Obj.SetSize btnIconNext.Pos, 356, 163, 22, 22
-  Obj.SetSize txtFileName.Pos, 222, 230, 196, 19
-  Obj.SetSize txtParams.Pos, 222, 276, 196, 19
-  Obj.SetSize txtPath.Pos, 222, 325, 196, 19
-  Obj.SetSize chkPauseOnExit.Pos, 222, 357, -1, -1
-  Obj.SetSize btnOK.Pos, 229, 384, 84, 22
-  Obj.SetSize btnCancel.Pos, 326, 384, 84, 22
+  Obj.SetSize txtLinkCapt.Pos, 222, ConfWin.Pos.Top + 46, 196, 19
+  Obj.SetSize btnIconPrev.Pos, 262, ConfWin.Pos.Top + 98, 22, 22
+  Obj.SetSize frmIconFrame.Pos, 296, ConfWin.Pos.Top + 85, 48, 48
+  Obj.SetSize imgIcon.Pos, 304, ConfWin.Pos.Top + 93, 32, 32
+  Obj.SetSize btnIconNext.Pos, 356, ConfWin.Pos.Top + 98, 22, 22
+  Obj.SetSize txtFileName.Pos, 222, ConfWin.Pos.Top + 165, 196, 19
+  Obj.SetSize txtParams.Pos, 222, ConfWin.Pos.Top + 211, 196, 19
+  Obj.SetSize txtPath.Pos, 222, ConfWin.Pos.Top + 260, 196, 19
+  Obj.SetSize chkPauseOnExit.Pos, 222, ConfWin.Pos.Top + 292, -1, -1
+  Obj.SetSize btnOK.Pos, 229, ConfWin.Pos.Top + 319, 84, 22
+  Obj.SetSize btnCancel.Pos, 326, ConfWin.Pos.Top + 319, 84, 22
 
   txtLinkCapt.MaxLen = 25
   txtFileName.MaxLen = 50
@@ -413,18 +448,18 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
   Obj.DrawChk chkPauseOnExit
   Obj.DrawBtn btnOK, False
   Obj.DrawBtn btnCancel, False
-  Font.Print "Description (caption):", 222, 97, SystemTheme.WindowText, 1
-  Font.Print "Program or DOS command:", 222, 213, SystemTheme.WindowText, 1
-  Font.Print "Parameters:", 222, 262, SystemTheme.WindowText, 1
-  Font.Print "Path (including drive):", 222, 311, SystemTheme.WindowText, 1
-  Font.Print "Pause after execution", 242, 360, SystemTheme.WindowText, 2
+  Font.Print "Description (caption):", 222, ConfWin.Pos.Top + 32, SystemTheme.WindowText, 1
+  Font.Print "Program or DOS command:", 222, ConfWin.Pos.Top + 148, SystemTheme.WindowText, 1
+  Font.Print "Parameters:", 222, ConfWin.Pos.Top + 197, SystemTheme.WindowText, 1
+  Font.Print "Path (including drive):", 222, ConfWin.Pos.Top + 246, SystemTheme.WindowText, 1
+  Font.Print "Pause after execution", 242, ConfWin.Pos.Top + 295, SystemTheme.WindowText, 2
   Mouse.Hide
-  LINE (221, 108)-(228, 108), SystemTheme.WindowText
-  LINE (298, 152)-(342, 196), SystemTheme.Desktop, BF
-  LINE (221, 224)-(228, 224), SystemTheme.WindowText
-  LINE (237, 322)-(244, 322), SystemTheme.WindowText
-  LINE (321, 371)-(327, 371), SystemTheme.WindowText
-  LINE (236, 273)-(243, 273), SystemTheme.WindowText
+  LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), SystemTheme.Desktop, BF
+  LINE (221, ConfWin.Pos.Top + 43)-(228, ConfWin.Pos.Top + 43), SystemTheme.WindowText
+  LINE (221, ConfWin.Pos.Top + 159)-(228, ConfWin.Pos.Top + 159), SystemTheme.WindowText
+  LINE (237, ConfWin.Pos.Top + 257)-(244, ConfWin.Pos.Top + 257), SystemTheme.WindowText
+  LINE (321, ConfWin.Pos.Top + 306)-(327, ConfWin.Pos.Top + 306), SystemTheme.WindowText
+  LINE (236, ConfWin.Pos.Top + 208)-(243, ConfWin.Pos.Top + 208), SystemTheme.WindowText
   Mouse.Show
   Obj.DrawImg imgIcon
 
@@ -521,8 +556,6 @@ SUB Desk.LinkLaunch (TargetLink AS INTEGER)
 
     TargetPath = RTRIM$(DESKLINK(TargetLink).Path)
 
-    IF UserSettings.ShowDesktopInApps THEN Sys.VGASave "DESKTOP"
-
     Desk.Run RTRIM$(DESKLINK(TargetLink).Filename), RTRIM$(DESKLINK(TargetLink).Parameters), RTRIM$(DESKLINK(TargetLink).Path), DESKLINK(TargetLink).PauseOnExit
 
 
@@ -561,6 +594,12 @@ SUB Desk.LinkLoad ()
 
         GET #FileHandle, , DESKLINK(LinkLoad)
 
+        'If screen resolution has been reduced, make sure icons aren't out
+        'of vertical view
+        IF DESKLINK(LinkLoad).Top > scrHeight - 32 THEN
+          DESKLINK(LinkLoad).Top = scrHeight - 32
+        END IF
+
     NEXT
     
     CLOSE #FileHandle
@@ -596,7 +635,7 @@ SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
     DrawFromLeft = True
   END IF
 
-  IF MenuY + MenuBack.Pos.Height > 479 THEN
+  IF MenuY + MenuBack.Pos.Height > (scrHeight - 1) THEN
     MenuBack.Pos.Top = MenuY - MenuBack.Pos.Height
     DrawFromTop = False
   ELSE
@@ -757,16 +796,19 @@ LinkMenuRefresh:
             Mouse.Show
             DO: LOOP WHILE Mouse.Clicked
 
-            Sys.VGASave "DESKTOP"
+            IF UserSettings.ScreenMode = scrEGA THEN
+              Mouse.Hide
+              PCOPY 0, 1
+              Mouse.Show
+            END IF
             Desk.LinkDialog TargetLink, DidEdit, False
 
-            IF DidEdit THEN
-                Mouse.Hide
-                LINE (0, 29)-(639, 479), SystemTheme.Desktop, BF
+            IF DidEdit OR UserSettings.ScreenMode = scrVGA THEN
                 Desk.DrawDesktop
-                Mouse.Show
             ELSE
-                Sys.VGALoad "DESKTOP"
+              Mouse.Hide
+              PCOPY 1, 0
+              Mouse.Show
             END IF
 
             EXIT SUB
@@ -779,7 +821,7 @@ LinkMenuRefresh:
             Mouse.Show
             Desk.LinkMove TargetLink
             Mouse.Hide
-            LINE (0, 2)-(639, 479), SystemTheme.Desktop, BF
+            LINE (0, 2)-(639, scrHeight - 1), SystemTheme.Desktop, BF
             Desk.DrawDesktop
             Mouse.Show
             EXIT SUB
@@ -803,7 +845,7 @@ LinkMenuRefresh:
                 Desk.LinkSave
                 Desk.LinkLoad
                 Mouse.Hide
-                LINE (0, 2)-(639, 479), SystemTheme.Desktop, BF
+                LINE (0, 2)-(639, scrHeight - 1), SystemTheme.Desktop, BF
                 Desk.DrawDesktop
                 Mouse.Show
                 DO: LOOP WHILE Mouse.Clicked
@@ -870,14 +912,14 @@ SUB Desk.LinkMove (TargetLink)
         KeyX = Mouse.X - 15
         KeyY = Mouse.Y
         IF KeyX < 16 THEN KeyX = 16
-        IF KeyY < 46 THEN KeyY = 46
+        IF KeyY < 48 THEN KeyY = 48
         Mouse.SetPos KeyX, KeyY
     END IF
     IF Key$ = CHR$(0) + "m" THEN
         KeyX = Mouse.X + 15
         KeyY = Mouse.Y
         IF KeyX > 624 THEN KeyX = 624
-        IF KeyY > 464 THEN KeyY = 464
+        IF KeyY > scrHeight - 16 THEN KeyY = scrHeight - 16
         Mouse.SetPos KeyX, KeyY
     END IF
     IF Key$ = CHR$(0) + "h" THEN
@@ -890,7 +932,7 @@ SUB Desk.LinkMove (TargetLink)
     IF Key$ = CHR$(0) + "p" THEN
         KeyY = Mouse.Y + 15
         KeyX = Mouse.X
-        IF KeyY > 464 THEN KeyY = 464
+        IF KeyY > scrHeight - 16 THEN KeyY = scrHeight - 16
         IF KeyX > 624 THEN KeyX = 624
         Mouse.SetPos KeyX, KeyY
     END IF
@@ -906,9 +948,9 @@ SUB Desk.LinkMove (TargetLink)
       FlickerY = Mouse.Y
 
       IF LastX < 16 THEN LastX = 16
-      IF LastY < 46 THEN LastY = 46
+      IF LastY < 48 THEN LastY = 48
       IF LastX > 624 THEN LastX = 624
-      IF LastY > 464 THEN LastY = 464
+      IF LastY > scrHeight - 16 THEN LastY = scrHeight - 16
       GET (LastX - 16, LastY - 16)-(LastX + 15, LastY + 15), LinkIconBack
       PUT (LastX - 16, LastY - 16), LinkIcon, PSET
       Mouse.Show
@@ -944,7 +986,7 @@ SUB Desk.LinkReset ()
     DESKLINK(0).Parameters = ""
     DESKLINK(0).ImageFile = "TICTAC"
     DESKLINK(0).Left = 15
-    DESKLINK(0).Top = 253
+    DESKLINK(0).Top = 45
 
     DESKLINK(1).Caption = "Text Viewer"
     DESKLINK(1).Filename = "TEXTVIEW.EXE"
@@ -952,7 +994,7 @@ SUB Desk.LinkReset ()
     DESKLINK(1).Parameters = ""
     DESKLINK(1).ImageFile = "DOCUMENT"
     DESKLINK(1).Left = 15
-    DESKLINK(1).Top = 298
+    DESKLINK(1).Top = 90
 
     DESKLINK(2).Caption = "Calculator"
     DESKLINK(2).Filename = "CALC.EXE"
@@ -960,7 +1002,7 @@ SUB Desk.LinkReset ()
     DESKLINK(2).Parameters = ""
     DESKLINK(2).ImageFile = "CALC"
     DESKLINK(2).Left = 15
-    DESKLINK(2).Top = 343
+    DESKLINK(2).Top = 135
 
     DESKLINK(3).Caption = "Theme Editor"
     DESKLINK(3).Filename = "THMEDIT.EXE"
@@ -968,7 +1010,7 @@ SUB Desk.LinkReset ()
     DESKLINK(3).Parameters = ""
     DESKLINK(3).ImageFile = "THEMES"
     DESKLINK(3).Left = 15
-    DESKLINK(3).Top = 388
+    DESKLINK(3).Top = 180
 
     DESKLINK(4).Caption = "Icon Editor"
     DESKLINK(4).Filename = "ICONEDIT.EXE"
@@ -976,7 +1018,7 @@ SUB Desk.LinkReset ()
     DESKLINK(4).Parameters = ""
     DESKLINK(4).ImageFile = "PAINT"
     DESKLINK(4).Left = 15
-    DESKLINK(4).Top = 433
+    DESKLINK(4).Top = 225
 
     DESKLINK(5).Caption = "DOS-prompt"
     DESKLINK(5).Filename = "COMMAND.COM"
@@ -993,7 +1035,7 @@ SUB Desk.LinkReset ()
     DESKLINK(6).Parameters = ""
     DESKLINK(6).ImageFile = "NEWSPAPE"
     DESKLINK(6).Left = 480
-    DESKLINK(6).Top = 388
+    DESKLINK(6).Top = 90
 
     DESKLINK(7).Caption = "User's guide"
     DESKLINK(7).Filename = "DOCS\HELP.TXT"
@@ -1001,7 +1043,7 @@ SUB Desk.LinkReset ()
     DESKLINK(7).Parameters = ""
     DESKLINK(7).ImageFile = "HELP"
     DESKLINK(7).Left = 480
-    DESKLINK(7).Top = 433
+    DESKLINK(7).Top = 135
 
     Desk.LinkSave
 
@@ -1126,10 +1168,10 @@ SUB Desk.Main ()
   CHDIR Sys.Path
   ON LOCAL ERROR GOTO 0
   
+  Desk.LinkLoad
+
 Desk.MainTop:
   Mouse.Hide
-  LINE (0, 2)-(639, 479), SystemTheme.Desktop, BF
-  Desk.LinkLoad
   Desk.DrawDesktop
   Mouse.Show
   TabCheck = -1
@@ -1204,18 +1246,18 @@ MainLoopStart:
                 Desk.LinkMenu DeskLinkCheck, ClickedX, ClickedY
                 GOSUB SlideDown
               ELSE
-                'Depending on the configuration a left click on a link
-                'will either open/run the targetfile or show the menu
 
-                'Check for double click - await button release first
+                'Left click. Check for double click - await button release
+                'first
                 DO: LOOP WHILE Mouse.Clicked
 
                 'Save current time, and loop until desired time has passed
+                'while checking for mouse click
                 DidDoubleClick = False
                 DoubleClickTimer = TIMER
                 DO
-                  'If mouse was clicked again within set time, and still within
-                  'icon, we have a doubleclick
+                  'If mouse was clicked again within set time, and still
+                  'within icon, we have a doubleclick
                   IF Mouse.Clicked = mbLeft THEN
                     ClickedX = Mouse.X
                     ClickedY = Mouse.Y
@@ -1257,19 +1299,29 @@ MainLoopStart:
             DESKLINK(UBOUND(DESKLINK)).Top = 45
 
             GOSUB SlideUp
-            IF UserSettings.ShowDesktopInApps THEN Sys.VGASave "DESKTOP"
+            IF UserSettings.ScreenMode = scrEGA THEN
+              Mouse.Hide
+              PCOPY 0, 1
+              Mouse.Show
+            END IF
             Desk.LinkDialog UBOUND(DESKLINK), DidEdit, True
 
-            IF DidEdit OR NOT UserSettings.ShowDesktopInApps THEN
+            IF DidEdit OR (NOT UserSettings.ScreenMode AND UserSettings.ScreenMode = scrVGA) THEN
                 TabCheck = -1
                 Desk.LinkLoad
                 Mouse.Hide
-                LINE (0, 29)-(639, 479), SystemTheme.Desktop, BF
+                LINE (0, 29)-(639, scrHeight - 1), SystemTheme.Desktop, BF
                 Desk.DrawDesktop
                 Mouse.Show
             ELSE
                 REDIM PRESERVE DESKLINK(0 TO UBOUND(DESKLINK) - 1) AS DeskLinkType
-                Sys.VGALoad "DESKTOP"
+                IF UserSettings.ScreenMode = scrEGA THEN
+                  Mouse.Hide
+                  PCOPY 1, 0
+                  Mouse.Show
+                ELSE
+                  Desk.DrawDesktop
+                END IF
             END IF
 
             GOSUB SlideDown
@@ -1280,7 +1332,6 @@ MainLoopStart:
             DIM FileToRun AS STRING
             FileToRun = Sys.InputBox("Execute program or command", "You can also use this dialog to open any file" + CHR$(13) + "associated with a program (like README.TXT).", "RUNPROG", "")
             IF LEN(FileToRun) AND NOT FileToRun = "C:\" THEN
-                IF UserSettings.ShowDesktopInApps THEN Sys.VGASave "DESKTOP"
                 DIM RunFile AS STRING
                 Desk.Run FileToRun, "", "", True
             END IF
@@ -1290,16 +1341,7 @@ MainLoopStart:
 
         IF Key$ = "a" THEN
             GOSUB SlideUp
-            IF UserSettings.ShowDesktopInApps THEN Sys.VGASave "DESKTOP"
             Desk.AboutBox
-            IF UserSettings.ShowDesktopInApps THEN
-              Sys.VGALoad "DESKTOP"
-            ELSE
-              Mouse.Hide
-              LINE (0, 29)-(639, 479), SystemTheme.Desktop, BF
-              Desk.DrawDesktop
-              Mouse.Show
-            END IF
             GOSUB SlideDown
             GOTO MainLoopStart
         END IF
@@ -1307,15 +1349,14 @@ MainLoopStart:
         IF Key$ = "p" THEN
             GOSUB SlideUp
             Desk.ProfileSelect
-            GOSUB Desk.MainTop
+            Desk.LinkLoad
+            GOTO Desk.MainTop
         END IF
 
         IF Key$ = "c" THEN
             GOSUB SlideUp
-            IF UserSettings.ShowDesktopInApps THEN Sys.VGASave "DESKTOP"
             Conf.Main
-            GOSUB SlideDown
-            GOTO MainLoopStart
+            GOTO Desk.MainTop
         END IF
 
 
@@ -1443,6 +1484,8 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
     DIM IconCount AS INTEGER, CurrentIcon AS INTEGER, IconFile AS STRING
     DIM CurrentIconFilename AS STRING
 
+    Sys.ShowLoading
+
     IconFile = DIR$(Sys.Path + "DATA\IMAGES\*.BSV")
     IconCount = 0
     CurrentIconFilename = RTRIM$(UserSettings.ProfileImage)
@@ -1475,7 +1518,7 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
     winProfEdit.Pos.Width = 220
     winProfEdit.Pos.Height = 208
     winProfEdit.Pos.Left = (640 - winProfEdit.Pos.Width) / 2
-    winProfEdit.Pos.Top = (480 - winProfEdit.Pos.Height) / 2
+    winProfEdit.Pos.Top = (scrHeight - winProfEdit.Pos.Height) / 2
     winProfEdit.Caption = "Edit profile"
 
     Obj.SetSize frmIconFrame.Pos, 296, winProfEdit.Pos.Top + 46, 48, 48
@@ -1564,13 +1607,13 @@ SUB Desk.ProfileSelect ()
     UserSettings.ThemeFile = "DEFAULT"
     Sys.LoadTheme
     Mouse.Hide
-    LINE (0, 0)-(639, 479), SystemTheme.Desktop, BF
+    LINE (0, 0)-(639, scrHeight - 1), SystemTheme.Desktop, BF
     Mouse.Show
     
     winProfiles.Pos.Width = 338
     winProfiles.Pos.Height = 220
     winProfiles.Pos.Left = (640 - winProfiles.Pos.Width) / 2
-    winProfiles.Pos.Top = (480 - winProfiles.Pos.Height) / 2
+    winProfiles.Pos.Top = (scrHeight - winProfiles.Pos.Height) / 2
     winProfiles.Caption = "Profile selection"
 
     Obj.SetSize btnProfile(1).Pos, winProfiles.Pos.Left + 18, winProfiles.Pos.Top + 84, 46, 46
@@ -1631,7 +1674,7 @@ TopOfProfile:
     FOR Counter = 1 TO 5
       Obj.DrawImg imgProfile(Counter)
     NEXT
-
+             
     DO
         Key$ = LCASE$(INKEY$)
 
@@ -1670,6 +1713,16 @@ TopOfProfile:
             Sys.SaveSettings
             Sys.LoadProfile SelectedProfile
             Sys.LoadTheme
+
+            Mouse.Hide
+            IF UserSettings.ScreenMode = scrVGA THEN
+              scrHeight = 480
+              SCREEN 12
+            ELSE
+              scrHeight = 350
+              SCREEN 9
+            END IF
+            Mouse.Show
             
             EXIT SUB
         END IF

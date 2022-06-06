@@ -1,0 +1,45 @@
+
+                          The Costa Graphical Shell
+                                By Jacob Palm                   
+
+                    Release instructions for new versions
+
+------------------------------------------------------------------------------
+
+ These instructions act as a checklist for the release of new versions of
+Costa - what tasks must be performed, what files should be included, etc.
+
+ If you are compiling your own version of Costa, you do not need to follow
+these strictly. They are mainly written to help myself remember every detail
+when releasing a new version.
+
+ - Update version information in SOURCE\APPINFO.BI
+ - Update version text in the icon "LOGO"
+ - Update version information in DOCS\HELP.TXT, and read through to see if
+   any information about new/changes features need to be documented
+ - Update changelog in DOCS\CHANGES.TXT
+ - Compile all EXE files
+   Use 286 optimizations, include run-time error checking.
+   Compile all except SETUP.MAK with VBDOS standard library loaded, compile
+   SETUP.MAK without as it is not needed.
+ - Run _DELOBJ.BAT to ensure all compiler leftover files are removed
+ - Create default user profile files for all 5 user profiles:
+   PROFILEx.DAT
+   DESKLNKx.DAT
+ - Create the default FILETYPE.DAT file, by removing it and opening the
+   file type association dialog from the Config utility
+ - Copy _DISTRUB.BAT to COSTA.BAT (contains first-run information for the
+   user)
+ - Exclude the following from the ZIP file:
+   SOURCE folder
+   .gif folder
+   .gitignore
+   .ds_store files from all subfolders if packaging on a Mac
+   README.MD
+   All files with a name starting with underscore
+ - Merge Git branch to main, if any
+ - Tag a release on GitHub for this version, and add the ZIP archive for
+   the release
+ - After final commit and push to Git, create ZIP archive of source for
+   own archive
+ - Update website with download link, archive and screenshots
