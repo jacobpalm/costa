@@ -189,6 +189,7 @@ StartOfAll:
     Obj.DrawTxt txtEditor, "", False
     Mouse.Hide
     LINE (7, txtEditor.Pos.Top + 2)-(633, txtEditor.Pos.Top + txtEditor.Pos.Height - 2), SystemTheme.Textbox, BF
+    Mouse.Show
 
     IF FileOpened THEN
         StartLine = 1
