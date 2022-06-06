@@ -40,7 +40,7 @@ p {
 
 /* Links */
 a {
-	color: #5555FF;
+	color: #00AAAA;
 	word-wrap: break-word;
 	-webkit-transition: color 0.1s ease-in, background 0.1s ease-in;
 	-moz-transition: color 0.1s ease-in, background 0.1s ease-in;
@@ -93,7 +93,7 @@ a:after {
 
 
 .progress-bar-theme {
-	background-color: #5555FF;
+	background-color: #00AAAA;
 }
 
 .centerDropdown {
