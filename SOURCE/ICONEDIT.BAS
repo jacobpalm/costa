@@ -506,6 +506,10 @@ SUB IconEdit.Main (IconToLoad AS STRING)
                 IconEdit.DrawPixel KeyboardPosX, KeyboardPosY, DrawColor, False
               CASE toolFloodFill
                 IconEdit.FillArea KeyboardPosX, KeyboardPosY, DrawColor
+                'After flood fill, switch back to the pencil tools
+                Obj.DrawBtn btnPencil, True
+                Obj.DrawBtn btnFloodFill, False
+                CurrentTool = toolPencil
             END SELECT
             IconEdit.MoveIndicator dirStay
           ELSE
@@ -569,6 +573,10 @@ SUB IconEdit.Main (IconToLoad AS STRING)
 
               CASE toolFloodFill
                 IconEdit.FillArea CursorX, CursorY, DrawColor
+                'After flood fill, switch back to the pencil tools
+                Obj.DrawBtn btnPencil, True
+                Obj.DrawBtn btnFloodFill, False
+                CurrentTool = toolPencil
 
             END SELECT
 
