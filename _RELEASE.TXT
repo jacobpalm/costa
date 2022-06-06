@@ -14,6 +14,7 @@ these strictly. They are mainly written to help myself remember every detail
 when releasing a new version.
 
  - Update version information in SOURCE\APPINFO.BI
+ - Update version text in the icon "LOGO"
  - Update version information in DOCS\HELP.TXT, and read through to see if
    any information about new/changes features need to be documented
  - Update changelog in DOCS\CHANGES.TXT
@@ -35,8 +36,9 @@ when releasing a new version.
    .gitignore
    .ds_store files from all subfolders if packaging on a Mac
    README.MD
-   All files with a name starting with _
+   All files with a name starting with underscore
  - After final commit and push to Git, create ZIP archive of source for
    own archive
- - Tag a release on Github for this version, and add the ZIP archive
+ - Tag a release on Github for this version, and add the ZIP archive for
+   the release
  - Update website with download link, archive and screenshots
