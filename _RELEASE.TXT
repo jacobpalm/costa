@@ -37,8 +37,9 @@ when releasing a new version.
    .ds_store files from all subfolders if packaging on a Mac
    README.MD
    All files with a name starting with underscore
+ - Merge Git branch to main, if any
+ - Tag a release on GitHub for this version, and add the ZIP archive for
+   the release
  - After final commit and push to Git, create ZIP archive of source for
    own archive
- - Tag a release on Github for this version, and add the ZIP archive for
-   the release
  - Update website with download link, archive and screenshots
