@@ -35,6 +35,7 @@ END
 
 DEFSNG A-Z
 SUB File.GetChildren (Path$, FilePattern$)
+
 	DIM InRegsX AS RegTypeX, OutRegsX AS RegTypeX
 	DIM DTAfile AS DTAtype
 	DIM ASCIIZ AS STRING * 260
@@ -49,8 +50,8 @@ SUB File.GetChildren (Path$, FilePattern$)
 
 	'Clear current shared variables
 	FolderCount = 0: FileCount = 0
-	REDIM SubFolders(1 TO 1) AS STRING
-	REDIM SubFiles(1 TO 1) AS STRING
+	REDIM SubFolders(0 TO 0) AS STRING
+	REDIM SubFiles(0 TO 0) AS STRING
 
 	'Retrieve current DTA, so it can be reset later
 	InRegsX.ax = &H2F00
@@ -71,6 +72,13 @@ SUB File.GetChildren (Path$, FilePattern$)
 	InRegsX.dx = VARPTR(ASCIIZ)
 	CALL INTERRUPTX(&H21, InRegsX, OutRegsX)
 
+	'If we're not at the root, add a '..' indicator as the first entry in
+	'the folder list
+	IF LEN(Path$) > 3 THEN
+		FolderCount = 1
+		SubFolders(0) = ".."
+	END IF
+
 	DO
 
 		IF (OutRegsX.flags AND &H1) = &H0 THEN
@@ -83,16 +91,16 @@ SUB File.GetChildren (Path$, FilePattern$)
 				'Directory bit was set, add to SubFolder array if it's a real folder
 				IF (NOT Filename = ".") AND (NOT Filename = "..") THEN
 					FolderCount = FolderCount + 1
-					REDIM PRESERVE SubFolders(1 TO FolderCount) AS STRING
-					SubFolders(FolderCount) = Filename
+					REDIM PRESERVE SubFolders(0 TO FolderCount - 1) AS STRING
+					SubFolders(FolderCount - 1) = Filename
 				END IF
 
 			ELSE
 
 				'We're dealing with a file, add to SubFile array
 				FileCount = FileCount + 1
-				REDIM PRESERVE SubFiles(1 TO FileCount) AS STRING
-				SubFiles(FileCount) = Filename
+				REDIM PRESERVE SubFiles(0 TO FileCount - 1) AS STRING
+				SubFiles(FileCount - 1) = Filename
 
 			END IF
 
@@ -124,24 +132,30 @@ DEFINT A-Z
 FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 
 	DIM winFileSelect AS WindowType
-	DIM txtFilelist AS TextboxType, txtFolderlist AS TextboxType
-	DIM txtDrive AS TextboxType, txtFilename AS TextboxType
+	DIM txtFileList AS TextboxType, txtFolderList AS TextboxType
+	DIM txtDrive AS TextboxType, txtPattern AS TextboxType
 	DIM btnSelect AS ButtonType, btnCancel AS ButtonType
+	DIM txtPatternText AS STRING, txtDriveText AS STRING
 
-	DIM Path AS STRING, Pattern AS STRING
+	DIM Path AS STRING, Pattern AS STRING, Drive AS STRING
 	DIM Key$
+	DIM MaxVisibleItems, FileListStartPos, FolderListStartPos
+	DIM FileListSelection, FolderListSelection, Counter, I
 
 	'Start out with contents of current directory
 	Path = CURDIR$
+	Drive = LEFT$(Path, 1)
 	Pattern = DefaultPattern
+	txtDriveText = Drive
+	txtPatternText = DefaultPattern
 	
 	Obj.SetSize winFileSelect.Pos, 25, 25, 500, 300
 	winFileSelect.Caption = "Select File"
 
-	Obj.SetSize txtFilename.Pos, winFileSelect.Pos.Left + 15, winFileSelect.Pos.Top + 47, 150, -1
+	Obj.SetSize txtPattern.Pos, winFileSelect.Pos.Left + 15, winFileSelect.Pos.Top + 47, 150, -1
 	Obj.SetSize txtDrive.Pos, winFileSelect.Pos.Left + 170, winFileSelect.Pos.Top + 47, 150, -1
-	Obj.SetSize txtFilelist.Pos, winFileSelect.Pos.Left + 15, winFileSelect.Pos.Top + 90, 150, 180
-	Obj.SetSize txtFolderlist.Pos, winFileSelect.Pos.Left + 170, winFileSelect.Pos.Top + 90, 150, 180
+	Obj.SetSize txtFileList.Pos, winFileSelect.Pos.Left + 15, winFileSelect.Pos.Top + 90, 150, 180
+	Obj.SetSize txtFolderList.Pos, winFileSelect.Pos.Left + 170, winFileSelect.Pos.Top + 90, 150, txtFileList.Pos.Height
 	Obj.SetSize btnSelect.Pos, winFileSelect.Pos.Left + 330, winFileSelect.Pos.Top + 47, -1, -1
 	Obj.SetSize btnCancel.Pos, winFileSelect.Pos.Left + 330, winFileSelect.Pos.Top + 77, -1, -1
 
@@ -151,29 +165,125 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	btnCancel.HotKey = 1
 
 	Obj.DrawWin winFileSelect
-	Obj.DrawTxt txtFilename, Pattern, False
-	Obj.DrawTxt txtDrive, "C", False
-	Obj.DrawTxt txtFilelist, "WWWWWWWW.WWW", False
-	Obj.DrawTxt txtFolderlist, "WWWWWWWW.WWW", False
+	Obj.DrawTxt txtPattern, txtPatternText, False
+	Obj.DrawTxt txtDrive, txtDriveText, False
 	Obj.DrawBtn btnSelect, False
 	Obj.DrawBtn btnCancel, False
-	Font.Print "Filter:", winFileSelect.Pos.Left + 15, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, fontNormal
+	Font.Print "Pattern:", winFileSelect.Pos.Left + 15, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, fontNormal
 	Font.Print "Drive:", winFileSelect.Pos.Left + 170, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, fontNormal
 	Font.Print "Files:", winFileSelect.Pos.Left + 15, winFileSelect.Pos.Top + 76, SystemTheme.WindowText, fontNormal
 	Font.Print "Folders:", winFileSelect.Pos.Left + 170, winFileSelect.Pos.Top + 76, SystemTheme.WindowText, fontNormal
 	
+	File.GetChildren Path, Pattern
 
-	File.GetChildren CURDIR$, Pattern
+	MaxVisibleItems = (txtFileList.Pos.Height - 24) / 12
+
+	GOSUB DrawFileList
+	GOSUB DrawFolderList
 
 	DO
-		Key$ = INKEY$
+		Key$ = LCASE$(INKEY$)
 
-		IF Obj.BtnClick(btnCancel) OR Key$ = "C" THEN EXIT FUNCTION
+		IF Obj.BtnClick(btnCancel) OR Key$ = "c" THEN
+			File.Select = ""
+			EXIT FUNCTION
+		END IF
+
+		IF Key$ = "f" THEN
+			FileListSelection = FileListSelection + 1
+			IF FileListSelection > UBOUND(SubFiles) THEN
+				FileListSelection = 0
+				FileListStartPos = 0
+			END IF
+			IF FileListSelection > FileListStartPos + MaxVisibleItems THEN
+				FileListStartPos = FileListSelection
+			END IF
+			GOSUB DrawFileList
+		END IF
+
+		IF Key$ = "o" THEN
+			FolderListSelection = FolderListSelection + 1
+			IF FolderListSelection > UBOUND(SubFolders) THEN
+				FolderListSelection = 0
+				FolderListStartPos = 0
+			END IF
+			IF FolderListSelection > FolderListStartPos + MaxVisibleItems THEN
+				FolderListStartPos = FolderListSelection
+			END IF
+			GOSUB DrawFolderList
+		END IF
+
+		IF Obj.TxtClick(txtPattern) OR Key$ = "p" THEN
+			Obj.EditTxt txtPattern, txtPatternText
+			txtPatternText = LTRIM$(RTRIM$(txtPatternText))
+			IF LEN(txtPatternText) > 12 THEN txtPatternText = LEFT$(txtPatternText, 12)
+
+			IF NOT txtPatternText = Pattern THEN
+				'Validate input
+
+				Pattern = RTRIM$(txtPatternText)
+				PRINT "Changed"
+				File.GetChildren Path, Pattern
+				GOSUB DrawFileList
+			END IF
+		END IF
+
+
+		IF Obj.TxtClick(txtDrive) OR Key$ = "d" THEN
+			Obj.EditTxt txtDrive, txtDriveText
+
+			IF NOT txtDriveText = Drive THEN
+				'Change drive. Validate drive beforehand.
+				'Go to root of drive.
+				'Reload files and folders.
+			END IF
+		END IF
+
+
 
 	LOOP
 
-	'SubFolders array contains subfolder names, SubFiles array contains files
-	'Count of each type is stored in FolderCount and FileCount, respectively
-	
+	EXIT FUNCTION
+
+DrawFileList:
+		Obj.DrawTxt txtFileList, "", False
+		Counter = 0
+		FOR I = FileListStartPos TO FileListStartPos + MaxVisibleItems
+			IF I <= UBOUND(SubFiles) THEN
+
+				IF I = FileListSelection THEN
+					Mouse.Hide
+					LINE (txtFileList.Pos.Left + 2, txtFileList.Pos.Top + 3 + (Counter * 12))-(txtFileList.Pos.Left + txtFileList.Pos.Width - 2, txtFileList.Pos.Top + 15 + (Counter * 12)), SystemTheme.Select, BF
+					Mouse.Show
+					Font.Print SubFiles(I), txtFileList.Pos.Left + 5, txtFileList.Pos.Top + 5 + (Counter * 12), SystemTheme.SelectText, fontSystem
+				ELSE
+					Font.Print SubFiles(I), txtFileList.Pos.Left + 5, txtFileList.Pos.Top + 5 + (Counter * 12), SystemTheme.TextboxText, fontSystem
+				END IF
+
+				Counter = Counter + 1
+			END IF
+		NEXT
+	RETURN
+
+DrawFolderList:
+		Obj.DrawTxt txtFolderList, "", False
+		Counter = 0
+		FOR I = FolderListStartPos TO FolderListStartPos + MaxVisibleItems
+			IF I <= UBOUND(SubFolders) THEN
+
+				IF I = FolderListSelection THEN
+					Mouse.Hide
+					LINE (txtFolderList.Pos.Left + 2, txtFolderList.Pos.Top + 3 + (Counter * 12))-(txtFolderList.Pos.Left + txtFolderList.Pos.Width - 2, txtFolderList.Pos.Top + 15 + (Counter * 12)), SystemTheme.Select, BF
+					Mouse.Show
+					Font.Print SubFolders(I), txtFolderList.Pos.Left + 5, txtFolderList.Pos.Top + 5 + (Counter * 12), SystemTheme.SelectText, fontSystem
+				ELSE
+					Font.Print SubFolders(I), txtFolderList.Pos.Left + 5, txtFolderList.Pos.Top + 5 + (Counter * 12), SystemTheme.TextboxText, fontSystem
+				END IF
+
+				Counter = Counter + 1
+			END IF
+		NEXT
+	RETURN
+
 END FUNCTION
 
