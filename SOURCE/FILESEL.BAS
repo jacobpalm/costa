@@ -1,3 +1,5 @@
+DECLARE SUB File.GetChildFolders (Path$)
+DECLARE SUB File.GetChildFiles (Path$, FilePattern$)
 DECLARE FUNCTION File.Select (Pattern AS STRING) AS STRING
 DEFINT A-Z
 OPTION EXPLICIT
@@ -34,7 +36,7 @@ PRINT Filename
 END
 
 DEFSNG A-Z
-SUB File.GetChildren (Path$, FilePattern$)
+SUB File.GetChildFiles (Path$, FilePattern$)
 
 	DIM InRegsX AS RegTypeX, OutRegsX AS RegTypeX
 	DIM DTAfile AS DTAtype
@@ -49,10 +51,87 @@ SUB File.GetChildren (Path$, FilePattern$)
 	ASCIIZ = UCASE$(FilePattern$) + CHR$(0)
 
 	'Clear current shared variables
-	FolderCount = 0: FileCount = 0
-	REDIM SubFolders(0 TO 0) AS STRING
+	FileCount = 0
 	REDIM SubFiles(0 TO 0) AS STRING
 
+	'Retrieve current DTA, so it can be reset later
+	InRegsX.ax = &H2F00
+	CALL INTERRUPTX(&H21, InRegsX, OutRegsX)
+	Current.DTA.SEG = OutRegsX.es
+	Current.DTA.OFF = OutRegsX.bx
+
+	'Store function DTA
+	InRegsX.ax = &H1A00
+	InRegsX.ds = VARSEG(DTAfile)
+	InRegsX.dx = VARPTR(DTAfile)
+	CALL INTERRUPTX(&H21, InRegsX, OutRegsX)
+
+	'Find first file
+	InRegsX.ax = &H4E00
+	InRegsX.cx = &H37
+	InRegsX.ds = VARSEG(ASCIIZ)
+	InRegsX.dx = VARPTR(ASCIIZ)
+	CALL INTERRUPTX(&H21, InRegsX, OutRegsX)
+
+	DO
+
+		IF (OutRegsX.flags AND &H1) = &H0 THEN
+
+			'Result found, isolate filename
+			Filename = LEFT$(DTAfile.ASCIIZfilename, INSTR(DTAfile.ASCIIZfilename, CHR$(0)) - 1)
+
+			IF NOT (ASC(DTAfile.FileBits) AND &H10) = &H10 THEN
+
+				'Folder bit not set.
+				'We're dealing with a file, add to SubFile array
+				FileCount = FileCount + 1
+				REDIM PRESERVE SubFiles(0 TO FileCount - 1) AS STRING
+				SubFiles(FileCount - 1) = Filename
+
+			END IF
+
+			'Find next match
+			InRegsX.ax = &H4F00
+			CALL INTERRUPTX(&H21, InRegsX, OutRegsX)
+
+		ELSE
+
+			'No more results found
+			EXIT DO
+
+		END IF
+
+	LOOP
+
+	'Restore previous DTA
+	InRegsX.ax = &H1A00
+	InRegsX.ds = Current.DTA.SEG
+	InRegsX.dx = Current.DTA.OFF
+	CALL INTERRUPTX(&H21, InRegsX, OutRegsX)
+
+	'Return to previous directory
+	CHDIR CurrentPath$
+
+END SUB
+
+DEFINT A-Z
+SUB File.GetChildFolders (Path$)
+	DIM InRegsX AS RegTypeX, OutRegsX AS RegTypeX
+	DIM DTAfile AS DTAtype
+	DIM ASCIIZ AS STRING * 260
+	DIM Current.DTA.SEG AS INTEGER, Current.DTA.OFF AS INTEGER
+	DIM CurrentPath AS STRING, Filename AS STRING
+
+	'Save current dir, and switch to target dir
+	CurrentPath$ = CURDIR$
+	CHDIR Path$
+
+	ASCIIZ = "*.*" + CHR$(0)
+
+	'Clear current shared variables
+	FolderCount = 0
+	REDIM SubFolders(0 TO 0) AS STRING
+	
 	'Retrieve current DTA, so it can be reset later
 	InRegsX.ax = &H2F00
 	CALL INTERRUPTX(&H21, InRegsX, OutRegsX)
@@ -95,13 +174,6 @@ SUB File.GetChildren (Path$, FilePattern$)
 					SubFolders(FolderCount - 1) = Filename
 				END IF
 
-			ELSE
-
-				'We're dealing with a file, add to SubFile array
-				FileCount = FileCount + 1
-				REDIM PRESERVE SubFiles(0 TO FileCount - 1) AS STRING
-				SubFiles(FileCount - 1) = Filename
-
 			END IF
 
 			'Find next match
@@ -126,9 +198,9 @@ SUB File.GetChildren (Path$, FilePattern$)
 	'Return to previous directory
 	CHDIR CurrentPath$
 
+
 END SUB
 
-DEFINT A-Z
 FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 
 	DIM winFileSelect AS WindowType
@@ -149,7 +221,11 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	txtDriveText = Drive
 	txtPatternText = DefaultPattern
 	
-	Obj.SetSize winFileSelect.Pos, 25, 25, 500, 300
+	Obj.SetSize winFileSelect.Pos, 25, 25, 436, 285
+	winFileSelect.Pos.Width = 436
+	winFileSelect.Pos.Height = 285
+	winFileSelect.Pos.Left = (640 - winFileSelect.Pos.Width) / 2
+	winFileSelect.Pos.Top = (scrHeight - winFileSelect.Pos.Height) / 2
 	winFileSelect.Caption = "Select File"
 
 	Obj.SetSize txtPattern.Pos, winFileSelect.Pos.Left + 15, winFileSelect.Pos.Top + 47, 150, -1
@@ -173,8 +249,15 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	Font.Print "Drive:", winFileSelect.Pos.Left + 170, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, fontNormal
 	Font.Print "Files:", winFileSelect.Pos.Left + 15, winFileSelect.Pos.Top + 76, SystemTheme.WindowText, fontNormal
 	Font.Print "Folders:", winFileSelect.Pos.Left + 170, winFileSelect.Pos.Top + 76, SystemTheme.WindowText, fontNormal
+	Mouse.Hide
+	LINE (winFileSelect.Pos.Left + 14, winFileSelect.Pos.Top + 43)-(winFileSelect.Pos.Left + 20, winFileSelect.Pos.Top + 43), SystemTheme.WindowText
+	LINE (winFileSelect.Pos.Left + 169, winFileSelect.Pos.Top + 43)-(winFileSelect.Pos.Left + 175, winFileSelect.Pos.Top + 43), SystemTheme.WindowText
+	LINE (winFileSelect.Pos.Left + 14, winFileSelect.Pos.Top + 86)-(winFileSelect.Pos.Left + 20, winFileSelect.Pos.Top + 86), SystemTheme.WindowText
+	LINE (winFileSelect.Pos.Left + 176, winFileSelect.Pos.Top + 86)-(winFileSelect.Pos.Left + 182, winFileSelect.Pos.Top + 86), SystemTheme.WindowText
+	Mouse.Show
 	
-	File.GetChildren Path, Pattern
+	File.GetChildFiles Path, Pattern
+	File.GetChildFolders Path
 
 	MaxVisibleItems = (txtFileList.Pos.Height - 24) / 12
 
@@ -184,7 +267,12 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	DO
 		Key$ = LCASE$(INKEY$)
 
-		IF Obj.BtnClick(btnCancel) OR Key$ = "c" THEN
+		IF Obj.BtnClick(btnSelect) OR Key$ = "s" THEN
+			'DEBUG - return a filename
+			EXIT FUNCTION
+		END IF
+
+		IF Obj.BtnClick(btnCancel) OR Key$ = "c" OR Key$ = CHR$(27) THEN
 			File.Select = ""
 			EXIT FUNCTION
 		END IF
@@ -223,7 +311,7 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 
 				Pattern = RTRIM$(txtPatternText)
 				PRINT "Changed"
-				File.GetChildren Path, Pattern
+				File.GetChildFiles Path, Pattern
 				GOSUB DrawFileList
 			END IF
 		END IF
@@ -237,6 +325,7 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 				'Go to root of drive.
 				'Reload files and folders.
 			END IF
+
 		END IF
 
 
