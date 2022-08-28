@@ -1,10 +1,10 @@
-DECLARE SUB File.GetChildFolders (Path$)
-DECLARE SUB File.GetChildFiles (Path$, FilePattern$)
-DECLARE FUNCTION File.Select (Pattern AS STRING) AS STRING
 DEFINT A-Z
 OPTION EXPLICIT
 
-DECLARE SUB File.GetChildren (Path$, FilePattern$)
+DECLARE FUNCTION File.Select (Pattern AS STRING) AS STRING
+DECLARE FUNCTION File.SetDrive% (Drive AS STRING)
+DECLARE SUB File.GetChildFolders (Path$)
+DECLARE SUB File.GetChildFiles (Path$, FilePattern$)
 
 TYPE DTAtype
 	Drive AS STRING * 1
@@ -29,6 +29,8 @@ DIM SHARED SubFiles() AS STRING
 
 Sys.Load
 
+
+'Test code
 DIM Filename AS STRING
 Filename = File.Select("*.*")
 
@@ -208,11 +210,19 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	DIM txtDrive AS TextboxType, txtPattern AS TextboxType
 	DIM btnSelect AS ButtonType, btnCancel AS ButtonType
 	DIM txtPatternText AS STRING, txtDriveText AS STRING
+	DIM btnFilePrev AS ButtonType, btnFileNext AS ButtonType
+	DIM btnFolderPrev AS ButtonType, btnFolderNext AS ButtonType
 
 	DIM Path AS STRING, Pattern AS STRING, Drive AS STRING
 	DIM Key$
 	DIM MaxVisibleItems, FileListStartPos, FolderListStartPos
 	DIM FileListSelection, FolderListSelection, Counter, I
+	DIM ClickedX, ClickedY, ClickedItem, RedrawNeeded
+	DIM ClickedDoubleTimer AS SINGLE
+
+	DIM ActiveList
+	CONST FileList = 0
+	CONST FolderList = 1
 
 	'Start out with contents of current directory
 	Path = CURDIR$
@@ -221,55 +231,158 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	txtDriveText = Drive
 	txtPatternText = DefaultPattern
 	
-	Obj.SetSize winFileSelect.Pos, 25, 25, 436, 285
-	winFileSelect.Pos.Width = 436
+	winFileSelect.Pos.Width = 468
 	winFileSelect.Pos.Height = 285
 	winFileSelect.Pos.Left = (640 - winFileSelect.Pos.Width) / 2
 	winFileSelect.Pos.Top = (scrHeight - winFileSelect.Pos.Height) / 2
 	winFileSelect.Caption = "Select File"
 
 	Obj.SetSize txtPattern.Pos, winFileSelect.Pos.Left + 15, winFileSelect.Pos.Top + 47, 150, -1
-	Obj.SetSize txtDrive.Pos, winFileSelect.Pos.Left + 170, winFileSelect.Pos.Top + 47, 150, -1
+	Obj.SetSize txtDrive.Pos, winFileSelect.Pos.Left + 186, winFileSelect.Pos.Top + 47, 150, -1
 	Obj.SetSize txtFileList.Pos, winFileSelect.Pos.Left + 15, winFileSelect.Pos.Top + 90, 150, 180
-	Obj.SetSize txtFolderList.Pos, winFileSelect.Pos.Left + 170, winFileSelect.Pos.Top + 90, 150, txtFileList.Pos.Height
-	Obj.SetSize btnSelect.Pos, winFileSelect.Pos.Left + 330, winFileSelect.Pos.Top + 47, -1, -1
-	Obj.SetSize btnCancel.Pos, winFileSelect.Pos.Left + 330, winFileSelect.Pos.Top + 77, -1, -1
+	Obj.SetSize txtFolderList.Pos, winFileSelect.Pos.Left + 186, winFileSelect.Pos.Top + 90, 150, txtFileList.Pos.Height
+	Obj.SetSize btnSelect.Pos, winFileSelect.Pos.Left + 362, winFileSelect.Pos.Top + 47, -1, -1
+	Obj.SetSize btnCancel.Pos, winFileSelect.Pos.Left + 362, winFileSelect.Pos.Top + 77, -1, -1
 
+	Obj.SetSize btnFilePrev.Pos, txtFileList.Pos.Left + txtFileList.Pos.Width + 2, txtFileList.Pos.Top, 14, (txtFileList.Pos.Height / 2) - 1
+	Obj.SetSize btnFileNext.Pos, txtFileList.Pos.Left + txtFileList.Pos.Width + 2, txtFileList.Pos.Top + (txtFileList.Pos.Height / 2) + 1, 14, (txtFileList.Pos.Height / 2) - 1
+	Obj.SetSize btnFolderPrev.Pos, txtFolderList.Pos.Left + txtFolderList.Pos.Width + 2, txtFolderList.Pos.Top, 14, (txtFolderList.Pos.Height / 2) - 1
+	Obj.SetSize btnFolderNext.Pos, txtFolderList.Pos.Left + txtFolderList.Pos.Width + 2, txtFolderList.Pos.Top + (txtFolderList.Pos.Height / 2) + 1, 14, (txtFolderList.Pos.Height / 2) - 1
+	
 	btnSelect.Caption = "Select"
 	btnSelect.HotKey = 1
 	btnCancel.Caption = "Cancel"
 	btnCancel.HotKey = 1
+	btnFilePrev.Caption = "<"
+	btnFileNext.Caption = ">"
+	btnFolderPrev.Caption = "<"
+	btnFolderNext.Caption = ">"
 
 	Obj.DrawWin winFileSelect
 	Obj.DrawTxt txtPattern, txtPatternText, False
 	Obj.DrawTxt txtDrive, txtDriveText, False
-	Obj.DrawBtn btnSelect, False
-	Obj.DrawBtn btnCancel, False
+	obj.DrawBtn btnSelect, False
+	obj.DrawBtn btnCancel, False
+	obj.DrawBtn btnFilePrev, False
+	obj.DrawBtn btnFileNext, False
+	obj.DrawBtn btnFolderPrev, False
+	obj.DrawBtn btnFolderNext, False
+	
 	Font.Print "Pattern:", winFileSelect.Pos.Left + 15, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, fontNormal
-	Font.Print "Drive:", winFileSelect.Pos.Left + 170, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, fontNormal
+	Font.Print "Drive:", winFileSelect.Pos.Left + 186, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, fontNormal
 	Font.Print "Files:", winFileSelect.Pos.Left + 15, winFileSelect.Pos.Top + 76, SystemTheme.WindowText, fontNormal
-	Font.Print "Folders:", winFileSelect.Pos.Left + 170, winFileSelect.Pos.Top + 76, SystemTheme.WindowText, fontNormal
+	Font.Print "Folders:", winFileSelect.Pos.Left + 186, winFileSelect.Pos.Top + 76, SystemTheme.WindowText, fontNormal
 	Mouse.Hide
 	LINE (winFileSelect.Pos.Left + 14, winFileSelect.Pos.Top + 43)-(winFileSelect.Pos.Left + 20, winFileSelect.Pos.Top + 43), SystemTheme.WindowText
-	LINE (winFileSelect.Pos.Left + 169, winFileSelect.Pos.Top + 43)-(winFileSelect.Pos.Left + 175, winFileSelect.Pos.Top + 43), SystemTheme.WindowText
+	LINE (winFileSelect.Pos.Left + 185, winFileSelect.Pos.Top + 43)-(winFileSelect.Pos.Left + 191, winFileSelect.Pos.Top + 43), SystemTheme.WindowText
 	LINE (winFileSelect.Pos.Left + 14, winFileSelect.Pos.Top + 86)-(winFileSelect.Pos.Left + 20, winFileSelect.Pos.Top + 86), SystemTheme.WindowText
-	LINE (winFileSelect.Pos.Left + 176, winFileSelect.Pos.Top + 86)-(winFileSelect.Pos.Left + 182, winFileSelect.Pos.Top + 86), SystemTheme.WindowText
+	LINE (winFileSelect.Pos.Left + 192, winFileSelect.Pos.Top + 86)-(winFileSelect.Pos.Left + 198, winFileSelect.Pos.Top + 86), SystemTheme.WindowText
 	Mouse.Show
 	
-	File.GetChildFiles Path, Pattern
-	File.GetChildFolders Path
-
 	MaxVisibleItems = (txtFileList.Pos.Height - 24) / 12
 
+	File.GetChildFiles Path, Pattern
+	File.GetChildFolders Path
 	GOSUB DrawFileList
 	GOSUB DrawFolderList
 
 	DO
 		Key$ = LCASE$(INKEY$)
 
+		IF Mouse.Clicked AND Mouse.InArea(txtFileList.Pos) THEN
+			RedrawNeeded = False
+			ClickedX = Mouse.X - txtFileList.Pos.Left
+			ClickedY = Mouse.Y - txtFileList.Pos.Top
+			'Validate click inside, not on border
+			IF ClickedX > 1 AND ClickedX < txtFileList.Pos.Width - 2 THEN
+				IF ClickedY > 2 AND ClickedY < txtFileList.Pos.Height - 1 THEN
+					ClickedItem = -1
+					ClickedItem = ((ClickedY + 4) / 12) - 1
+					IF ClickedItem > MaxVisibleItems THEN ClickedItem = -1
+					IF NOT ClickedItem + FileListStartPos > UBOUND(SubFiles) THEN
+						IF ClickedItem + FileListStartPos = FileListSelection THEN
+							'Already selected and clicked again, simulate "Enter" key
+							IF TIMER < ClickedDoubleTimer + .3 THEN Key$ = CHR$(13)
+						ELSE
+							RedrawNeeded = True
+							FileListSelection = ClickedItem + FileListStartPos
+						END IF
+					END IF
+				END IF
+			END IF
+
+			IF NOT ActiveList = FileList THEN
+				RedrawNeeded = True
+				ActiveList = FileList
+				GOSUB DrawFolderList
+			END IF
+			IF RedrawNeeded THEN GOSUB DrawFileList
+			ClickedDoubleTimer = TIMER
+			DO: LOOP WHILE Mouse.Clicked
+		END IF
+
+		IF Mouse.Clicked AND Mouse.InArea(txtFolderList.Pos) THEN
+			RedrawNeeded = False
+			ClickedX = Mouse.X - txtFolderList.Pos.Left
+			ClickedY = Mouse.Y - txtFolderList.Pos.Top
+			'Validate click inside, not on border
+			IF ClickedX > 1 AND ClickedX < txtFolderList.Pos.Width - 2 THEN
+				IF ClickedY > 2 AND ClickedY < txtFolderList.Pos.Height - 1 THEN
+					ClickedItem = -1
+					ClickedItem = ((ClickedY + 4) / 12) - 1
+					IF ClickedItem > MaxVisibleItems THEN ClickedItem = -1
+
+					IF NOT ClickedItem + FolderListStartPos > UBOUND(SubFolders) THEN
+						IF ClickedItem + FolderListStartPos = FolderListSelection THEN
+							'Already selected and clicked again, simulate "Enter" key
+							IF TIMER < ClickedDoubleTimer + .3 THEN Key$ = CHR$(13)
+						ELSE
+							RedrawNeeded = True
+							FolderListSelection = ClickedItem + FolderListStartPos
+						END IF
+					END IF
+				END IF
+			END IF
+
+			IF NOT ActiveList = FolderList THEN
+				RedrawNeeded = True
+				ActiveList = FolderList
+				GOSUB DrawFileList
+			END IF
+			IF RedrawNeeded THEN GOSUB DrawFolderList
+			ClickedDoubleTimer = TIMER
+			DO: LOOP WHILE Mouse.Clicked
+		END IF
+
+
+		IF Key$ = CHR$(13) THEN
+			'Enter-key pressed
+
+			IF ActiveList = FileList THEN
+				'Simulate click of "Select" button if the file list is active
+				Key$ = "s"
+			ELSE
+				'Navigate to the selected folder, if any
+				IF FolderCount > 0 THEN
+					CHDIR SubFolders(FolderListSelection)
+					File.GetChildFiles CURDIR$, Pattern
+					File.GetChildFolders CURDIR$
+					FileListSelection = 0
+					FolderListSelection = 0
+					GOSUB DrawFileList
+					GOSUB DrawFolderList
+				END IF
+			END IF
+		END IF
+
 		IF Obj.BtnClick(btnSelect) OR Key$ = "s" THEN
-			'DEBUG - return a filename
-			EXIT FUNCTION
+			IF FileCount > 0 THEN
+				'DEBUG - return a filename
+				LOCATE 1, 1
+				PRINT SubFiles(FileListSelection) + STRING$(10, " ")
+				'File.Select = SubFiles(FileListSelection)
+				'EXIT FUNCTION
+			END IF
 		END IF
 
 		IF Obj.BtnClick(btnCancel) OR Key$ = "c" OR Key$ = CHR$(27) THEN
@@ -278,101 +391,231 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 		END IF
 
 		IF Key$ = "f" THEN
-			FileListSelection = FileListSelection + 1
-			IF FileListSelection > UBOUND(SubFiles) THEN
-				FileListSelection = 0
-				FileListStartPos = 0
+			IF NOT ActiveList = FileList THEN
+				ActiveList = FileList
+				GOSUB DrawFolderList
+				GOSUB DrawFileList
 			END IF
-			IF FileListSelection > FileListStartPos + MaxVisibleItems THEN
-				FileListStartPos = FileListSelection
-			END IF
-			GOSUB DrawFileList
 		END IF
 
 		IF Key$ = "o" THEN
-			FolderListSelection = FolderListSelection + 1
-			IF FolderListSelection > UBOUND(SubFolders) THEN
-				FolderListSelection = 0
-				FolderListStartPos = 0
+			IF NOT ActiveList = FolderList THEN
+				ActiveList = FolderList
+				GOSUB DrawFileList
+				GOSUB DrawFolderList
 			END IF
-			IF FolderListSelection > FolderListStartPos + MaxVisibleItems THEN
-				FolderListStartPos = FolderListSelection
+		END IF
+
+		IF Obj.BtnClick(btnFilePrev) THEN
+			IF NOT ActiveList = FileList THEN
+				ActiveList = FileList
+				GOSUB DrawFolderList
 			END IF
-			GOSUB DrawFolderList
+			Key$ = CHR$(0) + "h" 'Simulate up arrow key
+		END IF
+
+		IF Obj.BtnClick(btnFileNext) THEN
+			IF NOT ActiveList = FileList THEN
+				ActiveList = FileList
+				GOSUB DrawFolderList
+			END IF
+			Key$ = CHR$(0) + "p" 'Simulate up arrow key
+		END IF
+
+		IF Obj.BtnClick(btnFolderPrev) THEN
+			IF NOT ActiveList = FolderList THEN
+				ActiveList = FolderList
+				GOSUB DrawFileList
+			END IF
+			Key$ = CHR$(0) + "h" 'Simulate up arrow key
+		END IF
+
+		IF Obj.BtnClick(btnFolderNext) THEN
+			IF NOT ActiveList = FolderList THEN
+				ActiveList = FolderList
+				GOSUB DrawFileList
+			END IF
+			Key$ = CHR$(0) + "p" 'Simulate up arrow key
+		END IF
+
+
+
+		IF Key$ = CHR$(0) + "h" OR Key$ = CHR$(0) + "k" THEN
+			'Up or left arrow key
+			IF ActiveList = FileList THEN
+				FileListSelection = FileListSelection - 1
+				IF FileListSelection < 0 THEN
+					FileListSelection = UBOUND(SubFiles)
+					FileListStartPos = UBOUND(SubFiles) - MaxVisibleItems
+				END IF
+				IF FileListSelection < FileListStartPos THEN
+					FileListStartPos = FileListSelection - MaxVisibleItems
+				END IF
+				IF FileListStartPos < 0 THEN FileListStartPos = 0
+				GOSUB DrawFileList
+			ELSE
+				FolderListSelection = FolderListSelection - 1
+				IF FolderListSelection < 0 THEN
+					FolderListSelection = UBOUND(SubFolders)
+					FolderListStartPos = UBOUND(SubFolders) - MaxVisibleItems
+				END IF
+				IF FolderListSelection < FolderListStartPos THEN
+					FolderListStartPos = FolderListSelection - MaxVisibleItems
+				END IF
+				IF FolderListStartPos < 0 THEN FolderListStartPos = 0
+				GOSUB DrawFolderList
+			END IF
+
+		END IF
+
+		IF Key$ = CHR$(0) + "p" OR Key$ = CHR$(0) + "m" THEN
+			'Down or right arrow key
+			IF ActiveList = FileList THEN
+				FileListSelection = FileListSelection + 1
+				IF FileListSelection > UBOUND(SubFiles) THEN
+					FileListSelection = 0
+					FileListStartPos = 0
+				END IF
+				IF FileListSelection > FileListStartPos + MaxVisibleItems THEN
+					FileListStartPos = FileListSelection
+				END IF
+				GOSUB DrawFileList
+			ELSE
+				FolderListSelection = FolderListSelection + 1
+				IF FolderListSelection > UBOUND(SubFolders) THEN
+					FolderListSelection = 0
+					FolderListStartPos = 0
+				END IF
+				IF FolderListSelection > FolderListStartPos + MaxVisibleItems THEN
+					FolderListStartPos = FolderListSelection
+				END IF
+				GOSUB DrawFolderList
+			END IF
 		END IF
 
 		IF Obj.TxtClick(txtPattern) OR Key$ = "p" THEN
 			Obj.EditTxt txtPattern, txtPatternText
-			txtPatternText = LTRIM$(RTRIM$(txtPatternText))
-			IF LEN(txtPatternText) > 12 THEN txtPatternText = LEFT$(txtPatternText, 12)
+			IF NOT txtPatternText = UCASE$(LTRIM$(RTRIM$(txtPatternText))) THEN
+				txtPatternText = UCASE$(LTRIM$(RTRIM$(txtPatternText)))
+				Obj.DrawTxt txtPattern, txtPatternText, False
+			END IF
+
+			'Input validation
+			IF LEN(txtPatternText) > 12 THEN
+				txtPatternText = LEFT$(txtPatternText, 12)
+				Obj.DrawTxt txtPattern, txtPatternText, False
+			END IF
 
 			IF NOT txtPatternText = Pattern THEN
 				'Validate input
-
 				Pattern = RTRIM$(txtPatternText)
-				PRINT "Changed"
 				File.GetChildFiles Path, Pattern
 				GOSUB DrawFileList
 			END IF
 		END IF
 
-
 		IF Obj.TxtClick(txtDrive) OR Key$ = "d" THEN
 			Obj.EditTxt txtDrive, txtDriveText
 
-			IF NOT txtDriveText = Drive THEN
-				'Change drive. Validate drive beforehand.
-				'Go to root of drive.
-				'Reload files and folders.
+			IF NOT txtDriveText = UCASE$(LTRIM$(RTRIM$(txtDriveText))) THEN
+				txtDriveText = UCASE$(LTRIM$(RTRIM$(txtDriveText)))
+				Obj.DrawTxt txtDrive, txtDriveText, False
 			END IF
+			
+			IF txtDriveText = "" THEN txtDriveText = Drive
 
+			IF NOT txtDriveText = Drive THEN
+				'Input validation
+				IF LEN(txtDriveText) > 1 THEN
+					txtDriveText = LEFT$(txtDriveText, 1)
+					Obj.DrawTxt txtDrive, txtDriveText, False
+				END IF
+				
+				IF File.SetDrive(txtDriveText) THEN
+					Path = CURDIR$
+					Drive = LEFT$(Path, 1)
+					File.GetChildFiles CURDIR$, Pattern
+					File.GetChildFolders CURDIR$
+					FileListSelection = 0
+					FolderListSelection = 0
+					GOSUB DrawFileList
+					GOSUB DrawFolderList
+				ELSE
+					txtDriveText = Drive
+					Obj.DrawTxt txtDrive, txtDriveText, False
+				END IF
+			END IF
 		END IF
-
-
-
+						
 	LOOP
 
 	EXIT FUNCTION
 
 DrawFileList:
 		Obj.DrawTxt txtFileList, "", False
-		Counter = 0
-		FOR I = FileListStartPos TO FileListStartPos + MaxVisibleItems
-			IF I <= UBOUND(SubFiles) THEN
+		IF FileCount > 0 THEN
+			Counter = 0
+			FOR I = FileListStartPos TO FileListStartPos + MaxVisibleItems
+				IF I <= UBOUND(SubFiles) THEN
 
-				IF I = FileListSelection THEN
-					Mouse.Hide
-					LINE (txtFileList.Pos.Left + 2, txtFileList.Pos.Top + 3 + (Counter * 12))-(txtFileList.Pos.Left + txtFileList.Pos.Width - 2, txtFileList.Pos.Top + 15 + (Counter * 12)), SystemTheme.Select, BF
-					Mouse.Show
-					Font.Print SubFiles(I), txtFileList.Pos.Left + 5, txtFileList.Pos.Top + 5 + (Counter * 12), SystemTheme.SelectText, fontSystem
-				ELSE
-					Font.Print SubFiles(I), txtFileList.Pos.Left + 5, txtFileList.Pos.Top + 5 + (Counter * 12), SystemTheme.TextboxText, fontSystem
+					IF I = FileListSelection AND ActiveList = FileList THEN
+						Mouse.Hide
+						LINE (txtFileList.Pos.Left + 2, txtFileList.Pos.Top + 3 + (Counter * 12))-(txtFileList.Pos.Left + txtFileList.Pos.Width - 2, txtFileList.Pos.Top + 15 + (Counter * 12)), SystemTheme.Select, BF
+						Mouse.Show
+						Font.Print SubFiles(I), txtFileList.Pos.Left + 5, txtFileList.Pos.Top + 5 + (Counter * 12), SystemTheme.SelectText, fontSystem
+					ELSE
+						Font.Print SubFiles(I), txtFileList.Pos.Left + 5, txtFileList.Pos.Top + 5 + (Counter * 12), SystemTheme.TextboxText, fontSystem
+					END IF
+
+					Counter = Counter + 1
 				END IF
-
-				Counter = Counter + 1
-			END IF
-		NEXT
+			NEXT
+		END IF
 	RETURN
 
 DrawFolderList:
 		Obj.DrawTxt txtFolderList, "", False
-		Counter = 0
-		FOR I = FolderListStartPos TO FolderListStartPos + MaxVisibleItems
-			IF I <= UBOUND(SubFolders) THEN
+		IF FolderCount > 0 THEN
+			Counter = 0
+			FOR I = FolderListStartPos TO FolderListStartPos + MaxVisibleItems
+				IF I <= UBOUND(SubFolders) THEN
 
-				IF I = FolderListSelection THEN
-					Mouse.Hide
-					LINE (txtFolderList.Pos.Left + 2, txtFolderList.Pos.Top + 3 + (Counter * 12))-(txtFolderList.Pos.Left + txtFolderList.Pos.Width - 2, txtFolderList.Pos.Top + 15 + (Counter * 12)), SystemTheme.Select, BF
-					Mouse.Show
-					Font.Print SubFolders(I), txtFolderList.Pos.Left + 5, txtFolderList.Pos.Top + 5 + (Counter * 12), SystemTheme.SelectText, fontSystem
-				ELSE
-					Font.Print SubFolders(I), txtFolderList.Pos.Left + 5, txtFolderList.Pos.Top + 5 + (Counter * 12), SystemTheme.TextboxText, fontSystem
+					IF I = FolderListSelection AND ActiveList = FolderList THEN
+						Mouse.Hide
+						LINE (txtFolderList.Pos.Left + 2, txtFolderList.Pos.Top + 3 + (Counter * 12))-(txtFolderList.Pos.Left + txtFolderList.Pos.Width - 2, txtFolderList.Pos.Top + 15 + (Counter * 12)), SystemTheme.Select, BF
+						Mouse.Show
+						Font.Print SubFolders(I), txtFolderList.Pos.Left + 5, txtFolderList.Pos.Top + 5 + (Counter * 12), SystemTheme.SelectText, fontSystem
+					ELSE
+						Font.Print SubFolders(I), txtFolderList.Pos.Left + 5, txtFolderList.Pos.Top + 5 + (Counter * 12), SystemTheme.TextboxText, fontSystem
+					END IF
+
+					Counter = Counter + 1
 				END IF
-
-				Counter = Counter + 1
-			END IF
-		NEXT
+			NEXT
+		END IF
 	RETURN
+
+END FUNCTION
+
+FUNCTION File.SetDrive (Drive AS STRING)
+
+	DIM CurrentDrive AS STRING * 1
+	CurrentDrive = LEFT$(CURDIR$, 1)
+
+	ON LOCAL ERROR GOTO DriveError
+	CHDRIVE Drive
+	CHDIR "\"
+	File.SetDrive = True
+
+	EXIT FUNCTION
+
+DriveError:
+	CHDRIVE CurrentDrive
+	DIM Null
+	Null = Sys.MsgBox("Drive not ready", "The drive " + Drive + ": was not ready, or does not exist." + CHR$(13) + "Verify and try again.", msgError)
+	File.SetDrive = False
+	EXIT FUNCTION
+	RESUME
 
 END FUNCTION
 
