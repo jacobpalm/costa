@@ -34,6 +34,7 @@ Sys.Load
 DIM Filename AS STRING
 Filename = File.Select("*.*")
 
+SCREEN 0
 PRINT Filename
 END
 
@@ -214,6 +215,7 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	DIM btnFolderPrev AS ButtonType, btnFolderNext AS ButtonType
 
 	DIM Path AS STRING, Pattern AS STRING, Drive AS STRING
+	DIM OriginalPath AS STRING
 	DIM Key$
 	DIM MaxVisibleItems, FileListStartPos, FolderListStartPos
 	DIM FileListSelection, FolderListSelection, Counter, I
@@ -225,7 +227,8 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	CONST FolderList = 1
 
 	'Start out with contents of current directory
-	Path = CURDIR$
+	OriginalPath = CURDIR$
+	Path = OriginalPath
 	Drive = LEFT$(Path, 1)
 	Pattern = DefaultPattern
 	txtDriveText = Drive
@@ -261,12 +264,12 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	Obj.DrawWin winFileSelect
 	Obj.DrawTxt txtPattern, txtPatternText, False
 	Obj.DrawTxt txtDrive, txtDriveText, False
-	obj.DrawBtn btnSelect, False
-	obj.DrawBtn btnCancel, False
-	obj.DrawBtn btnFilePrev, False
-	obj.DrawBtn btnFileNext, False
-	obj.DrawBtn btnFolderPrev, False
-	obj.DrawBtn btnFolderNext, False
+	Obj.DrawBtn btnSelect, False
+	Obj.DrawBtn btnCancel, False
+	Obj.DrawBtn btnFilePrev, False
+	Obj.DrawBtn btnFileNext, False
+	Obj.DrawBtn btnFolderPrev, False
+	Obj.DrawBtn btnFolderNext, False
 	
 	Font.Print "Pattern:", winFileSelect.Pos.Left + 15, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, fontNormal
 	Font.Print "Drive:", winFileSelect.Pos.Left + 186, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, fontNormal
@@ -365,8 +368,9 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 				'Navigate to the selected folder, if any
 				IF FolderCount > 0 THEN
 					CHDIR SubFolders(FolderListSelection)
-					File.GetChildFiles CURDIR$, Pattern
-					File.GetChildFolders CURDIR$
+					Path = CURDIR$
+					File.GetChildFiles Path, Pattern
+					File.GetChildFolders Path
 					FileListSelection = 0
 					FolderListSelection = 0
 					GOSUB DrawFileList
@@ -381,12 +385,16 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 				LOCATE 1, 1
 				PRINT SubFiles(FileListSelection) + STRING$(10, " ")
 				'File.Select = SubFiles(FileListSelection)
+				'chdrive left$(OriginalPath, 1)
+				'chdir OriginalPath
 				'EXIT FUNCTION
 			END IF
 		END IF
 
 		IF Obj.BtnClick(btnCancel) OR Key$ = "c" OR Key$ = CHR$(27) THEN
 			File.Select = ""
+			CHDRIVE LEFT$(OriginalPath, 1)
+			CHDIR OriginalPath
 			EXIT FUNCTION
 		END IF
 
@@ -534,8 +542,8 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 				IF File.SetDrive(txtDriveText) THEN
 					Path = CURDIR$
 					Drive = LEFT$(Path, 1)
-					File.GetChildFiles CURDIR$, Pattern
-					File.GetChildFolders CURDIR$
+					File.GetChildFiles Path, Pattern
+					File.GetChildFolders Path
 					FileListSelection = 0
 					FolderListSelection = 0
 					GOSUB DrawFileList
