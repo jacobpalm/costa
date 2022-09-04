@@ -49,8 +49,8 @@ FUNCTION Sys.Path () AS STRING
 	'Switch segment to environment table
 	DEF SEG = EnvironSeg&
 	
-	'Run through environment table until a null-byte is found, signalling end
-	'of table
+	'Run through environment table until a double null-byte is found, signalling
+	'end of table
 	WHILE (PEEK(OffSet&) <> 0 OR PEEK(OffSet& + 1) <> 0)
 		OffSet& = OffSet& + 1
 	WEND
