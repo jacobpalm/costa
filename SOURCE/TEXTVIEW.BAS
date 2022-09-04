@@ -1,4 +1,3 @@
-DECLARE SUB Sys.ShowLoading ()
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -11,10 +10,7 @@ DECLARE SUB TView.Main (FileToView AS STRING)
 COMMON SHARED FileData() AS STRING
 COMMON SHARED MaxLinesShown
 
-'Window is full screen, so no need to load desktop background
-ON ERROR RESUME NEXT
-KILL Sys.Path + "\DATA\TEMP\DESKTOP.*"
-ON ERROR GOTO 0
+STACK 6144
 
 Sys.Load
 
@@ -168,7 +164,7 @@ SUB TView.Main (FileToView AS STRING)
       MaxLinesShown = 17
     END IF
 
-StartOfAll:
+startofall:
 
     IF FileOpened THEN
         FileWin.Caption = "Textviewer - " + Filename
@@ -277,19 +273,16 @@ StartOfAll:
         IF Obj.BtnClick(btnOpen) OR Key$ = "o" THEN
             OldFileName = Filename
             OldFileOpened = FileOpened
-            Filename = UCASE$(Sys.InputBox("Open text file", "Type the path and filename of the file below," + CHR$(13) + "and click OK to open the file.", "35disk", Filename))
+            'DEBUG
+            'Filename = UCASE$(Sys.InputBox("Open text file", "Type the path and filename of the file below," + CHR$(13) + "and click OK to open the file.", "35disk", Filename))
+            Filename = File.Select("*.TXT")
             IF NOT Filename = "" AND NOT Filename = OldFileName THEN
                 FileOpened = TView.LoadFile(Filename)
-                IF FileOpened THEN
-                    GOTO StartOfAll
-                ELSE
-                    FileOpened = OldFileOpened
-                    Filename = OldFileName
-                END IF
             ELSE
                 FileOpened = OldFileOpened
                 Filename = OldFileName
             END IF
+            GOTO startofall
         END IF
 
         IF Obj.BtnClick(btnExit) OR Key$ = "c" OR Key$ = CHR$(27) THEN
