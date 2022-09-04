@@ -39,9 +39,9 @@ FUNCTION File.GetAssociation (FileType AS STRING) AS STRING
 	DIM OpenWith AS STRING, FileAssociation AS FileAssociationType
 	DIM FileHandle
 
-	IF File.Exists(Sys.Path + "\DATA\CONFIG\FILETYPE.DAT") THEN
+	IF File.Exists(Sys.Path + "DATA\CONFIG\FILETYPE.DAT") THEN
 		FileHandle = FREEFILE
-		OPEN Sys.Path + "\DATA\CONFIG\FILETYPE.DAT" FOR BINARY AS #FileHandle
+		OPEN Sys.Path + "DATA\CONFIG\FILETYPE.DAT" FOR BINARY AS #FileHandle
 
 		'ON LOCAL ERROR RESUME NEXT
 		DO WHILE NOT EOF(FileHandle)
@@ -1168,25 +1168,6 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	ELSE
 		Sys.VGALoad "MSGBOX"
 	END IF
-
-END FUNCTION
-
-FUNCTION Sys.Path () AS STRING
-
-	IF COMMAND$ = "/DEV" THEN
-		Sys.Path = "C:\COSTA\"
-		EXIT FUNCTION
-	END IF
-
-	DIM SysPath AS STRING
-
-	SysPath = ENVIRON$(appEnviron)
-
-	IF LEN(SysPath) > 0 THEN
-		IF NOT RIGHT$(SysPath, 1) = "\" THEN SysPath = SysPath + "\"
-	END IF
-
-	Sys.Path = SysPath
 
 END FUNCTION
 
