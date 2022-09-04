@@ -108,6 +108,7 @@ SUB Font.Print (BYVAL Text AS STRING, X, Y, Col, FontID)
 		IF Ascii >= 32 AND Ascii <= 126 THEN
 			DRAW FontData(FontID, Ascii)
 		ELSE
+			'An unsupported character - print a space instead
 			DRAW FontData(FontID, 32)
 		END IF
 	NEXT
