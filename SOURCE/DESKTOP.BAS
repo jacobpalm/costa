@@ -530,7 +530,6 @@ LinkDialogDraw:
           txtPathText = txtPathText + LEFT$(SelectedFile, INSTR(SelectedFile, "\"))
           SelectedFile = RIGHT$(SelectedFile, LEN(SelectedFile) - INSTR(SelectedFile, "\"))
         LOOP
-        'DEBUG - split path and filename
         txtFileNameText = SelectedFile
       END IF
       Desk.DrawDesktop
