@@ -16,7 +16,8 @@ when releasing a new version.
  - Update version information in SOURCE\APPINFO.BI
  - Update version text in the icon "LOGO"
  - Update version information in DOCS\HELP.TXT, and read through to see if
-   any information about new/changes features need to be documented
+   any information about new/changes features need to be documented.
+   Take note of section 1.3 - "News in this version."
  - Update changelog in DOCS\CHANGES.TXT
  - Compile all EXE files
    Use 286 optimizations, include run-time error checking.
@@ -26,6 +27,8 @@ when releasing a new version.
  - Create default user profile files for all 5 user profiles:
    PROFILEx.DAT
    DESKLNKx.DAT
+   Make sure profiles are named correctly - if copying one, the names will
+   all be the same within Costa.
  - Create the default FILETYPE.DAT file, by removing it and opening the
    file type association dialog from the Config utility
  - Copy _DISTRUB.BAT to COSTA.BAT (contains first-run information for the

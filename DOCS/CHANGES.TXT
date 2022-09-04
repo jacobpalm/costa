@@ -1,10 +1,19 @@
 
                          The Costa Graphical Shell
-                               Version 1.6.0
+                               Version 1.7.0
                                By Jacob Palm                   
 
                                  Changelog
 
+
+*1.7.0*
+Version 1.7.0 is all about making it easier to work with files. To fullfil
+this goal, a file selector has been added. This can be used to visually
+browse folders and select a file, instead of having to type path and filename
+in input fields. This is used for example when adding a desktop link, or
+opening a file in the text viewer.
+  -File selector added for easier handling of files, without having to
+   memorize paths and filenames
 
 *1.6.0*
 The most notable change of 1.6.0 is the addiction of EGA support. Now, Costa

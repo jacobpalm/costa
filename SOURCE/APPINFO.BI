@@ -3,8 +3,8 @@
 'which don't use the main library
 
     CONST appName = "The Costa Graphical Shell"
-    CONST appVersion = "1.6.0"
+    CONST appVersion = "1.7.0"
     CONST appYear = "2022"
-    CONST appEnviron = "COSTA160"
+    CONST appEnviron = "COSTA170"
     CONST appExeName = "DESKTOP" 'Without extension
 
