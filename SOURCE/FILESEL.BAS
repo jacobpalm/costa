@@ -1,11 +1,6 @@
 DEFINT A-Z
 OPTION EXPLICIT
 
-DECLARE FUNCTION File.Select (Pattern AS STRING) AS STRING
-DECLARE FUNCTION File.SetDrive% (Drive AS STRING)
-DECLARE SUB File.GetChildFolders (Path$)
-DECLARE SUB File.GetChildFiles (Path$, FilePattern$)
-
 TYPE DTAtype
 	Drive AS STRING * 1
 	SearchTemplate AS STRING * 11
@@ -26,17 +21,6 @@ END TYPE
 DIM SHARED FolderCount AS INTEGER, FileCount AS INTEGER
 DIM SHARED SubFolders() AS STRING
 DIM SHARED SubFiles() AS STRING
-
-Sys.Load
-
-
-'Test code
-DIM Filename AS STRING
-Filename = File.Select("*.*")
-
-SCREEN 0
-PRINT Filename
-END
 
 DEFSNG A-Z
 SUB File.GetChildFiles (Path$, FilePattern$)
@@ -270,11 +254,10 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	Obj.DrawBtn btnFileNext, False
 	Obj.DrawBtn btnFolderPrev, False
 	Obj.DrawBtn btnFolderNext, False
-	
-	Font.Print "Pattern:", winFileSelect.Pos.Left + 15, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, fontNormal
-	Font.Print "Drive:", winFileSelect.Pos.Left + 186, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, fontNormal
-	Font.Print "Files:", winFileSelect.Pos.Left + 15, winFileSelect.Pos.Top + 76, SystemTheme.WindowText, fontNormal
-	Font.Print "Folders:", winFileSelect.Pos.Left + 186, winFileSelect.Pos.Top + 76, SystemTheme.WindowText, fontNormal
+	Font.Print "Pattern:", winFileSelect.Pos.Left + 15, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, FontNormal
+	Font.Print "Drive:", winFileSelect.Pos.Left + 186, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, FontNormal
+	Font.Print "Files:", winFileSelect.Pos.Left + 15, winFileSelect.Pos.Top + 76, SystemTheme.WindowText, FontNormal
+	Font.Print "Folders:", winFileSelect.Pos.Left + 186, winFileSelect.Pos.Top + 76, SystemTheme.WindowText, FontNormal
 	Mouse.Hide
 	LINE (winFileSelect.Pos.Left + 14, winFileSelect.Pos.Top + 43)-(winFileSelect.Pos.Left + 20, winFileSelect.Pos.Top + 43), SystemTheme.WindowText
 	LINE (winFileSelect.Pos.Left + 185, winFileSelect.Pos.Top + 43)-(winFileSelect.Pos.Left + 191, winFileSelect.Pos.Top + 43), SystemTheme.WindowText
@@ -381,13 +364,17 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 
 		IF Obj.BtnClick(btnSelect) OR Key$ = "s" THEN
 			IF FileCount > 0 THEN
-				'DEBUG - return a filename
-				LOCATE 1, 1
-				PRINT SubFiles(FileListSelection) + STRING$(10, " ")
-				'File.Select = SubFiles(FileListSelection)
-				'chdrive left$(OriginalPath, 1)
-				'chdir OriginalPath
-				'EXIT FUNCTION
+				'Only append backslash to path if not at root level
+				IF NOT RIGHT$(CURDIR$, 1) = "\" THEN
+					File.Select = CURDIR$ + "\" + SubFiles(FileListSelection)
+				ELSE
+					File.Select = CURDIR$ + SubFiles(FileListSelection)
+				END IF
+				CHDRIVE LEFT$(OriginalPath, 1)
+				CHDIR OriginalPath
+				REDIM FileList(0 TO 0)
+				REDIM FolderList(0 TO 0)
+				EXIT FUNCTION
 			END IF
 		END IF
 
@@ -395,6 +382,8 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 			File.Select = ""
 			CHDRIVE LEFT$(OriginalPath, 1)
 			CHDIR OriginalPath
+			REDIM FileList(0 TO 0)
+			REDIM FolderList(0 TO 0)
 			EXIT FUNCTION
 		END IF
 
@@ -570,9 +559,9 @@ DrawFileList:
 						Mouse.Hide
 						LINE (txtFileList.Pos.Left + 2, txtFileList.Pos.Top + 3 + (Counter * 12))-(txtFileList.Pos.Left + txtFileList.Pos.Width - 2, txtFileList.Pos.Top + 15 + (Counter * 12)), SystemTheme.Select, BF
 						Mouse.Show
-						Font.Print SubFiles(I), txtFileList.Pos.Left + 5, txtFileList.Pos.Top + 5 + (Counter * 12), SystemTheme.SelectText, fontSystem
+						Font.Print SubFiles(I), txtFileList.Pos.Left + 5, txtFileList.Pos.Top + 5 + (Counter * 12), SystemTheme.SelectText, FontSystem
 					ELSE
-						Font.Print SubFiles(I), txtFileList.Pos.Left + 5, txtFileList.Pos.Top + 5 + (Counter * 12), SystemTheme.TextboxText, fontSystem
+						Font.Print SubFiles(I), txtFileList.Pos.Left + 5, txtFileList.Pos.Top + 5 + (Counter * 12), SystemTheme.TextboxText, FontSystem
 					END IF
 
 					Counter = Counter + 1
@@ -592,9 +581,9 @@ DrawFolderList:
 						Mouse.Hide
 						LINE (txtFolderList.Pos.Left + 2, txtFolderList.Pos.Top + 3 + (Counter * 12))-(txtFolderList.Pos.Left + txtFolderList.Pos.Width - 2, txtFolderList.Pos.Top + 15 + (Counter * 12)), SystemTheme.Select, BF
 						Mouse.Show
-						Font.Print SubFolders(I), txtFolderList.Pos.Left + 5, txtFolderList.Pos.Top + 5 + (Counter * 12), SystemTheme.SelectText, fontSystem
+						Font.Print SubFolders(I), txtFolderList.Pos.Left + 5, txtFolderList.Pos.Top + 5 + (Counter * 12), SystemTheme.SelectText, FontSystem
 					ELSE
-						Font.Print SubFolders(I), txtFolderList.Pos.Left + 5, txtFolderList.Pos.Top + 5 + (Counter * 12), SystemTheme.TextboxText, fontSystem
+						Font.Print SubFolders(I), txtFolderList.Pos.Left + 5, txtFolderList.Pos.Top + 5 + (Counter * 12), SystemTheme.TextboxText, FontSystem
 					END IF
 
 					Counter = Counter + 1
