@@ -1,6 +1,7 @@
 'Procedure declarations
     DECLARE FUNCTION File.Exists% (TargetFile AS STRING)
     DECLARE FUNCTION File.GetAssociation (FileType AS STRING) AS STRING
+    DECLARE FUNCTION File.Select (Pattern AS STRING) AS STRING
     
     DECLARE FUNCTION Font.GetWidth% (TargetText AS STRING, FontID%)
     DECLARE SUB Font.Print (BYVAL Text AS STRING, X%, Y%, Col%, FontID%)

@@ -1,6 +1,10 @@
 DEFINT A-Z
 OPTION EXPLICIT
 
+DECLARE FUNCTION File.SetDrive% (Drive AS STRING)
+DECLARE SUB File.GetChildFiles (Path$, FilePattern$)
+DECLARE SUB File.GetChildFolders (Path$)
+
 TYPE DTAtype
 	Drive AS STRING * 1
 	SearchTemplate AS STRING * 11
