@@ -24,8 +24,8 @@ perhaps a nifty theme, feel free to drop me a message. I am always looking
 to add more to Costa, and credit will of course be given! 
 
 ## Using this code
-When opening project files (.MAK), use the /L parameter for all files except
-SETUP.MAK - as such:
+When opening project files (.MAK), use the /L parameter for all projekt files
+like so:
 
 ```
 VBDOS.EXE DESKTOP.MAK /L

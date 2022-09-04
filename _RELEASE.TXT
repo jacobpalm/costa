@@ -21,8 +21,7 @@ when releasing a new version.
  - Update changelog in DOCS\CHANGES.TXT
  - Compile all EXE files
    Use 286 optimizations, include run-time error checking.
-   Compile all except SETUP.MAK with VBDOS standard library loaded, compile
-   SETUP.MAK without as it is not needed.
+   Compile all with VBDOS standard library loaded (/L parameter)
  - Run _DELOBJ.BAT to ensure all compiler leftover files are removed
  - Create default user profile files for all 5 user profiles:
    PROFILEx.DAT

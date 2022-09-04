@@ -5,12 +5,13 @@ DECLARE FUNCTION File.Exists (TargetFile AS STRING)
 
 '$INCLUDE: 'VBDOS.BI'
 '$INCLUDE: 'C:\COSTA\SOURCE\APPINFO.BI'
+'$INCLUDE: 'C:\COSTA\SOURCE\SYSPATH.BI'
 
 CONST False = 0
 CONST True = -1
 CONST strIndent = "          "
 
-DIM Sys.Path AS STRING
+DIM InputSysPath AS STRING
 DIM strToPrint AS STRING, Tries
 
 IF COMMAND$ = "/?" OR COMMAND$ = "/VER" OR COMMAND$ = "/HELP" THEN
@@ -60,33 +61,40 @@ PRINT
 PRINT strIndent + "You can also run this utility if Costa has been moved to"
 PRINT strIndent + "another directory, to recreate the COSTA.BAT file."
 PRINT
-PRINT strIndent + "If Costa is already working as expecting,";
+PRINT strIndent + "Costa has been detected in the following path:"
 COLOR 15, 1
-PRINT " leave the prompt"
-PRINT strIndent + "blank to exit";
-COLOR 7, 1
-PRINT " without modifying COSTA.BAT."
+PRINT strIndent + Sys.Path
 PRINT
-PRINT strIndent + "Type the path to Costa's files below - for example, C:\COSTA"
+COLOR 7, 1
+PRINT strIndent + "To use this path, ";
+COLOR 15, 1
+PRINT "leave the prompt below blank and press"
+PRINT strIndent + "Enter."
+PRINT
+COLOR 7, 1
+PRINT strIndent + "To exit without modifying anything, ";
+COLOR 15, 1
+PRINT "press Ctrl+C";
+COLOR 7, 1
+PRINT "."
+PRINT strIndent + "Type path below - for example, C:\COSTA"
 PRINT
 
 DO
 		COLOR 15, 1
 		PRINT strIndent + "Path: ";
 		COLOR 7, 1
-		INPUT "", Sys.Path
+		INPUT "", InputSysPath
 		
-		IF Sys.Path = "" THEN
-				PRINT
-				PRINT strIndent + "Nothing was changed."
-				GOTO ExitUtility
+		IF InputSysPath = "" THEN
+				InputSysPath = Sys.Path
 		END IF
 
-		IF LEN(Sys.Path) > 1 THEN
-				IF RIGHT$(Sys.Path, 1) = "\" OR RIGHT$(Sys.Path, 1) = "/" THEN Sys.Path = LEFT$(Sys.Path, LEN(Sys.Path) - 1)
+		IF LEN(InputSysPath) > 1 THEN
+				IF RIGHT$(InputSysPath, 1) = "\" OR RIGHT$(InputSysPath, 1) = "/" THEN InputSysPath = LEFT$(InputSysPath, LEN(InputSysPath) - 1)
 		END IF
 
-		IF File.Exists(Sys.Path + "\" + appExeName + ".EXE") THEN EXIT DO
+		IF File.Exists(InputSysPath + "\" + appExeName + ".EXE") THEN EXIT DO
 
 		Tries = Tries + 1
 		IF Tries = 3 THEN
@@ -110,12 +118,12 @@ PRINT
 PRINT strIndent + "Writing new COSTA.BAT... ";
 
 ON ERROR GOTO WriteErr
-OPEN Sys.Path + "\COSTA.BAT" FOR OUTPUT AS #1
+OPEN InputSysPath + "\COSTA.BAT" FOR OUTPUT AS #1
 PRINT #1, "@ECHO OFF"
 PRINT #1, ""
 PRINT #1, "REM " + appName + " " + appVersion + " - Made in 2004-" + appYear + " by Jacob Palm"
 PRINT #1, ""
-PRINT #1, "SET " + appEnviron + "=" + UCASE$(Sys.Path)
+PRINT #1, "SET " + appEnviron + "=" + UCASE$(InputSysPath)
 PRINT #1, "IF NOT EXIST %" + appEnviron + "%\" + appExeName + ".EXE GOTO ExeNotFound"
 PRINT #1, "%" + appEnviron + "%\MOUSE.COM >NUL"
 PRINT #1, "%" + appEnviron + "%\" + appExeName + ".EXE /BOOT"
@@ -160,7 +168,7 @@ PRINT "Failed!"
 COLOR 7, 1
 PRINT
 PRINT strIndent + "There was en error writing to"
-PRINT strIndent + "  " + Sys.Path + "\COSTA.BAT"
+PRINT strIndent + "  " + InputSysPath + "\COSTA.BAT"
 PRINT
 PRINT strIndent + "If the file already exists, make sure it isn't read-only."
 CLOSE
