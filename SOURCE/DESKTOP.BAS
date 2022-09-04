@@ -362,7 +362,8 @@ END FUNCTION
 ' =========================================================================
 SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
 
-  DIM AllIcons() AS STRING
+  DIM AllIcons() AS STRING, SelectedFile AS STRING
+  DIM ExtractPath AS STRING
   DIM IconCount AS INTEGER, CurrentIcon AS INTEGER, IconFile AS STRING
 
   Sys.ShowLoading
@@ -389,10 +390,10 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
   DIM ConfWin AS WindowType
   DIM txtLinkCapt AS TextboxType, txtFileName AS TextboxType
   DIM txtParams AS TextboxType, txtPath AS TextboxType
-  DIM txtLinkCaptText AS STRING, txtFilenameText AS STRING
+  DIM txtLinkCaptText AS STRING, txtFileNameText AS STRING
   DIM txtParamsText AS STRING, txtPathText AS STRING
   DIM btnIconNext AS ButtonType, btnIconPrev AS ButtonType
-  DIM btnOK AS ButtonType, btnCancel AS ButtonType
+  DIM btnOK AS ButtonType, btnCancel AS ButtonType, btnBrowse AS ButtonType
   DIM frmIconFrame AS FrameType
   DIM imgIcon AS ImageType
   DIM chkPauseOnExit AS CheckBoxType
@@ -409,7 +410,8 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
   Obj.SetSize frmIconFrame.Pos, 296, ConfWin.Pos.Top + 85, 48, 48
   Obj.SetSize imgIcon.Pos, 304, ConfWin.Pos.Top + 93, 32, 32
   Obj.SetSize btnIconNext.Pos, 356, ConfWin.Pos.Top + 98, 22, 22
-  Obj.SetSize txtFileName.Pos, 222, ConfWin.Pos.Top + 165, 196, 19
+  Obj.SetSize txtFileName.Pos, 222, ConfWin.Pos.Top + 165, 173, 19
+  Obj.SetSize btnBrowse.Pos, 399, ConfWin.Pos.Top + 165, 19, 19
   Obj.SetSize txtParams.Pos, 222, ConfWin.Pos.Top + 211, 196, 19
   Obj.SetSize txtPath.Pos, 222, ConfWin.Pos.Top + 260, 196, 19
   Obj.SetSize chkPauseOnExit.Pos, 222, ConfWin.Pos.Top + 292, -1, -1
@@ -420,12 +422,13 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
   txtFileName.MaxLen = 50
   txtParams.MaxLen = 50
   txtPath.MaxLen = 50
-  txtFilenameText = RTRIM$(DESKLINK(TargetLink).Filename)
+  txtFileNameText = RTRIM$(DESKLINK(TargetLink).Filename)
   txtParamsText = RTRIM$(DESKLINK(TargetLink).Parameters)
   txtPathText = RTRIM$(DESKLINK(TargetLink).Path)
   txtLinkCaptText = RTRIM$(DESKLINK(TargetLink).Caption)
   imgIcon.ImageFile = DESKLINK(TargetLink).ImageFile
   chkPauseOnExit.Checked = DESKLINK(TargetLink).PauseOnExit
+  btnBrowse.Caption = "..."
   btnIconPrev.Caption = "<"
   btnIconNext.Caption = ">"
   IF NewLink = False THEN
@@ -436,13 +439,14 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
   btnOK.HotKey = 1
   btnCancel.Caption = "Cancel": btnCancel.HotKey = 1
 
-
+LinkDialogDraw:
   Obj.DrawWin ConfWin
   Obj.DrawTxt txtLinkCapt, txtLinkCaptText, False
   Obj.DrawBtn btnIconPrev, False
   Obj.DrawFrm frmIconFrame, 15, SystemTheme.Shadow
   Obj.DrawBtn btnIconNext, False
-  Obj.DrawTxt txtFileName, txtFilenameText, False
+  Obj.DrawTxt txtFileName, txtFileNameText, False
+  Obj.DrawBtn btnBrowse, False
   Obj.DrawTxt txtParams, txtParamsText, False
   Obj.DrawTxt txtPath, txtPathText, False
   Obj.DrawChk chkPauseOnExit
@@ -476,7 +480,7 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
     IF Obj.BtnClick(btnOK) OR Key$ = CHR$(13) THEN
       IF RTRIM$(txtLinkCaptText) = "" THEN txtLinkCaptText = "Unnamed link"
       DESKLINK(TargetLink).Caption = RTRIM$(txtLinkCaptText)
-      DESKLINK(TargetLink).Filename = RTRIM$(txtFilenameText)
+      DESKLINK(TargetLink).Filename = RTRIM$(txtFileNameText)
       DESKLINK(TargetLink).Path = RTRIM$(txtPathText)
       DESKLINK(TargetLink).Parameters = RTRIM$(txtParamsText)
       DESKLINK(TargetLink).PauseOnExit = chkPauseOnExit.Checked
@@ -517,9 +521,24 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
       imgIcon.ImageFile = AllIcons(CurrentIcon)
       Obj.DrawImg imgIcon
     END IF
+
+    IF Obj.BtnClick(btnBrowse) OR Key$ = "." THEN
+      SelectedFile = File.Select("*.exe")
+      IF NOT SelectedFile = "" THEN
+        txtPathText = ""
+        DO WHILE INSTR(SelectedFile, "\")
+          txtPathText = txtPathText + LEFT$(SelectedFile, INSTR(SelectedFile, "\"))
+          SelectedFile = RIGHT$(SelectedFile, LEN(SelectedFile) - INSTR(SelectedFile, "\"))
+        LOOP
+        'DEBUG - split path and filename
+        txtFileNameText = SelectedFile
+      END IF
+      Desk.DrawDesktop
+      GOTO LinkDialogDraw
+    END IF
   
     IF Obj.TxtClick(txtLinkCapt) OR Key$ = "d" THEN Obj.EditTxt txtLinkCapt, txtLinkCaptText
-    IF Obj.TxtClick(txtFileName) OR Key$ = "p" THEN Obj.EditTxt txtFileName, txtFilenameText
+    IF Obj.TxtClick(txtFileName) OR Key$ = "p" THEN Obj.EditTxt txtFileName, txtFileNameText
     IF Obj.TxtClick(txtParams) OR Key$ = "r" THEN Obj.EditTxt txtParams, txtParamsText
     IF Obj.TxtClick(txtPath) OR Key$ = "t" THEN
       Obj.EditTxt txtPath, txtPathText
