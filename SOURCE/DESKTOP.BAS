@@ -1430,33 +1430,38 @@ MainLoopStart:
             GOSUB SlideDown
         END IF
 
+        'TAB or Shift+TAB
         IF Key$ = CHR$(9) OR Key$ = CHR$(0) + CHR$(15) THEN
-            IF TabCheck > -1 THEN
-                Mouse.Hide
-                LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), SystemTheme.Desktop, BF
-                Obj.DrawImg imgTab
-                Mouse.Show
-            END IF
+            'If there's only one item in the DESKLINK array, and it has no caption
+            'then there are no desktop links to cycle
+            IF NOT (UBOUND(DESKLINK) = 0 AND RTRIM$(DESKLINK(0).Caption) = "") THEN
+                IF TabCheck > -1 THEN
+                    Mouse.Hide
+                    LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), SystemTheme.Desktop, BF
+                    Obj.DrawImg imgTab
+                    Mouse.Show
+                END IF
 
-            IF Key$ = CHR$(9) THEN
-                TabCheck = TabCheck + 1
-                IF TabCheck > UBOUND(DESKLINK) THEN TabCheck = 0
-            ELSE
-                TabCheck = TabCheck - 1
-                IF TabCheck < 0 THEN TabCheck = UBOUND(DESKLINK)
-            END IF
+                IF Key$ = CHR$(9) THEN
+                    TabCheck = TabCheck + 1
+                    IF TabCheck > UBOUND(DESKLINK) THEN TabCheck = 0
+                ELSE
+                    TabCheck = TabCheck - 1
+                    IF TabCheck < 0 THEN TabCheck = UBOUND(DESKLINK)
+                END IF
             
-            IF DESKLINK(TabCheck).ImageFile = STRING$(8, 0) THEN
-                TabCheck = -1
-            ELSE
-                Mouse.Hide
-                imgTab.ImageFile = DESKLINK(TabCheck).ImageFile
-                imgTab.Pos.Left = DESKLINK(TabCheck).Left: imgTab.Pos.Top = DESKLINK(TabCheck).Top
-                btnTab.Pos.Left = DESKLINK(TabCheck).Left - 3: btnTab.Pos.Top = DESKLINK(TabCheck).Top - 3
-                btnTab.Pos.Width = 38: btnTab.Pos.Height = 38
-                Obj.DrawBtn btnTab, False
-                Obj.DrawImg imgTab
-                Mouse.Show
+                IF DESKLINK(TabCheck).ImageFile = STRING$(8, 0) THEN
+                    TabCheck = -1
+                ELSE
+                    Mouse.Hide
+                    imgTab.ImageFile = DESKLINK(TabCheck).ImageFile
+                    imgTab.Pos.Left = DESKLINK(TabCheck).Left: imgTab.Pos.Top = DESKLINK(TabCheck).Top
+                    btnTab.Pos.Left = DESKLINK(TabCheck).Left - 3: btnTab.Pos.Top = DESKLINK(TabCheck).Top - 3
+                    btnTab.Pos.Width = 38: btnTab.Pos.Height = 38
+                    Obj.DrawBtn btnTab, False
+                    Obj.DrawImg imgTab
+                    Mouse.Show
+                END IF
             END IF
         END IF
 
