@@ -611,21 +611,24 @@ SUB Desk.LinkLoad ()
     OPEN Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(ProfileID)) + ".DAT" FOR BINARY AS #FileHandle
     IF NOT LOF(FileHandle) = 0 THEN GET #FileHandle, , LinkCount
 
-    'A value of -1 means no icons exists, by choice
+    'A value of -1 means no icons exists by user choice, so do nothing
     IF LinkCount = -1 THEN
       CLOSE #FileHandle
       REDIM DESKLINK(0 TO 0) AS DeskLinkType
       EXIT SUB
     END IF
 
+    'If no links found in file, ask to recreate defaults
     IF LinkCount = 0 THEN
         IF Sys.MsgBox("No desktop links found", "No desktop links were found. Do you wish to recreate the default links?", msgQuest) THEN
+          CLOSE #FileHandle
           Desk.LinkReset
         ELSE
+          'Setting to -1 and saving will prevent Costa from asking again
           LinkCount = -1
           PUT #FileHandle, 1, LinkCount
+          CLOSE #FileHandle
         END IF
-        CLOSE #FileHandle
         EXIT SUB
     END IF
     
