@@ -10,7 +10,7 @@
 ' neccessary declarations.
 
 
-'Require variable declaration - not needed, but
+'Require variable declaration - not needed, but used throughout Costa modules
 OPTION EXPLICIT
 
 'Declare SUBs and Functions used in this application
