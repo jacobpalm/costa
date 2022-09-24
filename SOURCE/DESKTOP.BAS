@@ -1841,7 +1841,7 @@ SUB Desk.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVA
   
 
   'Print the filename, parameters, path and wether to pause on exit to
-  'RUN.BAT, and exit. COSTA.EXE will look at the file and run the program
+  'RUN.BAT, and exit. COSTA.BAT will detect that file and run it
   RunHandle = FREEFILE
 
   OPEN Sys.Path + "DATA\TEMP\RUN.BAT" FOR OUTPUT AS #RunHandle
