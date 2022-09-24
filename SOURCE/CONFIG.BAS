@@ -501,6 +501,7 @@ UpdatePreview:
         IF Obj.BtnClick(btnSave) OR Key$ = "s" OR Key$ = CHR$(13) THEN
             UserSettings.ThemeFile = ThemeList(ActiveTheme)
             Sys.SaveProfile ProfileID
+            Sys.LoadTheme
             EXIT SUB
         END IF
 
