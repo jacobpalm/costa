@@ -807,7 +807,7 @@ SUB Sys.Load ()
 		IF INSTR(COMMAND$, "/VER") OR INSTR(COMMAND$, "/?") THEN
 			PRINT
 			PRINT appName
-			PRINT "Made in 2004-" + appYear + " Jacob Palm"
+			PRINT "Made in 2004-" + appYear + " by Jacob Palm, released under the MIT license."
 			PRINT
 			PRINT "Version " + appVersion
 			PRINT
