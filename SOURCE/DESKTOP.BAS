@@ -46,15 +46,6 @@ IF COMMAND$ = "/BOOT" THEN
         END 1
     END IF
     
-    'Retrieve temp path from environment variable
-    'This is also done in Sys.Load, but that has not been called yes
-    Temp.Path = ENVIRON$("TEMP")
-    IF Temp.Path = "" THEN
-      Temp.Path = Sys.Path + "DATA\TEMP\"
-    ELSE
-      IF NOT RIGHT$(Temp.Path, 1) = "\" THEN Temp.Path = Temp.Path + "\"
-    END IF
-    
     'Make sure all directories are present and that no files from previous
     'sessions are present
     ON ERROR RESUME NEXT
@@ -71,17 +62,26 @@ IF COMMAND$ = "/BOOT" THEN
     MKDIR "IMAGES"
     MKDIR "THEMES"
     CHDIR ".."
+    'Clean temp files of both current and default location, they might not
+    'be the same
+    KILL Temp.Path + "*.DAT"
+    KILL Temp.Path + "*.TMP"
+    KILL Temp.Path + "*.INT"
+    KILL Temp.Path + "*.BLU"
+    KILL Temp.Path + "*.RED"
+    KILL Temp.Path + "*.GRN"
     KILL Sys.Path + "DATA\TEMP\*.DAT"
     KILL Sys.Path + "DATA\TEMP\*.TMP"
     KILL Sys.Path + "DATA\TEMP\*.INT"
     KILL Sys.Path + "DATA\TEMP\*.BLU"
     KILL Sys.Path + "DATA\TEMP\*.RED"
     KILL Sys.Path + "DATA\TEMP\*.GRN"
+
     ON ERROR GOTO 0
 
     DIM FileHandle
     FileHandle = FREEFILE
-    OPEN Sys.Path + "DATA\TEMP\RUNSTAT.TMP" FOR OUTPUT AS #FileHandle
+    OPEN Temp.Path + "RUNSTAT.TMP" FOR OUTPUT AS #FileHandle
     PRINT #FileHandle, "1"
     CLOSE #FileHandle
     
@@ -90,7 +90,7 @@ ELSE
   'We will redraw the desktop, not load it, so make sure there's nothing to
   'load
   ON ERROR RESUME NEXT
-  KILL Sys.Path + "DATA\TEMP\DESKTOP.*"
+  KILL Temp.Path + "DESKTOP.*"
   ON ERROR GOTO 0
 
 END IF
@@ -128,7 +128,7 @@ IF ProfileID < 1 OR ProfileID > 5 THEN
 END IF
 
 ON ERROR RESUME NEXT
-OPEN Sys.Path + "DATA\TEMP\PROFILE.TMP" FOR OUTPUT AS #FileHandle
+OPEN Temp.Path + "PROFILE.TMP" FOR OUTPUT AS #FileHandle
 PRINT #FileHandle, ProfileID
 CLOSE #FileHandle
 ON ERROR GOTO 0
@@ -287,12 +287,12 @@ END SUB
 SUB Desk.ExitGUI ()
     ON LOCAL ERROR RESUME NEXT
 
-    IF NOT COMMAND$ = "/DEV" THEN KILL Sys.Path + "DATA\TEMP\*.DAT"
-    KILL Sys.Path + "DATA\TEMP\*.TMP"
-    KILL Sys.Path + "DATA\TEMP\*.INT"
-    KILL Sys.Path + "DATA\TEMP\*.BLU"
-    KILL Sys.Path + "DATA\TEMP\*.RED"
-    KILL Sys.Path + "DATA\TEMP\*.GRN"
+    IF NOT COMMAND$ = "/DEV" THEN KILL Temp.Path + "*.DAT"
+    KILL Temp.Path + "*.TMP"
+    KILL Temp.Path + "*.INT"
+    KILL Temp.Path + "*.BLU"
+    KILL Temp.Path + "*.RED"
+    KILL Temp.Path + "*.GRN"
 
     SCREEN 0
     COLOR 7, 0
@@ -1773,7 +1773,7 @@ TopOfProfile:
         IF Key$ = "c" OR Key$ = CHR$(13) OR Obj.BtnClick(btnContinue) THEN
             DIM FileHandle
             FileHandle = FREEFILE
-            OPEN Sys.Path + "DATA\TEMP\PROFILE.TMP" FOR OUTPUT AS #FileHandle
+            OPEN Temp.Path + "PROFILE.TMP" FOR OUTPUT AS #FileHandle
             PRINT #FileHandle, SelectedProfile
             CLOSE #FileHandle
 
@@ -1856,7 +1856,7 @@ SUB Desk.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVA
   'RUN.BAT, and exit. COSTA.BAT will detect that file and run it
   RunHandle = FREEFILE
 
-  OPEN Sys.Path + "DATA\TEMP\RUN.BAT" FOR OUTPUT AS #RunHandle
+  OPEN Temp.Path + "RUN.BAT" FOR OUTPUT AS #RunHandle
   PRINT #RunHandle, "@ECHO OFF"
   IF LEN(TargetDrive) THEN PRINT #RunHandle, TargetDrive
   IF LEN(TargetPath) THEN

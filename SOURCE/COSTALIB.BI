@@ -40,6 +40,8 @@
     DECLARE SUB Sys.VGALoad (TargetFile AS STRING)
     DECLARE SUB Sys.VGASave (TargetFile AS STRING)
 
+    DECLARE FUNCTION Temp.Path () AS STRING
+
 'App name, version etc.
     '$INCLUDE: 'C:\COSTA\SOURCE\APPINFO.BI'
 
@@ -159,8 +161,6 @@
   COMMON SHARED SystemSettings AS SystemSettingsType
   COMMON SHARED UserSettings AS UserSettingsType
   COMMON SHARED SystemTheme AS ThemeType
-
-  COMMON SHARED Temp.Path AS STRING
 
   COMMON SHARED scrHeight AS INTEGER
 

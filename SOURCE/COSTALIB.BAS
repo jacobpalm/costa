@@ -1,3 +1,4 @@
+DECLARE FUNCTION Temp.Path () AS STRING
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -12,6 +13,8 @@ DEFINT A-Z
 	
 	DIM SHARED FontData(1 TO 3, 32 TO 127) AS STRING * 54
 	DIM SHARED FontWidth(1 TO 2, 32 TO 127) AS INTEGER
+
+	DIM SHARED TempPathInternal AS STRING
 
 FUNCTION File.Exists (TargetFile AS STRING)
 
@@ -816,7 +819,7 @@ SUB Sys.Load ()
 
 	'Make sure Costa is running, by checking if RUNSTAT.TMP created by the
 	'/BOOT parameter exists
-		IF File.Exists(Sys.Path + "DATA\TEMP\RUNSTAT.TMP") = False THEN
+		IF File.Exists(Temp.Path + "RUNSTAT.TMP") = False THEN
 			IF INSTR(COMMAND$, "/DEV") = 0 THEN
 				CLS
 				PRINT "This program is a part of " + appName + " and should not be executed"
@@ -828,21 +831,11 @@ SUB Sys.Load ()
 			END IF
 		END IF
 	
-	'Retrieve temp path and save to global variable, use default if variable
-	'is not set
-	Temp.Path = ENVIRON$("TEMP")
-	IF Temp.Path = "" THEN
-		Temp.Path = Sys.Path + "DATA\TEMP\"
-	ELSE
-		IF NOT RIGHT$(Temp.Path, 1) = "\" THEN Temp.Path = Temp.Path + "\"
-	END IF
-
-
 	'Load profile
-		IF File.Exists(Sys.Path + "DATA\TEMP\PROFILE.TMP") THEN
+		IF File.Exists(Temp.Path + "PROFILE.TMP") THEN
 			DIM ProfileFileHandle
 			ProfileFileHandle = FREEFILE
-			OPEN Sys.Path + "DATA\TEMP\PROFILE.TMP" FOR INPUT AS #ProfileFileHandle
+			OPEN Temp.Path + "PROFILE.TMP" FOR INPUT AS #ProfileFileHandle
 			IF LOF(ProfileFileHandle) > 0 THEN INPUT #ProfileFileHandle, ProfileID
 			CLOSE #ProfileFileHandle
 		END IF
@@ -1230,26 +1223,26 @@ END SUB
 STATIC SUB Sys.VGALoad (TargetFile AS STRING)
 	'BLOADs a VGA screen saved by Sys.VGASave
 	
-	IF File.Exists(Sys.Path + "DATA\TEMP\" + TargetFile + ".BLU") = False THEN EXIT SUB
-	IF File.Exists(Sys.Path + "DATA\TEMP\" + TargetFile + ".GRN") = False THEN EXIT SUB
-	IF File.Exists(Sys.Path + "DATA\TEMP\" + TargetFile + ".RED") = False THEN EXIT SUB
-	IF File.Exists(Sys.Path + "DATA\TEMP\" + TargetFile + ".INT") = False THEN EXIT SUB
+	IF File.Exists(Temp.Path + TargetFile + ".BLU") = False THEN EXIT SUB
+	IF File.Exists(Temp.Path + TargetFile + ".GRN") = False THEN EXIT SUB
+	IF File.Exists(Temp.Path + TargetFile + ".RED") = False THEN EXIT SUB
+	IF File.Exists(Temp.Path + TargetFile + ".INT") = False THEN EXIT SUB
 
 	Mouse.Hide
 
 	DEF SEG = &HA000
 
 	OUT &H3C4, 2: OUT &H3C5, 1
-	BLOAD Sys.Path + "DATA\TEMP\" + TargetFile + ".BLU", 0
+	BLOAD Temp.Path + TargetFile + ".BLU", 0
 
 	OUT &H3C4, 2: OUT &H3C5, 2
-	BLOAD Sys.Path + "DATA\TEMP\" + TargetFile + ".GRN", 0
+	BLOAD Temp.Path + TargetFile + ".GRN", 0
 
 	OUT &H3C4, 2: OUT &H3C5, 4
-	BLOAD Sys.Path + "DATA\TEMP\" + TargetFile + ".RED", 0
+	BLOAD Temp.Path + TargetFile + ".RED", 0
 
 	OUT &H3C4, 2: OUT &H3C5, 8
-	BLOAD Sys.Path + "DATA\TEMP\" + TargetFile + ".INT", 0
+	BLOAD Temp.Path + TargetFile + ".INT", 0
 
 	OUT &H3C4, 2: OUT &H3C5, 15
 
@@ -1269,20 +1262,37 @@ STATIC SUB Sys.VGASave (TargetFile AS STRING)
 	Size& = 38400
 
 	OUT &H3CE, 4: OUT &H3CF, 0
-	BSAVE Sys.Path + "DATA\TEMP\" + TargetFile + ".BLU", 0, Size&
+	BSAVE Temp.Path + TargetFile + ".BLU", 0, Size&
 
 	OUT &H3CE, 4: OUT &H3CF, 1
-	BSAVE Sys.Path + "DATA\TEMP\" + TargetFile + ".GRN", 0, Size&
+	BSAVE Temp.Path + TargetFile + ".GRN", 0, Size&
 
 	OUT &H3CE, 4: OUT &H3CF, 2
-	BSAVE Sys.Path + "DATA\TEMP\" + TargetFile + ".RED", 0, Size&
+	BSAVE Temp.Path + TargetFile + ".RED", 0, Size&
 
 	OUT &H3CE, 4: OUT &H3CF, 3
-	BSAVE Sys.Path + "DATA\TEMP\" + TargetFile + ".INT", 0, Size&
+	BSAVE Temp.Path + TargetFile + ".INT", 0, Size&
 
 	OUT &H3CE, 4: OUT &H3CF, 0
 
 	Mouse.Show
 
 END SUB
+
+FUNCTION Temp.Path () AS STRING
+
+	IF NOT LEN(TempPathInternal) THEN
+
+		TempPathInternal = environ$("TEMP")
+		If TempPathInternal = "" Then
+			TempPathInternal = Sys.Path + "DATA\TEMP\"
+		ELSE
+			if not right$(TempPathInternal, 1) = "\" then TempPathInternal = TempPathInternal + "\"
+		END IF
+
+	END IF
+
+	Temp.Path = TempPathInternal
+	
+END FUNCTION
 
