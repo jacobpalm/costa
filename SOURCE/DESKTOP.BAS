@@ -595,14 +595,37 @@ END SUB
 SUB Desk.LinkLoad ()
   
     DIM LinkCount, LinkLoad, FileHandle
+    DIM ResetMsg
+    DIM DeskLinkFile AS STRING
+
+    DeskLinkFile = Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(ProfileID)) + ".DAT"
     FileHandle = FREEFILE
+
+    IF NOT File.Exists(DeskLinkFile) THEN
+      Desk.LinkReset
+      ResetMsg = Sys.MsgBox("Desktop links reset to default", "The file in which Costa stores the configuration for desktop links, DESKLNK" + LTRIM$(STR$(ProfileID)) + ".DAT," + CHR$(13) + "was not found in this profile." + CHR$(13) + CHR$(13) +  _
+"A new file has been automatically created, but any custom links will need to be" + CHR$(13) + "created again manually.", msgError)
+      EXIT SUB
+    END IF
 
     OPEN Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(ProfileID)) + ".DAT" FOR BINARY AS #FileHandle
     IF NOT LOF(FileHandle) = 0 THEN GET #FileHandle, , LinkCount
 
+    'A value of -1 means no icons exists, by choice
+    IF LinkCount = -1 THEN
+      CLOSE #FileHandle
+      REDIM DESKLINK(0 TO 0) AS DeskLinkType
+      EXIT SUB
+    END IF
+
     IF LinkCount = 0 THEN
+        IF Sys.MsgBox("No desktop links found", "No desktop links were found. Do you wish to recreate the default links?", msgQuest) THEN
+          Desk.LinkReset
+        ELSE
+          LinkCount = -1
+          PUT #FileHandle, 1, LinkCount
+        END IF
         CLOSE #FileHandle
-        Desk.LinkReset
         EXIT SUB
     END IF
     
@@ -1065,10 +1088,6 @@ SUB Desk.LinkReset ()
 
     Desk.LinkSave
 
-    DIM ResetMsg
-    ResetMsg = Sys.MsgBox("Desktop links reset to default", "The file in which Costa stores the configuration for desktop links, DESKLNK.DAT," + CHR$(13) + "was not found in this profile." + CHR$(13) + CHR$(13) +  _
-"A new file has been automatically created, but any custom links will need to be" + CHR$(13) + "created again manually.", msgError)
-
 END SUB
 
 ' =========================================================================
@@ -1115,6 +1134,18 @@ SUB Desk.LinkSave ()
         NEXT
     END IF
 
+    'If there's only one link, and it has no caption or path, clear it as
+    'that means that the last link has been removed from the desktop
+    IF UBOUND(DESKLINK) = 0 AND RTRIM$(DESKLINK(0).Caption) = "" THEN
+      DESKLINK(0).Path = ""
+      DESKLINK(0).Filename = ""
+      DESKLINK(0).Path = ""
+      DESKLINK(0).Parameters = ""
+      DESKLINK(0).ImageFile = ""
+      DESKLINK(0).PauseOnExit = 0
+      DESKLINK(0).Left = 0
+      DESKLINK(0).Top = 0
+    END IF
 
     'Save
     DIM LinkCount, LinkSave, FileHandle
