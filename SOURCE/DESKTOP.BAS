@@ -46,9 +46,21 @@ IF COMMAND$ = "/BOOT" THEN
         END 1
     END IF
     
+    'Retrieve temp path from environment variable
+    'This is also done in Sys.Load, but that has not been called yes
+    Temp.Path = ENVIRON$("TEMP")
+    IF Temp.Path = "" THEN
+      Temp.Path = Sys.Path + "DATA\TEMP\"
+    ELSE
+      IF NOT RIGHT$(Temp.Path, 1) = "\" THEN Temp.Path = Temp.Path + "\"
+    END IF
+    
     'Make sure all directories are present and that no files from previous
     'sessions are present
     ON ERROR RESUME NEXT
+
+    CHDRIVE LEFT$(Temp.Path, 1)
+    MKDIR LEFT$(Temp.Path, LEN(Temp.Path) - 1)
 
     CHDRIVE LEFT$(Sys.Path, 1)
     CHDIR LEFT$(Sys.Path, LEN(Sys.Path) - 1)

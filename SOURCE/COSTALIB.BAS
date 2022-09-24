@@ -828,6 +828,16 @@ SUB Sys.Load ()
 			END IF
 		END IF
 	
+	'Retrieve temp path and save to global variable, use default if variable
+	'is not set
+	Temp.Path = ENVIRON$("TEMP")
+	IF Temp.Path = "" THEN
+		Temp.Path = Sys.Path + "DATA\TEMP\"
+	ELSE
+		IF NOT RIGHT$(Temp.Path, 1) = "\" THEN Temp.Path = Temp.Path + "\"
+	END IF
+
+
 	'Load profile
 		IF File.Exists(Sys.Path + "DATA\TEMP\PROFILE.TMP") THEN
 			DIM ProfileFileHandle

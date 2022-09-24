@@ -160,5 +160,7 @@
   COMMON SHARED UserSettings AS UserSettingsType
   COMMON SHARED SystemTheme AS ThemeType
 
+  COMMON SHARED Temp.Path AS STRING
+
   COMMON SHARED scrHeight AS INTEGER
 
