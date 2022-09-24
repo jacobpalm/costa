@@ -68,6 +68,7 @@ FUNCTION Sys.Path () AS STRING
 	'Reset segment
 	DEF SEG
 
+	'Get path up to the last backslash, to filter out the executable name
 	DO WHILE INSTR(tmp$, "\")
 		RetrievedPath$ = RetrievedPath$ + LEFT$(tmp$, INSTR(tmp$, "\"))
 		tmp$ = RIGHT$(tmp$, LEN(tmp$) - INSTR(tmp$, "\"))
