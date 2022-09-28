@@ -1,3 +1,4 @@
+DECLARE SUB File.DrawList (TargetList AS ANY, HighLightActive%, FullRedraw%)
 DEFINT A-Z
 OPTION EXPLICIT
 
@@ -22,9 +23,86 @@ END TYPE
 '$INCLUDE: 'C:\VBDOS\VBDOS.BI'
 '$INCLUDE: 'SOURCE\COSTALIB.BI'
 
+CONST FileList = 0
+CONST FolderList = 1
+
 DIM SHARED FolderCount AS INTEGER, FileCount AS INTEGER
 DIM SHARED SubFolders() AS STRING
 DIM SHARED SubFiles() AS STRING
+
+DIM SHARED MaxVisibleItems, FileListStartPos, FolderListStartPos
+DIM SHARED FileListSelection, FolderListSelection, ActiveList
+
+SUB File.DrawList (TargetList AS TextboxType, HighLightActive, FullRedraw)
+
+	DIM I, Counter, TotalItems, ListStartPos, ListSelection, FGColor, BGColor
+	DIM ItemText AS STRING
+
+	IF TargetList.MaxLen = FileList THEN
+		TotalItems = FileCount - 1
+		ListStartPos = FileListStartPos
+		ListSelection = FileListSelection
+	ELSE
+		TotalItems = FolderCount - 1
+		ListStartPos = FolderListStartPos
+		ListSelection = FolderListSelection
+	END IF
+
+	IF FullRedraw = True THEN
+
+		'Full redraw, draw list first and then all visible items within
+		Obj.DrawTxt TargetList, "", False
+
+		Counter = 0
+		FOR I = ListStartPos TO ListStartPos + MaxVisibleItems
+			IF I <= TotalItems THEN
+				IF TargetList.MaxLen = FileList THEN
+					ItemText = SubFiles(I)
+				ELSE
+					ItemText = SubFolders(I)
+				END IF
+
+				'Highlight active selected item, if encountered
+				IF I = ListSelection AND ActiveList = TargetList.MaxLen THEN
+					Mouse.Hide
+					LINE (TargetList.Pos.Left + 2, TargetList.Pos.Top + 3 + (Counter * 12))-(TargetList.Pos.Left + TargetList.Pos.Width - 2, TargetList.Pos.Top + 15 + (Counter * 12)), SystemTheme.Select, BF
+					Mouse.Show
+					Font.Print ItemText, TargetList.Pos.Left + 5, TargetList.Pos.Top + 5 + (Counter * 12), SystemTheme.SelectText, FontSystem
+				ELSE
+					Font.Print ItemText, TargetList.Pos.Left + 5, TargetList.Pos.Top + 5 + (Counter * 12), SystemTheme.TextboxText, FontSystem
+				END IF
+
+				Counter = Counter + 1
+			END IF
+		NEXT
+																 
+	ELSE
+
+		'Not a full redraw, only draw the selected item
+
+		IF HighLightActive AND ActiveList = TargetList.MaxLen THEN
+			FGColor = SystemTheme.SelectText
+			BGColor = SystemTheme.Select
+		ELSE
+			FGColor = SystemTheme.TextboxText
+			BGColor = SystemTheme.Textbox
+		END IF
+
+		IF TargetList.MaxLen = FileList THEN
+			ItemText = SubFiles(ListSelection)
+		ELSE
+			ItemText = SubFolders(ListSelection)
+		END IF
+		I = ListSelection - ListStartPos
+
+		Mouse.Hide
+		LINE (TargetList.Pos.Left + 2, TargetList.Pos.Top + 3 + (I * 12))-(TargetList.Pos.Left + TargetList.Pos.Width - 2, TargetList.Pos.Top + 15 + (I * 12)), BGColor, BF
+		Mouse.Show
+		Font.Print ItemText, TargetList.Pos.Left + 5, TargetList.Pos.Top + 5 + (I * 12), FGColor, FontSystem
+
+	END IF
+
+END SUB
 
 DEFSNG A-Z
 SUB File.GetChildFiles (Path$, FilePattern$)
@@ -204,15 +282,9 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 
 	DIM Path AS STRING, Pattern AS STRING, Drive AS STRING
 	DIM OriginalPath AS STRING
-	DIM Key$
-	DIM MaxVisibleItems, FileListStartPos, FolderListStartPos
-	DIM FileListSelection, FolderListSelection, Counter, I
+	DIM Counter, I, Key$
 	DIM ClickedX, ClickedY, ClickedItem, RedrawNeeded
 	DIM ClickedDoubleTimer AS SINGLE
-
-	DIM ActiveList
-	CONST FileList = 0
-	CONST FolderList = 1
 
 	'Start out with contents of current directory
 	OriginalPath = CURDIR$
@@ -234,6 +306,11 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	Obj.SetSize txtFolderList.Pos, winFileSelect.Pos.Left + 186, winFileSelect.Pos.Top + 90, 150, txtFileList.Pos.Height
 	Obj.SetSize btnSelect.Pos, winFileSelect.Pos.Left + 362, winFileSelect.Pos.Top + 47, -1, -1
 	Obj.SetSize btnCancel.Pos, winFileSelect.Pos.Left + 362, winFileSelect.Pos.Top + 77, -1, -1
+
+	'These are used in File.DrawList to differentiate lists... It's a dirty
+	'hack, but works
+	txtFileList.MaxLen = FileList
+	txtFolderList.MaxLen = FolderList
 
 	Obj.SetSize btnFilePrev.Pos, txtFileList.Pos.Left + txtFileList.Pos.Width + 2, txtFileList.Pos.Top, 14, (txtFileList.Pos.Height / 2) - 1
 	Obj.SetSize btnFileNext.Pos, txtFileList.Pos.Left + txtFileList.Pos.Width + 2, txtFileList.Pos.Top + (txtFileList.Pos.Height / 2) + 1, 14, (txtFileList.Pos.Height / 2) - 1
@@ -273,73 +350,81 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 
 	File.GetChildFiles Path, Pattern
 	File.GetChildFolders Path
-	GOSUB DrawFileList
-	GOSUB DrawFolderList
+	File.DrawList txtFileList, True, True
+	File.DrawList txtFolderList, False, True
 
 	DO
 		Key$ = LCASE$(INKEY$)
 
 		IF Mouse.Clicked AND Mouse.InArea(txtFileList.Pos) THEN
-			RedrawNeeded = False
 			ClickedX = Mouse.X - txtFileList.Pos.Left
 			ClickedY = Mouse.Y - txtFileList.Pos.Top
 			'Validate click inside, not on border
 			IF ClickedX > 1 AND ClickedX < txtFileList.Pos.Width - 2 THEN
 				IF ClickedY > 2 AND ClickedY < txtFileList.Pos.Height - 1 THEN
+					IF NOT ActiveList = FileList THEN
+						ActiveList = FileList
+						File.DrawList txtFolderList, False, False
+					END IF
+
 					ClickedItem = -1
 					ClickedItem = ((ClickedY + 4) / 12) - 1
 					IF ClickedItem > MaxVisibleItems THEN ClickedItem = -1
+
 					IF NOT ClickedItem + FileListStartPos > UBOUND(SubFiles) THEN
 						IF ClickedItem + FileListStartPos = FileListSelection THEN
-							'Already selected and clicked again, simulate "Enter" key
-							IF TIMER < ClickedDoubleTimer + .3 THEN Key$ = CHR$(13)
+							'Already selected and clicked again, simulate "Enter" key if
+							'double clicked
+							IF TIMER < ClickedDoubleTimer + .3 THEN
+								Key$ = CHR$(13)
+							ELSE
+								File.DrawList txtFileList, True, False
+							END IF
 						ELSE
-							RedrawNeeded = True
+							IF ActiveList = FileList THEN File.DrawList txtFileList, False, False
 							FileListSelection = ClickedItem + FileListStartPos
+							File.DrawList txtFileList, True, False
 						END IF
 					END IF
+
 				END IF
 			END IF
 
-			IF NOT ActiveList = FileList THEN
-				RedrawNeeded = True
-				ActiveList = FileList
-				GOSUB DrawFolderList
-			END IF
-			IF RedrawNeeded THEN GOSUB DrawFileList
 			ClickedDoubleTimer = TIMER
 			DO: LOOP WHILE Mouse.Clicked
 		END IF
 
 		IF Mouse.Clicked AND Mouse.InArea(txtFolderList.Pos) THEN
-			RedrawNeeded = False
 			ClickedX = Mouse.X - txtFolderList.Pos.Left
 			ClickedY = Mouse.Y - txtFolderList.Pos.Top
 			'Validate click inside, not on border
 			IF ClickedX > 1 AND ClickedX < txtFolderList.Pos.Width - 2 THEN
 				IF ClickedY > 2 AND ClickedY < txtFolderList.Pos.Height - 1 THEN
+					IF NOT ActiveList = FolderList THEN
+						ActiveList = FolderList
+						File.DrawList txtFileList, False, False
+					END IF
 					ClickedItem = -1
 					ClickedItem = ((ClickedY + 4) / 12) - 1
 					IF ClickedItem > MaxVisibleItems THEN ClickedItem = -1
-
 					IF NOT ClickedItem + FolderListStartPos > UBOUND(SubFolders) THEN
 						IF ClickedItem + FolderListStartPos = FolderListSelection THEN
-							'Already selected and clicked again, simulate "Enter" key
-							IF TIMER < ClickedDoubleTimer + .3 THEN Key$ = CHR$(13)
+							'Already selected and clicked again, simulate "Enter" key if
+							'double clicked
+							IF TIMER < ClickedDoubleTimer + .3 THEN
+								Key$ = CHR$(13)
+							ELSE
+								File.DrawList txtFolderList, True, False
+							END IF
 						ELSE
-							RedrawNeeded = True
+							IF ActiveList = FolderList THEN File.DrawList txtFolderList, False, False
 							FolderListSelection = ClickedItem + FolderListStartPos
+							File.DrawList txtFolderList, True, False
 						END IF
 					END IF
 				END IF
 			END IF
 
-			IF NOT ActiveList = FolderList THEN
-				RedrawNeeded = True
-				ActiveList = FolderList
-				GOSUB DrawFileList
-			END IF
-			IF RedrawNeeded THEN GOSUB DrawFolderList
 			ClickedDoubleTimer = TIMER
 			DO: LOOP WHILE Mouse.Clicked
 		END IF
@@ -360,8 +445,8 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 					File.GetChildFolders Path
 					FileListSelection = 0
 					FolderListSelection = 0
-					GOSUB DrawFileList
-					GOSUB DrawFolderList
+					File.DrawList txtFileList, True, True
+					File.DrawList txtFolderList, True, True
 				END IF
 			END IF
 		END IF
@@ -394,23 +479,23 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 		IF Key$ = "f" THEN
 			IF NOT ActiveList = FileList THEN
 				ActiveList = FileList
-				GOSUB DrawFolderList
-				GOSUB DrawFileList
+				File.DrawList txtFolderList, False, False
+				File.DrawList txtFileList, True, False
 			END IF
 		END IF
 
 		IF Key$ = "o" THEN
 			IF NOT ActiveList = FolderList THEN
 				ActiveList = FolderList
-				GOSUB DrawFileList
-				GOSUB DrawFolderList
+				File.DrawList txtFileList, False, False
+				File.DrawList txtFolderList, True, False
 			END IF
 		END IF
 
 		IF Obj.BtnClick(btnFilePrev) THEN
 			IF NOT ActiveList = FileList THEN
 				ActiveList = FileList
-				GOSUB DrawFolderList
+				File.DrawList txtFolderList, False, False
 			END IF
 			Key$ = CHR$(0) + "h" 'Simulate up arrow key
 		END IF
@@ -418,7 +503,7 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 		IF Obj.BtnClick(btnFileNext) THEN
 			IF NOT ActiveList = FileList THEN
 				ActiveList = FileList
-				GOSUB DrawFolderList
+				File.DrawList txtFolderList, False, False
 			END IF
 			Key$ = CHR$(0) + "p" 'Simulate up arrow key
 		END IF
@@ -426,7 +511,7 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 		IF Obj.BtnClick(btnFolderPrev) THEN
 			IF NOT ActiveList = FolderList THEN
 				ActiveList = FolderList
-				GOSUB DrawFileList
+				File.DrawList txtFileList, False, False
 			END IF
 			Key$ = CHR$(0) + "h" 'Simulate up arrow key
 		END IF
@@ -434,7 +519,7 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 		IF Obj.BtnClick(btnFolderNext) THEN
 			IF NOT ActiveList = FolderList THEN
 				ActiveList = FolderList
-				GOSUB DrawFileList
+				File.DrawList txtFileList, False, False
 			END IF
 			Key$ = CHR$(0) + "p" 'Simulate up arrow key
 		END IF
@@ -443,54 +528,92 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 
 		IF Key$ = CHR$(0) + "h" OR Key$ = CHR$(0) + "k" THEN
 			'Up or left arrow key
+			RedrawNeeded = False
 			IF ActiveList = FileList THEN
+				File.DrawList txtFileList, False, False
 				FileListSelection = FileListSelection - 1
 				IF FileListSelection < 0 THEN
 					FileListSelection = UBOUND(SubFiles)
 					FileListStartPos = UBOUND(SubFiles) - MaxVisibleItems
+					RedrawNeeded = True
 				END IF
 				IF FileListSelection < FileListStartPos THEN
 					FileListStartPos = FileListSelection - MaxVisibleItems
+					RedrawNeeded = True
 				END IF
-				IF FileListStartPos < 0 THEN FileListStartPos = 0
-				GOSUB DrawFileList
+				IF FileListStartPos < 0 THEN
+					RedrawNeeded = True
+				END IF
+				FileListStartPos = 0
+				IF RedrawNeeded THEN
+					File.DrawList txtFileList, True, True
+				ELSE
+					File.DrawList txtFileList, True, False
+				END IF
 			ELSE
+				File.DrawList txtFolderList, False, False
 				FolderListSelection = FolderListSelection - 1
 				IF FolderListSelection < 0 THEN
 					FolderListSelection = UBOUND(SubFolders)
 					FolderListStartPos = UBOUND(SubFolders) - MaxVisibleItems
+					RedrawNeeded = True
 				END IF
 				IF FolderListSelection < FolderListStartPos THEN
 					FolderListStartPos = FolderListSelection - MaxVisibleItems
+					RedrawNeeded = True
 				END IF
-				IF FolderListStartPos < 0 THEN FolderListStartPos = 0
-				GOSUB DrawFolderList
+				IF FolderListStartPos < 0 THEN
+					RedrawNeeded = True
+					FolderListStartPos = 0
+				END IF
+				IF RedrawNeeded THEN
+					File.DrawList txtFolderList, True, True
+				ELSE
+					File.DrawList txtFolderList, True, False
+				END IF
 			END IF
 
 		END IF
 
 		IF Key$ = CHR$(0) + "p" OR Key$ = CHR$(0) + "m" THEN
 			'Down or right arrow key
+			RedrawNeeded = False
 			IF ActiveList = FileList THEN
+				File.DrawList txtFileList, False, False
 				FileListSelection = FileListSelection + 1
 				IF FileListSelection > UBOUND(SubFiles) THEN
 					FileListSelection = 0
 					FileListStartPos = 0
+					RedrawNeeded = True
 				END IF
 				IF FileListSelection > FileListStartPos + MaxVisibleItems THEN
 					FileListStartPos = FileListSelection
+					RedrawNeeded = True
 				END IF
-				GOSUB DrawFileList
+				IF RedrawNeeded THEN
+					File.DrawList txtFileList, True, True
+				ELSE
+					File.DrawList txtFileList, True, False
+				END IF
+
 			ELSE
+				File.DrawList txtFolderList, False, False
 				FolderListSelection = FolderListSelection + 1
 				IF FolderListSelection > UBOUND(SubFolders) THEN
 					FolderListSelection = 0
 					FolderListStartPos = 0
+					RedrawNeeded = True
 				END IF
 				IF FolderListSelection > FolderListStartPos + MaxVisibleItems THEN
 					FolderListStartPos = FolderListSelection
+					RedrawNeeded = True
 				END IF
-				GOSUB DrawFolderList
+				IF RedrawNeeded THEN
+					File.DrawList txtFolderList, True, True
+				ELSE
+					File.DrawList txtFolderList, True, False
+				END IF
+				
 			END IF
 		END IF
 
@@ -511,7 +634,8 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 				'Validate input
 				Pattern = RTRIM$(txtPatternText)
 				File.GetChildFiles Path, Pattern
-				GOSUB DrawFileList
+				FileListSelection = 0
+				File.DrawList txtFileList, True, True
 			END IF
 		END IF
 
@@ -539,8 +663,8 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 					File.GetChildFolders Path
 					FileListSelection = 0
 					FolderListSelection = 0
-					GOSUB DrawFileList
-					GOSUB DrawFolderList
+					File.DrawList txtFileList, True, True
+					File.DrawList txtFileList, True, True
 				ELSE
 					txtDriveText = Drive
 					Obj.DrawTxt txtDrive, txtDriveText, False
@@ -549,52 +673,6 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 		END IF
 						
 	LOOP
-
-	EXIT FUNCTION
-
-DrawFileList:
-		Obj.DrawTxt txtFileList, "", False
-		IF FileCount > 0 THEN
-			Counter = 0
-			FOR I = FileListStartPos TO FileListStartPos + MaxVisibleItems
-				IF I <= UBOUND(SubFiles) THEN
-
-					IF I = FileListSelection AND ActiveList = FileList THEN
-						Mouse.Hide
-						LINE (txtFileList.Pos.Left + 2, txtFileList.Pos.Top + 3 + (Counter * 12))-(txtFileList.Pos.Left + txtFileList.Pos.Width - 2, txtFileList.Pos.Top + 15 + (Counter * 12)), SystemTheme.Select, BF
-						Mouse.Show
-						Font.Print SubFiles(I), txtFileList.Pos.Left + 5, txtFileList.Pos.Top + 5 + (Counter * 12), SystemTheme.SelectText, FontSystem
-					ELSE
-						Font.Print SubFiles(I), txtFileList.Pos.Left + 5, txtFileList.Pos.Top + 5 + (Counter * 12), SystemTheme.TextboxText, FontSystem
-					END IF
-
-					Counter = Counter + 1
-				END IF
-			NEXT
-		END IF
-	RETURN
-
-DrawFolderList:
-		Obj.DrawTxt txtFolderList, "", False
-		IF FolderCount > 0 THEN
-			Counter = 0
-			FOR I = FolderListStartPos TO FolderListStartPos + MaxVisibleItems
-				IF I <= UBOUND(SubFolders) THEN
-
-					IF I = FolderListSelection AND ActiveList = FolderList THEN
-						Mouse.Hide
-						LINE (txtFolderList.Pos.Left + 2, txtFolderList.Pos.Top + 3 + (Counter * 12))-(txtFolderList.Pos.Left + txtFolderList.Pos.Width - 2, txtFolderList.Pos.Top + 15 + (Counter * 12)), SystemTheme.Select, BF
-						Mouse.Show
-						Font.Print SubFolders(I), txtFolderList.Pos.Left + 5, txtFolderList.Pos.Top + 5 + (Counter * 12), SystemTheme.SelectText, FontSystem
-					ELSE
-						Font.Print SubFolders(I), txtFolderList.Pos.Left + 5, txtFolderList.Pos.Top + 5 + (Counter * 12), SystemTheme.TextboxText, FontSystem
-					END IF
-
-					Counter = Counter + 1
-				END IF
-			NEXT
-		END IF
-	RETURN
 
 END FUNCTION
 
