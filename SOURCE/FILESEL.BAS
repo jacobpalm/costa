@@ -1,10 +1,11 @@
-DECLARE SUB File.DrawList (TargetList AS ANY, HighLightActive%, FullRedraw%)
 DEFINT A-Z
 OPTION EXPLICIT
 
 DECLARE FUNCTION File.SetDrive% (Drive AS STRING)
+DECLARE SUB File.DrawList (TargetList AS ANY, HighLightActive%, FullRedraw%)
 DECLARE SUB File.GetChildFiles (Path$, FilePattern$)
 DECLARE SUB File.GetChildFolders (Path$)
+DECLARE SUB File.MoveSelection (TargetList AS ANY, Direction%)
 
 TYPE DTAtype
 	Drive AS STRING * 1
@@ -25,6 +26,10 @@ END TYPE
 
 CONST FileList = 0
 CONST FolderList = 1
+
+'Used for moving selection - added to current selection, -1 makes selection go up
+CONST DirectionUp = -1
+CONST DirectionDown = 1
 
 DIM SHARED FolderCount AS INTEGER, FileCount AS INTEGER
 DIM SHARED SubFolders() AS STRING
@@ -267,6 +272,78 @@ SUB File.GetChildFolders (Path$)
 	'Return to previous directory
 	CHDIR CurrentPath$
 
+
+END SUB
+
+SUB File.MoveSelection (TargetList AS TextboxType, Direction)
+
+	DIM RedrawNeeded
+	DIM TotalItems, ListStartPos, ListSelection
+
+	'Retrieve values to temp variables - so both lists can be handled by same
+	'code
+	IF TargetList.MaxLen = FileList THEN
+		TotalItems = FileCount - 1
+		ListStartPos = FileListStartPos
+		ListSelection = FileListSelection
+	ELSE
+		TotalItems = FolderCount - 1
+		ListStartPos = FolderListStartPos
+		ListSelection = FolderListSelection
+	END IF
+	
+	'Move selection - Direction is -1 for up, 1 for down - using constants
+	ListSelection = ListSelection + Direction
+	
+	'Validate if lists need to be scrolled in either direction
+
+	IF ListSelection < 0 THEN
+		'If selection is below zero, set to last item instead
+		RedrawNeeded = True
+		ListSelection = TotalItems
+		ListStartPos = TotalItems - MaxVisibleItems
+		IF ListStartPos < 0 THEN ListStartPos = 0
+	END IF
+	IF ListSelection < ListStartPos THEN
+		'If selection is below visible items, scroll up one page
+		RedrawNeeded = True
+		ListStartPos = ListStartPos - MaxVisibleItems
+		IF ListStartPos < 0 THEN ListStartPos = 0
+	END IF
+	IF ListSelection > TotalItems THEN
+		'If selection is higher than item count, set to first item instead
+		RedrawNeeded = True
+		ListSelection = 0
+		ListStartPos = 0
+	END IF
+	IF ListSelection > ListStartPos + MaxVisibleItems THEN
+		'If selected item is below visible items, scroll to make it first visible
+		'item
+		RedrawNeeded = True
+		ListStartPos = ListSelection
+	END IF
+
+	IF RedrawNeeded = False THEN
+		'Entire list won't be redrawn, so remove current selection
+		File.DrawList TargetList, False, False
+	END IF
+
+	'Put temporary values back in proper variables
+	IF TargetList.MaxLen = FileList THEN
+		FileListStartPos = ListStartPos
+		FileListSelection = ListSelection
+	ELSE
+		FolderListStartPos = ListStartPos
+		FolderListSelection = ListSelection
+	END IF
+
+	'Redraw is only needed if list has been scrolled, otherwise only active
+	'item will be drawn
+	IF RedrawNeeded THEN
+		File.DrawList TargetList, True, True
+	ELSE
+		File.DrawList TargetList, True, False
+	END IF
 
 END SUB
 
@@ -528,92 +605,19 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 
 		IF Key$ = CHR$(0) + "h" OR Key$ = CHR$(0) + "k" THEN
 			'Up or left arrow key
-			RedrawNeeded = False
 			IF ActiveList = FileList THEN
-				File.DrawList txtFileList, False, False
-				FileListSelection = FileListSelection - 1
-				IF FileListSelection < 0 THEN
-					FileListSelection = UBOUND(SubFiles)
-					FileListStartPos = UBOUND(SubFiles) - MaxVisibleItems
-					RedrawNeeded = True
-				END IF
-				IF FileListSelection < FileListStartPos THEN
-					FileListStartPos = FileListSelection - MaxVisibleItems
-					RedrawNeeded = True
-				END IF
-				IF FileListStartPos < 0 THEN
-					RedrawNeeded = True
-				END IF
-				FileListStartPos = 0
-				IF RedrawNeeded THEN
-					File.DrawList txtFileList, True, True
-				ELSE
-					File.DrawList txtFileList, True, False
-				END IF
+				File.MoveSelection txtFileList, DirectionUp
 			ELSE
-				File.DrawList txtFolderList, False, False
-				FolderListSelection = FolderListSelection - 1
-				IF FolderListSelection < 0 THEN
-					FolderListSelection = UBOUND(SubFolders)
-					FolderListStartPos = UBOUND(SubFolders) - MaxVisibleItems
-					RedrawNeeded = True
-				END IF
-				IF FolderListSelection < FolderListStartPos THEN
-					FolderListStartPos = FolderListSelection - MaxVisibleItems
-					RedrawNeeded = True
-				END IF
-				IF FolderListStartPos < 0 THEN
-					RedrawNeeded = True
-					FolderListStartPos = 0
-				END IF
-				IF RedrawNeeded THEN
-					File.DrawList txtFolderList, True, True
-				ELSE
-					File.DrawList txtFolderList, True, False
-				END IF
+				File.MoveSelection txtFolderList, DirectionUp
 			END IF
-
 		END IF
 
 		IF Key$ = CHR$(0) + "p" OR Key$ = CHR$(0) + "m" THEN
 			'Down or right arrow key
-			RedrawNeeded = False
 			IF ActiveList = FileList THEN
-				File.DrawList txtFileList, False, False
-				FileListSelection = FileListSelection + 1
-				IF FileListSelection > UBOUND(SubFiles) THEN
-					FileListSelection = 0
-					FileListStartPos = 0
-					RedrawNeeded = True
-				END IF
-				IF FileListSelection > FileListStartPos + MaxVisibleItems THEN
-					FileListStartPos = FileListSelection
-					RedrawNeeded = True
-				END IF
-				IF RedrawNeeded THEN
-					File.DrawList txtFileList, True, True
-				ELSE
-					File.DrawList txtFileList, True, False
-				END IF
-
+				File.MoveSelection txtFileList, DirectionDown
 			ELSE
-				File.DrawList txtFolderList, False, False
-				FolderListSelection = FolderListSelection + 1
-				IF FolderListSelection > UBOUND(SubFolders) THEN
-					FolderListSelection = 0
-					FolderListStartPos = 0
-					RedrawNeeded = True
-				END IF
-				IF FolderListSelection > FolderListStartPos + MaxVisibleItems THEN
-					FolderListStartPos = FolderListSelection
-					RedrawNeeded = True
-				END IF
-				IF RedrawNeeded THEN
-					File.DrawList txtFolderList, True, True
-				ELSE
-					File.DrawList txtFolderList, True, False
-				END IF
-				
+				File.MoveSelection txtFolderList, DirectionDown
 			END IF
 		END IF
 
