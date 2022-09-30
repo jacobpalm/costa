@@ -328,6 +328,7 @@ FUNCTION File.MouseSelection (TargetList AS TextboxType)
 				'Clicked inside list area, but in the small gap after last item.
 				'Draw current item with focus
 				File.DrawList TargetList, True, False
+				DO: LOOP WHILE Mouse.Clicked
 				EXIT FUNCTION
 			END IF
 			
@@ -465,29 +466,24 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	txtDriveText = Drive
 	txtPatternText = DefaultPattern
 	
-	winFileSelect.Pos.Width = 468
-	winFileSelect.Pos.Height = 285
-	winFileSelect.Pos.Left = (640 - winFileSelect.Pos.Width) / 2
-	winFileSelect.Pos.Top = (scrHeight - winFileSelect.Pos.Height) / 2
-	winFileSelect.Caption = "Select File"
-
-	Obj.SetSize txtPattern.Pos, winFileSelect.Pos.Left + 15, winFileSelect.Pos.Top + 47, 150, -1
-	Obj.SetSize txtDrive.Pos, winFileSelect.Pos.Left + 186, winFileSelect.Pos.Top + 47, 150, -1
-	Obj.SetSize txtFileList.Pos, winFileSelect.Pos.Left + 15, winFileSelect.Pos.Top + 90, 150, 180
-	Obj.SetSize txtFolderList.Pos, winFileSelect.Pos.Left + 186, winFileSelect.Pos.Top + 90, 150, txtFileList.Pos.Height
-	Obj.SetSize btnSelect.Pos, winFileSelect.Pos.Left + 362, winFileSelect.Pos.Top + 47, -1, -1
-	Obj.SetSize btnCancel.Pos, winFileSelect.Pos.Left + 362, winFileSelect.Pos.Top + 77, -1, -1
-
+	Obj.SetSize winFileSelect.Pos, 86, (scrHeight - 285) / 2, 468, 285
+	Obj.SetSize txtPattern.Pos, 101, winFileSelect.Pos.Top + 47, 150, -1
+	Obj.SetSize txtDrive.Pos, 272, winFileSelect.Pos.Top + 47, 150, -1
+	Obj.SetSize txtFileList.Pos, 101, winFileSelect.Pos.Top + 90, 150, 180
+	Obj.SetSize txtFolderList.Pos, 272, winFileSelect.Pos.Top + 90, 150, 180
+	Obj.SetSize btnSelect.Pos, 448, winFileSelect.Pos.Top + 47, -1, -1
+	Obj.SetSize btnCancel.Pos, 448, winFileSelect.Pos.Top + 77, -1, -1
+	Obj.SetSize btnFilePrev.Pos, 253, txtFileList.Pos.Top, 14, 89
+	Obj.SetSize btnFileNext.Pos, 253, txtFileList.Pos.Top + 91, 14, 89
+	Obj.SetSize btnFolderPrev.Pos, 424, txtFolderList.Pos.Top, 14, 89
+	Obj.SetSize btnFolderNext.Pos, 424, txtFolderList.Pos.Top + 91, 14, 89
+	
 	'These are used in File.DrawList to differentiate lists... It's a dirty
 	'hack, but works
 	txtFileList.MaxLen = FileList
 	txtFolderList.MaxLen = FolderList
 
-	Obj.SetSize btnFilePrev.Pos, txtFileList.Pos.Left + txtFileList.Pos.Width + 2, txtFileList.Pos.Top, 14, (txtFileList.Pos.Height / 2) - 1
-	Obj.SetSize btnFileNext.Pos, txtFileList.Pos.Left + txtFileList.Pos.Width + 2, txtFileList.Pos.Top + (txtFileList.Pos.Height / 2) + 1, 14, (txtFileList.Pos.Height / 2) - 1
-	Obj.SetSize btnFolderPrev.Pos, txtFolderList.Pos.Left + txtFolderList.Pos.Width + 2, txtFolderList.Pos.Top, 14, (txtFolderList.Pos.Height / 2) - 1
-	Obj.SetSize btnFolderNext.Pos, txtFolderList.Pos.Left + txtFolderList.Pos.Width + 2, txtFolderList.Pos.Top + (txtFolderList.Pos.Height / 2) + 1, 14, (txtFolderList.Pos.Height / 2) - 1
-	
+	winFileSelect.Caption = "Select File"
 	btnSelect.Caption = "Select"
 	btnSelect.HotKey = 1
 	btnCancel.Caption = "Cancel"
@@ -506,18 +502,18 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	Obj.DrawBtn btnFileNext, False
 	Obj.DrawBtn btnFolderPrev, False
 	Obj.DrawBtn btnFolderNext, False
-	Font.Print "Pattern:", winFileSelect.Pos.Left + 15, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, FontNormal
-	Font.Print "Drive:", winFileSelect.Pos.Left + 186, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, FontNormal
-	Font.Print "Files:", winFileSelect.Pos.Left + 15, winFileSelect.Pos.Top + 76, SystemTheme.WindowText, FontNormal
-	Font.Print "Folders:", winFileSelect.Pos.Left + 186, winFileSelect.Pos.Top + 76, SystemTheme.WindowText, FontNormal
+	Font.Print "Pattern:", 101, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, FontNormal
+	Font.Print "Drive:", 272, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, FontNormal
+	Font.Print "Files:", 101, winFileSelect.Pos.Top + 76, SystemTheme.WindowText, FontNormal
+	Font.Print "Folders:", 272, winFileSelect.Pos.Top + 76, SystemTheme.WindowText, FontNormal
 	Mouse.Hide
-	LINE (winFileSelect.Pos.Left + 14, winFileSelect.Pos.Top + 43)-(winFileSelect.Pos.Left + 20, winFileSelect.Pos.Top + 43), SystemTheme.WindowText
-	LINE (winFileSelect.Pos.Left + 185, winFileSelect.Pos.Top + 43)-(winFileSelect.Pos.Left + 191, winFileSelect.Pos.Top + 43), SystemTheme.WindowText
-	LINE (winFileSelect.Pos.Left + 14, winFileSelect.Pos.Top + 86)-(winFileSelect.Pos.Left + 20, winFileSelect.Pos.Top + 86), SystemTheme.WindowText
-	LINE (winFileSelect.Pos.Left + 192, winFileSelect.Pos.Top + 86)-(winFileSelect.Pos.Left + 198, winFileSelect.Pos.Top + 86), SystemTheme.WindowText
+	LINE (100, winFileSelect.Pos.Top + 43)-(106, winFileSelect.Pos.Top + 43), SystemTheme.WindowText
+	LINE (271, winFileSelect.Pos.Top + 43)-(277, winFileSelect.Pos.Top + 43), SystemTheme.WindowText
+	LINE (100, winFileSelect.Pos.Top + 86)-(106, winFileSelect.Pos.Top + 86), SystemTheme.WindowText
+	LINE (271, winFileSelect.Pos.Top + 86)-(277, winFileSelect.Pos.Top + 86), SystemTheme.WindowText
 	Mouse.Show
 	
-	MaxVisibleItems = (txtFileList.Pos.Height - 24) / 12
+	MaxVisibleItems = 13
 
 	File.GetChildFiles Path, Pattern
 	File.GetChildFolders Path
