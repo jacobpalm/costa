@@ -7,7 +7,7 @@ DECLARE SUB File.DrawList (TargetList AS ANY, HighLightActive%, FullRedraw%)
 DECLARE SUB File.GetChildFiles (Path$, FilePattern$)
 DECLARE SUB File.GetChildFolders (Path$)
 DECLARE SUB File.MoveSelection (TargetList AS ANY, Direction%)
-DECLARE SUB File.SetFolder (TargetPath AS STRING)
+DECLARE SUB File.SetFolder (BYVAL TargetPath AS STRING)
 
 TYPE DTAtype
 	Drive AS STRING * 1
@@ -99,11 +99,6 @@ SUB File.DrawList (TargetList AS TextboxType, HighLightActive, FullRedraw)
 			FGColor = SystemTheme.TextboxText
 			BGColor = SystemTheme.Textbox
 		END IF
-
-		PRINT "Partial ";
-		FOR I = 0 TO UBOUND(SubFolders)
-			PRINT STR$(I) + SubFolders(I) + "/";
-		NEXT
 
 		IF TargetList.MaxLen = FileList THEN
 			ItemText = SubFiles(ListSelection)
@@ -201,7 +196,7 @@ SUB File.GetChildFiles (Path$, FilePattern$)
 END SUB
 
 DEFINT A-Z
-SUB File.GetChildFolders (Path$)
+SUB File.GetChildFolders (TargetPath$)
 	DIM InRegsX AS RegTypeX, OutRegsX AS RegTypeX
 	DIM DTAfile AS DTAtype
 	DIM ASCIIZ AS STRING * 260
@@ -210,7 +205,7 @@ SUB File.GetChildFolders (Path$)
 
 	'Save current dir, and switch to target dir
 	CurrentPath$ = CURDIR$
-	CHDIR Path$
+	CHDIR TargetPath$
 
 	ASCIIZ = "*.*" + CHR$(0)
 
@@ -239,7 +234,7 @@ SUB File.GetChildFolders (Path$)
 
 	'If we're not at the root, add a '..' indicator as the first entry in
 	'the folder list
-	IF LEN(Path$) > 3 THEN
+	IF LEN(TargetPath$) > 3 THEN
 		FolderCount = 1
 		SubFolders(0) = ".."
 	END IF
@@ -252,7 +247,7 @@ SUB File.GetChildFolders (Path$)
 			FileName = LEFT$(DTAfile.ASCIIZfilename, INSTR(DTAfile.ASCIIZfilename, CHR$(0)) - 1)
 
 			IF (ASC(DTAfile.FileBits) AND &H10) = &H10 THEN
-				PRINT FileName
+
 				'Directory bit was set, add to SubFolder array if it's a real folder
 				IF (NOT FileName = ".") AND (NOT FileName = "..") THEN
 					FolderCount = FolderCount + 1
@@ -283,7 +278,6 @@ SUB File.GetChildFolders (Path$)
 
 	'Return to previous directory
 	CHDIR CurrentPath$
-
 
 END SUB
 
@@ -533,9 +527,6 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	DO
 		Key$ = LCASE$(INKEY$)
 
-		'DEBUG
-		IF Key$ = "k" THEN CHDRIVE "J"
-
 		IF Mouse.Clicked AND Mouse.InArea(txtFileList.Pos) THEN
 			IF File.MouseSelection(txtFileList) THEN Key$ = CHR$(13)
 		END IF
@@ -547,11 +538,13 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 
 		IF Key$ = CHR$(13) THEN
 			'Enter-key pressed
-
 			IF ActiveList = FileList THEN
 				'Simulate click of "Select" button if the file list is active
 				Key$ = "s"
 			ELSE
+				DIM TestString AS STRING
+				TestString = SubFolders(FolderListSelection)
+				'REDIM SubFolders(0 TO 0) AS STRING
 				File.SetFolder SubFolders(FolderListSelection)
 			END IF
 		END IF
@@ -732,7 +725,7 @@ DriveError:
 
 END FUNCTION
 
-SUB File.SetFolder (TargetPath AS STRING)
+SUB File.SetFolder (BYVAL TargetPath AS STRING)
 	
 	IF RTRIM$(TargetPath) = "" THEN EXIT SUB
 
@@ -751,7 +744,7 @@ SUB File.SetFolder (TargetPath AS STRING)
 
 FolderError:
 	DIM Null
-	Null = Sys.MsgBox("Folder not accesible", "The folder " + TargetPath + ": was not accesible." + CHR$(13) + "Verify access and try again.", msgError)
+	Null = Sys.MsgBox("Folder not accesible", "The folder " + TargetPath + " was not accesible." + CHR$(13) + "Verify access and try again.", msgError)
 	EXIT SUB
 	RETURN
 
