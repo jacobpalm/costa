@@ -1,11 +1,13 @@
 DEFINT A-Z
 OPTION EXPLICIT
 
+DECLARE FUNCTION File.MouseSelection% (TargetList AS ANY)
 DECLARE FUNCTION File.SetDrive% (Drive AS STRING)
 DECLARE SUB File.DrawList (TargetList AS ANY, HighLightActive%, FullRedraw%)
 DECLARE SUB File.GetChildFiles (Path$, FilePattern$)
 DECLARE SUB File.GetChildFolders (Path$)
 DECLARE SUB File.MoveSelection (TargetList AS ANY, Direction%)
+DECLARE SUB File.SetFolder (TargetPath AS STRING)
 
 TYPE DTAtype
 	Drive AS STRING * 1
@@ -31,12 +33,17 @@ CONST FolderList = 1
 CONST DirectionUp = -1
 CONST DirectionDown = 1
 
+DIM SHARED txtFileList AS TextboxType, txtFolderList AS TextboxType
+DIM SHARED ClickedDoubleTimer AS SINGLE
+
 DIM SHARED FolderCount AS INTEGER, FileCount AS INTEGER
 DIM SHARED SubFolders() AS STRING
 DIM SHARED SubFiles() AS STRING
 
 DIM SHARED MaxVisibleItems, FileListStartPos, FolderListStartPos
 DIM SHARED FileListSelection, FolderListSelection, ActiveList
+
+DIM SHARED Path AS STRING, Pattern AS STRING
 
 SUB File.DrawList (TargetList AS TextboxType, HighLightActive, FullRedraw)
 
@@ -93,6 +100,11 @@ SUB File.DrawList (TargetList AS TextboxType, HighLightActive, FullRedraw)
 			BGColor = SystemTheme.Textbox
 		END IF
 
+		PRINT "Partial ";
+		FOR I = 0 TO UBOUND(SubFolders)
+			PRINT STR$(I) + SubFolders(I) + "/";
+		NEXT
+
 		IF TargetList.MaxLen = FileList THEN
 			ItemText = SubFiles(ListSelection)
 		ELSE
@@ -116,7 +128,7 @@ SUB File.GetChildFiles (Path$, FilePattern$)
 	DIM DTAfile AS DTAtype
 	DIM ASCIIZ AS STRING * 260
 	DIM Current.DTA.SEG AS INTEGER, Current.DTA.OFF AS INTEGER
-	DIM CurrentPath AS STRING, Filename AS STRING
+	DIM CurrentPath AS STRING, FileName AS STRING
 	
 	'Save current dir, and switch to target dir
 	CurrentPath$ = CURDIR$
@@ -152,7 +164,7 @@ SUB File.GetChildFiles (Path$, FilePattern$)
 		IF (OutRegsX.flags AND &H1) = &H0 THEN
 
 			'Result found, isolate filename
-			Filename = LEFT$(DTAfile.ASCIIZfilename, INSTR(DTAfile.ASCIIZfilename, CHR$(0)) - 1)
+			FileName = LEFT$(DTAfile.ASCIIZfilename, INSTR(DTAfile.ASCIIZfilename, CHR$(0)) - 1)
 
 			IF NOT (ASC(DTAfile.FileBits) AND &H10) = &H10 THEN
 
@@ -160,7 +172,7 @@ SUB File.GetChildFiles (Path$, FilePattern$)
 				'We're dealing with a file, add to SubFile array
 				FileCount = FileCount + 1
 				REDIM PRESERVE SubFiles(0 TO FileCount - 1) AS STRING
-				SubFiles(FileCount - 1) = Filename
+				SubFiles(FileCount - 1) = FileName
 
 			END IF
 
@@ -194,7 +206,7 @@ SUB File.GetChildFolders (Path$)
 	DIM DTAfile AS DTAtype
 	DIM ASCIIZ AS STRING * 260
 	DIM Current.DTA.SEG AS INTEGER, Current.DTA.OFF AS INTEGER
-	DIM CurrentPath AS STRING, Filename AS STRING
+	DIM CurrentPath AS STRING, FileName AS STRING
 
 	'Save current dir, and switch to target dir
 	CurrentPath$ = CURDIR$
@@ -233,19 +245,19 @@ SUB File.GetChildFolders (Path$)
 	END IF
 
 	DO
-
+		
 		IF (OutRegsX.flags AND &H1) = &H0 THEN
 
 			'Result found, isolate filename
-			Filename = LEFT$(DTAfile.ASCIIZfilename, INSTR(DTAfile.ASCIIZfilename, CHR$(0)) - 1)
+			FileName = LEFT$(DTAfile.ASCIIZfilename, INSTR(DTAfile.ASCIIZfilename, CHR$(0)) - 1)
 
 			IF (ASC(DTAfile.FileBits) AND &H10) = &H10 THEN
-
+				PRINT FileName
 				'Directory bit was set, add to SubFolder array if it's a real folder
-				IF (NOT Filename = ".") AND (NOT Filename = "..") THEN
+				IF (NOT FileName = ".") AND (NOT FileName = "..") THEN
 					FolderCount = FolderCount + 1
 					REDIM PRESERVE SubFolders(0 TO FolderCount - 1) AS STRING
-					SubFolders(FolderCount - 1) = Filename
+					SubFolders(FolderCount - 1) = FileName
 				END IF
 
 			END IF
@@ -274,6 +286,96 @@ SUB File.GetChildFolders (Path$)
 
 
 END SUB
+
+FUNCTION File.MouseSelection (TargetList AS TextboxType)
+
+	DIM ClickedX, ClickedY, ClickedItem
+	DIM TotalItems, ListStartPos, ListSelection
+
+	ClickedX = Mouse.X - TargetList.Pos.Left
+	ClickedY = Mouse.Y - TargetList.Pos.Top
+
+	'Retrieve values to temp variables - so both lists can be handled by same
+	'code
+	IF TargetList.MaxLen = FileList THEN
+		TotalItems = FileCount - 1
+		ListStartPos = FileListStartPos
+		ListSelection = FileListSelection
+	ELSE
+		TotalItems = FolderCount - 1
+		ListStartPos = FolderListStartPos
+		ListSelection = FolderListSelection
+	END IF
+
+	'Validate click inside, not on border
+	IF ClickedX > 1 AND ClickedX < TargetList.Pos.Width - 2 THEN
+		IF ClickedY > 2 AND ClickedY < TargetList.Pos.Height - 1 THEN
+			
+			'Clicked inside
+
+			IF NOT ActiveList = TargetList.MaxLen THEN
+				'Clicked list is not active. Make it so, and remove selection
+				'from other list
+				IF ActiveList = FileList THEN
+					ActiveList = FolderList
+					File.DrawList txtFileList, False, False
+				ELSE
+					ActiveList = FileList
+					File.DrawList txtFolderList, False, False
+				END IF
+			END IF
+
+			'Row height is 12, and there is a 4 pixel border to first item.
+			'Calculate clicked item, and substract one to account for lower bound
+			'of 0
+			ClickedItem = ((ClickedY + 4) / 12) - 1
+
+			IF ClickedItem > MaxVisibleItems THEN
+				'Clicked inside list area, but in the small gap after last item.
+				'Draw current item with focus
+				File.DrawList TargetList, True, False
+				EXIT FUNCTION
+			END IF
+			
+			ClickedItem = ClickedItem + ListStartPos
+			IF NOT ClickedItem > TotalItems THEN
+				
+				IF ClickedItem = ListSelection THEN
+
+					'Already selected and clicked again, check for doubleclick
+					IF TIMER < ClickedDoubleTimer + .3 THEN
+						File.MouseSelection = True
+					ELSE
+						File.DrawList TargetList, True, False
+					END IF
+
+				ELSE
+
+					'Clicked item is not the current selection, move
+					'selection
+					File.DrawList TargetList, False, False
+					IF TargetList.MaxLen = FileList THEN
+						FileListSelection = ClickedItem
+					ELSE
+						FolderListSelection = ClickedItem
+					END IF
+					File.DrawList TargetList, True, False
+
+				END IF
+
+			ELSE
+				'Clicked in list, but below any items. Give focus to
+				'current selection
+				File.DrawList TargetList, True, False
+			END IF
+
+		END IF
+	END IF
+
+	ClickedDoubleTimer = TIMER
+	DO: LOOP WHILE Mouse.Clicked
+
+END FUNCTION
 
 SUB File.MoveSelection (TargetList AS TextboxType, Direction)
 
@@ -350,18 +452,16 @@ END SUB
 FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 
 	DIM winFileSelect AS WindowType
-	DIM txtFileList AS TextboxType, txtFolderList AS TextboxType
 	DIM txtDrive AS TextboxType, txtPattern AS TextboxType
 	DIM btnSelect AS ButtonType, btnCancel AS ButtonType
 	DIM txtPatternText AS STRING, txtDriveText AS STRING
 	DIM btnFilePrev AS ButtonType, btnFileNext AS ButtonType
 	DIM btnFolderPrev AS ButtonType, btnFolderNext AS ButtonType
 
-	DIM Path AS STRING, Pattern AS STRING, Drive AS STRING
+	DIM Drive AS STRING
 	DIM OriginalPath AS STRING
 	DIM Counter, I, Key$
 	DIM ClickedX, ClickedY, ClickedItem, RedrawNeeded
-	DIM ClickedDoubleTimer AS SINGLE
 
 	'Start out with contents of current directory
 	OriginalPath = CURDIR$
@@ -433,77 +533,15 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	DO
 		Key$ = LCASE$(INKEY$)
 
+		'DEBUG
+		IF Key$ = "k" THEN CHDRIVE "J"
+
 		IF Mouse.Clicked AND Mouse.InArea(txtFileList.Pos) THEN
-			ClickedX = Mouse.X - txtFileList.Pos.Left
-			ClickedY = Mouse.Y - txtFileList.Pos.Top
-			'Validate click inside, not on border
-			IF ClickedX > 1 AND ClickedX < txtFileList.Pos.Width - 2 THEN
-				IF ClickedY > 2 AND ClickedY < txtFileList.Pos.Height - 1 THEN
-					IF NOT ActiveList = FileList THEN
-						ActiveList = FileList
-						File.DrawList txtFolderList, False, False
-					END IF
-
-					ClickedItem = -1
-					ClickedItem = ((ClickedY + 4) / 12) - 1
-					IF ClickedItem > MaxVisibleItems THEN ClickedItem = -1
-
-					IF NOT ClickedItem + FileListStartPos > UBOUND(SubFiles) THEN
-						IF ClickedItem + FileListStartPos = FileListSelection THEN
-							'Already selected and clicked again, simulate "Enter" key if
-							'double clicked
-							IF TIMER < ClickedDoubleTimer + .3 THEN
-								Key$ = CHR$(13)
-							ELSE
-								File.DrawList txtFileList, True, False
-							END IF
-						ELSE
-							IF ActiveList = FileList THEN File.DrawList txtFileList, False, False
-							FileListSelection = ClickedItem + FileListStartPos
-							File.DrawList txtFileList, True, False
-						END IF
-					END IF
-
-				END IF
-			END IF
-
-			ClickedDoubleTimer = TIMER
-			DO: LOOP WHILE Mouse.Clicked
+			IF File.MouseSelection(txtFileList) THEN Key$ = CHR$(13)
 		END IF
 
 		IF Mouse.Clicked AND Mouse.InArea(txtFolderList.Pos) THEN
-			ClickedX = Mouse.X - txtFolderList.Pos.Left
-			ClickedY = Mouse.Y - txtFolderList.Pos.Top
-			'Validate click inside, not on border
-			IF ClickedX > 1 AND ClickedX < txtFolderList.Pos.Width - 2 THEN
-				IF ClickedY > 2 AND ClickedY < txtFolderList.Pos.Height - 1 THEN
-					IF NOT ActiveList = FolderList THEN
-						ActiveList = FolderList
-						File.DrawList txtFileList, False, False
-					END IF
-					ClickedItem = -1
-					ClickedItem = ((ClickedY + 4) / 12) - 1
-					IF ClickedItem > MaxVisibleItems THEN ClickedItem = -1
-					IF NOT ClickedItem + FolderListStartPos > UBOUND(SubFolders) THEN
-						IF ClickedItem + FolderListStartPos = FolderListSelection THEN
-							'Already selected and clicked again, simulate "Enter" key if
-							'double clicked
-							IF TIMER < ClickedDoubleTimer + .3 THEN
-								Key$ = CHR$(13)
-							ELSE
-								File.DrawList txtFolderList, True, False
-							END IF
-						ELSE
-							IF ActiveList = FolderList THEN File.DrawList txtFolderList, False, False
-							FolderListSelection = ClickedItem + FolderListStartPos
-							File.DrawList txtFolderList, True, False
-						END IF
-					END IF
-				END IF
-			END IF
-
-			ClickedDoubleTimer = TIMER
-			DO: LOOP WHILE Mouse.Clicked
+			IF File.MouseSelection(txtFolderList) THEN Key$ = CHR$(13)
 		END IF
 
 
@@ -514,17 +552,7 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 				'Simulate click of "Select" button if the file list is active
 				Key$ = "s"
 			ELSE
-				'Navigate to the selected folder, if any
-				IF FolderCount > 0 THEN
-					CHDIR SubFolders(FolderListSelection)
-					Path = CURDIR$
-					File.GetChildFiles Path, Pattern
-					File.GetChildFolders Path
-					FileListSelection = 0
-					FolderListSelection = 0
-					File.DrawList txtFileList, True, True
-					File.DrawList txtFolderList, True, True
-				END IF
+				File.SetFolder SubFolders(FolderListSelection)
 			END IF
 		END IF
 
@@ -682,6 +710,8 @@ END FUNCTION
 
 FUNCTION File.SetDrive (Drive AS STRING)
 
+	IF RTRIM$(Drive) = "" THEN EXIT FUNCTION
+
 	DIM CurrentDrive AS STRING * 1
 	CurrentDrive = LEFT$(CURDIR$, 1)
 
@@ -701,4 +731,29 @@ DriveError:
 	RESUME
 
 END FUNCTION
+
+SUB File.SetFolder (TargetPath AS STRING)
+	
+	IF RTRIM$(TargetPath) = "" THEN EXIT SUB
+
+	ON LOCAL ERROR GOTO FolderError
+
+	CHDIR SubFolders(FolderListSelection)
+
+	Path = CURDIR$
+	File.GetChildFiles Path, Pattern
+	File.GetChildFolders Path
+	FileListSelection = 0
+	FolderListSelection = 0
+	File.DrawList txtFileList, True, True
+	File.DrawList txtFolderList, True, True
+	EXIT SUB
+
+FolderError:
+	DIM Null
+	Null = Sys.MsgBox("Folder not accesible", "The folder " + TargetPath + ": was not accesible." + CHR$(13) + "Verify access and try again.", msgError)
+	EXIT SUB
+	RETURN
+
+END SUB
 
