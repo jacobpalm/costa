@@ -14,6 +14,17 @@ in input fields. This is used for example when adding a desktop link, or
 opening a file in the text viewer.
   -File selector added for easier handling of files, without having to
    memorize paths and filenames
+  -Setup utility can now auto-detect and suggest the path to Costa, removing
+   the need to type the full path on first run
+  -Previously, deleting the last desktop link recreated default links
+   automatically. Now, Costa will ask the user if that is desired, and will
+   remember the choice
+  -Fixed theme dialog, so that profile switch or restart of desktop is no
+   longer required to switch theme
+  -Costa now uses the TEMP environment variable to place its temporary files,
+   with a fallback to the DATA\TEMP directory. This allows temp files to be
+   moved to a RAM disk, for a great increase in speed on computers with a
+   slow drive
 
 *1.6.0*
 The most notable change of 1.6.0 is the addiction of EGA support. Now, Costa
