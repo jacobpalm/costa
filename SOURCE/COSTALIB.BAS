@@ -1283,11 +1283,11 @@ FUNCTION Temp.Path () AS STRING
 
 	IF NOT LEN(TempPathInternal) THEN
 
-		TempPathInternal = environ$("TEMP")
-		If TempPathInternal = "" Then
+		TempPathInternal = ENVIRON$("TEMP")
+		IF TempPathInternal = "" THEN
 			TempPathInternal = Sys.Path + "DATA\TEMP\"
 		ELSE
-			if not right$(TempPathInternal, 1) = "\" then TempPathInternal = TempPathInternal + "\"
+			IF NOT RIGHT$(TempPathInternal, 1) = "\" THEN TempPathInternal = TempPathInternal + "\"
 		END IF
 
 	END IF
