@@ -107,10 +107,12 @@ SUB File.DrawList (TargetList AS TextboxType, HighLightActive, FullRedraw)
 		END IF
 		I = ListSelection - ListStartPos
 
-		Mouse.Hide
-		LINE (TargetList.Pos.Left + 2, TargetList.Pos.Top + 3 + (I * 12))-(TargetList.Pos.Left + TargetList.Pos.Width - 2, TargetList.Pos.Top + 15 + (I * 12)), BGColor, BF
-		Mouse.Show
-		Font.Print ItemText, TargetList.Pos.Left + 5, TargetList.Pos.Top + 5 + (I * 12), FGColor, FontSystem
+		IF NOT ItemText = "" THEN
+			Mouse.Hide
+			LINE (TargetList.Pos.Left + 2, TargetList.Pos.Top + 3 + (I * 12))-(TargetList.Pos.Left + TargetList.Pos.Width - 2, TargetList.Pos.Top + 15 + (I * 12)), BGColor, BF
+			Mouse.Show
+			Font.Print ItemText, TargetList.Pos.Left + 5, TargetList.Pos.Top + 5 + (I * 12), FGColor, FontSystem
+		END IF
 
 	END IF
 
@@ -515,6 +517,14 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	
 	MaxVisibleItems = 13
 
+	'These are shared within module, and need to be reset to rid any values
+	'from previous showing of the dialog
+	FileListStartPos = 0
+	FolderListStartPos = 0
+	FileListSelection = 0
+	FolderListSelection = 0
+	ActiveList = FileList
+	
 	File.GetChildFiles Path, Pattern
 	File.GetChildFolders Path
 	File.DrawList txtFileList, True, True

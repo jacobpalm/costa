@@ -94,7 +94,6 @@ FUNCTION TView.LoadFile (TargetFile AS STRING)
     EXIT FUNCTION
 
 TViewLoadErr:
-    PRINT UBOUND(FileData)
     REDIM FileData(1) AS STRING
     DIM ErrMsg AS STRING, Dummy
     IF ERR = 6 OR ERR = 7 OR ERR = 9 OR ERR = 14 THEN
