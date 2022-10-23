@@ -19,10 +19,10 @@ when releasing a new version.
    any information about new/changes features need to be documented.
    Take note of section 1.3 - "News in this version."
  - Update changelog in DOCS\CHANGES.TXT
- - Compile all EXE files
-   Use 286 optimizations, include run-time error checking.
-   Compile all with VBDOS standard library loaded (/L parameter)
- - Run _DELOBJ.BAT to ensure all compiler leftover files are removed
+ - Compile all EXE files by running _BUILD.BAT
+   Manual compiler options, if needed:
+     Use 286 optimizations, include run-time error checking.
+     Compile all with VBDOS standard library loaded (/L parameter)
  - Create default user profile files for all 5 user profiles:
    PROFILEx.DAT
    DESKLNKx.DAT
