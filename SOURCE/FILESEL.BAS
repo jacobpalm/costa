@@ -512,7 +512,7 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	LINE (100, winFileSelect.Pos.Top + 43)-(106, winFileSelect.Pos.Top + 43), SystemTheme.WindowText
 	LINE (271, winFileSelect.Pos.Top + 43)-(277, winFileSelect.Pos.Top + 43), SystemTheme.WindowText
 	LINE (100, winFileSelect.Pos.Top + 86)-(106, winFileSelect.Pos.Top + 86), SystemTheme.WindowText
-	LINE (271, winFileSelect.Pos.Top + 86)-(277, winFileSelect.Pos.Top + 86), SystemTheme.WindowText
+	LINE (278, winFileSelect.Pos.Top + 86)-(284, winFileSelect.Pos.Top + 86), SystemTheme.WindowText
 	Mouse.Show
 	
 	MaxVisibleItems = 13
