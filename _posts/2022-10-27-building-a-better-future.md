@@ -12,13 +12,11 @@ So, now I've taken some steps to ease this process for myself. I've created a [b
 
 While I was at it, I started looking closely at how each EXE file was being linked and determined that I could make two improvements: Use [memory overlays](https://en.wikipedia.org/wiki/Overlay_(programming)) for the desktop, and include stub files in the link process to reduce EXE size.
 
-**Use overlays for the desktop**
-Overlays is a technique for reducing the amount of memory used by a program, and speeding up program startup time, by only loading the parts of it that are required to always be in memory. Other parts can then be loaded from disk as needed, or not at all if never required.
+**Use overlays for the desktop:** Overlays is a technique for reducing the amount of memory used by a program, and speeding up program startup time, by only loading the parts of it that are required to always be in memory. Other parts can then be loaded from disk as needed, or not at all if never required.
 
 I have taken advantage of this for the desktop, where the desktop itself is now always loaded, but the Configuration window, which is not used in every session, is only loaded from disk when needed. The same goes for the file selection window. By doing this, the part of the desktop that must load on startup and when returning from an external program, has been decreased, improving speed.
 
-**Include stub files**
-Programs compiled with [Visual Basic for DOS](https://en.wikipedia.org/w/index.php?title=Visual_Basic_for_DOS) contain a run-time library, containing many common functions that can be used in the program created with it. For example, text input/output, graphics routines, serial port communication and much more. This run-time library is included in all programs, but Visual Basic for DOS takes steps to only include needed parts, in order to reduce EXE size.
+**Include stub files:** Programs compiled with [Visual Basic for DOS](https://en.wikipedia.org/w/index.php?title=Visual_Basic_for_DOS) contain a run-time library, containing many common functions that can be used in the program created with it. For example, text input/output, graphics routines, serial port communication and much more. This run-time library is included in all programs, but Visual Basic for DOS takes steps to only include needed parts, in order to reduce EXE size.
 
 However, there are additional steps that can be taken to further reduce EXE size. One of these is linking in stub files. A stub file in this case is an object file, that removes unused code from the run-time library during linking of the EXE file. For Costa, I could remove several things, such as serial/parallel port communication, ISAM database functionality, and advanced input editing, none of which was used.
 
