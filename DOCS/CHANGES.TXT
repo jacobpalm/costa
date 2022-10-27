@@ -25,6 +25,12 @@ opening a file in the text viewer.
    with a fallback to the DATA\TEMP directory. This allows temp files to be
    moved to a RAM disk, for a great increase in speed on computers with a
    slow drive
+  -Desktop now utilizes memory overlays for the Configuration module and the
+   file selector, meaning they are only loaded when uses, improving desktop
+   launch speed
+  -EXEs are now compiled with stub files to remove unnecesary features, such
+   as COM/LPT port access, ISAM database support and advanced input editing,
+   saving a total of 52 KB (6 percent) diskspace for the compiled programs
 
 *1.6.0*
 The most notable change of 1.6.0 is the addiction of EGA support. Now, Costa
