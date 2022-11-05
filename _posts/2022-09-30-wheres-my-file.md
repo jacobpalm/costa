@@ -22,6 +22,7 @@ So, to find the program path, you have to:
 - Iterate through memory from the start location of the environment variables, until you find a two-byte gap, signaling the end of the environment variables
 - From that point, you're only a couple of bytes from the start location of the path, so jump to that location and you've found the path
 - The end of the path is marked by a NULL byte, so you retrieve the path byte-by-byte until a NULL byte is retrieved, and then you're done
+
 As you can see it's not quite simple to achieve - at least not without reading through proper documentation and studying the architecture of the OS a bit!
 
 Another goodie coming to 1.7.0 is the usage of the **default TEMP path, as defined by environment variable**. If this variable is set, Costa will now use that path for its temporary files. If it is not set, Costa will fall back to the DATA\TEMP directory as used in previous versions. The advantage of this is that it is now possible to point the TEMP environment variable to a RAM disk, greatly speeding up read/write operations on older computers with slow disks. On my old 486 PC, the difference is quite noticeable.
