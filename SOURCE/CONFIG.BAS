@@ -1,13 +1,13 @@
-DECLARE SUB Conf.RestoreAssoc ()
 OPTION EXPLICIT
 DEFINT A-Z
 
 DECLARE SUB Conf.ConfAssoc ()
 DECLARE SUB Conf.ConfMisc ()
-DECLARE SUB Conf.SaveAssoc (FileType AS STRING, Command AS STRING)
 DECLARE SUB Conf.ConfTheme ()
-DECLARE SUB Conf.Main ()
 DECLARE SUB Desk.DrawDesktop ()
+DECLARE SUB Conf.Main ()
+DECLARE SUB Conf.RestoreAssoc ()
+DECLARE SUB Conf.SaveAssoc (FileType AS STRING, Command AS STRING)
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
@@ -46,7 +46,6 @@ SUB Conf.ConfAssoc ()
     DIM btnSave AS ButtonType, btnClose AS ButtonType, btnDisable AS ButtonType
     DIM OldFileType AS STRING, SaveVar
     DIM Key$
-
     
     Obj.SetSize winAssoc.Pos, 92, (scrHeight - 280) / 2, 455, 280
     Obj.SetSize imgIcon.Pos, 105, winAssoc.Pos.Top + 38, -1, -1
@@ -186,11 +185,8 @@ SUB Conf.ConfMisc ()
     Obj.SetSize chkGreyOutMsgBox.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 60, -1, -1
     Obj.SetSize chkDailyTip.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 82, -1, -1
     Obj.SetSize chkUseLastProfile.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 104, -1, -1
-
-
     Obj.SetSize btnCancel.Pos, winMisc.Pos.Left + winMisc.Pos.Width - 104, winMisc.Pos.Top + winMisc.Pos.Height - 34, -1, -1
     Obj.SetSize btnSave.Pos, winMisc.Pos.Left + winMisc.Pos.Width - 208, winMisc.Pos.Top + winMisc.Pos.Height - 34, -1, -1
-
 
     winMisc.Caption = "Other settings"
     btnCancel.Caption = "Cancel": btnCancel.HotKey = 1
@@ -228,7 +224,6 @@ SUB Conf.ConfMisc ()
     Obj.DrawChk chkUseLastProfile
     Obj.DrawBtn btnSave, False
     Obj.DrawBtn btnCancel, False
-
 
     Font.Print "Show link descriptions", chkShowLinkDesc.Pos.Left + 20, chkShowLinkDesc.Pos.Top + 3, SystemTheme.WindowText, 2
     IF chkShowLinkDesc.Checked = True THEN
@@ -642,6 +637,16 @@ TopOfConf:
 
 END SUB
 
+' =========================================================================
+'          NAME: Conf.RestoreAssoc()
+'    PARAMETERS: None
+'       RETURNS: Nothing
+'       ASSUMES: Nothing
+'   CALLED FROM: DESKTOP.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Reset file associations to defaults, and save to filetype
+'                config file.
+' =========================================================================
 SUB Conf.RestoreAssoc ()
 
     DIM DefaultAssoc(0 TO 6) AS FileAssociationType
@@ -670,21 +675,33 @@ SUB Conf.RestoreAssoc ()
     PUT #AssocFile, , DefaultAssoc(3)
 
     DefaultAssoc(4).FileType = "ME"
-    DefaultAssoc(4).Command = "TEXTEDIT.EXE"
+    DefaultAssoc(4).Command = "TEXTVIEW.EXE"
     PUT #AssocFile, , DefaultAssoc(4)
 
     DefaultAssoc(5).FileType = "1ST"
-    DefaultAssoc(5).Command = "TEXTEDIT.EXE"
+    DefaultAssoc(5).Command = "TEXTVIEW.EXE"
     PUT #AssocFile, , DefaultAssoc(5)
 
     DefaultAssoc(6).FileType = "CFG"
-    DefaultAssoc(6).Command = "TEXTEDIT.EXE"
+    DefaultAssoc(6).Command = "TEXTVIEW.EXE"
     PUT #AssocFile, , DefaultAssoc(6)
                                     
     CLOSE #AssocFile
 
 END SUB
 
+' =========================================================================
+'          NAME: Conf.Main()
+'    PARAMETERS: FileType - a 1-3 letter string containing extension of
+'                           file type to associate
+'                Command  - the program or command to pass the file to
+'       RETURNS: Nothing
+'       ASSUMES: Nothing
+'   CALLED FROM: DESKTOP.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Saves a file association to the config file. Modifies
+'                existing if found, otherwise saves new association.
+' =========================================================================
 SUB Conf.SaveAssoc (FileType AS STRING, Command AS STRING)
 
   DIM FileAssociation AS FileAssociationType
