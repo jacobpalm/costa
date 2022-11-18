@@ -53,7 +53,7 @@ END FUNCTION
 '                             containing the link to launch
 '       RETURNS: Nothing
 '       ASSUMES: That the array position in the DeskLink array exists
-'   CALLED FROM: DESKTOP.BAS
+'   CALLED FROM: CALC.BAS
 ' -------------------------------------------------------------------------
 '   DESCRIPTION: The calculator accessory. Draws the UI and handles main
 '                logic
@@ -94,16 +94,6 @@ SUB Calc.Main ()
     Obj.SetSize btnClose.Pos, 326, winCalc.Pos.Top + 200, 90, -1
     
     winCalc.Caption = "Calculator"
-    btnNumb(0).Caption = "0"
-    btnNumb(1).Caption = "1"
-    btnNumb(2).Caption = "2"
-    btnNumb(3).Caption = "3"
-    btnNumb(4).Caption = "4"
-    btnNumb(5).Caption = "5"
-    btnNumb(6).Caption = "6"
-    btnNumb(7).Caption = "7"
-    btnNumb(8).Caption = "8"
-    btnNumb(9).Caption = "9"
     btnC.Caption = "C": btnC.HotKey = 1
     btnCE.Caption = "CE": btnCE.HotKey = 2
     btnDivide.Caption = "/"
@@ -120,6 +110,7 @@ SUB Calc.Main ()
     Obj.DrawBtn btnNumb(7), False
     Obj.DrawBtn btnNumb(8), False
     FOR btnCount = 0 TO 9
+        btnNumb(btnCount).Caption = LTRIM$(STR$(btnCount))
         Obj.DrawBtn btnNumb(btnCount), False
     NEXT
     Obj.DrawBtn btnC, False: Obj.DrawBtn btnCE, False: Obj.DrawBtn btnDivide, False

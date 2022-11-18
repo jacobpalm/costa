@@ -36,6 +36,9 @@ REDIM SHARED DESKLINK(0 TO 0) AS DeskLinkType
 
 IF COMMAND$ = "/BOOT" THEN
 
+  'Boot means that we need to initialize Costa, and make sure all paths are
+  'valid. Will not run when returning to the desktop from external program.
+
     IF Sys.Path = "" OR File.Exists(Sys.Path + appExeName + ".EXE") = False THEN
         CLS
         PRINT "The environment variable " + appExeName + ", which contains the path to Costa, is either"
@@ -99,11 +102,14 @@ CALL Sys.Load
 
 IF ProfileID < 1 OR ProfileID > 5 THEN
 
+    'If ProfileID is not set, then we need to use the last used one, or show
+    'profile selection dialog based on settings
     IF SystemSettings.UseLastProfile THEN
 
         IF SystemSettings.LastUsedProfile > 0 AND SystemSettings.LastUsedProfile < 5 THEN
             ProfileID = SystemSettings.LastUsedProfile
         ELSE
+            'Invalid value, load default
             ProfileID = 1
             SystemSettings.LastUsedProfile = 1
             Sys.SaveSettings
@@ -293,7 +299,11 @@ SUB Desk.ExitGUI ()
 
     SCREEN 0
     COLOR 7, 0
+
+    'Errorcode 1 makes the COSTA.BAT file exit its loop, thereby exiting
+    'Costa
     END 1
+
 END SUB
 
 ' =========================================================================
@@ -1545,6 +1555,16 @@ RETURN
 
 END SUB
 
+' =========================================================================
+'          NAME: Desk.ProfileEdit
+'    PARAMETERS: ProfileNum - ID of profile to edit, 1-5
+'       RETURNS: Nothing
+'       ASSUMES: Nothing
+'   CALLED FROM: DESKTOP.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Shows a window allowing user to select icon and name for
+'                the user profile
+' =========================================================================
 SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
     DIM AllIcons() AS STRING
     DIM IconCount AS INTEGER, CurrentIcon AS INTEGER, IconFile AS STRING
@@ -1657,6 +1677,16 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
 
 END SUB
 
+' =========================================================================
+'          NAME: Desk.ProfileSelect()
+'    PARAMETERS: None
+'       RETURNS: Nothing
+'       ASSUMES: Nothing
+'   CALLED FROM: DESKTOP.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Shows a window, allowing the user to choose between one
+'                of the five user profiles Costa offers
+' =========================================================================
 SUB Desk.ProfileSelect ()
     DIM ProfileEnabled(1 TO 5) AS INTEGER
     DIM ProfileName(1 TO 5) AS STRING
@@ -1803,9 +1833,21 @@ TopOfProfile:
 
 END SUB
 
-'Runs an external program.
-'Also checks for a file association if passed a file, and passes the
-'filename to the relevant program as a parameter.
+' =========================================================================
+'          NAME: Desk.Run
+'    PARAMETERS: TargetFile       - executable or command to run
+'                TargetParameters - parameters to pass
+'                TargetPath       - path to run from
+'                PauseOnExit      - Bool, await keypress before showing
+'                                   desktop after execution
+'       RETURNS: Nothing
+'       ASSUMES: Nothing
+'   CALLED FROM: DESKTOP.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Saves information about what program to run to RUN.BAT,
+'                then exits. COSTA.BAT will relaunch desktop after
+'                external command is done.
+' =========================================================================
 SUB Desk.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVAL TargetPath AS STRING, PauseOnExit AS INTEGER)
 
   DIM RunHandle, DotPos

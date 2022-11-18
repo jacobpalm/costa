@@ -45,6 +45,18 @@ DIM SHARED FileListSelection, FolderListSelection, ActiveList
 
 DIM SHARED Path AS STRING, Pattern AS STRING
 
+' =========================================================================
+'          NAME: File.DrawList
+'    PARAMETERS: TargetList      - a textbox object to redraw
+'                HighLightActive - bool, higlight active item or not
+'                FullRedraw      - bool, redraw entire list
+'       RETURNS: Nothing
+'       ASSUMES: Nothing
+'   CALLED FROM: FILESEL.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Used internally in File.Select to redraw file/folder list
+'                as needed
+' =========================================================================
 SUB File.DrawList (TargetList AS TextboxType, HighLightActive, FullRedraw)
 
 	DIM I, Counter, TotalItems, ListStartPos, ListSelection, FGColor, BGColor
@@ -119,6 +131,18 @@ SUB File.DrawList (TargetList AS TextboxType, HighLightActive, FullRedraw)
 END SUB
 
 DEFSNG A-Z
+' =========================================================================
+'          NAME: File.GetChildFiles
+'    PARAMETERS: Path$        - a valid MS-DOS path
+'                FilePattern$ - a valid MS-DOS file pattern (eg, *.txt)
+'       RETURNS: Nothing
+'       ASSUMES: Nothing
+'   CALLED FROM: FILESEL.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Used internally in File.Select to retrieve a list of all
+'                files matching pattern, in a specified folder, from the
+'                MS-DOS API
+' =========================================================================
 SUB File.GetChildFiles (Path$, FilePattern$)
 
 	DIM InRegsX AS RegTypeX, OutRegsX AS RegTypeX
@@ -198,6 +222,16 @@ SUB File.GetChildFiles (Path$, FilePattern$)
 END SUB
 
 DEFINT A-Z
+' =========================================================================
+'          NAME: File.GetChildFolders
+'    PARAMETERS: TargetPath$ - a valid MS-DOS path
+'       RETURNS: Nothing
+'       ASSUMES: Nothing
+'   CALLED FROM: FILESEL.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Used internally in File.Select to retrieve a list of all
+'                folders in the given path, from the MS-DOS API
+' =========================================================================
 SUB File.GetChildFolders (TargetPath$)
 	DIM InRegsX AS RegTypeX, OutRegsX AS RegTypeX
 	DIM DTAfile AS DTAtype
@@ -283,6 +317,18 @@ SUB File.GetChildFolders (TargetPath$)
 
 END SUB
 
+' =========================================================================
+'          NAME: File.MouseSelection
+'    PARAMETERS: TargetList - a textbox object
+'       RETURNS: True if an item was double-clicked in the list
+'       ASSUMES: Nothing
+'   CALLED FROM: FILESEL.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Used internally in File.Select to handle clicking with
+'                the mouse in a file list. Gives list focus if it hasn't
+'                already got it, highlights clicked item, and checks for
+'                double-click.
+' =========================================================================
 FUNCTION File.MouseSelection (TargetList AS TextboxType)
 
 	DIM ClickedX, ClickedY, ClickedItem
@@ -374,6 +420,17 @@ FUNCTION File.MouseSelection (TargetList AS TextboxType)
 
 END FUNCTION
 
+' =========================================================================
+'          NAME: File.MoveSelection
+'    PARAMETERS: TargetList - a textbox object
+'                Direction  - const DirectionUp or DirectionDown
+'       RETURNS: Nothing
+'       ASSUMES: Nothing
+'   CALLED FROM: FILESEL.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Used internally in File.Select to move selection in
+'                lists up or down
+' =========================================================================
 SUB File.MoveSelection (TargetList AS TextboxType, Direction)
 
 	DIM RedrawNeeded
@@ -446,6 +503,16 @@ SUB File.MoveSelection (TargetList AS TextboxType, Direction)
 
 END SUB
 
+' =========================================================================
+'          NAME: File.Select
+'    PARAMETERS: DefaultPattern - a valid MS-DOS file pattern (eg, *.txt)
+'       RETURNS: Filename with path, if file selected
+'       ASSUMES: Nothing
+'   CALLED FROM: Anywhere
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Shows a file selection dialog, allowing the user to
+'                browse for and select a file. Used as an "Open" dialog.
+' =========================================================================
 FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 
 	DIM winFileSelect AS WindowType
@@ -707,6 +774,16 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 
 END FUNCTION
 
+' =========================================================================
+'          NAME: File.SetDrive
+'    PARAMETERS: Drive - a 1-character string, drive letter
+'       RETURNS: True on success, False on failure
+'       ASSUMES: Nothing
+'   CALLED FROM: FILESEL.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Used internally in File.Select to switch to another
+'                drive
+' =========================================================================
 FUNCTION File.SetDrive (Drive AS STRING)
 
 	IF RTRIM$(Drive) = "" THEN EXIT FUNCTION
@@ -731,6 +808,16 @@ DriveError:
 
 END FUNCTION
 
+' =========================================================================
+'          NAME: File.SetFolder
+'    PARAMETERS: Drive - a 1-character string, drive letter
+'       RETURNS: True on success, False on failure
+'       ASSUMES: Nothing
+'   CALLED FROM: FILESEL.BAS
+' -------------------------------------------------------------------------
+'   DESCRIPTION: Used internally in File.Select to switch to another
+'                folder
+' =========================================================================
 SUB File.SetFolder (BYVAL TargetPath AS STRING)
 	
 	IF RTRIM$(TargetPath) = "" THEN EXIT SUB
