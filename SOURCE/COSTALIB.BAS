@@ -514,7 +514,7 @@ SUB Obj.DrawWin (TargetWin AS WindowType)
 	LINE (x1 + 5, y1 + 23)-(x2 - 5, y2 - 5), SystemTheme.Shadow, B
 	LINE (x1 + 6, y1 + 24)-(x2 - 6, y2 - 6), SystemTheme.Light, B
 
-	'Titlebar
+	'Window content area
 	LINE (x1 + 7, y1 + 25)-(x2 - 7, y2 - 7), SystemTheme.Window, BF
 
 	IF NOT RTRIM$(TargetWin.Caption) = "" THEN
