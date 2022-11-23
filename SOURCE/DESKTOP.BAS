@@ -159,7 +159,7 @@ SUB Desk.AboutBox ()
   Obj.SetSize btnClose.Pos, 274, winAboutBox.Pos.Top + 243, 92, 22
   Obj.SetSize imgLogo.Pos, 168, winAboutBox.Pos.Top + 11, -1, -1
   btnClose.Caption = "Close"
-  btnClose.HotKey = 1
+  btnClose.Hotkey = 1
   imgLogo.ImageFile = "LOGO"
   
   IF UserSettings.ScreenMode = scrEGA THEN
@@ -455,8 +455,8 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
   ELSE
     btnOK.Caption = "Add link"
   END IF
-  btnOK.HotKey = 1
-  btnCancel.Caption = "Cancel": btnCancel.HotKey = 1
+  btnOK.Hotkey = 1
+  btnCancel.Caption = "Cancel": btnCancel.Hotkey = 1
 
 LinkDialogDraw:
   Obj.DrawWin ConfWin
@@ -683,12 +683,16 @@ END SUB
 ' =========================================================================
 SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
 
-  DIM BehindMenu(1681), FrontOfMenu(1681)
-  DIM DrawFromLeft, DrawFromTop, ActiveItem, FgColor, BgColor
+  DIM BehindMenu(2473)
+  DIM DrawFromLeft, DrawFromTop
+  DIM RedrawDesktop, DidEdit
+  DIM Key$
   DIM MenuBack AS ButtonType
-  
+  DIM btnOpen AS ButtonType, btnCustomize AS ButtonType
+  DIM btnMove AS ButtonType, btnRemove AS ButtonType
+
   MenuBack.Pos.Width = 94
-  MenuBack.Pos.Height = 69
+  MenuBack.Pos.Height = 102
 
   IF MenuX + MenuBack.Pos.Width > 639 THEN
     MenuBack.Pos.Left = MenuX - MenuBack.Pos.Width
@@ -706,18 +710,27 @@ SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
     DrawFromTop = True
   END IF
 
-  Mouse.Hide
+  Obj.SetSize btnOpen.Pos, MenuBack.Pos.Left + 4, MenuBack.Pos.Top + 4, 86, 22
+  Obj.SetSize btnCustomize.Pos, MenuBack.Pos.Left + 4, MenuBack.Pos.Top + 28, 86, 22
+  Obj.SetSize btnMove.Pos, MenuBack.Pos.Left + 4, MenuBack.Pos.Top + 52, 86, 22
+  Obj.SetSize btnRemove.Pos, MenuBack.Pos.Left + 4, MenuBack.Pos.Top + 76, 86, 22
 
-  DIM x1, y1, x2, y2
-  x1 = MenuBack.Pos.Left
-  x2 = MenuBack.Pos.Left + MenuBack.Pos.Width
-  y1 = MenuBack.Pos.Top
-  y2 = MenuBack.Pos.Top + MenuBack.Pos.Height
-  
-  GET (x1, y1)-(x2, y2), BehindMenu
+  btnOpen.Caption = "Open"
+  btnOpen.Hotkey = 1
+  btnCustomize.Caption = "Customize"
+  btnCustomize.Hotkey = 1
+  btnMove.Caption = "Move"
+  btnMove.Hotkey = 1
+  btnRemove.Caption = "Remove"
+  btnRemove.Hotkey = 1
+
+  Mouse.Hide
+  GET (MenuBack.Pos.Left, MenuBack.Pos.Top)-(MenuBack.Pos.Left + MenuBack.Pos.Width, MenuBack.Pos.Top + MenuBack.Pos.Height), BehindMenu
+  Mouse.Show
   
   IF UserSettings.Animations THEN
     DIM Sys.DelayWait
+    DIM x1, y1, x2, y2
 
     IF DrawFromLeft = True THEN
       x1 = MenuBack.Pos.Left
@@ -732,6 +745,7 @@ SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
     END IF
     y2 = y1
 
+    Mouse.Hide
     DO
       LINE (x1, y1)-(x2, y2), SystemTheme.Window, B
       IF x1 > MenuBack.Pos.Left THEN x1 = x1 - 1
@@ -741,199 +755,93 @@ SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
       Sys.DelayWait = Sys.DelayWait + 1
       IF Sys.DelayWait = 25 THEN Sys.DelayWait = 0: Sys.Delay .01
     LOOP UNTIL x1 = MenuBack.Pos.Left AND y1 = MenuBack.Pos.Top AND x2 = MenuBack.Pos.Left + MenuBack.Pos.Width AND y2 = MenuBack.Pos.Top + MenuBack.Pos.Height
+    Mouse.Show
   END IF
-  Mouse.Show
 
-  FgColor = SystemTheme.WindowText
   Obj.DrawBtn MenuBack, False
-  Mouse.Hide
-  LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 2), SystemTheme.Window, BF
-  Mouse.Show
-  Font.Print "Open/run", MenuBack.Pos.Left + 6, MenuBack.Pos.Top + 6, FgColor, 1
-  Font.Print "Customize..", MenuBack.Pos.Left + 6, MenuBack.Pos.Top + 22, FgColor, 1
-  Font.Print "Move", MenuBack.Pos.Left + 6, MenuBack.Pos.Top + 38, FgColor, 1
-  Font.Print "Remove", MenuBack.Pos.Left + 6, MenuBack.Pos.Top + 54, FgColor, 1
-  LINE (MenuBack.Pos.Left + 5, MenuBack.Pos.Top + 17)-(MenuBack.Pos.Left + 12, MenuBack.Pos.Top + 17), FgColor
-  LINE (MenuBack.Pos.Left + 5, MenuBack.Pos.Top + 33)-(MenuBack.Pos.Left + 12, MenuBack.Pos.Top + 33), FgColor
-  LINE (MenuBack.Pos.Left + 5, MenuBack.Pos.Top + 49)-(MenuBack.Pos.Left + 12, MenuBack.Pos.Top + 49), FgColor
-  LINE (MenuBack.Pos.Left + 5, MenuBack.Pos.Top + 65)-(MenuBack.Pos.Left + 12, MenuBack.Pos.Top + 65), FgColor
+  Obj.DrawBtn btnOpen, False
+  Obj.DrawBtn btnCustomize, False
+  Obj.DrawBtn btnMove, False
+  Obj.DrawBtn btnRemove, False
 
-  Mouse.Hide
-  GET (x1, y1)-(x2, y2), FrontOfMenu
-  Mouse.Show
-
-  DIM KeyWasPressed, DidEdit, Key$
-
-LinkMenuRefresh:
-  
-  Mouse.Hide
-  PUT (x1, y1), FrontOfMenu, PSET
-  Mouse.Show
-
-  IF ActiveItem = 1 THEN
-    FgColor = SystemTheme.SelectText: BgColor = SystemTheme.Select
-    LINE (MenuBack.Pos.Left + 2, MenuBack.Pos.Top + 3)-(MenuBack.Pos.Left + MenuBack.Pos.Width - 2, MenuBack.Pos.Top + 18), BgColor, BF
-    Font.Print "Open/run", MenuBack.Pos.Left + 6, MenuBack.Pos.Top + 6, FgColor, 1
-    LINE (MenuBack.Pos.Left + 5, MenuBack.Pos.Top + 17)-(MenuBack.Pos.Left + 12, MenuBack.Pos.Top + 17), FgColor
-  END IF
-
-  IF ActiveItem = 2 THEN
-    FgColor = SystemTheme.SelectText: BgColor = SystemTheme.Select
-    LINE (MenuBack.Pos.Left + 2, MenuBack.Pos.Top + 19)-(MenuBack.Pos.Left + MenuBack.Pos.Width - 2, MenuBack.Pos.Top + 34), BgColor, BF
-    Font.Print "Customize..", MenuBack.Pos.Left + 6, MenuBack.Pos.Top + 22, FgColor, 1
-    LINE (MenuBack.Pos.Left + 5, MenuBack.Pos.Top + 33)-(MenuBack.Pos.Left + 12, MenuBack.Pos.Top + 33), FgColor
-  END IF
-
-  IF ActiveItem = 3 THEN
-    FgColor = SystemTheme.SelectText: BgColor = SystemTheme.Select
-    LINE (MenuBack.Pos.Left + 2, MenuBack.Pos.Top + 35)-(MenuBack.Pos.Left + MenuBack.Pos.Width - 2, MenuBack.Pos.Top + 51), BgColor, BF
-    Font.Print "Move", MenuBack.Pos.Left + 6, MenuBack.Pos.Top + 38, FgColor, 1
-    LINE (MenuBack.Pos.Left + 5, MenuBack.Pos.Top + 49)-(MenuBack.Pos.Left + 12, MenuBack.Pos.Top + 49), FgColor
-  END IF
-
-  IF ActiveItem = 4 THEN
-    FgColor = SystemTheme.SelectText: BgColor = SystemTheme.Select
-    LINE (MenuBack.Pos.Left + 2, MenuBack.Pos.Top + 52)-(MenuBack.Pos.Left + MenuBack.Pos.Width - 2, MenuBack.Pos.Top + 66), BgColor, BF
-    Font.Print "Remove", MenuBack.Pos.Left + 6, MenuBack.Pos.Top + 54, FgColor, 1
-    LINE (MenuBack.Pos.Left + 5, MenuBack.Pos.Top + 65)-(MenuBack.Pos.Left + 12, MenuBack.Pos.Top + 65), FgColor
-  END IF
-
-  DIM LastMouseX, LastMouseY
-  
-  Mouse.Show
   DO: LOOP WHILE Mouse.Clicked
   DO
 
     Key$ = LCASE$(INKEY$)
     
-    'Escape
-    IF Key$ = CHR$(27) THEN
-        Mouse.Hide
-        PUT (x1, y1), BehindMenu, PSET
-        Mouse.Show
-        EXIT SUB
+    'Escape or clicked outside
+    IF (Mouse.Clicked AND NOT Mouse.InArea(MenuBack.Pos)) OR Key$ = CHR$(27) THEN
+      Mouse.Hide
+      PUT (MenuBack.Pos.Left, MenuBack.Pos.Top), BehindMenu, PSET
+      Mouse.Show
+      EXIT SUB
     END IF
     
-    IF Mouse.X >= MenuBack.Pos.Left + 2 AND Mouse.X <= MenuBack.Pos.Left + MenuBack.Pos.Width - 2 THEN
-      IF Mouse.Y >= MenuBack.Pos.Top + 3 AND Mouse.Y <= MenuBack.Pos.Top + 18 THEN
-        IF NOT ActiveItem = 1 THEN ActiveItem = 1: Mouse.Hide: GOTO LinkMenuRefresh
+    'Open/run
+    IF Obj.BtnClick(btnOpen) OR Key$ = "o" THEN
+      Desk.LinkLaunch TargetLink
+      EXIT SUB
+    END IF
+
+    'Configure
+    IF Obj.BtnClick(btnCustomize) OR Key$ = "c" THEN
+      Mouse.Hide
+      PUT (MenuBack.Pos.Left, MenuBack.Pos.Top), BehindMenu, PSET
+      Mouse.Show
+      
+      IF UserSettings.ScreenMode = scrEGA THEN
+        Mouse.Hide
+        PCOPY 0, 1
+        Mouse.Show
       END IF
-      IF Mouse.Y >= MenuBack.Pos.Top + 19 AND Mouse.Y <= MenuBack.Pos.Top + 34 THEN
-        IF NOT ActiveItem = 2 THEN ActiveItem = 2: Mouse.Hide: GOTO LinkMenuRefresh
+      Desk.LinkDialog TargetLink, DidEdit, False
+
+      IF DidEdit OR UserSettings.ScreenMode = scrVGA THEN
+        Desk.DrawDesktop
+      ELSE
+        Mouse.Hide
+        PCOPY 1, 0
+        Mouse.Show
       END IF
-      IF Mouse.Y >= MenuBack.Pos.Top + 35 AND Mouse.Y <= MenuBack.Pos.Top + 51 THEN
-        IF NOT ActiveItem = 3 THEN ActiveItem = 3: Mouse.Hide: GOTO LinkMenuRefresh
+
+      EXIT SUB
+    END IF
+
+    'Move
+    IF Obj.BtnClick(btnMove) OR Key$ = "m" THEN
+      Mouse.Hide
+      PUT (MenuBack.Pos.Left, MenuBack.Pos.Top), BehindMenu, PSET
+      Mouse.Show
+      Desk.LinkMove TargetLink
+      Desk.DrawDesktop
+      EXIT SUB
+    END IF
+
+    'Remove
+    IF Obj.BtnClick(btnRemove) OR Key$ = "r" THEN
+      DIM DoDelete
+
+      IF UserSettings.ConfirmLinkDelete THEN
+        Mouse.Hide
+        PUT (MenuBack.Pos.Left, MenuBack.Pos.Top), BehindMenu, PSET
+        Mouse.Show
+        DoDelete = Sys.MsgBox("Remove desktop link", "This will permanently delete this" + CHR$(13) + "desktop link. Are you sure?", msgQuest)
+      ELSE
+        DoDelete = True
       END IF
-      IF Mouse.Y >= MenuBack.Pos.Top + 52 AND Mouse.Y <= MenuBack.Pos.Top + 66 THEN
-        IF NOT ActiveItem = 4 THEN ActiveItem = 4: Mouse.Hide: GOTO LinkMenuRefresh
+
+      IF DoDelete THEN
+        DESKLINK(TargetLink).Caption = ""
+        Desk.LinkSave
+        Desk.LinkLoad
+        Desk.DrawDesktop
+        DO: LOOP WHILE Mouse.Clicked
+        EXIT SUB
+      ELSE
+        EXIT SUB
       END IF
     END IF
 
-    IF Mouse.InArea(MenuBack.Pos) = False AND KeyWasPressed = False THEN
-        IF NOT ActiveItem = 0 THEN
-            ActiveItem = 0: Mouse.Hide: GOTO LinkMenuRefresh
-        END IF
-    END IF
-
-    IF Mouse.Clicked = mbLeft OR LEN(Key$) THEN
-
-      IF Mouse.InArea(MenuBack.Pos) = True OR LEN(Key$) THEN
-          IF Mouse.Clicked AND ActiveItem = 1 THEN Key$ = "o"
-          IF Mouse.Clicked AND ActiveItem = 2 THEN Key$ = "c"
-          IF Mouse.Clicked AND ActiveItem = 3 THEN Key$ = "m"
-          IF Mouse.Clicked AND ActiveItem = 4 THEN Key$ = "r"
-
-          'Open/run
-          IF Key$ = "o" THEN
-            Mouse.Hide
-            PUT (x1, y1), BehindMenu, PSET
-            Mouse.Show
-            Desk.LinkLaunch TargetLink
-            EXIT SUB
-          END IF
-
-          'Configure
-          IF Key$ = "c" THEN
-            Mouse.Hide
-            PUT (x1, y1), BehindMenu, PSET
-            Mouse.Show
-            DO: LOOP WHILE Mouse.Clicked
-
-            IF UserSettings.ScreenMode = scrEGA THEN
-              Mouse.Hide
-              PCOPY 0, 1
-              Mouse.Show
-            END IF
-            Desk.LinkDialog TargetLink, DidEdit, False
-
-            IF DidEdit OR UserSettings.ScreenMode = scrVGA THEN
-                Desk.DrawDesktop
-            ELSE
-              Mouse.Hide
-              PCOPY 1, 0
-              Mouse.Show
-            END IF
-
-            EXIT SUB
-          END IF
-
-          'Move
-          IF Key$ = "m" THEN
-            Mouse.Hide
-            PUT (x1, y1), BehindMenu, PSET
-            Mouse.Show
-            Desk.LinkMove TargetLink
-            Mouse.Hide
-            LINE (0, 2)-(639, scrHeight - 1), SystemTheme.Desktop, BF
-            Desk.DrawDesktop
-            Mouse.Show
-            EXIT SUB
-          END IF
-
-          'Remove
-          IF Key$ = "r" THEN
-            DIM DoDelete
-
-            IF UserSettings.ConfirmLinkDelete THEN
-                Mouse.Hide
-                PUT (x1, y1), BehindMenu, PSET
-                Mouse.Show
-                DoDelete = Sys.MsgBox("Remove desktop link", "This will permanently delete this" + CHR$(13) + "desktop link. Are you sure?", msgQuest)
-            ELSE
-                DoDelete = True
-            END IF
-
-            IF DoDelete THEN
-                DESKLINK(TargetLink).Caption = ""
-                Desk.LinkSave
-                Desk.LinkLoad
-                Mouse.Hide
-                LINE (0, 2)-(639, scrHeight - 1), SystemTheme.Desktop, BF
-                Desk.DrawDesktop
-                Mouse.Show
-                DO: LOOP WHILE Mouse.Clicked
-                EXIT SUB
-            ELSE
-                EXIT SUB
-            END IF
-          END IF
-
-      END IF
-
-        IF Mouse.InArea(MenuBack.Pos) = False THEN
-          IF Mouse.Clicked THEN
-            Mouse.Hide
-            PUT (x1, y1), BehindMenu, PSET
-            Mouse.Show
-            DO: LOOP WHILE Mouse.Clicked
-            EXIT SUB
-          END IF
-          IF NOT ActiveItem = 0 THEN
-            IF KeyWasPressed = False THEN ActiveItem = 0: Mouse.Hide: GOTO LinkMenuRefresh
-          END IF
-        END IF
-
-    END IF
   LOOP
 
 END SUB
@@ -1215,19 +1123,19 @@ SUB Desk.Main ()
   DIM SlidePos, DelayFixer
 
   Obj.SetSize btnAddLink.Pos, 3, 2, 92, 22
-  btnAddLink.Caption = "Add link": btnAddLink.HotKey = 5
+  btnAddLink.Caption = "Add link": btnAddLink.Hotkey = 5
   Obj.SetSize btnRunCmd.Pos, 102, 2, 92, 22
-  btnRunCmd.Caption = "Execute": btnRunCmd.HotKey = 2
+  btnRunCmd.Caption = "Execute": btnRunCmd.Hotkey = 2
 
   Obj.SetSize btnProfile.Pos, 224, 2, 92, 22
-  btnProfile.Caption = "Profile...": btnProfile.HotKey = 1
+  btnProfile.Caption = "Profile...": btnProfile.Hotkey = 1
   Obj.SetSize btnConfig.Pos, 323, 2, 92, 22
-  btnConfig.Caption = "Config...": btnConfig.HotKey = 1
+  btnConfig.Caption = "Config...": btnConfig.Hotkey = 1
 
   Obj.SetSize btnAboutCosta.Pos, 446, 2, 92, 22
-  btnAboutCosta.Caption = "About...": btnAboutCosta.HotKey = 1
+  btnAboutCosta.Caption = "About...": btnAboutCosta.Hotkey = 1
   Obj.SetSize btnExitCosta.Pos, 545, 2, 92, 22
-  btnExitCosta.Caption = "Exit": btnExitCosta.HotKey = 1
+  btnExitCosta.Caption = "Exit": btnExitCosta.Hotkey = 1
 
   DIM DeskLinkCheck, ClickedX, ClickedY, ClickedB, DidEdit, Key$
   DIM TabCheck, btnTab AS ButtonType, imgTab AS ImageType
@@ -1619,8 +1527,8 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
     txtProfileNameText = RTRIM$(UserSettings.ProfileName)
     btnIconPrev.Caption = "<"
     btnIconNext.Caption = ">"
-    btnSave.Caption = "Save": btnSave.HotKey = 1
-    btnCancel.Caption = "Cancel": btnCancel.HotKey = 1
+    btnSave.Caption = "Save": btnSave.Hotkey = 1
+    btnCancel.Caption = "Cancel": btnCancel.Hotkey = 1
     imgIcon.ImageFile = AllIcons(CurrentIcon)
 
     Obj.DrawWin winProfEdit
@@ -1725,11 +1633,11 @@ SUB Desk.ProfileSelect ()
 
     Obj.SetSize btnContinue.Pos, winProfiles.Pos.Left + winProfiles.Pos.Width - 94, winProfiles.Pos.Top + winProfiles.Pos.Height - 34, 80, 22
     btnContinue.Caption = "Continue"
-    btnContinue.HotKey = 1
+    btnContinue.Hotkey = 1
 
     Obj.SetSize btnEdit.Pos, winProfiles.Pos.Left + 18, winProfiles.Pos.Top + winProfiles.Pos.Height - 34, 80, 22
     btnEdit.Caption = "Edit..."
-    btnEdit.HotKey = 1
+    btnEdit.Hotkey = 1
 
     SelectedProfile = SystemSettings.LastUsedProfile
     IF SelectedProfile < 1 OR SelectedProfile > 5 THEN SelectedProfile = 1
