@@ -497,8 +497,40 @@ SUB Obj.DrawWin (TargetWin AS WindowType)
 
 	Mouse.Hide
 
+	IF UserSettings.Animations THEN
+		DIM Bound, BoundX, BoundY
+		DIM CenterX, CenterY, AnimPos, AnimPosX, AnimPosY
+		BoundX = (x2 - x1) / 2
+		BoundY = (y2 - y1) / 2
+		Bound = BoundX
+		IF BoundY > Bound THEN Bound = BoundY
+		CenterX = (x2 - x1) / 2 + x1
+		CenterY = (y2 - y1) / 2 + y1
+		AnimPosX = CenterX
+		AnimPosY = CenterY
+		DIM DelayFixer
+		DelayFixer = 0
+		FOR AnimPos = 0 TO Bound
+			AnimPosX = AnimPos
+			AnimPosY = AnimPos
+			IF AnimPosX > BoundX THEN AnimPosX = BoundX
+			IF AnimPosY > BoundY THEN AnimPosY = BoundY
+
+			LINE (CenterX - AnimPosX, CenterY - AnimPosY)-(CenterX + AnimPosX, CenterY + AnimPosY), SystemTheme.Window, B
+			
+			DelayFixer = DelayFixer + 1
+			IF DelayFixer = 25 THEN
+				Sys.Delay .01
+				DelayFixer = 0
+			END IF
+		NEXT
+	END IF
+
 	'Window titlebar and borders
 	LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 1), SystemTheme.TitleBar, BF
+
+	'Window content area
+	LINE (x1 + 7, y1 + 25)-(x2 - 7, y2 - 7), SystemTheme.Window, BF
 	
 	'Outer border
 	LINE (x1, y1)-(x2 - 1, y1), 15
@@ -513,9 +545,6 @@ SUB Obj.DrawWin (TargetWin AS WindowType)
 	'Inner border
 	LINE (x1 + 5, y1 + 23)-(x2 - 5, y2 - 5), SystemTheme.Shadow, B
 	LINE (x1 + 6, y1 + 24)-(x2 - 6, y2 - 6), SystemTheme.Light, B
-
-	'Window content area
-	LINE (x1 + 7, y1 + 25)-(x2 - 7, y2 - 7), SystemTheme.Window, BF
 
 	IF NOT RTRIM$(TargetWin.Caption) = "" THEN
 		'Draw caption centered on titlebar
