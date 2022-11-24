@@ -92,13 +92,23 @@ FUNCTION Font.GetWidth (TargetText AS STRING, FontID AS INTEGER)
 
 END FUNCTION
 
-SUB Font.Print (BYVAL Text AS STRING, X, Y, Col, FontID)
+SUB Font.Print (BYVAL Text AS STRING, x, Y, Col, FontID)
 
-	DIM Char, Ascii
+	DIM Char, Ascii, HotKey
 	DIM ColStr AS STRING
 
+	'If there's a hotkey in the text, save its position and remove the char
+	HotKey = INSTR(Text, "õ")
+	'IF HotKey AND LEN(Text) > 1 THEN
+	'  IF HotKey = 1 THEN
+	'    Text = RIGHT$(Text, LEN(Text) - 1)
+	'  ELSE
+	'    Text = LEFT$(Text, HotKey - 1) + RIGHT$(Text, LEN(Text) - HotKey)
+	'  END IF
+	'END IF
+	
 	'Use PSET to set the drawing position
-	PSET (X, Y + 11), POINT(X, Y + 11)
+	PSET (x, Y + 11), POINT(x, Y + 11)
 	DRAW "C" + LTRIM$(STR$(Col))
 
 	Text = RTRIM$(Text)
@@ -115,6 +125,12 @@ SUB Font.Print (BYVAL Text AS STRING, X, Y, Col, FontID)
 			DRAW FontData(FontID, 32)
 		END IF
 	NEXT
+	
+	'Underline hotkey, if any
+	IF HotKey THEN
+		LINE (x + Font.GetWidth(LEFT$(Text, HotKey - 1), FontID), Y + 11)-(x + Font.GetWidth(LEFT$(Text, HotKey), FontID), Y + 11), Col
+	END IF
+
 	Mouse.Show
 
 END SUB
@@ -317,21 +333,12 @@ SUB Obj.DrawBtn (TargetBtn AS ButtonType, Pressed AS INTEGER)
 	LINE (x2, y1)-(x2, y2 - 1), Color3
 
 	IF NOT RTRIM$(TargetBtn.Caption) = "" THEN
-		'Draw the caption centered on the button, and underline the hotkey
+		'Draw the caption centered on the button
 		x1 = ((x2 - x1) - Font.GetWidth(RTRIM$(TargetBtn.Caption), FontHeading)) / 2 + x1
 		y1 = ((y2 - y1) - 9) / 2 + y1
 		IF Pressed = True THEN x1 = x1 + 1: y1 = y1 + 1
 		
 		Font.Print TargetBtn.Caption, x1, y1, Color4, FontHeading
-
-		
-		IF TargetBtn.HotKey > 0 AND TargetBtn.HotKey <= LEN(RTRIM$(TargetBtn.Caption)) THEN
-			DIM XStart, XEnd
-			XStart = x1 + Font.GetWidth(LEFT$(TargetBtn.Caption, TargetBtn.HotKey - 1), FontHeading) - 1
-			XEnd = x1 + Font.GetWidth(LEFT$(TargetBtn.Caption, TargetBtn.HotKey), FontHeading) + 1
-			LINE (x1 + Font.GetWidth(LEFT$(TargetBtn.Caption, TargetBtn.HotKey - 1), FontHeading) - 1, y1 + 11)-(x1 + Font.GetWidth(LEFT$(TargetBtn.Caption, TargetBtn.HotKey), FontHeading), y1 + 11), Color4
-		END IF
-		
 	END IF
 
 	Mouse.Show
@@ -399,9 +406,9 @@ END SUB
 
 SUB Obj.DrawImg (TargetImg AS ImageType)
 
-	DIM X, Y, XPos, YPos
+	DIM x, Y, XPos, YPos
 	DIM Header AS STRING * 9
-	X = TargetImg.Pos.Left
+	x = TargetImg.Pos.Left
 	Y = TargetImg.Pos.Top
 
 	TargetImg.Pos.Width = 31
@@ -410,11 +417,11 @@ SUB Obj.DrawImg (TargetImg AS ImageType)
 	IF NOT File.Exists(Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".BSV") THEN
 		'Draw a red box with the text "IMG ERR" to indicate a missing file
 		Mouse.Hide
-		LINE (X + 1, Y + 1)-(X + 30, Y + 30), 4, BF
-		LINE (X, Y)-(X + 31, Y + 31), 0, B
+		LINE (x + 1, Y + 1)-(x + 30, Y + 30), 4, BF
+		LINE (x, Y)-(x + 31, Y + 31), 0, B
 		Mouse.Show
-		Font.Print "IMG", X + 6, Y + 4, 15, FontNormal
-		Font.Print "ERR", X + 6, Y + 19, 15, FontNormal
+		Font.Print "IMG", x + 6, Y + 4, 15, FontNormal
+		Font.Print "ERR", x + 6, Y + 19, 15, FontNormal
 		EXIT SUB
 	END IF
 
@@ -429,7 +436,7 @@ SUB Obj.DrawImg (TargetImg AS ImageType)
 	Mouse.Hide
 	FOR XPos = 0 TO 31
 		FOR YPos = 0 TO 31
-			IF IconData.Pixel(XPos, YPos) > -1 THEN PSET (X + XPos, Y + YPos), IconData.Pixel(XPos, YPos)
+			IF IconData.Pixel(XPos, YPos) > -1 THEN PSET (x + XPos, Y + YPos), IconData.Pixel(XPos, YPos)
 		NEXT
 	NEXT
 	Mouse.Show
@@ -438,11 +445,11 @@ SUB Obj.DrawImg (TargetImg AS ImageType)
 DrawImgError:
 	'Draw a red box with the text "IMG ERR" to indicate a missing file
 	Mouse.Hide
-	LINE (X + 1, Y + 1)-(X + 30, Y + 30), 4, BF
-	LINE (X, Y)-(X + 31, Y + 31), 0, B
+	LINE (x + 1, Y + 1)-(x + 30, Y + 30), 4, BF
+	LINE (x, Y)-(x + 31, Y + 31), 0, B
 	Mouse.Show
-	Font.Print "IMG", X + 6, Y + 4, 15, FontNormal
-	Font.Print "ERR", X + 6, Y + 19, 15, FontNormal
+	Font.Print "IMG", x + 6, Y + 4, 15, FontNormal
+	Font.Print "ERR", x + 6, Y + 19, 15, FontNormal
 	EXIT SUB
 	RESUME NEXT
 END SUB
@@ -739,11 +746,11 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 
 	DIM btnOK AS ButtonType
 	Obj.SetSize btnOK.Pos, winInputBox.Pos.Left + winInputBox.Pos.Width - 182, txtInput.Pos.Top + 30, 80, 22
-	btnOK.Caption = "OK": btnOK.HotKey = 1
+	btnOK.Caption = "õOK"
 	
 	DIM btnCancel AS ButtonType
 	Obj.SetSize btnCancel.Pos, winInputBox.Pos.Left + winInputBox.Pos.Width - 92, btnOK.Pos.Top, 80, 22
-	btnCancel.Caption = "Cancel": btnCancel.HotKey = 1
+	btnCancel.Caption = "õCancel"
 
 	DIM imgIcon AS ImageType
 	IF LEN(msgIcon) THEN
@@ -796,9 +803,8 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 		END IF
 	NEXT
 
-	Font.Print "Input:", txtInput.Pos.Left, txtInput.Pos.Top - 16, SystemTheme.WindowText, FontHeading
-	LINE (txtInput.Pos.Left + 5, txtInput.Pos.Top - 6)-(txtInput.Pos.Left + 12, txtInput.Pos.Top - 6), SystemTheme.WindowText
-
+	Font.Print "Iõnput:", txtInput.Pos.Left, txtInput.Pos.Top - 16, SystemTheme.WindowText, FontHeading
+	
 	IF LEN(msgIcon) THEN Obj.DrawImg imgIcon
 
 	DIM Key$
@@ -1108,20 +1114,19 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	IF msgType = msgTip THEN imgIcon.ImageFile = "TIPBULB"
 
 	Obj.SetSize btnFirst.Pos, -1, winMsgBox.Pos.Top + 60 + (15 * msgLineCount), 80, 22
-	btnFirst.HotKey = 1
 	IF msgType = msgQuest THEN
-		btnFirst.Caption = "Yes"
+		btnFirst.Caption = "õYes"
 		btnFirst.Pos.Left = 320 - 86
 	ELSEIF msgType = msgTip THEN
-		btnFirst.Caption = "Continue"
+		btnFirst.Caption = "õContinue"
 		btnFirst.Pos.Left = (640 - btnFirst.Pos.Width) / 2
 	ELSE
-		btnFirst.Caption = "OK"
+		btnFirst.Caption = "õOK"
 		btnFirst.Pos.Left = (640 - btnFirst.Pos.Width) / 2
 	END IF
 	
 	Obj.SetSize btnSecond.Pos, 326, btnFirst.Pos.Top, 80, 22
-	btnSecond.Caption = "No": btnSecond.HotKey = 1
+	btnSecond.Caption = "õNo"
 	
 	IF UserSettings.ScreenMode = scrEGA THEN
 		Mouse.Hide

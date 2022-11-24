@@ -46,14 +46,11 @@ SUB App.Main ()
     DIM btnExit AS ButtonType
     btnExit.Pos.Left = winSample.Pos.Left + 12
     btnExit.Pos.Top = winSample.Pos.Top + 34
-    btnExit.Caption = "Exit"
-    'The hotkey property determines which letter on the button is underlined,
-    'which indicates the keyboard key that can be pressed to activate the
-    'button without the mouse. In this case, the 2nd letter, X, will be
-    'underlined. This only affects the button visually, you must manually
-    'catch the keypress.
-    btnExit.HotKey = 2
-
+    btnExit.Caption = "Eõxit"
+    'The õ character determines which letter on the button is underlined.
+    'This is actually handled by the font routine, and can be used anywhere
+    'text is printed.
+    
     'Create an icon. Only the filename, without extension or path, is set.
     'This is because icons are always in the same folder. An icon does not
     'use the width or height property, they are always 32x32 pixels.

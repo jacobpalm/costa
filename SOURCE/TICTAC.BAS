@@ -342,28 +342,24 @@ SUB Tic.Main ()
 	Obj.SetSize btnNew.Pos, 376, winTic.Pos.Top + 32, 100, 25
 	Obj.SetSize btnAIToggle.Pos, 376, winTic.Pos.Top + 67, 100, 25
 	Obj.SetSize btnExit.Pos, 376, winTic.Pos.Top + 102, 100, 25
-	btnNew.Caption = "New game": btnNew.HotKey = 1
-	btnExit.Caption = "Close": btnExit.HotKey = 1
-	btnAIToggle.HotKey = 3
-
+	btnNew.Caption = "õNew game"
+	btnExit.Caption = "õClose"
+	
 	Obj.SetSize chkAudio.Pos, 376, winTic.Pos.Top + 217, -1, -1
 	
 	Obj.DrawWin winTic
 	Obj.DrawBtn btnNew, False
 	Obj.DrawBtn btnExit, False
-	Font.Print "Enable audio", 396, winTic.Pos.Top + 220, SystemTheme.WindowText, FontNormal
-	Mouse.Hide
-	LINE (438, winTic.Pos.Top + 231)-(444, winTic.Pos.Top + 231), SystemTheme.WindowText
-	Mouse.Show
+	Font.Print "Enable õaudio", 396, winTic.Pos.Top + 220, SystemTheme.WindowText, FontNormal
 
 	CircleAspect = 1
 
 	DidLoadState = Tic.LoadState
 	
 	IF EnableAI = True THEN
-		btnAIToggle.Caption = "2 players"
+		btnAIToggle.Caption = "2 õplayers"
 	ELSE
-		btnAIToggle.Caption = "1 player"
+		btnAIToggle.Caption = "1 õplayer"
 	END IF
 	Obj.DrawBtn btnAIToggle, False
 

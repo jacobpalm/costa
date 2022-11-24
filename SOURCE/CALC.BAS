@@ -94,15 +94,15 @@ SUB Calc.Main ()
     Obj.SetSize btnClose.Pos, 326, winCalc.Pos.Top + 200, 90, -1
     
     winCalc.Caption = "Calculator"
-    btnC.Caption = "C": btnC.HotKey = 1
-    btnCE.Caption = "CE": btnCE.HotKey = 2
+    btnC.Caption = "õC"
+    btnCE.Caption = "CõE"
     btnDivide.Caption = "/"
     btnDot.Caption = "."
     btnMulti.Caption = "*"
     btnMinus.Caption = "-"
     btnPlus.Caption = "+"
     btnEquals.Caption = "="
-    btnClose.Caption = "Close": btnClose.HotKey = 2
+    btnClose.Caption = "Cõlose"
     txtCalc.MaxLen = 25
 
     Obj.DrawWin winCalc

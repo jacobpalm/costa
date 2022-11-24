@@ -158,8 +158,8 @@ SUB Desk.AboutBox ()
   Obj.SetSize winAboutBox.Pos, 156, (scrHeight - 278) / 2, 328, 278
   Obj.SetSize btnClose.Pos, 274, winAboutBox.Pos.Top + 243, 92, 22
   Obj.SetSize imgLogo.Pos, 168, winAboutBox.Pos.Top + 11, -1, -1
-  btnClose.Caption = "Close"
-  btnClose.Hotkey = 1
+  btnClose.Caption = "õClose"
+
   imgLogo.ImageFile = "LOGO"
   
   IF UserSettings.ScreenMode = scrEGA THEN
@@ -451,12 +451,11 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
   btnIconPrev.Caption = "<"
   btnIconNext.Caption = ">"
   IF NewLink = False THEN
-    btnOK.Caption = "Save"
+    btnOK.Caption = "õSave"
   ELSE
-    btnOK.Caption = "Add link"
+    btnOK.Caption = "õAdd link"
   END IF
-  btnOK.Hotkey = 1
-  btnCancel.Caption = "Cancel": btnCancel.Hotkey = 1
+  btnCancel.Caption = "õCancel"
 
 LinkDialogDraw:
   Obj.DrawWin ConfWin
@@ -471,18 +470,13 @@ LinkDialogDraw:
   Obj.DrawChk chkPauseOnExit
   Obj.DrawBtn btnOK, False
   Obj.DrawBtn btnCancel, False
-  Font.Print "Description (caption):", 222, ConfWin.Pos.Top + 32, SystemTheme.WindowText, 1
-  Font.Print "Program or DOS command:", 222, ConfWin.Pos.Top + 148, SystemTheme.WindowText, 1
-  Font.Print "Parameters:", 222, ConfWin.Pos.Top + 197, SystemTheme.WindowText, 1
-  Font.Print "Path (including drive):", 222, ConfWin.Pos.Top + 246, SystemTheme.WindowText, 1
-  Font.Print "Pause after execution", 242, ConfWin.Pos.Top + 295, SystemTheme.WindowText, 2
+  Font.Print "õDescription (caption):", 222, ConfWin.Pos.Top + 32, SystemTheme.WindowText, 1
+  Font.Print "õProgram or DOS command:", 222, ConfWin.Pos.Top + 148, SystemTheme.WindowText, 1
+  Font.Print "Paõrameters:", 222, ConfWin.Pos.Top + 197, SystemTheme.WindowText, 1
+  Font.Print "Paõth (including drive):", 222, ConfWin.Pos.Top + 246, SystemTheme.WindowText, 1
+  Font.Print "Pause after eõxecution", 242, ConfWin.Pos.Top + 295, SystemTheme.WindowText, 2
   Mouse.Hide
   LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), SystemTheme.Desktop, BF
-  LINE (221, ConfWin.Pos.Top + 43)-(228, ConfWin.Pos.Top + 43), SystemTheme.WindowText
-  LINE (221, ConfWin.Pos.Top + 159)-(228, ConfWin.Pos.Top + 159), SystemTheme.WindowText
-  LINE (237, ConfWin.Pos.Top + 257)-(244, ConfWin.Pos.Top + 257), SystemTheme.WindowText
-  LINE (321, ConfWin.Pos.Top + 306)-(327, ConfWin.Pos.Top + 306), SystemTheme.WindowText
-  LINE (236, ConfWin.Pos.Top + 208)-(243, ConfWin.Pos.Top + 208), SystemTheme.WindowText
   Mouse.Show
   Obj.DrawImg imgIcon
 
@@ -715,15 +709,11 @@ SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
   Obj.SetSize btnMove.Pos, MenuBack.Pos.Left + 4, MenuBack.Pos.Top + 52, 86, 22
   Obj.SetSize btnRemove.Pos, MenuBack.Pos.Left + 4, MenuBack.Pos.Top + 76, 86, 22
 
-  btnOpen.Caption = "Open"
-  btnOpen.Hotkey = 1
-  btnCustomize.Caption = "Customize"
-  btnCustomize.Hotkey = 1
-  btnMove.Caption = "Move"
-  btnMove.Hotkey = 1
-  btnRemove.Caption = "Remove"
-  btnRemove.Hotkey = 1
-
+  btnOpen.Caption = "õOpen"
+  btnCustomize.Caption = "õCustomize"
+  btnMove.Caption = "õMove"
+  btnRemove.Caption = "õRemove"
+  
   Mouse.Hide
   GET (MenuBack.Pos.Left, MenuBack.Pos.Top)-(MenuBack.Pos.Left + MenuBack.Pos.Width, MenuBack.Pos.Top + MenuBack.Pos.Height), BehindMenu
   Mouse.Show
@@ -1123,19 +1113,19 @@ SUB Desk.Main ()
   DIM SlidePos, DelayFixer
 
   Obj.SetSize btnAddLink.Pos, 3, 2, 92, 22
-  btnAddLink.Caption = "Add link": btnAddLink.Hotkey = 5
+  btnAddLink.Caption = "Add õlink"
   Obj.SetSize btnRunCmd.Pos, 102, 2, 92, 22
-  btnRunCmd.Caption = "Execute": btnRunCmd.Hotkey = 2
+  btnRunCmd.Caption = "Eõxecute"
 
   Obj.SetSize btnProfile.Pos, 224, 2, 92, 22
-  btnProfile.Caption = "Profile...": btnProfile.Hotkey = 1
+  btnProfile.Caption = "õProfile..."
   Obj.SetSize btnConfig.Pos, 323, 2, 92, 22
-  btnConfig.Caption = "Config...": btnConfig.Hotkey = 1
+  btnConfig.Caption = "õConfig..."
 
   Obj.SetSize btnAboutCosta.Pos, 446, 2, 92, 22
-  btnAboutCosta.Caption = "About...": btnAboutCosta.Hotkey = 1
+  btnAboutCosta.Caption = "õAbout..."
   Obj.SetSize btnExitCosta.Pos, 545, 2, 92, 22
-  btnExitCosta.Caption = "Exit": btnExitCosta.Hotkey = 1
+  btnExitCosta.Caption = "õExit"
 
   DIM DeskLinkCheck, ClickedX, ClickedY, ClickedB, DidEdit, Key$
   DIM TabCheck, btnTab AS ButtonType, imgTab AS ImageType
@@ -1527,8 +1517,8 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
     txtProfileNameText = RTRIM$(UserSettings.ProfileName)
     btnIconPrev.Caption = "<"
     btnIconNext.Caption = ">"
-    btnSave.Caption = "Save": btnSave.Hotkey = 1
-    btnCancel.Caption = "Cancel": btnCancel.Hotkey = 1
+    btnSave.Caption = "õSave"
+    btnCancel.Caption = "õCancel"
     imgIcon.ImageFile = AllIcons(CurrentIcon)
 
     Obj.DrawWin winProfEdit
@@ -1538,10 +1528,7 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
     Obj.DrawTxt txtProfileName, txtProfileNameText, False
     Obj.DrawBtn btnSave, False
     Obj.DrawBtn btnCancel, False
-    Font.Print "Name:", 222, winProfEdit.Pos.Top + 114, SystemTheme.WindowText, 1
-    Mouse.Hide
-    LINE (221, winProfEdit.Pos.Top + 125)-(229, winProfEdit.Pos.Top + 125), SystemTheme.WindowText
-    Mouse.Show
+    Font.Print "õName:", 222, winProfEdit.Pos.Top + 114, SystemTheme.WindowText, 1
     Obj.DrawImg imgIcon
 
     DIM Key$
@@ -1632,13 +1619,11 @@ SUB Desk.ProfileSelect ()
     btnProfile(5).Transparent = True
 
     Obj.SetSize btnContinue.Pos, winProfiles.Pos.Left + winProfiles.Pos.Width - 94, winProfiles.Pos.Top + winProfiles.Pos.Height - 34, 80, 22
-    btnContinue.Caption = "Continue"
-    btnContinue.Hotkey = 1
-
+    btnContinue.Caption = "õContinue"
+    
     Obj.SetSize btnEdit.Pos, winProfiles.Pos.Left + 18, winProfiles.Pos.Top + winProfiles.Pos.Height - 34, 80, 22
-    btnEdit.Caption = "Edit..."
-    btnEdit.Hotkey = 1
-
+    btnEdit.Caption = "õEdit..."
+    
     SelectedProfile = SystemSettings.LastUsedProfile
     IF SelectedProfile < 1 OR SelectedProfile > 5 THEN SelectedProfile = 1
 

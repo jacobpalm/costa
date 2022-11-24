@@ -299,23 +299,17 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     Obj.SetSize btnPreview.Pos, winMain.Pos.Left + txtDrawArea.Pos.Width + 38, winMain.Pos.Top + 248, 52, 52
     btnPreview.Transparent = True
 
-    btnNew.Caption = "New"
-    btnNew.HotKey = 1
-    btnOpen.Caption = "Load"
-    btnOpen.HotKey = 1
-    btnSave.Caption = "Save"
-    btnSave.HotKey = 1
-    btnExit.Caption = "Exit"
-    btnExit.HotKey = 2
-
+    btnNew.Caption = "õNew"
+    btnOpen.Caption = "õLoad"
+    btnSave.Caption = "õSave"
+    btnExit.Caption = "Eõxit"
+    
     Obj.SetSize btnPencil.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 60, txtDrawArea.Pos.Top + 14, 50, 22
-    btnPencil.Caption = "Pencil"
-    btnPencil.HotKey = 2
-
+    btnPencil.Caption = "Põencil"
+    
     Obj.SetSize btnFloodFill.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 60, txtDrawArea.Pos.Top + 40, 50, 22
-    btnFloodFill.Caption = "Fill"
-    btnFloodFill.HotKey = 1
-
+    btnFloodFill.Caption = "õFill"
+    
     Obj.SetSize txtColor(-1).Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, txtDrawArea.Pos.Top + 166, 37, 18
     
     Obj.DrawWin winMain
@@ -329,10 +323,9 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     Obj.DrawBtn btnExit, False
     Obj.DrawTxt txtColor(-1), "", False
 
-    Font.Print "Colors", txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, txtDrawArea.Pos.Top, SystemTheme.WindowText, FontHeading
+    Font.Print "õColors", txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, txtDrawArea.Pos.Top, SystemTheme.WindowText, FontHeading
     Font.Print "Tools", txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 60, txtDrawArea.Pos.Top, SystemTheme.WindowText, FontHeading
     Mouse.Hide
-    LINE (txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 9, txtDrawArea.Pos.Top + 10)-(txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 16, txtDrawArea.Pos.Top + 10), SystemTheme.WindowText
     
     FOR YPos = 0 TO 7
         Obj.SetSize txtColor(YPos).Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 10, txtDrawArea.Pos.Top + (YPos * 19) + 14, 18, 18
@@ -354,8 +347,7 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     LINE (txtColor(-1).Pos.Left + 2, txtColor(-1).Pos.Top + 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 2, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 2), 15, BF
     LINE (txtColor(-1).Pos.Left + 2, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 2, txtColor(-1).Pos.Top + 2), 7
     
-    Font.Print "Preview", btnPreview.Pos.Left, btnPreview.Pos.Top - 15, SystemTheme.WindowText, FontHeading
-    LINE (btnPreview.Pos.Left - 1, btnPreview.Pos.Top - 4)-(btnPreview.Pos.Left + 5, btnPreview.Pos.Top - 4), SystemTheme.WindowText
+    Font.Print "õPreview", btnPreview.Pos.Left, btnPreview.Pos.Top - 15, SystemTheme.WindowText, FontHeading
     LINE (btnPreview.Pos.Left + 2, btnPreview.Pos.Top + 2)-(btnPreview.Pos.Left + btnPreview.Pos.Width - 2, btnPreview.Pos.Top + btnPreview.Pos.Height - 2), 15, BF
 
     'Draw grid in drawing area
@@ -687,9 +679,8 @@ SUB IconEdit.Preview ()
     winPreview.Caption = "Preview Icon"
 
     Obj.SetSize btnClose.Pos, winPreview.Pos.Left + winPreview.Pos.Width - 110, winPreview.Pos.Top + winPreview.Pos.Height - 32, 100, 22
-    btnClose.Caption = "Close"
-    btnClose.HotKey = 1
-
+    btnClose.Caption = "õClose"
+    
     Obj.SetSize txtPreview.Pos, winPreview.Pos.Left + 10, winPreview.Pos.Top + 32, 247, 247
 
     IF UserSettings.ScreenMode = scrEGA THEN
@@ -886,8 +877,7 @@ SUB IconEdit.ShowLoadDialog ()
     winSelect.Caption = "Load icon"
     btnPrev.Caption = "<"
     btnNext.Caption = ">"
-    btnCancel.Caption = "Cancel"
-    btnCancel.HotKey = 1
+    btnCancel.Caption = "õCancel"
     btnLoad.Transparent = True
     imgPreview.ImageFile = IconFiles(0)
     

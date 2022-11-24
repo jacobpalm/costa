@@ -87,13 +87,13 @@ SUB Theme.Edit (BYVAL ThmFile AS STRING)
 
 
     Obj.SetSize btnSave.Pos, winThemeEdit.Pos.Left + 12, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 69, 22
-    btnSave.Caption = "Save": btnSave.HotKey = 1
+    btnSave.Caption = "õSave"
 
     Obj.SetSize btnSaveAs.Pos, winThemeEdit.Pos.Left + 89, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 69, 22
-    btnSaveAs.Caption = "Save as": btnSaveAs.HotKey = 6
+    btnSaveAs.Caption = "Save õas"
 
     Obj.SetSize btnExit.Pos, winThemeEdit.Pos.Left + 450, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 69, 22
-    btnExit.Caption = "Exit": btnExit.HotKey = 2
+    btnExit.Caption = "Eõxit"
 
     Obj.SetSize txtThemeName.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 50, 194, 0
     txtThemeName.MaxLen = 25
@@ -154,18 +154,13 @@ RedrawAll:
       LINE (btnColor(I).Pos.Left + 2, btnColor(I).Pos.Top + 2)-(btnColor(I).Pos.Left + btnColor(I).Pos.Width - 2, btnColor(I).Pos.Top + btnColor(I).Pos.Height - 2), I, BF
       Mouse.Show
     NEXT
-    Font.Print "Theme name:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 34, SystemTheme.WindowText, 1
-    Font.Print "Theme author:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 82, SystemTheme.WindowText, 1
-    Font.Print "Object selected:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 130, SystemTheme.WindowText, 1
-    Font.Print "Color for object:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 180, SystemTheme.WindowText, 1
-
-    Mouse.Hide
-    LINE (433, winThemeEdit.Pos.Top + 92)-(440, winThemeEdit.Pos.Top + 92), SystemTheme.WindowText
-    LINE (425, winThemeEdit.Pos.Top + 44)-(432, winThemeEdit.Pos.Top + 44), SystemTheme.WindowText
-    LINE (379, winThemeEdit.Pos.Top + 140)-(386, winThemeEdit.Pos.Top + 140), SystemTheme.WindowText
-    LINE (379, winThemeEdit.Pos.Top + 190)-(386, winThemeEdit.Pos.Top + 190), SystemTheme.WindowText
+    Font.Print "Theme õname:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 34, SystemTheme.WindowText, 1
+    Font.Print "Theme aõuthor:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 82, SystemTheme.WindowText, 1
+    Font.Print "õObject selected:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 130, SystemTheme.WindowText, 1
+    Font.Print "õColor for object:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, winThemeEdit.Pos.Top + 180, SystemTheme.WindowText, 1
 
     'Color indicator
+    Mouse.Hide
     LINE (btnColor(thmClrDesktop).Pos.Left + 4, btnColor(thmClrDesktop).Pos.Top + 4)-(btnColor(thmClrDesktop).Pos.Left + btnColor(thmClrDesktop).Pos.Width - 4, btnColor(thmClrDesktop).Pos.Top + btnColor(thmClrDesktop).Pos.Height - 4), 8, B
     LINE (btnColor(thmClrDesktop).Pos.Left + 5, btnColor(thmClrDesktop).Pos.Top + 5)-(btnColor(thmClrDesktop).Pos.Left + btnColor(thmClrDesktop).Pos.Width - 5, btnColor(thmClrDesktop).Pos.Top + btnColor(thmClrDesktop).Pos.Height - 5), 15, B
     Mouse.Show
@@ -568,10 +563,10 @@ FUNCTION Theme.Select () AS STRING
     btnBack.Caption = "<-"
 
     Obj.SetSize btnEdit.Pos, winTheme.Pos.Left + 89, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 69, 22
-    btnEdit.Caption = "Edit": btnEdit.HotKey = 1
+    btnEdit.Caption = "õEdit"
 
     Obj.SetSize btnCancel.Pos, winTheme.Pos.Left + 166, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 69, 22
-    btnCancel.Caption = "Close": btnCancel.HotKey = 1
+    btnCancel.Caption = "õClose"
 
     Obj.SetSize btnNext.Pos, winTheme.Pos.Left + 267, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 45, 22
     btnNext.Caption = "->"

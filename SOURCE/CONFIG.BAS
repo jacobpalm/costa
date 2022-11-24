@@ -56,9 +56,9 @@ SUB Conf.ConfAssoc ()
     Obj.SetSize btnDisable.Pos, 105, winAssoc.Pos.Top + 246, 84, 23
 
     winAssoc.Caption = "File association editor"
-    btnClose.Caption = "Close": btnClose.HotKey = 1
-    btnSave.Caption = "Save": btnSave.HotKey = 1
-    btnDisable.Caption = "Disable": btnDisable.HotKey = 1
+    btnClose.Caption = "õClose"
+    btnSave.Caption = "õSave"
+    btnDisable.Caption = "õDisable"
 
     imgIcon.ImageFile = "UNKNOWN"
     txtFileType.MaxLen = 3
@@ -79,12 +79,8 @@ SUB Conf.ConfAssoc ()
     Font.Print "show up in the ""Open with"" field. To remove an association, leave the", 105, winAssoc.Pos.Top + 146, SystemTheme.WindowText, 2
     Font.Print """Open with"" field blank.", 105, winAssoc.Pos.Top + 162, SystemTheme.WindowText, 2
 
-    Font.Print "Filetype", 105, winAssoc.Pos.Top + 194, SystemTheme.WindowText, 1
-    Font.Print "Open with", 182, winAssoc.Pos.Top + 194, SystemTheme.WindowText, 1
-    Mouse.Hide
-    LINE (104, winAssoc.Pos.Top + 205)-(110, winAssoc.Pos.Top + 205), SystemTheme.WindowText
-    LINE (181, winAssoc.Pos.Top + 205)-(188, winAssoc.Pos.Top + 205), SystemTheme.WindowText
-    Mouse.Show
+    Font.Print "õFiletype", 105, winAssoc.Pos.Top + 194, SystemTheme.WindowText, 1
+    Font.Print "õOpen with", 182, winAssoc.Pos.Top + 194, SystemTheme.WindowText, 1
 
     Obj.DrawImg imgIcon
 
@@ -189,8 +185,8 @@ SUB Conf.ConfMisc ()
     Obj.SetSize btnSave.Pos, winMisc.Pos.Left + winMisc.Pos.Width - 208, winMisc.Pos.Top + winMisc.Pos.Height - 34, -1, -1
 
     winMisc.Caption = "Other settings"
-    btnCancel.Caption = "Cancel": btnCancel.HotKey = 1
-    btnSave.Caption = "Save": btnSave.HotKey = 1
+    btnCancel.Caption = "õCancel"
+    btnSave.Caption = "õSave"
     chkShowLinkDesc.Checked = UserSettings.ShowLinkDescriptions
     chkShowLinkTarget.Checked = UserSettings.ShowLinkTargetFiles
     IF UserSettings.ScreenMode = scrVGA THEN
@@ -225,37 +221,20 @@ SUB Conf.ConfMisc ()
     Obj.DrawBtn btnSave, False
     Obj.DrawBtn btnCancel, False
 
-    Font.Print "Show link descriptions", chkShowLinkDesc.Pos.Left + 20, chkShowLinkDesc.Pos.Top + 3, SystemTheme.WindowText, 2
+    Font.Print "Show link õdescriptions", chkShowLinkDesc.Pos.Left + 20, chkShowLinkDesc.Pos.Top + 3, SystemTheme.WindowText, 2
     IF chkShowLinkDesc.Checked = True THEN
-        Font.Print "Show link targets", chkShowLinkTarget.Pos.Left + 20, chkShowLinkTarget.Pos.Top + 3, SystemTheme.WindowText, 2
-        Mouse.Hide
-        LINE (chkShowLinkTarget.Pos.Left + 81, chkShowLinkTarget.Pos.Top + 14)-(chkShowLinkTarget.Pos.Left + 87, chkShowLinkTarget.Pos.Top + 14), SystemTheme.WindowText
-        Mouse.Show
+        Font.Print "Show link õtargets", chkShowLinkTarget.Pos.Left + 20, chkShowLinkTarget.Pos.Top + 3, SystemTheme.WindowText, 2
     ELSE
-        Mouse.Hide
-        LINE (chkShowLinkTarget.Pos.Left + 2, chkShowLinkTarget.Pos.Top + 2)-(chkShowLinkTarget.Pos.Left + 12, chkShowLinkTarget.Pos.Top + 12), SystemTheme.Window, BF
-        Mouse.Show
-        Font.Print "Show link targets", chkShowLinkTarget.Pos.Left + 20, chkShowLinkTarget.Pos.Top + 3, SystemTheme.Shadow, 2
+        Font.Print "Show link õtargets", chkShowLinkTarget.Pos.Left + 20, chkShowLinkTarget.Pos.Top + 3, SystemTheme.Shadow, 2
     END IF
-    Font.Print "Use VGA mode (higher resolution, but slower)", chkUseVGAMode.Pos.Left + 20, chkUseVGAMode.Pos.Top + 3, SystemTheme.WindowText, 2
-    Font.Print "Confirm link removal", chkConfLinkDel.Pos.Left + 20, chkConfLinkDel.Pos.Top + 3, SystemTheme.WindowText, 2
-    Font.Print "Animate user interface (sliding menus)", chkAnimUI.Pos.Left + 20, chkAnimUI.Pos.Top + 3, SystemTheme.WindowText, 2
-    Font.Print "Confirm when trying to exit Costa", chkConfExit.Pos.Left + 20, chkConfExit.Pos.Top + 3, SystemTheme.WindowText, 2
-    Font.Print "Grey out screen while showing a messagebox", chkGreyOutMsgBox.Pos.Left + 20, chkGreyOutMsgBox.Pos.Top + 3, SystemTheme.WindowText, 2
-    Font.Print "Show start-up ""Tip of the Day"" messages", chkDailyTip.Pos.Left + 20, chkDailyTip.Pos.Top + 3, SystemTheme.WindowText, 2
-    Font.Print "Use last profile on start-up without asking", chkUseLastProfile.Pos.Left + 20, chkUseLastProfile.Pos.Top + 3, SystemTheme.WindowText, 2
+    Font.Print "Use õVGA mode (higher resolution, but slower)", chkUseVGAMode.Pos.Left + 20, chkUseVGAMode.Pos.Top + 3, SystemTheme.WindowText, 2
+    Font.Print "Confirm link õremoval", chkConfLinkDel.Pos.Left + 20, chkConfLinkDel.Pos.Top + 3, SystemTheme.WindowText, 2
+    Font.Print "õAnimate user interface (sliding menus)", chkAnimUI.Pos.Left + 20, chkAnimUI.Pos.Top + 3, SystemTheme.WindowText, 2
+    Font.Print "Confirm when trying to eõxit Costa", chkConfExit.Pos.Left + 20, chkConfExit.Pos.Top + 3, SystemTheme.WindowText, 2
+    Font.Print "õGrey out screen while showing a messagebox", chkGreyOutMsgBox.Pos.Left + 20, chkGreyOutMsgBox.Pos.Top + 3, SystemTheme.WindowText, 2
+    Font.Print "Shoõw start-up ""Tip of the Day"" messages", chkDailyTip.Pos.Left + 20, chkDailyTip.Pos.Top + 3, SystemTheme.WindowText, 2
+    Font.Print "õUse last profile on start-up without asking", chkUseLastProfile.Pos.Left + 20, chkUseLastProfile.Pos.Top + 3, SystemTheme.WindowText, 2
     
-    Mouse.Hide
-    LINE (chkShowLinkDesc.Pos.Left + 81, chkShowLinkDesc.Pos.Top + 14)-(chkShowLinkDesc.Pos.Left + 88, chkShowLinkDesc.Pos.Top + 14), SystemTheme.WindowText
-    LINE (chkUseVGAMode.Pos.Left + 44, chkUseVGAMode.Pos.Top + 14)-(chkUseVGAMode.Pos.Left + 52, chkUseVGAMode.Pos.Top + 14), SystemTheme.WindowText
-    LINE (chkConfLinkDel.Pos.Left + 97, chkConfLinkDel.Pos.Top + 14)-(chkConfLinkDel.Pos.Left + 102, chkConfLinkDel.Pos.Top + 14), SystemTheme.WindowText
-    LINE (chkConfExit.Pos.Left + 169, chkConfExit.Pos.Top + 14)-(chkConfExit.Pos.Left + 175, chkConfExit.Pos.Top + 14), SystemTheme.WindowText
-    LINE (chkAnimUI.Pos.Left + 19, chkAnimUI.Pos.Top + 14)-(chkAnimUI.Pos.Left + 27, chkAnimUI.Pos.Top + 14), SystemTheme.WindowText
-    LINE (chkGreyOutMsgBox.Pos.Left + 19, chkGreyOutMsgBox.Pos.Top + 14)-(chkGreyOutMsgBox.Pos.Left + 26, chkGreyOutMsgBox.Pos.Top + 14), SystemTheme.WindowText
-    LINE (chkDailyTip.Pos.Left + 41, chkDailyTip.Pos.Top + 14)-(chkDailyTip.Pos.Left + 51, chkDailyTip.Pos.Top + 14), SystemTheme.WindowText
-    LINE (chkUseLastProfile.Pos.Left + 19, chkUseLastProfile.Pos.Top + 14)-(chkUseLastProfile.Pos.Left + 26, chkUseLastProfile.Pos.Top + 14), SystemTheme.WindowText
-    Mouse.Show
-
     DO
         Key$ = LCASE$(INKEY$)
         
@@ -315,17 +294,9 @@ SUB Conf.ConfMisc ()
         IF Key$ = "d" THEN
             chkShowLinkDesc.Checked = NOT chkShowLinkDesc.Checked: Obj.DrawChk chkShowLinkDesc
             IF chkShowLinkDesc.Checked = True THEN
-                Obj.DrawChk chkShowLinkTarget
-                Font.Print "Show link targets", chkShowLinkTarget.Pos.Left + 20, chkShowLinkTarget.Pos.Top + 3, SystemTheme.WindowText, 2
-                Mouse.Hide
-                LINE (chkShowLinkTarget.Pos.Left + 81, chkShowLinkTarget.Pos.Top + 14)-(chkShowLinkTarget.Pos.Left + 87, chkShowLinkTarget.Pos.Top + 14), SystemTheme.WindowText
-                Mouse.Show
+                Font.Print "Show link õtargets", chkShowLinkTarget.Pos.Left + 20, chkShowLinkTarget.Pos.Top + 3, SystemTheme.WindowText, 2
             ELSE
-                Font.Print "Show link targets", chkShowLinkTarget.Pos.Left + 20, chkShowLinkTarget.Pos.Top + 3, SystemTheme.Shadow, 2
-                Mouse.Hide
-                LINE (chkShowLinkTarget.Pos.Left + 2, chkShowLinkTarget.Pos.Top + 2)-(chkShowLinkTarget.Pos.Left + 13, chkShowLinkTarget.Pos.Top + 13), SystemTheme.Window, BF
-                LINE (chkShowLinkTarget.Pos.Left + 81, chkShowLinkTarget.Pos.Top + 14)-(chkShowLinkTarget.Pos.Left + 87, chkShowLinkTarget.Pos.Top + 14), SystemTheme.Window
-                Mouse.Show
+                Font.Print "Show link õtargets", chkShowLinkTarget.Pos.Left + 20, chkShowLinkTarget.Pos.Top + 3, SystemTheme.Shadow, 2
             END IF
         END IF
 
@@ -400,10 +371,10 @@ SUB Conf.ConfTheme ()
     btnBack.Caption = "<-"
 
     Obj.SetSize btnSave.Pos, winTheme.Pos.Left + 89, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 69, 22
-    btnSave.Caption = "Select": btnSave.HotKey = 1
+    btnSave.Caption = "õSelect"
 
     Obj.SetSize btnCancel.Pos, winTheme.Pos.Left + 166, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 69, 22
-    btnCancel.Caption = "Cancel": btnCancel.HotKey = 1
+    btnCancel.Caption = "õCancel"
 
     Obj.SetSize btnNext.Pos, winTheme.Pos.Left + 267, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 45, 22
     btnNext.Caption = "->"
@@ -571,7 +542,7 @@ TopOfConf:
   imgMisc.ImageFile = "CONFIG"
 
   Obj.SetSize btnClose.Pos, winConfig.Pos.Left + winConfig.Pos.Width - 105, winConfig.Pos.Top + winConfig.Pos.Height - 35, 92, 22
-  btnClose.Caption = "Close": btnClose.HotKey = 1
+  btnClose.Caption = "õClose"
 
   Obj.DrawWin winConfig
   Obj.DrawBtn btnThemes, False
@@ -579,23 +550,17 @@ TopOfConf:
   Obj.DrawBtn btnMisc, False
   Obj.DrawBtn btnClose, False
 
-  Font.Print "Theme selector", btnThemes.Pos.Left + 60, btnThemes.Pos.Top, SystemTheme.WindowText, 1
+  Font.Print "õTheme selector", btnThemes.Pos.Left + 60, btnThemes.Pos.Top, SystemTheme.WindowText, 1
   Font.Print "Change the colors of the user interface. Costa comes", btnThemes.Pos.Left + 60, btnThemes.Pos.Top + 15, SystemTheme.WindowText, 2
   Font.Print "with a collection of themes for you to choose from.", btnThemes.Pos.Left + 60, btnThemes.Pos.Top + 29, SystemTheme.WindowText, 2
 
-  Font.Print "File associations", btnFileAssoc.Pos.Left + 60, btnFileAssoc.Pos.Top, SystemTheme.WindowText, 1
+  Font.Print "õFile associations", btnFileAssoc.Pos.Left + 60, btnFileAssoc.Pos.Top, SystemTheme.WindowText, 1
   Font.Print "Enable or disable file associations, and define which", btnFileAssoc.Pos.Left + 60, btnFileAssoc.Pos.Top + 15, SystemTheme.WindowText, 2
   Font.Print "programs should open different file types.", btnFileAssoc.Pos.Left + 60, btnFileAssoc.Pos.Top + 29, SystemTheme.WindowText, 2
 
-  Font.Print "Other settings", btnMisc.Pos.Left + 60, btnMisc.Pos.Top, SystemTheme.WindowText, 1
+  Font.Print "õOther settings", btnMisc.Pos.Left + 60, btnMisc.Pos.Top, SystemTheme.WindowText, 1
   Font.Print "Tweak various aspects of Costa, like how the desktop", btnMisc.Pos.Left + 60, btnMisc.Pos.Top + 15, SystemTheme.WindowText, 2
   Font.Print "acts and if certain things require confirmation.", btnMisc.Pos.Left + 60, btnMisc.Pos.Top + 29, SystemTheme.WindowText, 2
-
-  Mouse.Hide
-  LINE (btnMisc.Pos.Left + 59, btnMisc.Pos.Top + 11)-(btnMisc.Pos.Left + 66, btnMisc.Pos.Top + 11), SystemTheme.WindowText
-  LINE (btnThemes.Pos.Left + 59, btnThemes.Pos.Top + 11)-(btnThemes.Pos.Left + 66, btnThemes.Pos.Top + 11), SystemTheme.WindowText
-  LINE (btnFileAssoc.Pos.Left + 59, btnFileAssoc.Pos.Top + 11)-(btnFileAssoc.Pos.Left + 64, btnFileAssoc.Pos.Top + 11), SystemTheme.WindowText
-  Mouse.Show
 
   Obj.DrawImg imgThemes
   Obj.DrawImg imgFileAssoc

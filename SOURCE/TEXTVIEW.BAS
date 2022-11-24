@@ -134,16 +134,16 @@ SUB TView.Main (FileToView AS STRING)
     FileWin.Caption = "Textviewer"
 
     Obj.SetSize btnOpen.Pos, 11, 35, -1, -1
-    btnOpen.Caption = "Open file...": btnOpen.HotKey = 1
+    btnOpen.Caption = "õOpen file..."
 
     Obj.SetSize btnPageUp.Pos, 113, 35, -1, -1
-    btnPageUp.Caption = "Page up": btnPageUp.HotKey = 6
+    btnPageUp.Caption = "Page õup"
 
     Obj.SetSize btnPageDown.Pos, 215, 35, -1, -1
-    btnPageDown.Caption = "Page down": btnPageDown.HotKey = 6
+    btnPageDown.Caption = "Page õdown"
     
     Obj.SetSize btnExit.Pos, 537, 35, -1, -1
-    btnExit.Caption = "Close": btnExit.HotKey = 1
+    btnExit.Caption = "õClose"
 
     Obj.SetSize txtEditor.Pos, 6, 67, 627, FileWin.Pos.Height - 69
     
@@ -206,7 +206,6 @@ startofall:
                 FOR LineMove = MaxLinesShown TO 1 STEP -1
                     GET (7, (15 * (LineMove)) + 54)-(633, 15 * (LineMove) + 68), LineData
                     PUT (7, (15 * (LineMove + 1)) + 54), LineData, PSET
-                    'SLEEP
                 NEXT
                 LINE (7, (15 * (1)) + 54)-(633, 15 * (1) + 68), SystemTheme.Textbox, BF
                 Font.Print FileData(StartLine), 9, (15 * (1)) + 56, SystemTheme.TextboxText, FontSystem
@@ -228,7 +227,6 @@ startofall:
                 FOR LineMove = 1 TO MaxLinesShown
                     GET (7, (15 * (LineMove + 1)) + 54)-(633, 15 * (LineMove + 1) + 68), LineData
                     PUT (7, (15 * (LineMove)) + 54), LineData, PSET
-                    'SLEEP
                 NEXT
                 LINE (7, (15 * (MaxLinesShown + 1)) + 54)-(633, 15 * (MaxLinesShown + 1) + 68), SystemTheme.Textbox, BF
                 Font.Print FileData(StartLine + MaxLinesShown), 9, (15 * (MaxLinesShown + 1)) + 56, SystemTheme.TextboxText, FontSystem
@@ -272,8 +270,6 @@ startofall:
         IF Obj.BtnClick(btnOpen) OR Key$ = "o" THEN
             OldFileName = Filename
             OldFileOpened = FileOpened
-            'DEBUG
-            'Filename = UCASE$(Sys.InputBox("Open text file", "Type the path and filename of the file below," + CHR$(13) + "and click OK to open the file.", "35disk", Filename))
             Filename = File.Select("*.TXT")
             IF NOT Filename = "" AND NOT Filename = OldFileName THEN
                 FileOpened = TView.LoadFile(Filename)
@@ -290,8 +286,6 @@ startofall:
         END IF
 
     LOOP
-
-
-
+            
 END SUB
 

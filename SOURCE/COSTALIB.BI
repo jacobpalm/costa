@@ -81,7 +81,6 @@
   TYPE ButtonType
     Pos AS PosType
     Caption AS STRING * 25
-    HotKey AS INTEGER
     Transparent AS INTEGER
   END TYPE
 

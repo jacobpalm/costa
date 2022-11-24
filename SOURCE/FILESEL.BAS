@@ -553,10 +553,8 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	txtFolderList.MaxLen = FolderList
 
 	winFileSelect.Caption = "Select File"
-	btnSelect.Caption = "Select"
-	btnSelect.HotKey = 1
-	btnCancel.Caption = "Cancel"
-	btnCancel.HotKey = 1
+	btnSelect.Caption = "õSelect"
+	btnCancel.Caption = "õCancel"
 	btnFilePrev.Caption = "<"
 	btnFileNext.Caption = ">"
 	btnFolderPrev.Caption = "<"
@@ -571,16 +569,10 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	Obj.DrawBtn btnFileNext, False
 	Obj.DrawBtn btnFolderPrev, False
 	Obj.DrawBtn btnFolderNext, False
-	Font.Print "Pattern:", 101, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, FontNormal
-	Font.Print "Drive:", 272, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, FontNormal
-	Font.Print "Files:", 101, winFileSelect.Pos.Top + 76, SystemTheme.WindowText, FontNormal
-	Font.Print "Folders:", 272, winFileSelect.Pos.Top + 76, SystemTheme.WindowText, FontNormal
-	Mouse.Hide
-	LINE (100, winFileSelect.Pos.Top + 43)-(106, winFileSelect.Pos.Top + 43), SystemTheme.WindowText
-	LINE (271, winFileSelect.Pos.Top + 43)-(277, winFileSelect.Pos.Top + 43), SystemTheme.WindowText
-	LINE (100, winFileSelect.Pos.Top + 86)-(106, winFileSelect.Pos.Top + 86), SystemTheme.WindowText
-	LINE (278, winFileSelect.Pos.Top + 86)-(284, winFileSelect.Pos.Top + 86), SystemTheme.WindowText
-	Mouse.Show
+	Font.Print "õPattern:", 101, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, FontNormal
+	Font.Print "õDrive:", 272, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, FontNormal
+	Font.Print "õFiles:", 101, winFileSelect.Pos.Top + 76, SystemTheme.WindowText, FontNormal
+	Font.Print "Fõolders:", 272, winFileSelect.Pos.Top + 76, SystemTheme.WindowText, FontNormal
 	
 	MaxVisibleItems = 13
 
