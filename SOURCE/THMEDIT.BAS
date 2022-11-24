@@ -230,7 +230,9 @@ UpdateEditPreview:
     Obj.DrawImg imgPreview
 
     Obj.DrawTxt txtListPreview, "", False
+    Mouse.Hide
     LINE (txtListPreview.Pos.Left + 2, txtListPreview.Pos.Top + 3)-(txtListPreview.Pos.Left + txtListPreview.Pos.Width - 2, txtListPreview.Pos.Top + 15), SystemTheme.Select, BF
+    Mouse.Show
     Font.Print "Selected item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5, SystemTheme.SelectText, FontSystem
     Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 12, SystemTheme.TextboxText, FontSystem
     Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 24, SystemTheme.TextboxText, FontSystem
@@ -653,7 +655,9 @@ UpdatePreview:
 
     Obj.DrawImg imgPreview
     Obj.DrawTxt txtListPreview, "", False
+    Mouse.Hide
     LINE (txtListPreview.Pos.Left + 2, txtListPreview.Pos.Top + 3)-(txtListPreview.Pos.Left + txtListPreview.Pos.Width - 2, txtListPreview.Pos.Top + 15), SystemTheme.Select, BF
+    Mouse.Show
     Font.Print "Selected item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5, SystemTheme.SelectText, FontSystem
     Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 12, SystemTheme.TextboxText, FontSystem
     Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 24, SystemTheme.TextboxText, FontSystem
