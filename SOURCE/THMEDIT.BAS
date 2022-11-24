@@ -171,7 +171,7 @@ RedrawAll:
     DIM txtPreview AS TextboxType, txtPreviewText AS STRING
     DIM btnPreview1 AS ButtonType, btnPreview2 AS ButtonType
     DIM imgPreview AS ImageType
-    DIM btnMenuPreview AS ButtonType
+    DIM txtListPreview AS TextboxType
 
     winPreview.Pos.Left = frmPreview.Pos.Left + 20
     winPreview.Pos.Top = frmPreview.Pos.Top + 20
@@ -195,8 +195,7 @@ RedrawAll:
     imgPreview.Pos.Top = frmPreview.Pos.Top + 190
     imgPreview.ImageFile = "LOGO"
 
-    Obj.SetSize btnMenuPreview.Pos, imgPreview.Pos.Left + 140, imgPreview.Pos.Top - 4, 98, 37
-    btnMenuPreview.Transparent = True
+    Obj.SetSize txtListPreview.Pos, imgPreview.Pos.Left + 140, imgPreview.Pos.Top - 4, 116, 41
 
     DIM Key$
 UpdateEditPreview:
@@ -229,16 +228,13 @@ UpdateEditPreview:
     Font.Print "preview.exe", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 18, SystemTheme.DesktopText, 2
 
     Obj.DrawImg imgPreview
-    Obj.DrawBtn btnMenuPreview, False
 
-    Mouse.Hide
-    LINE (btnMenuPreview.Pos.Left + 2, btnMenuPreview.Pos.Top + 2)-(btnMenuPreview.Pos.Left + btnMenuPreview.Pos.Width - 2, btnMenuPreview.Pos.Top + btnMenuPreview.Pos.Height - 2), SystemTheme.Window, BF
-    LINE (btnMenuPreview.Pos.Left + 2, btnMenuPreview.Pos.Top + 3)-(btnMenuPreview.Pos.Left + btnMenuPreview.Pos.Width - 2, btnMenuPreview.Pos.Top + 18), SystemTheme.Select, BF
-    LINE (btnMenuPreview.Pos.Left + 5, btnMenuPreview.Pos.Top + 17)-(btnMenuPreview.Pos.Left + 12, btnMenuPreview.Pos.Top + 17), SystemTheme.SelectText
-    LINE (btnMenuPreview.Pos.Left + 5, btnMenuPreview.Pos.Top + 33)-(btnMenuPreview.Pos.Left + 12, btnMenuPreview.Pos.Top + 33), SystemTheme.WindowText
-    Mouse.Show
-    Font.Print "Selected item", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 6, SystemTheme.SelectText, 1
-    Font.Print "Unselected", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 22, SystemTheme.WindowText, 1
+    Obj.DrawTxt txtListPreview, "", False
+    LINE (txtListPreview.Pos.Left + 2, txtListPreview.Pos.Top + 3)-(txtListPreview.Pos.Left + txtListPreview.Pos.Width - 2, txtListPreview.Pos.Top + 15), SystemTheme.Select, BF
+    Font.Print "Selected item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5, SystemTheme.SelectText, FontSystem
+    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 12, SystemTheme.TextboxText, FontSystem
+    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 24, SystemTheme.TextboxText, FontSystem
+
 
     Sys.LoadTheme
 
@@ -491,6 +487,9 @@ SUB Theme.Main ()
 
     OriginalTheme$ = RTRIM$(UserSettings.ThemeFile)
 
+    'Disable animations while selecting and editing themes
+    UserSettings.Animations = False
+
     IF NOT ThemeFile$ = "" THEN
       'A theme was specified as parameter
 
@@ -585,7 +584,7 @@ FUNCTION Theme.Select () AS STRING
     DIM txtPreview AS TextboxType, txtPreviewText AS STRING
     DIM btnPreview1 AS ButtonType, btnPreview2 AS ButtonType
     DIM imgPreview AS ImageType
-    DIM btnMenuPreview AS ButtonType
+    DIM txtListPreview AS TextboxType
 
     winPreview.Pos.Left = frmPreview.Pos.Left + 20
     winPreview.Pos.Top = frmPreview.Pos.Top + 20
@@ -609,9 +608,8 @@ FUNCTION Theme.Select () AS STRING
     imgPreview.Pos.Top = frmPreview.Pos.Top + 190
     imgPreview.ImageFile = "LOGO"
 
-    Obj.SetSize btnMenuPreview.Pos, imgPreview.Pos.Left + 140, imgPreview.Pos.Top - 4, 98, 37
-    btnMenuPreview.Transparent = True
-
+    Obj.SetSize txtListPreview.Pos, imgPreview.Pos.Left + 140, imgPreview.Pos.Top - 4, 116, 41
+    
     'Load theme filenames into array
     DIM TmpName$, TmpCount, ActiveTheme
     REDIM ThemeList(0 TO 0) AS STRING
@@ -654,16 +652,11 @@ UpdatePreview:
     Font.Print "preview.exe", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 18, SystemTheme.DesktopText, 2
 
     Obj.DrawImg imgPreview
-    Obj.DrawBtn btnMenuPreview, False
-
-    Mouse.Hide
-    LINE (btnMenuPreview.Pos.Left + 2, btnMenuPreview.Pos.Top + 2)-(btnMenuPreview.Pos.Left + btnMenuPreview.Pos.Width - 2, btnMenuPreview.Pos.Top + btnMenuPreview.Pos.Height - 2), SystemTheme.Window, BF
-    LINE (btnMenuPreview.Pos.Left + 2, btnMenuPreview.Pos.Top + 3)-(btnMenuPreview.Pos.Left + btnMenuPreview.Pos.Width - 2, btnMenuPreview.Pos.Top + 18), SystemTheme.Select, BF
-    LINE (btnMenuPreview.Pos.Left + 5, btnMenuPreview.Pos.Top + 17)-(btnMenuPreview.Pos.Left + 12, btnMenuPreview.Pos.Top + 17), SystemTheme.SelectText
-    LINE (btnMenuPreview.Pos.Left + 5, btnMenuPreview.Pos.Top + 33)-(btnMenuPreview.Pos.Left + 12, btnMenuPreview.Pos.Top + 33), SystemTheme.WindowText
-    Mouse.Show
-    Font.Print "Selected item", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 6, SystemTheme.SelectText, 1
-    Font.Print "Unselected", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 22, SystemTheme.WindowText, 1
+    Obj.DrawTxt txtListPreview, "", False
+    LINE (txtListPreview.Pos.Left + 2, txtListPreview.Pos.Top + 3)-(txtListPreview.Pos.Left + txtListPreview.Pos.Width - 2, txtListPreview.Pos.Top + 15), SystemTheme.Select, BF
+    Font.Print "Selected item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5, SystemTheme.SelectText, FontSystem
+    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 12, SystemTheme.TextboxText, FontSystem
+    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 24, SystemTheme.TextboxText, FontSystem
 
     UserSettings.ThemeFile = OriginalTheme$
     Sys.LoadTheme

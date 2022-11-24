@@ -330,11 +330,15 @@ SUB Conf.ConfTheme ()
     DIM frmPreview AS FrameType
     DIM btnBack AS ButtonType, btnNext AS ButtonType
     DIM btnSave AS ButtonType, btnCancel AS ButtonType
+    DIM AnimationsEnabled
 
     DIM OriginalTheme AS STRING
     DIM ThemeList() AS STRING
 
     Sys.ShowLoading
+
+    AnimationsEnabled = UserSettings.Animations
+    UserSettings.Animations = False
 
     'Load theme filenames into array
     DIM TmpName$, TmpCount, ActiveTheme
@@ -395,7 +399,7 @@ SUB Conf.ConfTheme ()
     DIM txtPreview AS TextboxType, txtPreviewText AS STRING
     DIM btnPreview1 AS ButtonType, btnPreview2 AS ButtonType
     DIM imgPreview AS ImageType
-    DIM btnMenuPreview AS ButtonType
+    DIM txtListPreview AS TextboxType
 
     winPreview.Pos.Left = frmPreview.Pos.Left + 20
     winPreview.Pos.Top = frmPreview.Pos.Top + 20
@@ -419,9 +423,7 @@ SUB Conf.ConfTheme ()
     imgPreview.Pos.Top = frmPreview.Pos.Top + 190
     imgPreview.ImageFile = "LOGO"
 
-    Obj.SetSize btnMenuPreview.Pos, imgPreview.Pos.Left + 140, imgPreview.Pos.Top - 4, 98, 37
-    btnMenuPreview.Transparent = True
-
+    Obj.SetSize txtListPreview.Pos, imgPreview.Pos.Left + 140, imgPreview.Pos.Top - 4, 116, 41
 
     OriginalTheme = RTRIM$(UserSettings.ThemeFile)
     UserSettings.ThemeFile = ThemeList(ActiveTheme)
@@ -446,16 +448,12 @@ UpdatePreview:
     Font.Print "preview.exe", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 18, SystemTheme.DesktopText, FontNormal
 
     Obj.DrawImg imgPreview
-    Obj.DrawBtn btnMenuPreview, False
-
-    Mouse.Hide
-    LINE (btnMenuPreview.Pos.Left + 2, btnMenuPreview.Pos.Top + 2)-(btnMenuPreview.Pos.Left + btnMenuPreview.Pos.Width - 2, btnMenuPreview.Pos.Top + btnMenuPreview.Pos.Height - 2), SystemTheme.Window, BF
-    LINE (btnMenuPreview.Pos.Left + 2, btnMenuPreview.Pos.Top + 3)-(btnMenuPreview.Pos.Left + btnMenuPreview.Pos.Width - 2, btnMenuPreview.Pos.Top + 18), SystemTheme.Select, BF
-    LINE (btnMenuPreview.Pos.Left + 5, btnMenuPreview.Pos.Top + 17)-(btnMenuPreview.Pos.Left + 12, btnMenuPreview.Pos.Top + 17), SystemTheme.SelectText
-    LINE (btnMenuPreview.Pos.Left + 5, btnMenuPreview.Pos.Top + 33)-(btnMenuPreview.Pos.Left + 12, btnMenuPreview.Pos.Top + 33), SystemTheme.WindowText
-    Mouse.Show
-    Font.Print "Selected item", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 6, SystemTheme.SelectText, FontHeading
-    Font.Print "Unselected", btnMenuPreview.Pos.Left + 6, btnMenuPreview.Pos.Top + 22, SystemTheme.WindowText, FontHeading
+    
+    Obj.DrawTxt txtListPreview, "", False
+    LINE (txtListPreview.Pos.Left + 2, txtListPreview.Pos.Top + 3)-(txtListPreview.Pos.Left + txtListPreview.Pos.Width - 2, txtListPreview.Pos.Top + 15), SystemTheme.Select, BF
+    Font.Print "Selected item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5, SystemTheme.SelectText, FontSystem
+    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 12, SystemTheme.TextboxText, FontSystem
+    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 24, SystemTheme.TextboxText, FontSystem
 
     UserSettings.ThemeFile = OriginalTheme
     Sys.LoadTheme
@@ -468,12 +466,14 @@ UpdatePreview:
             UserSettings.ThemeFile = ThemeList(ActiveTheme)
             Sys.SaveProfile ProfileID
             Sys.LoadTheme
+            UserSettings.Animations = AnimationsEnabled
             EXIT SUB
         END IF
 
         IF Obj.BtnClick(btnCancel) OR Key$ = "c" OR Key$ = CHR$(27) THEN
             UserSettings.ThemeFile = OriginalTheme
             Sys.LoadTheme
+            UserSettings.Animations = AnimationsEnabled
             EXIT SUB
         END IF
 

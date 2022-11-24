@@ -92,32 +92,34 @@ FUNCTION Font.GetWidth (TargetText AS STRING, FontID AS INTEGER)
 
 END FUNCTION
 
-SUB Font.Print (BYVAL Text AS STRING, x, Y, Col, FontID)
+SUB Font.Print (BYVAL Text AS STRING, X, Y, Col, FontID)
 
 	DIM Char, Ascii, HotKey
-	DIM ColStr AS STRING
+	DIM FilteredText AS STRING
 
 	'If there's a hotkey in the text, save its position and remove the char
 	HotKey = INSTR(Text, "õ")
-	'IF HotKey AND LEN(Text) > 1 THEN
-	'  IF HotKey = 1 THEN
-	'    Text = RIGHT$(Text, LEN(Text) - 1)
-	'  ELSE
-	'    Text = LEFT$(Text, HotKey - 1) + RIGHT$(Text, LEN(Text) - HotKey)
-	'  END IF
-	'END IF
+	IF HotKey AND LEN(Text) > 1 THEN
+		IF HotKey = 1 THEN
+			FilteredText = RIGHT$(Text, LEN(Text) - 1)
+		ELSE
+			FilteredText = LEFT$(Text, HotKey - 1) + RIGHT$(Text, LEN(Text) - HotKey)
+		END IF
+	ELSE
+		FilteredText = Text
+	END IF
 	
 	'Use PSET to set the drawing position
-	PSET (x, Y + 11), POINT(x, Y + 11)
+	PSET (X, Y + 11), POINT(X, Y + 11)
 	DRAW "C" + LTRIM$(STR$(Col))
 
-	Text = RTRIM$(Text)
+	FilteredText = RTRIM$(FilteredText)
 	IF LEN(Text) = 0 OR FontID < 1 OR FontID > 3 THEN EXIT SUB
 
 	'Print the text, char by char
 	Mouse.Hide
-	FOR Char = 1 TO LEN(Text)
-		Ascii = ASC(MID$(Text, Char, 1))
+	FOR Char = 1 TO LEN(FilteredText)
+		Ascii = ASC(MID$(FilteredText, Char, 1))
 		IF Ascii >= 32 AND Ascii <= 126 THEN
 			DRAW FontData(FontID, Ascii)
 		ELSE
@@ -128,7 +130,7 @@ SUB Font.Print (BYVAL Text AS STRING, x, Y, Col, FontID)
 	
 	'Underline hotkey, if any
 	IF HotKey THEN
-		LINE (x + Font.GetWidth(LEFT$(Text, HotKey - 1), FontID), Y + 11)-(x + Font.GetWidth(LEFT$(Text, HotKey), FontID), Y + 11), Col
+		LINE (X + Font.GetWidth(LEFT$(FilteredText, HotKey - 1), FontID), Y + 11)-(X + Font.GetWidth(LEFT$(FilteredText, HotKey), FontID), Y + 11), Col
 	END IF
 
 	Mouse.Show
@@ -406,9 +408,9 @@ END SUB
 
 SUB Obj.DrawImg (TargetImg AS ImageType)
 
-	DIM x, Y, XPos, YPos
+	DIM X, Y, XPos, YPos
 	DIM Header AS STRING * 9
-	x = TargetImg.Pos.Left
+	X = TargetImg.Pos.Left
 	Y = TargetImg.Pos.Top
 
 	TargetImg.Pos.Width = 31
@@ -417,11 +419,11 @@ SUB Obj.DrawImg (TargetImg AS ImageType)
 	IF NOT File.Exists(Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".BSV") THEN
 		'Draw a red box with the text "IMG ERR" to indicate a missing file
 		Mouse.Hide
-		LINE (x + 1, Y + 1)-(x + 30, Y + 30), 4, BF
-		LINE (x, Y)-(x + 31, Y + 31), 0, B
+		LINE (X + 1, Y + 1)-(X + 30, Y + 30), 4, BF
+		LINE (X, Y)-(X + 31, Y + 31), 0, B
 		Mouse.Show
-		Font.Print "IMG", x + 6, Y + 4, 15, FontNormal
-		Font.Print "ERR", x + 6, Y + 19, 15, FontNormal
+		Font.Print "IMG", X + 6, Y + 4, 15, FontNormal
+		Font.Print "ERR", X + 6, Y + 19, 15, FontNormal
 		EXIT SUB
 	END IF
 
@@ -436,7 +438,7 @@ SUB Obj.DrawImg (TargetImg AS ImageType)
 	Mouse.Hide
 	FOR XPos = 0 TO 31
 		FOR YPos = 0 TO 31
-			IF IconData.Pixel(XPos, YPos) > -1 THEN PSET (x + XPos, Y + YPos), IconData.Pixel(XPos, YPos)
+			IF IconData.Pixel(XPos, YPos) > -1 THEN PSET (X + XPos, Y + YPos), IconData.Pixel(XPos, YPos)
 		NEXT
 	NEXT
 	Mouse.Show
@@ -445,11 +447,11 @@ SUB Obj.DrawImg (TargetImg AS ImageType)
 DrawImgError:
 	'Draw a red box with the text "IMG ERR" to indicate a missing file
 	Mouse.Hide
-	LINE (x + 1, Y + 1)-(x + 30, Y + 30), 4, BF
-	LINE (x, Y)-(x + 31, Y + 31), 0, B
+	LINE (X + 1, Y + 1)-(X + 30, Y + 30), 4, BF
+	LINE (X, Y)-(X + 31, Y + 31), 0, B
 	Mouse.Show
-	Font.Print "IMG", x + 6, Y + 4, 15, FontNormal
-	Font.Print "ERR", x + 6, Y + 19, 15, FontNormal
+	Font.Print "IMG", X + 6, Y + 4, 15, FontNormal
+	Font.Print "ERR", X + 6, Y + 19, 15, FontNormal
 	EXIT SUB
 	RESUME NEXT
 END SUB
