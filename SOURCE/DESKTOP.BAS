@@ -749,6 +749,9 @@ SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
   END IF
 
   Obj.DrawBtn MenuBack, False
+  Mouse.Hide
+  LINE (MenuBack.Pos.Left + 2, MenuBack.Pos.Top + 2)-(MenuBack.Pos.Left + MenuBack.Pos.Width - 2, MenuBack.Pos.Top + MenuBack.Pos.Height - 2), SystemTheme.Window, BF
+  Mouse.Show
   Obj.DrawBtn btnOpen, False
   Obj.DrawBtn btnCustomize, False
   Obj.DrawBtn btnMove, False
