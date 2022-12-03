@@ -456,6 +456,14 @@ DrawImgError:
 	RESUME NEXT
 END SUB
 
+SUB Obj.DrawMenu ()
+	Mouse.Hide
+	LINE (0, 0)-(639, 26), SystemTheme.Window, BF
+	LINE (0, 27)-(639, 27), SystemTheme.Shadow
+	LINE (0, 28)-(639, 28), 0
+	Mouse.Show
+END SUB
+
 SUB Obj.DrawTxt (TargetTxt AS TextboxType, BYVAL Text AS STRING, IsEditing AS INTEGER)
 
 	DIM x1, x2, y1, y2, MaxShow
@@ -498,6 +506,7 @@ SUB Obj.DrawTxt (TargetTxt AS TextboxType, BYVAL Text AS STRING, IsEditing AS IN
 END SUB
 
 SUB Obj.DrawWin (TargetWin AS WindowType)
+
 	DIM x1, x2, y1, y2
 	x1 = TargetWin.Pos.Left
 	y1 = TargetWin.Pos.Top
@@ -510,7 +519,7 @@ SUB Obj.DrawWin (TargetWin AS WindowType)
 	LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 1), SystemTheme.TitleBar, BF
 
 	'Window content area
-	LINE (x1 + 7, y1 + 25)-(x2 - 7, y2 - 7), SystemTheme.Window, BF
+	LINE (x1 + 7, y1 + 7)-(x2 - 7, y2 - 7), SystemTheme.Window, BF
 	
 	'Outer border
 	LINE (x1, y1)-(x2 - 1, y1), 15
@@ -523,14 +532,8 @@ SUB Obj.DrawWin (TargetWin AS WindowType)
 	LINE (x1 + 1, y1 + 2)-(x1 + 1, y2 - 2), SystemTheme.Light
 
 	'Inner border
-	LINE (x1 + 5, y1 + 23)-(x2 - 5, y2 - 5), SystemTheme.Shadow, B
-	LINE (x1 + 6, y1 + 24)-(x2 - 6, y2 - 6), SystemTheme.Light, B
-
-	IF NOT RTRIM$(TargetWin.Caption) = "" THEN
-		'Draw caption centered on titlebar
-		x1 = ((x2 - x1) - Font.GetWidth(RTRIM$(TargetWin.Caption), FontHeading)) / 2 + x1
-		Font.Print TargetWin.Caption, x1, y1 + 9, SystemTheme.TitleBarText, FontHeading
-	END IF
+	LINE (x1 + 5, y1 + 5)-(x2 - 5, y2 - 5), SystemTheme.Shadow, B
+	LINE (x1 + 6, y1 + 6)-(x2 - 6, y2 - 6), SystemTheme.Light, B
 
 	Mouse.Show
 
@@ -708,13 +711,12 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 	DIM winInputBox AS WindowType
 	winInputBox.Pos.Width = msgTextWidth + 76
 	IF winInputBox.Pos.Width < 194 THEN winInputBox.Pos.Width = 194
-	winInputBox.Pos.Height = msgLineCount * 15 + 138
+	winInputBox.Pos.Height = msgLineCount * 15 + 120
 	winInputBox.Pos.Left = (640 - winInputBox.Pos.Width) / 2
 	winInputBox.Pos.Top = (scrHeight - winInputBox.Pos.Height) / 2
-	winInputBox.Caption = "Input required"
-
+	
 	DIM txtInput AS TextboxType, txtInputText AS STRING
-	Obj.SetSize txtInput.Pos, winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 74 + (15 * msgLineCount), winInputBox.Pos.Width - 24, -1
+	Obj.SetSize txtInput.Pos, winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 56 + (15 * msgLineCount), winInputBox.Pos.Width - 24, -1
 	txtInputText = msgDefault
 
 	DIM btnOK AS ButtonType
@@ -728,7 +730,7 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 	DIM imgIcon AS ImageType
 	IF LEN(msgIcon) THEN
 		imgIcon.Pos.Left = winInputBox.Pos.Left + 12
-		imgIcon.Pos.Top = winInputBox.Pos.Top + 33
+		imgIcon.Pos.Top = winInputBox.Pos.Top + 15
 		imgIcon.ImageFile = msgIcon
 		IF msgLineCount > 1 THEN imgIcon.Pos.Top = imgIcon.Pos.Top + 5
 	END IF
@@ -762,17 +764,17 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 	Obj.DrawTxt txtInput, txtInputText, False
 
 	IF LEN(msgIcon) THEN
-		Font.Print msgTitle, winInputBox.Pos.Left + 53, winInputBox.Pos.Top + 33, SystemTheme.WindowText, 1
+		Font.Print msgTitle, winInputBox.Pos.Left + 53, winInputBox.Pos.Top + 15, SystemTheme.WindowText, 1
 	ELSE
-		Font.Print msgTitle, winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 33, SystemTheme.WindowText, 1
+		Font.Print msgTitle, winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 15, SystemTheme.WindowText, 1
 	END IF
 
 	DIM PrintLine
 	FOR PrintLine = 1 TO msgLineCount
 		IF PrintLine < 3 AND LEN(msgIcon) THEN
-			Font.Print msgLines(PrintLine), winInputBox.Pos.Left + 53, winInputBox.Pos.Top + 35 + (15 * PrintLine), SystemTheme.WindowText, 2
+			Font.Print msgLines(PrintLine), winInputBox.Pos.Left + 53, winInputBox.Pos.Top + 17 + (15 * PrintLine), SystemTheme.WindowText, 2
 		ELSE
-			Font.Print msgLines(PrintLine), winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 35 + (15 * PrintLine), SystemTheme.WindowText, 2
+			Font.Print msgLines(PrintLine), winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 17 + (15 * PrintLine), SystemTheme.WindowText, 2
 		END IF
 	NEXT
 
@@ -1070,23 +1072,18 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	ELSE
 		IF winMsgBox.Pos.Width < 102 THEN winMsgBox.Pos.Width = 102
 	END IF
-	winMsgBox.Pos.Height = msgLineCount * 15 + 96
+	winMsgBox.Pos.Height = msgLineCount * 15 + 78
 	winMsgBox.Pos.Left = (640 - winMsgBox.Pos.Width) / 2
 	winMsgBox.Pos.Top = (scrHeight - winMsgBox.Pos.Height) / 2
-	IF msgType = msgInfo THEN winMsgBox.Caption = "Information"
-	IF msgType = msgWarn THEN winMsgBox.Caption = "Warning"
-	IF msgType = msgQuest THEN winMsgBox.Caption = "Question"
-	IF msgType = msgError THEN winMsgBox.Caption = "Error"
-	IF msgType = msgTip THEN winMsgBox.Caption = "Tip of the Day"
 
-	Obj.SetSize imgIcon.Pos, winMsgBox.Pos.Left + 13, winMsgBox.Pos.Top + 33, -1, -1
+	Obj.SetSize imgIcon.Pos, winMsgBox.Pos.Left + 13, winMsgBox.Pos.Top + 15, -1, -1
 	IF msgType = msgInfo THEN imgIcon.ImageFile = "MSGINFO"
 	IF msgType = msgWarn THEN imgIcon.ImageFile = "MSGWARN"
 	IF msgType = msgQuest THEN imgIcon.ImageFile = "MSGQUEST"
 	IF msgType = msgError THEN imgIcon.ImageFile = "MSGERROR"
 	IF msgType = msgTip THEN imgIcon.ImageFile = "TIPBULB"
 
-	Obj.SetSize btnFirst.Pos, -1, winMsgBox.Pos.Top + 60 + (15 * msgLineCount), 80, 22
+	Obj.SetSize btnFirst.Pos, -1, winMsgBox.Pos.Top + 42 + (15 * msgLineCount), 80, 22
 	IF msgType = msgQuest THEN
 		btnFirst.Caption = "õYes"
 		btnFirst.Pos.Left = 320 - 86
@@ -1128,11 +1125,11 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	Obj.DrawBtn btnFirst, False
 	IF msgType = msgQuest THEN Obj.DrawBtn btnSecond, False
 
-	Font.Print msgTitle, winMsgBox.Pos.Left + 56, winMsgBox.Pos.Top + 33, SystemTheme.WindowText, 1
+	Font.Print msgTitle, winMsgBox.Pos.Left + 56, winMsgBox.Pos.Top + 15, SystemTheme.WindowText, 1
 	
 	DIM PrintLine
 	FOR PrintLine = 1 TO msgLineCount
-		Font.Print msgLines(PrintLine), winMsgBox.Pos.Left + 56, winMsgBox.Pos.Top + 35 + (15 * PrintLine), SystemTheme.WindowText, 2
+		Font.Print msgLines(PrintLine), winMsgBox.Pos.Left + 56, winMsgBox.Pos.Top + 17 + (15 * PrintLine), SystemTheme.WindowText, 2
 	NEXT
 	
 	Obj.DrawImg imgIcon

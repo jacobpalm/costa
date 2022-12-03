@@ -23,6 +23,7 @@
     DECLARE SUB Obj.DrawChk (TargetChk AS ANY)
     DECLARE SUB Obj.DrawFrm (TargetFrm AS ANY, LightColor%, DarkColor%)
     DECLARE SUB Obj.DrawImg (TargetImg AS ANY)
+    DECLARE SUB Obj.DrawMenu ()
     DECLARE SUB Obj.DrawTxt (TargetTxt AS ANY, BYVAL Text AS STRING, IsEditing AS INTEGER)
     DECLARE SUB Obj.DrawWin (TargetWin AS ANY)
 

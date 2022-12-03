@@ -9,7 +9,7 @@ DECLARE SUB Desk.ExitGUI ()
 DECLARE SUB Desk.LinkDialog (TargetLink%, DidEdit%, NewLink%)
 DECLARE SUB Desk.LinkLaunch (TargetLink AS INTEGER)
 DECLARE SUB Desk.LinkLoad ()
-DECLARE SUB Desk.LinkMenu (TargetLink%, MenuX%, MenuY%)
+DECLARE SUB Desk.LinkMenu (TargetLink%)
 DECLARE SUB Desk.LinkMove (TargetLink%)
 DECLARE SUB Desk.LinkReset ()
 DECLARE SUB Desk.LinkSave ()
@@ -155,9 +155,9 @@ SUB Desk.AboutBox ()
   DIM imgLogo AS ImageType
   DIM Key$
 
-  Obj.SetSize winAboutBox.Pos, 156, (scrHeight - 278) / 2, 328, 278
-  Obj.SetSize btnClose.Pos, 274, winAboutBox.Pos.Top + 243, 92, 22
+  Obj.SetSize winAboutBox.Pos, 156, (scrHeight - 242) / 2, 328, 242
   Obj.SetSize imgLogo.Pos, 168, winAboutBox.Pos.Top + 11, -1, -1
+  Obj.SetSize btnClose.Pos, 545, 2, 92, 22
   btnClose.Caption = "õClose"
 
   imgLogo.ImageFile = "LOGO"
@@ -168,14 +168,10 @@ SUB Desk.AboutBox ()
     Mouse.Show
   END IF
 
-  Obj.DrawWin winAboutBox
-  Mouse.Hide
-  LINE (winAboutBox.Pos.Left + 5, winAboutBox.Pos.Top + 5)-(winAboutBox.Pos.Left + winAboutBox.Pos.Width - 5, winAboutBox.Pos.Top + winAboutBox.Pos.Height - 5), SystemTheme.Shadow, B
-  LINE (winAboutBox.Pos.Left + 6, winAboutBox.Pos.Top + 6)-(winAboutBox.Pos.Left + winAboutBox.Pos.Width - 6, winAboutBox.Pos.Top + winAboutBox.Pos.Height - 6), SystemTheme.Light, B
-  LINE (winAboutBox.Pos.Left + 7, winAboutBox.Pos.Top + 7)-(winAboutBox.Pos.Left + winAboutBox.Pos.Width - 7, winAboutBox.Pos.Top + winAboutBox.Pos.Height - 7), SystemTheme.Window, BF
-  Mouse.Show
+  Obj.DrawMenu
   Obj.DrawBtn btnClose, False
   
+  Obj.DrawWin winAboutBox
   Font.Print appName, 210, winAboutBox.Pos.Top + 17, 0, 1
   Font.Print "Version " + appVersion, 210, winAboutBox.Pos.Top + 31, 0, 2
   Font.Print "Made in 2004-" + appYear + " by Jacob Palm.", 168, winAboutBox.Pos.Top + 53, 0, 2
@@ -225,10 +221,11 @@ END SUB
 ' =========================================================================
 SUB Desk.DrawDesktop ()
    
+  Obj.DrawMenu
   Mouse.Hide
-  LINE (0, 0)-(639, 479), SystemTheme.Desktop, BF
+  LINE (0, 29)-(639, scrHeight), SystemTheme.Desktop, BF
   Mouse.Show
-  
+
   'All desklinks will always have an imagefile. Use this to check if any
   'desklinks exist
   IF RTRIM$(DESKLINK(0).ImageFile) = "" OR DESKLINK(0).Caption = STRING$(25, 0) THEN EXIT SUB
@@ -417,25 +414,25 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
   DIM imgIcon AS ImageType
   DIM chkPauseOnExit AS CheckBoxType
 
-  Obj.SetSize ConfWin.Pos, 210, (scrHeight - 350) / 2, 220, 350
+  Obj.SetSize ConfWin.Pos, 210, (scrHeight - 336) / 2, 220, 336
 
   IF NewLink = False THEN
     ConfWin.Caption = "Customize desktop link"
   ELSE
     ConfWin.Caption = "Add desktop link"
   END IF
-  Obj.SetSize txtLinkCapt.Pos, 222, ConfWin.Pos.Top + 46, 196, 19
-  Obj.SetSize btnIconPrev.Pos, 262, ConfWin.Pos.Top + 98, 22, 22
-  Obj.SetSize frmIconFrame.Pos, 296, ConfWin.Pos.Top + 85, 48, 48
-  Obj.SetSize imgIcon.Pos, 304, ConfWin.Pos.Top + 93, 32, 32
-  Obj.SetSize btnIconNext.Pos, 356, ConfWin.Pos.Top + 98, 22, 22
-  Obj.SetSize txtFileName.Pos, 222, ConfWin.Pos.Top + 165, 173, 19
-  Obj.SetSize btnBrowse.Pos, 399, ConfWin.Pos.Top + 165, 19, 19
-  Obj.SetSize txtParams.Pos, 222, ConfWin.Pos.Top + 211, 196, 19
-  Obj.SetSize txtPath.Pos, 222, ConfWin.Pos.Top + 260, 196, 19
-  Obj.SetSize chkPauseOnExit.Pos, 222, ConfWin.Pos.Top + 292, -1, -1
-  Obj.SetSize btnOK.Pos, 229, ConfWin.Pos.Top + 319, 84, 22
-  Obj.SetSize btnCancel.Pos, 326, ConfWin.Pos.Top + 319, 84, 22
+  Obj.SetSize txtLinkCapt.Pos, 222, ConfWin.Pos.Top + 28, 196, 19
+  Obj.SetSize btnIconPrev.Pos, 262, ConfWin.Pos.Top + 80, 22, 22
+  Obj.SetSize frmIconFrame.Pos, 296, ConfWin.Pos.Top + 67, 48, 48
+  Obj.SetSize imgIcon.Pos, 304, ConfWin.Pos.Top + 75, 32, 32
+  Obj.SetSize btnIconNext.Pos, 356, ConfWin.Pos.Top + 80, 22, 22
+  Obj.SetSize txtFileName.Pos, 222, ConfWin.Pos.Top + 147, 173, 19
+  Obj.SetSize btnBrowse.Pos, 399, ConfWin.Pos.Top + 147, 19, 19
+  Obj.SetSize txtParams.Pos, 222, ConfWin.Pos.Top + 193, 196, 19
+  Obj.SetSize txtPath.Pos, 222, ConfWin.Pos.Top + 242, 196, 19
+  Obj.SetSize chkPauseOnExit.Pos, 222, ConfWin.Pos.Top + 274, -1, -1
+  Obj.SetSize btnOK.Pos, 229, ConfWin.Pos.Top + 301, 84, 22
+  Obj.SetSize btnCancel.Pos, 326, ConfWin.Pos.Top + 301, 84, 22
 
   txtLinkCapt.MaxLen = 25
   txtFileName.MaxLen = 50
@@ -470,11 +467,11 @@ LinkDialogDraw:
   Obj.DrawChk chkPauseOnExit
   Obj.DrawBtn btnOK, False
   Obj.DrawBtn btnCancel, False
-  Font.Print "õDescription (caption):", 222, ConfWin.Pos.Top + 32, SystemTheme.WindowText, 1
-  Font.Print "õProgram or DOS command:", 222, ConfWin.Pos.Top + 148, SystemTheme.WindowText, 1
-  Font.Print "Paõrameters:", 222, ConfWin.Pos.Top + 197, SystemTheme.WindowText, 1
-  Font.Print "Paõth (including drive):", 222, ConfWin.Pos.Top + 246, SystemTheme.WindowText, 1
-  Font.Print "Pause after eõxecution", 242, ConfWin.Pos.Top + 295, SystemTheme.WindowText, 2
+  Font.Print "õDescription (caption):", 222, ConfWin.Pos.Top + 14, SystemTheme.WindowText, 1
+  Font.Print "õProgram or DOS command:", 222, ConfWin.Pos.Top + 130, SystemTheme.WindowText, 1
+  Font.Print "Paõrameters:", 222, ConfWin.Pos.Top + 179, SystemTheme.WindowText, 1
+  Font.Print "Paõth (including drive):", 222, ConfWin.Pos.Top + 228, SystemTheme.WindowText, 1
+  Font.Print "Pause after eõxecution", 242, ConfWin.Pos.Top + 277, SystemTheme.WindowText, 2
   Mouse.Hide
   LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), SystemTheme.Desktop, BF
   Mouse.Show
@@ -675,87 +672,33 @@ END SUB
 '   DESCRIPTION: Shows the menu that allows the user to open, edit, move
 '                or delete a desktop link
 ' =========================================================================
-SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
+SUB Desk.LinkMenu (TargetLink)
 
-  DIM BehindMenu(2473)
-  DIM DrawFromLeft, DrawFromTop
   DIM RedrawDesktop, DidEdit
   DIM Key$
-  DIM MenuBack AS ButtonType
+
   DIM btnOpen AS ButtonType, btnCustomize AS ButtonType
   DIM btnMove AS ButtonType, btnRemove AS ButtonType
-
-  MenuBack.Pos.Width = 94
-  MenuBack.Pos.Height = 102
-
-  IF MenuX + MenuBack.Pos.Width > 639 THEN
-    MenuBack.Pos.Left = MenuX - MenuBack.Pos.Width
-    DrawFromLeft = False
-  ELSE
-    MenuBack.Pos.Left = MenuX
-    DrawFromLeft = True
-  END IF
-
-  IF MenuY + MenuBack.Pos.Height > (scrHeight - 1) THEN
-    MenuBack.Pos.Top = MenuY - MenuBack.Pos.Height
-    DrawFromTop = False
-  ELSE
-    MenuBack.Pos.Top = MenuY
-    DrawFromTop = True
-  END IF
-
-  Obj.SetSize btnOpen.Pos, MenuBack.Pos.Left + 4, MenuBack.Pos.Top + 4, 86, 22
-  Obj.SetSize btnCustomize.Pos, MenuBack.Pos.Left + 4, MenuBack.Pos.Top + 28, 86, 22
-  Obj.SetSize btnMove.Pos, MenuBack.Pos.Left + 4, MenuBack.Pos.Top + 52, 86, 22
-  Obj.SetSize btnRemove.Pos, MenuBack.Pos.Left + 4, MenuBack.Pos.Top + 76, 86, 22
-
+  DIM btnCancel AS ButtonType
+        
+  Obj.SetSize btnOpen.Pos, 3, 2, 92, 22
+  Obj.SetSize btnCustomize.Pos, 102, 2, 92, 22
+  Obj.SetSize btnMove.Pos, 201, 2, 92, 22
+  Obj.SetSize btnRemove.Pos, 300, 2, 92, 22
+  Obj.SetSize btnCancel.Pos, 545, 2, 92, 22
+  
   btnOpen.Caption = "õOpen"
-  btnCustomize.Caption = "õCustomize"
+  btnCustomize.Caption = "Cõustomize"
   btnMove.Caption = "õMove"
   btnRemove.Caption = "õRemove"
+  btnCancel.Caption = "õCancel"
   
-  Mouse.Hide
-  GET (MenuBack.Pos.Left, MenuBack.Pos.Top)-(MenuBack.Pos.Left + MenuBack.Pos.Width, MenuBack.Pos.Top + MenuBack.Pos.Height), BehindMenu
-  Mouse.Show
-  
-  IF UserSettings.Animations THEN
-    DIM Sys.DelayWait
-    DIM x1, y1, x2, y2
-
-    IF DrawFromLeft = True THEN
-      x1 = MenuBack.Pos.Left
-    ELSE
-      x1 = MenuBack.Pos.Left + MenuBack.Pos.Width
-    END IF
-    x2 = x1
-    IF DrawFromTop = True THEN
-      y1 = MenuBack.Pos.Top
-    ELSE
-      y1 = MenuBack.Pos.Top + MenuBack.Pos.Height
-    END IF
-    y2 = y1
-
-    Mouse.Hide
-    DO
-      LINE (x1, y1)-(x2, y2), SystemTheme.Window, B
-      IF x1 > MenuBack.Pos.Left THEN x1 = x1 - 1
-      IF y1 > MenuBack.Pos.Top THEN y1 = y1 - 1
-      IF x2 < MenuBack.Pos.Left + MenuBack.Pos.Width THEN x2 = x2 + 1
-      IF y2 < MenuBack.Pos.Top + MenuBack.Pos.Height THEN y2 = y2 + 1
-      Sys.DelayWait = Sys.DelayWait + 1
-      IF Sys.DelayWait = 25 THEN Sys.DelayWait = 0: Sys.Delay .01
-    LOOP UNTIL x1 = MenuBack.Pos.Left AND y1 = MenuBack.Pos.Top AND x2 = MenuBack.Pos.Left + MenuBack.Pos.Width AND y2 = MenuBack.Pos.Top + MenuBack.Pos.Height
-    Mouse.Show
-  END IF
-
-  Obj.DrawBtn MenuBack, False
-  Mouse.Hide
-  LINE (MenuBack.Pos.Left + 2, MenuBack.Pos.Top + 2)-(MenuBack.Pos.Left + MenuBack.Pos.Width - 2, MenuBack.Pos.Top + MenuBack.Pos.Height - 2), SystemTheme.Window, BF
-  Mouse.Show
+  Obj.DrawMenu
   Obj.DrawBtn btnOpen, False
   Obj.DrawBtn btnCustomize, False
   Obj.DrawBtn btnMove, False
   Obj.DrawBtn btnRemove, False
+  Obj.DrawBtn btnCancel, False
 
   DO: LOOP WHILE Mouse.Clicked
   DO
@@ -763,10 +706,7 @@ SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
     Key$ = LCASE$(INKEY$)
     
     'Escape or clicked outside
-    IF (Mouse.Clicked AND NOT Mouse.InArea(MenuBack.Pos)) OR Key$ = CHR$(27) THEN
-      Mouse.Hide
-      PUT (MenuBack.Pos.Left, MenuBack.Pos.Top), BehindMenu, PSET
-      Mouse.Show
+    IF (Mouse.Clicked AND Mouse.Y > 28) OR Key$ = CHR$(27) THEN
       EXIT SUB
     END IF
     
@@ -778,15 +718,12 @@ SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
 
     'Configure
     IF Obj.BtnClick(btnCustomize) OR Key$ = "c" THEN
-      Mouse.Hide
-      PUT (MenuBack.Pos.Left, MenuBack.Pos.Top), BehindMenu, PSET
-      Mouse.Show
-      
       IF UserSettings.ScreenMode = scrEGA THEN
         Mouse.Hide
         PCOPY 0, 1
         Mouse.Show
       END IF
+
       Desk.LinkDialog TargetLink, DidEdit, False
 
       IF DidEdit OR UserSettings.ScreenMode = scrVGA THEN
@@ -802,9 +739,6 @@ SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
 
     'Move
     IF Obj.BtnClick(btnMove) OR Key$ = "m" THEN
-      Mouse.Hide
-      PUT (MenuBack.Pos.Left, MenuBack.Pos.Top), BehindMenu, PSET
-      Mouse.Show
       Desk.LinkMove TargetLink
       Desk.DrawDesktop
       EXIT SUB
@@ -815,9 +749,6 @@ SUB Desk.LinkMenu (TargetLink, MenuX, MenuY)
       DIM DoDelete
 
       IF UserSettings.ConfirmLinkDelete THEN
-        Mouse.Hide
-        PUT (MenuBack.Pos.Left, MenuBack.Pos.Top), BehindMenu, PSET
-        Mouse.Show
         DoDelete = Sys.MsgBox("Remove desktop link", "This will permanently delete this" + CHR$(13) + "desktop link. Are you sure?", msgQuest)
       ELSE
         DoDelete = True
@@ -1142,7 +1073,8 @@ SUB Desk.Main ()
   
   Desk.LinkLoad
 
-Desk.MainTop:
+  
+Desk.RedrawAll:
   Mouse.Hide
   Desk.DrawDesktop
   Mouse.Show
@@ -1173,13 +1105,16 @@ Desk.MainTop:
     END IF
   END IF
 
+Desk.RedrawMenu:
+  Obj.DrawMenu
+  Obj.DrawBtn btnAddLink, False
+  Obj.DrawBtn btnRunCmd, False
+  Obj.DrawBtn btnProfile, False
+  Obj.DrawBtn btnConfig, False
+  Obj.DrawBtn btnAboutCosta, False
+  Obj.DrawBtn btnExitCosta, False
 
-  'The buttons on the menu is drawn at the label SlideDown
-  GOSUB SlideDown
 
-  Mouse.Show
-  
-MainLoopStart:
   DO
 
     Key$ = LCASE$(INKEY$)
@@ -1206,7 +1141,6 @@ MainLoopStart:
               'If we reach this point, the link was clicked.
               IF ClickedB = mbRight THEN
                 'If the right mouse button was clicked, show the menu
-                GOSUB SlideUp
                 IF NOT TabCheck = -1 THEN
                     Mouse.Hide
                     LINE (DESKLINK(TabCheck).Left - 3, DESKLINK(TabCheck).Top - 3)-(DESKLINK(TabCheck).Left + 35, DESKLINK(TabCheck).Top + 35), SystemTheme.Desktop, BF
@@ -1215,8 +1149,9 @@ MainLoopStart:
                     TabCheck = -1
                 END IF
 
-                Desk.LinkMenu DeskLinkCheck, ClickedX, ClickedY
-                GOSUB SlideDown
+                Desk.LinkMenu DeskLinkCheck
+                
+                GOTO Desk.RedrawMenu
               ELSE
 
                 'Left click. Check for double click - await button release
@@ -1243,12 +1178,9 @@ MainLoopStart:
                 LOOP UNTIL TIMER > DoubleClickTimer + .3 OR TIMER < DoubleClickTimer
 
                 IF DidDoubleClick THEN
-                  GOSUB SlideUp
                   Desk.LinkLaunch DeskLinkCheck
                 END IF
               END IF
-
-              GOTO MainLoopStart
 
             END IF
           END IF
@@ -1270,7 +1202,6 @@ MainLoopStart:
             DESKLINK(UBOUND(DESKLINK)).Left = 15
             DESKLINK(UBOUND(DESKLINK)).Top = 45
 
-            GOSUB SlideUp
             IF UserSettings.ScreenMode = scrEGA THEN
               Mouse.Hide
               PCOPY 0, 1
@@ -1296,45 +1227,37 @@ MainLoopStart:
                 END IF
             END IF
 
-            GOSUB SlideDown
+            GOTO Desk.RedrawMenu
         END IF
 
         IF Key$ = "x" THEN
-            GOSUB SlideUp
             DIM FileToRun AS STRING
             FileToRun = Sys.InputBox("Execute program or command", "You can also use this dialog to open any file" + CHR$(13) + "associated with a program (like README.TXT).", "RUNPROG", "")
             IF LEN(FileToRun) AND NOT FileToRun = "C:\" THEN
                 DIM RunFile AS STRING
                 Desk.Run FileToRun, "", "", True
             END IF
-            GOSUB SlideDown
-            GOTO MainLoopStart
+            GOTO Desk.RedrawMenu
         END IF
 
         IF Key$ = "a" THEN
-            GOSUB SlideUp
             Desk.AboutBox
-            GOSUB SlideDown
-            GOTO MainLoopStart
+            GOTO Desk.RedrawMenu
         END IF
 
         IF Key$ = "p" THEN
-            GOSUB SlideUp
             Desk.ProfileSelect
             Desk.LinkLoad
-            GOTO Desk.MainTop
+            GOTO Desk.RedrawAll
         END IF
 
         IF Key$ = "c" THEN
-            GOSUB SlideUp
             Conf.Main
-            GOTO Desk.MainTop
+            GOTO Desk.RedrawAll
         END IF
 
 
         IF Key$ = "e" OR Key$ = CHR$(27) THEN
-            GOSUB SlideUp
-
             DIM DoExit
             IF UserSettings.ConfirmExit THEN
                 DoExit = Sys.MsgBox("Exit " + appName, "This will exit Costa and return you to the DOS" + CHR$(13) + "prompt. Are you sure?", msgQuest)
@@ -1346,8 +1269,6 @@ MainLoopStart:
                 Mouse.Hide
                 Desk.ExitGUI
             END IF
-
-            GOSUB SlideDown
         END IF
 
         'TAB or Shift+TAB
@@ -1377,7 +1298,7 @@ MainLoopStart:
                     imgTab.ImageFile = DESKLINK(TabCheck).ImageFile
                     imgTab.Pos.Left = DESKLINK(TabCheck).Left: imgTab.Pos.Top = DESKLINK(TabCheck).Top
                     btnTab.Pos.Left = DESKLINK(TabCheck).Left - 3: btnTab.Pos.Top = DESKLINK(TabCheck).Top - 3
-                    btnTab.Pos.Width = 38: btnTab.Pos.Height = 38
+                    btnTab.Pos.Width = 36: btnTab.Pos.Height = 36
                     Obj.DrawBtn btnTab, False
                     Obj.DrawImg imgTab
                     Mouse.Show
@@ -1391,7 +1312,10 @@ MainLoopStart:
             Obj.DrawImg imgTab
             Mouse.Show
 
-            IF Key$ = CHR$(13) THEN GOSUB SlideUp: Desk.LinkMenu TabCheck, DESKLINK(TabCheck).Left + 15, DESKLINK(TabCheck).Top + 15: GOSUB SlideDown
+            IF Key$ = CHR$(13) THEN
+              Desk.LinkMenu TabCheck
+              GOTO Desk.RedrawMenu
+            END IF
             TabCheck = -1
         END IF
 
@@ -1400,59 +1324,6 @@ MainLoopStart:
   LOOP
 
 EXIT SUB
-
-SlideDown:
-  Mouse.Hide
-  IF UserSettings.Animations THEN
-    DelayFixer = 0
-    FOR SlidePos = 0 TO 26 STEP 2
-      LINE (0, 0)-(639, SlidePos), SystemTheme.Window, BF
-      LINE (0, SlidePos + 1)-(639, SlidePos + 1), SystemTheme.Shadow
-      LINE (0, SlidePos + 2)-(639, SlidePos + 2), 0
-      DelayFixer = DelayFixer + 1
-      IF DelayFixer = 4 THEN
-        Sys.Delay .01
-        DelayFixer = 0
-      END IF
-    NEXT
-  ELSE
-    LINE (0, 0)-(639, 26), SystemTheme.Window, BF
-    LINE (0, 27)-(639, 27), SystemTheme.Shadow
-    LINE (0, 28)-(639, 28), 0
-  END IF
-  Mouse.Show
-  Obj.DrawBtn btnAddLink, False
-  Obj.DrawBtn btnRunCmd, False
-  Obj.DrawBtn btnProfile, False
-  Obj.DrawBtn btnConfig, False
-  Obj.DrawBtn btnAboutCosta, False
-  Obj.DrawBtn btnExitCosta, False
-RETURN
-
-SlideUp:
-  Mouse.Hide
-  DelayFixer = 0
-  IF UserSettings.Animations THEN
-    LINE (0, 0)-(639, 28), SystemTheme.Window, BF
-    FOR SlidePos = 25 TO 0 STEP -2
-      LINE (0, SlidePos)-(639, SlidePos), SystemTheme.Shadow
-      LINE (0, SlidePos + 1)-(639, SlidePos + 1), 0
-      LINE (0, SlidePos + 2)-(639, SlidePos + 3), SystemTheme.Desktop, BF
-      DelayFixer = DelayFixer + 1
-      IF DelayFixer = 4 THEN
-        Sys.Delay .01
-        DelayFixer = 0
-      END IF
-    NEXT
-  ELSE
-      LINE (0, 3)-(639, 28), SystemTheme.Desktop, BF
-      LINE (0, 0)-(639, 0), SystemTheme.Window
-      LINE (0, 1)-(639, 1), SystemTheme.Shadow
-      LINE (0, 2)-(639, 2), 0
-  END IF
-  Mouse.Show
-RETURN
-
 
 END SUB
 
@@ -1600,38 +1471,32 @@ SUB Desk.ProfileSelect ()
 
     UserSettings.ThemeFile = "DEFAULT"
     Sys.LoadTheme
-    Mouse.Hide
-    LINE (0, 0)-(639, scrHeight - 1), SystemTheme.Desktop, BF
-    Mouse.Show
     
     winProfiles.Pos.Width = 338
-    winProfiles.Pos.Height = 220
+    winProfiles.Pos.Height = 196
     winProfiles.Pos.Left = (640 - winProfiles.Pos.Width) / 2
     winProfiles.Pos.Top = (scrHeight - winProfiles.Pos.Height) / 2
     winProfiles.Caption = "Profile selection"
 
-    Obj.SetSize btnProfile(1).Pos, winProfiles.Pos.Left + 18, winProfiles.Pos.Top + 84, 46, 46
-    Obj.SetSize btnProfile(2).Pos, winProfiles.Pos.Left + 82, winProfiles.Pos.Top + 84, 46, 46
-    Obj.SetSize btnProfile(3).Pos, winProfiles.Pos.Left + 146, winProfiles.Pos.Top + 84, 46, 46
-    Obj.SetSize btnProfile(4).Pos, winProfiles.Pos.Left + 210, winProfiles.Pos.Top + 84, 46, 46
-    Obj.SetSize btnProfile(5).Pos, winProfiles.Pos.Left + 274, winProfiles.Pos.Top + 84, 46, 46
+    Obj.SetSize btnProfile(1).Pos, winProfiles.Pos.Left + 18, winProfiles.Pos.Top + 66, 46, 46
+    Obj.SetSize btnProfile(2).Pos, winProfiles.Pos.Left + 82, winProfiles.Pos.Top + 66, 46, 46
+    Obj.SetSize btnProfile(3).Pos, winProfiles.Pos.Left + 146, winProfiles.Pos.Top + 66, 46, 46
+    Obj.SetSize btnProfile(4).Pos, winProfiles.Pos.Left + 210, winProfiles.Pos.Top + 66, 46, 46
+    Obj.SetSize btnProfile(5).Pos, winProfiles.Pos.Left + 274, winProfiles.Pos.Top + 66, 46, 46
     btnProfile(1).Transparent = True
     btnProfile(2).Transparent = True
     btnProfile(3).Transparent = True
     btnProfile(4).Transparent = True
     btnProfile(5).Transparent = True
 
-    Obj.SetSize btnContinue.Pos, winProfiles.Pos.Left + winProfiles.Pos.Width - 94, winProfiles.Pos.Top + winProfiles.Pos.Height - 34, 80, 22
-    btnContinue.Caption = "õContinue"
-    
-    Obj.SetSize btnEdit.Pos, winProfiles.Pos.Left + 18, winProfiles.Pos.Top + winProfiles.Pos.Height - 34, 80, 22
+    Obj.SetSize btnEdit.Pos, winProfiles.Pos.Left + 18, winProfiles.Pos.Top + winProfiles.Pos.Height - 39, 80, 22
     btnEdit.Caption = "õEdit..."
+
+    Obj.SetSize btnContinue.Pos, winProfiles.Pos.Left + winProfiles.Pos.Width - 98, winProfiles.Pos.Top + winProfiles.Pos.Height - 39, 80, 22
+    btnContinue.Caption = "õContinue"
     
     SelectedProfile = SystemSettings.LastUsedProfile
     IF SelectedProfile < 1 OR SelectedProfile > 5 THEN SelectedProfile = 1
-
-
-TopOfProfile:
 
     FOR Counter = 1 TO 5
         Sys.LoadProfile Counter
@@ -1639,16 +1504,22 @@ TopOfProfile:
         imgProfile(Counter).ImageFile = RTRIM$(UserSettings.ProfileImage)
     NEXT
 
+
+TopOfProfile:
+    Mouse.Hide
+    LINE (0, 0)-(639, scrHeight - 1), SystemTheme.Desktop, BF
+    Mouse.Show
+    
     Obj.DrawWin winProfiles
-    Font.Print "Please select a profile from which your desktop,", winProfiles.Pos.Left + 14, winProfiles.Pos.Top + 36, SystemTheme.WindowText, FontNormal
-    Font.Print "theme and other customizations will be loaded.", winProfiles.Pos.Left + 14, winProfiles.Pos.Top + 50, SystemTheme.WindowText, FontNormal
+    Font.Print "Please select a profile from which your desktop,", winProfiles.Pos.Left + 14, winProfiles.Pos.Top + 18, SystemTheme.WindowText, FontNormal
+    Font.Print "theme and other customizations will be loaded.", winProfiles.Pos.Left + 14, winProfiles.Pos.Top + 32, SystemTheme.WindowText, FontNormal
 
     IF SelectedProfile < 1 OR SelectedProfile > 5 THEN
         SelectedProfile = 1
     END IF
 
     ProfileNamePos = winProfiles.Pos.Left + (winProfiles.Pos.Width / 2) - (Font.GetWidth(ProfileName(SelectedProfile), FontHeading) / 2)
-    Font.Print ProfileName(SelectedProfile), ProfileNamePos, winProfiles.Pos.Top + 154, SystemTheme.WindowText, FontHeading
+    Font.Print ProfileName(SelectedProfile), ProfileNamePos, winProfiles.Pos.Top + 136, SystemTheme.WindowText, FontHeading
 
     FOR Counter = 1 TO 5
         IF Counter = SelectedProfile THEN
@@ -1685,9 +1556,9 @@ TopOfProfile:
                     SelectedProfile = Counter
                     ProfileNamePos = winProfiles.Pos.Left + (winProfiles.Pos.Width / 2) - (Font.GetWidth(ProfileName(SelectedProfile), FontHeading) / 2)
                     Mouse.Hide
-                    LINE (winProfiles.Pos.Left + 7, winProfiles.Pos.Top + 150)-(winProfiles.Pos.Left + winProfiles.Pos.Width - 7, winProfiles.Pos.Top + 166), SystemTheme.Window, BF
+                    LINE (winProfiles.Pos.Left + 7, winProfiles.Pos.Top + 132)-(winProfiles.Pos.Left + winProfiles.Pos.Width - 7, winProfiles.Pos.Top + 148), SystemTheme.Window, BF
                     Mouse.Show
-                    Font.Print ProfileName(SelectedProfile), ProfileNamePos, winProfiles.Pos.Top + 154, SystemTheme.WindowText, FontHeading
+                    Font.Print ProfileName(SelectedProfile), ProfileNamePos, winProfiles.Pos.Top + 136, SystemTheme.WindowText, FontHeading
                     DO WHILE Mouse.Clicked: LOOP
                 END IF
             END IF
