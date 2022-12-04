@@ -1,3 +1,4 @@
+DECLARE SUB Desk.TipOfTheDay ()
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -199,9 +200,6 @@ SUB Desk.AboutBox ()
     PCOPY 1, 0
     Mouse.Show
   ELSE
-    Mouse.Hide
-    LINE (0, 0)-(639, scrHeight - 1), SystemTheme.Desktop, BF
-    Mouse.Show
     Desk.DrawDesktop
   END IF
   
@@ -220,7 +218,6 @@ END SUB
 ' =========================================================================
 SUB Desk.DrawDesktop ()
    
-  Obj.DrawMenu
   Mouse.Hide
   LINE (0, 29)-(639, scrHeight), SystemTheme.Desktop, BF
   Mouse.Show
@@ -415,11 +412,6 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
 
   Obj.SetSize ConfWin.Pos, 210, (scrHeight - 336) / 2, 220, 336
 
-  IF NewLink = False THEN
-    ConfWin.Caption = "Customize desktop link"
-  ELSE
-    ConfWin.Caption = "Add desktop link"
-  END IF
   Obj.SetSize txtLinkCapt.Pos, 222, ConfWin.Pos.Top + 28, 196, 19
   Obj.SetSize btnIconPrev.Pos, 262, ConfWin.Pos.Top + 80, 22, 22
   Obj.SetSize frmIconFrame.Pos, 296, ConfWin.Pos.Top + 67, 48, 48
@@ -475,8 +467,7 @@ LinkDialogDraw:
   LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), SystemTheme.Desktop, BF
   Mouse.Show
   Obj.DrawImg imgIcon
-
-
+  
 
   DIM IconChanged
   DIM Key$
@@ -678,9 +669,9 @@ SUB Desk.LinkMenu (TargetLink)
   DIM btnMove AS ButtonType, btnRemove AS ButtonType
   DIM btnCancel AS ButtonType
   DIM imgIcon AS ImageType
-
-  DIM RedrawDesktop, DidEdit
-  DIM Key$
+  
+  DIM DidEdit, RedrawNeeded
+  DIM Key$, CroppedText AS STRING
 
   Obj.SetSize winLinkMenu.Pos, (640 - 413) / 2, (scrHeight - 165) / 2, 413, 165
   Obj.SetSize btnOpen.Pos, winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + winLinkMenu.Pos.Height - 64, 389, 22
@@ -698,6 +689,12 @@ SUB Desk.LinkMenu (TargetLink)
   btnRemove.Caption = "õRemove"
   btnCancel.Caption = "õCancel"
   
+  IF UserSettings.ScreenMode = scrEGA THEN
+    Mouse.Hide
+    PCOPY 0, 1
+    Mouse.Show
+  END IF
+
   Obj.DrawWin winLinkMenu
   Obj.DrawBtn btnOpen, False
   Obj.DrawBtn btnCustomize, False
@@ -711,9 +708,10 @@ SUB Desk.LinkMenu (TargetLink)
   Font.Print "Path:", winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 59, 0, 2
   Font.Print "Parameters:", winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 76, 0, 2
   
-  Font.Print DeskLink(TargetLink).Path, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 53, 0, 2
-  Font.Print DeskLink(TargetLink).Parameters, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 67, 0, 2
-
+  VIEW SCREEN (winLinkMenu.Pos.Left + 90, winLinkMenu.Pos.Top + 55)-(winLinkMenu.Pos.Left + winLinkMenu.Pos.Width - 12, winLinkMenu.Pos.Top + 90)
+  Font.Print DeskLink(TargetLink).Path, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 59, 0, 2
+  Font.Print DeskLink(TargetLink).Parameters, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 76, 0, 2
+  VIEW
 
   DO: LOOP WHILE Mouse.Clicked
   DO
@@ -722,7 +720,7 @@ SUB Desk.LinkMenu (TargetLink)
     
     'Cancel, or Escape key
     IF Obj.BtnClick(btnCancel) OR Key$ = "c" OR Key$ = CHR$(27) THEN
-      EXIT SUB
+      EXIT DO
     END IF
     
     'Open/run
@@ -733,15 +731,15 @@ SUB Desk.LinkMenu (TargetLink)
 
     'Configure
     IF Obj.BtnClick(btnCustomize) OR Key$ = "u" THEN
-      IF UserSettings.ScreenMode = scrEGA THEN
-        Mouse.Hide
-        PCOPY 0, 1
-        Mouse.Show
-      END IF
-
       Desk.LinkDialog TargetLink, DidEdit, False
 
-      IF DidEdit OR UserSettings.ScreenMode = scrVGA THEN
+      EXIT DO
+    END IF
+
+    'Move
+    IF Obj.BtnClick(btnMove) OR Key$ = "m" THEN
+
+      IF UserSettings.ScreenMode = scrVGA OR RedrawNeeded THEN
         Desk.DrawDesktop
       ELSE
         Mouse.Hide
@@ -749,11 +747,6 @@ SUB Desk.LinkMenu (TargetLink)
         Mouse.Show
       END IF
 
-      EXIT SUB
-    END IF
-
-    'Move
-    IF Obj.BtnClick(btnMove) OR Key$ = "m" THEN
       Desk.LinkMove TargetLink
       Desk.DrawDesktop
       EXIT SUB
@@ -763,6 +756,7 @@ SUB Desk.LinkMenu (TargetLink)
     IF Obj.BtnClick(btnRemove) OR Key$ = "r" THEN
       DIM DoDelete
 
+      RedrawNeeded = True
       IF UserSettings.ConfirmLinkDelete THEN
         DoDelete = Sys.MsgBox("Remove desktop link", "This will permanently delete this" + CHR$(13) + "desktop link. Are you sure?", msgQuest)
       ELSE
@@ -781,6 +775,14 @@ SUB Desk.LinkMenu (TargetLink)
 
   LOOP
 
+  IF UserSettings.ScreenMode = scrVGA OR RedrawNeeded THEN
+    Desk.DrawDesktop
+  ELSE
+    Mouse.Hide
+    PCOPY 1, 0
+    Mouse.Show
+  END IF
+             
 END SUB
 
 ' =========================================================================
@@ -1077,15 +1079,14 @@ SUB Desk.Main ()
   DIM DeskLinkCheck, ClickedX, ClickedY, ClickedB, DidEdit, Key$
   DIM TabCheck, btnTab AS ButtonType, imgTab AS ImageType
   DIM DoubleClickTimer AS SINGLE, DidDoubleClick
-  DIM dateLastLaunch AS STRING
-
+  
   ON LOCAL ERROR RESUME NEXT
   CHDRIVE LEFT$(Sys.Path, 1)
   CHDIR Sys.Path
   ON LOCAL ERROR GOTO 0
   
   Desk.LinkLoad
-
+  Desk.TipOfTheDay
   
 Desk.RedrawAll:
   Mouse.Hide
@@ -1093,32 +1094,6 @@ Desk.RedrawAll:
   Mouse.Show
   TabCheck = -1
 
-  'Clear mouse and keyboard buffer, since DOSBox will sometimes leave data
-  DO: LOOP WHILE Mouse.Clicked
-  DO: LOOP WHILE LEN(INKEY$)
-
-
-  'Check if "Tip of the Day" should be shown
-  IF UserSettings.TipOfTheDay THEN
-    'Only show a tip if this is the first time Costa is started today
-    IF NOT UserSettings.TipLastShown = DAY(NOW) THEN
-
-        DIM showTip, TipOfTheDay AS STRING
-        TipOfTheDay = Desk.GetDailyTip
-        Mouse.Show
-
-        IF LEN(TipOfTheDay) THEN
-            showTip = Sys.MsgBox("Did you know?", TipOfTheDay, msgTip)
-        ELSE
-            showTip = Sys.MsgBox("Could not read daily tips", "Could not read daily tips from " + Sys.Path + "DATA\DAILYTIPS.DAT." + CHR$(13) + "Make sure this file exists, and isn't corrupted.", msgError)
-        END IF
-        Mouse.Hide
-        UserSettings.TipLastShown = DAY(NOW)
-        Sys.SaveProfile ProfileID
-    END IF
-  END IF
-
-Desk.RedrawMenu:
   Obj.DrawMenu
   Obj.DrawBtn btnAddLink, False
   Obj.DrawBtn btnRunCmd, False
@@ -1127,6 +1102,9 @@ Desk.RedrawMenu:
   Obj.DrawBtn btnAboutCosta, False
   Obj.DrawBtn btnExitCosta, False
 
+  'Clear mouse and keyboard buffer, since DOSBox will sometimes leave data
+  DO: LOOP WHILE Mouse.Clicked
+  DO: LOOP WHILE LEN(INKEY$)
 
   DO
 
@@ -1152,48 +1130,7 @@ Desk.RedrawMenu:
             IF ClickedY >= DeskLink(DeskLinkCheck).Top AND ClickedY <= DeskLink(DeskLinkCheck).Top + 31 THEN
 
               'If we reach this point, the link was clicked.
-              IF ClickedB = mbRight THEN
-                'If the right mouse button was clicked, show the menu
-                IF NOT TabCheck = -1 THEN
-                    Mouse.Hide
-                    LINE (DeskLink(TabCheck).Left - 3, DeskLink(TabCheck).Top - 3)-(DeskLink(TabCheck).Left + 35, DeskLink(TabCheck).Top + 35), SystemTheme.Desktop, BF
-                    Mouse.Show
-                    Obj.DrawImg imgTab
-                    TabCheck = -1
-                END IF
-
-                Desk.LinkMenu DeskLinkCheck
-                
-                GOTO Desk.RedrawMenu
-              ELSE
-
-                'Left click. Check for double click - await button release
-                'first
-                DO: LOOP WHILE Mouse.Clicked
-
-                'Save current time, and loop until desired time has passed
-                'while checking for mouse click
-                DidDoubleClick = False
-                DoubleClickTimer = TIMER
-                DO
-                  'If mouse was clicked again within set time, and still
-                  'within icon, we have a doubleclick
-                  IF Mouse.Clicked = mbLeft THEN
-                    ClickedX = Mouse.X
-                    ClickedY = Mouse.Y
-                    IF ClickedX >= DeskLink(DeskLinkCheck).Left AND ClickedX <= DeskLink(DeskLinkCheck).Left + 31 THEN
-                      IF ClickedY >= DeskLink(DeskLinkCheck).Top AND ClickedY <= DeskLink(DeskLinkCheck).Top + 31 THEN
-                        DidDoubleClick = True
-                      END IF
-                    END IF
-                    EXIT DO
-                  END IF
-                LOOP UNTIL TIMER > DoubleClickTimer + .3 OR TIMER < DoubleClickTimer
-
-                IF DidDoubleClick THEN
-                  Desk.LinkLaunch DeskLinkCheck
-                END IF
-              END IF
+              Desk.LinkMenu DeskLinkCheck
 
             END IF
           END IF
@@ -1240,7 +1177,6 @@ Desk.RedrawMenu:
                 END IF
             END IF
 
-            GOTO Desk.RedrawMenu
         END IF
 
         IF Key$ = "x" THEN
@@ -1250,12 +1186,10 @@ Desk.RedrawMenu:
                 DIM RunFile AS STRING
                 Desk.Run FileToRun, "", "", True
             END IF
-            GOTO Desk.RedrawMenu
         END IF
 
         IF Key$ = "a" THEN
             Desk.AboutBox
-            GOTO Desk.RedrawMenu
         END IF
 
         IF Key$ = "p" THEN
@@ -1327,7 +1261,6 @@ Desk.RedrawMenu:
 
             IF Key$ = CHR$(13) THEN
               Desk.LinkMenu TabCheck
-              GOTO Desk.RedrawMenu
             END IF
             TabCheck = -1
         END IF
@@ -1695,6 +1628,32 @@ SUB Desk.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVA
 
   DO: LOOP WHILE LEN(INKEY$)
   END 2
+
+END SUB
+
+SUB Desk.TipOfTheDay ()
+
+  'Check if "Tip of the Day" should be shown
+  IF UserSettings.TipOfTheDay THEN
+    'Only show a tip if this is the first time Costa is started today
+    IF NOT UserSettings.TipLastShown = DAY(NOW) THEN
+
+        DIM showTip
+        DIM TipOfTheDay AS STRING
+
+        TipOfTheDay = Desk.GetDailyTip
+        
+        Mouse.Show
+        IF LEN(TipOfTheDay) THEN
+            showTip = Sys.MsgBox("Did you know?", TipOfTheDay, msgTip)
+        ELSE
+            showTip = Sys.MsgBox("Could not read daily tips", "Could not read daily tips from " + Sys.Path + "DATA\DAILYTIPS.DAT." + CHR$(13) + "Make sure this file exists, and isn't corrupted.", msgError)
+        END IF
+        Mouse.Hide
+        UserSettings.TipLastShown = DAY(NOW)
+        Sys.SaveProfile ProfileID
+    END IF
+  END IF
 
 END SUB
 
