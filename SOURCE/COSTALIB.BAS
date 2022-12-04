@@ -300,29 +300,30 @@ SUB Obj.DrawBtn (TargetBtn AS ButtonType, Pressed AS INTEGER)
 		Color4 = 15
 	END IF
 
+	IF Color1 = SystemTheme.Window THEN
+		IF SystemTheme.Window >= 8 THEN
+			Color1 = SystemTheme.Window - 8
+		ELSE
+			Color1 = SystemTheme.Window + 8
+		END IF
+	END IF
+	IF Color3 = SystemTheme.Window THEN
+		IF SystemTheme.Window >= 8 THEN
+			Color3 = SystemTheme.Window - 8
+		ELSE
+			Color3 = SystemTheme.Window + 8
+		END IF
+	END IF
+	IF Color4 = Color2 THEN
+		IF Color2 >= 8 THEN
+			Color4 = Color2 - 8
+		ELSE
+			Color4 = Color2 + 8
+		END IF
+	END IF
+	 
 	Mouse.Hide
 	IF TargetBtn.Transparent = False THEN
-		IF Color1 = SystemTheme.Window THEN
-			IF SystemTheme.Window >= 8 THEN
-				Color1 = SystemTheme.Window - 8
-			ELSE
-				Color1 = SystemTheme.Window + 8
-			END IF
-		END IF
-		IF Color3 = SystemTheme.Window THEN
-			IF SystemTheme.Window >= 8 THEN
-				Color3 = SystemTheme.Window - 8
-			ELSE
-				Color3 = SystemTheme.Window + 8
-			END IF
-		END IF
-		IF Color4 = Color2 THEN
-			IF Color2 >= 8 THEN
-				Color4 = Color2 - 8
-			ELSE
-				Color4 = Color2 + 8
-			END IF
-		END IF
 		LINE (x1, y1)-(x2 - 1, y2 - 1), Color2, BF
 	ELSE
 		LINE (x1, y1)-(x2 - 1, y2 - 1), Color2, B
@@ -349,7 +350,7 @@ END SUB
 
 SUB Obj.DrawChk (TargetChk AS CheckBoxType)
 
-	DIM x1, x2, y1, y2
+	DIM x1, x2, y1, y2, chkColor
 	x1 = TargetChk.Pos.Left
 	y1 = TargetChk.Pos.Top
 	x2 = TargetChk.Pos.Left + 15
@@ -363,9 +364,15 @@ SUB Obj.DrawChk (TargetChk AS CheckBoxType)
 	Mouse.Hide
 	LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 2), SystemTheme.Textbox, BF
 
-	LINE (x1 + 1, y1 + 1)-(x2, y2), 0, B
-	LINE (x2 - 1, y1 + 2)-(x2 - 1, y2 - 1), 0
-	LINE (x1 + 2, y2 - 1)-(x2 - 2, y2 - 1), 0
+	IF SystemTheme.Window = 0 THEN
+		chkColor = 15
+	ELSE
+		chkColor = 0
+	END IF
+
+	LINE (x1 + 1, y1 + 1)-(x2, y2), chkColor, B
+	LINE (x2 - 1, y1 + 2)-(x2 - 1, y2 - 1), chkColor
+	LINE (x1 + 2, y2 - 1)-(x2 - 2, y2 - 1), chkColor
 	
 	LINE (x1, y1)-(x1, y2), SystemTheme.Shadow
 	LINE (x1 + 1, y1)-(x2, y1), SystemTheme.Shadow

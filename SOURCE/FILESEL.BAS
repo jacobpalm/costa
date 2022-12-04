@@ -725,6 +725,7 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 				Pattern = RTRIM$(txtPatternText)
 				File.GetChildFiles Path, Pattern
 				FileListSelection = 0
+				FileListStartPos = 0
 				File.DrawList txtFileList, True, True
 			END IF
 		END IF
