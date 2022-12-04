@@ -1497,14 +1497,13 @@ SUB Desk.ProfileSelect ()
     SelectedProfile = SystemSettings.LastUsedProfile
     IF SelectedProfile < 1 OR SelectedProfile > 5 THEN SelectedProfile = 1
 
+TopOfProfile:
     FOR Counter = 1 TO 5
         Sys.LoadProfile Counter
         ProfileName(Counter) = RTRIM$(UserSettings.ProfileName)
         imgProfile(Counter).ImageFile = RTRIM$(UserSettings.ProfileImage)
     NEXT
 
-
-TopOfProfile:
     Mouse.Hide
     LINE (0, 0)-(639, scrHeight - 1), SystemTheme.Desktop, BF
     Mouse.Show
