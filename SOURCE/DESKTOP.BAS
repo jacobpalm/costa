@@ -1,4 +1,3 @@
-DECLARE SUB Desk.TipOfTheDay ()
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -19,6 +18,7 @@ DECLARE SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
 DECLARE SUB Desk.ProfileSelect ()
 DECLARE SUB Desk.RunDialog ()
 DECLARE SUB Desk.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVAL TargetPath AS STRING, PauseOnExit AS INTEGER)
+DECLARE SUB Desk.TipOfTheDay ()
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
@@ -714,6 +714,7 @@ SUB Desk.LinkMenu (TargetLink)
   VIEW
 
   DO: LOOP WHILE Mouse.Clicked
+  DO: LOOP WHILE LEN(INKEY$)
   DO
 
     Key$ = LCASE$(INKEY$)
@@ -723,8 +724,8 @@ SUB Desk.LinkMenu (TargetLink)
       EXIT DO
     END IF
     
-    'Open/run
-    IF Obj.BtnClick(btnOpen) OR Key$ = "o" THEN
+    'Open/run, or Enter key
+    IF Obj.BtnClick(btnOpen) OR Key$ = "o" OR Key$ = CHR$(13) THEN
       Desk.LinkLaunch TargetLink
       EXIT SUB
     END IF

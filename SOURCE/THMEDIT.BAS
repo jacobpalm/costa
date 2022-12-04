@@ -734,7 +734,7 @@ FUNCTION Theme.SelectObject (BYVAL CurrentSelection) AS INTEGER
     btnObject(7).Caption = "Textbox text"
     btnObject(8).Caption = "3D light"
     btnObject(9).Caption = "3D Shadow"
-    btnObject(10).Caption = "Titlebar and border"
+    btnObject(10).Caption = "Window border"
     btnObject(11).Caption = "Titlebar text"
     btnObject(12).Caption = "Selection"
     btnObject(13).Caption = "Selection text"
