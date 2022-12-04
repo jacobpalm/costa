@@ -36,8 +36,8 @@ SUB TView.DrawText (StartLine)
     Mouse.Hide
     FOR LineCount = StartLine TO StartLine + MaxLinesShown
         IF NOT LineCount > UBOUND(FileData) THEN
-            LINE (7, (15 * (LineCount - StartLine + 1)) + 54)-(633, 15 * (LineCount - StartLine + 1) + 68), SystemTheme.Textbox, BF
-            Font.Print FileData(LineCount), 9, (15 * (LineCount - StartLine + 1)) + 56, SystemTheme.TextboxText, FontSystem
+            LINE (7, (15 * (LineCount - StartLine + 1)) + 22)-(633, 15 * (LineCount - StartLine + 1) + 36), SystemTheme.Textbox, BF
+            Font.Print FileData(LineCount), 9, (15 * (LineCount - StartLine + 1)) + 24, SystemTheme.TextboxText, FontSystem
         END IF
     NEXT
     Mouse.Show
@@ -121,7 +121,6 @@ END FUNCTION
 ' =========================================================================
 SUB TView.Main (FileToView AS STRING)
 
-    DIM FileWin AS WindowType
     DIM btnOpen AS ButtonType, btnExit AS ButtonType
     DIM btnPageUp AS ButtonType, btnPageDown AS ButtonType
     DIM txtEditor AS TextboxType
@@ -130,22 +129,19 @@ SUB TView.Main (FileToView AS STRING)
     DIM StartLine, OldStartLine, FileOpened, OldFileOpened
     DIM LineMove, LineData(2371)
 
-    Obj.SetSize FileWin.Pos, 0, 3, 639, scrHeight - 4
-    FileWin.Caption = "Textviewer"
-
-    Obj.SetSize btnOpen.Pos, 11, 35, -1, -1
+    Obj.SetSize btnOpen.Pos, 3, 2, 92, 22
     btnOpen.Caption = "õOpen file..."
 
-    Obj.SetSize btnPageUp.Pos, 113, 35, -1, -1
+    Obj.SetSize btnPageUp.Pos, 102, 2, 92, 22
     btnPageUp.Caption = "Page õup"
 
-    Obj.SetSize btnPageDown.Pos, 215, 35, -1, -1
+    Obj.SetSize btnPageDown.Pos, 201, 2, 92, 22
     btnPageDown.Caption = "Page õdown"
     
-    Obj.SetSize btnExit.Pos, 537, 35, -1, -1
+    Obj.SetSize btnExit.Pos, 545, 2, 92, 22
     btnExit.Caption = "õClose"
 
-    Obj.SetSize txtEditor.Pos, 6, 67, 627, FileWin.Pos.Height - 69
+    Obj.SetSize txtEditor.Pos, 2, 32, 635, scrHeight - 36
     
     IF LEN(LTRIM$(RTRIM$(FileToView))) THEN
         Filename = LTRIM$(RTRIM$(FileToView))
@@ -155,36 +151,30 @@ SUB TView.Main (FileToView AS STRING)
         ELSE
             FileOpened = TView.LoadFile(Filename)
         END IF
+    ELSE
+      REDIM FileData(0) AS STRING
     END IF
 
     IF scrHeight = 480 THEN
-      MaxLinesShown = 26
+      MaxLinesShown = 28
     ELSE
-      MaxLinesShown = 17
+      MaxLinesShown = 19
     END IF
 
 startofall:
 
-    IF FileOpened THEN
-        FileWin.Caption = "Textviewer - " + Filename
-    END IF
-
-    Obj.DrawWin FileWin
+    Obj.DrawMenu
+    Mouse.Hide
+    LINE (0, 29)-(639, scrHeight - 1), SystemTheme.Window, BF
     Obj.DrawBtn btnOpen, False
-    IF FileOpened = False THEN
+    Mouse.Show
+
+    IF FileOpened AND UBOUND(FileData) > 27 THEN
         Obj.DrawBtn btnPageUp, False
         Obj.DrawBtn btnPageDown, False
-    ELSE
-        IF UBOUND(FileData) > 27 THEN
-            Obj.DrawBtn btnPageUp, False
-            Obj.DrawBtn btnPageDown, False
-        END IF
     END IF
     Obj.DrawBtn btnExit, False
     Obj.DrawTxt txtEditor, "", False
-    Mouse.Hide
-    LINE (7, txtEditor.Pos.Top + 2)-(633, txtEditor.Pos.Top + txtEditor.Pos.Height - 2), SystemTheme.Textbox, BF
-    Mouse.Show
 
     IF FileOpened THEN
         StartLine = 1
@@ -204,11 +194,11 @@ startofall:
                 Mouse.Hide
 
                 FOR LineMove = MaxLinesShown TO 1 STEP -1
-                    GET (7, (15 * (LineMove)) + 54)-(633, 15 * (LineMove) + 68), LineData
-                    PUT (7, (15 * (LineMove + 1)) + 54), LineData, PSET
+                    GET (7, (15 * (LineMove)) + 21)-(633, 15 * (LineMove) + 35), LineData
+                    PUT (7, (15 * (LineMove + 1)) + 21), LineData, PSET
                 NEXT
-                LINE (7, (15 * (1)) + 54)-(633, 15 * (1) + 68), SystemTheme.Textbox, BF
-                Font.Print FileData(StartLine), 9, (15 * (1)) + 56, SystemTheme.TextboxText, FontSystem
+                LINE (7, (15 * (1)) + 21)-(633, 15 * (1) + 35), SystemTheme.Textbox, BF
+                Font.Print FileData(StartLine), 9, (15 * (1)) + 22, SystemTheme.TextboxText, FontSystem
 
                 Mouse.Show
             END IF
@@ -225,11 +215,11 @@ startofall:
             IF NOT StartLine = OldStartLine THEN
                 Mouse.Hide
                 FOR LineMove = 1 TO MaxLinesShown
-                    GET (7, (15 * (LineMove + 1)) + 54)-(633, 15 * (LineMove + 1) + 68), LineData
-                    PUT (7, (15 * (LineMove)) + 54), LineData, PSET
+                    GET (7, (15 * (LineMove + 1)) + 22)-(633, 15 * (LineMove + 1) + 36), LineData
+                    PUT (7, (15 * (LineMove)) + 22), LineData, PSET
                 NEXT
-                LINE (7, (15 * (MaxLinesShown + 1)) + 54)-(633, 15 * (MaxLinesShown + 1) + 68), SystemTheme.Textbox, BF
-                Font.Print FileData(StartLine + MaxLinesShown), 9, (15 * (MaxLinesShown + 1)) + 56, SystemTheme.TextboxText, FontSystem
+                LINE (7, (15 * (MaxLinesShown + 1)) + 21)-(633, 15 * (MaxLinesShown + 1) + 35), SystemTheme.Textbox, BF
+                Font.Print FileData(StartLine + MaxLinesShown), 9, (15 * (MaxLinesShown + 1)) + 22, SystemTheme.TextboxText, FontSystem
                 Mouse.Show
             END IF
         END IF

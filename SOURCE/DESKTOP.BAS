@@ -155,9 +155,9 @@ SUB Desk.AboutBox ()
   DIM imgLogo AS ImageType
   DIM Key$
 
-  Obj.SetSize winAboutBox.Pos, 156, (scrHeight - 242) / 2, 328, 242
+  Obj.SetSize winAboutBox.Pos, 156, (scrHeight - 278) / 2, 328, 278
   Obj.SetSize imgLogo.Pos, 168, winAboutBox.Pos.Top + 11, -1, -1
-  Obj.SetSize btnClose.Pos, 545, 2, 92, 22
+  Obj.SetSize btnClose.Pos, 274, winAboutBox.Pos.Top + 243, 92, 22
   btnClose.Caption = "õClose"
 
   imgLogo.ImageFile = "LOGO"
@@ -168,10 +168,9 @@ SUB Desk.AboutBox ()
     Mouse.Show
   END IF
 
-  Obj.DrawMenu
-  Obj.DrawBtn btnClose, False
-  
   Obj.DrawWin winAboutBox
+  Obj.DrawBtn btnClose, False
+
   Font.Print appName, 210, winAboutBox.Pos.Top + 17, 0, 1
   Font.Print "Version " + appVersion, 210, winAboutBox.Pos.Top + 31, 0, 2
   Font.Print "Made in 2004-" + appYear + " by Jacob Palm.", 168, winAboutBox.Pos.Top + 53, 0, 2
