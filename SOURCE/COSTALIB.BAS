@@ -821,8 +821,6 @@ END FUNCTION
 
 SUB Sys.Load ()
 
-	DIM DontDrawDesktop
-
 	'If the parameters /VER or /? are used, just show version info and exit
 		IF INSTR(COMMAND$, "/VER") OR INSTR(COMMAND$, "/?") THEN
 			PRINT
@@ -898,9 +896,6 @@ SUB Sys.Load ()
 		IF ProfileID THEN
 			Sys.LoadProfile ProfileID
 		ELSE
-			DontDrawDesktop = True 'If no profile loaded, don't draw desktop as
-														 'that will cause flicker once theme is loaded
-														 'and proper desktop color is drawn
 			Sys.LoadProfile 0
 		END IF
 
@@ -918,12 +913,6 @@ SUB Sys.Load ()
 		ELSE
 			scrHeight = 350
 			SCREEN 9
-		END IF
-
-		IF NOT DontDrawDesktop THEN
-			Mouse.Hide
-			LINE (0, 0)-(639, scrHeight - 1), SystemTheme.Desktop, BF
-			Mouse.Show
 		END IF
 
 	'Set the right colors for the palette
@@ -985,7 +974,7 @@ LoadDefaultProfile:
 	UserSettings.Animations = True
 	UserSettings.ShowLinkDescriptions = True
 	UserSettings.ShowLinkTargetFiles = True
-	UserSettings.ScreenMode = scrEGA
+	UserSettings.ScreenMode = scrVGA
 	UserSettings.ConfirmLinkDelete = True
 	UserSettings.ConfirmExit = True
 	UserSettings.TipOfTheDay = True
