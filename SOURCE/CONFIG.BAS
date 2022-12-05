@@ -21,7 +21,7 @@ Sys.Load
 Conf.Main
 
 ' =========================================================================
-'          NAME: Conf.ConfAssoc()     
+'          NAME: Conf.ConfAssoc()    
 '    PARAMETERS: None
 '       RETURNS: Nothing
 '       ASSUMES: Nothing
@@ -293,7 +293,7 @@ RedrawAllMisc:
     Font.Print "Use õVGA mode (higher resolution, but slower)", chkUseVGAMode.Pos.Left + 20, chkUseVGAMode.Pos.Top + 3, SystemTheme.WindowText, 2
     Font.Print "Confirm link õremoval", chkConfLinkDel.Pos.Left + 20, chkConfLinkDel.Pos.Top + 3, SystemTheme.WindowText, 2
     Font.Print "õAnimate user interface (sliding menus)", chkAnimUI.Pos.Left + 20, chkAnimUI.Pos.Top + 3, SystemTheme.Shadow, 2
-    Font.Print "Confirm when trying to eõxit Costa", chkConfExit.Pos.Left + 20, chkConfExit.Pos.Top + 3, SystemTheme.WindowText, 2
+    Font.Print "Confirm before eõxiting Costa", chkConfExit.Pos.Left + 20, chkConfExit.Pos.Top + 3, SystemTheme.WindowText, 2
     Font.Print "õGrey out screen while showing a messagebox", chkGreyOutMsgBox.Pos.Left + 20, chkGreyOutMsgBox.Pos.Top + 3, SystemTheme.WindowText, 2
     Font.Print "Shoõw start-up ""Tip of the Day"" messages", chkDailyTip.Pos.Left + 20, chkDailyTip.Pos.Top + 3, SystemTheme.WindowText, 2
     Font.Print "õUse last profile on start-up without asking", chkUseLastProfile.Pos.Left + 20, chkUseLastProfile.Pos.Top + 3, SystemTheme.WindowText, 2
