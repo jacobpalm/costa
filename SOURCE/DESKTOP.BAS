@@ -36,7 +36,6 @@ END TYPE
 REDIM SHARED DeskLink(0 TO 0) AS DeskLinkType
 
 IF COMMAND$ = "/BOOT" THEN
-
   'Boot means that we need to initialize Costa, and make sure all paths are
   'valid. Will not run when returning to the desktop from external program.
 
@@ -86,15 +85,6 @@ IF COMMAND$ = "/BOOT" THEN
     OPEN Temp.Path + "RUNSTAT.TMP" FOR OUTPUT AS #FileHandle
     PRINT #FileHandle, "1"
     CLOSE #FileHandle
-    
-ELSE
-
-  'We will redraw the desktop, not load it, so make sure there's nothing to
-  'load
-  ON ERROR RESUME NEXT
-  KILL Temp.Path + "DESKTOP.*"
-  ON ERROR GOTO 0
-
 END IF
 
 STACK 5120
@@ -136,6 +126,9 @@ ON ERROR RESUME NEXT
 OPEN Temp.Path + "PROFILE.TMP" FOR OUTPUT AS #FileHandle
 PRINT #FileHandle, ProfileID
 CLOSE #FileHandle
+
+CHDRIVE LEFT$(Sys.Path, 1)
+CHDIR Sys.Path
 ON ERROR GOTO 0
 
 Desk.Main
@@ -1060,8 +1053,7 @@ SUB Desk.Main ()
   DIM btnAddLink AS ButtonType, btnRunCmd AS ButtonType
   DIM btnAboutCosta AS ButtonType, btnExitCosta AS ButtonType
   DIM btnProfile AS ButtonType, btnConfig AS ButtonType
-  DIM SlidePos, DelayFixer
-
+  
   Obj.SetSize btnAddLink.Pos, 3, 2, 92, 22
   btnAddLink.Caption = "Add õlink"
   Obj.SetSize btnRunCmd.Pos, 102, 2, 92, 22
@@ -1079,20 +1071,15 @@ SUB Desk.Main ()
 
   DIM DeskLinkCheck, ClickedX, ClickedY, ClickedB, DidEdit, Key$
   DIM TabCheck, btnTab AS ButtonType, imgTab AS ImageType
-  DIM DoubleClickTimer AS SINGLE, DidDoubleClick
   
-  ON LOCAL ERROR RESUME NEXT
-  CHDRIVE LEFT$(Sys.Path, 1)
-  CHDIR Sys.Path
-  ON LOCAL ERROR GOTO 0
-  
+  Mouse.Show
+
   Desk.LinkLoad
   Desk.TipOfTheDay
-  
+
 Desk.RedrawAll:
-  Mouse.Hide
+
   Desk.DrawDesktop
-  Mouse.Show
   TabCheck = -1
 
   Obj.DrawMenu
@@ -1642,15 +1629,18 @@ SUB Desk.TipOfTheDay ()
         DIM showTip
         DIM TipOfTheDay AS STRING
 
+        Mouse.Hide
+        LINE (0, 0)-(639, scrHeight - 1), SystemTheme.Desktop, BF
+        Mouse.Show
+
         TipOfTheDay = Desk.GetDailyTip
         
-        Mouse.Show
         IF LEN(TipOfTheDay) THEN
             showTip = Sys.MsgBox("Did you know?", TipOfTheDay, msgTip)
         ELSE
             showTip = Sys.MsgBox("Could not read daily tips", "Could not read daily tips from " + Sys.Path + "DATA\DAILYTIPS.DAT." + CHR$(13) + "Make sure this file exists, and isn't corrupted.", msgError)
         END IF
-        Mouse.Hide
+
         UserSettings.TipLastShown = DAY(NOW)
         Sys.SaveProfile ProfileID
     END IF
