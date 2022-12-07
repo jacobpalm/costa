@@ -1188,8 +1188,7 @@ Desk.RedrawAll:
         END IF
 
         IF Key$ = "c" THEN
-            Conf.Main
-            GOTO Desk.RedrawAll
+            Desk.Run "CONFIG.EXE", "", Sys.Path, False
         END IF
 
 

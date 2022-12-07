@@ -16,12 +16,14 @@ CONST LaunchTheme = 3
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
+STACK 5120
+
 Sys.Load
 
 Conf.Main
 
 ' =========================================================================
-'          NAME: Conf.ConfAssoc()    
+'          NAME: Conf.ConfAssoc()  
 '    PARAMETERS: None
 '       RETURNS: Nothing
 '       ASSUMES: Nothing
