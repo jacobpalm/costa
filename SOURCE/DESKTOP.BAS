@@ -1183,6 +1183,7 @@ Desk.RedrawAll:
         IF Key$ = "p" THEN
             Desk.ProfileSelect
             Desk.LinkLoad
+            Desk.TipOfTheDay
             GOTO Desk.RedrawAll
         END IF
 
