@@ -129,7 +129,7 @@ SUB Font.Print (BYVAL Text AS STRING, X, Y, Col, FontID)
 	NEXT
 	
 	'Underline hotkey, if any
-	IF HotKey THEN
+	IF HotKey AND NOT FontID = FontSystem THEN
 		LINE (X + Font.GetWidth(LEFT$(FilteredText, HotKey - 1), FontID), Y + 11)-(X + Font.GetWidth(LEFT$(FilteredText, HotKey), FontID), Y + 11), Col
 	END IF
 
@@ -275,7 +275,7 @@ SUB Obj.ChkClick (TargetChk AS CheckBoxType)
 END SUB
 
 SUB Obj.DrawBtn (TargetBtn AS ButtonType, Pressed AS INTEGER)
-
+	
 	'Store the size and position in variables for easiser handling, and
 	'set the default size of the control if no size is specified
 	DIM x1, x2, y1, y2
