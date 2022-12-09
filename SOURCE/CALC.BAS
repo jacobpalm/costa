@@ -2,9 +2,12 @@ OPTION EXPLICIT
 DEFINT A-Z
 
 DECLARE FUNCTION Calc.FormatNum (TargetStr AS STRING) AS STRING
+DECLARE SUB Calc.LogLine (Text AS STRING, TargetTxt AS ANY)
 DECLARE SUB Calc.Main ()
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
+
+DIM SHARED LogLinesWritten
 
 Sys.Load
 
@@ -47,6 +50,29 @@ FUNCTION Calc.FormatNum (TargetStr AS STRING) AS STRING
     
 END FUNCTION
 
+SUB Calc.LogLine (Text AS STRING, TargetTxt AS TextboxType)
+
+  DIM MaxLogLines, TopOffset
+
+  IF UserSettings.ScreenMode = scrVGA THEN
+    MaxLogLines = 27
+    TopOffset = 48
+  ELSE
+    MaxLogLines = 18
+    TopOffset = 52
+  END IF
+
+  LogLinesWritten = LogLinesWritten + 1
+
+  IF LogLinesWritten > MaxLogLines THEN
+    LogLinesWritten = 0
+    Obj.DrawTxt TargetTxt, "", False
+  END IF
+
+  Font.Print Text, 624 - LEN(Text) * 8, TopOffset + (LogLinesWritten * 15), SystemTheme.WindowText, FontSystem
+  
+END SUB
+
 ' =========================================================================
 '          NAME: Calc.Main()
 '    PARAMETERS: TargetLink - the position in the DeskLink array
@@ -60,8 +86,8 @@ END FUNCTION
 ' =========================================================================
 SUB Calc.Main ()
 
-    DIM winCalc AS WindowType
-    DIM txtCalc AS TextboxType
+    DIM frmCalc AS FrameType
+    DIM txtCalc AS TextboxType, txtResults AS TextboxType
     DIM btnNumb(0 TO 9) AS ButtonType
     DIM btnC AS ButtonType, btnCE AS ButtonType, btnDivide AS ButtonType
     DIM btnMulti AS ButtonType, btnMinus AS ButtonType, btnPlus AS ButtonType
@@ -70,30 +96,32 @@ SUB Calc.Main ()
     DIM MathFunc AS STRING * 1
     DIM TotalSum AS CURRENCY, Op1 AS CURRENCY, Op2 AS CURRENCY, NumOps
     DIM Key$, txtCalcText AS STRING, LastClick AS STRING
-                                     
-    Obj.SetSize winCalc.Pos, 213, (scrHeight - 233) / 2, 214, 233
-    Obj.SetSize txtCalc.Pos, 225, winCalc.Pos.Top + 35, 190, -1
-    Obj.SetSize btnNumb(0).Pos, 226, winCalc.Pos.Top + 200, 40, -1
-    Obj.SetSize btnNumb(1).Pos, 226, winCalc.Pos.Top + 167, 40, -1
-    Obj.SetSize btnNumb(2).Pos, 276, winCalc.Pos.Top + 167, 40, -1
-    Obj.SetSize btnNumb(3).Pos, 326, winCalc.Pos.Top + 167, 40, -1
-    Obj.SetSize btnNumb(4).Pos, 226, winCalc.Pos.Top + 134, 40, -1
-    Obj.SetSize btnNumb(5).Pos, 276, winCalc.Pos.Top + 134, 40, -1
-    Obj.SetSize btnNumb(6).Pos, 326, winCalc.Pos.Top + 134, 40, -1
-    Obj.SetSize btnNumb(7).Pos, 226, winCalc.Pos.Top + 101, 40, -1
-    Obj.SetSize btnNumb(8).Pos, 276, winCalc.Pos.Top + 101, 40, -1
-    Obj.SetSize btnNumb(9).Pos, 326, winCalc.Pos.Top + 101, 40, -1
-    Obj.SetSize btnC.Pos, 226, winCalc.Pos.Top + 68, 40, -1
-    Obj.SetSize btnCE.Pos, 276, winCalc.Pos.Top + 68, 40, -1
-    Obj.SetSize btnDivide.Pos, 326, winCalc.Pos.Top + 68, 40, -1
-    Obj.SetSize btnDot.Pos, 276, winCalc.Pos.Top + 200, 40, -1
-    Obj.SetSize btnMulti.Pos, 376, winCalc.Pos.Top + 68, 40, -1
-    Obj.SetSize btnMinus.Pos, 376, winCalc.Pos.Top + 101, 40, -1
-    Obj.SetSize btnPlus.Pos, 376, winCalc.Pos.Top + 134, 40, -1
-    Obj.SetSize btnEquals.Pos, 376, winCalc.Pos.Top + 167, 40, -1
-    Obj.SetSize btnClose.Pos, 326, winCalc.Pos.Top + 200, 90, -1
     
-    winCalc.Caption = "Calculator"
+    Obj.SetSize frmCalc.Pos, 12, 42, 218, 208
+    Obj.SetSize txtCalc.Pos, 25, frmCalc.Pos.Top + 12, 191, -1
+    Obj.SetSize btnNumb(0).Pos, 26, frmCalc.Pos.Top + 172, 90, -1
+    Obj.SetSize btnNumb(1).Pos, 26, frmCalc.Pos.Top + 139, 40, -1
+    Obj.SetSize btnNumb(2).Pos, 76, frmCalc.Pos.Top + 139, 40, -1
+    Obj.SetSize btnNumb(3).Pos, 126, frmCalc.Pos.Top + 139, 40, -1
+    Obj.SetSize btnNumb(4).Pos, 26, frmCalc.Pos.Top + 106, 40, -1
+    Obj.SetSize btnNumb(5).Pos, 76, frmCalc.Pos.Top + 106, 40, -1
+    Obj.SetSize btnNumb(6).Pos, 126, frmCalc.Pos.Top + 106, 40, -1
+    Obj.SetSize btnNumb(7).Pos, 26, frmCalc.Pos.Top + 73, 40, -1
+    Obj.SetSize btnNumb(8).Pos, 76, frmCalc.Pos.Top + 73, 40, -1
+    Obj.SetSize btnNumb(9).Pos, 126, frmCalc.Pos.Top + 73, 40, -1
+    Obj.SetSize btnC.Pos, 26, frmCalc.Pos.Top + 40, 40, -1
+    Obj.SetSize btnCE.Pos, 76, frmCalc.Pos.Top + 40, 40, -1
+    Obj.SetSize btnDivide.Pos, 126, frmCalc.Pos.Top + 40, 40, -1
+    Obj.SetSize btnDot.Pos, 126, frmCalc.Pos.Top + 172, 40, -1
+    Obj.SetSize btnMulti.Pos, 176, frmCalc.Pos.Top + 40, 40, -1
+    Obj.SetSize btnMinus.Pos, 176, frmCalc.Pos.Top + 73, 40, -1
+    Obj.SetSize btnPlus.Pos, 176, frmCalc.Pos.Top + 106, 40, -1
+    Obj.SetSize btnEquals.Pos, 176, frmCalc.Pos.Top + 139, 40, 55
+
+    Obj.SetSize txtResults.Pos, frmCalc.Pos.Left + frmCalc.Pos.Width + 12, frmCalc.Pos.Top, 385, scrHeight - 55
+
+    Obj.SetSize btnClose.Pos, 545, 2, 92, 22
+    
     btnC.Caption = "õC"
     btnCE.Caption = "CõE"
     btnDivide.Caption = "/"
@@ -105,10 +133,13 @@ SUB Calc.Main ()
     btnClose.Caption = "Cõlose"
     txtCalc.MaxLen = 25
 
-    Obj.DrawWin winCalc
+    Mouse.Hide
+    LINE (0, 29)-(639, scrHeight - 1), SystemTheme.Window, BF
+    Mouse.Show
+    Obj.DrawMenu
+
+    Obj.DrawFrm frmCalc, 15, SystemTheme.Shadow
     Obj.DrawTxt txtCalc, "", False
-    Obj.DrawBtn btnNumb(7), False
-    Obj.DrawBtn btnNumb(8), False
     FOR btnCount = 0 TO 9
         btnNumb(btnCount).Caption = LTRIM$(STR$(btnCount))
         Obj.DrawBtn btnNumb(btnCount), False
@@ -117,7 +148,10 @@ SUB Calc.Main ()
     Obj.DrawBtn btnMulti, False: Obj.DrawBtn btnMinus, False: Obj.DrawBtn btnPlus, False
     Obj.DrawBtn btnEquals, False: Obj.DrawBtn btnDot, False: Obj.DrawBtn btnClose, False
 
+    Obj.DrawTxt txtResults, "", False
     Mouse.Show
+
+    LogLinesWritten = -1
 
     ON LOCAL ERROR GOTO CalcErr
 
@@ -135,8 +169,11 @@ StartOfCalc:
                 IF LEN(txtCalcText) < 22 THEN
                     Key$ = LTRIM$(STR$(btnCount))
                     IF NOT (Key$ = "0" AND txtCalcText = "0") THEN
-                        IF LastClick = "EQUAL" THEN Obj.DrawTxt txtCalc, "", False: txtCalcText = "": NumOps = 0: Op1 = 0
-                        IF LastClick = "OP" THEN Obj.DrawTxt txtCalc, "", False
+                        IF LastClick = "EQUAL" THEN
+                          NumOps = 0
+                          Op1 = 0
+                          Calc.LogLine "", txtResults
+                        END IF
                         LastClick = "NUMB"
                         txtCalcText = txtCalcText + Key$
                         Obj.DrawTxt txtCalc, Calc.FormatNum(txtCalcText), False
@@ -154,13 +191,16 @@ StartOfCalc:
         IF Obj.BtnClick(btnCE) OR Key$ = "e" THEN
             txtCalcText = ""
             Obj.DrawTxt txtCalc, "", False
+            Calc.LogLine "", txtResults
             TotalSum = 0: MathFunc = "": NumOps = 0: Op1 = 0: LastClick = ""
         END IF
 
         IF Obj.BtnClick(btnDot) OR (Key$ = "." OR Key$ = ",") THEN
             IF LEN(txtCalcText) < 22 AND (INSTR(txtCalcText$, ".") = 0) THEN
-                IF LastClick = "EQUAL" THEN Obj.DrawTxt txtCalc, "", False: txtCalcText = "": NumOps = 0: Op1 = 0
-                IF LastClick = "OP" THEN Obj.DrawTxt txtCalc, "", False
+                IF LastClick = "EQUAL" THEN
+                  NumOps = 0
+                  Op1 = 0
+                END IF
                 LastClick = "NUMB"
                 IF txtCalcText = "" THEN txtCalcText = "0"
                 txtCalcText = txtCalcText + "."
@@ -171,6 +211,8 @@ StartOfCalc:
         IF Obj.BtnClick(btnEquals) OR Key$ = "=" OR Key$ = CHR$(13) THEN
             IF NumOps = 1 AND LastClick = "NUMB" THEN
                 Op1 = VAL(txtCalcText)
+                Calc.LogLine MathFunc + " " + Calc.FormatNum(LTRIM$(STR$(Op1))), txtResults
+
                 IF MathFunc = "+" THEN TotalSum = TotalSum + Op1
                 IF MathFunc = "-" THEN TotalSum = TotalSum - Op1
                 IF MathFunc = "*" THEN TotalSum = TotalSum * Op1
@@ -178,11 +220,20 @@ StartOfCalc:
                     IF NOT Op1 = 0 THEN
                         TotalSum = TotalSum / Op1
                     ELSE
-                        txtCalcText = "": Obj.DrawTxt txtCalc, "Division by zero", False: TotalSum = 0: MathFunc = "": NumOps = 0: Op1 = 0: LastClick = ""
+                        txtCalcText = ""
+                        Obj.DrawTxt txtCalc, "Division by zero", False
+                        TotalSum = 0
+                        MathFunc = ""
+                        NumOps = 0
+                        Op1 = 0
+                        LastClick = ""
+                        Calc.LogLine "Division by zero", txtResults
+                        Calc.LogLine "", txtResults
                         GOTO StartOfCalc
                     END IF
                 END IF
-                Obj.DrawTxt txtCalc, Calc.FormatNum(LTRIM$(STR$(TotalSum))), False
+                
+                Calc.LogLine "= " + Calc.FormatNum(LTRIM$(STR$(TotalSum))), txtResults
             END IF
 
             IF NOT MathFunc = CHR$(0) AND NOT MathFunc = "" AND NOT MathFunc = " " THEN
@@ -201,6 +252,7 @@ StartOfCalc:
             IF Key$ = "+" OR Key$ = "-" OR Key$ = "*" OR Key$ = "/" THEN
                 IF NumOps = 1 AND LastClick = "NUMB" THEN
                     Op1 = VAL(txtCalcText)
+                    Calc.LogLine MathFunc + " " + Calc.FormatNum(LTRIM$(STR$(Op1))), txtResults
                     IF MathFunc = "+" THEN TotalSum = TotalSum + Op1
                     IF MathFunc = "-" THEN TotalSum = TotalSum - Op1
                     IF MathFunc = "*" THEN TotalSum = TotalSum * Op1
@@ -208,7 +260,15 @@ StartOfCalc:
                         IF NOT Op1 = 0 THEN
                             TotalSum = TotalSum / Op1
                         ELSE
-                            txtCalcText = "": Obj.DrawTxt txtCalc, "Division by zero", False: TotalSum = 0: MathFunc = "": NumOps = 0: Op1 = 0: LastClick = ""
+                            txtCalcText = ""
+                            Obj.DrawTxt txtCalc, "Division by zero", False
+                            TotalSum = 0
+                            MathFunc = ""
+                            NumOps = 0
+                            Op1 = 0
+                            LastClick = ""
+                            Calc.LogLine "Division by zero", txtResults
+                            Calc.LogLine "", txtResults
                             GOTO StartOfCalc
                         END IF
                     END IF
@@ -221,6 +281,7 @@ StartOfCalc:
                 IF Key$ = "/" THEN MathFunc = "/"
                 IF NumOps = 0 THEN
                     TotalSum = VAL(txtCalcText)
+                    Calc.LogLine Calc.FormatNum(LTRIM$(STR$(TotalSum))), txtResults
                 END IF
                 IF LastClick = "NUMB" THEN txtCalcText = ""
 
@@ -245,8 +306,9 @@ StartOfCalc:
     EXIT SUB
 
 CalcErr:
-    txtCalcText = "": Obj.DrawTxt txtCalc, "Overflow error", False
+    txtCalcText = "": Obj.DrawTxt txtCalc, "", False
+    Calc.LogLine "Overflow error", txtResults
     TotalSum = 0: MathFunc = "": NumOps = 0: Op1 = 0: LastClick = ""
-    GOTO StartOfCalc
+    RESUME NEXT
 END SUB
 
