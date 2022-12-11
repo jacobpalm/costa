@@ -254,7 +254,7 @@ SUB Desk.DrawDesktop ()
 
             Font.Print LinkTargetText, DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 18, SystemTheme.DesktopText, 2
         ELSE
-            Font.Print DeskLink(TargetLink).Caption, DeskLink(TargetLink).Left + 16 - (Font.GetWidth(RTRIM$(DeskLink(TargetLink).Caption), FontNormal) / 2), DeskLink(TargetLink).Top + 38, SystemTheme.DesktopText, FontNormal
+            Font.Print DeskLink(TargetLink).Caption, DeskLink(TargetLink).Left + 16 - (Font.GetWidth(RTRIM$(DeskLink(TargetLink).Caption), fontNormal) / 2), DeskLink(TargetLink).Top + 38, SystemTheme.DesktopText, fontNormal
         END IF
 
     END IF
@@ -393,7 +393,7 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
   END IF
   
   DIM ConfWin AS WindowType
-  DIM txtLinkCapt AS TextboxType, txtFileName AS TextboxType
+  DIM txtLinkCapt AS TextboxType, txtFilename AS TextboxType
   DIM txtParams AS TextboxType, txtPath AS TextboxType
   DIM txtLinkCaptText AS STRING, txtFileNameText AS STRING
   DIM txtParamsText AS STRING, txtPathText AS STRING
@@ -403,23 +403,28 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
   DIM imgIcon AS ImageType
   DIM chkPauseOnExit AS CheckBoxType
 
-  Obj.SetSize ConfWin.Pos, 210, (scrHeight - 336) / 2, 220, 336
+  Obj.SetSize ConfWin.Pos, 210, (scrHeight - 336) / 2, 220, 312
+  IF UserSettings.ScreenMode = scrEGA THEN
+    'Avoid menubar overlap on low resolution
+    ConfWin.Pos.Top = (scrHeight - ConfWin.Pos.Height - 28) / 2 + 28
+  END IF
 
-  Obj.SetSize txtLinkCapt.Pos, 222, ConfWin.Pos.Top + 28, 196, 19
-  Obj.SetSize btnIconPrev.Pos, 262, ConfWin.Pos.Top + 80, 22, 22
-  Obj.SetSize frmIconFrame.Pos, 296, ConfWin.Pos.Top + 67, 48, 48
-  Obj.SetSize imgIcon.Pos, 304, ConfWin.Pos.Top + 75, 32, 32
-  Obj.SetSize btnIconNext.Pos, 356, ConfWin.Pos.Top + 80, 22, 22
-  Obj.SetSize txtFileName.Pos, 222, ConfWin.Pos.Top + 147, 173, 19
-  Obj.SetSize btnBrowse.Pos, 399, ConfWin.Pos.Top + 147, 19, 19
-  Obj.SetSize txtParams.Pos, 222, ConfWin.Pos.Top + 193, 196, 19
-  Obj.SetSize txtPath.Pos, 222, ConfWin.Pos.Top + 242, 196, 19
-  Obj.SetSize chkPauseOnExit.Pos, 222, ConfWin.Pos.Top + 274, -1, -1
-  Obj.SetSize btnOK.Pos, 229, ConfWin.Pos.Top + 301, 84, 22
-  Obj.SetSize btnCancel.Pos, 326, ConfWin.Pos.Top + 301, 84, 22
+  Obj.SetSize frmIconFrame.Pos, 296, ConfWin.Pos.Top + 12, 48, 48
+  Obj.SetSize imgIcon.Pos, 304, frmIconFrame.Pos.Top + 8, 32, 32
+  Obj.SetSize btnIconPrev.Pos, 262, frmIconFrame.Pos.Top + 13, 22, 22
+  Obj.SetSize btnIconNext.Pos, 356, frmIconFrame.Pos.Top + 13, 22, 22
+
+  Obj.SetSize txtLinkCapt.Pos, 222, frmIconFrame.Pos.Top + 73, 196, 19
+  Obj.SetSize txtFilename.Pos, 222, txtLinkCapt.Pos.Top + 44, 173, 19
+  Obj.SetSize btnBrowse.Pos, 399, txtFilename.Pos.Top, 19, 19
+  Obj.SetSize txtParams.Pos, 222, txtFilename.Pos.Top + 44, 196, 19
+  Obj.SetSize txtPath.Pos, 222, txtParams.Pos.Top + 44, 196, 19
+  Obj.SetSize chkPauseOnExit.Pos, 222, txtPath.Pos.Top + 32, -1, -1
+  Obj.SetSize btnOK.Pos, 229, chkPauseOnExit.Pos.Top + 28, 84, 22
+  Obj.SetSize btnCancel.Pos, 326, btnOK.Pos.Top, 84, 22
 
   txtLinkCapt.MaxLen = 25
-  txtFileName.MaxLen = 50
+  txtFilename.MaxLen = 50
   txtParams.MaxLen = 50
   txtPath.MaxLen = 50
   txtFileNameText = RTRIM$(DeskLink(TargetLink).Filename)
@@ -444,18 +449,18 @@ LinkDialogDraw:
   Obj.DrawBtn btnIconPrev, False
   Obj.DrawFrm frmIconFrame, 15, SystemTheme.Shadow
   Obj.DrawBtn btnIconNext, False
-  Obj.DrawTxt txtFileName, txtFileNameText, False
+  Obj.DrawTxt txtFilename, txtFileNameText, False
   Obj.DrawBtn btnBrowse, False
   Obj.DrawTxt txtParams, txtParamsText, False
   Obj.DrawTxt txtPath, txtPathText, False
   Obj.DrawChk chkPauseOnExit
   Obj.DrawBtn btnOK, False
   Obj.DrawBtn btnCancel, False
-  Font.Print "õDescription (caption):", 222, ConfWin.Pos.Top + 14, SystemTheme.WindowText, 1
-  Font.Print "õProgram or DOS command:", 222, ConfWin.Pos.Top + 130, SystemTheme.WindowText, 1
-  Font.Print "Paõrameters:", 222, ConfWin.Pos.Top + 179, SystemTheme.WindowText, 1
-  Font.Print "Paõth (including drive):", 222, ConfWin.Pos.Top + 228, SystemTheme.WindowText, 1
-  Font.Print "Pause after eõxecution", 242, ConfWin.Pos.Top + 277, SystemTheme.WindowText, 2
+  Font.Print "õDescription (caption):", 222, txtLinkCapt.Pos.Top - 15, SystemTheme.WindowText, 1
+  Font.Print "õProgram or DOS command:", 222, txtFilename.Pos.Top - 15, SystemTheme.WindowText, 1
+  Font.Print "Paõrameters:", 222, txtParams.Pos.Top - 15, SystemTheme.WindowText, 1
+  Font.Print "Paõth (including drive):", 222, txtPath.Pos.Top - 15, SystemTheme.WindowText, 1
+  Font.Print "Pause after eõxecution", 242, chkPauseOnExit.Pos.Top + 3, SystemTheme.WindowText, 2
   Mouse.Hide
   LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), SystemTheme.Desktop, BF
   Mouse.Show
@@ -530,7 +535,7 @@ LinkDialogDraw:
     END IF
   
     IF Obj.TxtClick(txtLinkCapt) OR Key$ = "d" THEN Obj.EditTxt txtLinkCapt, txtLinkCaptText
-    IF Obj.TxtClick(txtFileName) OR Key$ = "p" THEN Obj.EditTxt txtFileName, txtFileNameText
+    IF Obj.TxtClick(txtFilename) OR Key$ = "p" THEN Obj.EditTxt txtFilename, txtFileNameText
     IF Obj.TxtClick(txtParams) OR Key$ = "r" THEN Obj.EditTxt txtParams, txtParamsText
     IF Obj.TxtClick(txtPath) OR Key$ = "t" THEN
       Obj.EditTxt txtPath, txtPathText
@@ -696,14 +701,22 @@ SUB Desk.LinkMenu (TargetLink)
   Obj.DrawBtn btnCancel, False
   Obj.DrawImg imgIcon
 
-  Font.Print DeskLink(TargetLink).Caption, winLinkMenu.Pos.Left + 54, winLinkMenu.Pos.Top + 17, 0, 1
-  Font.Print DeskLink(TargetLink).Filename, winLinkMenu.Pos.Left + 54, winLinkMenu.Pos.Top + 31, 0, 2
-  Font.Print "Path:", winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 59, 0, 2
-  Font.Print "Parameters:", winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 76, 0, 2
+  Font.Print DeskLink(TargetLink).Caption, winLinkMenu.Pos.Left + 54, winLinkMenu.Pos.Top + 17, 0, fontHeading
+  Font.Print DeskLink(TargetLink).Filename, winLinkMenu.Pos.Left + 54, winLinkMenu.Pos.Top + 31, 0, fontNormal
+  Font.Print "Path:", winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 59, 0, fontNormal
+  Font.Print "Parameters:", winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 76, 0, fontNormal
   
   VIEW SCREEN (winLinkMenu.Pos.Left + 90, winLinkMenu.Pos.Top + 55)-(winLinkMenu.Pos.Left + winLinkMenu.Pos.Width - 12, winLinkMenu.Pos.Top + 90)
-  Font.Print DeskLink(TargetLink).Path, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 59, 0, 2
-  Font.Print DeskLink(TargetLink).Parameters, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 76, 0, 2
+  IF LEN(RTRIM$(DeskLink(TargetLink).Path)) THEN
+    Font.Print DeskLink(TargetLink).Path, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 59, SystemTheme.WindowText, fontNormal
+  ELSE
+    Font.Print "Unspecified", winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 59, SystemTheme.WindowText, fontNormal
+  END IF
+  IF LEN(RTRIM$(DeskLink(TargetLink).Parameters)) THEN
+    Font.Print DeskLink(TargetLink).Parameters, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 76, SystemTheme.WindowText, fontNormal
+  ELSE
+    Font.Print "None", winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 76, SystemTheme.WindowText, fontNormal
+  END IF
   VIEW
 
   DO: LOOP WHILE Mouse.Clicked
@@ -726,7 +739,7 @@ SUB Desk.LinkMenu (TargetLink)
     'Configure
     IF Obj.BtnClick(btnCustomize) OR Key$ = "u" THEN
       Desk.LinkDialog TargetLink, DidEdit, False
-
+      IF DidEdit = True THEN RedrawNeeded = True
       EXIT DO
     END IF
 
@@ -1170,7 +1183,7 @@ Desk.RedrawAll:
         IF Key$ = "x" THEN
             DIM FileToRun AS STRING
             FileToRun = Sys.InputBox("Execute program or command", "You can also use this dialog to open any file" + CHR$(13) + "associated with a program (like README.TXT).", "RUNPROG", "")
-            IF LEN(FileToRun) AND NOT FileToRun = "C:\" THEN
+            IF LEN(FileToRun) THEN
                 DIM RunFile AS STRING
                 Desk.Run FileToRun, "", "", True
             END IF
@@ -1311,8 +1324,7 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
     winProfEdit.Pos.Height = 208
     winProfEdit.Pos.Left = (640 - winProfEdit.Pos.Width) / 2
     winProfEdit.Pos.Top = (scrHeight - winProfEdit.Pos.Height) / 2
-    winProfEdit.Caption = "Edit profile"
-
+    
     Obj.SetSize frmIconFrame.Pos, 296, winProfEdit.Pos.Top + 46, 48, 48
     Obj.SetSize imgIcon.Pos, 304, frmIconFrame.Pos.Top + 8, 32, 32
     Obj.SetSize btnIconPrev.Pos, 262, frmIconFrame.Pos.Top + 14, 22, 22
@@ -1410,8 +1422,7 @@ SUB Desk.ProfileSelect ()
     winProfiles.Pos.Height = 196
     winProfiles.Pos.Left = (640 - winProfiles.Pos.Width) / 2
     winProfiles.Pos.Top = (scrHeight - winProfiles.Pos.Height) / 2
-    winProfiles.Caption = "Profile selection"
-
+    
     Obj.SetSize btnProfile(1).Pos, winProfiles.Pos.Left + 18, winProfiles.Pos.Top + 66, 46, 46
     Obj.SetSize btnProfile(2).Pos, winProfiles.Pos.Left + 82, winProfiles.Pos.Top + 66, 46, 46
     Obj.SetSize btnProfile(3).Pos, winProfiles.Pos.Left + 146, winProfiles.Pos.Top + 66, 46, 46
@@ -1444,15 +1455,15 @@ TopOfProfile:
     Mouse.Show
     
     Obj.DrawWin winProfiles
-    Font.Print "Please select a profile from which your desktop,", winProfiles.Pos.Left + 14, winProfiles.Pos.Top + 18, SystemTheme.WindowText, FontNormal
-    Font.Print "theme and other customizations will be loaded.", winProfiles.Pos.Left + 14, winProfiles.Pos.Top + 32, SystemTheme.WindowText, FontNormal
+    Font.Print "Please select a profile from which your desktop,", winProfiles.Pos.Left + 14, winProfiles.Pos.Top + 18, SystemTheme.WindowText, fontNormal
+    Font.Print "theme and other customizations will be loaded.", winProfiles.Pos.Left + 14, winProfiles.Pos.Top + 32, SystemTheme.WindowText, fontNormal
 
     IF SelectedProfile < 1 OR SelectedProfile > 5 THEN
         SelectedProfile = 1
     END IF
 
-    ProfileNamePos = winProfiles.Pos.Left + (winProfiles.Pos.Width / 2) - (Font.GetWidth(ProfileName(SelectedProfile), FontHeading) / 2)
-    Font.Print ProfileName(SelectedProfile), ProfileNamePos, winProfiles.Pos.Top + 136, SystemTheme.WindowText, FontHeading
+    ProfileNamePos = winProfiles.Pos.Left + (winProfiles.Pos.Width / 2) - (Font.GetWidth(ProfileName(SelectedProfile), fontHeading) / 2)
+    Font.Print ProfileName(SelectedProfile), ProfileNamePos, winProfiles.Pos.Top + 136, SystemTheme.WindowText, fontHeading
 
     FOR Counter = 1 TO 5
         IF Counter = SelectedProfile THEN
@@ -1487,11 +1498,11 @@ TopOfProfile:
                     Obj.DrawBtn btnProfile(SelectedProfile), False
                     Obj.DrawBtn btnProfile(Counter), True
                     SelectedProfile = Counter
-                    ProfileNamePos = winProfiles.Pos.Left + (winProfiles.Pos.Width / 2) - (Font.GetWidth(ProfileName(SelectedProfile), FontHeading) / 2)
+                    ProfileNamePos = winProfiles.Pos.Left + (winProfiles.Pos.Width / 2) - (Font.GetWidth(ProfileName(SelectedProfile), fontHeading) / 2)
                     Mouse.Hide
                     LINE (winProfiles.Pos.Left + 7, winProfiles.Pos.Top + 132)-(winProfiles.Pos.Left + winProfiles.Pos.Width - 7, winProfiles.Pos.Top + 148), SystemTheme.Window, BF
                     Mouse.Show
-                    Font.Print ProfileName(SelectedProfile), ProfileNamePos, winProfiles.Pos.Top + 136, SystemTheme.WindowText, FontHeading
+                    Font.Print ProfileName(SelectedProfile), ProfileNamePos, winProfiles.Pos.Top + 136, SystemTheme.WindowText, fontHeading
                     DO WHILE Mouse.Clicked: LOOP
                 END IF
             END IF
@@ -1550,64 +1561,69 @@ END SUB
 ' =========================================================================
 SUB Desk.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVAL TargetPath AS STRING, PauseOnExit AS INTEGER)
 
-  DIM RunHandle, DotPos
-  DIM TargetDrive AS STRING, SysDrive AS STRING
-
+  DIM RunHandle, DotPos, I
+  DIM TargetDrive AS STRING, SysDrive AS STRING, FileType AS STRING
+  DIM OpenWith AS STRING
+  
   TargetFile = LTRIM$(RTRIM$(TargetFile))
   TargetParameters = LTRIM$(RTRIM$(TargetParameters))
+
+  'Get drive, if any, from path
   IF MID$(TargetPath, 2, 2) = ":\" THEN TargetDrive = LEFT$(TargetPath, 2)
 
+  'Remove trailing \ from path
   IF LEN(TargetPath) THEN
     IF RIGHT$(TargetPath, 1) = "\" AND LEN(TargetPath) > 1 THEN TargetPath = LEFT$(TargetPath, LEN(TargetPath) - 1)
   END IF
-  IF INSTR(UCASE$(TargetPath), appEnviron) THEN
-    DIM TmpPath AS STRING
-    IF INSTR(UCASE$(TargetPath), appEnviron) > 1 THEN
-      TmpPath = LEFT$(TargetPath, INSTR(UCASE$(TargetPath), appEnviron) - 1)
-    END IF
-    TmpPath = TmpPath + Sys.Path
-    IF LEN(TargetPath) > INSTR(UCASE$(TargetPath), appEnviron) + 9 THEN
-      TmpPath = TmpPath + RIGHT$(TargetPath, LEN(TargetPath) - 9 - INSTR(UCASE$(TargetPath), appEnviron))
-    END IF
-    TargetPath = TmpPath
-    IF LEN(TargetPath) THEN IF RIGHT$(TargetPath, 1) = "\" AND LEN(TargetPath) > 1 THEN TargetPath = LEFT$(TargetPath, LEN(TargetPath) - 1)
-  END IF
-  
 
-  
   'Get the file extension, and see if it's associated with a program
-  DotPos = INSTR(TargetFile, ".")
-  IF DotPos > 0 AND UserSettings.AssignFileTypes THEN
+  'Don't check if target is too short, or if it contains a space (if space is
+  'found, then it's not a filename, but a command)
+  IF LEN(TargetFile) > 1 AND NOT INSTR(TargetFile, " ") THEN
+    FOR I = LEN(TargetFile) TO 1 STEP -1
 
-    DIM FileType AS STRING, OpenWith AS STRING
-    FileType = RIGHT$(TargetFile, LEN(TargetFile) - DotPos)
+      'If backslash is found before a dot, then any dot would be part of path
+      'and should be ignored
+      IF MID$(TargetFile, I, 1) = "\" THEN EXIT FOR
 
-    OpenWith = File.GetAssociation(FileType)
-    
-    IF NOT OpenWith = "" AND NOT INSTR(TargetFile, " ") THEN
-      TargetFile = OpenWith + " " + TargetFile
-    END IF
+      IF MID$(TargetFile, I, 1) = "." THEN
+        FileType = RIGHT$(TargetFile, LEN(TargetFile) - I)
+        OpenWith = File.GetAssociation(FileType)
 
+        IF NOT OpenWith = "" THEN
+          IF LEN(TargetPath) THEN
+            TargetFile = OpenWith + " " + TargetPath + "\" + TargetFile
+            TargetPath = ""
+          ELSE
+            TargetFile = OpenWith + " " + TargetFile
+          END IF
+        END IF
+
+      END IF
+    NEXT
   END IF
   
-
   'Print the filename, parameters, path and wether to pause on exit to
-  'RUN.BAT, and exit. COSTA.BAT will detect that file and run it
+  'RUN.BAT, and exit. COSTA.BAT will detect that file and run it, and then
+  'relaunch the desktop
   RunHandle = FREEFILE
 
   OPEN Temp.Path + "RUN.BAT" FOR OUTPUT AS #RunHandle
   PRINT #RunHandle, "@ECHO OFF"
   IF LEN(TargetDrive) THEN PRINT #RunHandle, TargetDrive
   IF LEN(TargetPath) THEN
-    IF LEN(TargetPath) > 1 THEN
-      IF RIGHT$(TargetPath, 1) = "\" AND LEN(TargetPath) > 1 THEN TargetPath = LEFT$(TargetPath, LEN(TargetPath) - 1)
-    END IF
     PRINT #RunHandle, "CD\"
     PRINT #RunHandle, "CD " + TargetPath
   END IF
   PRINT #RunHandle, TargetFile + " " + TargetParameters
-  IF PauseOnExit = True THEN PRINT #RunHandle, "PAUSE"
+  IF PauseOnExit = True THEN
+    PRINT #RunHandle, "ECHO."
+    PRINT #RunHandle, "ECHO."
+    PRINT #RunHandle, "PAUSE"
+  END IF
 
+  'Make the batch file return to the path of Costa, so that relative paths
+  'within it work
   IF MID$(Sys.Path, 2, 2) = ":\" THEN SysDrive = LEFT$(Sys.Path, 2)
   IF LEN(SysDrive) THEN PRINT #RunHandle, SysDrive
   PRINT #RunHandle, "CD " + LEFT$(Sys.Path, LEN(Sys.Path) - 1)
