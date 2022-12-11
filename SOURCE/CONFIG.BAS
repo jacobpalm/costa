@@ -23,7 +23,7 @@ Sys.Load
 Conf.Main
 
 ' =========================================================================
-'          NAME: Conf.ConfAssoc()  
+'          NAME: Conf.ConfAssoc()
 '    PARAMETERS: None
 '       RETURNS: Nothing
 '       ASSUMES: Nothing
@@ -60,8 +60,8 @@ FUNCTION Conf.ConfAssoc ()
     Obj.SetSize txtFileType.Pos, 79, 300, 50, -1
     Obj.SetSize txtOpenWith.Pos, 156, 300, 464, -1
 
-    Obj.SetSize btnDisable.Pos, 323, 2, 92, 22
-    Obj.SetSize btnSave.Pos, 446, 2, 92, 22
+    Obj.SetSize btnSave.Pos, 2, 2, 92, 22
+    Obj.SetSize btnDisable.Pos, 101, 2, 92, 22
     Obj.SetSize btnClose.Pos, 545, 2, 92, 22
     
     btnClose.Caption = "õClose"
@@ -219,7 +219,7 @@ FUNCTION Conf.ConfMisc ()
     Obj.SetSize chkGreyOutMsgBox.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 60, -1, -1
     Obj.SetSize chkDailyTip.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 82, -1, -1
     Obj.SetSize chkUseLastProfile.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 104, -1, -1
-    Obj.SetSize btnSave.Pos, 446, 2, 92, 22
+    Obj.SetSize btnSave.Pos, 2, 2, 92, 22
     Obj.SetSize btnClose.Pos, 545, 2, 92, 22
     
     Obj.SetSize btnThemes.Pos, 14, 29 + 14, 46, 46
@@ -463,7 +463,7 @@ FUNCTION Conf.ConfTheme ()
     Obj.SetSize btnNext.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width - 45, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 45, 22
     btnNext.Caption = "->"
 
-    Obj.SetSize btnSave.Pos, 446, 2, 92, 22
+    Obj.SetSize btnSave.Pos, 2, 2, 92, 22
     btnSave.Caption = "õSave"
 
     Obj.SetSize btnClose.Pos, 545, 2, 92, 22
@@ -761,7 +761,7 @@ END SUB
 ' =========================================================================
 SUB Conf.RestoreAssoc ()
 
-    DIM DefaultAssoc(0 TO 6) AS FileAssociationType
+    DIM DefaultAssoc(0 TO 7) AS FileAssociationType
     DIM AssocFile
 
     ON LOCAL ERROR RESUME NEXT
@@ -797,7 +797,11 @@ SUB Conf.RestoreAssoc ()
     DefaultAssoc(6).FileType = "CFG"
     DefaultAssoc(6).Command = "TEXTVIEW.EXE"
     PUT #AssocFile, , DefaultAssoc(6)
-                                    
+
+    DefaultAssoc(7).FileType = "BAS"
+    DefaultAssoc(7).Command = "QBASIC.EXE /RUN"
+    PUT #AssocFile, , DefaultAssoc(7)
+    
     CLOSE #AssocFile
 
 END SUB
