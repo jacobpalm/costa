@@ -327,8 +327,7 @@ SUB Tic.Main ()
 	DIM DidLoadState
 
 	Obj.SetSize winTic.Pos, 146, (scrHeight - 242) / 2, 348, 242
-	winTic.Caption = "Tic Tac Toe for Costa"
-
+	
 	Obj.SetSize txtPlayField(1, 1).Pos, 156, winTic.Pos.Top + 32, 60, 60
 	Obj.SetSize txtPlayField(1, 2).Pos, 226, winTic.Pos.Top + 32, 60, 60
 	Obj.SetSize txtPlayField(1, 3).Pos, 296, winTic.Pos.Top + 32, 60, 60

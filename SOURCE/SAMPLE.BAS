@@ -31,7 +31,6 @@ SUB App.Main ()
 
     'Create a new window, and set properties
     DIM winSample AS WindowType
-    winSample.Caption = "Sample Application" 'Text on the titlebar
     winSample.Pos.Width = 244
     winSample.Pos.Height = 200
 

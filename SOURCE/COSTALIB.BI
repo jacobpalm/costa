@@ -103,7 +103,6 @@
   
   TYPE WindowType
     Pos AS PosType
-    Caption AS STRING * 40
   END TYPE
 
   TYPE CheckBoxType

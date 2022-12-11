@@ -522,7 +522,7 @@ SUB Obj.DrawWin (TargetWin AS WindowType)
 
 	Mouse.Hide
 	
-	'Window titlebar and borders
+	'Window border
 	LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 1), SystemTheme.TitleBar, BF
 
 	'Window content area

@@ -552,7 +552,6 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	txtFileList.MaxLen = FileList
 	txtFolderList.MaxLen = FolderList
 
-	winFileSelect.Caption = "Select File"
 	btnSelect.Caption = "õSelect"
 	btnCancel.Caption = "õCancel"
 	btnFilePrev.Caption = "<"
