@@ -89,10 +89,10 @@ SUB Theme.Edit (BYVAL ThmFile AS STRING)
     frmPreview.Pos.Width = 410
     frmPreview.Pos.Height = scrHeight - 57
 
-    Obj.SetSize btnSave.Pos, 347, 2, 92, 22
+    Obj.SetSize btnSave.Pos, 2, 2, 92, 22
     btnSave.Caption = "õSave"
 
-    Obj.SetSize btnSaveAs.Pos, 446, 2, 92, 22
+    Obj.SetSize btnSaveAs.Pos, 101, 2, 92, 22
     btnSaveAs.Caption = "Save õas"
 
     Obj.SetSize btnExit.Pos, 545, 2, 92, 22
@@ -601,7 +601,7 @@ FUNCTION Theme.Select () AS STRING
     Obj.SetSize btnNext.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width - 45, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 45, 22
     btnNext.Caption = "->"
 
-    Obj.SetSize btnEdit.Pos, 446, 2, 92, 22
+    Obj.SetSize btnEdit.Pos, 2, 2, 92, 22
     btnEdit.Caption = "õEdit"
 
     Obj.SetSize btnCancel.Pos, 545, 2, 92, 22
@@ -749,8 +749,7 @@ FUNCTION Theme.SelectObject (BYVAL CurrentSelection) AS INTEGER
     winSelectObject.Pos.Height = 304
     winSelectObject.Pos.Left = (640 - winSelectObject.Pos.Width) / 2
     winSelectObject.Pos.Top = (scrHeight - winSelectObject.Pos.Height) / 2
-    winSelectObject.Caption = "Select Object"
-
+    
     FOR I = 1 TO 12
         Obj.SetSize btnObject(I).Pos, winSelectObject.Pos.Left + 13, winSelectObject.Pos.Top + (I * 23) - 8, 200, 22
     NEXT
