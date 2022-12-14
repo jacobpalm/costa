@@ -1,5 +1,3 @@
-DECLARE SUB Tic.DrawBackground ()
-DECLARE SUB Tic.PrintMessage (MessageType AS INTEGER)
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -8,9 +6,11 @@ DECLARE FUNCTION Tic.LoadState% ()
 DECLARE SUB Tic.AIMove ()
 DECLARE SUB Tic.DrawBoard ()
 DECLARE SUB Tic.DrawXO (FieldRow%, FieldCol%, FieldValue%)
+DECLARE SUB Tic.DrawBackground ()
 DECLARE SUB Tic.NewGame ()
 DECLARE SUB Tic.Main ()
 DECLARE SUB Tic.PlaySound (SoundType AS INTEGER)
+DECLARE SUB Tic.PrintMessage (MessageType AS INTEGER)
 DECLARE SUB Tic.SaveState ()
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
@@ -28,6 +28,10 @@ CONST msgDraw = 2
 CONST msgAITurn = 3
 CONST msgPlayerTurn = 4
 
+TYPE FieldType
+	Pos AS PosType
+END TYPE
+
 DIM SHARED PlayerStart AS INTEGER
 DIM SHARED PlayerTurn AS INTEGER
 DIM SHARED TotalTurns AS INTEGER
@@ -36,7 +40,7 @@ DIM SHARED EnableAudio AS INTEGER
 DIM SHARED CircleAspect AS INTEGER
 DIM SHARED FieldClicked AS INTEGER
 DIM SHARED PlayField(1 TO 3, 1 TO 3) AS INTEGER
-DIM SHARED txtPlayField(1 TO 3, 1 TO 3) AS TextboxType
+DIM SHARED txtPlayField(1 TO 3, 1 TO 3) AS FieldType
 
 Sys.Load
 
@@ -207,13 +211,23 @@ END SUB
 SUB Tic.DrawBoard ()
 
 	DIM FieldRow, FieldCol
+	DIM x1, y1, x2, y2
 
+	Mouse.Hide
 	FOR FieldRow = 1 TO 3
 		FOR FieldCol = 1 TO 3
-			Obj.DrawTxt txtPlayField(FieldRow, FieldCol), "", False
+			x1 = txtPlayField(FieldRow, FieldCol).Pos.Left
+			y1 = txtPlayField(FieldRow, FieldCol).Pos.Top
+			x2 = txtPlayField(FieldRow, FieldCol).Pos.Left + txtPlayField(FieldRow, FieldCol).Pos.Width
+			y2 = txtPlayField(FieldRow, FieldCol).Pos.Top + txtPlayField(FieldRow, FieldCol).Pos.Height
+			LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 2), 15, BF
+			LINE (x1, y1)-(x2 - 1, y2 - 1), 10, B
+			LINE (x1 + 1, y1 + 1)-(x2, y2), 8, B
+			
 			Tic.DrawXO FieldRow, FieldCol, PlayField(FieldRow, FieldCol)
 		NEXT
 	NEXT
+	Mouse.Show
 
 END SUB
 
@@ -236,40 +250,40 @@ SUB Tic.DrawXO (FieldRow, FieldCol, FieldValue)
 		SELECT CASE FieldValue
 			CASE 1
 				Mouse.Hide
-				LINE (XCoord + 11, YCoord + 12)-(XCoord + 48, YCoord + 49), SystemTheme.TextboxText
-				LINE (XCoord + 11, YCoord + 13)-(XCoord + 47, YCoord + 49), SystemTheme.TextboxText
-				LINE (XCoord + 12, YCoord + 12)-(XCoord + 49, YCoord + 49), SystemTheme.TextboxText
-				LINE (XCoord + 13, YCoord + 12)-(XCoord + 49, YCoord + 48), SystemTheme.TextboxText
-				LINE (XCoord + 11, YCoord + 48)-(XCoord + 47, YCoord + 12), SystemTheme.TextboxText
-				LINE (XCoord + 11, YCoord + 49)-(XCoord + 48, YCoord + 12), SystemTheme.TextboxText
-				LINE (XCoord + 12, YCoord + 49)-(XCoord + 49, YCoord + 12), SystemTheme.TextboxText
-				LINE (XCoord + 13, YCoord + 49)-(XCoord + 49, YCoord + 13), SystemTheme.TextboxText
+				LINE (XCoord + 11, YCoord + 12)-(XCoord + 48, YCoord + 49), 0
+				LINE (XCoord + 11, YCoord + 13)-(XCoord + 47, YCoord + 49), 0
+				LINE (XCoord + 12, YCoord + 12)-(XCoord + 49, YCoord + 49), 0
+				LINE (XCoord + 13, YCoord + 12)-(XCoord + 49, YCoord + 48), 0
+				LINE (XCoord + 11, YCoord + 48)-(XCoord + 47, YCoord + 12), 0
+				LINE (XCoord + 11, YCoord + 49)-(XCoord + 48, YCoord + 12), 0
+				LINE (XCoord + 12, YCoord + 49)-(XCoord + 49, YCoord + 12), 0
+				LINE (XCoord + 13, YCoord + 49)-(XCoord + 49, YCoord + 13), 0
 				Mouse.Show
 			CASE 2
 				Mouse.Hide
-				CIRCLE (XCoord + 30, YCoord + 30), 19, SystemTheme.TextboxText, , , CircleAspect
-				CIRCLE (XCoord + 30, YCoord + 30), 18, SystemTheme.TextboxText, , , CircleAspect
-				CIRCLE (XCoord + 30, YCoord + 30), 17, SystemTheme.TextboxText, , , CircleAspect
-				PSET (XCoord + 14, YCoord + 23), SystemTheme.TextboxText
-				PSET (XCoord + 15, YCoord + 21), SystemTheme.TextboxText
-				PSET (XCoord + 21, YCoord + 15), SystemTheme.TextboxText
-				PSET (XCoord + 23, YCoord + 14), SystemTheme.TextboxText
-				PSET (XCoord + 14, YCoord + 37), SystemTheme.TextboxText
-				PSET (XCoord + 15, YCoord + 39), SystemTheme.TextboxText
-				PSET (XCoord + 21, YCoord + 45), SystemTheme.TextboxText
-				PSET (XCoord + 23, YCoord + 46), SystemTheme.TextboxText
-				PSET (XCoord + 37, YCoord + 46), SystemTheme.TextboxText
-				PSET (XCoord + 39, YCoord + 45), SystemTheme.TextboxText
-				PSET (XCoord + 45, YCoord + 39), SystemTheme.TextboxText
-				PSET (XCoord + 46, YCoord + 37), SystemTheme.TextboxText
-				PSET (XCoord + 46, YCoord + 23), SystemTheme.TextboxText
-				PSET (XCoord + 45, YCoord + 21), SystemTheme.TextboxText
-				PSET (XCoord + 39, YCoord + 15), SystemTheme.TextboxText
-				PSET (XCoord + 37, YCoord + 14), SystemTheme.TextboxText
-				LINE (XCoord + 16, YCoord + 18)-(XCoord + 18, YCoord + 16), SystemTheme.TextboxText
-				LINE (XCoord + 42, YCoord + 16)-(XCoord + 44, YCoord + 18), SystemTheme.TextboxText
-				LINE (XCoord + 44, YCoord + 42)-(XCoord + 42, YCoord + 44), SystemTheme.TextboxText
-				LINE (XCoord + 16, YCoord + 42)-(XCoord + 18, YCoord + 44), SystemTheme.TextboxText
+				CIRCLE (XCoord + 30, YCoord + 30), 19, 0, , , CircleAspect
+				CIRCLE (XCoord + 30, YCoord + 30), 18, 0, , , CircleAspect
+				CIRCLE (XCoord + 30, YCoord + 30), 17, 0, , , CircleAspect
+				PSET (XCoord + 14, YCoord + 23), 0
+				PSET (XCoord + 15, YCoord + 21), 0
+				PSET (XCoord + 21, YCoord + 15), 0
+				PSET (XCoord + 23, YCoord + 14), 0
+				PSET (XCoord + 14, YCoord + 37), 0
+				PSET (XCoord + 15, YCoord + 39), 0
+				PSET (XCoord + 21, YCoord + 45), 0
+				PSET (XCoord + 23, YCoord + 46), 0
+				PSET (XCoord + 37, YCoord + 46), 0
+				PSET (XCoord + 39, YCoord + 45), 0
+				PSET (XCoord + 45, YCoord + 39), 0
+				PSET (XCoord + 46, YCoord + 37), 0
+				PSET (XCoord + 46, YCoord + 23), 0
+				PSET (XCoord + 45, YCoord + 21), 0
+				PSET (XCoord + 39, YCoord + 15), 0
+				PSET (XCoord + 37, YCoord + 14), 0
+				LINE (XCoord + 16, YCoord + 18)-(XCoord + 18, YCoord + 16), 0
+				LINE (XCoord + 42, YCoord + 16)-(XCoord + 44, YCoord + 18), 0
+				LINE (XCoord + 44, YCoord + 42)-(XCoord + 42, YCoord + 44), 0
+				LINE (XCoord + 16, YCoord + 42)-(XCoord + 18, YCoord + 44), 0
 				Mouse.Show
 		END SELECT
 
@@ -453,15 +467,15 @@ StartOfGame:
 		END IF
 
 		IF TotalTurns < 9 THEN
-			IF Obj.TxtClick(txtPlayField(1, 1)) OR Key$ = "7" THEN FieldClicked = True: FieldRow = 1: FieldCol = 1
-			IF Obj.TxtClick(txtPlayField(1, 2)) OR Key$ = "8" THEN FieldClicked = True: FieldRow = 1: FieldCol = 2
-			IF Obj.TxtClick(txtPlayField(1, 3)) OR Key$ = "9" THEN FieldClicked = True: FieldRow = 1: FieldCol = 3
-			IF Obj.TxtClick(txtPlayField(2, 1)) OR Key$ = "4" THEN FieldClicked = True: FieldRow = 2: FieldCol = 1
-			IF Obj.TxtClick(txtPlayField(2, 2)) OR Key$ = "5" THEN FieldClicked = True: FieldRow = 2: FieldCol = 2
-			IF Obj.TxtClick(txtPlayField(2, 3)) OR Key$ = "6" THEN FieldClicked = True: FieldRow = 2: FieldCol = 3
-			IF Obj.TxtClick(txtPlayField(3, 1)) OR Key$ = "1" THEN FieldClicked = True: FieldRow = 3: FieldCol = 1
-			IF Obj.TxtClick(txtPlayField(3, 2)) OR Key$ = "2" THEN FieldClicked = True: FieldRow = 3: FieldCol = 2
-			IF Obj.TxtClick(txtPlayField(3, 3)) OR Key$ = "3" THEN FieldClicked = True: FieldRow = 3: FieldCol = 3
+			IF (Mouse.Clicked AND Mouse.InArea(txtPlayField(1, 1).Pos)) OR Key$ = "7" THEN FieldClicked = True: FieldRow = 1: FieldCol = 1
+			IF (Mouse.Clicked AND Mouse.InArea(txtPlayField(1, 2).Pos)) OR Key$ = "8" THEN FieldClicked = True: FieldRow = 1: FieldCol = 2
+			IF (Mouse.Clicked AND Mouse.InArea(txtPlayField(1, 3).Pos)) OR Key$ = "9" THEN FieldClicked = True: FieldRow = 1: FieldCol = 3
+			IF (Mouse.Clicked AND Mouse.InArea(txtPlayField(2, 1).Pos)) OR Key$ = "4" THEN FieldClicked = True: FieldRow = 2: FieldCol = 1
+			IF (Mouse.Clicked AND Mouse.InArea(txtPlayField(2, 2).Pos)) OR Key$ = "5" THEN FieldClicked = True: FieldRow = 2: FieldCol = 2
+			IF (Mouse.Clicked AND Mouse.InArea(txtPlayField(2, 3).Pos)) OR Key$ = "6" THEN FieldClicked = True: FieldRow = 2: FieldCol = 3
+			IF (Mouse.Clicked AND Mouse.InArea(txtPlayField(3, 1).Pos)) OR Key$ = "1" THEN FieldClicked = True: FieldRow = 3: FieldCol = 1
+			IF (Mouse.Clicked AND Mouse.InArea(txtPlayField(3, 2).Pos)) OR Key$ = "2" THEN FieldClicked = True: FieldRow = 3: FieldCol = 2
+			IF (Mouse.Clicked AND Mouse.InArea(txtPlayField(3, 3).Pos)) OR Key$ = "3" THEN FieldClicked = True: FieldRow = 3: FieldCol = 3
 
 			'Prevent audio from running wild if a key is held down
 			IF FieldClicked THEN
