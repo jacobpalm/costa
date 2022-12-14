@@ -1,3 +1,5 @@
+DECLARE SUB Tic.DrawBackground ()
+DECLARE SUB Tic.PrintMessage (MessageType AS INTEGER)
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -20,13 +22,18 @@ CONST SoundWin = 4
 CONST SoundLoose = 5
 CONST SoundDraw = 6
 CONST SoundNew = 7
-														 
+
+CONST msgWin = 1
+CONST msgDraw = 2
+CONST msgAITurn = 3
+CONST msgPlayerTurn = 4
+
 DIM SHARED PlayerStart AS INTEGER
 DIM SHARED PlayerTurn AS INTEGER
 DIM SHARED TotalTurns AS INTEGER
 DIM SHARED EnableAI AS INTEGER
+DIM SHARED EnableAudio AS INTEGER
 DIM SHARED CircleAspect AS INTEGER
-DIM SHARED chkAudio AS CheckBoxType
 DIM SHARED FieldClicked AS INTEGER
 DIM SHARED PlayField(1 TO 3, 1 TO 3) AS INTEGER
 DIM SHARED txtPlayField(1 TO 3, 1 TO 3) AS TextboxType
@@ -48,7 +55,7 @@ SUB Tic.AIMove ()
 
 		'Simulate some random "thinking" time
 		RANDOMIZE TIMER
-		Sys.Delay (INT(RND * 550) + 550) / 1000
+		Sys.Delay (INT(RND * 550) + 550) / 500
 
 		'Check if AI can win
 			'Horizontal
@@ -168,6 +175,26 @@ FUNCTION Tic.CheckWin ()
 
 END FUNCTION
 
+SUB Tic.DrawBackground ()
+	
+	DIM LX, LY
+	LY = 29
+	Mouse.Hide
+	
+	LINE (0, 29)-(639, scrHeight - 1), 2, BF
+
+	FOR LX = 0 TO 639 STEP 6
+		LINE (LX, 29)-(LX, scrHeight - 1), 10, , &H1111
+	NEXT
+
+	FOR LX = 3 TO 639 STEP 6
+		LINE (LX, 31)-(LX, scrHeight - 1), 10, , &H1111
+	NEXT
+
+	Mouse.Show
+	
+END SUB
+
 ' =========================================================================
 '          NAME: Tic.DrawBoard()
 '    PARAMETERS: None
@@ -275,7 +302,7 @@ FUNCTION Tic.LoadState ()
 	GET #StateFile, , EnableAI
 	GET #StateFile, , PlayerTurn
 	GET #StateFile, , PlayerStart
-	GET #StateFile, , chkAudio.Checked
+	GET #StateFile, , EnableAudio
 
 	IF TotalTurns > 0 THEN
 		FOR X = 1 TO 3
@@ -298,10 +325,10 @@ SanityChecks:
 	'Various sanity checks to make sure loaded data is valid
 	'crash
 	IF TotalTurns < 0 OR TotalTurns > 9 THEN TotalTurns = 0
-	IF EnableAI < -1 OR EnableAI > 0 THEN EnableAI = -1
+	IF EnableAI < -1 OR EnableAI > 0 THEN EnableAI = True
 	IF PlayerTurn < 1 OR PlayerTurn > 2 THEN PlayerTurn = 1
 	IF PlayerStart < 1 OR PlayerStart > 2 THEN PlayerStart = 1
-	IF chkAudio.Checked < -1 OR chkAudio.Checked > 0 THEN chkAudio.Checked = -1
+	IF EnableAudio < -1 OR EnableAudio > 0 THEN EnableAudio = True
 	FOR X = 1 TO 3
 		FOR Y = 1 TO 3
 			IF PlayField(X, Y) < 0 OR PlayField(X, Y) > 2 THEN PlayField(X, Y) = 0
@@ -321,63 +348,66 @@ END FUNCTION
 ' =========================================================================
 SUB Tic.Main ()
 
-	DIM winTic AS WindowType
-	DIM btnNew AS ButtonType, btnAIToggle AS ButtonType, btnExit AS ButtonType
+	DIM frmTic AS FrameType
+	DIM btnNew AS ButtonType, btnAIToggle AS ButtonType
+	DIM btnAudio AS ButtonType, btnExit AS ButtonType
 	DIM FieldRow, FieldCol
 	DIM DidLoadState
 
-	Obj.SetSize winTic.Pos, 146, (scrHeight - 242) / 2, 348, 242
+	Obj.SetSize frmTic.Pos, (640 - 221) / 2, (scrHeight - 28 - 221) / 2 + 28, 221, 221
 	
-	Obj.SetSize txtPlayField(1, 1).Pos, 156, winTic.Pos.Top + 32, 60, 60
-	Obj.SetSize txtPlayField(1, 2).Pos, 226, winTic.Pos.Top + 32, 60, 60
-	Obj.SetSize txtPlayField(1, 3).Pos, 296, winTic.Pos.Top + 32, 60, 60
-	Obj.SetSize txtPlayField(2, 1).Pos, 156, winTic.Pos.Top + 102, 60, 60
-	Obj.SetSize txtPlayField(2, 2).Pos, 226, winTic.Pos.Top + 102, 60, 60
-	Obj.SetSize txtPlayField(2, 3).Pos, 296, winTic.Pos.Top + 102, 60, 60
-	Obj.SetSize txtPlayField(3, 1).Pos, 156, winTic.Pos.Top + 172, 60, 60
-	Obj.SetSize txtPlayField(3, 2).Pos, 226, winTic.Pos.Top + 172, 60, 60
-	Obj.SetSize txtPlayField(3, 3).Pos, 296, winTic.Pos.Top + 172, 60, 60
+	Obj.SetSize txtPlayField(1, 1).Pos, frmTic.Pos.Left + 10, frmTic.Pos.Top + 10, 60, 60
+	Obj.SetSize txtPlayField(1, 2).Pos, txtPlayField(1, 1).Pos.Left + 70, txtPlayField(1, 1).Pos.Top, 60, 60
+	Obj.SetSize txtPlayField(1, 3).Pos, txtPlayField(1, 2).Pos.Left + 70, txtPlayField(1, 1).Pos.Top, 60, 60
 
-	Obj.SetSize btnNew.Pos, 376, winTic.Pos.Top + 32, 100, 25
-	Obj.SetSize btnAIToggle.Pos, 376, winTic.Pos.Top + 67, 100, 25
-	Obj.SetSize btnExit.Pos, 376, winTic.Pos.Top + 102, 100, 25
+	Obj.SetSize txtPlayField(2, 1).Pos, txtPlayField(1, 1).Pos.Left, txtPlayField(1, 1).Pos.Top + 70, 60, 60
+	Obj.SetSize txtPlayField(2, 2).Pos, txtPlayField(2, 1).Pos.Left + 70, txtPlayField(2, 1).Pos.Top, 60, 60
+	Obj.SetSize txtPlayField(2, 3).Pos, txtPlayField(2, 2).Pos.Left + 70, txtPlayField(2, 1).Pos.Top, 60, 60
+
+	Obj.SetSize txtPlayField(3, 1).Pos, txtPlayField(2, 1).Pos.Left, txtPlayField(2, 1).Pos.Top + 70, 60, 60
+	Obj.SetSize txtPlayField(3, 2).Pos, txtPlayField(3, 1).Pos.Left + 70, txtPlayField(3, 1).Pos.Top, 60, 60
+	Obj.SetSize txtPlayField(3, 3).Pos, txtPlayField(3, 2).Pos.Left + 70, txtPlayField(3, 1).Pos.Top, 60, 60
+
+	Obj.SetSize btnNew.Pos, 3, 2, 92, 22
+	Obj.SetSize btnAIToggle.Pos, 102, 2, 92, 22
+	Obj.SetSize btnAudio.Pos, 201, 2, 92, 22
+	Obj.SetSize btnExit.Pos, 545, 2, 92, 22
 	btnNew.Caption = "õNew game"
 	btnExit.Caption = "õClose"
 	
-	Obj.SetSize chkAudio.Pos, 376, winTic.Pos.Top + 217, -1, -1
-	
-	Obj.DrawWin winTic
+	Obj.DrawMenu
+	Tic.DrawBackground
+
+	Mouse.Hide
+	LINE (frmTic.Pos.Left + 2, frmTic.Pos.Top + 2)-(frmTic.Pos.Left + frmTic.Pos.Width - 2, frmTic.Pos.Top + frmTic.Pos.Height - 2), 2, BF
+	Mouse.Show
+	Obj.DrawFrm frmTic, 10, 8
 	Obj.DrawBtn btnNew, False
 	Obj.DrawBtn btnExit, False
-	Font.Print "Enable õaudio", 396, winTic.Pos.Top + 220, SystemTheme.WindowText, FontNormal
-
+	
 	CircleAspect = 1
 
 	DidLoadState = Tic.LoadState
 	
 	IF EnableAI = True THEN
-		btnAIToggle.Caption = "2 õplayers"
+		btnAIToggle.Caption = "Singleõplayer"
 	ELSE
-		btnAIToggle.Caption = "1 õplayer"
+		btnAIToggle.Caption = "Multiõplayer"
 	END IF
+
+	IF EnableAudio THEN
+		btnAudio.Caption = "Disable õsound"
+	ELSE
+		btnAudio.Caption = "Enable õsound"
+	END IF
+
 	Obj.DrawBtn btnAIToggle, False
-
-	Obj.DrawChk chkAudio
-
-	DIM key$
+	Obj.DrawBtn btnAudio, False
+	
+	DIM Key$
 
 StartOfGame:
 	Tic.DrawBoard
-
-	Mouse.Hide
-	LINE (376, winTic.Pos.Top + 152)-(476, winTic.Pos.Top + 163), SystemTheme.Window, BF
-	Mouse.Show
-	IF PlayerTurn = 1 THEN
-		Font.Print "X", 400, winTic.Pos.Top + 152, SystemTheme.WindowText, 3
-	ELSE
-		Font.Print "O", 400, winTic.Pos.Top + 152, SystemTheme.WindowText, 3
-	END IF
-	Font.Print "'s turn", 408, winTic.Pos.Top + 152, SystemTheme.WindowText, 2
 
 	IF NOT DidLoadState THEN
 		Tic.PlaySound SoundNew
@@ -385,48 +415,53 @@ StartOfGame:
 	END IF
 
 	IF EnableAI = True AND PlayerTurn = 2 THEN GOTO PerformAIMove
+	Tic.PrintMessage msgPlayerTurn
 
 	DO
-		key$ = LCASE$(INKEY$)
+		Key$ = LCASE$(INKEY$)
 
-		IF Obj.BtnClick(btnNew) OR key$ = "n" THEN
+		IF Obj.BtnClick(btnNew) OR Key$ = "n" THEN
 			Tic.NewGame
 			GOTO StartOfGame
 		END IF
 
-		IF Obj.BtnClick(btnExit) OR key$ = "c" THEN
+		IF Obj.BtnClick(btnExit) OR Key$ = "c" THEN
 			Tic.SaveState
 			EXIT SUB
 		END IF
 
-		IF Obj.BtnClick(btnAIToggle) OR key$ = "p" THEN
+		IF Obj.BtnClick(btnAIToggle) OR Key$ = "p" THEN
 			EnableAI = NOT EnableAI
 			IF EnableAI = True THEN
-				btnAIToggle.Caption = "2 players"
+				btnAIToggle.Caption = "Multiõplayer"
 			ELSE
-				btnAIToggle.Caption = "1 player"
+				btnAIToggle.Caption = "Singleõplayer"
 			END IF
 			Obj.DrawBtn btnAIToggle, False
 			Tic.NewGame
 			GOTO StartOfGame
 		END IF
 
-		Obj.ChkClick chkAudio
-		IF key$ = "a" THEN
-			chkAudio.Checked = NOT chkAudio.Checked
-			Obj.DrawChk chkAudio
+		IF Key$ = "s" THEN
+			EnableAudio = NOT EnableAudio
+			IF EnableAudio THEN
+				btnAudio.Caption = "Disable õsound"
+			ELSE
+				btnAudio.Caption = "Enable õsound"
+			END IF
+			Obj.DrawBtn btnAudio, False
 		END IF
 
 		IF TotalTurns < 9 THEN
-			IF Obj.TxtClick(txtPlayField(1, 1)) OR key$ = "7" THEN FieldClicked = True: FieldRow = 1: FieldCol = 1
-			IF Obj.TxtClick(txtPlayField(1, 2)) OR key$ = "8" THEN FieldClicked = True: FieldRow = 1: FieldCol = 2
-			IF Obj.TxtClick(txtPlayField(1, 3)) OR key$ = "9" THEN FieldClicked = True: FieldRow = 1: FieldCol = 3
-			IF Obj.TxtClick(txtPlayField(2, 1)) OR key$ = "4" THEN FieldClicked = True: FieldRow = 2: FieldCol = 1
-			IF Obj.TxtClick(txtPlayField(2, 2)) OR key$ = "5" THEN FieldClicked = True: FieldRow = 2: FieldCol = 2
-			IF Obj.TxtClick(txtPlayField(2, 3)) OR key$ = "6" THEN FieldClicked = True: FieldRow = 2: FieldCol = 3
-			IF Obj.TxtClick(txtPlayField(3, 1)) OR key$ = "1" THEN FieldClicked = True: FieldRow = 3: FieldCol = 1
-			IF Obj.TxtClick(txtPlayField(3, 2)) OR key$ = "2" THEN FieldClicked = True: FieldRow = 3: FieldCol = 2
-			IF Obj.TxtClick(txtPlayField(3, 3)) OR key$ = "3" THEN FieldClicked = True: FieldRow = 3: FieldCol = 3
+			IF Obj.TxtClick(txtPlayField(1, 1)) OR Key$ = "7" THEN FieldClicked = True: FieldRow = 1: FieldCol = 1
+			IF Obj.TxtClick(txtPlayField(1, 2)) OR Key$ = "8" THEN FieldClicked = True: FieldRow = 1: FieldCol = 2
+			IF Obj.TxtClick(txtPlayField(1, 3)) OR Key$ = "9" THEN FieldClicked = True: FieldRow = 1: FieldCol = 3
+			IF Obj.TxtClick(txtPlayField(2, 1)) OR Key$ = "4" THEN FieldClicked = True: FieldRow = 2: FieldCol = 1
+			IF Obj.TxtClick(txtPlayField(2, 2)) OR Key$ = "5" THEN FieldClicked = True: FieldRow = 2: FieldCol = 2
+			IF Obj.TxtClick(txtPlayField(2, 3)) OR Key$ = "6" THEN FieldClicked = True: FieldRow = 2: FieldCol = 3
+			IF Obj.TxtClick(txtPlayField(3, 1)) OR Key$ = "1" THEN FieldClicked = True: FieldRow = 3: FieldCol = 1
+			IF Obj.TxtClick(txtPlayField(3, 2)) OR Key$ = "2" THEN FieldClicked = True: FieldRow = 3: FieldCol = 2
+			IF Obj.TxtClick(txtPlayField(3, 3)) OR Key$ = "3" THEN FieldClicked = True: FieldRow = 3: FieldCol = 3
 
 			'Prevent audio from running wild if a key is held down
 			IF FieldClicked THEN
@@ -442,67 +477,43 @@ StartOfGame:
 					TotalTurns = TotalTurns + 1
 
 					IF Tic.CheckWin = True THEN
-						Mouse.Hide
-						LINE (376, winTic.Pos.Top + 152)-(476, winTic.Pos.Top + 163), SystemTheme.Window, BF
-						Mouse.Show
-
-						IF PlayerTurn = 1 THEN
-							Font.Print "X", 377, winTic.Pos.Top + 152, SystemTheme.WindowText, 3
-						ELSE
-							Font.Print "O", 377, winTic.Pos.Top + 152, SystemTheme.WindowText, 3
-						END IF
-						Font.Print "wins the game!", 388, winTic.Pos.Top + 152, SystemTheme.WindowText, 2
+						Tic.PrintMessage msgWin
 						TotalTurns = 9
 						Tic.PlaySound SoundWin
 					ELSE
 						IF TotalTurns < 9 THEN
-							Mouse.Hide
-							LINE (400, winTic.Pos.Top + 152)-(405, winTic.Pos.Top + 163), SystemTheme.Window, BF
-							Mouse.Show
 
 							IF PlayerTurn = 1 THEN
 								PlayerTurn = 2
-								Font.Print "O", 400, winTic.Pos.Top + 152, SystemTheme.WindowText, 3
 							ELSE
 								PlayerTurn = 1
-								Font.Print "X", 400, winTic.Pos.Top + 152, SystemTheme.WindowText, 3
 							END IF
 
 							IF EnableAI = True AND TotalTurns < 9 AND PlayerTurn = 2 THEN
 PerformAIMove:
+								Tic.PrintMessage msgAITurn
 								Tic.AIMove
 								Tic.PlaySound SoundY
 								TotalTurns = TotalTurns + 1
 								IF Tic.CheckWin = True THEN
-									Mouse.Hide
-									LINE (376, winTic.Pos.Top + 152)-(476, winTic.Pos.Top + 163), SystemTheme.Window, BF
-									Mouse.Show
-									Font.Print "O", 377, winTic.Pos.Top + 152, SystemTheme.WindowText, 3
-									Font.Print "wins the game!", 388, winTic.Pos.Top + 152, SystemTheme.WindowText, 2
+									Tic.PrintMessage msgWin
 									Tic.PlaySound SoundLoose
 									TotalTurns = 9
 								ELSE
 									IF TotalTurns = 9 THEN
-										Mouse.Hide
-										LINE (376, winTic.Pos.Top + 152)-(476, winTic.Pos.Top + 163), SystemTheme.Window, BF
-										Mouse.Show
-										Font.Print "It's a draw!", 393, winTic.Pos.Top + 152, SystemTheme.WindowText, 2
+										Tic.PrintMessage msgDraw
 										Tic.PlaySound SoundDraw
 									ELSE
 										PlayerTurn = 1
-										Mouse.Hide
-										LINE (400, winTic.Pos.Top + 152)-(405, winTic.Pos.Top + 163), SystemTheme.Window, BF
-										Mouse.Show
-										Font.Print "X", 400, winTic.Pos.Top + 152, SystemTheme.WindowText, 3
+										Tic.PrintMessage msgPlayerTurn
 									END IF
 								END IF
+							ELSE
+								Tic.PrintMessage msgPlayerTurn
 							END IF
 
 						ELSE
-							Mouse.Hide
-							LINE (376, winTic.Pos.Top + 152)-(476, winTic.Pos.Top + 163), SystemTheme.Window, BF
-							Mouse.Show
-							Font.Print "It's a draw!", 393, winTic.Pos.Top + 152, SystemTheme.WindowText, 2
+							Tic.PrintMessage msgDraw
 							Tic.PlaySound SoundDraw
 						END IF
 
@@ -514,11 +525,8 @@ PerformAIMove:
 			END IF
 		END IF
 
-
-
 	LOOP
-
-
+	
 END SUB
 
 ' =========================================================================
@@ -569,7 +577,7 @@ END SUB
 ' =========================================================================
 SUB Tic.PlaySound (SoundType AS INTEGER)
 
-	IF NOT chkAudio.Checked THEN EXIT SUB
+	IF NOT EnableAudio THEN EXIT SUB
 
 	SELECT CASE SoundType
 		CASE SoundX
@@ -588,6 +596,101 @@ SUB Tic.PlaySound (SoundType AS INTEGER)
 			PLAY "O2 T180 C8 C8 E3"
 	END SELECT
 
+END SUB
+
+SUB Tic.PrintMessage (MessageType AS INTEGER)
+
+	DIM Message AS STRING
+	DIM CurrentTurn AS STRING * 1
+	DIM Randomizer
+
+	Randomizer = INT(5 * RND + 1)
+
+	IF PlayerTurn = 1 THEN
+		CurrentTurn = "X"
+	ELSE
+		CurrentTurn = "O"
+	END IF
+
+	RANDOMIZE TIMER
+	SELECT CASE MessageType
+		CASE msgWin
+
+			SELECT CASE Randomizer
+				CASE 1
+					Message = CurrentTurn + " has brought honor to the family!"
+				CASE 2
+					Message = CurrentTurn + " has emerged victoriously from the battle!"
+				CASE 3
+					Message = "Nothing could stop " + CurrentTurn + " from achieving victory!"
+				CASE 4
+					Message = "The crowd is gasping, amazed at the incredible play by " + CurrentTurn + "!"
+				CASE 5
+					Message = CurrentTurn + " has brought down utter destruction on the opponent!"
+			END SELECT
+
+
+		CASE msgDraw
+
+			SELECT CASE Randomizer
+				CASE 1
+					Message = "It was a real nail-biter, but neither player could best the other."
+				CASE 2
+					Message = "No winners means no losers, I guess."
+				CASE 3
+					Message = "A high-stakes game that could have gone both ways."
+				CASE 4
+					Message = "As eager as both players were, neither of them could achieve victory."
+				CASE 5
+					Message = "No bragging rights for either player - try again!"
+			END SELECT
+
+
+		CASE msgAITurn
+
+			SELECT CASE Randomizer
+				CASE 1
+					Message = CurrentTurn + " is contemplating the next move..."
+				CASE 2
+					Message = CurrentTurn + " is calculating all possible outcomes..."
+				CASE 3
+					Message = "The stakes are too high for " + CurrentTurn + " not to think this through..."
+				CASE 4
+					Message = CurrentTurn + " is struggling to find enough CPU power to beat the opponent..."
+				CASE 5
+					Message = CurrentTurn + " is becomming sentient in the quest to beat the humans..."
+			END SELECT
+
+
+		CASE msgPlayerTurn
+
+			SELECT CASE Randomizer
+				CASE 1
+					Message = "Make your move, " + CurrentTurn + "!"
+				CASE 2
+					Message = "How are you going to beat your opponent, " + CurrentTurn + "?"
+				CASE 3
+					Message = "Uh oh, what a powerfull move! What will " + CurrentTurn + " do now?"
+				CASE 4
+					Message = "Take your time " + CurrentTurn + " - the stakes are too high to slip up now!"
+				CASE 5
+					Message = "How will you eliminate your opponent, " + CurrentTurn + "?"
+			END SELECT
+
+
+	END SELECT
+
+
+	Mouse.Hide
+	IF UserSettings.ScreenMode = scrVGA THEN
+		LINE (12, 81)-(627, 97), 2, BF
+		Font.Print Message, (640 - Font.GetWidth(Message, fontHeading)) / 2, 85, 0, fontHeading
+	ELSE
+		LINE (12, 49)-(627, 65), 2, BF
+		Font.Print Message, (640 - Font.GetWidth(Message, fontHeading)) / 2, 53, 0, fontHeading
+	END IF
+	Mouse.Show
+	
 END SUB
 
 ' =========================================================================
@@ -611,7 +714,7 @@ SUB Tic.SaveState ()
 	PUT #StateFile, , EnableAI
 	PUT #StateFile, , PlayerTurn
 	PUT #StateFile, , PlayerStart
-	PUT #StateFile, , chkAudio.Checked
+	PUT #StateFile, , EnableAudio
 	FOR X = 1 TO 3
 		FOR Y = 1 TO 3
 			PUT #StateFile, , PlayField(X, Y)
