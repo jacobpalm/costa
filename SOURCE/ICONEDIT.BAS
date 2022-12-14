@@ -9,7 +9,6 @@ DECLARE SUB IconEdit.Main (IconToLoad AS STRING)
 DECLARE SUB IconEdit.MoveIndicator (Direction%)
 DECLARE SUB IconEdit.NewIcon ()
 DECLARE SUB IconEdit.Preview ()
-DECLARE SUB IconEdit.SetTitle ()
 DECLARE SUB IconEdit.ShowLoadDialog ()
 
 CONST toolPencil = 0
