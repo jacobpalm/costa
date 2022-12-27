@@ -614,11 +614,11 @@ END SUB
 
 SUB Tic.PrintMessage (MessageType AS INTEGER)
 
-	DIM Message AS STRING
+	DIM message AS STRING
 	DIM CurrentTurn AS STRING * 1
 	DIM Randomizer
 
-	Randomizer = INT(5 * RND + 1)
+	Randomizer = INT(6 * RND + 1)
 
 	IF PlayerTurn = 1 THEN
 		CurrentTurn = "X"
@@ -632,15 +632,17 @@ SUB Tic.PrintMessage (MessageType AS INTEGER)
 
 			SELECT CASE Randomizer
 				CASE 1
-					Message = CurrentTurn + " has brought honor to the family!"
+					message = CurrentTurn + " has brought honor to the family!"
 				CASE 2
-					Message = CurrentTurn + " has emerged victoriously from the battle!"
+					message = CurrentTurn + " has emerged victoriously from the battle!"
 				CASE 3
-					Message = "Nothing could stop " + CurrentTurn + " from achieving victory!"
+					message = "Nothing could stop " + CurrentTurn + " from achieving victory!"
 				CASE 4
-					Message = "The crowd is gasping, amazed at the incredible play by " + CurrentTurn + "!"
+					message = "The crowd is gasping, amazed at the incredible play by " + CurrentTurn + "!"
 				CASE 5
-					Message = CurrentTurn + " has brought down utter destruction on the opponent!"
+					message = CurrentTurn + " has brought down utter destruction on the opponent!"
+				CASE 6
+					message = CurrentTurn + " is unbeatable on the playing field!"
 			END SELECT
 
 
@@ -648,15 +650,17 @@ SUB Tic.PrintMessage (MessageType AS INTEGER)
 
 			SELECT CASE Randomizer
 				CASE 1
-					Message = "It was a real nail-biter, but neither player could best the other."
+					message = "It was a real nail-biter, but neither player could best the other."
 				CASE 2
-					Message = "No winners means no losers, I guess."
+					message = "No winners means no losers, I guess."
 				CASE 3
-					Message = "A high-stakes game that could have gone both ways."
+					message = "A high-stakes game that could have gone both ways."
 				CASE 4
-					Message = "As eager as both players were, neither of them could achieve victory."
+					message = "As eager as both players were, neither of them could achieve victory."
 				CASE 5
-					Message = "No bragging rights for either player - try again!"
+					message = "No bragging rights for either player - try again!"
+				CASE 6
+					message = "An otherwise intense game, which ended with disappointment for both sides."
 			END SELECT
 
 
@@ -664,15 +668,17 @@ SUB Tic.PrintMessage (MessageType AS INTEGER)
 
 			SELECT CASE Randomizer
 				CASE 1
-					Message = CurrentTurn + " is contemplating the next move..."
+					message = CurrentTurn + " is contemplating the next move..."
 				CASE 2
-					Message = CurrentTurn + " is calculating all possible outcomes..."
+					message = CurrentTurn + " is calculating all possible outcomes..."
 				CASE 3
-					Message = "The stakes are too high for " + CurrentTurn + " not to think this through..."
+					message = "The stakes are too high for " + CurrentTurn + " not to think this through..."
 				CASE 4
-					Message = CurrentTurn + " is struggling to find enough CPU power to beat the opponent..."
+					message = CurrentTurn + " is struggling to find enough CPU power to beat the opponent..."
 				CASE 5
-					Message = CurrentTurn + " is becomming sentient in the quest to beat the humans..."
+					message = CurrentTurn + " is becomming sentient in the quest to beat the humans..."
+				CASE 6
+					message = CurrentTurn + " is working hard to not loose to a feeble human..."
 			END SELECT
 
 
@@ -680,15 +686,17 @@ SUB Tic.PrintMessage (MessageType AS INTEGER)
 
 			SELECT CASE Randomizer
 				CASE 1
-					Message = "Make your move, " + CurrentTurn + "!"
+					message = "Make your move, " + CurrentTurn + "!"
 				CASE 2
-					Message = "How are you going to beat your opponent, " + CurrentTurn + "?"
+					message = "How are you going to beat your opponent, " + CurrentTurn + "?"
 				CASE 3
-					Message = "Uh oh, what a powerfull move! What will " + CurrentTurn + " do now?"
+					message = "Uh oh, what a powerfull move! What will " + CurrentTurn + " do now?"
 				CASE 4
-					Message = "Take your time " + CurrentTurn + " - the stakes are too high to slip up now!"
+					message = "Take your time " + CurrentTurn + " - the stakes are too high to slip up now!"
 				CASE 5
-					Message = "How will you eliminate your opponent, " + CurrentTurn + "?"
+					message = "How will you eliminate your opponent, " + CurrentTurn + "?"
+				CASE 6
+					message = "Now is the time to prove yourself, " + CurrentTurn + "!"
 			END SELECT
 
 
@@ -698,10 +706,10 @@ SUB Tic.PrintMessage (MessageType AS INTEGER)
 	Mouse.Hide
 	IF UserSettings.ScreenMode = scrVGA THEN
 		LINE (12, 81)-(627, 97), 2, BF
-		Font.Print Message, (640 - Font.GetWidth(Message, fontHeading)) / 2, 85, 0, fontHeading
+		Font.Print message, (640 - Font.GetWidth(message, fontHeading)) / 2, 85, 0, fontHeading
 	ELSE
 		LINE (12, 49)-(627, 65), 2, BF
-		Font.Print Message, (640 - Font.GetWidth(Message, fontHeading)) / 2, 53, 0, fontHeading
+		Font.Print message, (640 - Font.GetWidth(message, fontHeading)) / 2, 53, 0, fontHeading
 	END IF
 	Mouse.Show
 	
