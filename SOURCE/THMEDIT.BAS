@@ -267,25 +267,25 @@ TopOfLoop:
               CASE 3
                 thmClrWindow = I
               CASE 4
-                thmClrWindowText = I
-              CASE 5
-                thmClrButton = I
-              CASE 6
-                thmClrTextbox = I
-              CASE 7
-                thmClrTextboxText = I
-              CASE 8
-                thmClr3DLight = I
-              CASE 9
-                thmClr3DShadow = I
-              CASE 10
                 thmClrTitlebar = I
+              CASE 5
+                thmClrWindowText = I
+              CASE 6
+                thmClrButton = I
+              CASE 7
+                thmClrTextbox = I
+              CASE 8
+                thmClrTextboxText = I
+              CASE 9
+                thmClr3DLight = I
+              CASE 10
+                thmClr3DShadow = I
               CASE 11
-                thmClrTitlebarText = I
-              CASE 12
                 thmClrSelect = I
-              CASE 13
+              CASE 12
                 thmClrSelectText = I
+              CASE 13
+                thmClrTitlebarText = I
             END SELECT
             Theme.DrawIndicator I
             GOTO UpdateEditPreview
