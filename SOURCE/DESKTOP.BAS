@@ -39,16 +39,6 @@ IF COMMAND$ = "/BOOT" THEN
   'Boot means that we need to initialize Costa, and make sure all paths are
   'valid. Will not run when returning to the desktop from external program.
 
-    IF Sys.Path = "" OR File.Exists(Sys.Path + appExeName + ".EXE") = False THEN
-        CLS
-        PRINT "The environment variable " + appExeName + ", which contains the path to Costa, is either"
-        PRINT "not set or contains an invalid path."
-        PRINT
-        PRINT "Run SETUP.EXE to fix this issue."
-        PRINT
-        END 1
-    END IF
-    
     'Make sure all directories are present and that no files from previous
     'sessions are present
     ON ERROR RESUME NEXT
