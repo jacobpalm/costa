@@ -1132,6 +1132,8 @@ Desk.RedrawAll:
 
               'If we reach this point, the link was clicked.
               Desk.LinkMenu DeskLinkCheck
+              'Exit FOR, otherwise overlapping icons will also be clicked
+              EXIT FOR
 
             END IF
           END IF
