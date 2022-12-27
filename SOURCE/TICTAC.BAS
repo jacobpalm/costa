@@ -456,7 +456,7 @@ StartOfGame:
 			GOTO StartOfGame
 		END IF
 
-		IF Key$ = "s" THEN
+		IF Obj.BtnClick(btnAudio) OR Key$ = "s" THEN
 			EnableAudio = NOT EnableAudio
 			IF EnableAudio THEN
 				btnAudio.Caption = "Disable õsound"
