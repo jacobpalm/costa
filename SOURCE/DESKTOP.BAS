@@ -203,11 +203,13 @@ SUB Desk.DrawDesktop ()
    
   Mouse.Hide
   LINE (0, 29)-(639, scrHeight), SystemTheme.Desktop, BF
-  Mouse.Show
-
+  
   'All desklinks will always have an imagefile. Use this to check if any
   'desklinks exist
-  IF RTRIM$(DeskLink(0).ImageFile) = "" OR DeskLink(0).Caption = STRING$(25, 0) THEN EXIT SUB
+  IF RTRIM$(DeskLink(0).ImageFile) = "" OR DeskLink(0).Caption = STRING$(25, 0) THEN
+    Mouse.Show
+    EXIT SUB
+  END IF
 
   DIM imgDeskLinkIcon AS ImageType
   DIM TargetLink
@@ -251,6 +253,8 @@ SUB Desk.DrawDesktop ()
                  
   NEXT
   
+  Mouse.Show
+
 END SUB
 
 ' =========================================================================
@@ -1081,8 +1085,6 @@ SUB Desk.Main ()
   Desk.TipOfTheDay
 
 Desk.RedrawAll:
-
-  Desk.DrawDesktop
   TabCheck = -1
 
   Obj.DrawMenu
@@ -1092,6 +1094,7 @@ Desk.RedrawAll:
   Obj.DrawBtn btnConfig, False
   Obj.DrawBtn btnAboutCosta, False
   Obj.DrawBtn btnExitCosta, False
+  Desk.DrawDesktop
 
   'Clear mouse and keyboard buffer, since DOSBox will sometimes leave data
   DO: LOOP WHILE Mouse.Clicked
