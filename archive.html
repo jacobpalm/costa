@@ -16,6 +16,7 @@ title: Archive - The Costa Graphical User Interface
 					<span class="caret"></span>
 					</button>
 					<ul class="dropdown-menu centerDropdown" aria-labelledby="dropdownMenu1">
+					<li><a href="{{ site.baseURL }}/archive.html#version170">1.7.0</a></li>
 					<li><a href="{{ site.baseURL }}/archive.html#version160">1.6.0</a></li>
 					<li><a href="{{ site.baseURL }}/archive.html#version150">1.5.0</a></li>
 					<li><a href="{{ site.baseURL }}/archive.html#version140">1.4.0</a></li>
@@ -46,7 +47,31 @@ title: Archive - The Costa Graphical User Interface
 	</div>
 </div>
 
-<div class="white" id="version160">
+<div class="white" id="version170">
+	<div class="container">
+		<div class="row">
+			<div class="col-lg-8 col-lg-offset-2">
+				<h4>Version 1.7.0</h4>
+				<p>7th of January, 2023</p>
+				<p><a class="btn btn-default" href="{{ site.baseURL }}/screenshots/170.html"><span class="glyphicon glyphicon-picture" aria-hidden="true"></span> Screenshot</a>
+				<a class="btn btn-default" href="{{ site.baseURL }}/downloads/costa170.zip"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> Download</a></p>				
+				<p>Version 1.7.0 is all about making it easier to work with files. To fulfil this goal, a file selector has been added. This can be used to visually browse folders and select a file, instead of having to type path and filename in input fields. This is used for example when adding a desktop link, or opening a file in the text viewer.</p>
+				<ul>
+					<li>File selector added for easier handling of files, without having to memorize paths and filenames</li>
+					<li>UI redesign - since Costa is single-tasking, there really was no need for windows. As such, windows are no longer present. All apps run full screen. Dialogs, such as message boxes and input boxes, still appear on top of content.</li>
+					<li>Setup utility can now auto-detect and suggest the path to Costa, removing the need to type the full path on first run</li>
+					<li>Previously, deleting the last desktop link recreated default links automatically. Now, Costa will ask the user if that is desired, and will remember the choice</li>
+					<li>Fixed theme dialog, so that profile switch or restart of desktop is no longer required to switch theme</li>
+					<li>Costa now uses the TEMP environment variable to place its temporary files, with a fallback to the DATA\TEMP directory. This allows temp files to be moved to a RAM disk, for a great increase in speed on computers with a slow drive</li>
+					<li>EXEs are now compiled with stub files to remove unnecessary features, such as COM/LPT port access, ISAM database support and advanced input editing, saving a total of 52 KB (6 percent) diskspace for the compiled programs</li>
+				</ul>
+				<p><a href="{{ site.baseURL }}/archive.html#sitetop">Back to top</a></p>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="grey" id="version160">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
@@ -70,7 +95,7 @@ title: Archive - The Costa Graphical User Interface
 	</div>
 </div>
 
-<div class="grey" id="version150">
+<div class="white" id="version150">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
@@ -99,7 +124,7 @@ title: Archive - The Costa Graphical User Interface
 	</div>
 </div>
 
-<div class="white" id="version140">
+<div class="grey" id="version140">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
@@ -121,7 +146,7 @@ title: Archive - The Costa Graphical User Interface
 	</div>
 </div>
 
-<div class="grey" id="version130">
+<div class="white" id="version130">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
@@ -145,7 +170,7 @@ title: Archive - The Costa Graphical User Interface
 	</div>
 </div>
 
-<div class="white" id="version120">
+<div class="grey" id="version120">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
@@ -167,7 +192,7 @@ title: Archive - The Costa Graphical User Interface
 	</div>
 </div>
 
-<div class="grey" id="version110">
+<div class="white" id="version110">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
@@ -189,7 +214,7 @@ title: Archive - The Costa Graphical User Interface
 	</div>
 </div>
 
-<div class="white" id="version100">
+<div class="grey" id="version100">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
@@ -214,7 +239,7 @@ title: Archive - The Costa Graphical User Interface
 	</div>
 </div>
 
-<div class="grey" id="version099">
+<div class="white" id="version099">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
@@ -240,7 +265,7 @@ title: Archive - The Costa Graphical User Interface
 	</div>
 </div>
 
-<div class="white" id="version098">
+<div class="grey" id="version098">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
@@ -273,7 +298,7 @@ title: Archive - The Costa Graphical User Interface
 	</div>
 </div>
 
-<div class="grey" id="version095">
+<div class="white" id="version095">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
@@ -288,7 +313,7 @@ title: Archive - The Costa Graphical User Interface
 	</div>
 </div>
 
-<div class="white" id="version094">
+<div class="grey" id="version094">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
@@ -307,7 +332,7 @@ title: Archive - The Costa Graphical User Interface
 	</div>
 </div>
 
-<div class="grey" id="version093">
+<div class="white" id="version093">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
@@ -328,7 +353,7 @@ title: Archive - The Costa Graphical User Interface
 	</div>
 </div>
 
-<div class="white" id="version092">
+<div class="grey" id="version092">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
@@ -350,7 +375,7 @@ title: Archive - The Costa Graphical User Interface
 	</div>
 </div>
 
-<div class="grey" id="version091">
+<div class="white" id="version091">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
@@ -374,7 +399,7 @@ title: Archive - The Costa Graphical User Interface
 	</div>
 </div>
 
-<div class="white" id="version090">
+<div class="grey" id="version090">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
@@ -397,7 +422,7 @@ title: Archive - The Costa Graphical User Interface
 	</div>
 </div>
 
-<div class="grey" id="version080">
+<div class="white" id="version080">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
@@ -427,7 +452,7 @@ title: Archive - The Costa Graphical User Interface
 	</div>
 </div>
 
-<div class="white" id="version070">
+<div class="grey" id="version070">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
@@ -450,7 +475,7 @@ title: Archive - The Costa Graphical User Interface
 	</div>
 </div>
 
-<div class="grey" id="version060">
+<div class="white" id="version060">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
@@ -472,7 +497,7 @@ title: Archive - The Costa Graphical User Interface
 	</div>
 </div>
 
-<div class="white" id="version040">
+<div class="grey" id="version040">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
@@ -498,7 +523,7 @@ title: Archive - The Costa Graphical User Interface
 	</div>
 </div>
 
-<div class="grey" id="version033">
+<div class="white" id="version033">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
@@ -518,7 +543,7 @@ title: Archive - The Costa Graphical User Interface
 	</div>
 </div>
 
-<div class="white" id="version030">
+<div class="grey" id="version030">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
@@ -546,7 +571,7 @@ title: Archive - The Costa Graphical User Interface
 	</div>
 </div>
 
-<div class="grey" id="version023">
+<div class="white" id="version023">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
@@ -574,7 +599,7 @@ title: Archive - The Costa Graphical User Interface
 	</div>
 </div>
 
-<div class="white" id="version001">
+<div class="grey" id="version001">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
