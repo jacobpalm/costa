@@ -160,21 +160,18 @@
 
  ** 2.3 - Managing desktop links **
     
-    To open a desktop link using the mouse, double-click it.
+    To open a desktop link using the mouse, simply click it. You can also use 
+   the TAB key on your keyboard to cycle through the icons from left to
+   right, and then press Enter when the desired icon is highlighted. Use
+   Shift+TAB to cycle through links in reverse order.
+   
+    When you open a desktop link, you will be presented with a dialog with   
+   information about the link, as well as a few options.
 
-    Managing desktop links is as easy as it gets. To customize an existing
-   link or to open the file/program it points to, just right-click it using
-   the mouse. You can also use the TAB key on your keyboard to cycle through
-   the icons from left to right, and then press Enter when the desired icon
-   is highlighted. Use Shift+TAB to cycle through links in reverse order.
-   
-    Once the icon has been right-clicked, you will get a menu with four
-   choices: 
-   
-     -Open/run
+     -Open
       Run the program or open the target file specified for this desktop link
 
-     -Customize..
+     -Customize
       Opens a dialog where you can change the target filename, path, icon and
       more. If the "Pause after execution" checkbox is selected, Costa will
       wait for a key press before returning to the desktop once the program
@@ -190,13 +187,13 @@
       Removes the desktop link permanently. Costa will ask you to confirm
       this action.
 
-    To close the menu without choosing any options, click outside of the menu
-   or press the Escape key.
+    To close the menu without choosing any options, click Cancel or press the 
+   Escape key.
 
     To add a new desktop link, click the "Add link" button in the top right
-   corner of the desktop. The dialog mentioned earlier under "Customize"
-   will appear to allow you to define the properties of your new link. If you
-   click "Cancel" in this dialog, no new link will be added.
+   corner of the desktop. A dialog will appear, allowing you to define the
+   properties of your new link. If you click "Cancel" in this dialog, no new 
+   link will be added.
 
 
  ** 2.4 Running DOS commands **
@@ -281,10 +278,9 @@
 
  ** 3.2 Launching the Configuration program **
 
-    On the desktop you will find a built-in shortcut named "Configuration".
-   This shortcut can be moved like any other shortcut, but cannot be removed
-   or customized. Clicking it will open the Configuration program, which
-   allows you to change the appearance and behavior of Costa.
+    On the desktop you will find a button labeld "Config...". Clicking it will
+   open the Configuration program, which allows you to change the appearance
+   and behavior of Costa.
 
 
  ** 3.3 The theme selector **
@@ -355,9 +351,7 @@
       link on the desktop.
 
     - Animate user interface
-      Makes the bar at the top of the desktop and link menus appear and
-      disappear using a sliding animation, which looks nice but results in
-      a short delay.
+      This setting is deprecated, and currently not in use.
 
     - Confirm when trying to exit Costa
       If enabled you will be asked if you really want to exit Costa when you
