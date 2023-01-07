@@ -676,7 +676,7 @@ SUB Tic.PrintMessage (MessageType AS INTEGER)
 				CASE 4
 					message = CurrentTurn + " is struggling to find enough CPU power to beat the opponent..."
 				CASE 5
-					message = CurrentTurn + " is becomming sentient in the quest to beat the humans..."
+					message = CurrentTurn + " is becoming sentient in the quest to beat the humans..."
 				CASE 6
 					message = CurrentTurn + " is working hard to not loose to a feeble human..."
 			END SELECT

@@ -7,7 +7,7 @@
 
 
 *1.7.0*
-Version 1.7.0 is all about making it easier to work with files. To fullfil
+Version 1.7.0 is all about making it easier to work with files. To fulfil
 this goal, a file selector has been added. This can be used to visually
 browse folders and select a file, instead of having to type path and filename
 in input fields. This is used for example when adding a desktop link, or
@@ -29,7 +29,7 @@ opening a file in the text viewer.
    with a fallback to the DATA\TEMP directory. This allows temp files to be
    moved to a RAM disk, for a great increase in speed on computers with a
    slow drive
-  -EXEs are now compiled with stub files to remove unnecesary features, such
+  -EXEs are now compiled with stub files to remove unnecessary features, such
    as COM/LPT port access, ISAM database support and advanced input editing,
    saving a total of 52 KB (6 percent) diskspace for the compiled programs
 
