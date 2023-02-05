@@ -92,7 +92,7 @@ FUNCTION Font.GetWidth (TargetText AS STRING, FontID AS INTEGER)
 
 END FUNCTION
 
-SUB Font.Print (BYVAL Text AS STRING, X, Y, Col, FontID)
+SUB Font.Print (BYVAL Text AS STRING, x, Y, Col, FontID)
 
 	DIM Char, Ascii, HotKey
 	DIM FilteredText AS STRING
@@ -110,7 +110,7 @@ SUB Font.Print (BYVAL Text AS STRING, X, Y, Col, FontID)
 	END IF
 	
 	'Use PSET to set the drawing position
-	PSET (X, Y + 11), POINT(X, Y + 11)
+	PSET (x, Y + 11), POINT(x, Y + 11)
 	DRAW "C" + LTRIM$(STR$(Col))
 
 	FilteredText = RTRIM$(FilteredText)
@@ -130,7 +130,7 @@ SUB Font.Print (BYVAL Text AS STRING, X, Y, Col, FontID)
 	
 	'Underline hotkey, if any
 	IF HotKey AND NOT FontID = FontSystem THEN
-		LINE (X + Font.GetWidth(LEFT$(FilteredText, HotKey - 1), FontID), Y + 11)-(X + Font.GetWidth(LEFT$(FilteredText, HotKey), FontID), Y + 11), Col
+		LINE (x + Font.GetWidth(LEFT$(FilteredText, HotKey - 1), FontID), Y + 11)-(x + Font.GetWidth(LEFT$(FilteredText, HotKey), FontID), Y + 11), Col
 	END IF
 
 	Mouse.Show
@@ -415,50 +415,36 @@ END SUB
 
 SUB Obj.DrawImg (TargetImg AS ImageType)
 
-	DIM X, Y, XPos, YPos
-	DIM Header AS STRING * 9
-	X = TargetImg.Pos.Left
+	DIM x, Y, XPos, YPos
+	x = TargetImg.Pos.Left
 	Y = TargetImg.Pos.Top
 
 	TargetImg.Pos.Width = 31
 	TargetImg.Pos.Height = 31
 
-	IF NOT File.Exists(Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".BSV") THEN
-		'Draw a red box with the text "IMG ERR" to indicate a missing file
-		Mouse.Hide
-		LINE (X + 1, Y + 1)-(X + 30, Y + 30), 4, BF
-		LINE (X, Y)-(X + 31, Y + 31), 0, B
-		Mouse.Show
-		Font.Print "IMG", X + 6, Y + 4, 15, FontNormal
-		Font.Print "ERR", X + 6, Y + 19, 15, FontNormal
-		EXIT SUB
-	END IF
+	IF NOT File.Exists(Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".BSV") THEN GOTO DrawImgError
 
-	DIM IconData AS IconDataType
-
-	'Load saved memory back to address of IconData.Pixel array
-	ON LOCAL ERROR GOTO DrawImgError
-	DEF SEG = VARSEG(IconData.Pixel(0, 0))
-	BLOAD Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".BSV", VARPTR(IconData.Pixel(0, 0))
+	DIM scrBuffer(260)
+	DEF SEG = VARSEG(scrBuffer(0))
+	BLOAD Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".BSV", VARPTR(scrBuffer(0))
 	DEF SEG
-	
 	Mouse.Hide
-	FOR XPos = 0 TO 31
-		FOR YPos = 0 TO 31
-			IF IconData.Pixel(XPos, YPos) > -1 THEN PSET (X + XPos, Y + YPos), IconData.Pixel(XPos, YPos)
-		NEXT
-	NEXT
+	LINE (x - 1, Y - 1)-(x + 32, Y - 1), SystemTheme.Light
+	LINE (x - 1, Y)-(x - 1, Y + 32), SystemTheme.Light
+	LINE (x, Y + 32)-(x + 32, Y + 32), SystemTheme.Shadow
+	LINE (x + 32, Y)-(x + 32, Y + 31), SystemTheme.Shadow
+	PUT (x, Y), scrBuffer, PSET
 	Mouse.Show
 	EXIT SUB
 
 DrawImgError:
 	'Draw a red box with the text "IMG ERR" to indicate a missing file
 	Mouse.Hide
-	LINE (X + 1, Y + 1)-(X + 30, Y + 30), 4, BF
-	LINE (X, Y)-(X + 31, Y + 31), 0, B
+	LINE (x + 1, Y + 1)-(x + 30, Y + 30), 4, BF
+	LINE (x, Y)-(x + 31, Y + 31), 0, B
 	Mouse.Show
-	Font.Print "IMG", X + 6, Y + 4, 15, FontNormal
-	Font.Print "ERR", X + 6, Y + 19, 15, FontNormal
+	Font.Print "IMG", x + 6, Y + 4, 15, FontNormal
+	Font.Print "ERR", x + 6, Y + 19, 15, FontNormal
 	EXIT SUB
 	RESUME NEXT
 END SUB

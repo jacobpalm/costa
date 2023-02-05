@@ -73,14 +73,8 @@ SUB IconEdit.DrawPixel (X, Y, DrawColor, ForceDraw)
         IconData.Pixel(X, Y) = DrawColor
 
         Mouse.Hide
-        IF DrawColor > -1 THEN
-            LINE (XPos, YPos)-(XPos + PixelSize - 2, YPos + PixelSize - 2), DrawColor, BF
-            PSET (PreviewOffsetX + X, PreviewOffsetY + Y), DrawColor
-        ELSE
-            LINE (XPos, YPos)-(XPos + PixelSize - 2, YPos + PixelSize - 2), 15, BF
-            LINE (XPos, YPos + PixelSize - 2)-(XPos + PixelSize - 2, YPos), 7
-            PSET (PreviewOffsetX + X, PreviewOffsetY + Y), 15
-        END IF
+        LINE (XPos, YPos)-(XPos + PixelSize - 2, YPos + PixelSize - 2), DrawColor, BF
+        PSET (PreviewOffsetX + X, PreviewOffsetY + Y), DrawColor
         Mouse.Show
 
     END IF
@@ -196,9 +190,7 @@ END SUB
 SUB IconEdit.LoadIcon (IconToLoad AS STRING)
 
     DIM ErrMsg, XPos, YPos
-    DIM Header AS STRING * 9
     DIM WindowTitle AS STRING
-    DIM IconLoadData AS IconEditDataType
     
     IF NOT File.Exists(Sys.Path + "DATA\IMAGES\" + IconToLoad + ".BSV") THEN
         ErrMsg = Sys.MsgBox("File not found", "Could not open the specified icon." + CHR$(13) + "Verify the filename and try again.", msgError)
@@ -234,16 +226,21 @@ SUB IconEdit.LoadIcon (IconToLoad AS STRING)
     'We made it this far - load icon
 
     ON LOCAL ERROR GOTO LoadIconError
-    DEF SEG = VARSEG(IconLoadData.Pixel(0, 0))
-    BLOAD Sys.Path + "DATA\IMAGES\" + IconToLoad + ".BSV", VARPTR(IconLoadData.Pixel(0, 0))
+    DIM scrBuffer(260)
+    DEF SEG = VARSEG(scrBuffer(0))
+    BLOAD Sys.Path + "DATA\IMAGES\" + IconToLoad + ".BSV", VARPTR(scrBuffer(0))
     DEF SEG
+    Mouse.Hide
+    PUT (PreviewOffsetX, PreviewOffsetY), scrBuffer, PSET
+    Mouse.Show
     ON LOCAL ERROR RESUME NEXT
 
     IconFileName = IconToLoad
+
     Mouse.Hide
     FOR XPos = 0 TO 31
         FOR YPos = 0 TO 31
-            IconEdit.DrawPixel XPos, YPos, IconLoadData.Pixel(XPos, YPos), True
+            IconEdit.DrawPixel XPos, YPos, POINT(PreviewOffsetX + XPos, PreviewOffsetY + YPos), True
         NEXT
     NEXT
     Mouse.Show
@@ -266,9 +263,9 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     DIM btnFloodFill AS ButtonType
     DIM btnNew AS ButtonType, btnOpen AS ButtonType, btnSave AS ButtonType
     DIM btnExit AS ButtonType
-    DIM txtColor(-1 TO 15) AS TextboxType
+    DIM txtColor(0 TO 15) AS TextboxType
     
-    DIM Key$, YPos, XPos, CursorX, CursorY, DrawColor, void
+    DIM Key$, YPos, XPos, CursorX, CursorY, DrawColor, Void
     DIM ColChk, FillColor, CurrentTool
 
     Obj.DrawMenu
@@ -334,14 +331,11 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     LINE (txtColor(DrawColor).Pos.Left + 4, txtColor(DrawColor).Pos.Top + 4)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 4, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 4), 8, B
     LINE (txtColor(DrawColor).Pos.Left + 5, txtColor(DrawColor).Pos.Top + 5)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 5, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 5), 15, B
                                 
-    'Transparent color box
-    Obj.SetSize txtColor(-1).Pos, txtColor(7).Pos.Left, txtColor(7).Pos.Top + 22, 41, 22
-    Obj.DrawTxt txtColor(-1), "", False
-    LINE (txtColor(-1).Pos.Left + 2, txtColor(-1).Pos.Top + 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 2, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 2), 15, BF
-    LINE (txtColor(-1).Pos.Left + 3, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 2, txtColor(-1).Pos.Top + 2), 7
-    
-    Font.Print "õPreview", btnPreview.Pos.Left, btnPreview.Pos.Top - 15, SystemTheme.WindowText, FontHeading
     LINE (btnPreview.Pos.Left + 2, btnPreview.Pos.Top + 2)-(btnPreview.Pos.Left + btnPreview.Pos.Width - 2, btnPreview.Pos.Top + btnPreview.Pos.Height - 2), 15, BF
+    LINE (PreviewOffsetX - 1, PreviewOffsetY - 1)-(PreviewOffsetX + 32, PreviewOffsetY - 1), SystemTheme.Light
+    LINE (PreviewOffsetX - 1, PreviewOffsetY)-(PreviewOffsetX - 1, PreviewOffsetY + 32), SystemTheme.Light
+    LINE (PreviewOffsetX, PreviewOffsetY + 32)-(PreviewOffsetX + 32, PreviewOffsetY + 32), SystemTheme.Shadow
+    LINE (PreviewOffsetX + 32, PreviewOffsetY)-(PreviewOffsetX + 32, PreviewOffsetY + 31), SystemTheme.Shadow
 
     'Draw grid in drawing area
     FOR YPos = 0 TO 31
@@ -354,9 +348,9 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     NEXT
     
     Mouse.Show
+    Font.Print "õPreview", btnPreview.Pos.Left, btnPreview.Pos.Top - 15, SystemTheme.WindowText, FontHeading
     Font.Print "õColor", txtColor(0).Pos.Left, txtDrawArea.Pos.Top, SystemTheme.WindowText, FontHeading
     Font.Print "Tools", txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 12, txtDrawArea.Pos.Top, SystemTheme.WindowText, FontHeading
-
 
     KeyboardPosX = 16
     KeyboardPosY = 16
@@ -398,7 +392,7 @@ SUB IconEdit.Main (IconToLoad AS STRING)
         END IF
 
         IF Obj.BtnClick(btnSave) OR Key$ = "s" THEN
-            void = IconEdit.SaveIcon
+            Void = IconEdit.SaveIcon
         END IF
 
         IF Obj.BtnClick(btnOpen) OR Key$ = "l" THEN
@@ -439,24 +433,15 @@ SUB IconEdit.Main (IconToLoad AS STRING)
           END IF
         END IF
 
-        IF Key$ = "t" OR Key$ = "c" THEN
+        IF Key$ = "c" THEN
           Mouse.Hide
           'Remove selection marker from current color
-          IF DrawColor = -1 THEN
-            LINE (txtColor(-1).Pos.Left + 2, txtColor(-1).Pos.Top + 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 4, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 4), 15, BF
-            LINE (txtColor(-1).Pos.Left + 3, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 2, txtColor(-1).Pos.Top + 2), 7
-          ELSE
-            LINE (txtColor(DrawColor).Pos.Left + 4, txtColor(DrawColor).Pos.Top + 4)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 4, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 4), DrawColor, BF
-          END IF
-
+          LINE (txtColor(DrawColor).Pos.Left + 4, txtColor(DrawColor).Pos.Top + 4)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 4, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 4), DrawColor, BF
+          
           'Change color according to key pressed
-          IF Key$ = "t" THEN
-            DrawColor = -1
-          ELSE
-            DrawColor = DrawColor + 1
-            IF DrawColor > 15 THEN DrawColor = -1
-          END IF
-
+          DrawColor = DrawColor + 1
+          IF DrawColor > 15 THEN DrawColor = 0
+          
           'Draw new selection marker
           LINE (txtColor(DrawColor).Pos.Left + 4, txtColor(DrawColor).Pos.Top + 4)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 4, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 4), 8, B
           LINE (txtColor(DrawColor).Pos.Left + 5, txtColor(DrawColor).Pos.Top + 5)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 5, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 5), 15, B
@@ -506,7 +491,7 @@ SUB IconEdit.Main (IconToLoad AS STRING)
           END IF
         END IF
 
-        FOR ColChk = -1 TO 15
+        FOR ColChk = 0 TO 15
             IF Obj.TxtClick(txtColor(ColChk)) THEN
                 IF NOT DrawColor = ColChk THEN
                     Mouse.Hide
@@ -664,11 +649,9 @@ END SUB
 SUB IconEdit.Preview ()
 
     DIM winPreview AS WindowType, btnClose AS ButtonType
-    DIM txtPreview AS TextboxType, imgPreview AS ImageType
-    DIM Key$, XPos, YPos, FileHandle
-    DIM IconSaveData AS IconDataType
-    DIM Header AS STRING * 9
-    Header = "JACOBPALM"
+    DIM txtPreview AS TextboxType
+    DIM Key$, XPos, YPos, Void
+    DIM scrBuffer(341)
     
     Obj.SetSize winPreview.Pos, 186, (scrHeight - 299) / 2, 271, 303
     
@@ -685,6 +668,10 @@ SUB IconEdit.Preview ()
       Sys.VGASave "ICONPREW"
     END IF
 
+    Mouse.Hide
+    GET (PreviewOffsetX - 1, PreviewOffsetY - 1)-(PreviewOffsetX + 32, PreviewOffsetY + 32), scrBuffer
+    Mouse.Show
+    
     Obj.DrawWin winPreview
     Obj.DrawBtn btnClose, False
     Obj.DrawTxt txtPreview, "", False
@@ -708,27 +695,18 @@ SUB IconEdit.Preview ()
     LINE (txtPreview.Pos.Left + 185, txtPreview.Pos.Top + 185)-(txtPreview.Pos.Left + 245, txtPreview.Pos.Top + 245), 15, BF
     Mouse.Show
 
-    ON LOCAL ERROR GOTO PreviewError
-    DEF SEG = VARSEG(IconData.Pixel(0, 0))
-    BSAVE Sys.Path + "DATA\IMAGES\PRW_JPC8.BSV", VARPTR(IconData.Pixel(0, 0)), 2048
-    DEF SEG
-    ON LOCAL ERROR RESUME NEXT
-    
-    imgPreview.ImageFile = "PRW_JPC8.BSV"
-    
+    Mouse.Hide
     FOR XPos = 2 TO 185 STEP 61
         FOR YPos = 2 TO 185 STEP 61
-            imgPreview.Pos.Left = txtPreview.Pos.Left + XPos + 16
-            imgPreview.Pos.Top = txtPreview.Pos.Top + YPos + 16
-            Obj.DrawImg imgPreview
+            LINE (PreviewOffsetX - 1, PreviewOffsetY - 1)-(PreviewOffsetX + 32, PreviewOffsetY - 1), SystemTheme.Light
+            LINE (PreviewOffsetX - 1, PreviewOffsetY)-(PreviewOffsetX - 1, PreviewOffsetY + 32), SystemTheme.Light
+            LINE (PreviewOffsetX, PreviewOffsetY + 32)-(PreviewOffsetX + 32, PreviewOffsetY + 32), SystemTheme.Shadow
+            LINE (PreviewOffsetX + 32, PreviewOffsetY)-(PreviewOffsetX + 32, PreviewOffsetY + 31), SystemTheme.Shadow
+            PUT (txtPreview.Pos.Left + XPos + 16, txtPreview.Pos.Top + YPos + 16), scrBuffer, PSET
         NEXT
     NEXT
+    Mouse.Show
     
-    'Kill temp file, ignore errors
-    ON LOCAL ERROR RESUME NEXT
-    KILL Sys.Path + "DATA\IMAGES\PRW_JPC8.BSV"
-    ON LOCAL ERROR GOTO 0
-
     DO
         Key$ = INKEY$
 
@@ -748,7 +726,7 @@ SUB IconEdit.Preview ()
     EXIT SUB
 
 PreviewError:
-    FileHandle = Sys.MsgBox("Could not preview icon", "An error occured while previewing your icon, while saving a temporary copy." + CHR$(13) + "Make sure the disk is not full or write-protected, and try again.", msgError)
+    Void = Sys.MsgBox("Could not preview icon", "An error occured while previewing your icon, while saving a temporary copy." + CHR$(13) + "Make sure the disk is not full or write-protected, and try again.", msgError)
     Sys.VGALoad "ICONPREW"
     EXIT SUB
     RESUME NEXT
@@ -758,7 +736,7 @@ END SUB
 FUNCTION IconEdit.SaveIcon ()
 
     DIM SaveAs AS STRING, FileHandle, XPos, YPos
-    DIM Header AS STRING * 9, WindowTitle AS STRING
+    DIM WindowTitle AS STRING
 
 TopOfSave:
 
@@ -785,8 +763,12 @@ TopOfSave:
     END IF
 
     ON LOCAL ERROR GOTO SaveIconError
-    DEF SEG = VARSEG(IconData.Pixel(0, 0))
-    BSAVE Sys.Path + "DATA\IMAGES\" + SaveAs + ".BSV", VARPTR(IconData.Pixel(0, 0)), 2048
+    DIM scrBuffer(260)
+    Mouse.Hide
+    GET (PreviewOffsetX, PreviewOffsetY)-(PreviewOffsetX + 31, PreviewOffsetY + 31), scrBuffer
+    Mouse.Show
+    DEF SEG = VARSEG(scrBuffer(0))
+    BSAVE Sys.Path + "DATA\IMAGES\" + SaveAs + ".BSV", VARPTR(scrBuffer(0)), UBOUND(scrBuffer) * 2
     DEF SEG
     ON LOCAL ERROR GOTO 0
 
@@ -826,8 +808,8 @@ SUB IconEdit.ShowLoadDialog ()
     IconFiles(0) = DIR$(Sys.Path + "DATA\IMAGES\*.BSV")
 
     IF IconFiles(0) = "" THEN
-        DIM void
-        void = Sys.MsgBox("No icons found", "It appears that no icons exist - create a new one" + CHR$(13) + "by clicking the ""New"" button in the main window.", msgInfo)
+        DIM Void
+        Void = Sys.MsgBox("No icons found", "It appears that no icons exist - create a new one" + CHR$(13) + "by clicking the ""New"" button in the main window.", msgInfo)
         EXIT SUB
     END IF
     IconFiles(0) = LEFT$(IconFiles(0), LEN(IconFiles(0)) - 4)
