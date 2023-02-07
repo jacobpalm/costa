@@ -1241,7 +1241,7 @@ Desk.RedrawAll:
                     imgTab.ImageFile = DeskLink(TabCheck).ImageFile
                     imgTab.Pos.Left = DeskLink(TabCheck).Left: imgTab.Pos.Top = DeskLink(TabCheck).Top
                     btnTab.Pos.Left = DeskLink(TabCheck).Left - 3: btnTab.Pos.Top = DeskLink(TabCheck).Top - 3
-                    btnTab.Pos.Width = 36: btnTab.Pos.Height = 36
+                    btnTab.Pos.Width = 37: btnTab.Pos.Height = 37
                     Obj.DrawBtn btnTab, False
                     Obj.DrawImg imgTab
                     Mouse.Show
