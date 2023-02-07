@@ -955,7 +955,7 @@ SUB Sys.LoadProfile (ProfileNum)
 
 LoadDefaultProfile:
 	UserSettings.ProfileName = "Profile" + STR$(ProfileNum)
-	UserSettings.ProfileImage = "USERS"
+	UserSettings.ProfileImage = "DESKTOP"
 	UserSettings.ThemeFile = "DEFAULT"
 	UserSettings.Animations = True
 	UserSettings.ShowLinkDescriptions = True
