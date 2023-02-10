@@ -496,13 +496,8 @@ SUB IconEdit.Main (IconToLoad AS STRING)
                 IF NOT DrawColor = ColChk THEN
                     Mouse.Hide
                     'Remove selection marker
-                    IF DrawColor = -1 THEN
-                      LINE (txtColor(-1).Pos.Left + 2, txtColor(-1).Pos.Top + 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 4, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 4), 15, BF
-                      LINE (txtColor(-1).Pos.Left + 3, txtColor(-1).Pos.Top + txtColor(-1).Pos.Height - 2)-(txtColor(-1).Pos.Left + txtColor(-1).Pos.Width - 2, txtColor(-1).Pos.Top + 2), 7
-                    ELSE
-                      LINE (txtColor(DrawColor).Pos.Left + 4, txtColor(DrawColor).Pos.Top + 4)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 4, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 4), DrawColor, BF
-                    END IF
-
+                    LINE (txtColor(DrawColor).Pos.Left + 4, txtColor(DrawColor).Pos.Top + 4)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 4, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 4), DrawColor, BF
+                    
                     DrawColor = ColChk
                     'Draw new selection marker
                     LINE (txtColor(DrawColor).Pos.Left + 4, txtColor(DrawColor).Pos.Top + 4)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 4, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 4), 8, B
@@ -577,18 +572,13 @@ SUB IconEdit.MoveIndicator (Direction)
     END SELECT
 
 
-    IF (PerformMove AND KeyboardPosVisible) OR Direction = dirHide THEN
+    IF (PerformMove AND KeyboardPosVisible) OR (Direction = dirHide AND KeyboardPosVisible) THEN
 
       IF KeyboardPosX > -1 AND KeyboardPosY > -1 THEN
         XPos = DrawAreaOffsetX + (KeyboardPosX * PixelSize)
         YPos = DrawAreaOffsetY + (KeyboardPosY * PixelSize)
         Mouse.Hide
-        IF IconData.Pixel(KeyboardPosX, KeyboardPosY) > -1 THEN
-          LINE (XPos, YPos)-(XPos + PixelSize - 2, YPos + PixelSize - 2), IconData.Pixel(KeyboardPosX, KeyboardPosY), BF
-        ELSE
-          LINE (XPos, YPos)-(XPos + PixelSize - 2, YPos + PixelSize - 2), 15, BF
-          LINE (XPos, YPos + PixelSize - 2)-(XPos + PixelSize - 2, YPos), 7
-        END IF
+        LINE (XPos, YPos)-(XPos + PixelSize - 2, YPos + PixelSize - 2), IconData.Pixel(KeyboardPosX, KeyboardPosY), BF
         Mouse.Show
       END IF
     END IF
@@ -637,7 +627,7 @@ SUB IconEdit.NewIcon ()
     'Draw all pixels transparent
     FOR XPos = 0 TO 31
         FOR YPos = 0 TO 31
-            IconEdit.DrawPixel XPos, YPos, -1, True
+            IconEdit.DrawPixel XPos, YPos, 15, True
         NEXT
     NEXT
 
