@@ -404,9 +404,9 @@ SUB Tic.Main ()
 	DidLoadState = Tic.LoadState
 	
 	IF EnableAI = True THEN
-		btnAIToggle.Caption = "Singleõplayer"
-	ELSE
 		btnAIToggle.Caption = "Multiõplayer"
+	ELSE
+		btnAIToggle.Caption = "Singleõplayer"
 	END IF
 
 	IF EnableAudio THEN
