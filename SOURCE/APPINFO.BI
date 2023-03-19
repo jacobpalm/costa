@@ -3,6 +3,6 @@
 'which don't use the main library
 
     CONST appName = "The Costa Graphical Shell"
-    CONST appVersion = "1.7.0"
+    CONST appVersion = "1.7.1"
     CONST appYear = "2023"
 
