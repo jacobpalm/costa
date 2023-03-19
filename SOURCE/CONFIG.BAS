@@ -47,7 +47,6 @@ FUNCTION Conf.ConfAssoc ()
       Conf.RestoreAssoc
     END IF
 
-    DIM imgIcon AS ImageType
     DIM txtFileType AS TextboxType, txtFileTypeText AS STRING
     DIM txtOpenWith AS TextboxType, txtOpenWithText AS STRING
     DIM btnSave AS ButtonType, btnClose AS ButtonType, btnDisable AS ButtonType
@@ -56,7 +55,6 @@ FUNCTION Conf.ConfAssoc ()
     DIM OldFileType AS STRING, SaveVar
     DIM Key$
     
-    Obj.SetSize imgIcon.Pos, 83, 48, -1, -1
     Obj.SetSize txtFileType.Pos, 79, 300, 50, -1
     Obj.SetSize txtOpenWith.Pos, 156, 300, 464, -1
 
@@ -68,7 +66,6 @@ FUNCTION Conf.ConfAssoc ()
     btnSave.Caption = "õSave"
     btnDisable.Caption = "õDisable"
 
-    imgIcon.ImageFile = "UNKNOWN"
     txtFileType.MaxLen = 3
 
     Obj.SetSize btnThemes.Pos, 14, 29 + 14, 46, 46
@@ -89,16 +86,16 @@ FUNCTION Conf.ConfAssoc ()
     Obj.DrawTxt txtFileType, txtFileTypeText, False
     Obj.DrawTxt txtOpenWith, txtOpenWithText, False
     
-    Font.Print "Edit file associations", 122, 43, SystemTheme.WindowText, 1
-    Font.Print "Using this editor you can associate file types with programs. What this means, is", 122, 60, SystemTheme.WindowText, 2
-    Font.Print "that whenever you open a file of that type directly, Costa will automatically", 122, 76, SystemTheme.WindowText, 2
-    Font.Print "open the associated program, and have it load the file for you.", 79, 92, SystemTheme.WindowText, 2
+    Font.Print "Edit file associations", 79, 43, SystemTheme.WindowText, 1
+    Font.Print "Using this editor you can associate file types with programs. What this means, is that", 79, 60, SystemTheme.WindowText, 2
+    Font.Print "whenever you open a file of that type directly, Costa will automatically open the", 79, 76, SystemTheme.WindowText, 2
+    Font.Print "associated program, and have it load the file for you.", 79, 92, SystemTheme.WindowText, 2
 
     Font.Print "As an example, let's say you associate the TXT file extension with C:\DOS\EDIT.COM. Now,", 79, 124, SystemTheme.WindowText, 2
     Font.Print "whenever you open a TXT file, Costa will launch EDIT.COM and have it open the file for you.", 79, 140, SystemTheme.WindowText, 2
 
     Font.Print "To associate a filetype with a program, type the filetype below. If a program is already", 79, 172, SystemTheme.WindowText, 2
-    Font.Print "assigned with this filetype, it will automatically show up in the ""Open with"" field.", 79, 188, SystemTheme.WindowText, 2
+    Font.Print "associated with this filetype, it will automatically show up in the ""Open with"" field.", 79, 188, SystemTheme.WindowText, 2
 
     Font.Print "To remove an association, leave the ""Open with"" field blank.", 79, 220, SystemTheme.WindowText, 2
 
@@ -106,8 +103,6 @@ FUNCTION Conf.ConfAssoc ()
 
     Font.Print "Fõiletype", txtFileType.Pos.Left, txtFileType.Pos.Top - 18, SystemTheme.WindowText, 1
     Font.Print "Open õwith", txtOpenWith.Pos.Left, txtOpenWith.Pos.Top - 18, SystemTheme.WindowText, 1
-
-    Obj.DrawImg imgIcon
 
     DO
 
@@ -232,7 +227,7 @@ FUNCTION Conf.ConfMisc ()
     btnFileAssoc.Transparent = True
     imgFileAssoc.Pos.Left = btnFileAssoc.Pos.Left + 7
     imgFileAssoc.Pos.Top = btnFileAssoc.Pos.Top + 7
-    imgFileAssoc.ImageFile = "DOCUMENT"
+    imgFileAssoc.ImageFile = "UNKNOWN"
 
     Obj.SetSize btnMisc.Pos, 14, 29 + 134, 46, 46
     btnMisc.Transparent = True
@@ -479,7 +474,7 @@ FUNCTION Conf.ConfTheme ()
     btnFileAssoc.Transparent = True
     imgFileAssoc.Pos.Left = btnFileAssoc.Pos.Left + 7
     imgFileAssoc.Pos.Top = btnFileAssoc.Pos.Top + 7
-    imgFileAssoc.ImageFile = "DOCUMENT"
+    imgFileAssoc.ImageFile = "UNKNOWN"
 
     Obj.SetSize btnMisc.Pos, 14, 29 + 134, 46, 46
     btnMisc.Transparent = True
@@ -672,7 +667,7 @@ SUB Conf.Main ()
   btnFileAssoc.Transparent = True
   imgFileAssoc.Pos.Left = btnFileAssoc.Pos.Left + 7
   imgFileAssoc.Pos.Top = btnFileAssoc.Pos.Top + 7
-  imgFileAssoc.ImageFile = "DOCUMENT"
+  imgFileAssoc.ImageFile = "UNKNOWN"
 
   Obj.SetSize btnMisc.Pos, 14, 29 + 134, 46, 46
   btnMisc.Transparent = True
