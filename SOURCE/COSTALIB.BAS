@@ -42,6 +42,14 @@ FUNCTION File.GetAssociation (FileType AS STRING) AS STRING
 	DIM OpenWith AS STRING, FileAssociation AS FileAssociationType
 	DIM FileHandle
 
+	FileType = UCASE$(FileType)
+
+	'Do not allow executables to be associated with anything
+	IF FileType = "EXE" OR FileType = "COM" OR FileType = "BAT" THEN
+		File.GetAssociation = ""
+		EXIT FUNCTION
+	END IF
+
 	IF File.Exists(Sys.Path + "DATA\CONFIG\FILETYPE.DAT") THEN
 		FileHandle = FREEFILE
 		OPEN Sys.Path + "DATA\CONFIG\FILETYPE.DAT" FOR BINARY AS #FileHandle
@@ -51,7 +59,7 @@ FUNCTION File.GetAssociation (FileType AS STRING) AS STRING
 
 			GET #FileHandle, , FileAssociation
 		
-			IF UCASE$(FileType) = RTRIM$(FileAssociation.FileType) THEN
+			IF FileType = RTRIM$(FileAssociation.FileType) THEN
 				OpenWith = RTRIM$(FileAssociation.Command)
 				EXIT DO
 			END IF
