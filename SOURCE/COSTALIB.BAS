@@ -153,14 +153,11 @@ FUNCTION Mouse.Clicked ()
 	'  mbRight 2 if right button is clicked
 	'  mbBoth  3 if both buttons are clicked
 
-	DIM lButton, RButton, ButtonMouse
 	DIM regs AS RegType
 
 	regs.ax = 3
 	INTERRUPT 51, regs, regs
-	ButtonMouse = regs.bx
-
-	Mouse.Clicked = ButtonMouse
+	Mouse.Clicked = regs.bx
 
 END FUNCTION
 
@@ -175,15 +172,14 @@ END SUB
 FUNCTION Mouse.InArea (TargetArea AS PosType)
 
 	'Returns True if the mouse cursor is within the area
+	'regs.cx = X, regs.dx = y
 
-	DIM XPos, YPos
+	DIM regs AS RegType
+	regs.ax = 3
+	INTERRUPT 51, regs, regs
 
-	'Get mouse pos to variables, cuts interrupt calls in half
-	XPos = Mouse.X
-	YPos = Mouse.Y
-
-	IF XPos >= TargetArea.Left AND XPos <= TargetArea.Left + TargetArea.Width THEN
-		IF YPos >= TargetArea.Top AND YPos <= TargetArea.Top + TargetArea.Height THEN
+	IF regs.cx >= TargetArea.Left AND regs.cx <= TargetArea.Left + TargetArea.Width THEN
+		IF regs.dx >= TargetArea.Top AND regs.dx <= TargetArea.Top + TargetArea.Height THEN
 			Mouse.InArea = True
 		END IF
 	END IF
