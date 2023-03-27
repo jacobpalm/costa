@@ -17,6 +17,9 @@ echo.
 echo Building system path object file...
 C:\VBDOS\BC.EXE C:\COSTA\SOURCE\SYSPATH.BAS /E /X /D /G2 /O /T /C:512;
 echo.
+echo Building input box object file...
+C:\VBDOS\BC.EXE C:\COSTA\SOURCE\INPUTBOX.BAS /E /X /D /G2 /O /T /C:512;
+echo.
 echo Building desktop object files (desktop)...
 C:\VBDOS\BC.EXE C:\COSTA\SOURCE\DESKTOP.BAS /E /X /D /G2 /O /T /C:512;
 echo.
