@@ -14,8 +14,6 @@ DEFINT A-Z
 	DIM SHARED FontData(1 TO 3, 32 TO 127) AS STRING * 54
 	DIM SHARED FontWidth(1 TO 2, 32 TO 127) AS INTEGER
 
-	DIM SHARED TempPathInternal AS STRING
-
 FUNCTION File.Exists (TargetFile AS STRING)
 
 	DIM FileHandle
@@ -1142,15 +1140,19 @@ END SUB
 
 FUNCTION Temp.Path () AS STRING
 
-	IF NOT LEN(TempPathInternal) THEN
+	'Used to retrieve the path where Costa saves temp files - from
+	'environment variable, with fallback to default path.
+	'Value only retrieved on first call, cached in static variable.
 
+	STATIC TempPathInternal AS STRING
+
+	IF NOT LEN(TempPathInternal) THEN
 		TempPathInternal = ENVIRON$("TEMP")
 		IF TempPathInternal = "" THEN
 			TempPathInternal = Sys.Path + "DATA\TEMP\"
 		ELSE
 			IF NOT RIGHT$(TempPathInternal, 1) = "\" THEN TempPathInternal = TempPathInternal + "\"
 		END IF
-
 	END IF
 
 	Temp.Path = TempPathInternal
