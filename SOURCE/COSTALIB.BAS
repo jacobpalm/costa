@@ -100,7 +100,7 @@ FUNCTION Font.GetWidth (TargetText AS STRING, FontID AS INTEGER)
 
 END FUNCTION
 
-SUB Font.Print (BYVAL Text AS STRING, x, Y, Col, FontID)
+SUB Font.Print (BYVAL Text AS STRING, x, y, Col, FontID)
 
 	DIM Char, Ascii, HotKey
 	DIM FilteredText AS STRING
@@ -118,7 +118,7 @@ SUB Font.Print (BYVAL Text AS STRING, x, Y, Col, FontID)
 	END IF
 	
 	'Use PSET to set the drawing position
-	PSET (x, Y + 11), POINT(x, Y + 11)
+	PSET (x, y + 11), POINT(x, y + 11)
 	DRAW "C" + LTRIM$(STR$(Col))
 
 	FilteredText = RTRIM$(FilteredText)
@@ -138,7 +138,7 @@ SUB Font.Print (BYVAL Text AS STRING, x, Y, Col, FontID)
 	
 	'Underline hotkey, if any
 	IF HotKey AND NOT FontID = FontSystem THEN
-		LINE (x + Font.GetWidth(LEFT$(FilteredText, HotKey - 1), FontID), Y + 11)-(x + Font.GetWidth(LEFT$(FilteredText, HotKey), FontID), Y + 11), Col
+		LINE (x + Font.GetWidth(LEFT$(FilteredText, HotKey - 1), FontID), y + 11)-(x + Font.GetWidth(LEFT$(FilteredText, HotKey), FontID), y + 11), Col
 	END IF
 
 	Mouse.Show
@@ -423,12 +423,18 @@ END SUB
 
 SUB Obj.DrawImg (TargetImg AS ImageType)
 
-	DIM x, Y, XPos, YPos
+	DIM x, y, XPos, YPos
 	x = TargetImg.Pos.Left
-	Y = TargetImg.Pos.Top
+	y = TargetImg.Pos.Top
 
 	TargetImg.Pos.Width = 31
 	TargetImg.Pos.Height = 31
+
+	Mouse.Hide
+	LINE (x - 1, y - 1)-(x + 32, y - 1), SystemTheme.Light
+	LINE (x - 1, y)-(x - 1, y + 32), SystemTheme.Light
+	LINE (x, y + 32)-(x + 32, y + 32), SystemTheme.Shadow
+	LINE (x + 32, y)-(x + 32, y + 31), SystemTheme.Shadow
 
 	IF NOT File.Exists(Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".BSV") THEN GOTO DrawImgError
 
@@ -436,23 +442,17 @@ SUB Obj.DrawImg (TargetImg AS ImageType)
 	DEF SEG = VARSEG(scrBuffer(0))
 	BLOAD Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".BSV", VARPTR(scrBuffer(0))
 	DEF SEG
-	Mouse.Hide
-	LINE (x - 1, Y - 1)-(x + 32, Y - 1), SystemTheme.Light
-	LINE (x - 1, Y)-(x - 1, Y + 32), SystemTheme.Light
-	LINE (x, Y + 32)-(x + 32, Y + 32), SystemTheme.Shadow
-	LINE (x + 32, Y)-(x + 32, Y + 31), SystemTheme.Shadow
-	PUT (x, Y), scrBuffer, PSET
+	PUT (x, y), scrBuffer, PSET
+
 	Mouse.Show
 	EXIT SUB
 
 DrawImgError:
 	'Draw a red box with the text "IMG ERR" to indicate a missing file
-	Mouse.Hide
-	LINE (x + 1, Y + 1)-(x + 30, Y + 30), 4, BF
-	LINE (x, Y)-(x + 31, Y + 31), 0, B
+	LINE (x, y)-(x + 31, y + 31), 4, BF
 	Mouse.Show
-	Font.Print "IMG", x + 6, Y + 4, 15, FontNormal
-	Font.Print "ERR", x + 6, Y + 19, 15, FontNormal
+	Font.Print "IMG", x + 6, y + 4, 15, FontNormal
+	Font.Print "ERR", x + 6, y + 19, 15, FontNormal
 	EXIT SUB
 	RESUME NEXT
 END SUB
