@@ -895,6 +895,7 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	DIM msgLines() AS STRING, msgLineCount, msgTextWidth
 	DIM btnFirst AS ButtonType, btnSecond AS ButtonType
 	DIM imgIcon AS ImageType
+	DIM CloseKey AS STRING * 1
 	DIM winMsgBox AS WindowType
 	
 	IF RIGHT$(msgText, 1) = CHR$(13) THEN msgText = LEFT$(msgText, LEN(msgText) - 1)
@@ -944,9 +945,11 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 		btnFirst.Pos.Left = 320 - 86
 	ELSEIF msgType = msgTip THEN
 		btnFirst.Caption = "õContinue"
+		CloseKey = "C"
 		btnFirst.Pos.Left = (640 - btnFirst.Pos.Width) / 2
 	ELSE
 		btnFirst.Caption = "õOK"
+		CloseKey = "O"
 		btnFirst.Pos.Left = (640 - btnFirst.Pos.Width) / 2
 	END IF
 	
@@ -1008,13 +1011,8 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 					Sys.MsgBox = False
 					EXIT DO
 				END IF
-			ELSEIF msgType = msgTip THEN
-				IF Key$ = CHR$(13) OR Key$ = CHR$(27) OR Key$ = CHR$(32) OR Key$ = "c" THEN
-					Sys.MsgBox = True
-					EXIT DO
-				END IF
 			ELSE
-				IF Key$ = CHR$(13) OR Key$ = CHR$(27) OR Key$ = CHR$(32) OR Key$ = "o" THEN
+				IF Key$ = CHR$(13) OR Key$ = CHR$(27) OR Key$ = CHR$(32) OR Key$ = CloseKey THEN
 					Sys.MsgBox = True
 					EXIT DO
 				END IF
