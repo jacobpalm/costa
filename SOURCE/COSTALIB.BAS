@@ -1061,65 +1061,6 @@ SUB Sys.ShowLoading ()
 
 END SUB
 
-STATIC SUB Sys.VGALoad (TargetFile AS STRING)
-	'BLOADs a VGA screen saved by Sys.VGASave
-	
-	IF File.Exists(Temp.Path + TargetFile + ".BLU") = False THEN EXIT SUB
-	IF File.Exists(Temp.Path + TargetFile + ".GRN") = False THEN EXIT SUB
-	IF File.Exists(Temp.Path + TargetFile + ".RED") = False THEN EXIT SUB
-	IF File.Exists(Temp.Path + TargetFile + ".INT") = False THEN EXIT SUB
-
-	Mouse.Hide
-
-	DEF SEG = &HA000
-
-	OUT &H3C4, 2: OUT &H3C5, 1
-	BLOAD Temp.Path + TargetFile + ".BLU", 0
-
-	OUT &H3C4, 2: OUT &H3C5, 2
-	BLOAD Temp.Path + TargetFile + ".GRN", 0
-
-	OUT &H3C4, 2: OUT &H3C5, 4
-	BLOAD Temp.Path + TargetFile + ".RED", 0
-
-	OUT &H3C4, 2: OUT &H3C5, 8
-	BLOAD Temp.Path + TargetFile + ".INT", 0
-
-	OUT &H3C4, 2: OUT &H3C5, 15
-
-	Mouse.Show
-	
-END SUB
-
-STATIC SUB Sys.VGASave (TargetFile AS STRING)
-	'Save a screenshot of SCREEN 12 in 4 parts in 4 files, which can be
-	'loaded again using Sys.VGALoad
-
-	DIM Size&
-
-	Mouse.Hide
-
-	DEF SEG = &HA000
-	Size& = 38400
-
-	OUT &H3CE, 4: OUT &H3CF, 0
-	BSAVE Temp.Path + TargetFile + ".BLU", 0, Size&
-
-	OUT &H3CE, 4: OUT &H3CF, 1
-	BSAVE Temp.Path + TargetFile + ".GRN", 0, Size&
-
-	OUT &H3CE, 4: OUT &H3CF, 2
-	BSAVE Temp.Path + TargetFile + ".RED", 0, Size&
-
-	OUT &H3CE, 4: OUT &H3CF, 3
-	BSAVE Temp.Path + TargetFile + ".INT", 0, Size&
-
-	OUT &H3CE, 4: OUT &H3CF, 0
-
-	Mouse.Show
-
-END SUB
-
 FUNCTION Temp.Path () AS STRING
 
 	'Used to retrieve the path where Costa saves temp files - from

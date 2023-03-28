@@ -37,8 +37,6 @@
     DECLARE SUB Sys.SaveProfile (ProfileNum%)
     DECLARE SUB Sys.SaveSettings ()
     DECLARE SUB Sys.ShowLoading ()
-    DECLARE SUB Sys.VGALoad (TargetFile AS STRING)
-    DECLARE SUB Sys.VGASave (TargetFile AS STRING)
 
     DECLARE FUNCTION Temp.Path () AS STRING
 
