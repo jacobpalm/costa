@@ -732,10 +732,7 @@ FUNCTION Theme.SelectObject (BYVAL CurrentSelection) AS INTEGER
     DIM btnObject(1 TO 12) AS ButtonType
     DIM Key$, I, ActiveSelection
     
-    winSelectObject.Pos.Width = 226
-    winSelectObject.Pos.Height = 304
-    winSelectObject.Pos.Left = (640 - winSelectObject.Pos.Width) / 2
-    winSelectObject.Pos.Top = (350 - winSelectObject.Pos.Height) / 2
+    Obj.SetSize winSelectObject.Pos, sizeCenter, sizeCenter, 226, 304
     
     FOR I = 1 TO 12
         Obj.SetSize btnObject(I).Pos, winSelectObject.Pos.Left + 13, winSelectObject.Pos.Top + (I * 23) - 8, 200, 22
