@@ -57,16 +57,10 @@ IF COMMAND$ = "/BOOT" THEN
     CHDIR ".."
     'Clean temp files of both current and default location, they might not
     'be the same
-    KILL Temp.Path + "*.TMP"
-    KILL Temp.Path + "*.INT"
-    KILL Temp.Path + "*.BLU"
-    KILL Temp.Path + "*.RED"
-    KILL Temp.Path + "*.GRN"
-    KILL Sys.Path + "DATA\TEMP\*.TMP"
-    KILL Sys.Path + "DATA\TEMP\*.INT"
-    KILL Sys.Path + "DATA\TEMP\*.BLU"
-    KILL Sys.Path + "DATA\TEMP\*.RED"
-    KILL Sys.Path + "DATA\TEMP\*.GRN"
+    KILL Temp.Path + "PROFILE.TMP"
+    KILL Temp.Path + "RUNSTAT.TMP"
+    KILL Sys.Path + "DATA\TEMP\PROFILE.TMP"
+    KILL Sys.Path + "DATA\TEMP\RUNSTAT.TMP"
 
     ON ERROR GOTO 0
 
