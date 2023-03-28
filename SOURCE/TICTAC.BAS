@@ -368,7 +368,7 @@ SUB Tic.Main ()
 	DIM FieldRow, FieldCol
 	DIM DidLoadState
 
-	Obj.SetSize frmTic.Pos, (640 - 221) / 2, 78, 221, 221
+	Obj.SetSize frmTic.Pos, sizeCenter, sizeCenter, 221, 221
 	
 	Obj.SetSize txtPlayField(1, 1).Pos, frmTic.Pos.Left + 10, frmTic.Pos.Top + 10, 60, 60
 	Obj.SetSize txtPlayField(1, 2).Pos, txtPlayField(1, 1).Pos.Left + 70, txtPlayField(1, 1).Pos.Top, 60, 60

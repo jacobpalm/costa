@@ -29,14 +29,9 @@ App.Main
 
 SUB App.Main ()
 
-    'Create a new window, and set properties
+    'Create a new window, and set size - center on screen
     DIM winSample AS WindowType
-    winSample.Pos.Width = 244
-    winSample.Pos.Height = 200
-
-    'Center the window
-    winSample.Pos.Left = (640 - winSample.Pos.Width) / 2
-    winSample.Pos.Top = (350 - winSample.Pos.Height) / 2
+    Obj.SetSize winSample.Pos, sizeCenter, sizeCenter, 244, 200
 
     'Create a button
     DIM btnExit AS ButtonType

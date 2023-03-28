@@ -66,6 +66,10 @@
     CONST msgError = 4
     CONST msgTip = 5
 
+'Size/position constants
+    CONST sizeRetain = -1
+    CONST sizeCenter = -2
+
 'Type declarations
   TYPE PosType
     Left AS INTEGER
@@ -156,6 +160,6 @@
   COMMON SHARED UserSettings AS UserSettingsType
   COMMON SHARED SystemTheme AS ThemeType
 
-  COMMON SHARED MouseX as INTEGER
-  COMMON SHARED MouseY as INTEGER
+  COMMON SHARED MouseX AS INTEGER
+  COMMON SHARED MouseY AS INTEGER
 

@@ -98,7 +98,7 @@ FUNCTION Font.GetWidth (TargetText AS STRING, FontID AS INTEGER)
 
 END FUNCTION
 
-SUB Font.Print (BYVAL Text AS STRING, x, y, Col, FontID)
+SUB Font.Print (BYVAL Text AS STRING, X, Y, Col, FontID)
 
 	DIM Char, Ascii, HotKey
 	DIM FilteredText AS STRING
@@ -116,7 +116,7 @@ SUB Font.Print (BYVAL Text AS STRING, x, y, Col, FontID)
 	END IF
 	
 	'Use PSET to set the drawing position
-	PSET (x, y + 11), POINT(x, y + 11)
+	PSET (X, Y + 11), POINT(X, Y + 11)
 	DRAW "C" + LTRIM$(STR$(Col))
 
 	FilteredText = RTRIM$(FilteredText)
@@ -136,7 +136,7 @@ SUB Font.Print (BYVAL Text AS STRING, x, y, Col, FontID)
 	
 	'Underline hotkey, if any
 	IF HotKey AND NOT FontID = FontSystem THEN
-		LINE (x + Font.GetWidth(LEFT$(FilteredText, HotKey - 1), FontID), y + 11)-(x + Font.GetWidth(LEFT$(FilteredText, HotKey), FontID), y + 11), Col
+		LINE (X + Font.GetWidth(LEFT$(FilteredText, HotKey - 1), FontID), Y + 11)-(X + Font.GetWidth(LEFT$(FilteredText, HotKey), FontID), Y + 11), Col
 	END IF
 
 	Mouse.Show
@@ -407,18 +407,18 @@ END SUB
 
 SUB Obj.DrawImg (TargetImg AS ImageType)
 
-	DIM x, y, XPos, YPos
-	x = TargetImg.Pos.Left
-	y = TargetImg.Pos.Top
+	DIM X, Y, XPos, YPos
+	X = TargetImg.Pos.Left
+	Y = TargetImg.Pos.Top
 
 	TargetImg.Pos.Width = 31
 	TargetImg.Pos.Height = 31
 
 	Mouse.Hide
-	LINE (x - 1, y - 1)-(x + 32, y - 1), SystemTheme.Light
-	LINE (x - 1, y)-(x - 1, y + 32), SystemTheme.Light
-	LINE (x, y + 32)-(x + 32, y + 32), SystemTheme.Shadow
-	LINE (x + 32, y)-(x + 32, y + 31), SystemTheme.Shadow
+	LINE (X - 1, Y - 1)-(X + 32, Y - 1), SystemTheme.Light
+	LINE (X - 1, Y)-(X - 1, Y + 32), SystemTheme.Light
+	LINE (X, Y + 32)-(X + 32, Y + 32), SystemTheme.Shadow
+	LINE (X + 32, Y)-(X + 32, Y + 31), SystemTheme.Shadow
 
 	IF NOT File.Exists(Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".BSV") THEN GOTO DrawImgError
 
@@ -426,17 +426,17 @@ SUB Obj.DrawImg (TargetImg AS ImageType)
 	DEF SEG = VARSEG(scrBuffer(0))
 	BLOAD Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".BSV", VARPTR(scrBuffer(0))
 	DEF SEG
-	PUT (x, y), scrBuffer, PSET
+	PUT (X, Y), scrBuffer, PSET
 
 	Mouse.Show
 	EXIT SUB
 
 DrawImgError:
 	'Draw a red box with the text "IMG ERR" to indicate a missing file
-	LINE (x, y)-(x + 31, y + 31), 4, BF
+	LINE (X, Y)-(X + 31, Y + 31), 4, BF
 	Mouse.Show
-	Font.Print "IMG", x + 6, y + 4, 15, FontNormal
-	Font.Print "ERR", x + 6, y + 19, 15, FontNormal
+	Font.Print "IMG", X + 6, Y + 4, 15, FontNormal
+	Font.Print "ERR", X + 6, Y + 19, 15, FontNormal
 	EXIT SUB
 	RESUME NEXT
 END SUB
@@ -625,11 +625,29 @@ SUB Obj.EditTxt (TargetTxt AS TextboxType, Text AS STRING)
 END SUB
 
 SUB Obj.SetSize (TargetArea AS PosType, TargetLeft, TargetTop, TargetWidth, TargetHeight)
+	'Set left, top, width and height of object in one go.
+	'Use sizeRetain to retain one or more properties (leave them unchanged).
+	'Use sizeCenter for TargetLeft or TargetTop to center on screen.
 
-	IF NOT TargetLeft = -1 THEN TargetArea.Left = TargetLeft
-	IF NOT TargetTop = -1 THEN TargetArea.Top = TargetTop
-	IF NOT TargetWidth = -1 THEN TargetArea.Width = TargetWidth
-	IF NOT TargetHeight = -1 THEN TargetArea.Height = TargetHeight
+	IF NOT TargetWidth = sizeRetain THEN TargetArea.Width = TargetWidth
+	IF NOT TargetHeight = sizeRetain THEN TargetArea.Height = TargetHeight
+
+	IF NOT TargetLeft = sizeRetain THEN
+		IF TargetLeft = sizeCenter THEN
+			TargetArea.Left = (640 - TargetArea.Width) / 2
+		ELSE
+			TargetArea.Left = TargetLeft
+		END IF
+	END IF
+
+	IF NOT TargetTop = sizeRetain THEN
+		IF TargetTop = sizeCenter THEN
+			TargetArea.Top = (322 - TargetArea.Height) / 2 + 28
+		ELSE
+			TargetArea.Top = TargetTop
+		END IF
+	END IF
+
 
 END SUB
 
@@ -907,18 +925,16 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	ELSE
 		IF winMsgBox.Pos.Width < 102 THEN winMsgBox.Pos.Width = 102
 	END IF
-	winMsgBox.Pos.Height = msgLineCount * 15 + 78
-	winMsgBox.Pos.Left = (640 - winMsgBox.Pos.Width) / 2
-	winMsgBox.Pos.Top = (350 - winMsgBox.Pos.Height) / 2
+	Obj.SetSize winMsgBox.Pos, sizeCenter, sizeCenter, sizeRetain, msgLineCount * 15 + 78
 
-	Obj.SetSize imgIcon.Pos, winMsgBox.Pos.Left + 13, winMsgBox.Pos.Top + 15, -1, -1
+	Obj.SetSize imgIcon.Pos, winMsgBox.Pos.Left + 13, winMsgBox.Pos.Top + 15, sizeRetain, sizeRetain
 	IF msgType = msgInfo THEN imgIcon.ImageFile = "MSGINFO"
 	IF msgType = msgWarn THEN imgIcon.ImageFile = "MSGWARN"
 	IF msgType = msgQuest THEN imgIcon.ImageFile = "MSGQUEST"
 	IF msgType = msgError THEN imgIcon.ImageFile = "MSGERROR"
 	IF msgType = msgTip THEN imgIcon.ImageFile = "TIPBULB"
 
-	Obj.SetSize btnFirst.Pos, -1, winMsgBox.Pos.Top + 42 + (15 * msgLineCount), 80, 22
+	Obj.SetSize btnFirst.Pos, sizeRetain, winMsgBox.Pos.Top + 42 + (15 * msgLineCount), 80, 22
 	IF msgType = msgQuest THEN
 		btnFirst.Caption = "õYes"
 		btnFirst.Pos.Left = 320 - 86
@@ -1039,10 +1055,7 @@ END SUB
 SUB Sys.ShowLoading ()
 
 		DIM btnLoading AS ButtonType
-		btnLoading.Pos.Width = 110
-		btnLoading.Pos.Height = 34
-		btnLoading.Pos.Left = 265
-		btnLoading.Pos.Top = (350 - btnLoading.Pos.Height) / 2
+		Obj.SetSize btnLoading.Pos, sizeCenter, sizeCenter, 110, 34
 		btnLoading.Caption = "Loading..."
 		Obj.DrawBtn btnLoading, False
 

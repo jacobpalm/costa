@@ -131,8 +131,8 @@ SUB Desk.AboutBox ()
   DIM imgLogo AS ImageType
   DIM Key$
 
-  Obj.SetSize winAboutBox.Pos, 156, 36, 328, 278
-  Obj.SetSize imgLogo.Pos, 168, winAboutBox.Pos.Top + 11, -1, -1
+  Obj.SetSize winAboutBox.Pos, sizeCenter, sizeCenter, 328, 278
+  Obj.SetSize imgLogo.Pos, 168, winAboutBox.Pos.Top + 11, sizeRetain, sizeRetain
   Obj.SetSize btnClose.Pos, 274, winAboutBox.Pos.Top + 243, 92, 22
   btnClose.Caption = "õClose"
 
@@ -393,7 +393,7 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
   Obj.SetSize btnBrowse.Pos, 399, txtFilename.Pos.Top, 19, 19
   Obj.SetSize txtParams.Pos, 222, txtFilename.Pos.Top + 44, 196, 19
   Obj.SetSize txtPath.Pos, 222, txtParams.Pos.Top + 44, 196, 19
-  Obj.SetSize chkPauseOnExit.Pos, 222, txtPath.Pos.Top + 32, -1, -1
+  Obj.SetSize chkPauseOnExit.Pos, 222, txtPath.Pos.Top + 32, sizeRetain, sizeRetain
   Obj.SetSize btnOK.Pos, 229, chkPauseOnExit.Pos.Top + 28, 84, 22
   Obj.SetSize btnCancel.Pos, 326, btnOK.Pos.Top, 84, 22
 
@@ -639,14 +639,14 @@ SUB Desk.LinkMenu (TargetLink)
   DIM DidEdit, RedrawNeeded
   DIM Key$, CroppedText AS STRING
 
-  Obj.SetSize winLinkMenu.Pos, (640 - 413) / 2, 92, 413, 165
+  Obj.SetSize winLinkMenu.Pos, sizeCenter, sizeCenter, 413, 165
   Obj.SetSize btnOpen.Pos, winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + winLinkMenu.Pos.Height - 64, 389, 22
   Obj.SetSize btnCustomize.Pos, btnOpen.Pos.Left, btnOpen.Pos.Top + 30, 92, 22
   Obj.SetSize btnMove.Pos, btnCustomize.Pos.Left + 99, btnCustomize.Pos.Top, 92, 22
   Obj.SetSize btnRemove.Pos, btnMove.Pos.Left + 99, btnCustomize.Pos.Top, 92, 22
   Obj.SetSize btnCancel.Pos, btnRemove.Pos.Left + 99, btnCustomize.Pos.Top, 92, 22
   
-  Obj.SetSize imgIcon.Pos, winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 11, -1, -1
+  Obj.SetSize imgIcon.Pos, winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 11, sizeRetain, sizeRetain
   imgIcon.ImageFile = DeskLink(TargetLink).ImageFile
 
   btnOpen.Caption = "õOpen"

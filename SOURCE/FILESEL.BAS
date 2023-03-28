@@ -536,13 +536,13 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	txtDriveText = Drive
 	txtPatternText = DefaultPattern
 	
-	Obj.SetSize winFileSelect.Pos, 86, 32, 468, 285
-	Obj.SetSize txtPattern.Pos, 101, winFileSelect.Pos.Top + 47, 150, -1
-	Obj.SetSize txtDrive.Pos, 272, winFileSelect.Pos.Top + 47, 150, -1
+	Obj.SetSize winFileSelect.Pos, sizeCenter, sizeCenter, 468, 285
+	Obj.SetSize txtPattern.Pos, 101, winFileSelect.Pos.Top + 47, 150, sizeRetain
+	Obj.SetSize txtDrive.Pos, 272, winFileSelect.Pos.Top + 47, 150, sizeRetain
 	Obj.SetSize txtFileList.Pos, 101, winFileSelect.Pos.Top + 90, 150, 180
 	Obj.SetSize txtFolderList.Pos, 272, winFileSelect.Pos.Top + 90, 150, 180
-	Obj.SetSize btnSelect.Pos, 448, winFileSelect.Pos.Top + 47, -1, -1
-	Obj.SetSize btnCancel.Pos, 448, winFileSelect.Pos.Top + 77, -1, -1
+	Obj.SetSize btnSelect.Pos, 448, winFileSelect.Pos.Top + 47, sizeRetain, sizeRetain
+	Obj.SetSize btnCancel.Pos, 448, winFileSelect.Pos.Top + 77, sizeRetain, sizeRetain
 	Obj.SetSize btnFilePrev.Pos, 253, txtFileList.Pos.Top, 14, 89
 	Obj.SetSize btnFileNext.Pos, 253, txtFileList.Pos.Top + 91, 14, 89
 	Obj.SetSize btnFolderPrev.Pos, 424, txtFolderList.Pos.Top, 14, 89
@@ -553,8 +553,8 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	txtFileList.MaxLen = FileList
 	txtFolderList.MaxLen = FolderList
 
-	btnSelect.Caption = "ï¿½Select"
-	btnCancel.Caption = "ï¿½Cancel"
+	btnSelect.Caption = "õSelect"
+	btnCancel.Caption = "õCancel"
 	btnFilePrev.Caption = "<"
 	btnFileNext.Caption = ">"
 	btnFolderPrev.Caption = "<"
@@ -569,10 +569,10 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	Obj.DrawBtn btnFileNext, False
 	Obj.DrawBtn btnFolderPrev, False
 	Obj.DrawBtn btnFolderNext, False
-	Font.Print "ï¿½Pattern:", 101, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, FontNormal
-	Font.Print "ï¿½Drive:", 272, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, FontNormal
-	Font.Print "ï¿½Files:", 101, winFileSelect.Pos.Top + 76, SystemTheme.WindowText, FontNormal
-	Font.Print "Fï¿½olders:", 272, winFileSelect.Pos.Top + 76, SystemTheme.WindowText, FontNormal
+	Font.Print "õPattern:", 101, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, FontNormal
+	Font.Print "õDrive:", 272, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, FontNormal
+	Font.Print "õFiles:", 101, winFileSelect.Pos.Top + 76, SystemTheme.WindowText, FontNormal
+	Font.Print "Fõolders:", 272, winFileSelect.Pos.Top + 76, SystemTheme.WindowText, FontNormal
 	
 	MaxVisibleItems = 13
 

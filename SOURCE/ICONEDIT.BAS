@@ -641,7 +641,7 @@ SUB IconEdit.Preview ()
     DIM Key$, XPos, YPos, Void
     DIM scrBuffer(341)
     
-    Obj.SetSize winPreview.Pos, 186, 23, 271, 303
+    Obj.SetSize winPreview.Pos, sizeCenter, sizeCenter, 271, 303
     
     Obj.SetSize btnClose.Pos, winPreview.Pos.Left + winPreview.Pos.Width - 112, winPreview.Pos.Top + winPreview.Pos.Height - 34, 100, 22
     btnClose.Caption = "õClose"
@@ -790,7 +790,7 @@ SUB IconEdit.ShowLoadDialog ()
     IconFiles(0) = LEFT$(IconFiles(0), LEN(IconFiles(0)) - 4)
     IconIndex = 0
 
-    Obj.SetSize winSelect.Pos, 243, 109, 154, 132
+    Obj.SetSize winSelect.Pos, sizeCenter, sizeCenter, 154, 132
     Obj.SetSize btnLoad.Pos, winSelect.Pos.Left + 51, winSelect.Pos.Top + 32, 52, 52
     Obj.SetSize btnPrev.Pos, winSelect.Pos.Left + 15, winSelect.Pos.Top + 48, 22, 22
     Obj.SetSize btnNext.Pos, winSelect.Pos.Left + 117, winSelect.Pos.Top + 48, 22, 22

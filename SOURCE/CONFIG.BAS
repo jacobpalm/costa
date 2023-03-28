@@ -55,8 +55,8 @@ FUNCTION Conf.ConfAssoc ()
     DIM OldFileType AS STRING, SaveVar
     DIM Key$
     
-    Obj.SetSize txtFileType.Pos, 79, 300, 50, -1
-    Obj.SetSize txtOpenWith.Pos, 156, 300, 464, -1
+    Obj.SetSize txtFileType.Pos, 79, 300, 50, sizeRetain
+    Obj.SetSize txtOpenWith.Pos, 156, 300, 464, sizeRetain
 
     Obj.SetSize btnSave.Pos, 2, 2, 92, 22
     Obj.SetSize btnDisable.Pos, 101, 2, 92, 22
@@ -69,7 +69,7 @@ FUNCTION Conf.ConfAssoc ()
     txtFileType.MaxLen = 3
 
     Obj.SetSize btnThemes.Pos, 14, 29 + 14, 46, 46
-    Obj.SetSize btnFileAssoc.Pos, 14, 29 + 74, 46, 46
+    Obj.SetSize btnFileAssoc.Pos, 14, 103, 46, 46
     Obj.SetSize btnMisc.Pos, 14, 29 + 134, 46, 46
     btnThemes.Transparent = True
     btnFileAssoc.Transparent = True
@@ -203,15 +203,15 @@ FUNCTION Conf.ConfMisc ()
     Obj.SetSize frmDesktop.Pos, 74, 43, 552, 118
     Obj.SetSize frmVarious.Pos, 74, frmDesktop.Pos.Top + frmDesktop.Pos.Height + 12, frmDesktop.Pos.Width, 129
 
-    Obj.SetSize chkShowLinkDesc.Pos, frmDesktop.Pos.Left + 12, frmDesktop.Pos.Top + 16, -1, -1
-    Obj.SetSize chkShowLinkTarget.Pos, frmDesktop.Pos.Left + 34, frmDesktop.Pos.Top + 38, -1, -1
-    Obj.SetSize chkUseVGAMode.Pos, frmDesktop.Pos.Left + 12, frmDesktop.Pos.Top + 70, -1, -1
-    Obj.SetSize chkConfLinkDel.Pos, frmDesktop.Pos.Left + 12, frmDesktop.Pos.Top + 92, -1, -1
-    Obj.SetSize chkAnimUI.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 16, -1, -1
-    Obj.SetSize chkConfExit.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 38, -1, -1
-    Obj.SetSize chkGreyOutMsgBox.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 60, -1, -1
-    Obj.SetSize chkDailyTip.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 82, -1, -1
-    Obj.SetSize chkUseLastProfile.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 104, -1, -1
+    Obj.SetSize chkShowLinkDesc.Pos, frmDesktop.Pos.Left + 12, frmDesktop.Pos.Top + 16, sizeRetain, sizeRetain
+    Obj.SetSize chkShowLinkTarget.Pos, frmDesktop.Pos.Left + 34, frmDesktop.Pos.Top + 38, sizeRetain, sizeRetain
+    Obj.SetSize chkUseVGAMode.Pos, frmDesktop.Pos.Left + 12, frmDesktop.Pos.Top + 70, sizeRetain, sizeRetain
+    Obj.SetSize chkConfLinkDel.Pos, frmDesktop.Pos.Left + 12, frmDesktop.Pos.Top + 92, sizeRetain, sizeRetain
+    Obj.SetSize chkAnimUI.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 16, sizeRetain, sizeRetain
+    Obj.SetSize chkConfExit.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 38, sizeRetain, sizeRetain
+    Obj.SetSize chkGreyOutMsgBox.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 60, sizeRetain, sizeRetain
+    Obj.SetSize chkDailyTip.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 82, sizeRetain, sizeRetain
+    Obj.SetSize chkUseLastProfile.Pos, frmVarious.Pos.Left + 12, frmVarious.Pos.Top + 104, sizeRetain, sizeRetain
     Obj.SetSize btnSave.Pos, 2, 2, 92, 22
     Obj.SetSize btnClose.Pos, 545, 2, 92, 22
     

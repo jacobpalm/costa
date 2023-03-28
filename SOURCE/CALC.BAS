@@ -91,24 +91,24 @@ SUB Calc.Main ()
     DIM Key$, txtCalcText AS STRING, LastClick AS STRING
     
     Obj.SetSize frmCalc.Pos, 12, 42, 218, 208
-    Obj.SetSize txtCalc.Pos, 25, frmCalc.Pos.Top + 12, 191, -1
-    Obj.SetSize btnNumb(0).Pos, 26, frmCalc.Pos.Top + 172, 90, -1
-    Obj.SetSize btnNumb(1).Pos, 26, frmCalc.Pos.Top + 139, 40, -1
-    Obj.SetSize btnNumb(2).Pos, 76, frmCalc.Pos.Top + 139, 40, -1
-    Obj.SetSize btnNumb(3).Pos, 126, frmCalc.Pos.Top + 139, 40, -1
-    Obj.SetSize btnNumb(4).Pos, 26, frmCalc.Pos.Top + 106, 40, -1
-    Obj.SetSize btnNumb(5).Pos, 76, frmCalc.Pos.Top + 106, 40, -1
-    Obj.SetSize btnNumb(6).Pos, 126, frmCalc.Pos.Top + 106, 40, -1
-    Obj.SetSize btnNumb(7).Pos, 26, frmCalc.Pos.Top + 73, 40, -1
-    Obj.SetSize btnNumb(8).Pos, 76, frmCalc.Pos.Top + 73, 40, -1
-    Obj.SetSize btnNumb(9).Pos, 126, frmCalc.Pos.Top + 73, 40, -1
-    Obj.SetSize btnC.Pos, 26, frmCalc.Pos.Top + 40, 40, -1
-    Obj.SetSize btnCE.Pos, 76, frmCalc.Pos.Top + 40, 40, -1
-    Obj.SetSize btnDivide.Pos, 126, frmCalc.Pos.Top + 40, 40, -1
-    Obj.SetSize btnDot.Pos, 126, frmCalc.Pos.Top + 172, 40, -1
-    Obj.SetSize btnMulti.Pos, 176, frmCalc.Pos.Top + 40, 40, -1
-    Obj.SetSize btnMinus.Pos, 176, frmCalc.Pos.Top + 73, 40, -1
-    Obj.SetSize btnPlus.Pos, 176, frmCalc.Pos.Top + 106, 40, -1
+    Obj.SetSize txtCalc.Pos, 25, frmCalc.Pos.Top + 12, 191, 22
+    Obj.SetSize btnNumb(0).Pos, 26, frmCalc.Pos.Top + 172, 90, 22
+    Obj.SetSize btnNumb(1).Pos, 26, frmCalc.Pos.Top + 139, 40, 22
+    Obj.SetSize btnNumb(2).Pos, 76, frmCalc.Pos.Top + 139, 40, 22
+    Obj.SetSize btnNumb(3).Pos, 126, frmCalc.Pos.Top + 139, 40, 22
+    Obj.SetSize btnNumb(4).Pos, 26, frmCalc.Pos.Top + 106, 40, 22
+    Obj.SetSize btnNumb(5).Pos, 76, frmCalc.Pos.Top + 106, 40, 22
+    Obj.SetSize btnNumb(6).Pos, 126, frmCalc.Pos.Top + 106, 40, 22
+    Obj.SetSize btnNumb(7).Pos, 26, frmCalc.Pos.Top + 73, 40, 22
+    Obj.SetSize btnNumb(8).Pos, 76, frmCalc.Pos.Top + 73, 40, 22
+    Obj.SetSize btnNumb(9).Pos, 126, frmCalc.Pos.Top + 73, 40, 22
+    Obj.SetSize btnC.Pos, 26, frmCalc.Pos.Top + 40, 40, 22
+    Obj.SetSize btnCE.Pos, 76, frmCalc.Pos.Top + 40, 40, 22
+    Obj.SetSize btnDivide.Pos, 126, frmCalc.Pos.Top + 40, 40, 22
+    Obj.SetSize btnDot.Pos, 126, frmCalc.Pos.Top + 172, 40, 22
+    Obj.SetSize btnMulti.Pos, 176, frmCalc.Pos.Top + 40, 40, 22
+    Obj.SetSize btnMinus.Pos, 176, frmCalc.Pos.Top + 73, 40, 22
+    Obj.SetSize btnPlus.Pos, 176, frmCalc.Pos.Top + 106, 40, 22
     Obj.SetSize btnEquals.Pos, 176, frmCalc.Pos.Top + 139, 40, 55
 
     Obj.SetSize txtResults.Pos, frmCalc.Pos.Left + frmCalc.Pos.Width + 12, frmCalc.Pos.Top, 385, 295

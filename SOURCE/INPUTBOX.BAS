@@ -42,12 +42,10 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
     DIM winInputBox AS WindowType
     winInputBox.Pos.Width = msgTextWidth + 76
     IF winInputBox.Pos.Width < 194 THEN winInputBox.Pos.Width = 194
-    winInputBox.Pos.Height = msgLineCount * 15 + 120
-    winInputBox.Pos.Left = (640 - winInputBox.Pos.Width) / 2
-    winInputBox.Pos.Top = (350 - winInputBox.Pos.Height) / 2
+    Obj.SetSize winInputBox.Pos, sizeCenter, sizeCenter, sizeRetain, msgLineCount * 15 + 120
     
     DIM txtInput AS TextboxType, txtInputText AS STRING
-    Obj.SetSize txtInput.Pos, winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 56 + (15 * msgLineCount), winInputBox.Pos.Width - 24, -1
+    Obj.SetSize txtInput.Pos, winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 56 + (15 * msgLineCount), winInputBox.Pos.Width - 24, sizeRetain
     txtInputText = msgDefault
 
     DIM btnOK AS ButtonType
