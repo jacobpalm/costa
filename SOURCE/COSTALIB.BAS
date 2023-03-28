@@ -751,14 +751,8 @@ SUB Sys.Load ()
 		DO: LOOP WHILE LEN(INKEY$)
 			
 
-	'VGA 640x480, 16 colors
-		IF UserSettings.ScreenMode = scrVGA THEN
-			scrHeight = 480
-			SCREEN 12
-		ELSE
-			scrHeight = 350
-			SCREEN 9
-		END IF
+	'EGA/VGA 640x350, 16 colors
+	SCREEN 9
 
 	'Set the right colors for the palette
 		OUT &H3C8, 6
@@ -808,7 +802,6 @@ SUB Sys.LoadProfile (ProfileNum)
 	IF RTRIM$(UserSettings.ProfileName) = "" THEN UserSettings.ProfileName = "Profile" + STR$(ProfileNum)
 	IF RTRIM$(UserSettings.ProfileImage) = "" THEN UserSettings.ProfileImage = "USERS"
 	IF RTRIM$(UserSettings.ThemeFile) = "" THEN UserSettings.ThemeFile = "DEFAULT"
-	IF NOT UserSettings.ScreenMode = scrVGA AND NOT UserSettings.ScreenMode = scrEGA THEN UserSettings.ScreenMode = scrEGA
 
 	EXIT SUB
 
@@ -819,7 +812,7 @@ LoadDefaultProfile:
 	UserSettings.Animations = True
 	UserSettings.ShowLinkDescriptions = True
 	UserSettings.ShowLinkTargetFiles = True
-	UserSettings.ScreenMode = scrVGA
+	UserSettings.ScreenMode = 9
 	UserSettings.ConfirmLinkDelete = True
 	UserSettings.ConfirmExit = True
 	UserSettings.TipOfTheDay = True
@@ -916,7 +909,7 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	END IF
 	winMsgBox.Pos.Height = msgLineCount * 15 + 78
 	winMsgBox.Pos.Left = (640 - winMsgBox.Pos.Width) / 2
-	winMsgBox.Pos.Top = (scrHeight - winMsgBox.Pos.Height) / 2
+	winMsgBox.Pos.Top = (350 - winMsgBox.Pos.Height) / 2
 
 	Obj.SetSize imgIcon.Pos, winMsgBox.Pos.Left + 13, winMsgBox.Pos.Top + 15, -1, -1
 	IF msgType = msgInfo THEN imgIcon.ImageFile = "MSGINFO"
@@ -942,20 +935,16 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	Obj.SetSize btnSecond.Pos, 326, btnFirst.Pos.Top, 80, 22
 	btnSecond.Caption = "õNo"
 	
-	IF UserSettings.ScreenMode = scrEGA THEN
-		Mouse.Hide
-		PCOPY 0, 1
-		Mouse.Show
-	ELSE
-		Sys.VGASave "MSGBOX"
-	END IF
-
+	Mouse.Hide
+	PCOPY 0, 1
+	Mouse.Show
+	
 	IF UserSettings.GreyoutOnMsgBox THEN
 		DIM LX, LY
 		LY = 0
 		Mouse.Hide
 		FOR LX = 0 TO 639
-			LINE (LX, LY)-(LX, scrHeight - 1), SystemTheme.Shadow, , &HAAAA
+			LINE (LX, LY)-(LX, 349), SystemTheme.Shadow, , &HAAAA
 			IF LY = 0 THEN
 				LY = 1
 			ELSE
@@ -1007,13 +996,9 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	
 	LOOP
 
-	IF UserSettings.ScreenMode = scrEGA THEN
-		Mouse.Hide
-		PCOPY 1, 0
-		Mouse.Show
-	ELSE
-		Sys.VGALoad "MSGBOX"
-	END IF
+	Mouse.Hide
+	PCOPY 1, 0
+	Mouse.Show
 
 END FUNCTION
 
@@ -1057,7 +1042,7 @@ SUB Sys.ShowLoading ()
 		btnLoading.Pos.Width = 110
 		btnLoading.Pos.Height = 34
 		btnLoading.Pos.Left = 265
-		btnLoading.Pos.Top = (scrHeight - btnLoading.Pos.Height) / 2
+		btnLoading.Pos.Top = (350 - btnLoading.Pos.Height) / 2
 		btnLoading.Caption = "Loading..."
 		Obj.DrawBtn btnLoading, False
 

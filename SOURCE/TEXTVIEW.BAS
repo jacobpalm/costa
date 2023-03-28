@@ -5,10 +5,11 @@ DECLARE FUNCTION TView.LoadFile% (TargetFile AS STRING)
 DECLARE SUB TView.DrawText (StartLine%)
 DECLARE SUB TView.Main (FileToView AS STRING)
 
+CONST MaxLinesShown = 19
+
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
 COMMON SHARED FileData() AS STRING
-COMMON SHARED MaxLinesShown
 
 STACK 6144
 
@@ -141,7 +142,7 @@ SUB TView.Main (FileToView AS STRING)
     Obj.SetSize btnExit.Pos, 545, 2, 92, 22
     btnExit.Caption = "õClose"
 
-    Obj.SetSize txtEditor.Pos, 2, 32, 635, scrHeight - 36
+    Obj.SetSize txtEditor.Pos, 2, 32, 635, 314
     
     IF LEN(LTRIM$(RTRIM$(FileToView))) THEN
         Filename = LTRIM$(RTRIM$(FileToView))
@@ -155,17 +156,11 @@ SUB TView.Main (FileToView AS STRING)
       REDIM FileData(0) AS STRING
     END IF
 
-    IF scrHeight = 480 THEN
-      MaxLinesShown = 28
-    ELSE
-      MaxLinesShown = 19
-    END IF
-
 startofall:
 
     Obj.DrawMenu
     Mouse.Hide
-    LINE (0, 29)-(639, scrHeight - 1), SystemTheme.Window, BF
+    LINE (0, 29)-(639, 349), SystemTheme.Window, BF
     Obj.DrawBtn btnOpen, False
     Mouse.Show
 

@@ -44,7 +44,7 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
     IF winInputBox.Pos.Width < 194 THEN winInputBox.Pos.Width = 194
     winInputBox.Pos.Height = msgLineCount * 15 + 120
     winInputBox.Pos.Left = (640 - winInputBox.Pos.Width) / 2
-    winInputBox.Pos.Top = (scrHeight - winInputBox.Pos.Height) / 2
+    winInputBox.Pos.Top = (350 - winInputBox.Pos.Height) / 2
     
     DIM txtInput AS TextboxType, txtInputText AS STRING
     Obj.SetSize txtInput.Pos, winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 56 + (15 * msgLineCount), winInputBox.Pos.Width - 24, -1
@@ -66,20 +66,16 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
         IF msgLineCount > 1 THEN imgIcon.Pos.Top = imgIcon.Pos.Top + 5
     END IF
 
-    IF UserSettings.ScreenMode = scrEGA THEN
-        Mouse.Hide
-        PCOPY 0, 1
-        Mouse.Show
-    ELSE
-        Sys.VGASave "INPUTBOX"
-    END IF
+    Mouse.Hide
+    PCOPY 0, 1
+    Mouse.Show
 
     IF UserSettings.GreyoutOnMsgBox THEN
         DIM LX, LY
         LY = 0
         Mouse.Hide
         FOR LX = 0 TO 639
-            LINE (LX, LY)-(LX, scrHeight - 1), SystemTheme.Shadow, , &HAAAA
+            LINE (LX, LY)-(LX, 349), SystemTheme.Shadow, , &HAAAA
             IF LY = 0 THEN
                 LY = 1
             ELSE
@@ -132,14 +128,9 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 
     LOOP
 
-    IF UserSettings.ScreenMode = scrEGA THEN
-        Mouse.Hide
-        PCOPY 1, 0
-        Mouse.Show
-    ELSE
-        Sys.VGALoad "INPUTBOX"
-    END IF
-
+    Mouse.Hide
+    PCOPY 1, 0
+    Mouse.Show
 
 END FUNCTION
 

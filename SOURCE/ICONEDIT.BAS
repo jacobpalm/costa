@@ -21,6 +21,8 @@ CONST dirDown = 3
 CONST dirStay = 4
 CONST dirHide = 5
 
+CONST PixelSize = 9
+
 CONST FilledNeedsCheck = 1
 CONST FilledChecked = 2
 
@@ -39,7 +41,7 @@ END TYPE
 DIM SHARED IconData AS IconEditDataType
 DIM SHARED IconFileName AS STRING
 DIM SHARED KeyboardPosX, KeyboardPosY, KeyboardPosVisible
-DIM SHARED IconChanged, PixelSize, PreviewOffsetX, PreviewOffsetY
+DIM SHARED IconChanged, PreviewOffsetX, PreviewOffsetY
 DIM SHARED DrawAreaOffsetX, DrawAreaOffsetY
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
@@ -270,16 +272,10 @@ SUB IconEdit.Main (IconToLoad AS STRING)
 
     Obj.DrawMenu
     Mouse.Hide
-    LINE (0, 29)-(639, scrHeight - 1), SystemTheme.Window, BF
+    LINE (0, 29)-(639, 349), SystemTheme.Window, BF
     Mouse.Show
 
-    IF UserSettings.ScreenMode = scrVGA THEN
-      PixelSize = 13
-      Obj.SetSize txtDrawArea.Pos, (640 - 418) / 2, (scrHeight - 418 - 28) / 2 + 28, 418, 418
-    ELSE
-      PixelSize = 9
-      Obj.SetSize txtDrawArea.Pos, (640 - 290) / 2, (scrHeight - 290 - 28) / 2 + 28, 290, 290
-    END IF
+    Obj.SetSize txtDrawArea.Pos, 175, 44, 290, 290
     
     Obj.SetSize btnNew.Pos, 2, 2, 92, 22
     Obj.SetSize btnOpen.Pos, 101, 2, 92, 22
@@ -645,22 +641,15 @@ SUB IconEdit.Preview ()
     DIM Key$, XPos, YPos, Void
     DIM scrBuffer(341)
     
-    Obj.SetSize winPreview.Pos, 186, (scrHeight - 299) / 2, 271, 303
+    Obj.SetSize winPreview.Pos, 186, 23, 271, 303
     
     Obj.SetSize btnClose.Pos, winPreview.Pos.Left + winPreview.Pos.Width - 112, winPreview.Pos.Top + winPreview.Pos.Height - 34, 100, 22
     btnClose.Caption = "õClose"
     
     Obj.SetSize txtPreview.Pos, winPreview.Pos.Left + 12, winPreview.Pos.Top + 12, 247, 247
 
-    IF UserSettings.ScreenMode = scrEGA THEN
-      Mouse.Hide
-      PCOPY 0, 1
-      Mouse.Show
-    ELSE
-      Sys.VGASave "ICONPREW"
-    END IF
-
     Mouse.Hide
+    PCOPY 0, 1
     GET (PreviewOffsetX - 1, PreviewOffsetY - 1)-(PreviewOffsetX + 32, PreviewOffsetY + 32), scrBuffer
     Mouse.Show
     
@@ -708,18 +697,16 @@ SUB IconEdit.Preview ()
 
     LOOP
 
-    IF UserSettings.ScreenMode = scrEGA THEN
-      Mouse.Hide
-      PCOPY 1, 0
-      Mouse.Show
-    ELSE
-      Sys.VGALoad "ICONPREW"
-    END IF
+    Mouse.Hide
+    PCOPY 1, 0
+    Mouse.Show
     EXIT SUB
 
 PreviewError:
+    Mouse.Hide
+    PCOPY 1, 0
+    Mouse.Show
     Void = Sys.MsgBox("Could not preview icon", "An error occured while previewing your icon, while saving a temporary copy." + CHR$(13) + "Make sure the disk is not full or write-protected, and try again.", msgError)
-    Sys.VGALoad "ICONPREW"
     EXIT SUB
     RESUME NEXT
 
@@ -787,13 +774,9 @@ SUB IconEdit.ShowLoadDialog ()
     DIM btnNext AS ButtonType, btnPrev AS ButtonType, btnCancel AS ButtonType
     DIM btnLoad AS ButtonType
                                      
-    IF UserSettings.ScreenMode = scrEGA THEN
-      Mouse.Hide
-      PCOPY 0, 1
-      Mouse.Show
-    ELSE
-      Sys.VGASave "LoadIcon"
-    END IF
+    Mouse.Hide
+    PCOPY 0, 1
+    Mouse.Show
     Sys.ShowLoading
 
     REDIM IconFiles(0) AS STRING
@@ -807,7 +790,7 @@ SUB IconEdit.ShowLoadDialog ()
     IconFiles(0) = LEFT$(IconFiles(0), LEN(IconFiles(0)) - 4)
     IconIndex = 0
 
-    Obj.SetSize winSelect.Pos, 243, (scrHeight - 132) / 2, 154, 132
+    Obj.SetSize winSelect.Pos, 243, 109, 154, 132
     Obj.SetSize btnLoad.Pos, winSelect.Pos.Left + 51, winSelect.Pos.Top + 32, 52, 52
     Obj.SetSize btnPrev.Pos, winSelect.Pos.Left + 15, winSelect.Pos.Top + 48, 22, 22
     Obj.SetSize btnNext.Pos, winSelect.Pos.Left + 117, winSelect.Pos.Top + 48, 22, 22
@@ -843,13 +826,9 @@ SUB IconEdit.ShowLoadDialog ()
         Key$ = LCASE$(INKEY$)
 
         IF Obj.BtnClick(btnCancel) OR Key$ = CHR$(27) OR Key$ = "c" THEN
-            IF UserSettings.ScreenMode = scrEGA THEN
-              Mouse.Hide
-              PCOPY 1, 0
-              Mouse.Show
-            ELSE
-              Sys.VGALoad "LoadIcon"
-            END IF
+            Mouse.Hide
+            PCOPY 1, 0
+            Mouse.Show
             EXIT SUB
         END IF
 
@@ -878,13 +857,9 @@ SUB IconEdit.ShowLoadDialog ()
         END IF
 
         IF Obj.BtnClick(btnLoad) OR Key$ = CHR$(13) THEN
-            IF UserSettings.ScreenMode = scrEGA THEN
-              Mouse.Hide
-              PCOPY 1, 0
-              Mouse.Show
-            ELSE
-              Sys.VGALoad "LoadIcon"
-            END IF
+            Mouse.Hide
+            PCOPY 1, 0
+            Mouse.Show
             IconEdit.LoadIcon (IconFiles(IconIndex))
             EXIT SUB
         END IF

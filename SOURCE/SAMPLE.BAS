@@ -34,12 +34,9 @@ SUB App.Main ()
     winSample.Pos.Width = 244
     winSample.Pos.Height = 200
 
-    'Center the window. Notice that the width of the screen is always 640
-    'pixels, but that the height varies depending on whether screen mode
-    '9 (EGA/VGA 640x350) or 12 (VGA 640x480) is used. The height can be
-    'retrieved from the ScrHeight variable
+    'Center the window
     winSample.Pos.Left = (640 - winSample.Pos.Width) / 2
-    winSample.Pos.Top = (ScrHeight - winSample.Pos.Height) / 2
+    winSample.Pos.Top = (350 - winSample.Pos.Height) / 2
 
     'Create a button
     DIM btnExit AS ButtonType

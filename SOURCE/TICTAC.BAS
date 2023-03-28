@@ -185,14 +185,14 @@ SUB Tic.DrawBackground ()
 	LY = 29
 	Mouse.Hide
 	
-	LINE (0, 29)-(639, scrHeight - 1), 2, BF
+	LINE (0, 29)-(639, 349), 2, BF
 
 	FOR LX = 0 TO 639 STEP 6
-		LINE (LX, 29)-(LX, scrHeight - 1), 10, , &H1111
+		LINE (LX, 29)-(LX, 349), 10, , &H1111
 	NEXT
 
 	FOR LX = 3 TO 639 STEP 6
-		LINE (LX, 31)-(LX, scrHeight - 1), 10, , &H1111
+		LINE (LX, 31)-(LX, 349), 10, , &H1111
 	NEXT
 
 	Mouse.Show
@@ -368,7 +368,7 @@ SUB Tic.Main ()
 	DIM FieldRow, FieldCol
 	DIM DidLoadState
 
-	Obj.SetSize frmTic.Pos, (640 - 221) / 2, (scrHeight - 28 - 221) / 2 + 28, 221, 221
+	Obj.SetSize frmTic.Pos, (640 - 221) / 2, 78, 221, 221
 	
 	Obj.SetSize txtPlayField(1, 1).Pos, frmTic.Pos.Left + 10, frmTic.Pos.Top + 10, 60, 60
 	Obj.SetSize txtPlayField(1, 2).Pos, txtPlayField(1, 1).Pos.Left + 70, txtPlayField(1, 1).Pos.Top, 60, 60
@@ -704,13 +704,8 @@ SUB Tic.PrintMessage (MessageType AS INTEGER)
 
 
 	Mouse.Hide
-	IF UserSettings.ScreenMode = scrVGA THEN
-		LINE (12, 81)-(627, 97), 2, BF
-		Font.Print message, (640 - Font.GetWidth(message, fontHeading)) / 2, 85, 0, fontHeading
-	ELSE
-		LINE (12, 49)-(627, 65), 2, BF
-		Font.Print message, (640 - Font.GetWidth(message, fontHeading)) / 2, 53, 0, fontHeading
-	END IF
+	LINE (12, 49)-(627, 65), 2, BF
+	Font.Print message, (640 - Font.GetWidth(message, fontHeading)) / 2, 53, 0, fontHeading
 	Mouse.Show
 	
 END SUB

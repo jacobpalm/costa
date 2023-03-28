@@ -52,16 +52,9 @@ END FUNCTION
 
 SUB Calc.LogLine (Text AS STRING, TargetTxt AS TextboxType)
 
-  DIM MaxLogLines, TopOffset
-
-  IF UserSettings.ScreenMode = scrVGA THEN
-    MaxLogLines = 27
-    TopOffset = 48
-  ELSE
-    MaxLogLines = 18
-    TopOffset = 52
-  END IF
-
+  CONST MaxLogLines = 18
+  CONST TopOffset = 52
+  
   LogLinesWritten = LogLinesWritten + 1
 
   IF LogLinesWritten > MaxLogLines THEN
@@ -118,7 +111,7 @@ SUB Calc.Main ()
     Obj.SetSize btnPlus.Pos, 176, frmCalc.Pos.Top + 106, 40, -1
     Obj.SetSize btnEquals.Pos, 176, frmCalc.Pos.Top + 139, 40, 55
 
-    Obj.SetSize txtResults.Pos, frmCalc.Pos.Left + frmCalc.Pos.Width + 12, frmCalc.Pos.Top, 385, scrHeight - 55
+    Obj.SetSize txtResults.Pos, frmCalc.Pos.Left + frmCalc.Pos.Width + 12, frmCalc.Pos.Top, 385, 295
 
     Obj.SetSize btnClose.Pos, 545, 2, 92, 22
     
@@ -134,7 +127,7 @@ SUB Calc.Main ()
     txtCalc.MaxLen = 25
 
     Mouse.Hide
-    LINE (0, 29)-(639, scrHeight - 1), SystemTheme.Window, BF
+    LINE (0, 29)-(639, 349), SystemTheme.Window, BF
     Mouse.Show
     Obj.DrawMenu
 

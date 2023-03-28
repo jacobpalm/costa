@@ -66,10 +66,6 @@
     CONST msgError = 4
     CONST msgTip = 5
 
-'Screen resolution constants
-  CONST scrEGA = 9
-  CONST scrVGA = 12
-
 'Type declarations
   TYPE PosType
     Left AS INTEGER
@@ -160,7 +156,6 @@
   COMMON SHARED UserSettings AS UserSettingsType
   COMMON SHARED SystemTheme AS ThemeType
 
-  COMMON SHARED scrHeight AS INTEGER
   COMMON SHARED MouseX as INTEGER
   COMMON SHARED MouseY as INTEGER
 

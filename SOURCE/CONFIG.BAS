@@ -76,7 +76,7 @@ FUNCTION Conf.ConfAssoc ()
     btnMisc.Transparent = True
 
     Mouse.Hide
-    LINE (74, 29)-(639, scrHeight - 1), SystemTheme.Window, BF
+    LINE (74, 29)-(639, 349), SystemTheme.Window, BF
     Mouse.Show
     Obj.DrawMenu
     Obj.DrawBtn btnDisable, False
@@ -197,10 +197,8 @@ FUNCTION Conf.ConfMisc ()
     DIM btnThemes AS ButtonType, btnFileAssoc AS ButtonType, btnMisc AS ButtonType
     DIM imgThemes AS ImageType, imgFileAssoc AS ImageType, imgMisc AS ImageType
 
-    DIM ShowTargetChk, CurrentScreenMode
+    DIM ShowTargetChk
     DIM Key$
-
-    CurrentScreenMode = UserSettings.ScreenMode
 
     Obj.SetSize frmDesktop.Pos, 74, 43, 552, 118
     Obj.SetSize frmVarious.Pos, 74, frmDesktop.Pos.Top + frmDesktop.Pos.Height + 12, frmDesktop.Pos.Width, 129
@@ -244,9 +242,10 @@ FUNCTION Conf.ConfMisc ()
     btnSave.Caption = "õSave"
     chkShowLinkDesc.Checked = UserSettings.ShowLinkDescriptions
     chkShowLinkTarget.Checked = UserSettings.ShowLinkTargetFiles
-    IF UserSettings.ScreenMode = scrVGA THEN
-      chkUseVGAMode.Checked = True
-    END IF
+    'IF UserSettings.ScreenMode = scrVGA THEN
+    '  chkUseVGAMode.Checked = True
+    'END IF
+    chkUseVGAMode.Checked = False
     chkConfLinkDel.Checked = UserSettings.ConfirmLinkDelete
     'chkAnimUI.Checked = UserSettings.Animations
     chkAnimUI.Checked = False
@@ -257,7 +256,7 @@ FUNCTION Conf.ConfMisc ()
 
 RedrawAllMisc:
     Mouse.Hide
-    LINE (74, 29)-(639, scrHeight - 1), SystemTheme.Window, BF
+    LINE (74, 29)-(639, 349), SystemTheme.Window, BF
     Mouse.Show
     Obj.DrawMenu
     Obj.DrawBtn btnSave, False
@@ -287,7 +286,7 @@ RedrawAllMisc:
     ELSE
         Font.Print "Show link targõets", chkShowLinkTarget.Pos.Left + 20, chkShowLinkTarget.Pos.Top + 3, SystemTheme.Shadow, 2
     END IF
-    Font.Print "Use õVGA mode (higher resolution, but slower)", chkUseVGAMode.Pos.Left + 20, chkUseVGAMode.Pos.Top + 3, SystemTheme.WindowText, 2
+    Font.Print "Use õVGA mode (higher resolution, but slower)", chkUseVGAMode.Pos.Left + 20, chkUseVGAMode.Pos.Top + 3, SystemTheme.Shadow, 2
     Font.Print "Confirm link õremoval", chkConfLinkDel.Pos.Left + 20, chkConfLinkDel.Pos.Top + 3, SystemTheme.WindowText, 2
     Font.Print "õAnimate user interface (sliding menus)", chkAnimUI.Pos.Left + 20, chkAnimUI.Pos.Top + 3, SystemTheme.Shadow, 2
     Font.Print "Confirm before eõxiting Costa", chkConfExit.Pos.Left + 20, chkConfExit.Pos.Top + 3, SystemTheme.WindowText, 2
@@ -306,7 +305,7 @@ RedrawAllMisc:
         END IF
 
         IF ShowTargetChk = True THEN Obj.ChkClick chkShowLinkTarget
-        Obj.ChkClick chkUseVGAMode
+        'Obj.ChkClick chkUseVGAMode
         Obj.ChkClick chkConfLinkDel
         Obj.ChkClick chkConfExit
         Obj.ChkClick chkGreyOutMsgBox
@@ -326,11 +325,12 @@ RedrawAllMisc:
             UserSettings.Animations = chkAnimUI.Checked
             UserSettings.ShowLinkDescriptions = chkShowLinkDesc.Checked
             UserSettings.ShowLinkTargetFiles = chkShowLinkTarget.Checked
-            IF chkUseVGAMode.Checked THEN
-              UserSettings.ScreenMode = scrVGA
-            ELSE
-              UserSettings.ScreenMode = scrEGA
-            END IF
+            'IF chkUseVGAMode.Checked THEN
+            '  UserSettings.ScreenMode = 12
+            'ELSE
+            '  UserSettings.ScreenMode = 9
+            'END IF
+            UserSettings.ScreenMode = 9
             UserSettings.ConfirmLinkDelete = chkConfLinkDel.Checked
             UserSettings.ConfirmExit = chkConfExit.Checked
             UserSettings.TipOfTheDay = chkDailyTip.Checked
@@ -339,27 +339,6 @@ RedrawAllMisc:
             Sys.SaveSettings
             Sys.SaveProfile ProfileID
 
-            IF NOT UserSettings.ScreenMode = CurrentScreenMode THEN
-              CurrentScreenMode = UserSettings.ScreenMode
-              Mouse.Hide
-              IF UserSettings.ScreenMode = scrVGA THEN
-                scrHeight = 480
-                SCREEN 12
-              ELSE
-                scrHeight = 350
-                SCREEN 9
-              END IF
-            
-              LINE (0, 29)-(73, scrHeight - 1), SystemTheme.Window, BF
-              Mouse.Show
-              Obj.DrawBtn btnThemes, False
-              Obj.DrawBtn btnFileAssoc, False
-              Obj.DrawBtn btnMisc, False
-              Obj.DrawImg imgThemes
-              Obj.DrawImg imgFileAssoc
-              Obj.DrawImg imgMisc
-              GOTO RedrawAllMisc
-            END IF
         END IF
 
         IF Key$ = "d" THEN
@@ -372,7 +351,7 @@ RedrawAllMisc:
         END IF
 
         IF Key$ = "e" AND chkShowLinkDesc.Checked = True THEN chkShowLinkTarget.Checked = NOT chkShowLinkTarget.Checked: Obj.DrawChk chkShowLinkTarget
-        IF Key$ = "v" THEN chkUseVGAMode.Checked = NOT chkUseVGAMode.Checked: Obj.DrawChk chkUseVGAMode
+        'IF Key$ = "v" THEN chkUseVGAMode.Checked = NOT chkUseVGAMode.Checked: Obj.DrawChk chkUseVGAMode
         IF Key$ = "r" THEN chkConfLinkDel.Checked = NOT chkConfLinkDel.Checked: Obj.DrawChk chkConfLinkDel
         'IF Key$ = "a" THEN chkAnimUI.Checked = NOT chkAnimUI.Checked: Obj.DrawChk chkAnimUI
         IF Key$ = "x" THEN chkConfExit.Checked = NOT chkConfExit.Checked: Obj.DrawChk chkConfExit
@@ -414,19 +393,11 @@ FUNCTION Conf.ConfTheme ()
     DIM imgThemes AS ImageType, imgFileAssoc AS ImageType, imgMisc AS ImageType
 
     DIM OrigWindowColor, OrigWindowTextColor
-    DIM scrCorrection
     
     DIM OriginalTheme AS STRING
     DIM ThemeList() AS STRING
 
     Sys.ShowLoading
-
-    'Used to move objects in preview closer to border in smaller resolution
-    IF scrHeight = 350 THEN
-      scrCorrection = 16
-    ELSE
-      scrCorrection = 32
-    END IF
 
     'Load theme filenames into array
     DIM TmpName$, TmpCount, ActiveTheme
@@ -450,7 +421,7 @@ FUNCTION Conf.ConfTheme ()
     frmPreview.Pos.Left = 74
     frmPreview.Pos.Top = 73
     frmPreview.Pos.Width = 552
-    frmPreview.Pos.Height = scrHeight - 116
+    frmPreview.Pos.Height = 234
 
     Obj.SetSize btnBack.Pos, frmPreview.Pos.Left, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 45, 22
     btnBack.Caption = "<-"
@@ -488,7 +459,7 @@ RedrawAll:
     OrigWindowTextColor = SystemTheme.WindowText
 
     Mouse.Hide
-    LINE (74, 29)-(639, scrHeight - 1), SystemTheme.Window, BF
+    LINE (74, 29)-(639, 349), SystemTheme.Window, BF
     Mouse.Show
 
     Obj.DrawMenu
@@ -528,14 +499,14 @@ RedrawAll:
     Obj.SetSize btnPreview3.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width - 96, frmPreview.Pos.Top + 3, 92, 22
     btnPreview3.Caption = "Menu button"
 
-    imgPreview.Pos.Left = frmPreview.Pos.Left + scrCorrection
-    imgPreview.Pos.Top = frmPreview.Pos.Top + frmPreview.Pos.Height - 32 - scrCorrection
+    imgPreview.Pos.Left = frmPreview.Pos.Left + 16
+    imgPreview.Pos.Top = frmPreview.Pos.Top + frmPreview.Pos.Height - 48
     imgPreview.ImageFile = "LOGO"
 
     txtListPreview.Pos.Width = 116
     txtListPreview.Pos.Height = 66
-    txtListPreview.Pos.Left = frmPreview.Pos.Left + frmPreview.Pos.Width - txtListPreview.Pos.Width - scrCorrection
-    txtListPreview.Pos.Top = frmPreview.Pos.Top + frmPreview.Pos.Height - txtListPreview.Pos.Height - scrCorrection
+    txtListPreview.Pos.Left = frmPreview.Pos.Left + frmPreview.Pos.Width - txtListPreview.Pos.Width - 16
+    txtListPreview.Pos.Top = frmPreview.Pos.Top + frmPreview.Pos.Height - txtListPreview.Pos.Height - 16
     
     OriginalTheme = RTRIM$(UserSettings.ThemeFile)
     UserSettings.ThemeFile = ThemeList(ActiveTheme)
@@ -589,7 +560,7 @@ UpdatePreview:
             Sys.LoadTheme
             OriginalTheme = RTRIM$(UserSettings.ThemeFile)
             Mouse.Hide
-            LINE (0, 29)-(73, scrHeight - 1), SystemTheme.Window, BF
+            LINE (0, 29)-(73, 349), SystemTheme.Window, BF
             Mouse.Show
             Obj.DrawBtn btnThemes, False
             Obj.DrawBtn btnFileAssoc, False
@@ -680,7 +651,7 @@ SUB Conf.Main ()
 
 TopOfConf:
   Mouse.Hide
-  LINE (0, 29)-(640, scrHeight - 1), SystemTheme.Window, BF
+  LINE (0, 29)-(640, 349), SystemTheme.Window, BF
   Mouse.Show
 
   Obj.DrawBtn btnThemes, False
@@ -688,7 +659,7 @@ TopOfConf:
   Obj.DrawBtn btnMisc, False
 
   Mouse.Hide
-  LINE (74, 29)-(639, scrHeight - 1), SystemTheme.Window, BF
+  LINE (74, 29)-(639, 349), SystemTheme.Window, BF
   Mouse.Show
   Obj.DrawMenu
   Obj.DrawBtn btnClose, False

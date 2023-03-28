@@ -102,14 +102,6 @@ IF ProfileID < 1 OR ProfileID > 5 THEN
         Desk.ProfileSelect
     END IF
 
-    IF UserSettings.ScreenMode = scrVGA THEN
-      scrHeight = 480
-      SCREEN 12
-    ELSE
-      scrHeight = 350
-      SCREEN 9
-    END IF
-    
 END IF
 
 ON ERROR RESUME NEXT
@@ -139,18 +131,16 @@ SUB Desk.AboutBox ()
   DIM imgLogo AS ImageType
   DIM Key$
 
-  Obj.SetSize winAboutBox.Pos, 156, (scrHeight - 278) / 2, 328, 278
+  Obj.SetSize winAboutBox.Pos, 156, 36, 328, 278
   Obj.SetSize imgLogo.Pos, 168, winAboutBox.Pos.Top + 11, -1, -1
   Obj.SetSize btnClose.Pos, 274, winAboutBox.Pos.Top + 243, 92, 22
   btnClose.Caption = "õClose"
 
   imgLogo.ImageFile = "LOGO"
   
-  IF UserSettings.ScreenMode = scrEGA THEN
-    Mouse.Hide
-    PCOPY 0, 1
-    Mouse.Show
-  END IF
+  Mouse.Hide
+  PCOPY 0, 1
+  Mouse.Show
 
   Obj.DrawWin winAboutBox
   Obj.DrawBtn btnClose, False
@@ -178,13 +168,9 @@ SUB Desk.AboutBox ()
 
   LOOP
 
-  IF UserSettings.ScreenMode = scrEGA THEN
-    Mouse.Hide
-    PCOPY 1, 0
-    Mouse.Show
-  ELSE
-    Desk.DrawDesktop
-  END IF
+  Mouse.Hide
+  PCOPY 1, 0
+  Mouse.Show
   
 END SUB
 
@@ -202,7 +188,7 @@ END SUB
 SUB Desk.DrawDesktop ()
    
   Mouse.Hide
-  LINE (0, 29)-(639, scrHeight), SystemTheme.Desktop, BF
+  LINE (0, 29)-(639, 349), SystemTheme.Desktop, BF
   
   'All desklinks will always have an imagefile. Use this to check if any
   'desklinks exist
@@ -219,12 +205,10 @@ SUB Desk.DrawDesktop ()
   'each desklink
   FOR TargetLink = 0 TO UBOUND(DeskLink)
 
-    'If screen resolution has been reduced, make sure icons aren't out
-    'of vertical view
-    IF DeskLink(TargetLink).Top > scrHeight - 32 THEN
-      DeskLink(TargetLink).Top = scrHeight - 32
-    END IF
-
+    'For compatibility - old versions used higher vertical resolution, icons may be
+    'out of view if old data file is carried over
+    IF DeskLink(TargetLink).Top > 318 THEN DeskLink(TargetLink).Top = 318
+    
     imgDeskLinkIcon.ImageFile = DeskLink(TargetLink).ImageFile
     imgDeskLinkIcon.Pos.Left = DeskLink(TargetLink).Left
     imgDeskLinkIcon.Pos.Top = DeskLink(TargetLink).Top
@@ -397,11 +381,7 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
   DIM imgIcon AS ImageType
   DIM chkPauseOnExit AS CheckBoxType
 
-  Obj.SetSize ConfWin.Pos, 210, (scrHeight - 336) / 2, 220, 312
-  IF UserSettings.ScreenMode = scrEGA THEN
-    'Avoid menubar overlap on low resolution
-    ConfWin.Pos.Top = (scrHeight - ConfWin.Pos.Height - 28) / 2 + 28
-  END IF
+  Obj.SetSize ConfWin.Pos, 210, 35, 220, 312
 
   Obj.SetSize frmIconFrame.Pos, 296, ConfWin.Pos.Top + 12, 48, 48
   Obj.SetSize imgIcon.Pos, 304, frmIconFrame.Pos.Top + 8, 32, 32
@@ -630,12 +610,6 @@ SUB Desk.LinkLoad ()
 
         GET #FileHandle, , DeskLink(LinkLoad)
 
-        'If screen resolution has been reduced, make sure icons aren't out
-        'of vertical view
-        IF DeskLink(LinkLoad).Top > scrHeight - 32 THEN
-          DeskLink(LinkLoad).Top = scrHeight - 32
-        END IF
-
     NEXT
     
     CLOSE #FileHandle
@@ -665,7 +639,7 @@ SUB Desk.LinkMenu (TargetLink)
   DIM DidEdit, RedrawNeeded
   DIM Key$, CroppedText AS STRING
 
-  Obj.SetSize winLinkMenu.Pos, (640 - 413) / 2, (scrHeight - 165) / 2, 413, 165
+  Obj.SetSize winLinkMenu.Pos, (640 - 413) / 2, 92, 413, 165
   Obj.SetSize btnOpen.Pos, winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + winLinkMenu.Pos.Height - 64, 389, 22
   Obj.SetSize btnCustomize.Pos, btnOpen.Pos.Left, btnOpen.Pos.Top + 30, 92, 22
   Obj.SetSize btnMove.Pos, btnCustomize.Pos.Left + 99, btnCustomize.Pos.Top, 92, 22
@@ -681,11 +655,9 @@ SUB Desk.LinkMenu (TargetLink)
   btnRemove.Caption = "õRemove"
   btnCancel.Caption = "õCancel"
   
-  IF UserSettings.ScreenMode = scrEGA THEN
-    Mouse.Hide
-    PCOPY 0, 1
-    Mouse.Show
-  END IF
+  Mouse.Hide
+  PCOPY 0, 1
+  Mouse.Show
 
   Obj.DrawWin winLinkMenu
   Obj.DrawBtn btnOpen, False
@@ -740,7 +712,7 @@ SUB Desk.LinkMenu (TargetLink)
     'Move
     IF Obj.BtnClick(btnMove) OR Key$ = "m" THEN
 
-      IF UserSettings.ScreenMode = scrVGA OR RedrawNeeded THEN
+      IF RedrawNeeded THEN
         Desk.DrawDesktop
       ELSE
         Mouse.Hide
@@ -776,7 +748,7 @@ SUB Desk.LinkMenu (TargetLink)
 
   LOOP
 
-  IF UserSettings.ScreenMode = scrVGA OR RedrawNeeded THEN
+  IF RedrawNeeded THEN
     Desk.DrawDesktop
   ELSE
     Mouse.Hide
@@ -831,7 +803,7 @@ SUB Desk.LinkMove (TargetLink)
         KeyX = MouseX + 15
         KeyY = MouseY
         IF KeyX > 624 THEN KeyX = 624
-        IF KeyY > scrHeight - 16 THEN KeyY = scrHeight - 16
+        IF KeyY > 334 THEN KeyY = 334
         Mouse.SetPos KeyX, KeyY
     END IF
     IF Key$ = CHR$(0) + "h" THEN
@@ -844,7 +816,7 @@ SUB Desk.LinkMove (TargetLink)
     IF Key$ = CHR$(0) + "p" THEN
         KeyY = MouseY + 15
         KeyX = MouseX
-        IF KeyY > scrHeight - 16 THEN KeyY = scrHeight - 16
+        IF KeyY > 334 THEN KeyY = 334
         IF KeyX > 624 THEN KeyX = 624
         Mouse.SetPos KeyX, KeyY
     END IF
@@ -862,7 +834,7 @@ SUB Desk.LinkMove (TargetLink)
       IF LastX < 16 THEN LastX = 16
       IF LastY < 48 THEN LastY = 48
       IF LastX > 624 THEN LastX = 624
-      IF LastY > scrHeight - 16 THEN LastY = scrHeight - 16
+      IF LastY > 334 THEN LastY = 334
       GET (LastX - 16, LastY - 16)-(LastX + 15, LastY + 15), LinkIconBack
       PUT (LastX - 16, LastY - 16), LinkIcon, PSET
       Mouse.Show
@@ -1150,29 +1122,24 @@ Desk.RedrawAll:
             DeskLink(UBOUND(DeskLink)).Left = 15
             DeskLink(UBOUND(DeskLink)).Top = 45
 
-            IF UserSettings.ScreenMode = scrEGA THEN
-              Mouse.Hide
-              PCOPY 0, 1
-              Mouse.Show
-            END IF
+            Mouse.Hide
+            PCOPY 0, 1
+            Mouse.Show
+
             Desk.LinkDialog UBOUND(DeskLink), DidEdit, True
 
-            IF DidEdit OR (NOT UserSettings.ScreenMode AND UserSettings.ScreenMode = scrVGA) THEN
+            IF DidEdit THEN
                 TabCheck = -1
                 Desk.LinkLoad
                 Mouse.Hide
-                LINE (0, 29)-(639, scrHeight - 1), SystemTheme.Desktop, BF
+                LINE (0, 29)-(639, 349), SystemTheme.Desktop, BF
                 Desk.DrawDesktop
                 Mouse.Show
             ELSE
                 REDIM PRESERVE DeskLink(0 TO UBOUND(DeskLink) - 1) AS DeskLinkType
-                IF UserSettings.ScreenMode = scrEGA THEN
-                  Mouse.Hide
-                  PCOPY 1, 0
-                  Mouse.Show
-                ELSE
-                  Desk.DrawDesktop
-                END IF
+                Mouse.Hide
+                PCOPY 1, 0
+                Mouse.Show
             END IF
 
         END IF
@@ -1316,11 +1283,8 @@ SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
     DIM btnIconPrev AS ButtonType, btnIconNext AS ButtonType
     DIM frmIconFrame AS FrameType
     DIM imgIcon AS ImageType
-    
-    winProfEdit.Pos.Width = 220
-    winProfEdit.Pos.Height = 208
-    winProfEdit.Pos.Left = (640 - winProfEdit.Pos.Width) / 2
-    winProfEdit.Pos.Top = (scrHeight - winProfEdit.Pos.Height) / 2
+
+    Obj.SetSize winProfEdit.Pos, 210, 71, 220, 208
     
     Obj.SetSize frmIconFrame.Pos, 296, winProfEdit.Pos.Top + 46, 48, 48
     Obj.SetSize imgIcon.Pos, 304, frmIconFrame.Pos.Top + 8, 32, 32
@@ -1415,10 +1379,7 @@ SUB Desk.ProfileSelect ()
     UserSettings.ThemeFile = "DEFAULT"
     Sys.LoadTheme
     
-    winProfiles.Pos.Width = 338
-    winProfiles.Pos.Height = 196
-    winProfiles.Pos.Left = (640 - winProfiles.Pos.Width) / 2
-    winProfiles.Pos.Top = (scrHeight - winProfiles.Pos.Height) / 2
+    Obj.SetSize winProfiles.Pos, 151, 77, 338, 196
     
     Obj.SetSize btnProfile(1).Pos, winProfiles.Pos.Left + 18, winProfiles.Pos.Top + 66, 46, 46
     Obj.SetSize btnProfile(2).Pos, winProfiles.Pos.Left + 82, winProfiles.Pos.Top + 66, 46, 46
@@ -1448,7 +1409,7 @@ TopOfProfile:
     NEXT
 
     Mouse.Hide
-    LINE (0, 0)-(639, scrHeight - 1), SystemTheme.Desktop, BF
+    LINE (0, 0)-(639, 349), SystemTheme.Desktop, BF
     Mouse.Show
     
     Obj.DrawWin winProfiles
@@ -1518,16 +1479,6 @@ TopOfProfile:
             Sys.LoadProfile SelectedProfile
             Sys.LoadTheme
 
-            Mouse.Hide
-            IF UserSettings.ScreenMode = scrVGA THEN
-              scrHeight = 480
-              SCREEN 12
-            ELSE
-              scrHeight = 350
-              SCREEN 9
-            END IF
-            Mouse.Show
-            
             EXIT SUB
         END IF
 
@@ -1643,7 +1594,7 @@ SUB Desk.TipOfTheDay ()
         DIM TipOfTheDay AS STRING
 
         Mouse.Hide
-        LINE (0, 0)-(639, scrHeight - 1), SystemTheme.Desktop, BF
+        LINE (0, 0)-(639, 349), SystemTheme.Desktop, BF
         Mouse.Show
 
         TipOfTheDay = Desk.GetDailyTip

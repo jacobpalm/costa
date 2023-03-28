@@ -70,24 +70,18 @@ SUB Theme.Edit (BYVAL ThmFile AS STRING)
     DIM I, YPos, XPos, SelectedObject, ThemeChanged
     DIM TargetFile$, OriginalText$
 
-    DIM OrigWindowColor, OrigWindowTextColor, scrCorrection
+    DIM OrigWindowColor, OrigWindowTextColor
 
     Mouse.Hide
-    LINE (0, 29)-(639, scrHeight - 1), SystemTheme.Window, BF
+    LINE (0, 29)-(639, 349), SystemTheme.Window, BF
     Mouse.Show
-    
-    IF scrHeight = 350 THEN
-      scrCorrection = 16
-    ELSE
-      scrCorrection = 32
-    END IF
 
     ThemeFile$ = ThmFile
 
     frmPreview.Pos.Left = 12
     frmPreview.Pos.Top = 42
     frmPreview.Pos.Width = 410
-    frmPreview.Pos.Height = scrHeight - 57
+    frmPreview.Pos.Height = 293
 
     Obj.SetSize btnSave.Pos, 2, 2, 92, 22
     btnSave.Caption = "õSave"
@@ -192,14 +186,14 @@ SUB Theme.Edit (BYVAL ThmFile AS STRING)
     Obj.SetSize btnPreview3.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width - 96, frmPreview.Pos.Top + 3, 92, 22
     btnPreview3.Caption = "Menu button"
 
-    imgPreview.Pos.Left = frmPreview.Pos.Left + scrCorrection
-    imgPreview.Pos.Top = frmPreview.Pos.Top + frmPreview.Pos.Height - 32 - scrCorrection
+    imgPreview.Pos.Left = frmPreview.Pos.Left + 16
+    imgPreview.Pos.Top = frmPreview.Pos.Top + frmPreview.Pos.Height - 48
     imgPreview.ImageFile = "LOGO"
 
     txtListPreview.Pos.Width = 116
     txtListPreview.Pos.Height = 66
-    txtListPreview.Pos.Left = frmPreview.Pos.Left + frmPreview.Pos.Width - txtListPreview.Pos.Width - scrCorrection
-    txtListPreview.Pos.Top = frmPreview.Pos.Top + frmPreview.Pos.Height - txtListPreview.Pos.Height - scrCorrection
+    txtListPreview.Pos.Left = frmPreview.Pos.Left + frmPreview.Pos.Width - txtListPreview.Pos.Width - 16
+    txtListPreview.Pos.Top = frmPreview.Pos.Top + frmPreview.Pos.Height - txtListPreview.Pos.Height - 16
 
     DIM Key$
 UpdateEditPreview:
@@ -555,21 +549,14 @@ FUNCTION Theme.Select () AS STRING
     DIM btnBack AS ButtonType, btnNext AS ButtonType
     DIM btnEdit AS ButtonType, btnCancel AS ButtonType
 
-    DIM OrigWindowColor, OrigWindowTextColor, scrCorrection
+    DIM OrigWindowColor, OrigWindowTextColor
 
     Mouse.Hide
-    LINE (0, 29)-(639, scrHeight - 1), SystemTheme.Window, BF
+    LINE (0, 29)-(639, 349), SystemTheme.Window, BF
     Mouse.Show
     Obj.DrawMenu
 
     Sys.ShowLoading
-
-    'Used to move objects in preview closer to border in smaller resolution
-    IF scrHeight = 350 THEN
-      scrCorrection = 16
-    ELSE
-      scrCorrection = 32
-    END IF
 
     'Load theme filenames into array
     DIM TmpName$, TmpCount, ActiveTheme
@@ -593,7 +580,7 @@ FUNCTION Theme.Select () AS STRING
     frmPreview.Pos.Left = 12
     frmPreview.Pos.Top = 73
     frmPreview.Pos.Width = 615
-    frmPreview.Pos.Height = scrHeight - 117
+    frmPreview.Pos.Height = 233
 
     Obj.SetSize btnBack.Pos, frmPreview.Pos.Left, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 45, 22
     btnBack.Caption = "<-"
@@ -640,14 +627,14 @@ FUNCTION Theme.Select () AS STRING
     Obj.SetSize btnPreview3.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width - 96, frmPreview.Pos.Top + 3, 92, 22
     btnPreview3.Caption = "Menu button"
 
-    imgPreview.Pos.Left = frmPreview.Pos.Left + scrCorrection
-    imgPreview.Pos.Top = frmPreview.Pos.Top + frmPreview.Pos.Height - 32 - scrCorrection
+    imgPreview.Pos.Left = frmPreview.Pos.Left + 16
+    imgPreview.Pos.Top = frmPreview.Pos.Top + frmPreview.Pos.Height - 48
     imgPreview.ImageFile = "LOGO"
 
     txtListPreview.Pos.Width = 116
     txtListPreview.Pos.Height = 66
-    txtListPreview.Pos.Left = frmPreview.Pos.Left + frmPreview.Pos.Width - txtListPreview.Pos.Width - scrCorrection
-    txtListPreview.Pos.Top = frmPreview.Pos.Top + frmPreview.Pos.Height - txtListPreview.Pos.Height - scrCorrection
+    txtListPreview.Pos.Left = frmPreview.Pos.Left + frmPreview.Pos.Width - txtListPreview.Pos.Width - 16
+    txtListPreview.Pos.Top = frmPreview.Pos.Top + frmPreview.Pos.Height - txtListPreview.Pos.Height - 16
     
     OrigWindowColor = SystemTheme.Window
     OrigWindowTextColor = SystemTheme.WindowText
@@ -748,7 +735,7 @@ FUNCTION Theme.SelectObject (BYVAL CurrentSelection) AS INTEGER
     winSelectObject.Pos.Width = 226
     winSelectObject.Pos.Height = 304
     winSelectObject.Pos.Left = (640 - winSelectObject.Pos.Width) / 2
-    winSelectObject.Pos.Top = (scrHeight - winSelectObject.Pos.Height) / 2
+    winSelectObject.Pos.Top = (350 - winSelectObject.Pos.Height) / 2
     
     FOR I = 1 TO 12
         Obj.SetSize btnObject(I).Pos, winSelectObject.Pos.Left + 13, winSelectObject.Pos.Top + (I * 23) - 8, 200, 22
@@ -769,13 +756,9 @@ FUNCTION Theme.SelectObject (BYVAL CurrentSelection) AS INTEGER
 
     ActiveSelection = CurrentSelection
 
-    IF UserSettings.ScreenMode = scrEGA THEN
-      Mouse.Hide
-      PCOPY 0, 1
-      Mouse.Show
-    ELSE
-      Sys.VGASave "THMOBJ"
-    END IF
+    Mouse.Hide
+    PCOPY 0, 1
+    Mouse.Show
 
     Obj.DrawWin winSelectObject
     FOR I = 1 TO 12
@@ -792,25 +775,17 @@ FUNCTION Theme.SelectObject (BYVAL CurrentSelection) AS INTEGER
 
       IF Key$ = CHR$(13) THEN
         Theme.SelectObject = ActiveSelection
-        IF UserSettings.ScreenMode = scrEGA THEN
-          Mouse.Hide
-          PCOPY 1, 0
-          Mouse.Show
-        ELSE
-          Sys.VGALoad "THMOBJ"
-        END IF
+        Mouse.Hide
+        PCOPY 1, 0
+        Mouse.Show
         EXIT FUNCTION
       END IF
 
       IF Key$ = CHR$(27) THEN
         Theme.SelectObject = CurrentSelection
-        IF UserSettings.ScreenMode = scrEGA THEN
-          Mouse.Hide
-          PCOPY 1, 0
-          Mouse.Show
-        ELSE
-          Sys.VGALoad "THMOBJ"
-        END IF
+        Mouse.Hide
+        PCOPY 1, 0
+        Mouse.Show
         EXIT FUNCTION
       END IF
 
@@ -819,13 +794,9 @@ FUNCTION Theme.SelectObject (BYVAL CurrentSelection) AS INTEGER
         FOR I = 1 TO 12
           IF Obj.BtnClick(btnObject(I)) THEN
             Theme.SelectObject = I
-            IF UserSettings.ScreenMode = scrEGA THEN
-              Mouse.Hide
-              PCOPY 1, 0
-              Mouse.Show
-            ELSE
-              Sys.VGALoad "THMOBJ"
-            END IF
+            Mouse.Hide
+            PCOPY 1, 0
+            Mouse.Show
             EXIT FUNCTION
           END IF
         NEXT
