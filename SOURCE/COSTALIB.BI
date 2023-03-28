@@ -8,9 +8,8 @@
 
     DECLARE FUNCTION Mouse.Clicked% ()
     DECLARE FUNCTION Mouse.InArea% (TargetArea AS ANY)
-    DECLARE FUNCTION Mouse.X% ()
-    DECLARE FUNCTION Mouse.Y% ()
     DECLARE SUB Mouse.Hide ()
+    DECLARE SUB Mouse.Poll ()
     DECLARE SUB Mouse.SetPos (XPos%, YPos%)
     DECLARE SUB Mouse.Show ()
 
@@ -162,4 +161,6 @@
   COMMON SHARED SystemTheme AS ThemeType
 
   COMMON SHARED scrHeight AS INTEGER
+  COMMON SHARED MouseX as INTEGER
+  COMMON SHARED MouseY as INTEGER
 

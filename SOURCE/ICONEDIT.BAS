@@ -366,8 +366,9 @@ SUB IconEdit.Main (IconToLoad AS STRING)
         Key$ = LCASE$(INKEY$)
         
         IF Mouse.InArea(txtDrawArea.Pos) THEN
-            CursorX = (Mouse.X - (txtDrawArea.Pos.Left + 7)) / PixelSize
-            CursorY = (Mouse.Y - (txtDrawArea.Pos.Top + 7)) / PixelSize
+            Mouse.Poll
+            CursorX = (MouseX - (txtDrawArea.Pos.Left + 7)) / PixelSize
+            CursorY = (MouseY - (txtDrawArea.Pos.Top + 7)) / PixelSize
             IF CursorX < 0 THEN CursorX = 0
             IF CursorY < 0 THEN CursorY = 0
             IF CursorX > 31 THEN CursorX = 31
@@ -523,8 +524,9 @@ SUB IconEdit.Main (IconToLoad AS STRING)
                   IconEdit.DrawPixel CursorX, CursorY, DrawColor, False
 
                   IF Mouse.InArea(txtDrawArea.Pos) THEN
-                      CursorX = (Mouse.X - (txtDrawArea.Pos.Left + 7)) / PixelSize
-                      CursorY = (Mouse.Y - (txtDrawArea.Pos.Top + 7)) / PixelSize
+                      Mouse.Poll
+                      CursorX = (MouseX - (txtDrawArea.Pos.Left + 7)) / PixelSize
+                      CursorY = (MouseY - (txtDrawArea.Pos.Top + 7)) / PixelSize
                       IF CursorX < 0 THEN CursorX = 0
                       IF CursorY < 0 THEN CursorY = 0
                       IF CursorX > 31 THEN CursorX = 31

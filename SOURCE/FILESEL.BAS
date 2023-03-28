@@ -334,8 +334,9 @@ FUNCTION File.MouseSelection (TargetList AS TextboxType)
 	DIM ClickedX, ClickedY, ClickedItem
 	DIM TotalItems, ListStartPos, ListSelection
 
-	ClickedX = Mouse.X - TargetList.Pos.Left
-	ClickedY = Mouse.Y - TargetList.Pos.Top
+	Mouse.Poll
+	ClickedX = MouseX - TargetList.Pos.Left
+	ClickedY = MouseY - TargetList.Pos.Top
 
 	'Retrieve values to temp variables - so both lists can be handled by same
 	'code

@@ -186,6 +186,17 @@ FUNCTION Mouse.InArea (TargetArea AS PosType)
 	
 END FUNCTION
 
+SUB Mouse.Poll ()
+	'Stores mouse coordinates in shared variables MouseX and MouseY
+
+	DIM regs AS RegType
+	regs.ax = 3
+	INTERRUPT 51, regs, regs
+	MouseX = regs.cx
+	MouseY = regs.dx
+
+END SUB
+
 SUB Mouse.SetPos (XPos, YPos)
 
 	DIM regs AS RegType
@@ -203,27 +214,6 @@ SUB Mouse.Show ()
 	INTERRUPT 51, regs, regs
 
 END SUB
-
-FUNCTION Mouse.X ()
-	'Returns the X coordinate of the mouse.
-
-	DIM regs AS RegType
-
-	regs.ax = 3
-	INTERRUPT 51, regs, regs
-	Mouse.X = regs.cx
-
-END FUNCTION
-
-FUNCTION Mouse.Y ()
-	'Returns the Y coordinate of the mouse.
-
-	DIM regs AS RegType
-	regs.ax = 3
-	INTERRUPT 51, regs, regs
-	Mouse.Y = regs.dx
-
-END FUNCTION
 
 FUNCTION Obj.BtnClick (TargetBtn AS ButtonType)
 

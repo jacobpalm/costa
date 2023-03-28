@@ -819,30 +819,31 @@ SUB Desk.LinkMove (TargetLink)
     IF Key$ = CHR$(27) THEN EXIT SUB
     IF Key$ = CHR$(13) THEN EXIT DO
 
+    Mouse.Poll
     IF Key$ = CHR$(0) + "k" THEN
-        KeyX = Mouse.X - 15
-        KeyY = Mouse.Y
+        KeyX = MouseX - 15
+        KeyY = MouseY
         IF KeyX < 16 THEN KeyX = 16
         IF KeyY < 48 THEN KeyY = 48
         Mouse.SetPos KeyX, KeyY
     END IF
     IF Key$ = CHR$(0) + "m" THEN
-        KeyX = Mouse.X + 15
-        KeyY = Mouse.Y
+        KeyX = MouseX + 15
+        KeyY = MouseY
         IF KeyX > 624 THEN KeyX = 624
         IF KeyY > scrHeight - 16 THEN KeyY = scrHeight - 16
         Mouse.SetPos KeyX, KeyY
     END IF
     IF Key$ = CHR$(0) + "h" THEN
-        KeyY = Mouse.Y - 15
-        KeyX = Mouse.X
+        KeyY = MouseY - 15
+        KeyX = MouseX
         IF KeyY < 46 THEN KeyY = 46
         IF KeyX < 16 THEN KeyX = 16
         Mouse.SetPos KeyX, KeyY
     END IF
     IF Key$ = CHR$(0) + "p" THEN
-        KeyY = Mouse.Y + 15
-        KeyX = Mouse.X
+        KeyY = MouseY + 15
+        KeyX = MouseX
         IF KeyY > scrHeight - 16 THEN KeyY = scrHeight - 16
         IF KeyX > 624 THEN KeyX = 624
         Mouse.SetPos KeyX, KeyY
@@ -850,13 +851,13 @@ SUB Desk.LinkMove (TargetLink)
 
     Sys.Delay .01
     WAIT &H3DA, 8
-    IF NOT FlickerX = Mouse.X OR NOT FlickerY = Mouse.Y THEN
+    IF NOT FlickerX = MouseX OR NOT FlickerY = MouseY THEN
       Mouse.Hide
       PUT (LastX - 16, LastY - 16), LinkIconBack, PSET
-      LastX = Mouse.X
-      LastY = Mouse.Y
-      FlickerX = Mouse.X
-      FlickerY = Mouse.Y
+      LastX = MouseX
+      LastY = MouseY
+      FlickerX = MouseX
+      FlickerY = MouseY
 
       IF LastX < 16 THEN LastX = 16
       IF LastY < 48 THEN LastY = 48
@@ -1111,8 +1112,9 @@ Desk.RedrawAll:
     IF Obj.BtnClick(btnAboutCosta) THEN Key$ = "a"
     IF Obj.BtnClick(btnExitCosta) THEN Key$ = "e"
 
-    IF Mouse.Clicked AND Mouse.Y > 32 THEN
-      ClickedB = Mouse.Clicked: ClickedX = Mouse.X: ClickedY = Mouse.Y
+    Mouse.Poll
+    IF Mouse.Clicked AND MouseY > 32 THEN
+      ClickedB = Mouse.Clicked: ClickedX = MouseX: ClickedY = MouseY
       
       'The mouse was clicked. Before checking if a desktop link was clicked,
       'check to see if any desktop links are present
