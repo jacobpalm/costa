@@ -1,3 +1,4 @@
+DECLARE SUB Theme.DrawPreview (ThemeFile AS STRING)
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -14,7 +15,12 @@ STACK 5120
 
 DIM SHARED ThemeFile$, ThemeName$, ThemeAuthor$
 DIM SHARED OriginalTheme$
-DIM SHARED ThemeList() AS STRING
+
+DIM SHARED thmClrDesktop, thmClrDesktopText, thmClrWindow
+DIM SHARED thmClrButton, thmClrTextbox, thmClrTextboxText
+DIM SHARED thmClrWindowText, thmClrTitlebar, thmClrTitlebarText
+DIM SHARED thmClr3DLight, thmClr3DShadow, thmClrSelect, thmClrSelectText
+
 
 'Shared because it is used in Theme.DrawIndicator
 DIM SHARED btnColor(0 TO 15) AS ButtonType
@@ -46,6 +52,108 @@ SUB Theme.DrawIndicator (ActiveColor)
 
 END SUB
 
+SUB Theme.DrawPreview (ThemeFile AS STRING)
+
+    DIM OriginalTheme AS STRING * 8
+
+    DIM frmPreview AS FrameType
+    DIM winPreview AS WindowType
+    DIM txtPreview AS TextboxType, txtPreviewText AS STRING
+    DIM btnPreview1 AS ButtonType, btnPreview2 AS ButtonType
+    DIM btnPreview3 AS ButtonType
+    DIM imgPreview AS ImageType
+    DIM txtListPreview AS TextboxType
+
+    Obj.SetSize frmPreview.Pos, 12, 42, 410, 293
+    Obj.DrawFrm frmPreview, 15, SystemTheme.Shadow
+
+    IF LEN(ThemeFile) THEN
+        OriginalTheme = UserSettings.ThemeFile
+        UserSettings.ThemeFile = ThemeFile
+        Sys.LoadTheme
+
+        ThemeName$ = RTRIM$(SystemTheme.Name)
+        ThemeAuthor$ = RTRIM$(SystemTheme.Author)
+        thmClrDesktop = SystemTheme.Desktop
+        thmClrDesktopText = SystemTheme.DesktopText
+        thmClrWindow = SystemTheme.Window
+        thmClrButton = SystemTheme.Button
+        thmClrTextbox = SystemTheme.Textbox
+        thmClrTextboxText = SystemTheme.TextboxText
+        thmClrWindowText = SystemTheme.WindowText
+        thmClrTitlebar = SystemTheme.TitleBar
+        thmClrTitlebarText = SystemTheme.TitleBarText
+        thmClr3DLight = SystemTheme.Light
+        thmClr3DShadow = SystemTheme.Shadow
+        thmClrSelect = SystemTheme.Select
+        thmClrSelectText = SystemTheme.SelectText
+    ELSE
+        SystemTheme.Desktop = thmClrDesktop
+        SystemTheme.DesktopText = thmClrDesktopText
+        SystemTheme.Window = thmClrWindow
+        SystemTheme.Button = thmClrButton
+        SystemTheme.Textbox = thmClrTextbox
+        SystemTheme.TextboxText = thmClrTextboxText
+        SystemTheme.WindowText = thmClrWindowText
+        SystemTheme.TitleBar = thmClrTitlebar
+        SystemTheme.TitleBarText = thmClrTitlebarText
+        SystemTheme.Light = thmClr3DLight
+        SystemTheme.Shadow = thmClr3DShadow
+        SystemTheme.Select = thmClrSelect
+        SystemTheme.SelectText = thmClrSelectText
+    END IF
+
+    Obj.SetSize winPreview.Pos, frmPreview.Pos.Left + ((frmPreview.Pos.Width - 260) / 2), frmPreview.Pos.Top + 65, 260, 127
+    Obj.SetSize txtPreview.Pos, winPreview.Pos.Left + 12, winPreview.Pos.Top + 56, 236, 19
+    Obj.SetSize btnPreview1.Pos, winPreview.Pos.Left + 14, winPreview.Pos.Top + 93, 111, 22
+    Obj.SetSize btnPreview2.Pos, winPreview.Pos.Left + 133, winPreview.Pos.Top + 93, 111, 22
+    Obj.SetSize btnPreview3.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width - 96, frmPreview.Pos.Top + 3, 92, 22
+    Obj.SetSize txtListPreview.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width - 182, frmPreview.Pos.Top + frmPreview.Pos.Height - 82, 166, 66
+    Obj.SetSize imgPreview.Pos, frmPreview.Pos.Left + 16, frmPreview.Pos.Top + frmPreview.Pos.Height - 48, sizeRetain, sizeRetain
+
+    txtPreviewText = "Textbox contents"
+    btnPreview1.Caption = "Button up"
+    btnPreview2.Caption = "Button down"
+    btnPreview3.Caption = "Menu button"
+    imgPreview.ImageFile = "LOGO"
+
+    Mouse.Hide
+    LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 2)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + frmPreview.Pos.Height - 2), SystemTheme.Desktop, BF
+    LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 2)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + 27), SystemTheme.Window, BF
+    LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 28)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + 28), SystemTheme.Shadow
+    LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 29)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + 29), 0
+    Mouse.Show
+
+    Obj.DrawWin winPreview
+    Obj.DrawTxt txtPreview, txtPreviewText, True
+    Obj.DrawBtn btnPreview1, False
+    Obj.DrawBtn btnPreview2, True
+    Obj.DrawBtn btnPreview3, False
+
+    Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 14, SystemTheme.WindowText, fontHeading
+    Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 30, SystemTheme.WindowText, FontNormal
+    Font.Print "Preview link", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 4, SystemTheme.DesktopText, fontHeading
+    Font.Print "preview.exe", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 18, SystemTheme.DesktopText, FontNormal
+
+    Obj.DrawImg imgPreview
+
+    Obj.DrawTxt txtListPreview, "", False
+    Mouse.Hide
+    LINE (txtListPreview.Pos.Left + 2, txtListPreview.Pos.Top + 15)-(txtListPreview.Pos.Left + txtListPreview.Pos.Width - 2, txtListPreview.Pos.Top + 27), SystemTheme.Select, BF
+    Mouse.Show
+    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5, SystemTheme.TextboxText, FontSystem
+    Font.Print "Selected item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 12, SystemTheme.SelectText, FontSystem
+    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 24, SystemTheme.TextboxText, FontSystem
+    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 36, SystemTheme.TextboxText, FontSystem
+    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 48, SystemTheme.TextboxText, FontSystem
+
+    IF LEN(ThemeFile) THEN
+        UserSettings.ThemeFile = OriginalTheme
+        Sys.LoadTheme
+    END IF
+    
+END SUB
+
 ' =========================================================================
 '          NAME: Theme.Edit()
 '    PARAMETERS: ThmFile - string containing filename of theme to edit,
@@ -58,45 +166,34 @@ END SUB
 ' =========================================================================
 SUB Theme.Edit (BYVAL ThmFile AS STRING)
 
-    DIM frmPreview AS FrameType
     DIM btnSave AS ButtonType, btnSaveAs AS ButtonType
     DIM btnExit AS ButtonType, btnObject AS ButtonType
     DIM txtThemeName AS TextboxType, txtThemeAuthor AS TextboxType
 
-    DIM thmClrDesktop, thmClrDesktopText, thmClrWindow
-    DIM thmClrButton, thmClrTextbox, thmClrTextboxText
-    DIM thmClrWindowText, thmClrTitlebar, thmClrTitlebarText
-    DIM thmClr3DLight, thmClr3DShadow, thmClrSelect, thmClrSelectText
     DIM I, YPos, XPos, SelectedObject, ThemeChanged
     DIM TargetFile$, OriginalText$
 
-    DIM OrigWindowColor, OrigWindowTextColor
-
     Mouse.Hide
-    LINE (0, 29)-(639, 349), SystemTheme.Window, BF
+    LINE (430, 29)-(639, 349), SystemTheme.Window, BF
+    LINE (201, 2)-(293, 24), SystemTheme.Window, BF
     Mouse.Show
 
     ThemeFile$ = ThmFile
 
-    frmPreview.Pos.Left = 12
-    frmPreview.Pos.Top = 42
-    frmPreview.Pos.Width = 410
-    frmPreview.Pos.Height = 293
-
-    Obj.SetSize btnSave.Pos, 2, 2, 92, 22
+    Obj.SetSize btnSave.Pos, 3, 2, 92, 22
     btnSave.Caption = "õSave"
 
-    Obj.SetSize btnSaveAs.Pos, 101, 2, 92, 22
+    Obj.SetSize btnSaveAs.Pos, 102, 2, 92, 22
     btnSaveAs.Caption = "Save õas"
 
     Obj.SetSize btnExit.Pos, 545, 2, 92, 22
     btnExit.Caption = "Eõxit"
 
-    Obj.SetSize txtThemeName.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width + 12, frmPreview.Pos.Top + 17, 194, 0
+    Obj.SetSize txtThemeName.Pos, 434, 59, 194, 0
     txtThemeName.MaxLen = 25
-    Obj.SetSize txtThemeAuthor.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width + 12, txtThemeName.Pos.Top + 48, 194, 0
+    Obj.SetSize txtThemeAuthor.Pos, 434, txtThemeName.Pos.Top + 48, 194, 0
     txtThemeAuthor.MaxLen = 25
-    Obj.SetSize btnObject.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width + 12, txtThemeAuthor.Pos.Top + 48, 194, 0
+    Obj.SetSize btnObject.Pos, 434, txtThemeAuthor.Pos.Top + 48, 194, 0
     btnObject.Caption = "Desktop"
     SelectedObject = 1
 
@@ -112,48 +209,22 @@ SUB Theme.Edit (BYVAL ThmFile AS STRING)
       XPos = XPos + 25
     NEXT
 
-    OrigWindowColor = SystemTheme.Window
-    OrigWindowTextColor = SystemTheme.WindowText
-    
-    'Load data about theme to edit
-    UserSettings.ThemeFile = ThemeFile$
-    Sys.LoadTheme
-    ThemeName$ = RTRIM$(SystemTheme.Name)
-    ThemeAuthor$ = RTRIM$(SystemTheme.Author)
-    thmClrDesktop = SystemTheme.Desktop
-    thmClrDesktopText = SystemTheme.DesktopText
-    thmClrWindow = SystemTheme.Window
-    thmClrButton = SystemTheme.Button
-    thmClrTextbox = SystemTheme.Textbox
-    thmClrTextboxText = SystemTheme.TextboxText
-    thmClrWindowText = SystemTheme.WindowText
-    thmClrTitlebar = SystemTheme.TitleBar
-    thmClrTitlebarText = SystemTheme.TitleBarText
-    thmClr3DLight = SystemTheme.Light
-    thmClr3DShadow = SystemTheme.Shadow
-    thmClrSelect = SystemTheme.Select
-    thmClrSelectText = SystemTheme.SelectText
-
-    UserSettings.ThemeFile = OriginalTheme$
-    Sys.LoadTheme
-
     Obj.DrawBtn btnSaveAs, False
     Obj.DrawBtn btnSave, False
     Obj.DrawBtn btnExit, False
     Obj.DrawTxt txtThemeName, ThemeName$, False
     Obj.DrawTxt txtThemeAuthor, ThemeAuthor$, False
     Obj.DrawBtn btnObject, False
-    Obj.DrawFrm frmPreview, 15, SystemTheme.Shadow
     FOR I = 0 TO 15
       Obj.DrawBtn btnColor(I), True
       Mouse.Hide
       LINE (btnColor(I).Pos.Left + 2, btnColor(I).Pos.Top + 2)-(btnColor(I).Pos.Left + btnColor(I).Pos.Width - 2, btnColor(I).Pos.Top + btnColor(I).Pos.Height - 2), I, BF
       Mouse.Show
     NEXT
-    Font.Print "Theme õname:", txtThemeName.Pos.Left, txtThemeName.Pos.Top - 16, SystemTheme.WindowText, 1
-    Font.Print "Theme aõuthor:", txtThemeAuthor.Pos.Left, txtThemeAuthor.Pos.Top - 16, SystemTheme.WindowText, 1
-    Font.Print "õObject selected:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, btnObject.Pos.Top - 16, SystemTheme.WindowText, 1
-    Font.Print "õColor for object:", frmPreview.Pos.Left + frmPreview.Pos.Width + 12, btnColor(0).Pos.Top - 16, SystemTheme.WindowText, 1
+    Font.Print "Theme õname:", txtThemeName.Pos.Left, txtThemeName.Pos.Top - 16, SystemTheme.WindowText, fontHeading
+    Font.Print "Theme aõuthor:", txtThemeAuthor.Pos.Left, txtThemeAuthor.Pos.Top - 16, SystemTheme.WindowText, fontHeading
+    Font.Print "õObject selected:", 434, btnObject.Pos.Top - 16, SystemTheme.WindowText, fontHeading
+    Font.Print "õColor for object:", 434, btnColor(0).Pos.Top - 16, SystemTheme.WindowText, fontHeading
 
     'Color indicator
     Mouse.Hide
@@ -161,88 +232,7 @@ SUB Theme.Edit (BYVAL ThmFile AS STRING)
     LINE (btnColor(thmClrDesktop).Pos.Left + 5, btnColor(thmClrDesktop).Pos.Top + 5)-(btnColor(thmClrDesktop).Pos.Left + btnColor(thmClrDesktop).Pos.Width - 5, btnColor(thmClrDesktop).Pos.Top + btnColor(thmClrDesktop).Pos.Height - 5), 15, B
     Mouse.Show
 
-    'The rest of the controls are used in the preview
-    DIM winPreview AS WindowType
-    DIM txtPreview AS TextboxType, txtPreviewText AS STRING
-    DIM btnPreview1 AS ButtonType, btnPreview2 AS ButtonType
-    DIM btnPreview3 AS ButtonType
-    DIM imgPreview AS ImageType
-    DIM txtListPreview AS TextboxType
-
-    Obj.SetSize winPreview.Pos, frmPreview.Pos.Left + ((frmPreview.Pos.Width - 260) / 2), frmPreview.Pos.Top + 65, 260, 127
-    
-    txtPreview.Pos.Left = winPreview.Pos.Left + 12
-    txtPreview.Pos.Top = winPreview.Pos.Top + 56
-    txtPreview.Pos.Width = 236
-    txtPreview.Pos.Height = 19
-    txtPreviewText = "Textbox contents"
-    
-    Obj.SetSize btnPreview1.Pos, winPreview.Pos.Left + 14, winPreview.Pos.Top + 93, 111, 22
-    btnPreview1.Caption = "Button up"
-
-    Obj.SetSize btnPreview2.Pos, winPreview.Pos.Left + 133, winPreview.Pos.Top + 93, 111, 22
-    btnPreview2.Caption = "Button down"
-
-    Obj.SetSize btnPreview3.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width - 96, frmPreview.Pos.Top + 3, 92, 22
-    btnPreview3.Caption = "Menu button"
-
-    imgPreview.Pos.Left = frmPreview.Pos.Left + 16
-    imgPreview.Pos.Top = frmPreview.Pos.Top + frmPreview.Pos.Height - 48
-    imgPreview.ImageFile = "LOGO"
-
-    txtListPreview.Pos.Width = 116
-    txtListPreview.Pos.Height = 66
-    txtListPreview.Pos.Left = frmPreview.Pos.Left + frmPreview.Pos.Width - txtListPreview.Pos.Width - 16
-    txtListPreview.Pos.Top = frmPreview.Pos.Top + frmPreview.Pos.Height - txtListPreview.Pos.Height - 16
-
     DIM Key$
-UpdateEditPreview:
-
-    SystemTheme.Desktop = thmClrDesktop
-    SystemTheme.DesktopText = thmClrDesktopText
-    SystemTheme.Window = thmClrWindow
-    SystemTheme.Button = thmClrButton
-    SystemTheme.Textbox = thmClrTextbox
-    SystemTheme.TextboxText = thmClrTextboxText
-    SystemTheme.WindowText = thmClrWindowText
-    SystemTheme.TitleBar = thmClrTitlebar
-    SystemTheme.TitleBarText = thmClrTitlebarText
-    SystemTheme.Light = thmClr3DLight
-    SystemTheme.Shadow = thmClr3DShadow
-    SystemTheme.Select = thmClrSelect
-    SystemTheme.SelectText = thmClrSelectText
-
-    Mouse.Hide
-    LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 2)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + frmPreview.Pos.Height - 2), SystemTheme.Desktop, BF
-    LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 2)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + 27), SystemTheme.Window, BF
-    LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 28)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + 28), SystemTheme.Shadow
-    LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 29)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + 29), 0
-    Mouse.Show
-
-    Obj.DrawWin winPreview
-    Obj.DrawTxt txtPreview, txtPreviewText, True
-    Obj.DrawBtn btnPreview1, False
-    Obj.DrawBtn btnPreview2, True
-    Obj.DrawBtn btnPreview3, False
-    
-    Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 14, SystemTheme.WindowText, FontHeading
-    Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 30, SystemTheme.WindowText, FontNormal
-    Font.Print "Preview link", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 4, SystemTheme.DesktopText, FontHeading
-    Font.Print "preview.exe", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 18, SystemTheme.DesktopText, FontNormal
-
-    Obj.DrawImg imgPreview
-    
-    Obj.DrawTxt txtListPreview, "", False
-    Mouse.Hide
-    LINE (txtListPreview.Pos.Left + 2, txtListPreview.Pos.Top + 15)-(txtListPreview.Pos.Left + txtListPreview.Pos.Width - 2, txtListPreview.Pos.Top + 27), SystemTheme.Select, BF
-    Mouse.Show
-    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5, SystemTheme.TextboxText, FontSystem
-    Font.Print "Selected item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 12, SystemTheme.SelectText, FontSystem
-    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 24, SystemTheme.TextboxText, FontSystem
-    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 36, SystemTheme.TextboxText, FontSystem
-    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 48, SystemTheme.TextboxText, FontSystem
-
-    Sys.LoadTheme
 
 TopOfLoop:
     DO
@@ -282,7 +272,7 @@ TopOfLoop:
                 thmClrTitlebarText = I
             END SELECT
             Theme.DrawIndicator I
-            GOTO UpdateEditPreview
+            Theme.DrawPreview ""
           END IF
         END IF
       NEXT
@@ -344,7 +334,7 @@ TopOfLoop:
             Theme.DrawIndicator thmClrTitlebarText
         END SELECT
         ThemeChanged = True
-        GOTO UpdateEditPreview
+        Theme.DrawPreview ""
       END IF
 
       IF Obj.BtnClick(btnObject) OR Key$ = "o" THEN
@@ -545,11 +535,11 @@ END SUB
 ' =========================================================================
 FUNCTION Theme.Select () AS STRING
 
-    DIM frmPreview AS FrameType
     DIM btnBack AS ButtonType, btnNext AS ButtonType
     DIM btnEdit AS ButtonType, btnCancel AS ButtonType
 
-    DIM OrigWindowColor, OrigWindowTextColor
+    DIM UpdatePreview
+    DIM ThemeList() AS STRING
 
     Mouse.Hide
     LINE (0, 29)-(639, 349), SystemTheme.Window, BF
@@ -577,109 +567,32 @@ FUNCTION Theme.Select () AS STRING
       EXIT FUNCTION
     END IF
 
-    frmPreview.Pos.Left = 12
-    frmPreview.Pos.Top = 73
-    frmPreview.Pos.Width = 615
-    frmPreview.Pos.Height = 233
+    Obj.SetSize btnBack.Pos, 3, 2, 92, 22
+    btnBack.Caption = "õPrevious"
 
-    Obj.SetSize btnBack.Pos, frmPreview.Pos.Left, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 45, 22
-    btnBack.Caption = "<-"
+    Obj.SetSize btnNext.Pos, 102, 2, 92, 22
+    btnNext.Caption = "õNext"
 
-    Obj.SetSize btnNext.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width - 45, frmPreview.Pos.Top + frmPreview.Pos.Height + 10, 45, 22
-    btnNext.Caption = "->"
-
-    Obj.SetSize btnEdit.Pos, 2, 2, 92, 22
+    Obj.SetSize btnEdit.Pos, 201, 2, 92, 22
     btnEdit.Caption = "õEdit"
 
     Obj.SetSize btnCancel.Pos, 545, 2, 92, 22
-    btnCancel.Caption = "õClose"
+    btnCancel.Caption = "Eõxit"
 
-    Obj.DrawBtn btnBack, False
     Obj.DrawBtn btnEdit, False
     Obj.DrawBtn btnCancel, False
+    Obj.DrawBtn btnBack, False
     Obj.DrawBtn btnNext, False
-    Obj.DrawFrm frmPreview, 15, SystemTheme.Shadow
-    Font.Print "Theme name:", frmPreview.Pos.Left, 43, SystemTheme.WindowText, 1
-    Font.Print "Theme author:", frmPreview.Pos.Left, 58, SystemTheme.WindowText, 1
+
+    Font.Print "Theme name:", 434, 43, SystemTheme.WindowText, fontHeading
+    Font.Print "Theme author:", 434, 91, SystemTheme.WindowText, fontHeading
     
-    'The rest of the controls are used in the preview
-    DIM winPreview AS WindowType
-    DIM txtPreview AS TextboxType, txtPreviewText AS STRING
-    DIM btnPreview1 AS ButtonType, btnPreview2 AS ButtonType
-    DIM btnPreview3 AS ButtonType
-    DIM imgPreview AS ImageType
-    DIM txtListPreview AS TextboxType
+    Theme.DrawPreview ThemeList(ActiveTheme)
 
-    Obj.SetSize winPreview.Pos, frmPreview.Pos.Left + ((frmPreview.Pos.Width - 260) / 2), frmPreview.Pos.Top + 65, 260, 127
-    
-    txtPreview.Pos.Left = winPreview.Pos.Left + 12
-    txtPreview.Pos.Top = winPreview.Pos.Top + 56
-    txtPreview.Pos.Width = 236
-    txtPreview.Pos.Height = 19
-    txtPreviewText = "Textbox contents"
-    
-    Obj.SetSize btnPreview1.Pos, winPreview.Pos.Left + 14, winPreview.Pos.Top + 93, 111, 22
-    btnPreview1.Caption = "Button up"
+    Font.Print ThemeName$, 434, 59, SystemTheme.WindowText, FontNormal
+    Font.Print ThemeAuthor$, 434, 107, SystemTheme.WindowText, FontNormal
 
-    Obj.SetSize btnPreview2.Pos, winPreview.Pos.Left + 133, winPreview.Pos.Top + 93, 111, 22
-    btnPreview2.Caption = "Button down"
-
-    Obj.SetSize btnPreview3.Pos, frmPreview.Pos.Left + frmPreview.Pos.Width - 96, frmPreview.Pos.Top + 3, 92, 22
-    btnPreview3.Caption = "Menu button"
-
-    imgPreview.Pos.Left = frmPreview.Pos.Left + 16
-    imgPreview.Pos.Top = frmPreview.Pos.Top + frmPreview.Pos.Height - 48
-    imgPreview.ImageFile = "LOGO"
-
-    txtListPreview.Pos.Width = 116
-    txtListPreview.Pos.Height = 66
-    txtListPreview.Pos.Left = frmPreview.Pos.Left + frmPreview.Pos.Width - txtListPreview.Pos.Width - 16
-    txtListPreview.Pos.Top = frmPreview.Pos.Top + frmPreview.Pos.Height - txtListPreview.Pos.Height - 16
-    
-    OrigWindowColor = SystemTheme.Window
-    OrigWindowTextColor = SystemTheme.WindowText
-
-    UserSettings.ThemeFile = ThemeList(ActiveTheme)
-    Sys.LoadTheme
-                       
     DIM Key$
-UpdatePreview:
-    Mouse.Hide
-    LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 2)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + frmPreview.Pos.Height - 2), SystemTheme.Desktop, BF
-    LINE (frmPreview.Pos.Left + 99, 42)-(frmPreview.Pos.Left + 350, 71), OrigWindowColor, BF
-    LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 2)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + 27), SystemTheme.Window, BF
-    LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 28)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + 28), SystemTheme.Shadow
-    LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 29)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + 29), 0
-    Mouse.Show
-
-    Font.Print RTRIM$(SystemTheme.Name), frmPreview.Pos.Left + 100, 43, OrigWindowTextColor, FontNormal
-    Font.Print RTRIM$(SystemTheme.Author), frmPreview.Pos.Left + 100, 58, OrigWindowTextColor, FontNormal
-    
-    Obj.DrawWin winPreview
-    Obj.DrawTxt txtPreview, txtPreviewText, True
-    Obj.DrawBtn btnPreview1, False
-    Obj.DrawBtn btnPreview2, True
-    Obj.DrawBtn btnPreview3, False
-    
-    Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 14, SystemTheme.WindowText, FontHeading
-    Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 30, SystemTheme.WindowText, FontNormal
-    Font.Print "Preview link", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 4, SystemTheme.DesktopText, FontHeading
-    Font.Print "preview.exe", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 18, SystemTheme.DesktopText, FontNormal
-
-    Obj.DrawImg imgPreview
-    
-    Obj.DrawTxt txtListPreview, "", False
-    Mouse.Hide
-    LINE (txtListPreview.Pos.Left + 2, txtListPreview.Pos.Top + 15)-(txtListPreview.Pos.Left + txtListPreview.Pos.Width - 2, txtListPreview.Pos.Top + 27), SystemTheme.Select, BF
-    Mouse.Show
-    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5, SystemTheme.TextboxText, FontSystem
-    Font.Print "Selected item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 12, SystemTheme.SelectText, FontSystem
-    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 24, SystemTheme.TextboxText, FontSystem
-    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 36, SystemTheme.TextboxText, FontSystem
-    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 48, SystemTheme.TextboxText, FontSystem
-
-    UserSettings.ThemeFile = OriginalTheme$
-    Sys.LoadTheme
 
     DO
       Key$ = LCASE$(INKEY$)
@@ -689,26 +602,33 @@ UpdatePreview:
         EXIT FUNCTION
       END IF
 
-      IF Obj.BtnClick(btnCancel) OR Key$ = "c" OR Key$ = CHR$(27) THEN
+      IF Obj.BtnClick(btnCancel) OR Key$ = "x" OR Key$ = CHR$(27) THEN
         Theme.Select = ""
         EXIT FUNCTION
       END IF
 
 
-      IF Obj.BtnClick(btnNext) OR Key$ = CHR$(0) + "m" THEN
+      IF Obj.BtnClick(btnNext) OR Key$ = "n" OR Key$ = CHR$(0) + "m" THEN
         ActiveTheme = ActiveTheme + 1
         IF ActiveTheme > UBOUND(ThemeList) THEN ActiveTheme = 0
-        UserSettings.ThemeFile = ThemeList(ActiveTheme)
-        Sys.LoadTheme
-        GOTO UpdatePreview
+        UpdatePreview = True
       END IF
 
-      IF Obj.BtnClick(btnBack) OR Key$ = CHR$(0) + "k" THEN
+      IF Obj.BtnClick(btnBack) OR Key$ = "p" OR Key$ = CHR$(0) + "k" THEN
         ActiveTheme = ActiveTheme - 1
         IF ActiveTheme < 0 THEN ActiveTheme = UBOUND(ThemeList)
-        UserSettings.ThemeFile = ThemeList(ActiveTheme)
-        Sys.LoadTheme
-        GOTO UpdatePreview
+        UpdatePreview = True
+      END IF
+
+      IF UpdatePreview THEN
+        Mouse.Hide
+        LINE (433, 57)-(639, 70), SystemTheme.Window, BF
+        LINE (433, 105)-(639, 118), SystemTheme.Window, BF
+        Mouse.Show
+        Theme.DrawPreview ThemeList(ActiveTheme)
+        Font.Print ThemeName$, 434, 59, SystemTheme.WindowText, FontNormal
+        Font.Print ThemeAuthor$, 434, 107, SystemTheme.WindowText, FontNormal
+        UpdatePreview = False
       END IF
 
     LOOP
