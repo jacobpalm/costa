@@ -1,3 +1,4 @@
+DECLARE SUB Tic.PrintStatus ()
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -15,6 +16,9 @@ DECLARE SUB Tic.SaveState ()
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
+CONST PlayerX = 10
+CONST PlayerO = NOT PlayerX
+
 CONST SoundX = 1
 CONST SoundY = 2
 CONST SoundIllegalMove = 3
@@ -27,6 +31,7 @@ CONST msgWin = 1
 CONST msgDraw = 2
 CONST msgAITurn = 3
 CONST msgPlayerTurn = 4
+CONST msgNewGame = 5
 
 TYPE FieldType
 	Pos AS PosType
@@ -37,7 +42,6 @@ DIM SHARED PlayerTurn AS INTEGER
 DIM SHARED TotalTurns AS INTEGER
 DIM SHARED EnableAI AS INTEGER
 DIM SHARED EnableAudio AS INTEGER
-DIM SHARED CircleAspect AS INTEGER
 DIM SHARED FieldClicked AS INTEGER
 DIM SHARED PlayField(1 TO 3, 1 TO 3) AS INTEGER
 DIM SHARED txtPlayField(1 TO 3, 1 TO 3) AS FieldType
@@ -181,8 +185,7 @@ END FUNCTION
 
 SUB Tic.DrawBackground ()
 	
-	DIM LX, LY
-	LY = 29
+	DIM LX
 	Mouse.Hide
 	
 	LINE (0, 29)-(639, 349), 2, BF
@@ -246,9 +249,9 @@ SUB Tic.DrawXO (FieldRow, FieldCol, FieldValue)
 		DIM XCoord, YCoord
 		XCoord = txtPlayField(FieldRow, FieldCol).Pos.Left
 		YCoord = txtPlayField(FieldRow, FieldCol).Pos.Top
-
+		
 		SELECT CASE FieldValue
-			CASE 1
+			CASE PlayerX
 				Mouse.Hide
 				LINE (XCoord + 11, YCoord + 12)-(XCoord + 48, YCoord + 49), 0
 				LINE (XCoord + 11, YCoord + 13)-(XCoord + 47, YCoord + 49), 0
@@ -259,11 +262,11 @@ SUB Tic.DrawXO (FieldRow, FieldCol, FieldValue)
 				LINE (XCoord + 12, YCoord + 49)-(XCoord + 49, YCoord + 12), 0
 				LINE (XCoord + 13, YCoord + 49)-(XCoord + 49, YCoord + 13), 0
 				Mouse.Show
-			CASE 2
+			CASE PlayerO
 				Mouse.Hide
-				CIRCLE (XCoord + 30, YCoord + 30), 19, 0, , , CircleAspect
-				CIRCLE (XCoord + 30, YCoord + 30), 18, 0, , , CircleAspect
-				CIRCLE (XCoord + 30, YCoord + 30), 17, 0, , , CircleAspect
+				CIRCLE (XCoord + 30, YCoord + 30), 19, 0, , , 1
+				CIRCLE (XCoord + 30, YCoord + 30), 18, 0, , , 1
+				CIRCLE (XCoord + 30, YCoord + 30), 17, 0, , , 1
 				PSET (XCoord + 14, YCoord + 23), 0
 				PSET (XCoord + 15, YCoord + 21), 0
 				PSET (XCoord + 21, YCoord + 15), 0
@@ -290,68 +293,6 @@ SUB Tic.DrawXO (FieldRow, FieldCol, FieldValue)
 END SUB
 
 ' =========================================================================
-'          NAME: Tic.LoadState()
-'    PARAMETERS: None
-'       RETURNS: Nothing
-'       ASSUMES: Nothing
-'   CALLED FROM: TICTAC.BAS
-' -------------------------------------------------------------------------
-'   DESCRIPTION: Loads game state from config file. Default values are used
-'                to create a new game, if one or more settings are missing.
-' =========================================================================
-FUNCTION Tic.LoadState ()
-
-	IF NOT File.Exists("DATA\CONFIG\TICTAC" + LTRIM$(STR$(ProfileID)) + ".DAT") THEN
-		Tic.LoadState = False
-		GOTO SanityChecks
-	END IF
-
-	ON LOCAL ERROR RESUME NEXT
-
-	DIM StateFile, X, Y, SoundEnabled
-	StateFile = FREEFILE
-	OPEN "DATA\CONFIG\TICTAC" + LTRIM$(STR$(ProfileID)) + ".DAT" FOR BINARY AS #StateFile
-	
-	GET #StateFile, , TotalTurns
-	GET #StateFile, , EnableAI
-	GET #StateFile, , PlayerTurn
-	GET #StateFile, , PlayerStart
-	GET #StateFile, , EnableAudio
-
-	IF TotalTurns > 0 THEN
-		FOR X = 1 TO 3
-			FOR Y = 1 TO 3
-				GET #StateFile, , PlayField(X, Y)
-			NEXT
-		NEXT
-	END IF
-	
-	'If state was saved after a player won, start a new game
-	IF TotalTurns > 8 THEN Tic.NewGame
-
-	CLOSE #StateFile
-
-	ON LOCAL ERROR RESUME NEXT
-
-	Tic.LoadState = True
-
-SanityChecks:
-	'Various sanity checks to make sure loaded data is valid
-	'crash
-	IF TotalTurns < 0 OR TotalTurns > 9 THEN TotalTurns = 0
-	IF EnableAI < -1 OR EnableAI > 0 THEN EnableAI = True
-	IF PlayerTurn < 1 OR PlayerTurn > 2 THEN PlayerTurn = 1
-	IF PlayerStart < 1 OR PlayerStart > 2 THEN PlayerStart = 1
-	IF EnableAudio < -1 OR EnableAudio > 0 THEN EnableAudio = True
-	FOR X = 1 TO 3
-		FOR Y = 1 TO 3
-			IF PlayField(X, Y) < 0 OR PlayField(X, Y) > 2 THEN PlayField(X, Y) = 0
-		NEXT
-	NEXT
-	
-END FUNCTION
-
-' =========================================================================
 '          NAME: Tic.Main()
 '    PARAMETERS: None
 '       RETURNS: Nothing
@@ -366,7 +307,7 @@ SUB Tic.Main ()
 	DIM btnNew AS ButtonType, btnAIToggle AS ButtonType
 	DIM btnAudio AS ButtonType, btnExit AS ButtonType
 	DIM FieldRow, FieldCol
-	DIM DidLoadState
+	DIM Key$
 
 	Obj.SetSize frmTic.Pos, sizeCenter, sizeCenter, 221, 221
 	
@@ -387,6 +328,8 @@ SUB Tic.Main ()
 	Obj.SetSize btnAudio.Pos, 201, 2, 92, 22
 	Obj.SetSize btnExit.Pos, 545, 2, 92, 22
 	btnNew.Caption = "õNew game"
+	btnAIToggle.Caption = "õMode"
+	btnAudio.Caption = "õSound"
 	btnExit.Caption = "õClose"
 	
 	Obj.DrawMenu
@@ -397,73 +340,37 @@ SUB Tic.Main ()
 	Mouse.Show
 	Obj.DrawFrm frmTic, 10, 8
 	Obj.DrawBtn btnNew, False
-	Obj.DrawBtn btnExit, False
-	
-	CircleAspect = 1
-
-	DidLoadState = Tic.LoadState
-	
-	IF EnableAI = True THEN
-		btnAIToggle.Caption = "Multiõplayer"
-	ELSE
-		btnAIToggle.Caption = "Singleõplayer"
-	END IF
-
-	IF EnableAudio THEN
-		btnAudio.Caption = "Disable õsound"
-	ELSE
-		btnAudio.Caption = "Enable õsound"
-	END IF
-
 	Obj.DrawBtn btnAIToggle, False
 	Obj.DrawBtn btnAudio, False
+	Obj.DrawBtn btnExit, False
 	
-	DIM Key$
-
-StartOfGame:
+	PlayerTurn = PlayerX
+	PlayerStart = PlayerX
 	Tic.DrawBoard
-
-	IF NOT DidLoadState THEN
-		Tic.PlaySound SoundNew
-		DidLoadState = True 'Just to make sure sound only plays once...
-	END IF
-
-	IF EnableAI = True AND PlayerTurn = 2 THEN GOTO PerformAIMove
-	Tic.PrintMessage msgPlayerTurn
+	Tic.PlaySound SoundNew
+	Tic.PrintMessage msgNewGame
+	Tic.PrintStatus
 
 	DO
 		Key$ = LCASE$(INKEY$)
-
+		
 		IF Obj.BtnClick(btnNew) OR Key$ = "n" THEN
 			Tic.NewGame
-			GOTO StartOfGame
 		END IF
 
 		IF Obj.BtnClick(btnExit) OR Key$ = "c" THEN
-			Tic.SaveState
 			EXIT SUB
 		END IF
 
-		IF Obj.BtnClick(btnAIToggle) OR Key$ = "p" THEN
+		IF Obj.BtnClick(btnAIToggle) OR Key$ = "m" THEN
 			EnableAI = NOT EnableAI
-			IF EnableAI = True THEN
-				btnAIToggle.Caption = "Multiõplayer"
-			ELSE
-				btnAIToggle.Caption = "Singleõplayer"
-			END IF
-			Obj.DrawBtn btnAIToggle, False
 			Tic.NewGame
-			GOTO StartOfGame
+			Tic.PrintStatus
 		END IF
 
 		IF Obj.BtnClick(btnAudio) OR Key$ = "s" THEN
 			EnableAudio = NOT EnableAudio
-			IF EnableAudio THEN
-				btnAudio.Caption = "Disable õsound"
-			ELSE
-				btnAudio.Caption = "Enable õsound"
-			END IF
-			Obj.DrawBtn btnAudio, False
+			Tic.PrintStatus
 		END IF
 
 		IF TotalTurns < 9 THEN
@@ -477,12 +384,10 @@ StartOfGame:
 			IF (Mouse.Clicked AND Mouse.InArea(txtPlayField(3, 2).Pos)) OR Key$ = "2" THEN FieldClicked = True: FieldRow = 3: FieldCol = 2
 			IF (Mouse.Clicked AND Mouse.InArea(txtPlayField(3, 3).Pos)) OR Key$ = "3" THEN FieldClicked = True: FieldRow = 3: FieldCol = 3
 
-			'Prevent audio from running wild if a key is held down
 			IF FieldClicked THEN
-				DO: LOOP WHILE LEN(INKEY$)
-			END IF
+				'Prevent audio from running wild if mouse/key is held down
+				DO: LOOP WHILE LEN(INKEY$) OR Mouse.Clicked
 
-			IF FieldClicked THEN
 				IF PlayField(FieldRow, FieldCol) = 0 THEN
 					FieldClicked = 0
 					PlayField(FieldRow, FieldCol) = PlayerTurn
@@ -497,13 +402,9 @@ StartOfGame:
 					ELSE
 						IF TotalTurns < 9 THEN
 
-							IF PlayerTurn = 1 THEN
-								PlayerTurn = 2
-							ELSE
-								PlayerTurn = 1
-							END IF
+							PlayerTurn = NOT PlayerTurn
 
-							IF EnableAI = True AND TotalTurns < 9 AND PlayerTurn = 2 THEN
+							IF EnableAI = True AND PlayerTurn = PlayerO THEN
 PerformAIMove:
 								Tic.PrintMessage msgAITurn
 								Tic.AIMove
@@ -518,7 +419,7 @@ PerformAIMove:
 										Tic.PrintMessage msgDraw
 										Tic.PlaySound SoundDraw
 									ELSE
-										PlayerTurn = 1
+										PlayerTurn = PlayerX
 										Tic.PrintMessage msgPlayerTurn
 									END IF
 								END IF
@@ -567,13 +468,10 @@ SUB Tic.NewGame ()
 	Tic.DrawBoard
 
 	TotalTurns = 0
-	IF PlayerStart = 1 THEN
-		PlayerStart = 2
-	ELSE
-		PlayerStart = 1
-	END IF
+	PlayerStart = NOT PlayerStart
 	PlayerTurn = PlayerStart
 
+	Tic.PrintMessage msgNewGame
 	Tic.PlaySound SoundNew
 
 END SUB
@@ -594,9 +492,9 @@ SUB Tic.PlaySound (SoundType AS INTEGER)
 	IF NOT EnableAudio THEN EXIT SUB
 
 	SELECT CASE SoundType
-		CASE SoundX
+		CASE PlayerX
 			SOUND 400, .7
-		CASE SoundY
+		CASE PlayerO
 			SOUND 800, .7
 		CASE SoundIllegalMove
 			SOUND 100, .7
@@ -614,35 +512,35 @@ END SUB
 
 SUB Tic.PrintMessage (MessageType AS INTEGER)
 
-	DIM message AS STRING
+	DIM Message AS STRING
 	DIM CurrentTurn AS STRING * 1
 	DIM Randomizer
 
+	RANDOMIZE TIMER
 	Randomizer = INT(6 * RND + 1)
 
-	IF PlayerTurn = 1 THEN
+	IF PlayerTurn = PlayerX THEN
 		CurrentTurn = "X"
 	ELSE
 		CurrentTurn = "O"
 	END IF
 
-	RANDOMIZE TIMER
 	SELECT CASE MessageType
 		CASE msgWin
 
 			SELECT CASE Randomizer
 				CASE 1
-					message = CurrentTurn + " has brought honor to the family!"
+					Message = CurrentTurn + " has brought honor to the family!"
 				CASE 2
-					message = CurrentTurn + " has emerged victoriously from the battle!"
+					Message = CurrentTurn + " has emerged victoriously from the battle!"
 				CASE 3
-					message = "Nothing could stop " + CurrentTurn + " from achieving victory!"
+					Message = "Nothing could stop " + CurrentTurn + " from achieving victory!"
 				CASE 4
-					message = "The crowd is gasping, amazed at the incredible play by " + CurrentTurn + "!"
+					Message = "The crowd is gasping, amazed at the incredible play by " + CurrentTurn + "!"
 				CASE 5
-					message = CurrentTurn + " has brought down utter destruction on the opponent!"
+					Message = CurrentTurn + " has brought down utter destruction on the opponent!"
 				CASE 6
-					message = CurrentTurn + " is unbeatable on the playing field!"
+					Message = CurrentTurn + " is unbeatable on the playing field!"
 			END SELECT
 
 
@@ -650,17 +548,17 @@ SUB Tic.PrintMessage (MessageType AS INTEGER)
 
 			SELECT CASE Randomizer
 				CASE 1
-					message = "It was a real nail-biter, but neither player could best the other."
+					Message = "It was a real nail-biter, but neither player could best the other."
 				CASE 2
-					message = "No winners means no losers, I guess."
+					Message = "No winners means no losers, I guess."
 				CASE 3
-					message = "A high-stakes game that could have gone both ways."
+					Message = "A high-stakes game that could have gone both ways."
 				CASE 4
-					message = "As eager as both players were, neither of them could achieve victory."
+					Message = "As eager as both players were, neither of them could achieve victory."
 				CASE 5
-					message = "No bragging rights for either player - try again!"
+					Message = "No bragging rights for either player - try again!"
 				CASE 6
-					message = "An otherwise intense game, which ended with disappointment for both sides."
+					Message = "An otherwise intense game, which ended with disappointment for both sides."
 			END SELECT
 
 
@@ -668,17 +566,17 @@ SUB Tic.PrintMessage (MessageType AS INTEGER)
 
 			SELECT CASE Randomizer
 				CASE 1
-					message = CurrentTurn + " is contemplating the next move..."
+					Message = CurrentTurn + " is contemplating the next move..."
 				CASE 2
-					message = CurrentTurn + " is calculating all possible outcomes..."
+					Message = CurrentTurn + " is calculating all possible outcomes..."
 				CASE 3
-					message = "The stakes are too high for " + CurrentTurn + " not to think this through..."
+					Message = "The stakes are too high for " + CurrentTurn + " not to think this through..."
 				CASE 4
-					message = CurrentTurn + " is struggling to find enough CPU power to beat the opponent..."
+					Message = CurrentTurn + " is struggling to find enough CPU power to beat the opponent..."
 				CASE 5
-					message = CurrentTurn + " is becoming sentient in the quest to beat the humans..."
+					Message = CurrentTurn + " is becoming sentient in the quest to beat the humans..."
 				CASE 6
-					message = CurrentTurn + " is working hard to not loose to a feeble human..."
+					Message = CurrentTurn + " is working hard to not loose to a feeble human..."
 			END SELECT
 
 
@@ -686,17 +584,35 @@ SUB Tic.PrintMessage (MessageType AS INTEGER)
 
 			SELECT CASE Randomizer
 				CASE 1
-					message = "Make your move, " + CurrentTurn + "!"
+					Message = "Make your move, " + CurrentTurn + "!"
 				CASE 2
-					message = "How are you going to beat your opponent, " + CurrentTurn + "?"
+					Message = "How are you going to beat your opponent, " + CurrentTurn + "?"
 				CASE 3
-					message = "Uh oh, what a powerfull move! What will " + CurrentTurn + " do now?"
+					Message = "Uh oh, what a powerfull move! What will " + CurrentTurn + " do now?"
 				CASE 4
-					message = "Take your time " + CurrentTurn + " - the stakes are too high to slip up now!"
+					Message = "Take your time " + CurrentTurn + " - the stakes are too high to slip up now!"
 				CASE 5
-					message = "How will you eliminate your opponent, " + CurrentTurn + "?"
+					Message = "How will you eliminate your opponent, " + CurrentTurn + "?"
 				CASE 6
-					message = "Now is the time to prove yourself, " + CurrentTurn + "!"
+					Message = "Now is the time to prove yourself, " + CurrentTurn + "!"
+			END SELECT
+
+
+		CASE msgNewGame
+
+			SELECT CASE Randomizer
+				CASE 1
+					Message = CurrentTurn + " gets to make the first move!"
+				CASE 2
+					Message = "Looks like " + CurrentTurn + " will be the one to strike first!"
+				CASE 3
+					Message = "How will " + CurrentTurn + " begin the battle?"
+				CASE 4
+					Message = CurrentTurn + " is preparing the surprise attack carefully..."
+				CASE 5
+					Message = CurrentTurn + " is thinking about the optimal way to start the game..."
+				CASE 6
+					Message = "First move is yours " + CurrentTurn + ", use it wisely!"
 			END SELECT
 
 
@@ -705,40 +621,30 @@ SUB Tic.PrintMessage (MessageType AS INTEGER)
 
 	Mouse.Hide
 	LINE (12, 49)-(627, 65), 2, BF
-	Font.Print message, (640 - Font.GetWidth(message, fontHeading)) / 2, 53, 0, fontHeading
+	Font.Print Message, (640 - Font.GetWidth(Message, fontHeading)) / 2, 53, 0, fontHeading
 	Mouse.Show
 	
 END SUB
 
-' =========================================================================
-'          NAME: Tic.SaveState()
-'    PARAMETERS: None
-'       RETURNS: Nothing
-'       ASSUMES: Nothing
-'   CALLED FROM: TICTAC.BAS
-' -------------------------------------------------------------------------
-'   DESCRIPTION: Saves the current state of the game to a config file.
-'                This exact session can then be loaded again with
-'                Tic.LoadState
-' =========================================================================
-SUB Tic.SaveState ()
+SUB Tic.PrintStatus ()
+	DIM Message AS STRING
 
-	DIM StateFile, X, Y
-	StateFile = FREEFILE
-	OPEN "DATA\CONFIG\TICTAC" + LTRIM$(STR$(ProfileID)) + ".DAT" FOR BINARY AS #StateFile
+	Message = "Playing "
+	IF EnableAI THEN
+		Message = Message + "against computer"
+	ELSE
+		Message = Message + "two players"
+	END IF
+	Message = Message + SPACE$(20) + "Sound: "
+	IF EnableAudio THEN
+		Message = Message + "On"
+	ELSE
+		Message = Message + "Off"
+	END IF
 
-	PUT #StateFile, , TotalTurns
-	PUT #StateFile, , EnableAI
-	PUT #StateFile, , PlayerTurn
-	PUT #StateFile, , PlayerStart
-	PUT #StateFile, , EnableAudio
-	FOR X = 1 TO 3
-		FOR Y = 1 TO 3
-			PUT #StateFile, , PlayField(X, Y)
-		NEXT
-	NEXT
-
-	CLOSE #StateFile
-
+	Mouse.Hide
+	LINE (162, 316)-(477, 332), 2, BF
+	Font.Print Message, (640 - Font.GetWidth(Message, fontHeading)) / 2, 320, 0, fontHeading
+	Mouse.Show
 END SUB
 
