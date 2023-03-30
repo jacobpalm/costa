@@ -1,9 +1,7 @@
-DECLARE SUB Tic.PrintStatus ()
 OPTION EXPLICIT
 DEFINT A-Z
 
 DECLARE FUNCTION Tic.CheckWin% ()
-DECLARE FUNCTION Tic.LoadState% ()
 DECLARE SUB Tic.AIMove ()
 DECLARE SUB Tic.DrawBoard ()
 DECLARE SUB Tic.DrawXO (FieldRow%, FieldCol%, FieldValue%)
@@ -12,7 +10,7 @@ DECLARE SUB Tic.NewGame ()
 DECLARE SUB Tic.Main ()
 DECLARE SUB Tic.PlaySound (SoundType AS INTEGER)
 DECLARE SUB Tic.PrintMessage (MessageType AS INTEGER)
-DECLARE SUB Tic.SaveState ()
+DECLARE SUB Tic.PrintStatus ()
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 

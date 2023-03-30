@@ -62,7 +62,7 @@ SUB Calc.LogLine (Text AS STRING, TargetTxt AS TextboxType)
     Obj.DrawTxt TargetTxt, "", False
   END IF
 
-  Font.Print Text, 624 - LEN(Text) * 8, TopOffset + (LogLinesWritten * 15), SystemTheme.WindowText, FontSystem
+  Font.Print Text, 624 - LEN(Text) * 8, TopOffset + (LogLinesWritten * 15), Theme.WindowText, FontSystem
   
 END SUB
 
@@ -127,11 +127,11 @@ SUB Calc.Main ()
     txtCalc.MaxLen = 25
 
     Mouse.Hide
-    LINE (0, 29)-(639, 349), SystemTheme.Window, BF
+    LINE (0, 29)-(639, 349), Theme.Window, BF
     Mouse.Show
     Obj.DrawMenu
 
-    Obj.DrawFrm frmCalc, 15, SystemTheme.Shadow
+    Obj.DrawFrm frmCalc, 15, Theme.Shadow
     Obj.DrawTxt txtCalc, "", False
     FOR btnCount = 0 TO 9
         btnNumb(btnCount).Caption = LTRIM$(STR$(btnCount))

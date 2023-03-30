@@ -272,7 +272,7 @@ SUB IconEdit.Main (IconToLoad AS STRING)
 
     Obj.DrawMenu
     Mouse.Hide
-    LINE (0, 29)-(639, 349), SystemTheme.Window, BF
+    LINE (0, 29)-(639, 349), Theme.Window, BF
     Mouse.Show
 
     Obj.SetSize txtDrawArea.Pos, 175, 44, 290, 290
@@ -328,10 +328,10 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     LINE (txtColor(DrawColor).Pos.Left + 5, txtColor(DrawColor).Pos.Top + 5)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 5, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 5), 15, B
                                 
     LINE (btnPreview.Pos.Left + 2, btnPreview.Pos.Top + 2)-(btnPreview.Pos.Left + btnPreview.Pos.Width - 2, btnPreview.Pos.Top + btnPreview.Pos.Height - 2), 15, BF
-    LINE (PreviewOffsetX - 1, PreviewOffsetY - 1)-(PreviewOffsetX + 32, PreviewOffsetY - 1), SystemTheme.Light
-    LINE (PreviewOffsetX - 1, PreviewOffsetY)-(PreviewOffsetX - 1, PreviewOffsetY + 32), SystemTheme.Light
-    LINE (PreviewOffsetX, PreviewOffsetY + 32)-(PreviewOffsetX + 32, PreviewOffsetY + 32), SystemTheme.Shadow
-    LINE (PreviewOffsetX + 32, PreviewOffsetY)-(PreviewOffsetX + 32, PreviewOffsetY + 31), SystemTheme.Shadow
+    LINE (PreviewOffsetX - 1, PreviewOffsetY - 1)-(PreviewOffsetX + 32, PreviewOffsetY - 1), Theme.Light
+    LINE (PreviewOffsetX - 1, PreviewOffsetY)-(PreviewOffsetX - 1, PreviewOffsetY + 32), Theme.Light
+    LINE (PreviewOffsetX, PreviewOffsetY + 32)-(PreviewOffsetX + 32, PreviewOffsetY + 32), Theme.Shadow
+    LINE (PreviewOffsetX + 32, PreviewOffsetY)-(PreviewOffsetX + 32, PreviewOffsetY + 31), Theme.Shadow
 
     'Draw grid in drawing area
     FOR YPos = 0 TO 31
@@ -344,9 +344,9 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     NEXT
     
     Mouse.Show
-    Font.Print "õPreview", btnPreview.Pos.Left, btnPreview.Pos.Top - 15, SystemTheme.WindowText, FontHeading
-    Font.Print "õColor", txtColor(0).Pos.Left, txtDrawArea.Pos.Top, SystemTheme.WindowText, FontHeading
-    Font.Print "Tools", txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 12, txtDrawArea.Pos.Top, SystemTheme.WindowText, FontHeading
+    Font.Print "õPreview", btnPreview.Pos.Left, btnPreview.Pos.Top - 15, Theme.WindowText, FontHeading
+    Font.Print "õColor", txtColor(0).Pos.Left, txtDrawArea.Pos.Top, Theme.WindowText, FontHeading
+    Font.Print "Tools", txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 12, txtDrawArea.Pos.Top, Theme.WindowText, FontHeading
 
     KeyboardPosX = 16
     KeyboardPosY = 16
@@ -679,10 +679,10 @@ SUB IconEdit.Preview ()
     Mouse.Hide
     FOR XPos = 2 TO 185 STEP 61
         FOR YPos = 2 TO 185 STEP 61
-            LINE (PreviewOffsetX - 1, PreviewOffsetY - 1)-(PreviewOffsetX + 32, PreviewOffsetY - 1), SystemTheme.Light
-            LINE (PreviewOffsetX - 1, PreviewOffsetY)-(PreviewOffsetX - 1, PreviewOffsetY + 32), SystemTheme.Light
-            LINE (PreviewOffsetX, PreviewOffsetY + 32)-(PreviewOffsetX + 32, PreviewOffsetY + 32), SystemTheme.Shadow
-            LINE (PreviewOffsetX + 32, PreviewOffsetY)-(PreviewOffsetX + 32, PreviewOffsetY + 31), SystemTheme.Shadow
+            LINE (PreviewOffsetX - 1, PreviewOffsetY - 1)-(PreviewOffsetX + 32, PreviewOffsetY - 1), Theme.Light
+            LINE (PreviewOffsetX - 1, PreviewOffsetY)-(PreviewOffsetX - 1, PreviewOffsetY + 32), Theme.Light
+            LINE (PreviewOffsetX, PreviewOffsetY + 32)-(PreviewOffsetX + 32, PreviewOffsetY + 32), Theme.Shadow
+            LINE (PreviewOffsetX + 32, PreviewOffsetY)-(PreviewOffsetX + 32, PreviewOffsetY + 31), Theme.Shadow
             PUT (txtPreview.Pos.Left + XPos + 16, txtPreview.Pos.Top + YPos + 16), scrBuffer, PSET
         NEXT
     NEXT
@@ -810,7 +810,7 @@ SUB IconEdit.ShowLoadDialog ()
     Obj.DrawBtn btnCancel, 0
     Obj.DrawImg imgPreview
 
-    Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 12, SystemTheme.WindowText, FontHeading
+    Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 12, Theme.WindowText, FontHeading
 
     DO
         REDIM PRESERVE IconFiles(0 TO UBOUND(IconFiles) + 1) AS STRING
@@ -837,11 +837,11 @@ SUB IconEdit.ShowLoadDialog ()
             IF IconIndex = -1 THEN IconIndex = UBOUND(IconFiles)
             imgPreview.ImageFile = IconFiles(IconIndex)
             Mouse.Hide
-            LINE (btnLoad.Pos.Left + 11, btnLoad.Pos.Top + 11)-(btnLoad.Pos.Left + 42, btnLoad.Pos.Top + 42), SystemTheme.Window, BF
-            LINE (winSelect.Pos.Left + 10, winSelect.Pos.Top + 12)-(winSelect.Pos.Left + winSelect.Pos.Width - 10, winSelect.Pos.Top + 21), SystemTheme.Window, BF
+            LINE (btnLoad.Pos.Left + 11, btnLoad.Pos.Top + 11)-(btnLoad.Pos.Left + 42, btnLoad.Pos.Top + 42), Theme.Window, BF
+            LINE (winSelect.Pos.Left + 10, winSelect.Pos.Top + 12)-(winSelect.Pos.Left + winSelect.Pos.Width - 10, winSelect.Pos.Top + 21), Theme.Window, BF
             Mouse.Show
             Obj.DrawImg imgPreview
-            Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 12, SystemTheme.WindowText, FontHeading
+            Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 12, Theme.WindowText, FontHeading
         END IF
 
         IF Obj.BtnClick(btnNext) OR Key$ = CHR$(0) + "m" THEN 'Right arrow
@@ -849,11 +849,11 @@ SUB IconEdit.ShowLoadDialog ()
             IF IconIndex > UBOUND(IconFiles) THEN IconIndex = 0
             imgPreview.ImageFile = IconFiles(IconIndex)
             Mouse.Hide
-            LINE (btnLoad.Pos.Left + 11, btnLoad.Pos.Top + 11)-(btnLoad.Pos.Left + 42, btnLoad.Pos.Top + 42), SystemTheme.Window, BF
-            LINE (winSelect.Pos.Left + 10, winSelect.Pos.Top + 12)-(winSelect.Pos.Left + winSelect.Pos.Width - 10, winSelect.Pos.Top + 21), SystemTheme.Window, BF
+            LINE (btnLoad.Pos.Left + 11, btnLoad.Pos.Top + 11)-(btnLoad.Pos.Left + 42, btnLoad.Pos.Top + 42), Theme.Window, BF
+            LINE (winSelect.Pos.Left + 10, winSelect.Pos.Top + 12)-(winSelect.Pos.Left + winSelect.Pos.Width - 10, winSelect.Pos.Top + 21), Theme.Window, BF
             Mouse.Show
             Obj.DrawImg imgPreview
-            Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 12, SystemTheme.WindowText, FontHeading
+            Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 12, Theme.WindowText, FontHeading
         END IF
 
         IF Obj.BtnClick(btnLoad) OR Key$ = CHR$(13) THEN

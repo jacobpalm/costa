@@ -1,13 +1,13 @@
-DECLARE SUB Theme.DrawPreview (ThemeFile AS STRING)
+DECLARE SUB ThmEdit.DrawPreview (ThemeFile AS STRING)
 OPTION EXPLICIT
 DEFINT A-Z
 
-DECLARE FUNCTION Theme.SelectObject (BYVAL CurrentSelection%) AS INTEGER
-DECLARE FUNCTION Theme.Select () AS STRING
-DECLARE SUB Theme.DrawIndicator (ActiveColor%)
-DECLARE SUB Theme.Main ()
-DECLARE SUB Theme.Load (BYVAL ThmFile AS STRING)
-DECLARE SUB Theme.Edit (BYVAL ThmFile AS STRING)
+DECLARE FUNCTION ThmEdit.SelectObject (BYVAL CurrentSelection%) AS INTEGER
+DECLARE FUNCTION ThmEdit.Select () AS STRING
+DECLARE SUB ThmEdit.DrawIndicator (ActiveColor%)
+DECLARE SUB ThmEdit.Main ()
+DECLARE SUB ThmEdit.Load (BYVAL ThmFile AS STRING)
+DECLARE SUB ThmEdit.Edit (BYVAL ThmFile AS STRING)
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
@@ -22,7 +22,7 @@ DIM SHARED thmClrWindowText, thmClrTitlebar, thmClrTitlebarText
 DIM SHARED thmClr3DLight, thmClr3DShadow, thmClrSelect, thmClrSelectText
 
 
-'Shared because it is used in Theme.DrawIndicator
+'Shared because it is used in ThmEdit.DrawIndicator
 DIM SHARED btnColor(0 TO 15) AS ButtonType
 
 IF NOT COMMAND$ = "/?" AND NOT COMMAND$ = "/VER" AND NOT COMMAND$ = "/DEV" THEN
@@ -31,9 +31,9 @@ END IF
 
 Sys.Load
 
-Theme.Main
+ThmEdit.Main
 
-SUB Theme.DrawIndicator (ActiveColor)
+SUB ThmEdit.DrawIndicator (ActiveColor)
 
   DIM DrawColor
   
@@ -52,7 +52,7 @@ SUB Theme.DrawIndicator (ActiveColor)
 
 END SUB
 
-SUB Theme.DrawPreview (ThemeFile AS STRING)
+SUB ThmEdit.DrawPreview (ThemeFile AS STRING)
 
     DIM OriginalTheme AS STRING * 8
 
@@ -65,42 +65,42 @@ SUB Theme.DrawPreview (ThemeFile AS STRING)
     DIM txtListPreview AS TextboxType
 
     Obj.SetSize frmPreview.Pos, 12, 42, 410, 293
-    Obj.DrawFrm frmPreview, 15, SystemTheme.Shadow
+    Obj.DrawFrm frmPreview, 15, Theme.Shadow
 
     IF LEN(ThemeFile) THEN
-        OriginalTheme = UserSettings.ThemeFile
-        UserSettings.ThemeFile = ThemeFile
+        OriginalTheme = Setting.ThemeFile
+        Setting.ThemeFile = ThemeFile
         Sys.LoadTheme
 
-        ThemeName$ = RTRIM$(SystemTheme.Name)
-        ThemeAuthor$ = RTRIM$(SystemTheme.Author)
-        thmClrDesktop = SystemTheme.Desktop
-        thmClrDesktopText = SystemTheme.DesktopText
-        thmClrWindow = SystemTheme.Window
-        thmClrButton = SystemTheme.Button
-        thmClrTextbox = SystemTheme.Textbox
-        thmClrTextboxText = SystemTheme.TextboxText
-        thmClrWindowText = SystemTheme.WindowText
-        thmClrTitlebar = SystemTheme.TitleBar
-        thmClrTitlebarText = SystemTheme.TitleBarText
-        thmClr3DLight = SystemTheme.Light
-        thmClr3DShadow = SystemTheme.Shadow
-        thmClrSelect = SystemTheme.Select
-        thmClrSelectText = SystemTheme.SelectText
+        ThemeName$ = RTRIM$(Theme.Name)
+        ThemeAuthor$ = RTRIM$(Theme.Author)
+        thmClrDesktop = Theme.Desktop
+        thmClrDesktopText = Theme.DesktopText
+        thmClrWindow = Theme.Window
+        thmClrButton = Theme.Button
+        thmClrTextbox = Theme.Textbox
+        thmClrTextboxText = Theme.TextboxText
+        thmClrWindowText = Theme.WindowText
+        thmClrTitlebar = Theme.TitleBar
+        thmClrTitlebarText = Theme.TitleBarText
+        thmClr3DLight = Theme.Light
+        thmClr3DShadow = Theme.Shadow
+        thmClrSelect = Theme.Select
+        thmClrSelectText = Theme.SelectText
     ELSE
-        SystemTheme.Desktop = thmClrDesktop
-        SystemTheme.DesktopText = thmClrDesktopText
-        SystemTheme.Window = thmClrWindow
-        SystemTheme.Button = thmClrButton
-        SystemTheme.Textbox = thmClrTextbox
-        SystemTheme.TextboxText = thmClrTextboxText
-        SystemTheme.WindowText = thmClrWindowText
-        SystemTheme.TitleBar = thmClrTitlebar
-        SystemTheme.TitleBarText = thmClrTitlebarText
-        SystemTheme.Light = thmClr3DLight
-        SystemTheme.Shadow = thmClr3DShadow
-        SystemTheme.Select = thmClrSelect
-        SystemTheme.SelectText = thmClrSelectText
+        Theme.Desktop = thmClrDesktop
+        Theme.DesktopText = thmClrDesktopText
+        Theme.Window = thmClrWindow
+        Theme.Button = thmClrButton
+        Theme.Textbox = thmClrTextbox
+        Theme.TextboxText = thmClrTextboxText
+        Theme.WindowText = thmClrWindowText
+        Theme.TitleBar = thmClrTitlebar
+        Theme.TitleBarText = thmClrTitlebarText
+        Theme.Light = thmClr3DLight
+        Theme.Shadow = thmClr3DShadow
+        Theme.Select = thmClrSelect
+        Theme.SelectText = thmClrSelectText
     END IF
 
     Obj.SetSize winPreview.Pos, frmPreview.Pos.Left + ((frmPreview.Pos.Width - 260) / 2), frmPreview.Pos.Top + 65, 260, 127
@@ -118,9 +118,9 @@ SUB Theme.DrawPreview (ThemeFile AS STRING)
     imgPreview.ImageFile = "LOGO"
 
     Mouse.Hide
-    LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 2)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + frmPreview.Pos.Height - 2), SystemTheme.Desktop, BF
-    LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 2)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + 27), SystemTheme.Window, BF
-    LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 28)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + 28), SystemTheme.Shadow
+    LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 2)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + frmPreview.Pos.Height - 2), Theme.Desktop, BF
+    LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 2)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + 27), Theme.Window, BF
+    LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 28)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + 28), Theme.Shadow
     LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 29)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + 29), 0
     Mouse.Show
 
@@ -130,32 +130,32 @@ SUB Theme.DrawPreview (ThemeFile AS STRING)
     Obj.DrawBtn btnPreview2, True
     Obj.DrawBtn btnPreview3, False
 
-    Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 14, SystemTheme.WindowText, fontHeading
-    Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 30, SystemTheme.WindowText, FontNormal
-    Font.Print "Preview link", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 4, SystemTheme.DesktopText, fontHeading
-    Font.Print "preview.exe", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 18, SystemTheme.DesktopText, FontNormal
+    Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 14, Theme.WindowText, fontHeading
+    Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 30, Theme.WindowText, FontNormal
+    Font.Print "Preview link", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 4, Theme.DesktopText, fontHeading
+    Font.Print "preview.exe", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 18, Theme.DesktopText, FontNormal
 
     Obj.DrawImg imgPreview
 
     Obj.DrawTxt txtListPreview, "", False
     Mouse.Hide
-    LINE (txtListPreview.Pos.Left + 2, txtListPreview.Pos.Top + 15)-(txtListPreview.Pos.Left + txtListPreview.Pos.Width - 2, txtListPreview.Pos.Top + 27), SystemTheme.Select, BF
+    LINE (txtListPreview.Pos.Left + 2, txtListPreview.Pos.Top + 15)-(txtListPreview.Pos.Left + txtListPreview.Pos.Width - 2, txtListPreview.Pos.Top + 27), Theme.Select, BF
     Mouse.Show
-    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5, SystemTheme.TextboxText, FontSystem
-    Font.Print "Selected item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 12, SystemTheme.SelectText, FontSystem
-    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 24, SystemTheme.TextboxText, FontSystem
-    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 36, SystemTheme.TextboxText, FontSystem
-    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 48, SystemTheme.TextboxText, FontSystem
+    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5, Theme.TextboxText, FontSystem
+    Font.Print "Selected item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 12, Theme.SelectText, FontSystem
+    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 24, Theme.TextboxText, FontSystem
+    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 36, Theme.TextboxText, FontSystem
+    Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 48, Theme.TextboxText, FontSystem
 
     IF LEN(ThemeFile) THEN
-        UserSettings.ThemeFile = OriginalTheme
+        Setting.ThemeFile = OriginalTheme
         Sys.LoadTheme
     END IF
     
 END SUB
 
 ' =========================================================================
-'          NAME: Theme.Edit()
+'          NAME: ThmEdit.Edit()
 '    PARAMETERS: ThmFile - string containing filename of theme to edit,
 '                          sans extension
 '       RETURNS: Nothing
@@ -164,7 +164,7 @@ END SUB
 ' -------------------------------------------------------------------------
 '   DESCRIPTION: The main dialog for editing a theme and saving it
 ' =========================================================================
-SUB Theme.Edit (BYVAL ThmFile AS STRING)
+SUB ThmEdit.Edit (BYVAL ThmFile AS STRING)
 
     DIM btnSave AS ButtonType, btnSaveAs AS ButtonType
     DIM btnExit AS ButtonType, btnObject AS ButtonType
@@ -174,8 +174,8 @@ SUB Theme.Edit (BYVAL ThmFile AS STRING)
     DIM TargetFile$, OriginalText$
 
     Mouse.Hide
-    LINE (430, 29)-(639, 349), SystemTheme.Window, BF
-    LINE (201, 2)-(293, 24), SystemTheme.Window, BF
+    LINE (430, 29)-(639, 349), Theme.Window, BF
+    LINE (201, 2)-(293, 24), Theme.Window, BF
     Mouse.Show
 
     ThemeFile$ = ThmFile
@@ -221,10 +221,10 @@ SUB Theme.Edit (BYVAL ThmFile AS STRING)
       LINE (btnColor(I).Pos.Left + 2, btnColor(I).Pos.Top + 2)-(btnColor(I).Pos.Left + btnColor(I).Pos.Width - 2, btnColor(I).Pos.Top + btnColor(I).Pos.Height - 2), I, BF
       Mouse.Show
     NEXT
-    Font.Print "Theme õname:", txtThemeName.Pos.Left, txtThemeName.Pos.Top - 16, SystemTheme.WindowText, fontHeading
-    Font.Print "Theme aõuthor:", txtThemeAuthor.Pos.Left, txtThemeAuthor.Pos.Top - 16, SystemTheme.WindowText, fontHeading
-    Font.Print "õObject selected:", 434, btnObject.Pos.Top - 16, SystemTheme.WindowText, fontHeading
-    Font.Print "õColor for object:", 434, btnColor(0).Pos.Top - 16, SystemTheme.WindowText, fontHeading
+    Font.Print "Theme õname:", txtThemeName.Pos.Left, txtThemeName.Pos.Top - 16, Theme.WindowText, fontHeading
+    Font.Print "Theme aõuthor:", txtThemeAuthor.Pos.Left, txtThemeAuthor.Pos.Top - 16, Theme.WindowText, fontHeading
+    Font.Print "õObject selected:", 434, btnObject.Pos.Top - 16, Theme.WindowText, fontHeading
+    Font.Print "õColor for object:", 434, btnColor(0).Pos.Top - 16, Theme.WindowText, fontHeading
 
     'Color indicator
     Mouse.Hide
@@ -271,8 +271,8 @@ TopOfLoop:
               CASE 13
                 thmClrTitlebarText = I
             END SELECT
-            Theme.DrawIndicator I
-            Theme.DrawPreview ""
+            ThmEdit.DrawIndicator I
+            ThmEdit.DrawPreview ""
           END IF
         END IF
       NEXT
@@ -283,103 +283,103 @@ TopOfLoop:
           CASE 1
             thmClrDesktop = thmClrDesktop + 1
             IF thmClrDesktop > 15 THEN thmClrDesktop = 0
-            Theme.DrawIndicator thmClrDesktop
+            ThmEdit.DrawIndicator thmClrDesktop
           CASE 2
             thmClrDesktopText = thmClrDesktopText + 1
             IF thmClrDesktopText > 15 THEN thmClrDesktopText = 0
-            Theme.DrawIndicator thmClrDesktopText
+            ThmEdit.DrawIndicator thmClrDesktopText
           CASE 3
             thmClrWindow = thmClrWindow + 1
             IF thmClrWindow > 15 THEN thmClrWindow = 0
-            Theme.DrawIndicator thmClrWindow
+            ThmEdit.DrawIndicator thmClrWindow
           CASE 4
             thmClrTitlebar = thmClrTitlebar + 1
             IF thmClrTitlebar > 15 THEN thmClrTitlebar = 0
-            Theme.DrawIndicator thmClrTitlebar
+            ThmEdit.DrawIndicator thmClrTitlebar
           CASE 5
             thmClrWindowText = thmClrWindowText + 1
             IF thmClrWindowText > 15 THEN thmClrWindowText = 0
-            Theme.DrawIndicator thmClrWindowText
+            ThmEdit.DrawIndicator thmClrWindowText
           CASE 6
             thmClrButton = thmClrButton + 1
             IF thmClrButton > 15 THEN thmClrButton = 0
-            Theme.DrawIndicator thmClrButton
+            ThmEdit.DrawIndicator thmClrButton
           CASE 7
             thmClrTextbox = thmClrTextbox + 1
             IF thmClrTextbox > 15 THEN thmClrTextbox = 0
-            Theme.DrawIndicator thmClrTextbox
+            ThmEdit.DrawIndicator thmClrTextbox
           CASE 8
             thmClrTextboxText = thmClrTextboxText + 1
             IF thmClrTextboxText > 15 THEN thmClrTextboxText = 0
-            Theme.DrawIndicator thmClrTextboxText
+            ThmEdit.DrawIndicator thmClrTextboxText
           CASE 9
             thmClr3DLight = thmClr3DLight + 1
             IF thmClr3DLight > 15 THEN thmClr3DLight = 0
-            Theme.DrawIndicator thmClr3DLight
+            ThmEdit.DrawIndicator thmClr3DLight
           CASE 10
             thmClr3DShadow = thmClr3DShadow + 1
             IF thmClr3DShadow > 15 THEN thmClr3DShadow = 0
-            Theme.DrawIndicator thmClr3DShadow
+            ThmEdit.DrawIndicator thmClr3DShadow
           CASE 11
             thmClrSelect = thmClrSelect + 1
             IF thmClrSelect > 15 THEN thmClrSelect = 0
-            Theme.DrawIndicator thmClrSelect
+            ThmEdit.DrawIndicator thmClrSelect
           CASE 12
             thmClrSelectText = thmClrSelectText + 1
             IF thmClrSelectText > 15 THEN thmClrSelectText = 0
-            Theme.DrawIndicator thmClrSelectText
+            ThmEdit.DrawIndicator thmClrSelectText
           CASE 13
             thmClrTitlebarText = thmClrTitlebarText + 1
             IF thmClrTitlebarText > 15 THEN thmClrTitlebarText = 0
-            Theme.DrawIndicator thmClrTitlebarText
+            ThmEdit.DrawIndicator thmClrTitlebarText
         END SELECT
         ThemeChanged = True
-        Theme.DrawPreview ""
+        ThmEdit.DrawPreview ""
       END IF
 
       IF Obj.BtnClick(btnObject) OR Key$ = "o" THEN
 
-        SelectedObject = Theme.SelectObject(SelectedObject)
+        SelectedObject = ThmEdit.SelectObject(SelectedObject)
         SELECT CASE SelectedObject
           CASE 1
             btnObject.Caption = "Desktop"
-            Theme.DrawIndicator thmClrDesktop
+            ThmEdit.DrawIndicator thmClrDesktop
           CASE 2
             btnObject.Caption = "Desktop text"
-            Theme.DrawIndicator thmClrDesktopText
+            ThmEdit.DrawIndicator thmClrDesktopText
           CASE 3
             btnObject.Caption = "Window"
-            Theme.DrawIndicator thmClrWindow
+            ThmEdit.DrawIndicator thmClrWindow
           CASE 4
             btnObject.Caption = "Window border"
-            Theme.DrawIndicator thmClrTitlebar
+            ThmEdit.DrawIndicator thmClrTitlebar
           CASE 5
             btnObject.Caption = "Window text"
-            Theme.DrawIndicator thmClrWindowText
+            ThmEdit.DrawIndicator thmClrWindowText
           CASE 6
             btnObject.Caption = "Button"
-            Theme.DrawIndicator thmClrButton
+            ThmEdit.DrawIndicator thmClrButton
           CASE 7
             btnObject.Caption = "Textbox"
-            Theme.DrawIndicator thmClrTextbox
+            ThmEdit.DrawIndicator thmClrTextbox
           CASE 8
             btnObject.Caption = "Textbox text"
-            Theme.DrawIndicator thmClrTextboxText
+            ThmEdit.DrawIndicator thmClrTextboxText
           CASE 9
             btnObject.Caption = "3D light"
-            Theme.DrawIndicator thmClr3DLight
+            ThmEdit.DrawIndicator thmClr3DLight
           CASE 10
             btnObject.Caption = "3D Shadow"
-            Theme.DrawIndicator thmClr3DShadow
+            ThmEdit.DrawIndicator thmClr3DShadow
           CASE 11
             btnObject.Caption = "Selection"
-            Theme.DrawIndicator thmClrSelect
+            ThmEdit.DrawIndicator thmClrSelect
           CASE 12
             btnObject.Caption = "Selection text"
-            Theme.DrawIndicator thmClrSelectText
+            ThmEdit.DrawIndicator thmClrSelectText
           CASE 13
             btnObject.Caption = "Titlebar text"
-            Theme.DrawIndicator thmClrTitlebarText
+            ThmEdit.DrawIndicator thmClrTitlebarText
         END SELECT
         Obj.DrawBtn btnObject, False
       END IF
@@ -463,7 +463,7 @@ TopOfLoop:
 END SUB
 
 ' =========================================================================
-'          NAME: Theme.Main()
+'          NAME: ThmEdit.Main()
 '    PARAMETERS: None
 '       RETURNS: Nothing
 '       ASSUMES: Nothing
@@ -473,15 +473,12 @@ END SUB
 '                chosen, calls the theme editor. If a parameter was passed
 '                on the command line, that theme will be opened.
 ' ========================================================================='
-SUB Theme.Main ()
+SUB ThmEdit.Main ()
 
     DIM ThemeToEdit AS STRING
     DIM I
 
-    OriginalTheme$ = RTRIM$(UserSettings.ThemeFile)
-
-    'Disable animations while selecting and editing themes
-    UserSettings.Animations = False
+    OriginalTheme$ = RTRIM$(Setting.ThemeFile)
 
     IF NOT ThemeFile$ = "" THEN
       'A theme was specified as parameter
@@ -514,17 +511,17 @@ SUB Theme.Main ()
 
       ThemeToEdit = ThemeFile$
     ELSE
-      ThemeToEdit = Theme.Select()
+      ThemeToEdit = ThmEdit.Select()
     END IF
 
     IF LEN(ThemeToEdit) THEN
-      Theme.Edit ThemeToEdit
+      ThmEdit.Edit ThemeToEdit
     END IF
 
 END SUB
 
 ' =========================================================================
-'          NAME: Theme.Select()
+'          NAME: ThmEdit.Select()
 '    PARAMETERS: None
 '       RETURNS: A string with the filename of the selected theme, if any
 '       ASSUMES: Nothing
@@ -533,7 +530,7 @@ END SUB
 '   DESCRIPTION: Shows a window allowing the user to chose from among all
 '                themes in DATA\THEMES directory
 ' =========================================================================
-FUNCTION Theme.Select () AS STRING
+FUNCTION ThmEdit.Select () AS STRING
 
     DIM btnBack AS ButtonType, btnNext AS ButtonType
     DIM btnEdit AS ButtonType, btnCancel AS ButtonType
@@ -542,7 +539,7 @@ FUNCTION Theme.Select () AS STRING
     DIM ThemeList() AS STRING
 
     Mouse.Hide
-    LINE (0, 29)-(639, 349), SystemTheme.Window, BF
+    LINE (0, 29)-(639, 349), Theme.Window, BF
     Mouse.Show
     Obj.DrawMenu
 
@@ -557,7 +554,7 @@ FUNCTION Theme.Select () AS STRING
       TmpName$ = LEFT$(TmpName$, LEN(TmpName$) - 4)
       REDIM PRESERVE ThemeList(0 TO TmpCount) AS STRING
       ThemeList(UBOUND(ThemeList)) = TmpName$
-      IF UCASE$(TmpName$) = UCASE$(RTRIM$(UserSettings.ThemeFile)) THEN ActiveTheme = TmpCount
+      IF UCASE$(TmpName$) = UCASE$(RTRIM$(Setting.ThemeFile)) THEN ActiveTheme = TmpCount
       TmpName$ = DIR$
       TmpCount = TmpCount + 1
     LOOP
@@ -584,13 +581,13 @@ FUNCTION Theme.Select () AS STRING
     Obj.DrawBtn btnBack, False
     Obj.DrawBtn btnNext, False
 
-    Font.Print "Theme name:", 434, 43, SystemTheme.WindowText, fontHeading
-    Font.Print "Theme author:", 434, 91, SystemTheme.WindowText, fontHeading
+    Font.Print "Theme name:", 434, 43, Theme.WindowText, fontHeading
+    Font.Print "Theme author:", 434, 91, Theme.WindowText, fontHeading
     
-    Theme.DrawPreview ThemeList(ActiveTheme)
+    ThmEdit.DrawPreview ThemeList(ActiveTheme)
 
-    Font.Print ThemeName$, 434, 59, SystemTheme.WindowText, FontNormal
-    Font.Print ThemeAuthor$, 434, 107, SystemTheme.WindowText, FontNormal
+    Font.Print ThemeName$, 434, 59, Theme.WindowText, FontNormal
+    Font.Print ThemeAuthor$, 434, 107, Theme.WindowText, FontNormal
 
     DIM Key$
 
@@ -598,12 +595,12 @@ FUNCTION Theme.Select () AS STRING
       Key$ = LCASE$(INKEY$)
 
       IF Obj.BtnClick(btnEdit) OR Key$ = "e" OR Key$ = CHR$(13) THEN
-        Theme.Select = ThemeList(ActiveTheme)
+        ThmEdit.Select = ThemeList(ActiveTheme)
         EXIT FUNCTION
       END IF
 
       IF Obj.BtnClick(btnCancel) OR Key$ = "x" OR Key$ = CHR$(27) THEN
-        Theme.Select = ""
+        ThmEdit.Select = ""
         EXIT FUNCTION
       END IF
 
@@ -622,12 +619,12 @@ FUNCTION Theme.Select () AS STRING
 
       IF UpdatePreview THEN
         Mouse.Hide
-        LINE (433, 57)-(639, 70), SystemTheme.Window, BF
-        LINE (433, 105)-(639, 118), SystemTheme.Window, BF
+        LINE (433, 57)-(639, 70), Theme.Window, BF
+        LINE (433, 105)-(639, 118), Theme.Window, BF
         Mouse.Show
-        Theme.DrawPreview ThemeList(ActiveTheme)
-        Font.Print ThemeName$, 434, 59, SystemTheme.WindowText, FontNormal
-        Font.Print ThemeAuthor$, 434, 107, SystemTheme.WindowText, FontNormal
+        ThmEdit.DrawPreview ThemeList(ActiveTheme)
+        Font.Print ThemeName$, 434, 59, Theme.WindowText, FontNormal
+        Font.Print ThemeAuthor$, 434, 107, Theme.WindowText, FontNormal
         UpdatePreview = False
       END IF
 
@@ -636,7 +633,7 @@ FUNCTION Theme.Select () AS STRING
 END FUNCTION
 
 ' =========================================================================
-'          NAME: Theme.SelectObject()
+'          NAME: ThmEdit.SelectObject()
 '    PARAMETERS: CurrentSelection - INT representing currently selected obj
 '       RETURNS: Integer representing new selected object
 '       ASSUMES: Nothing
@@ -646,7 +643,7 @@ END FUNCTION
 '                which the user can then select a color in the theme edit
 '                dialog
 ' =========================================================================
-FUNCTION Theme.SelectObject (BYVAL CurrentSelection) AS INTEGER
+FUNCTION ThmEdit.SelectObject (BYVAL CurrentSelection) AS INTEGER
 
     DIM winSelectObject AS WindowType
     DIM btnObject(1 TO 12) AS ButtonType
@@ -691,7 +688,7 @@ FUNCTION Theme.SelectObject (BYVAL CurrentSelection) AS INTEGER
       Key$ = LCASE$(INKEY$)
 
       IF Key$ = CHR$(13) THEN
-        Theme.SelectObject = ActiveSelection
+        ThmEdit.SelectObject = ActiveSelection
         Mouse.Hide
         PCOPY 1, 0
         Mouse.Show
@@ -699,7 +696,7 @@ FUNCTION Theme.SelectObject (BYVAL CurrentSelection) AS INTEGER
       END IF
 
       IF Key$ = CHR$(27) THEN
-        Theme.SelectObject = CurrentSelection
+        ThmEdit.SelectObject = CurrentSelection
         Mouse.Hide
         PCOPY 1, 0
         Mouse.Show
@@ -710,7 +707,7 @@ FUNCTION Theme.SelectObject (BYVAL CurrentSelection) AS INTEGER
       IF Mouse.Clicked THEN
         FOR I = 1 TO 12
           IF Obj.BtnClick(btnObject(I)) THEN
-            Theme.SelectObject = I
+            ThmEdit.SelectObject = I
             Mouse.Hide
             PCOPY 1, 0
             Mouse.Show

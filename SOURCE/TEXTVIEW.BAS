@@ -37,8 +37,8 @@ SUB TView.DrawText (StartLine)
     Mouse.Hide
     FOR LineCount = StartLine TO StartLine + MaxLinesShown
         IF NOT LineCount > UBOUND(FileData) THEN
-            LINE (7, (15 * (LineCount - StartLine + 1)) + 22)-(633, 15 * (LineCount - StartLine + 1) + 36), SystemTheme.Textbox, BF
-            Font.Print FileData(LineCount), 9, (15 * (LineCount - StartLine + 1)) + 24, SystemTheme.TextboxText, FontSystem
+            LINE (7, (15 * (LineCount - StartLine + 1)) + 22)-(633, 15 * (LineCount - StartLine + 1) + 36), Theme.Textbox, BF
+            Font.Print FileData(LineCount), 9, (15 * (LineCount - StartLine + 1)) + 24, Theme.TextboxText, FontSystem
         END IF
     NEXT
     Mouse.Show
@@ -104,7 +104,7 @@ TViewLoadErr:
     END IF
     Dummy = Sys.MsgBox("Could not load file", ErrMsg, msgError)
     Mouse.Hide
-    LINE (265, 223)-(375, 257), SystemTheme.Textbox, BF
+    LINE (265, 223)-(375, 257), Theme.Textbox, BF
     Mouse.Show
     TView.LoadFile = False
     EXIT FUNCTION
@@ -160,7 +160,7 @@ startofall:
 
     Obj.DrawMenu
     Mouse.Hide
-    LINE (0, 29)-(639, 349), SystemTheme.Window, BF
+    LINE (0, 29)-(639, 349), Theme.Window, BF
     Obj.DrawBtn btnOpen, False
     Mouse.Show
 
@@ -192,8 +192,8 @@ startofall:
                     GET (7, (15 * (LineMove)) + 21)-(633, 15 * (LineMove) + 35), LineData
                     PUT (7, (15 * (LineMove + 1)) + 21), LineData, PSET
                 NEXT
-                LINE (7, (15 * (1)) + 21)-(633, 15 * (1) + 35), SystemTheme.Textbox, BF
-                Font.Print FileData(StartLine), 9, (15 * (1)) + 22, SystemTheme.TextboxText, FontSystem
+                LINE (7, (15 * (1)) + 21)-(633, 15 * (1) + 35), Theme.Textbox, BF
+                Font.Print FileData(StartLine), 9, (15 * (1)) + 22, Theme.TextboxText, FontSystem
 
                 Mouse.Show
             END IF
@@ -213,8 +213,8 @@ startofall:
                     GET (7, (15 * (LineMove + 1)) + 22)-(633, 15 * (LineMove + 1) + 36), LineData
                     PUT (7, (15 * (LineMove)) + 22), LineData, PSET
                 NEXT
-                LINE (7, (15 * (MaxLinesShown + 1)) + 21)-(633, 15 * (MaxLinesShown + 1) + 35), SystemTheme.Textbox, BF
-                Font.Print FileData(StartLine + MaxLinesShown), 9, (15 * (MaxLinesShown + 1)) + 22, SystemTheme.TextboxText, FontSystem
+                LINE (7, (15 * (MaxLinesShown + 1)) + 21)-(633, 15 * (MaxLinesShown + 1) + 35), Theme.Textbox, BF
+                Font.Print FileData(StartLine + MaxLinesShown), 9, (15 * (MaxLinesShown + 1)) + 22, Theme.TextboxText, FontSystem
                 Mouse.Show
             END IF
         END IF
