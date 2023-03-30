@@ -1,10 +1,6 @@
 '$INCLUDE: 'SOURCE\SYSPATH.BI'
 '$INCLUDE: 'C:\VBDOS\VBDOS.BI'
 
-
-'Used to save retrieved path, to only call interrupt once
-DIM SHARED RetrievedPath$
-
 FUNCTION Sys.Path () AS STRING
 
 	'Uses the program segment prefix (PSP) to retrieve the path of the current
@@ -12,6 +8,8 @@ FUNCTION Sys.Path () AS STRING
 	'After the environment table, which is offset at &H2C, comes a four-byte
 	'gap, immediately followed by a ASCIIZ string containing the program path
 	'and filename of the currently running program.
+
+	STATIC RerievedPath$
 
 	'If path has already been detected, return it and exit function
 	IF LEN(RetrievedPath$) THEN
