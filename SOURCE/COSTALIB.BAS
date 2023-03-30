@@ -1,18 +1,19 @@
-DECLARE FUNCTION Temp.Path () AS STRING
 OPTION EXPLICIT
 DEFINT A-Z
+
+DECLARE FUNCTION Temp.Path () AS STRING
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 '$INCLUDE: 'C:\VBDOS\VBDOS.BI'
 
 'This is dimmed here, and not in LIBRARY.BI, because only this module uses
 'it
-	TYPE IconDataType
-		Pixel(31, 31) AS INTEGER
-	END TYPE
-	
-	DIM SHARED FontData(1 TO 3, 32 TO 127) AS STRING * 54
-	DIM SHARED FontWidth(1 TO 2, 32 TO 127) AS INTEGER
+TYPE IconDataType
+	Pixel(31, 31) AS INTEGER
+END TYPE
+
+DIM SHARED FontData(1 TO 3, 32 TO 127) AS STRING * 54
+DIM SHARED FontWidth(1 TO 2, 32 TO 127) AS INTEGER
 
 FUNCTION File.Exists (TargetFile AS STRING)
 
@@ -684,25 +685,12 @@ END SUB
 DEFINT A-Z
 SUB Sys.Load ()
 
-	'If the parameters /VER or /? are used, just show version info and exit
-		IF INSTR(COMMAND$, "/VER") OR INSTR(COMMAND$, "/?") THEN
-			PRINT
-			PRINT appName
-			PRINT "Made in 2004-" + appYear + " by Jacob Palm, released under the MIT license."
-			PRINT
-			PRINT "Version " + appVersion
-			PRINT
-			END
-		END IF
-
 	'Make sure Costa is running, by checking if RUNSTAT.TMP created by the
 	'/BOOT parameter exists
 		IF File.Exists(Temp.Path + "RUNSTAT.TMP") = False THEN
 			IF INSTR(COMMAND$, "/DEV") = 0 THEN
 				CLS
-				PRINT "This program is a part of " + appName + " and should not be executed"
-				PRINT "directly from the command prompt."
-				PRINT
+				PRINT "This program is a part of " + appName + "."
 				PRINT "To start Costa, run COSTA.BAT. If that file doesn't exist, run SETUP.EXE."
 				PRINT
 				END
@@ -733,21 +721,17 @@ SUB Sys.Load ()
 		
 		IF FontErr THEN
 			CLS
-			PRINT "One or more font files were not found."
-			PRINT "Make sure the font files are in " + Sys.Path + "DATA\FONTS."
-			PRINT
+			PRINT "One or more font files were not found in " + Sys.Path + "DATA\FONTS."
 			PRINT "Press any key to exit."
 			DO: LOOP WHILE INKEY$ = ""
-			END 1
+			END 1 'Error 1 makes costa.bat terminate
 		END IF
 
 		DEF SEG = VARSEG(FontData(1, 32))
-		'BSAVE Sys.Path + "DATA\FONTDATA.BSV", VARPTR(FontData(1, 32)), 15552
 		BLOAD Sys.Path + "DATA\FONTDATA.BSV", VARPTR(FontData(1, 32))
 		DEF SEG
 
 		DEF SEG = VARSEG(FontWidth(1, 32))
-		'BSAVE Sys.Path + "DATA\FONTINFO.BSV", VARPTR(FontWidth(1, 32)), 384
 		BLOAD Sys.Path + "DATA\FONTINFO.BSV", VARPTR(FontWidth(1, 32))
 		DEF SEG
 
@@ -755,23 +739,20 @@ SUB Sys.Load ()
 	'Load settings
 		Sys.LoadSettings
 		
-	'Load user profile - if profile has not yet been selected, load default
-		IF ProfileID THEN
-			Sys.LoadProfile ProfileID
-		ELSE
-			Sys.LoadProfile 0
-		END IF
+	'Load user profile
+		Sys.LoadProfile ProfileID
 
 	'Load colors for the interface
 		Sys.LoadTheme
 	
 	'Clear the keyboard buffer, DOSBox has some issues with leaving keys in it
 		DO: LOOP WHILE LEN(INKEY$)
-			
 
 	'EGA/VGA 640x350, 16 colors
-	SCREEN 9
+		SCREEN 9
 
+	Mouse.Show
+	EXIT SUB
 	'Set the right colors for the palette
 		OUT &H3C8, 6
 		OUT &H3C9, 31
@@ -852,7 +833,7 @@ SUB Sys.LoadSettings ()
 	EXIT SUB
 
 LoadDefaultSettings:
-	SystemSettings.LastUsedProfile = 0
+	SystemSettings.LastUsedProfile = 1
 	SystemSettings.UseLastProfile = True
 
 END SUB
