@@ -9,8 +9,8 @@ FUNCTION Sys.Path () AS STRING
 	'gap, immediately followed by a ASCIIZ string containing the program path
 	'and filename of the currently running program.
 
-	STATIC RerievedPath$
-
+	STATIC RetrievedPath$
+	
 	'If path has already been detected, return it and exit function
 	IF LEN(RetrievedPath$) THEN
 		Sys.Path = RetrievedPath$
@@ -23,7 +23,6 @@ FUNCTION Sys.Path () AS STRING
 		Sys.Path = RetrievedPath$
 		EXIT FUNCTION
 	END IF
-
 
 	'Offset of environ in PSP
 	CONST EnvOffInPsp = &H2C
