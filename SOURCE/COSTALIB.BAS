@@ -735,7 +735,6 @@ SUB Sys.Load ()
 		BLOAD Sys.Path + "DATA\FONTINFO.BSV", VARPTR(FontWidth(1, 32))
 		DEF SEG
 
-		
 	'Load settings
 		Sys.LoadSettings
 		
@@ -829,6 +828,10 @@ SUB Sys.LoadSettings ()
 	OPEN Sys.Path + "\DATA\CONFIG\COSTA.DAT" FOR BINARY AS #FileHandle
 	GET #FileHandle, , SystemSettings
 	CLOSE #FileHandle
+
+	IF SystemSettings.LastUsedProfile < 1 OR SystemSettings.LastUsedProfile > 5 THEN
+		SystemSettings.LastUsedProfile = 1
+	END IF
 
 	EXIT SUB
 
@@ -936,21 +939,6 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	PCOPY 0, 1
 	Mouse.Show
 	
-	IF UserSettings.GreyoutOnMsgBox THEN
-		DIM LX, LY
-		LY = 0
-		Mouse.Hide
-		FOR LX = 0 TO 639
-			LINE (LX, LY)-(LX, 349), SystemTheme.Shadow, , &HAAAA
-			IF LY = 0 THEN
-				LY = 1
-			ELSE
-				LY = 0
-			END IF
-		NEXT
-		Mouse.Show
-	END IF
-
 	Obj.DrawWin winMsgBox
 	Obj.DrawBtn btnFirst, False
 	IF msgType = msgQuest THEN Obj.DrawBtn btnSecond, False

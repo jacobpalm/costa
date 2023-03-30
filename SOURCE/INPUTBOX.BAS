@@ -68,21 +68,6 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
     PCOPY 0, 1
     Mouse.Show
 
-    IF UserSettings.GreyoutOnMsgBox THEN
-        DIM LX, LY
-        LY = 0
-        Mouse.Hide
-        FOR LX = 0 TO 639
-            LINE (LX, LY)-(LX, 349), SystemTheme.Shadow, , &HAAAA
-            IF LY = 0 THEN
-                LY = 1
-            ELSE
-                LY = 0
-            END IF
-        NEXT
-        Mouse.Show
-    END IF
-
     Obj.DrawWin winInputBox
     Obj.DrawBtn btnOK, False
     Obj.DrawBtn btnCancel, False
