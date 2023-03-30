@@ -55,57 +55,12 @@ IF COMMAND$ = "/BOOT" THEN
     MKDIR "IMAGES"
     MKDIR "THEMES"
     CHDIR ".."
-    'Clean temp files of both current and default location, they might not
-    'be the same
-    KILL Temp.Path + "PROFILE.TMP"
-    KILL Temp.Path + "RUNSTAT.TMP"
-    KILL Sys.Path + "DATA\TEMP\PROFILE.TMP"
-    KILL Sys.Path + "DATA\TEMP\RUNSTAT.TMP"
-
     ON ERROR GOTO 0
-
-    DIM FileHandle
-    FileHandle = FREEFILE
-    OPEN Temp.Path + "RUNSTAT.TMP" FOR OUTPUT AS #FileHandle
-    PRINT #FileHandle, "1"
-    CLOSE #FileHandle
 END IF
 
 STACK 5120
 
 CALL Sys.Load
-
-IF ProfileID < 1 OR ProfileID > 5 THEN
-
-    'If ProfileID is not set, then we need to use the last used one, or show
-    'profile selection dialog based on settings
-    IF SystemSettings.UseLastProfile THEN
-
-        IF SystemSettings.LastUsedProfile > 0 AND SystemSettings.LastUsedProfile < 5 THEN
-            ProfileID = SystemSettings.LastUsedProfile
-        ELSE
-            'Invalid value, load default
-            ProfileID = 1
-            SystemSettings.LastUsedProfile = 1
-            Sys.SaveSettings
-        END IF
-        Sys.LoadProfile SystemSettings.LastUsedProfile
-        Sys.LoadTheme
-
-    ELSE
-        Desk.ProfileSelect
-    END IF
-
-END IF
-
-ON ERROR RESUME NEXT
-OPEN Temp.Path + "PROFILE.TMP" FOR OUTPUT AS #FileHandle
-PRINT #FileHandle, ProfileID
-CLOSE #FileHandle
-
-CHDRIVE LEFT$(Sys.Path, 1)
-CHDIR Sys.Path
-ON ERROR GOTO 0
 
 Desk.Main
 
@@ -182,7 +137,7 @@ END SUB
 SUB Desk.DrawDesktop ()
    
   Mouse.Hide
-  LINE (0, 29)-(639, 349), SystemTheme.Desktop, BF
+  LINE (0, 29)-(639, 349), Theme.Desktop, BF
   
   'All desklinks will always have an imagefile. Use this to check if any
   'desklinks exist
@@ -210,10 +165,10 @@ SUB Desk.DrawDesktop ()
     Obj.DrawImg imgDeskLinkIcon
 
     'Description (caption) and target file
-    IF UserSettings.ShowLinkDescriptions THEN
+    IF Setting.ShowLinkDescriptions THEN
     
-        IF UserSettings.ShowLinkTargetFiles THEN
-            Font.Print DeskLink(TargetLink).Caption, DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 4, SystemTheme.DesktopText, 1
+        IF Setting.ShowLinkTargetFiles THEN
+            Font.Print DeskLink(TargetLink).Caption, DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 4, Theme.DesktopText, 1
             
             LinkTargetText = LCASE$(DeskLink(TargetLink).Filename)
 
@@ -222,9 +177,9 @@ SUB Desk.DrawDesktop ()
                 LinkTargetText = RIGHT$(LinkTargetText, LEN(LinkTargetText) - INSTR(LinkTargetText, "\"))
             LOOP
 
-            Font.Print LinkTargetText, DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 18, SystemTheme.DesktopText, 2
+            Font.Print LinkTargetText, DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 18, Theme.DesktopText, 2
         ELSE
-            Font.Print DeskLink(TargetLink).Caption, DeskLink(TargetLink).Left + 16 - (Font.GetWidth(RTRIM$(DeskLink(TargetLink).Caption), fontNormal) / 2), DeskLink(TargetLink).Top + 38, SystemTheme.DesktopText, fontNormal
+            Font.Print DeskLink(TargetLink).Caption, DeskLink(TargetLink).Left + 16 - (Font.GetWidth(RTRIM$(DeskLink(TargetLink).Caption), FontNormal) / 2), DeskLink(TargetLink).Top + 38, Theme.DesktopText, FontNormal
         END IF
 
     END IF
@@ -248,12 +203,6 @@ END SUB
 ' =========================================================================
 SUB Desk.ExitGUI ()
     ON LOCAL ERROR RESUME NEXT
-
-    KILL Temp.Path + "*.TMP"
-    KILL Temp.Path + "*.INT"
-    KILL Temp.Path + "*.BLU"
-    KILL Temp.Path + "*.RED"
-    KILL Temp.Path + "*.GRN"
 
     SCREEN 0
     COLOR 7, 0
@@ -358,7 +307,7 @@ LinkDialogDraw:
   Obj.DrawWin ConfWin
   Obj.DrawTxt txtLinkCapt, txtLinkCaptText, False
   Obj.DrawBtn btnIconPrev, False
-  Obj.DrawFrm frmIconFrame, 15, SystemTheme.Shadow
+  Obj.DrawFrm frmIconFrame, 15, Theme.Shadow
   Obj.DrawBtn btnIconNext, False
   Obj.DrawTxt txtFilename, txtFileNameText, False
   Obj.DrawBtn btnBrowse, False
@@ -367,13 +316,13 @@ LinkDialogDraw:
   Obj.DrawChk chkPauseOnExit
   Obj.DrawBtn btnOK, False
   Obj.DrawBtn btnCancel, False
-  Font.Print "õDescription (caption):", 222, txtLinkCapt.Pos.Top - 15, SystemTheme.WindowText, 1
-  Font.Print "õProgram or DOS command:", 222, txtFilename.Pos.Top - 15, SystemTheme.WindowText, 1
-  Font.Print "Paõrameters:", 222, txtParams.Pos.Top - 15, SystemTheme.WindowText, 1
-  Font.Print "Paõth (including drive):", 222, txtPath.Pos.Top - 15, SystemTheme.WindowText, 1
-  Font.Print "Pause after eõxecution", 242, chkPauseOnExit.Pos.Top + 3, SystemTheme.WindowText, 2
+  Font.Print "õDescription (caption):", 222, txtLinkCapt.Pos.Top - 15, Theme.WindowText, 1
+  Font.Print "õProgram or DOS command:", 222, txtFilename.Pos.Top - 15, Theme.WindowText, 1
+  Font.Print "Paõrameters:", 222, txtParams.Pos.Top - 15, Theme.WindowText, 1
+  Font.Print "Paõth (including drive):", 222, txtPath.Pos.Top - 15, Theme.WindowText, 1
+  Font.Print "Pause after eõxecution", 242, chkPauseOnExit.Pos.Top + 3, Theme.WindowText, 2
   Mouse.Hide
-  LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), SystemTheme.Desktop, BF
+  LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), Theme.Desktop, BF
   Mouse.Show
   Obj.DrawImg imgIcon
   
@@ -414,7 +363,7 @@ LinkDialogDraw:
       CurrentIcon = CurrentIcon - 1
       IF CurrentIcon < 0 THEN CurrentIcon = UBOUND(AllIcons)
       Mouse.Hide
-      LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), SystemTheme.Desktop, BF
+      LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), Theme.Desktop, BF
       Mouse.Show
       imgIcon.ImageFile = AllIcons(CurrentIcon)
       Obj.DrawImg imgIcon
@@ -425,7 +374,7 @@ LinkDialogDraw:
       CurrentIcon = CurrentIcon + 1
       IF CurrentIcon > UBOUND(AllIcons) THEN CurrentIcon = 0
       Mouse.Hide
-      LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), SystemTheme.Desktop, BF
+      LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), Theme.Desktop, BF
       Mouse.Show
       imgIcon.ImageFile = AllIcons(CurrentIcon)
       Obj.DrawImg imgIcon
@@ -506,17 +455,17 @@ SUB Desk.LinkLoad ()
     DIM ResetMsg
     DIM DeskLinkFile AS STRING
 
-    DeskLinkFile = Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(ProfileID)) + ".DAT"
+    DeskLinkFile = Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(Setting.DesktopID)) + ".DAT"
     FileHandle = FREEFILE
 
     IF NOT File.Exists(DeskLinkFile) THEN
       Desk.LinkReset
-      ResetMsg = Sys.MsgBox("Desktop links reset to default", "The file in which Costa stores the configuration for desktop links, DESKLNK" + LTRIM$(STR$(ProfileID)) + ".DAT," + CHR$(13) + "was not found in this profile." + CHR$(13) + CHR$(13) +  _
-"A new file has been automatically created, but any custom links will need to be" + CHR$(13) + "created again manually.", msgError)
+      ResetMsg = Sys.MsgBox("Desktop links reset to default", "The file in which Costa stores the configuration for desktop links, DESKLNK" + LTRIM$(STR$(Setting.DesktopID)) + ".DAT," + CHR$(13) + "was not found in this profile." + CHR$(13) + CHR$( _
+13) + "A new file has been automatically created, but any custom links will need to be" + CHR$(13) + "created again manually.", msgError)
       EXIT SUB
     END IF
 
-    OPEN Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(ProfileID)) + ".DAT" FOR BINARY AS #FileHandle
+    OPEN Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(Setting.DesktopID)) + ".DAT" FOR BINARY AS #FileHandle
     IF NOT LOF(FileHandle) = 0 THEN GET #FileHandle, , LinkCount
 
     'A value of -1 means no icons exists by user choice, so do nothing
@@ -543,9 +492,7 @@ SUB Desk.LinkLoad ()
     REDIM DeskLink(0 TO LinkCount - 1) AS DeskLinkType
 
     FOR LinkLoad = 0 TO LinkCount - 1
-
         GET #FileHandle, , DeskLink(LinkLoad)
-
     NEXT
     
     CLOSE #FileHandle
@@ -604,20 +551,20 @@ SUB Desk.LinkMenu (TargetLink)
   Obj.DrawImg imgIcon
 
   Font.Print DeskLink(TargetLink).Caption, winLinkMenu.Pos.Left + 54, winLinkMenu.Pos.Top + 17, 0, fontHeading
-  Font.Print DeskLink(TargetLink).Filename, winLinkMenu.Pos.Left + 54, winLinkMenu.Pos.Top + 31, 0, fontNormal
-  Font.Print "Path:", winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 59, 0, fontNormal
-  Font.Print "Parameters:", winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 76, 0, fontNormal
+  Font.Print DeskLink(TargetLink).Filename, winLinkMenu.Pos.Left + 54, winLinkMenu.Pos.Top + 31, 0, FontNormal
+  Font.Print "Path:", winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 59, 0, FontNormal
+  Font.Print "Parameters:", winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 76, 0, FontNormal
   
   VIEW SCREEN (winLinkMenu.Pos.Left + 90, winLinkMenu.Pos.Top + 55)-(winLinkMenu.Pos.Left + winLinkMenu.Pos.Width - 12, winLinkMenu.Pos.Top + 90)
   IF LEN(RTRIM$(DeskLink(TargetLink).Path)) THEN
-    Font.Print DeskLink(TargetLink).Path, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 59, SystemTheme.WindowText, fontNormal
+    Font.Print DeskLink(TargetLink).Path, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 59, Theme.WindowText, FontNormal
   ELSE
-    Font.Print "Unspecified", winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 59, SystemTheme.WindowText, fontNormal
+    Font.Print "Unspecified", winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 59, Theme.WindowText, FontNormal
   END IF
   IF LEN(RTRIM$(DeskLink(TargetLink).Parameters)) THEN
-    Font.Print DeskLink(TargetLink).Parameters, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 76, SystemTheme.WindowText, fontNormal
+    Font.Print DeskLink(TargetLink).Parameters, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 76, Theme.WindowText, FontNormal
   ELSE
-    Font.Print "None", winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 76, SystemTheme.WindowText, fontNormal
+    Font.Print "None", winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 76, Theme.WindowText, FontNormal
   END IF
   VIEW
 
@@ -666,7 +613,7 @@ SUB Desk.LinkMenu (TargetLink)
       DIM DoDelete
 
       RedrawNeeded = True
-      IF UserSettings.ConfirmLinkDelete THEN
+      IF Setting.ConfirmLinkDelete THEN
         DoDelete = Sys.MsgBox("Remove desktop link", "This will permanently delete this" + CHR$(13) + "desktop link. Are you sure?", msgQuest)
       ELSE
         DoDelete = True
@@ -798,7 +745,7 @@ END SUB
 'Resets all desk icons, by recreating the array as default
 SUB Desk.LinkReset ()
 
-    REDIM DeskLink(0 TO 7) AS DeskLinkType
+    REDIM DeskLink(0 TO 8) AS DeskLinkType
 
     DeskLink(0).Caption = "Tic Tac Toe"
     DeskLink(0).Filename = "TICTAC.EXE"
@@ -840,30 +787,38 @@ SUB Desk.LinkReset ()
     DeskLink(4).Left = 15
     DeskLink(4).Top = 225
 
-    DeskLink(5).Caption = "DOS-prompt"
-    DeskLink(5).Filename = "COMMAND.COM"
+    DeskLink(5).Caption = "Configuration"
+    DeskLink(5).Filename = "CONFIG.EXE"
     DeskLink(5).Path = ""
     DeskLink(5).Parameters = ""
-    DeskLink(5).ImageFile = "DOSPROG"
-    DeskLink(5).PauseOnExit = True
+    DeskLink(5).ImageFile = "CONFIG"
     DeskLink(5).Left = 480
     DeskLink(5).Top = 45
 
-    DeskLink(6).Caption = "What's new?"
-    DeskLink(6).Filename = "DOCS\CHANGES.TXT"
+    DeskLink(6).Caption = "DOS-prompt"
+    DeskLink(6).Filename = "COMMAND.COM"
     DeskLink(6).Path = ""
     DeskLink(6).Parameters = ""
-    DeskLink(6).ImageFile = "NEWSPAPE"
+    DeskLink(6).ImageFile = "DOSPROG"
+    DeskLink(6).PauseOnExit = True
     DeskLink(6).Left = 480
     DeskLink(6).Top = 90
 
-    DeskLink(7).Caption = "User's guide"
-    DeskLink(7).Filename = "DOCS\HELP.TXT"
+    DeskLink(7).Caption = "What's new?"
+    DeskLink(7).Filename = "DOCS\CHANGES.TXT"
     DeskLink(7).Path = ""
     DeskLink(7).Parameters = ""
-    DeskLink(7).ImageFile = "HELP"
+    DeskLink(7).ImageFile = "NEWSPAPE"
     DeskLink(7).Left = 480
     DeskLink(7).Top = 135
+
+    DeskLink(8).Caption = "User's guide"
+    DeskLink(8).Filename = "DOCS\HELP.TXT"
+    DeskLink(8).Path = ""
+    DeskLink(8).Parameters = ""
+    DeskLink(8).ImageFile = "HELP"
+    DeskLink(8).Left = 480
+    DeskLink(8).Top = 180
 
     Desk.LinkSave
 
@@ -935,8 +890,8 @@ SUB Desk.LinkSave ()
     NEXT
     
     FileHandle = FREEFILE
-    IF File.Exists(Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(ProfileID)) + ".DAT") THEN KILL Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(ProfileID)) + ".DAT"
-    OPEN Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(ProfileID)) + ".DAT" FOR BINARY AS #FileHandle
+    IF File.Exists(Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(Setting.DesktopID)) + ".DAT") THEN KILL Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(Setting.DesktopID)) + ".DAT"
+    OPEN Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(Setting.DesktopID)) + ".DAT" FOR BINARY AS #FileHandle
     PUT #FileHandle, , LinkCount
 
     IF LinkCount = 0 THEN CLOSE #FileHandle: EXIT SUB
@@ -968,22 +923,22 @@ SUB Desk.Main ()
 
   DIM btnAddLink AS ButtonType, btnRunCmd AS ButtonType
   DIM btnAboutCosta AS ButtonType, btnExitCosta AS ButtonType
-  DIM btnProfile AS ButtonType, btnConfig AS ButtonType
+  DIM btnPrevious AS ButtonType, btnNext AS ButtonType
   
   Obj.SetSize btnAddLink.Pos, 3, 2, 92, 22
   btnAddLink.Caption = "Add õlink"
   Obj.SetSize btnRunCmd.Pos, 102, 2, 92, 22
-  btnRunCmd.Caption = "Eõxecute"
+  btnRunCmd.Caption = "õExecute"
 
-  Obj.SetSize btnProfile.Pos, 224, 2, 92, 22
-  btnProfile.Caption = "õProfile..."
-  Obj.SetSize btnConfig.Pos, 323, 2, 92, 22
-  btnConfig.Caption = "õConfig..."
+  Obj.SetSize btnPrevious.Pos, 255, 2, 42, 22
+  btnPrevious.Caption = "õ<"
+  Obj.SetSize btnNext.Pos, 343, 2, 42, 22
+  btnNext.Caption = "õ>"
 
   Obj.SetSize btnAboutCosta.Pos, 446, 2, 92, 22
   btnAboutCosta.Caption = "õAbout..."
   Obj.SetSize btnExitCosta.Pos, 545, 2, 92, 22
-  btnExitCosta.Caption = "õExit"
+  btnExitCosta.Caption = "Eõxit"
 
   DIM DeskLinkCheck, ClickedX, ClickedY, ClickedB, DidEdit, Key$
   DIM TabCheck, btnTab AS ButtonType, imgTab AS ImageType
@@ -991,16 +946,18 @@ SUB Desk.Main ()
   Mouse.Show
 
   Desk.LinkLoad
+
 Desk.RedrawAll:
   TabCheck = -1
 
   Obj.DrawMenu
   Obj.DrawBtn btnAddLink, False
   Obj.DrawBtn btnRunCmd, False
-  Obj.DrawBtn btnProfile, False
-  Obj.DrawBtn btnConfig, False
+  Obj.DrawBtn btnPrevious, False
+  Obj.DrawBtn btnNext, False
   Obj.DrawBtn btnAboutCosta, False
   Obj.DrawBtn btnExitCosta, False
+  Font.Print LTRIM$(STR$(Setting.DesktopID)) + "/5", 310, 8, Theme.WindowText, fontHeading
   Desk.DrawDesktop
 
   'Clear mouse and keyboard buffer, since DOSBox will sometimes leave data
@@ -1012,11 +969,11 @@ Desk.RedrawAll:
     Key$ = LCASE$(INKEY$)
 
     IF Obj.BtnClick(btnAddLink) THEN Key$ = "l"
-    IF Obj.BtnClick(btnRunCmd) THEN Key$ = "x"
-    IF Obj.BtnClick(btnProfile) THEN Key$ = "p"
-    IF Obj.BtnClick(btnConfig) THEN Key$ = "c"
+    IF Obj.BtnClick(btnRunCmd) THEN Key$ = "e"
+    IF Obj.BtnClick(btnPrevious) THEN Key$ = CHR$(0) + "m"
+    IF Obj.BtnClick(btnNext) THEN Key$ = CHR$(0) + "k"
     IF Obj.BtnClick(btnAboutCosta) THEN Key$ = "a"
-    IF Obj.BtnClick(btnExitCosta) THEN Key$ = "e"
+    IF Obj.BtnClick(btnExitCosta) THEN Key$ = "x"
 
     Mouse.Poll
     IF Mouse.Clicked AND MouseY > 32 THEN
@@ -1066,7 +1023,6 @@ Desk.RedrawAll:
                 TabCheck = -1
                 Desk.LinkLoad
                 Mouse.Hide
-                LINE (0, 29)-(639, 349), SystemTheme.Desktop, BF
                 Desk.DrawDesktop
                 Mouse.Show
             ELSE
@@ -1078,7 +1034,7 @@ Desk.RedrawAll:
 
         END IF
 
-        IF Key$ = "x" THEN
+        IF Key$ = "e" THEN
             DIM FileToRun AS STRING
             FileToRun = Sys.InputBox("Execute program or command", "You can also use this dialog to open any file" + CHR$(13) + "associated with a program (like README.TXT).", "RUNPROG", "")
             IF LEN(FileToRun) THEN
@@ -1091,21 +1047,26 @@ Desk.RedrawAll:
             Desk.AboutBox
         END IF
 
-        IF Key$ = "p" THEN
-            Desk.ProfileSelect
+        IF Key$ = CHR$(0) + "k" OR Key$ = CHR$(0) + "m" THEN
+            IF Key$ = CHR$(0) + "k" THEN
+                Setting.DesktopID = Setting.DesktopID - 1
+            ELSE
+                Setting.DesktopID = Setting.DesktopID + 1
+            END IF
+            IF Setting.DesktopID < 1 THEN Setting.DesktopID = 5
+            IF Setting.DesktopID > 5 THEN Setting.DesktopID = 1
+            Mouse.Hide
+            LINE (310, 7)-(330, 16), Theme.Window, BF
+            Mouse.Show
+            Font.Print LTRIM$(STR$(Setting.DesktopID)) + "/5", 310, 8, Theme.WindowText, fontHeading
             Desk.LinkLoad
-            Desk.TipOfTheDay
-            GOTO Desk.RedrawAll
+            Desk.DrawDesktop
+            TabCheck = -1
         END IF
 
-        IF Key$ = "c" THEN
-            Desk.Run "CONFIG.EXE", "", Sys.Path, False
-        END IF
-
-
-        IF Key$ = "e" OR Key$ = CHR$(27) THEN
+        IF Key$ = "x" OR Key$ = CHR$(27) THEN
             DIM DoExit
-            IF UserSettings.ConfirmExit THEN
+            IF Setting.ConfirmExit THEN
                 DoExit = Sys.MsgBox("Exit " + appName, "This will exit Costa and return you to the DOS" + CHR$(13) + "prompt. Are you sure?", msgQuest)
             ELSE
                 DoExit = True
@@ -1124,7 +1085,7 @@ Desk.RedrawAll:
             IF NOT (UBOUND(DeskLink) = 0 AND RTRIM$(DeskLink(0).Caption) = "") THEN
                 IF TabCheck > -1 THEN
                     Mouse.Hide
-                    LINE (DeskLink(TabCheck).Left - 3, DeskLink(TabCheck).Top - 3)-(DeskLink(TabCheck).Left + 35, DeskLink(TabCheck).Top + 35), SystemTheme.Desktop, BF
+                    LINE (DeskLink(TabCheck).Left - 3, DeskLink(TabCheck).Top - 3)-(DeskLink(TabCheck).Left + 35, DeskLink(TabCheck).Top + 35), Theme.Desktop, BF
                     Obj.DrawImg imgTab
                     Mouse.Show
                 END IF
@@ -1154,7 +1115,7 @@ Desk.RedrawAll:
 
         IF (Key$ = CHR$(13) OR Key$ = CHR$(32)) AND TabCheck > -1 THEN
             Mouse.Hide
-            LINE (DeskLink(TabCheck).Left - 3, DeskLink(TabCheck).Top - 3)-(DeskLink(TabCheck).Left + 35, DeskLink(TabCheck).Top + 35), SystemTheme.Desktop, BF
+            LINE (DeskLink(TabCheck).Left - 3, DeskLink(TabCheck).Top - 3)-(DeskLink(TabCheck).Left + 35, DeskLink(TabCheck).Top + 35), Theme.Desktop, BF
             Obj.DrawImg imgTab
             Mouse.Show
 
@@ -1169,260 +1130,6 @@ Desk.RedrawAll:
   LOOP
 
 EXIT SUB
-
-END SUB
-
-' =========================================================================
-'          NAME: Desk.ProfileEdit
-'    PARAMETERS: ProfileNum - ID of profile to edit, 1-5
-'       RETURNS: Nothing
-'       ASSUMES: Nothing
-'   CALLED FROM: DESKTOP.BAS
-' -------------------------------------------------------------------------
-'   DESCRIPTION: Shows a window allowing user to select icon and name for
-'                the user profile
-' =========================================================================
-SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
-    DIM AllIcons() AS STRING
-    DIM IconCount AS INTEGER, CurrentIcon AS INTEGER, IconFile AS STRING
-    DIM CurrentIconFilename AS STRING
-
-    Sys.ShowLoading
-
-    IconFile = DIR$(Sys.Path + "DATA\IMAGES\*.BSV")
-    IconCount = 0
-    CurrentIconFilename = RTRIM$(UserSettings.ProfileImage)
-
-    REDIM PRESERVE AllIcons(0) AS STRING
-    IF NOT IconFile = "" THEN
-        DO
-          REDIM PRESERVE AllIcons(0 TO IconCount) AS STRING
-          AllIcons(IconCount) = LEFT$(IconFile, LEN(IconFile) - 4)
-
-          IF AllIcons(IconCount) = CurrentIconFilename THEN CurrentIcon = IconCount
-
-          IconCount = IconCount + 1
-          IconFile = DIR$
-        LOOP UNTIL IconFile = ""
-    ELSE
-      IconFile = "UNKNOWN"
-      AllIcons(0) = "UNKNOWN"
-    END IF
-
-
-    DIM winProfEdit AS WindowType
-    DIM txtProfileName AS TextboxType
-    DIM txtProfileNameText AS STRING
-    DIM btnSave AS ButtonType, btnCancel AS ButtonType
-    DIM btnIconPrev AS ButtonType, btnIconNext AS ButtonType
-    DIM frmIconFrame AS FrameType
-    DIM imgIcon AS ImageType
-
-    Obj.SetSize winProfEdit.Pos, 210, 71, 220, 208
-    
-    Obj.SetSize frmIconFrame.Pos, 296, winProfEdit.Pos.Top + 46, 48, 48
-    Obj.SetSize imgIcon.Pos, 304, frmIconFrame.Pos.Top + 8, 32, 32
-    Obj.SetSize btnIconPrev.Pos, 262, frmIconFrame.Pos.Top + 14, 22, 22
-    Obj.SetSize btnIconNext.Pos, 356, frmIconFrame.Pos.Top + 14, 22, 22
-    Obj.SetSize txtProfileName.Pos, 222, winProfEdit.Pos.Top + 128, 196, 19
-    Obj.SetSize btnSave.Pos, 229, winProfEdit.Pos.Top + 174, 84, 22
-    Obj.SetSize btnCancel.Pos, 326, winProfEdit.Pos.Top + 174, 84, 22
-
-    txtProfileName.MaxLen = 25
-    txtProfileNameText = RTRIM$(UserSettings.ProfileName)
-    btnIconPrev.Caption = "<"
-    btnIconNext.Caption = ">"
-    btnSave.Caption = "õSave"
-    btnCancel.Caption = "õCancel"
-    imgIcon.ImageFile = AllIcons(CurrentIcon)
-
-    Obj.DrawWin winProfEdit
-    Obj.DrawBtn btnIconPrev, False
-    Obj.DrawFrm frmIconFrame, 15, SystemTheme.Shadow
-    Obj.DrawBtn btnIconNext, False
-    Obj.DrawTxt txtProfileName, txtProfileNameText, False
-    Obj.DrawBtn btnSave, False
-    Obj.DrawBtn btnCancel, False
-    Font.Print "õName:", 222, winProfEdit.Pos.Top + 114, SystemTheme.WindowText, 1
-    Obj.DrawImg imgIcon
-
-    DIM Key$
-    DO
-        Key$ = LCASE$(INKEY$)
-
-        IF Obj.BtnClick(btnIconPrev) OR Key$ = CHR$(0) + "k" THEN
-          CurrentIcon = CurrentIcon - 1
-          IF CurrentIcon < 0 THEN CurrentIcon = UBOUND(AllIcons)
-          Mouse.Hide
-          LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), SystemTheme.Window, BF
-          Mouse.Show
-          imgIcon.ImageFile = AllIcons(CurrentIcon)
-          Obj.DrawImg imgIcon
-        END IF
-
-        IF Obj.BtnClick(btnIconNext) OR Key$ = CHR$(0) + "m" THEN
-          CurrentIcon = CurrentIcon + 1
-          IF CurrentIcon > UBOUND(AllIcons) THEN CurrentIcon = 0
-          Mouse.Hide
-          LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), SystemTheme.Window, BF
-          Mouse.Show
-          imgIcon.ImageFile = AllIcons(CurrentIcon)
-          Obj.DrawImg imgIcon
-        END IF
-
-        IF Obj.TxtClick(txtProfileName) OR Key$ = "n" THEN Obj.EditTxt txtProfileName, txtProfileNameText
-
-        IF Obj.BtnClick(btnSave) OR Key$ = CHR$(13) OR Key$ = "s" THEN
-            UserSettings.ProfileName = LTRIM$(RTRIM$(txtProfileNameText))
-            UserSettings.ProfileImage = AllIcons(CurrentIcon)
-            Sys.SaveProfile ProfileNum
-            EXIT DO
-        END IF
-
-        IF Obj.BtnClick(btnCancel) OR Key$ = CHR$(27) OR Key$ = "c" THEN
-            EXIT DO
-        END IF
-
-    LOOP
-
-END SUB
-
-' =========================================================================
-'          NAME: Desk.ProfileSelect()
-'    PARAMETERS: None
-'       RETURNS: Nothing
-'       ASSUMES: Nothing
-'   CALLED FROM: DESKTOP.BAS
-' -------------------------------------------------------------------------
-'   DESCRIPTION: Shows a window, allowing the user to choose between one
-'                of the five user profiles Costa offers
-' =========================================================================
-SUB Desk.ProfileSelect ()
-    DIM ProfileEnabled(1 TO 5) AS INTEGER
-    DIM ProfileName(1 TO 5) AS STRING
-    DIM Counter, SelectedProfile
-    DIM ProfileNamePos
-    DIM Key$
-
-    DIM winProfiles AS WindowType
-    DIM btnProfile(1 TO 5) AS ButtonType
-    DIM imgProfile(1 TO 5) AS ImageType
-    DIM btnContinue AS ButtonType
-    DIM btnEdit AS ButtonType
-
-    UserSettings.ThemeFile = "DEFAULT"
-    Sys.LoadTheme
-    
-    Obj.SetSize winProfiles.Pos, 151, 77, 338, 196
-    
-    Obj.SetSize btnProfile(1).Pos, winProfiles.Pos.Left + 18, winProfiles.Pos.Top + 66, 46, 46
-    Obj.SetSize btnProfile(2).Pos, winProfiles.Pos.Left + 82, winProfiles.Pos.Top + 66, 46, 46
-    Obj.SetSize btnProfile(3).Pos, winProfiles.Pos.Left + 146, winProfiles.Pos.Top + 66, 46, 46
-    Obj.SetSize btnProfile(4).Pos, winProfiles.Pos.Left + 210, winProfiles.Pos.Top + 66, 46, 46
-    Obj.SetSize btnProfile(5).Pos, winProfiles.Pos.Left + 274, winProfiles.Pos.Top + 66, 46, 46
-    btnProfile(1).Transparent = True
-    btnProfile(2).Transparent = True
-    btnProfile(3).Transparent = True
-    btnProfile(4).Transparent = True
-    btnProfile(5).Transparent = True
-
-    Obj.SetSize btnEdit.Pos, winProfiles.Pos.Left + 18, winProfiles.Pos.Top + winProfiles.Pos.Height - 39, 80, 22
-    btnEdit.Caption = "õEdit..."
-
-    Obj.SetSize btnContinue.Pos, winProfiles.Pos.Left + winProfiles.Pos.Width - 98, winProfiles.Pos.Top + winProfiles.Pos.Height - 39, 80, 22
-    btnContinue.Caption = "õContinue"
-    
-    SelectedProfile = SystemSettings.LastUsedProfile
-    IF SelectedProfile < 1 OR SelectedProfile > 5 THEN SelectedProfile = 1
-
-TopOfProfile:
-    FOR Counter = 1 TO 5
-        Sys.LoadProfile Counter
-        ProfileName(Counter) = RTRIM$(UserSettings.ProfileName)
-        imgProfile(Counter).ImageFile = RTRIM$(UserSettings.ProfileImage)
-    NEXT
-
-    Mouse.Hide
-    LINE (0, 0)-(639, 349), SystemTheme.Desktop, BF
-    Mouse.Show
-    
-    Obj.DrawWin winProfiles
-    Font.Print "Please select a profile from which your desktop,", winProfiles.Pos.Left + 14, winProfiles.Pos.Top + 18, SystemTheme.WindowText, fontNormal
-    Font.Print "theme and other customizations will be loaded.", winProfiles.Pos.Left + 14, winProfiles.Pos.Top + 32, SystemTheme.WindowText, fontNormal
-
-    IF SelectedProfile < 1 OR SelectedProfile > 5 THEN
-        SelectedProfile = 1
-    END IF
-
-    ProfileNamePos = winProfiles.Pos.Left + (winProfiles.Pos.Width / 2) - (Font.GetWidth(ProfileName(SelectedProfile), fontHeading) / 2)
-    Font.Print ProfileName(SelectedProfile), ProfileNamePos, winProfiles.Pos.Top + 136, SystemTheme.WindowText, fontHeading
-
-    FOR Counter = 1 TO 5
-        IF Counter = SelectedProfile THEN
-            Obj.DrawBtn btnProfile(Counter), True
-        ELSE
-            Obj.DrawBtn btnProfile(Counter), False
-        END IF
-        imgProfile(Counter).Pos.Top = btnProfile(Counter).Pos.Top + 7
-        imgProfile(Counter).Pos.Left = btnProfile(Counter).Pos.Left + 7
-    NEXT
-
-    Obj.DrawBtn btnContinue, False
-    Obj.DrawBtn btnEdit, False
-
-    FOR Counter = 1 TO 5
-      Obj.DrawImg imgProfile(Counter)
-    NEXT
-             
-    DO
-        Key$ = LCASE$(INKEY$)
-
-        IF Key$ = CHR$(0) + "k" THEN Key$ = LTRIM$(STR$(SelectedProfile - 1))
-        IF Key$ = CHR$(0) + "m" THEN Key$ = LTRIM$(STR$(SelectedProfile + 1))
-
-        FOR Counter = 1 TO 5
-            IF Mouse.Clicked AND Mouse.InArea(btnProfile(Counter).Pos) THEN
-                Key$ = LTRIM$(STR$(Counter))
-            END IF
-
-            IF Key$ = LTRIM$(STR$(Counter)) THEN
-                IF NOT Counter = SelectedProfile THEN
-                    Obj.DrawBtn btnProfile(SelectedProfile), False
-                    Obj.DrawBtn btnProfile(Counter), True
-                    SelectedProfile = Counter
-                    ProfileNamePos = winProfiles.Pos.Left + (winProfiles.Pos.Width / 2) - (Font.GetWidth(ProfileName(SelectedProfile), fontHeading) / 2)
-                    Mouse.Hide
-                    LINE (winProfiles.Pos.Left + 7, winProfiles.Pos.Top + 132)-(winProfiles.Pos.Left + winProfiles.Pos.Width - 7, winProfiles.Pos.Top + 148), SystemTheme.Window, BF
-                    Mouse.Show
-                    Font.Print ProfileName(SelectedProfile), ProfileNamePos, winProfiles.Pos.Top + 136, SystemTheme.WindowText, fontHeading
-                    DO WHILE Mouse.Clicked: LOOP
-                END IF
-            END IF
-        NEXT
-
-        IF Key$ = "c" OR Key$ = CHR$(13) OR Obj.BtnClick(btnContinue) THEN
-            DIM FileHandle
-            FileHandle = FREEFILE
-            OPEN Temp.Path + "PROFILE.TMP" FOR OUTPUT AS #FileHandle
-            PRINT #FileHandle, SelectedProfile
-            CLOSE #FileHandle
-
-            ProfileID = SelectedProfile
-            SystemSettings.LastUsedProfile = SelectedProfile
-            Sys.SaveSettings
-            Sys.LoadProfile SelectedProfile
-            Sys.LoadTheme
-
-            EXIT SUB
-        END IF
-
-        IF Key$ = "e" OR Obj.BtnClick(btnEdit) THEN
-            Sys.LoadProfile SelectedProfile
-            Desk.ProfileEdit SelectedProfile
-            GOSUB TopOfProfile
-        END IF
-
-    LOOP
 
 END SUB
 

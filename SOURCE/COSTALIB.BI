@@ -107,24 +107,13 @@
     Checked AS INTEGER
   END TYPE
 
-  TYPE SystemSettingsType
-    UseLastProfile AS INTEGER
-    LastUsedProfile AS INTEGER
-  END TYPE
-
-  TYPE UserSettingsType
-    ProfileName AS STRING * 25
-    ProfileImage AS STRING * 8
-    Animations AS INTEGER
+  TYPE SettingType
+    DesktopID AS INTEGER
     ShowLinkDescriptions AS INTEGER
     ShowLinkTargetFiles AS INTEGER
-    ScreenMode AS INTEGER
     ConfirmLinkDelete AS INTEGER
     ConfirmExit AS INTEGER
-    TipOfTheDay AS INTEGER
-    TipLastShown AS INTEGER
     AssignFileTypes AS INTEGER
-    GreyoutOnMsgBox AS INTEGER
     ThemeFile AS STRING * 8
   END TYPE
 
@@ -152,11 +141,8 @@
   END TYPE
 
 'Common shared variables
-  COMMON SHARED ProfileID AS INTEGER
-
-  COMMON SHARED SystemSettings AS SystemSettingsType
-  COMMON SHARED UserSettings AS UserSettingsType
-  COMMON SHARED SystemTheme AS ThemeType
+  COMMON SHARED Setting AS SettingType
+  COMMON SHARED Theme AS ThemeType
 
   COMMON SHARED MouseX AS INTEGER
   COMMON SHARED MouseY AS INTEGER

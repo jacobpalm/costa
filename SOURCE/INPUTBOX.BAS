@@ -74,21 +74,21 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
     Obj.DrawTxt txtInput, txtInputText, False
 
     IF LEN(msgIcon) THEN
-        Font.Print msgTitle, winInputBox.Pos.Left + 53, winInputBox.Pos.Top + 15, SystemTheme.WindowText, 1
+        Font.Print msgTitle, winInputBox.Pos.Left + 53, winInputBox.Pos.Top + 15, Theme.WindowText, 1
     ELSE
-        Font.Print msgTitle, winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 15, SystemTheme.WindowText, 1
+        Font.Print msgTitle, winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 15, Theme.WindowText, 1
     END IF
 
     DIM PrintLine
     FOR PrintLine = 1 TO msgLineCount
         IF PrintLine < 3 AND LEN(msgIcon) THEN
-            Font.Print msgLines(PrintLine), winInputBox.Pos.Left + 53, winInputBox.Pos.Top + 17 + (15 * PrintLine), SystemTheme.WindowText, 2
+            Font.Print msgLines(PrintLine), winInputBox.Pos.Left + 53, winInputBox.Pos.Top + 17 + (15 * PrintLine), Theme.WindowText, 2
         ELSE
-            Font.Print msgLines(PrintLine), winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 17 + (15 * PrintLine), SystemTheme.WindowText, 2
+            Font.Print msgLines(PrintLine), winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 17 + (15 * PrintLine), Theme.WindowText, 2
         END IF
     NEXT
 
-    Font.Print "Iõnput:", txtInput.Pos.Left, txtInput.Pos.Top - 16, SystemTheme.WindowText, FontHeading
+    Font.Print "Iõnput:", txtInput.Pos.Left, txtInput.Pos.Top - 16, Theme.WindowText, FontHeading
     
     IF LEN(msgIcon) THEN Obj.DrawImg imgIcon
 

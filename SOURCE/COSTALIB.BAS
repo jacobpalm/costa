@@ -283,28 +283,28 @@ SUB Obj.DrawBtn (TargetBtn AS ButtonType, Pressed AS INTEGER)
 	DIM Color1, Color2, Color3, Color4
 	IF Pressed = False THEN
 		Color1 = 15
-		Color2 = SystemTheme.Button
-		Color3 = SystemTheme.Shadow
-		Color4 = SystemTheme.WindowText
+		Color2 = Theme.Button
+		Color3 = Theme.Shadow
+		Color4 = Theme.WindowText
 	ELSE
 		Color1 = 0
-		Color2 = SystemTheme.Shadow
-		Color3 = SystemTheme.Light
+		Color2 = Theme.Shadow
+		Color3 = Theme.Light
 		Color4 = 15
 	END IF
 
-	IF Color1 = SystemTheme.Window THEN
-		IF SystemTheme.Window >= 8 THEN
-			Color1 = SystemTheme.Window - 8
+	IF Color1 = Theme.Window THEN
+		IF Theme.Window >= 8 THEN
+			Color1 = Theme.Window - 8
 		ELSE
-			Color1 = SystemTheme.Window + 8
+			Color1 = Theme.Window + 8
 		END IF
 	END IF
-	IF Color3 = SystemTheme.Window THEN
-		IF SystemTheme.Window >= 8 THEN
-			Color3 = SystemTheme.Window - 8
+	IF Color3 = Theme.Window THEN
+		IF Theme.Window >= 8 THEN
+			Color3 = Theme.Window - 8
 		ELSE
-			Color3 = SystemTheme.Window + 8
+			Color3 = Theme.Window + 8
 		END IF
 	END IF
 	IF Color4 = Color2 THEN
@@ -355,9 +355,9 @@ SUB Obj.DrawChk (TargetChk AS CheckBoxType)
 	IF TargetChk.Pos.Height = 0 THEN TargetChk.Pos.Height = 14
 
 	Mouse.Hide
-	LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 2), SystemTheme.Textbox, BF
+	LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 2), Theme.Textbox, BF
 
-	IF SystemTheme.Window = 0 THEN
+	IF Theme.Window = 0 THEN
 		chkColor = 15
 	ELSE
 		chkColor = 0
@@ -367,21 +367,21 @@ SUB Obj.DrawChk (TargetChk AS CheckBoxType)
 	LINE (x2 - 1, y1 + 2)-(x2 - 1, y2 - 1), chkColor
 	LINE (x1 + 2, y2 - 1)-(x2 - 2, y2 - 1), chkColor
 	
-	LINE (x1, y1)-(x1, y2), SystemTheme.Shadow
-	LINE (x1 + 1, y1)-(x2, y1), SystemTheme.Shadow
+	LINE (x1, y1)-(x1, y2), Theme.Shadow
+	LINE (x1 + 1, y1)-(x2, y1), Theme.Shadow
 
 	IF TargetChk.Checked = True THEN
 
-		LINE (x1 + 5, y1 + 8)-(x1 + 7, y1 + 10), SystemTheme.TextboxText
-		LINE (x1 + 5, y1 + 9)-(x1 + 7, y1 + 11), SystemTheme.TextboxText
-		LINE (x1 + 8, y1 + 9)-(x1 + 11, y1 + 6), SystemTheme.TextboxText
-		LINE (x1 + 8, y1 + 10)-(x1 + 11, y1 + 7), SystemTheme.TextboxText
+		LINE (x1 + 5, y1 + 8)-(x1 + 7, y1 + 10), Theme.TextboxText
+		LINE (x1 + 5, y1 + 9)-(x1 + 7, y1 + 11), Theme.TextboxText
+		LINE (x1 + 8, y1 + 9)-(x1 + 11, y1 + 6), Theme.TextboxText
+		LINE (x1 + 8, y1 + 10)-(x1 + 11, y1 + 7), Theme.TextboxText
 
-		LINE (x1 + 5, y1 + 7)-(x1 + 7, y1 + 9), SystemTheme.Shadow
-		LINE (x1 + 8, y1 + 8)-(x1 + 11, y1 + 5), SystemTheme.Shadow
+		LINE (x1 + 5, y1 + 7)-(x1 + 7, y1 + 9), Theme.Shadow
+		LINE (x1 + 8, y1 + 8)-(x1 + 11, y1 + 5), Theme.Shadow
 
-		LINE (x1 + 5, y1 + 10)-(x1 + 6, y1 + 11), SystemTheme.Light
-		LINE (x1 + 8, y1 + 11)-(x1 + 11, y1 + 8), SystemTheme.Light
+		LINE (x1 + 5, y1 + 10)-(x1 + 6, y1 + 11), Theme.Light
+		LINE (x1 + 8, y1 + 11)-(x1 + 11, y1 + 8), Theme.Light
 
 	END IF
 
@@ -416,10 +416,10 @@ SUB Obj.DrawImg (TargetImg AS ImageType)
 	TargetImg.Pos.Height = 31
 
 	Mouse.Hide
-	LINE (X - 1, Y - 1)-(X + 32, Y - 1), SystemTheme.Light
-	LINE (X - 1, Y)-(X - 1, Y + 32), SystemTheme.Light
-	LINE (X, Y + 32)-(X + 32, Y + 32), SystemTheme.Shadow
-	LINE (X + 32, Y)-(X + 32, Y + 31), SystemTheme.Shadow
+	LINE (X - 1, Y - 1)-(X + 32, Y - 1), Theme.Light
+	LINE (X - 1, Y)-(X - 1, Y + 32), Theme.Light
+	LINE (X, Y + 32)-(X + 32, Y + 32), Theme.Shadow
+	LINE (X + 32, Y)-(X + 32, Y + 31), Theme.Shadow
 
 	IF NOT File.Exists(Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".BSV") THEN GOTO DrawImgError
 
@@ -444,8 +444,8 @@ END SUB
 
 SUB Obj.DrawMenu ()
 	Mouse.Hide
-	LINE (0, 0)-(639, 26), SystemTheme.Window, BF
-	LINE (0, 27)-(639, 27), SystemTheme.Shadow
+	LINE (0, 0)-(639, 26), Theme.Window, BF
+	LINE (0, 27)-(639, 27), Theme.Shadow
 	LINE (0, 28)-(639, 28), 0
 	Mouse.Show
 END SUB
@@ -462,10 +462,10 @@ SUB Obj.DrawTxt (TargetTxt AS TextboxType, BYVAL Text AS STRING, IsEditing AS IN
 	y2 = TargetTxt.Pos.Top + TargetTxt.Pos.Height
 
 	Mouse.Hide
-	LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 2), SystemTheme.Textbox, BF
+	LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 2), Theme.Textbox, BF
 
-	LINE (x1, y1)-(x2 - 1, y2 - 1), SystemTheme.Light, B
-	LINE (x1 + 1, y1 + 1)-(x2, y2), SystemTheme.Shadow, B
+	LINE (x1, y1)-(x2 - 1, y2 - 1), Theme.Light, B
+	LINE (x1 + 1, y1 + 1)-(x2, y2), Theme.Shadow, B
 
 
 	Mouse.Show
@@ -479,13 +479,13 @@ SUB Obj.DrawTxt (TargetTxt AS TextboxType, BYVAL Text AS STRING, IsEditing AS IN
 			Text = RIGHT$(Text, LEN(Text) - 1)
 		LOOP
 		
-		Font.Print Text, x1 + 5, y1 + 5, SystemTheme.TextboxText, FontHeading
+		Font.Print Text, x1 + 5, y1 + 5, Theme.TextboxText, FontHeading
 	END IF
 
 	IF IsEditing = True THEN
 		Mouse.Hide
 		x1 = x1 + 7 + Font.GetWidth(Text, FontHeading)
-		LINE (x1, y1 + 4)-(x1, y1 + 15), SystemTheme.TextboxText
+		LINE (x1, y1 + 4)-(x1, y1 + 15), Theme.TextboxText
 		Mouse.Show
 	END IF
 
@@ -502,24 +502,24 @@ SUB Obj.DrawWin (TargetWin AS WindowType)
 	Mouse.Hide
 	
 	'Window border
-	LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 1), SystemTheme.TitleBar, BF
+	LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 1), Theme.TitleBar, BF
 
 	'Window content area
-	LINE (x1 + 7, y1 + 7)-(x2 - 7, y2 - 7), SystemTheme.Window, BF
+	LINE (x1 + 7, y1 + 7)-(x2 - 7, y2 - 7), Theme.Window, BF
 	
 	'Outer border
 	LINE (x1, y1)-(x2 - 1, y1), 15
 	LINE (x1, y1 + 1)-(x1, y2 - 1), 15
 	LINE (x2, y1)-(x2, y2), 0
 	LINE (x1, y2)-(x2 - 1, y2), 0
-	LINE (x2 - 1, y1 + 1)-(x2 - 1, y2 - 1), SystemTheme.Shadow
-	LINE (x1 + 1, y2 - 1)-(x2 - 2, y2 - 1), SystemTheme.Shadow
-	LINE (x1 + 1, y1 + 1)-(x2 - 2, y1 + 1), SystemTheme.Light
-	LINE (x1 + 1, y1 + 2)-(x1 + 1, y2 - 2), SystemTheme.Light
+	LINE (x2 - 1, y1 + 1)-(x2 - 1, y2 - 1), Theme.Shadow
+	LINE (x1 + 1, y2 - 1)-(x2 - 2, y2 - 1), Theme.Shadow
+	LINE (x1 + 1, y1 + 1)-(x2 - 2, y1 + 1), Theme.Light
+	LINE (x1 + 1, y1 + 2)-(x1 + 1, y2 - 2), Theme.Light
 
 	'Inner border
-	LINE (x1 + 5, y1 + 5)-(x2 - 5, y2 - 5), SystemTheme.Shadow, B
-	LINE (x1 + 6, y1 + 6)-(x2 - 6, y2 - 6), SystemTheme.Light, B
+	LINE (x1 + 5, y1 + 5)-(x2 - 5, y2 - 5), Theme.Shadow, B
+	LINE (x1 + 6, y1 + 6)-(x2 - 6, y2 - 6), Theme.Light, B
 
 	Mouse.Show
 
@@ -549,7 +549,7 @@ SUB Obj.EditTxt (TargetTxt AS TextboxType, Text AS STRING)
 	IF Font.GetWidth(TempTxt + Key$, FontHeading) + 2 < MaxShow THEN
 		LineX1 = x1 + Font.GetWidth(Text, FontHeading) + 2
 		Mouse.Hide
-		LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), SystemTheme.TextboxText
+		LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), Theme.TextboxText
 		Mouse.Show
 	ELSE
 		Obj.DrawTxt TargetTxt, TempTxt, True
@@ -569,12 +569,12 @@ SUB Obj.EditTxt (TargetTxt AS TextboxType, Text AS STRING)
 							'Erase only the last char
 							LineX1 = x1 + Font.GetWidth(TempTxt, FontHeading)
 							Mouse.Hide
-							LINE (LineX1 + 2, y1 - 2)-(LineX1 - Font.GetWidth(RIGHT$(TempTxt, 1), FontHeading), y1 + 11), SystemTheme.Textbox, BF
+							LINE (LineX1 + 2, y1 - 2)-(LineX1 - Font.GetWidth(RIGHT$(TempTxt, 1), FontHeading), y1 + 11), Theme.Textbox, BF
 							Mouse.Show
 							TempTxt = LEFT$(TempTxt, LEN(TempTxt) - 1)
 							LineX1 = x1 + Font.GetWidth(TempTxt, FontHeading) + 2
 							Mouse.Hide
-							LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), SystemTheme.TextboxText
+							LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), Theme.TextboxText
 							Mouse.Show
 						ELSE
 							'There's more text that's not shown, so we'll
@@ -589,7 +589,7 @@ SUB Obj.EditTxt (TargetTxt AS TextboxType, Text AS STRING)
 					Text = TempTxt
 					LineX1 = x1 + Font.GetWidth(Text, FontHeading) + 2
 					Mouse.Hide
-					LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), SystemTheme.Textbox
+					LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), Theme.Textbox
 					Mouse.Show
 					EXIT SUB
 
@@ -598,13 +598,13 @@ SUB Obj.EditTxt (TargetTxt AS TextboxType, Text AS STRING)
 						IF Font.GetWidth(TempTxt + Key$, FontHeading) + 2 < MaxShow THEN
 							LineX1 = x1 + Font.GetWidth(TempTxt, FontHeading) + 2
 							Mouse.Hide
-							LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), SystemTheme.Textbox
+							LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), Theme.Textbox
 							Mouse.Show
 							TempTxt = TempTxt + Key$
-							Font.Print TempTxt, x1, y1, SystemTheme.TextboxText, FontHeading
+							Font.Print TempTxt, x1, y1, Theme.TextboxText, FontHeading
 							LineX1 = x1 + Font.GetWidth(TempTxt, FontHeading) + 2
 							Mouse.Hide
-							LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), SystemTheme.TextboxText
+							LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), Theme.TextboxText
 							Mouse.Show
 						ELSE
 							TempTxt = TempTxt + Key$
@@ -685,35 +685,6 @@ END SUB
 DEFINT A-Z
 SUB Sys.Load ()
 
-	'Make sure Costa is running, by checking if RUNSTAT.TMP created by the
-	'/BOOT parameter exists
-		IF File.Exists(Temp.Path + "RUNSTAT.TMP") = False THEN
-			IF INSTR(COMMAND$, "/DEV") = 0 THEN
-				CLS
-				PRINT "This program is a part of " + appName + "."
-				PRINT "To start Costa, run COSTA.BAT. If that file doesn't exist, run SETUP.EXE."
-				PRINT
-				END
-			END IF
-		END IF
-	
-	'Load profile
-		IF File.Exists(Temp.Path + "PROFILE.TMP") THEN
-			DIM ProfileFileHandle
-			ProfileFileHandle = FREEFILE
-			OPEN Temp.Path + "PROFILE.TMP" FOR INPUT AS #ProfileFileHandle
-			IF LOF(ProfileFileHandle) > 0 THEN INPUT #ProfileFileHandle, ProfileID
-			CLOSE #ProfileFileHandle
-		END IF
-
-		'When running with /DEV parameter, always use profile 1 if none is
-		'specified. Otherwise, config files from accessories will end up in the
-		'wrong path
-		IF (ProfileID < 1 OR ProfileID > 5) AND INSTR(COMMAND$, "/DEV") THEN
-			ProfileID = 1
-		END IF
-		
-
 	'Prepare fonts for use
 		DIM FontErr
 		IF NOT File.Exists(Sys.Path + "DATA\FONTDATA.BSV") THEN FontErr = True
@@ -738,9 +709,6 @@ SUB Sys.Load ()
 	'Load settings
 		Sys.LoadSettings
 		
-	'Load user profile
-		Sys.LoadProfile ProfileID
-
 	'Load colors for the interface
 		Sys.LoadTheme
 	
@@ -777,96 +745,62 @@ SUB Sys.Load ()
 
 END SUB
 
-SUB Sys.LoadProfile (ProfileNum)
-
-	DIM FileHandle
-
-	IF ProfileNum > 0 AND ProfileNum < 6 THEN
-
-		IF File.Exists(Sys.Path + "\DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileNum)) + ".DAT") THEN
-			FileHandle = FREEFILE
-			ON LOCAL ERROR GOTO LoadDefaultProfile
-			OPEN Sys.Path + "\DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileNum)) + ".DAT" FOR BINARY AS #FileHandle
-			GET #FileHandle, , UserSettings
-			CLOSE #FileHandle
-		ELSE
-			GOTO LoadDefaultProfile
-		END IF
-
-	ELSE
-		GOTO LoadDefaultProfile
-	END IF
-
-	IF RTRIM$(UserSettings.ProfileName) = "" THEN UserSettings.ProfileName = "Profile" + STR$(ProfileNum)
-	IF RTRIM$(UserSettings.ProfileImage) = "" THEN UserSettings.ProfileImage = "USERS"
-	IF RTRIM$(UserSettings.ThemeFile) = "" THEN UserSettings.ThemeFile = "DEFAULT"
-
-	EXIT SUB
-
-LoadDefaultProfile:
-	UserSettings.ProfileName = "Profile" + STR$(ProfileNum)
-	UserSettings.ProfileImage = "DESKTOP"
-	UserSettings.ThemeFile = "DEFAULT"
-	UserSettings.Animations = True
-	UserSettings.ShowLinkDescriptions = True
-	UserSettings.ShowLinkTargetFiles = True
-	UserSettings.ScreenMode = 9
-	UserSettings.ConfirmLinkDelete = True
-	UserSettings.ConfirmExit = True
-	UserSettings.TipOfTheDay = True
-	UserSettings.TipLastShown = 0
-	UserSettings.AssignFileTypes = True
-	UserSettings.GreyoutOnMsgBox = False
-END SUB
-
 SUB Sys.LoadSettings ()
 
 	DIM FileHandle
 
+	IF NOT File.Exists(Sys.Path + "\DATA\CONFIG\SETTING.DAT") THEN
+		GOTO LoadDefaultSettings
+	END IF
+
 	ON LOCAL ERROR GOTO LoadDefaultSettings
 	FileHandle = FREEFILE
-	OPEN Sys.Path + "\DATA\CONFIG\COSTA.DAT" FOR BINARY AS #FileHandle
-	GET #FileHandle, , SystemSettings
+	OPEN Sys.Path + "\DATA\CONFIG\SETTING.DAT" FOR BINARY AS #FileHandle
+	GET #FileHandle, , Setting
 	CLOSE #FileHandle
 
-	IF SystemSettings.LastUsedProfile < 1 OR SystemSettings.LastUsedProfile > 5 THEN
-		SystemSettings.LastUsedProfile = 1
+	IF Setting.DesktopID < 1 OR Setting.DesktopID > 5 THEN
+		Setting.DesktopID = 1
 	END IF
 
 	EXIT SUB
 
 LoadDefaultSettings:
-	SystemSettings.LastUsedProfile = 1
-	SystemSettings.UseLastProfile = True
-
+	Setting.DesktopID = 1
+	Setting.ShowLinkDescriptions = True
+	Setting.ShowLinkTargetFiles = True
+	Setting.ConfirmLinkDelete = True
+	Setting.ConfirmExit = True
+	Setting.AssignFileTypes = True
+	Setting.ThemeFile = "DEFAULT"
 END SUB
 
 SUB Sys.LoadTheme ()
 
 	DIM ThemeFile AS STRING
-	ThemeFile = RTRIM$(UserSettings.ThemeFile)
+	ThemeFile = RTRIM$(Setting.ThemeFile)
 
 	DIM FileHandle
 	FileHandle = FREEFILE
 
 	IF File.Exists(Sys.Path + "\DATA\THEMES\" + ThemeFile + ".DAT") THEN
 		OPEN Sys.Path + "\DATA\THEMES\" + ThemeFile + ".DAT" FOR BINARY AS #FileHandle
-		GET #FileHandle, , SystemTheme
+		GET #FileHandle, , Theme
 		CLOSE #FileHandle
 	ELSE
-		SystemTheme.Desktop = 7
-		SystemTheme.DesktopText = 0
-		SystemTheme.Window = 15
-		SystemTheme.Button = 7
-		SystemTheme.Textbox = 15
-		SystemTheme.TextboxText = 0
-		SystemTheme.WindowText = 0
-		SystemTheme.TitleBar = 3
-		SystemTheme.TitleBarText = 0
-		SystemTheme.Light = 7
-		SystemTheme.Shadow = 8
-		SystemTheme.Select = 8
-		SystemTheme.SelectText = 15
+		Theme.Desktop = 7
+		Theme.DesktopText = 0
+		Theme.Window = 15
+		Theme.Button = 7
+		Theme.Textbox = 15
+		Theme.TextboxText = 0
+		Theme.WindowText = 0
+		Theme.TitleBar = 3
+		Theme.TitleBarText = 0
+		Theme.Light = 7
+		Theme.Shadow = 8
+		Theme.Select = 8
+		Theme.SelectText = 15
 	END IF
 
 END SUB
@@ -876,7 +810,6 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	DIM msgLines() AS STRING, msgLineCount, msgTextWidth
 	DIM btnFirst AS ButtonType, btnSecond AS ButtonType
 	DIM imgIcon AS ImageType
-	DIM CloseKey AS STRING * 1
 	DIM winMsgBox AS WindowType
 	
 	IF RIGHT$(msgText, 1) = CHR$(13) THEN msgText = LEFT$(msgText, LEN(msgText) - 1)
@@ -922,13 +855,8 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	IF msgType = msgQuest THEN
 		btnFirst.Caption = "õYes"
 		btnFirst.Pos.Left = 320 - 86
-	ELSEIF msgType = msgTip THEN
-		btnFirst.Caption = "õContinue"
-		CloseKey = "C"
-		btnFirst.Pos.Left = (640 - btnFirst.Pos.Width) / 2
 	ELSE
 		btnFirst.Caption = "õOK"
-		CloseKey = "O"
 		btnFirst.Pos.Left = (640 - btnFirst.Pos.Width) / 2
 	END IF
 	
@@ -943,11 +871,11 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	Obj.DrawBtn btnFirst, False
 	IF msgType = msgQuest THEN Obj.DrawBtn btnSecond, False
 
-	Font.Print msgTitle, winMsgBox.Pos.Left + 56, winMsgBox.Pos.Top + 15, SystemTheme.WindowText, 1
+	Font.Print msgTitle, winMsgBox.Pos.Left + 56, winMsgBox.Pos.Top + 15, Theme.WindowText, 1
 	
 	DIM PrintLine
 	FOR PrintLine = 1 TO msgLineCount
-		Font.Print msgLines(PrintLine), winMsgBox.Pos.Left + 56, winMsgBox.Pos.Top + 17 + (15 * PrintLine), SystemTheme.WindowText, 2
+		Font.Print msgLines(PrintLine), winMsgBox.Pos.Left + 56, winMsgBox.Pos.Top + 17 + (15 * PrintLine), Theme.WindowText, 2
 	NEXT
 	
 	Obj.DrawImg imgIcon
@@ -972,7 +900,7 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 					EXIT DO
 				END IF
 			ELSE
-				IF Key$ = CHR$(13) OR Key$ = CHR$(27) OR Key$ = CHR$(32) OR Key$ = CloseKey THEN
+				IF Key$ = CHR$(13) OR Key$ = CHR$(27) OR Key$ = CHR$(32) OR Key$ = "o" THEN
 					Sys.MsgBox = True
 					EXIT DO
 				END IF
@@ -987,31 +915,13 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 
 END FUNCTION
 
-SUB Sys.SaveProfile (ProfileNum)
-
-	DIM FileHandle
-
-	ON LOCAL ERROR GOTO SaveProfileError
-	FileHandle = FREEFILE
-	OPEN Sys.Path + "\DATA\CONFIG\PROFILE" + LTRIM$(STR$(ProfileNum)) + ".DAT" FOR BINARY AS #FileHandle
-	PUT #FileHandle, , UserSettings
-	CLOSE #FileHandle
-
-	EXIT SUB
-
-SaveProfileError:
-	FileHandle = Sys.MsgBox("Could not save settings", "An error occured while saving your settings, and they were not saved." + CHR$(13) + "Make sure the disk is not full or write-protected, and try again.", msgError)
-	EXIT SUB
-	RESUME NEXT
-END SUB
-
 SUB Sys.SaveSettings ()
 
 	ON LOCAL ERROR GOTO SaveSettingsError
 	DIM FileHandle
 	FileHandle = FREEFILE
-	OPEN Sys.Path + "\DATA\CONFIG\COSTA.DAT" FOR BINARY AS #FileHandle
-	PUT #FileHandle, , SystemSettings
+	OPEN Sys.Path + "\DATA\CONFIG\SETTING.DAT" FOR BINARY AS #FileHandle
+	PUT #FileHandle, , Setting
 	CLOSE #FileHandle
 	EXIT SUB
 

@@ -89,11 +89,11 @@ SUB File.DrawList (TargetList AS TextboxType, HighLightActive, FullRedraw)
 				'Highlight active selected item, if encountered
 				IF I = ListSelection AND ActiveList = TargetList.MaxLen THEN
 					Mouse.Hide
-					LINE (TargetList.Pos.Left + 2, TargetList.Pos.Top + 3 + (Counter * 12))-(TargetList.Pos.Left + TargetList.Pos.Width - 2, TargetList.Pos.Top + 15 + (Counter * 12)), SystemTheme.Select, BF
+					LINE (TargetList.Pos.Left + 2, TargetList.Pos.Top + 3 + (Counter * 12))-(TargetList.Pos.Left + TargetList.Pos.Width - 2, TargetList.Pos.Top + 15 + (Counter * 12)), Theme.Select, BF
 					Mouse.Show
-					Font.Print ItemText, TargetList.Pos.Left + 5, TargetList.Pos.Top + 5 + (Counter * 12), SystemTheme.SelectText, FontSystem
+					Font.Print ItemText, TargetList.Pos.Left + 5, TargetList.Pos.Top + 5 + (Counter * 12), Theme.SelectText, FontSystem
 				ELSE
-					Font.Print ItemText, TargetList.Pos.Left + 5, TargetList.Pos.Top + 5 + (Counter * 12), SystemTheme.TextboxText, FontSystem
+					Font.Print ItemText, TargetList.Pos.Left + 5, TargetList.Pos.Top + 5 + (Counter * 12), Theme.TextboxText, FontSystem
 				END IF
 
 				Counter = Counter + 1
@@ -105,11 +105,11 @@ SUB File.DrawList (TargetList AS TextboxType, HighLightActive, FullRedraw)
 		'Not a full redraw, only draw the selected item
 
 		IF HighLightActive AND ActiveList = TargetList.MaxLen THEN
-			FGColor = SystemTheme.SelectText
-			BGColor = SystemTheme.Select
+			FGColor = Theme.SelectText
+			BGColor = Theme.Select
 		ELSE
-			FGColor = SystemTheme.TextboxText
-			BGColor = SystemTheme.Textbox
+			FGColor = Theme.TextboxText
+			BGColor = Theme.Textbox
 		END IF
 
 		IF TargetList.MaxLen = FileList THEN
@@ -569,10 +569,10 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	Obj.DrawBtn btnFileNext, False
 	Obj.DrawBtn btnFolderPrev, False
 	Obj.DrawBtn btnFolderNext, False
-	Font.Print "õPattern:", 101, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, FontNormal
-	Font.Print "õDrive:", 272, winFileSelect.Pos.Top + 33, SystemTheme.WindowText, FontNormal
-	Font.Print "õFiles:", 101, winFileSelect.Pos.Top + 76, SystemTheme.WindowText, FontNormal
-	Font.Print "Fõolders:", 272, winFileSelect.Pos.Top + 76, SystemTheme.WindowText, FontNormal
+	Font.Print "õPattern:", 101, winFileSelect.Pos.Top + 33, Theme.WindowText, FontNormal
+	Font.Print "õDrive:", 272, winFileSelect.Pos.Top + 33, Theme.WindowText, FontNormal
+	Font.Print "õFiles:", 101, winFileSelect.Pos.Top + 76, Theme.WindowText, FontNormal
+	Font.Print "Fõolders:", 272, winFileSelect.Pos.Top + 76, Theme.WindowText, FontNormal
 	
 	MaxVisibleItems = 13
 
