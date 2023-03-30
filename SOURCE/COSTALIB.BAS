@@ -686,60 +686,35 @@ DEFINT A-Z
 SUB Sys.Load ()
 
 	'Prepare fonts for use
-		DIM FontErr
-		IF NOT File.Exists(Sys.Path + "DATA\FONTDATA.BSV") THEN FontErr = True
-		IF NOT File.Exists(Sys.Path + "DATA\FONTINFO.BSV") THEN FontErr = True
-		
-		IF FontErr THEN
-			CLS
-			PRINT "One or more font files were not found in " + Sys.Path + "DATA\FONTS."
-			PRINT "Press any key to exit."
-			DO: LOOP WHILE INKEY$ = ""
-			END 1 'Error 1 makes costa.bat terminate
-		END IF
+	DIM FontErr
+	IF NOT File.Exists(Sys.Path + "DATA\FONTDATA.BSV") THEN FontErr = True
+	IF NOT File.Exists(Sys.Path + "DATA\FONTINFO.BSV") THEN FontErr = True
 
-		DEF SEG = VARSEG(FontData(1, 32))
-		BLOAD Sys.Path + "DATA\FONTDATA.BSV", VARPTR(FontData(1, 32))
-		DEF SEG
-
-		DEF SEG = VARSEG(FontWidth(1, 32))
-		BLOAD Sys.Path + "DATA\FONTINFO.BSV", VARPTR(FontWidth(1, 32))
-		DEF SEG
-
-	'Load settings
-		Sys.LoadSettings
-		
-	'Load colors for the interface
-		Sys.LoadTheme
-	
-	'Clear the keyboard buffer, DOSBox has some issues with leaving keys in it
-		DO: LOOP WHILE LEN(INKEY$)
+	IF FontErr THEN
+		CLS
+		PRINT "One or more font files were not found in " + Sys.Path + "DATA\FONTS."
+		PRINT "Press any key to exit."
+		DO: LOOP WHILE INKEY$ = ""
+		END 1 'Error 1 makes costa.bat terminate
+	END IF
 
 	'EGA/VGA 640x350, 16 colors
-		SCREEN 9
+	SCREEN 9
+	
+	DEF SEG = VARSEG(FontData(1, 32))
+	BLOAD Sys.Path + "DATA\FONTDATA.BSV", VARPTR(FontData(1, 32))
+	DEF SEG
 
-	Mouse.Show
-	EXIT SUB
-	'Set the right colors for the palette
-		OUT &H3C8, 6
-		OUT &H3C9, 31
-		OUT &H3C9, 31
-		OUT &H3C9, 0
+	DEF SEG = VARSEG(FontWidth(1, 32))
+	BLOAD Sys.Path + "DATA\FONTINFO.BSV", VARPTR(FontWidth(1, 32))
+	DEF SEG
 
-		OUT &H3C8, 10
-		OUT &H3C9, 0
-		OUT &H3C9, 255
-		OUT &H3C9, 0
-
-		OUT &H3C8, 12
-		OUT &H3C9, 255
-		OUT &H3C9, 0
-		OUT &H3C9, 0
-
-		OUT &H3C8, 14
-		OUT &H3C9, 63
-		OUT &H3C9, 63
-		OUT &H3C9, 0
+	'Load settings
+	Sys.LoadSettings
+	Sys.LoadTheme
+	
+	'Clear the keyboard buffer, DOSBox has some issues with leaving keys in it
+	DO: LOOP WHILE LEN(INKEY$)
 
 	Mouse.Show
 
