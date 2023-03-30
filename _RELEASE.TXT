@@ -23,11 +23,10 @@ when releasing a new version.
    Manual compiler options, if needed:
      Use 286 optimizations, include run-time error checking.
      Compile all with VBDOS standard library loaded (/L parameter)
- - Create default user profile files for all 5 user profiles:
-   PROFILEx.DAT
+ - Create default desktop files for all 5 user profiles:
    DESKLNKx.DAT
-   Make sure profiles are named correctly - if copying one, the names will
-   all be the same within Costa.
+   The first one should contain default icons, the other four should be
+   empty
  - Create the default FILETYPE.DAT file, by removing it and opening the
    file type association dialog from the Config utility
  - Copy _DISTRUB.BAT to COSTA.BAT (contains first-run information for the
