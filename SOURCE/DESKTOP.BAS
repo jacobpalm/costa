@@ -265,63 +265,6 @@ SUB Desk.ExitGUI ()
 END SUB
 
 ' =========================================================================
-'          NAME: Desk.GetDailyTip()
-'    PARAMETERS: None
-'       RETURNS: A string containing a tip of the day - or an empty string
-'                if any error occurs
-'       ASSUMES: Nothing
-'   CALLED FROM: DESKTOP.BAS
-' -------------------------------------------------------------------------
-'   DESCRIPTION: Loads all "Tip of the Day" messages from a file, and
-'                picks a random one to return
-' =========================================================================
-FUNCTION Desk.GetDailyTip () AS STRING
-
-    ON LOCAL ERROR GOTO DailyTipError
-
-    DIM TipHandle, TipCount
-    DIM DailyTips() AS STRING
-    DIM ReadTip AS STRING
-    DIM TipToShow AS STRING
-    DIM PipePos
-
-    TipCount = 0
-    REDIM DailyTips(1 TO 1) AS STRING
-
-    TipHandle = FREEFILE
-    OPEN Sys.Path + "DATA\DAILYTIP.DAT" FOR INPUT AS #TipHandle
-    DO WHILE NOT EOF(TipHandle)
-        LINE INPUT #TipHandle, ReadTip
-        IF NOT ReadTip = "" THEN
-            TipCount = TipCount + 1
-            REDIM PRESERVE DailyTips(1 TO TipCount) AS STRING
-            DailyTips(TipCount) = ReadTip
-        END IF
-    LOOP
-    CLOSE #TipHandle
-
-    'Get random tip
-    RANDOMIZE TIMER
-    TipToShow = DailyTips(INT(RND * TipCount) + 1)
-    
-    'Replace pipe with line break in tip
-    WHILE INSTR(TipToShow, "|")
-        PipePos = INSTR(TipToShow, "|")
-        TipToShow = LEFT$(TipToShow, PipePos - 1) + CHR$(13) + RIGHT$(TipToShow, LEN(TipToShow) - PipePos)
-    WEND
-
-    Desk.GetDailyTip = TipToShow
-    EXIT FUNCTION
-
-
-DailyTipError:
-    Desk.GetDailyTip = ""
-    EXIT FUNCTION
-    RESUME
-
-END FUNCTION
-
-' =========================================================================
 '          NAME: Desk.LinkDialog()
 '    PARAMETERS: TargetLink - the ID of the icon to edit
 '                DidEdit    - pass an empty variable, it will be modified
@@ -541,7 +484,6 @@ SUB Desk.LinkLaunch (TargetLink AS INTEGER)
     TargetPath = RTRIM$(DeskLink(TargetLink).Path)
 
     Desk.Run RTRIM$(DeskLink(TargetLink).Filename), RTRIM$(DeskLink(TargetLink).Parameters), RTRIM$(DeskLink(TargetLink).Path), DeskLink(TargetLink).PauseOnExit
-
 
 END SUB
 
@@ -1049,8 +991,6 @@ SUB Desk.Main ()
   Mouse.Show
 
   Desk.LinkLoad
-  Desk.TipOfTheDay
-
 Desk.RedrawAll:
   TabCheck = -1
 
@@ -1574,35 +1514,6 @@ SUB Desk.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVA
 
   DO: LOOP WHILE LEN(INKEY$)
   END 2
-
-END SUB
-
-SUB Desk.TipOfTheDay ()
-
-  'Check if "Tip of the Day" should be shown
-  IF UserSettings.TipOfTheDay THEN
-    'Only show a tip if this is the first time Costa is started today
-    IF NOT UserSettings.TipLastShown = DAY(NOW) THEN
-
-        DIM showTip
-        DIM TipOfTheDay AS STRING
-
-        Mouse.Hide
-        LINE (0, 0)-(639, 349), SystemTheme.Desktop, BF
-        Mouse.Show
-
-        TipOfTheDay = Desk.GetDailyTip
-        
-        IF LEN(TipOfTheDay) THEN
-            showTip = Sys.MsgBox("Did you know?", TipOfTheDay, msgTip)
-        ELSE
-            showTip = Sys.MsgBox("Could not read daily tips", "Could not read daily tips from " + Sys.Path + "DATA\DAILYTIPS.DAT." + CHR$(13) + "Make sure this file exists, and isn't corrupted.", msgError)
-        END IF
-
-        UserSettings.TipLastShown = DAY(NOW)
-        Sys.SaveProfile ProfileID
-    END IF
-  END IF
 
 END SUB
 
