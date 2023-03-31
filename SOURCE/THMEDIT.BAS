@@ -1,10 +1,11 @@
-DECLARE SUB ThmEdit.DrawPreview (ThemeFile AS STRING)
+DECLARE SUB ThmEdit.Save ()
 OPTION EXPLICIT
 DEFINT A-Z
 
 DECLARE FUNCTION ThmEdit.SelectObject (BYVAL CurrentSelection%) AS INTEGER
 DECLARE FUNCTION ThmEdit.Select () AS STRING
 DECLARE SUB ThmEdit.DrawIndicator (ActiveColor%)
+DECLARE SUB ThmEdit.DrawPreview (ThemeFile AS STRING)
 DECLARE SUB ThmEdit.Main ()
 DECLARE SUB ThmEdit.Load (BYVAL ThmFile AS STRING)
 DECLARE SUB ThmEdit.Edit (BYVAL ThmFile AS STRING)
@@ -418,44 +419,22 @@ TopOfLoop:
 
         'Output to file
         ThemeFile$ = UCASE$(TargetFile$)
-        Key$ = "s" 'Triggers save button
+        ThmEdit.Save
       END IF
 
-
       IF Obj.BtnClick(btnSave) OR Key$ = "s" THEN
-        TargetFile$ = Sys.Path + "\DATA\THEMES\" + ThemeFile$ + ".DAT"
-
-        DIM ThemeToSave AS ThemeType
-        DIM ThemeToSaveHandle
-        ThemeToSave.Name = ThemeName$
-        ThemeToSave.Author = ThemeAuthor$
-        ThemeToSave.Desktop = thmClrDesktop
-        ThemeToSave.DesktopText = thmClrDesktopText
-        ThemeToSave.Window = thmClrWindow
-        ThemeToSave.Button = thmClrButton
-        ThemeToSave.Textbox = thmClrTextbox
-        ThemeToSave.TextboxText = thmClrTextboxText
-        ThemeToSave.WindowText = thmClrWindowText
-        ThemeToSave.TitleBar = thmClrTitlebar
-        ThemeToSave.TitleBarText = thmClrTitlebarText
-        ThemeToSave.Light = thmClr3DLight
-        ThemeToSave.Shadow = thmClr3DShadow
-        ThemeToSave.Select = thmClrSelect
-        ThemeToSave.SelectText = thmClrSelectText
-
-        ThemeToSaveHandle = FREEFILE
-        OPEN TargetFile$ FOR BINARY AS #ThemeToSaveHandle
-        PUT #ThemeToSaveHandle, , ThemeToSave
-        CLOSE #ThemeToSaveHandle
-
-        ThemeChanged = False
+        IF ThemeChanged THEN
+            ThmEdit.Save
+            ThemeChanged = False
+        END IF
       END IF
 
       IF Obj.BtnClick(btnExit) OR Key$ = "x" OR Key$ = CHR$(27) THEN
         IF ThemeChanged = False THEN END
-        IF Sys.MsgBox("Theme has been modified", "This theme contains unsaved changes. Do you" + CHR$(13) + "want to exit and loose your changes?", msgQuest) = True THEN
-          END
+        IF Sys.MsgBox("Theme has been modified", "This theme contains unsaved changes. Do you" + CHR$(13) + "want to save before you exit?", msgQuest) THEN
+          ThmEdit.Save
         END IF
+        END
       END IF
             
     LOOP
@@ -517,6 +496,37 @@ SUB ThmEdit.Main ()
     IF LEN(ThemeToEdit) THEN
       ThmEdit.Edit ThemeToEdit
     END IF
+
+END SUB
+
+SUB ThmEdit.Save ()
+        
+        DIM ThemeToSave AS ThemeType
+        DIM TargetFile$
+        DIM ThemeToSaveHandle
+
+        TargetFile$ = Sys.Path + "\DATA\THEMES\" + ThemeFile$ + ".DAT"
+
+        ThemeToSave.Name = ThemeName$
+        ThemeToSave.Author = ThemeAuthor$
+        ThemeToSave.Desktop = thmClrDesktop
+        ThemeToSave.DesktopText = thmClrDesktopText
+        ThemeToSave.Window = thmClrWindow
+        ThemeToSave.Button = thmClrButton
+        ThemeToSave.Textbox = thmClrTextbox
+        ThemeToSave.TextboxText = thmClrTextboxText
+        ThemeToSave.WindowText = thmClrWindowText
+        ThemeToSave.TitleBar = thmClrTitlebar
+        ThemeToSave.TitleBarText = thmClrTitlebarText
+        ThemeToSave.Light = thmClr3DLight
+        ThemeToSave.Shadow = thmClr3DShadow
+        ThemeToSave.Select = thmClrSelect
+        ThemeToSave.SelectText = thmClrSelectText
+
+        ThemeToSaveHandle = FREEFILE
+        OPEN TargetFile$ FOR BINARY AS #ThemeToSaveHandle
+        PUT #ThemeToSaveHandle, , ThemeToSave
+        CLOSE #ThemeToSaveHandle
 
 END SUB
 
