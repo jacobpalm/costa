@@ -1,8 +1,11 @@
-DECLARE SUB Conf.UpdatePreview (Area AS ANY, ThemeId%)
-DECLARE SUB Conf.GetThemes ()
-DECLARE SUB Conf.Main ()
 OPTION EXPLICIT
 DEFINT A-Z
+
+DECLARE SUB Conf.GetThemes ()
+DECLARE SUB Conf.Main ()
+DECLARE SUB Conf.RestoreAssoc ()
+DECLARE SUB Conf.SaveAssoc (FileType AS STRING, Command AS STRING)
+DECLARE SUB Conf.UpdatePreview (Area AS ANY, ThemeId%)
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
@@ -49,6 +52,7 @@ SUB Conf.Main ()
     DIM txtFileType AS TextboxType, txtOpenWith AS TextboxType
     
     DIM txtFileTypeText AS STRING, txtOpenWithText AS STRING
+    DIM strValidate AS STRING
     DIM ThemePreviewId
     DIM Key$
     
@@ -78,8 +82,8 @@ SUB Conf.Main ()
     Obj.SetSize txtOpenWith.Pos, txtFileType.Pos.Left + txtFileType.Pos.Width + 14, txtFileType.Pos.Top, 213, sizeRetain
     Obj.SetSize btnBrowse.Pos, txtOpenWith.Pos.Left + txtOpenWith.Pos.Width + 2, txtFileType.Pos.Top, 22, 19
 
-    Obj.SetSize frmThemePreview.Pos, frmTheme.Pos.Left + 14, frmTheme.Pos.Top + 55, frmTheme.Pos.Width - 28, 190
-    Obj.SetSize btnPrevious.Pos, frmTheme.Pos.Left + 14, frmTheme.Pos.Top + frmTheme.Pos.Height - 36, 92, 22
+    Obj.SetSize frmThemePreview.Pos, frmTheme.Pos.Left + 14, frmTheme.Pos.Top + 55, frmTheme.Pos.Width - 28, 192
+    Obj.SetSize btnPrevious.Pos, frmTheme.Pos.Left + 14, frmTheme.Pos.Top + frmTheme.Pos.Height - 34, 92, 22
     Obj.SetSize btnNext.Pos, frmTheme.Pos.Left + frmTheme.Pos.Width - 92 - 14, btnPrevious.Pos.Top, 92, 22
 
     btnExit.Caption = "Eõxit"
@@ -90,6 +94,15 @@ SUB Conf.Main ()
     imgAssoc.ImageFile = "UNKNOWN"
     imgTheme.ImageFile = "THEMES"
 
+    chkSetting(0).Checked = Setting.ShowLinkDescriptions
+    chkSetting(1).Checked = Setting.ShowLinkTargetFiles
+    chkSetting(2).Checked = Setting.ConfirmLinkDelete
+    chkSetting(3).Checked = Setting.ConfirmExit
+    chkSetting(4).Checked = Setting.AssignFileTypes
+    
+    txtFileType.MaxLen = 3
+    txtOpenWith.MaxLen = 50
+
     Obj.DrawBtn btnExit, False
     Obj.DrawBtn btnBrowse, False
     Obj.DrawBtn btnPrevious, False
@@ -99,12 +112,6 @@ SUB Conf.Main ()
     Obj.DrawFrm frmAssoc, 15, Theme.Shadow
     Obj.DrawFrm frmTheme, 15, Theme.Shadow
     Obj.DrawFrm frmThemePreview, 15, Theme.Shadow
-
-    chkSetting(0).Checked = Setting.ShowLinkDescriptions
-    chkSetting(1).Checked = Setting.ShowLinkTargetFiles
-    chkSetting(2).Checked = Setting.ConfirmLinkDelete
-    chkSetting(3).Checked = Setting.ConfirmExit
-    chkSetting(4).Checked = Setting.AssignFileTypes
 
     Obj.DrawChk chkSetting(0)
     Obj.DrawChk chkSetting(1)
@@ -162,6 +169,72 @@ SUB Conf.Main ()
         Obj.ChkClick chkSetting(3)
         Obj.ChkClick chkSetting(4)
 
+        IF Key$ = "d" THEN
+            chkSetting(0).Checked = NOT chkSetting(0).Checked
+            Obj.DrawChk chkSetting(0)
+        END IF
+        IF Key$ = "t" THEN
+            chkSetting(1).Checked = NOT chkSetting(1).Checked
+            Obj.DrawChk chkSetting(1)
+        END IF
+        IF Key$ = "r" THEN
+            chkSetting(2).Checked = NOT chkSetting(2).Checked
+            Obj.DrawChk chkSetting(2)
+        END IF
+        IF Key$ = "e" THEN
+            chkSetting(3).Checked = NOT chkSetting(3).Checked
+            Obj.DrawChk chkSetting(3)
+        END IF
+        IF Key$ = "y" THEN
+            chkSetting(4).Checked = NOT chkSetting(4).Checked
+            Obj.DrawChk chkSetting(4)
+        END IF
+
+        IF Obj.BtnClick(btnBrowse) OR Key$ = "." THEN
+            IF LEN(txtFileTypeText) THEN
+                Mouse.Hide
+                PCOPY 0, 1
+                Mouse.Show
+                strValidate = File.Select("*.EXE")
+                Mouse.Hide
+                PCOPY 1, 0
+                Mouse.Show
+                IF LEN(strValidate) THEN
+                    txtOpenWithText = strValidate
+                    Obj.DrawTxt txtOpenWith, txtOpenWithText, False
+                    Conf.SaveAssoc txtFileTypeText, txtOpenWithText
+                END IF
+            ELSE
+                Key$ = "f" 'Gives focus to edit file type
+            END IF
+        END IF
+
+        IF Obj.TxtClick(txtOpenWith) OR Key$ = "o" THEN
+            IF LEN(txtFileTypeText) THEN
+                strValidate = LTRIM$(RTRIM$(txtOpenWithText))
+                Obj.EditTxt txtOpenWith, txtOpenWithText
+                txtOpenWithText = LTRIM$(RTRIM$(txtOpenWithText))
+                IF NOT txtOpenWithText = strValidate THEN
+                    txtOpenWithText = UCASE$(txtOpenWithText)
+                    Conf.SaveAssoc txtFileTypeText, txtOpenWithText
+                    Obj.DrawTxt txtOpenWith, txtOpenWithText, False
+                END IF
+            ELSE
+                Key$ = "f" 'Gives focus to edit file type
+            END IF
+        END IF
+
+        IF Obj.TxtClick(txtFileType) OR Key$ = "f" THEN
+            strValidate = txtFileTypeText
+            Obj.EditTxt txtFileType, txtFileTypeText
+            txtFileTypeText = LTRIM$(RTRIM$(UCASE$(txtFileTypeText)))
+            IF NOT txtFileTypeText = strValidate THEN
+                txtOpenWithText = File.GetAssociation(txtFileTypeText)
+                Obj.DrawTxt txtFileType, txtFileTypeText, False
+                Obj.DrawTxt txtOpenWith, txtOpenWithText, False
+            END IF
+        END IF
+
         IF Obj.BtnClick(btnExit) OR Key$ = "x" THEN
             IF ThemesFound > 0 THEN
                 Setting.ThemeFile = ThemeList(ThemePreviewId)
@@ -177,6 +250,93 @@ SUB Conf.Main ()
 
     LOOP
     
+END SUB
+
+SUB Conf.RestoreAssoc ()
+
+    DIM DefaultAssoc(0 TO 7) AS FileAssociationType
+    DIM AssocFile
+
+    ON LOCAL ERROR RESUME NEXT
+    KILL Sys.Path + "\DATA\CONFIG\FILETYPE.DAT"
+
+    AssocFile = FREEFILE
+    OPEN Sys.Path + "\DATA\CONFIG\FILETYPE.DAT" FOR BINARY AS #AssocFile
+
+    DefaultAssoc(0).FileType = "TXT"
+    DefaultAssoc(0).Command = "TEXTVIEW.EXE"
+    PUT #AssocFile, , DefaultAssoc(0)
+
+    DefaultAssoc(1).FileType = "INI"
+    DefaultAssoc(1).Command = "TEXTVIEW.EXE"
+    PUT #AssocFile, , DefaultAssoc(1)
+
+    DefaultAssoc(2).FileType = "THM"
+    DefaultAssoc(2).Command = "THMEDIT.EXE"
+    PUT #AssocFile, , DefaultAssoc(2)
+
+    DefaultAssoc(3).FileType = "DOC"
+    DefaultAssoc(3).Command = "TEXTVIEW.EXE"
+    PUT #AssocFile, , DefaultAssoc(3)
+
+    DefaultAssoc(4).FileType = "ME"
+    DefaultAssoc(4).Command = "TEXTVIEW.EXE"
+    PUT #AssocFile, , DefaultAssoc(4)
+
+    DefaultAssoc(5).FileType = "1ST"
+    DefaultAssoc(5).Command = "TEXTVIEW.EXE"
+    PUT #AssocFile, , DefaultAssoc(5)
+
+    DefaultAssoc(6).FileType = "CFG"
+    DefaultAssoc(6).Command = "TEXTVIEW.EXE"
+    PUT #AssocFile, , DefaultAssoc(6)
+
+    DefaultAssoc(7).FileType = "BAS"
+    DefaultAssoc(7).Command = "QBASIC.EXE /RUN"
+    PUT #AssocFile, , DefaultAssoc(7)
+
+    CLOSE #AssocFile
+
+END SUB
+
+SUB Conf.SaveAssoc (FileType AS STRING, Command AS STRING)
+    DIM FileAssociation AS FileAssociationType
+    DIM FileHandle, FilePos, AssocSaved
+
+    IF NOT File.Exists(Sys.Path + "\DATA\CONFIG\FILETYPE.DAT") THEN
+        Conf.RestoreAssoc
+    END IF
+
+    FileHandle = FREEFILE
+    OPEN Sys.Path + "\DATA\CONFIG\FILETYPE.DAT" FOR BINARY AS #FileHandle
+
+    ON LOCAL ERROR RESUME NEXT
+
+    'See if extension is already known, update command if so
+    DO WHILE NOT EOF(FileHandle)
+
+        'Save position so we know where to write if this is the one
+        FilePos = LOC(FileHandle)
+        GET #FileHandle, , FileAssociation
+        IF UCASE$(FileType) = RTRIM$(FileAssociation.FileType) THEN
+            FileAssociation.Command = UCASE$(Command)
+            PUT #FileHandle, FilePos + 1, FileAssociation
+            AssocSaved = True
+            EXIT DO
+        END IF
+
+    LOOP
+
+    'Extension was not in file, add it
+    IF NOT AssocSaved THEN
+        FileAssociation.FileType = UCASE$(FileType)
+        FileAssociation.Command = UCASE$(Command)
+        PUT #FileHandle, , FileAssociation
+    END IF
+
+    CLOSE #FileHandle
+    ON LOCAL ERROR GOTO 0
+
 END SUB
 
 SUB Conf.UpdatePreview (Area AS PosType, ThemeId)
