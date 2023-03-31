@@ -384,11 +384,13 @@ SUB Conf.UpdatePreview (Area AS PosType, ThemeId)
 
     Obj.DrawTxt txtPreview, "Example textbox", False
     
-    Font.Print "Theme preview", imgLogo.Pos.Left + 42, imgLogo.Pos.Top + 5, Theme.WindowText, fontHeading
-    Font.Print "This is an example.", imgLogo.Pos.Left + 42, imgLogo.Pos.Top + 19, Theme.WindowText, fontNormal
-
     Font.Print "Preview link", imgDeskLink.Pos.Left + 38, imgDeskLink.Pos.Top + 4, Theme.DesktopText, fontHeading
     Font.Print "preview.exe", imgDeskLink.Pos.Left + 38, imgDeskLink.Pos.Top + 18, Theme.DesktopText, fontNormal
+
+    'Decrease VIEW width, so theme name/author can't go outside winPreview
+    VIEW (Area.Left + 2, Area.Top + 2)-(Area.Left + Area.Width - 28, Area.Top + Area.Height - 2)
+    Font.Print Theme.Name, imgLogo.Pos.Left + 42, imgLogo.Pos.Top + 5, Theme.WindowText, fontHeading
+    Font.Print Theme.Author, imgLogo.Pos.Left + 42, imgLogo.Pos.Top + 19, Theme.WindowText, fontNormal
 
     VIEW
     Mouse.Show
