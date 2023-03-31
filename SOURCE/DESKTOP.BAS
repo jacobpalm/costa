@@ -970,8 +970,8 @@ Desk.RedrawAll:
 
     IF Obj.BtnClick(btnAddLink) THEN Key$ = "l"
     IF Obj.BtnClick(btnRunCmd) THEN Key$ = "e"
-    IF Obj.BtnClick(btnPrevious) THEN Key$ = CHR$(0) + "m"
-    IF Obj.BtnClick(btnNext) THEN Key$ = CHR$(0) + "k"
+    IF Obj.BtnClick(btnPrevious) THEN Key$ = CHR$(0) + "k"
+    IF Obj.BtnClick(btnNext) THEN Key$ = CHR$(0) + "m"
     IF Obj.BtnClick(btnAboutCosta) THEN Key$ = "a"
     IF Obj.BtnClick(btnExitCosta) THEN Key$ = "x"
 
