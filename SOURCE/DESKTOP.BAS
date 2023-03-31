@@ -204,6 +204,8 @@ END SUB
 SUB Desk.ExitGUI ()
     ON LOCAL ERROR RESUME NEXT
 
+    Sys.SaveSettings
+
     SCREEN 0
     COLOR 7, 0
 
@@ -1218,6 +1220,8 @@ SUB Desk.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVA
   PRINT #RunHandle, "CD " + LEFT$(Sys.Path, LEN(Sys.Path) - 1)
 
   CLOSE #RunHandle
+
+  Sys.SaveSettings
 
   DO: LOOP WHILE LEN(INKEY$)
   END 2
