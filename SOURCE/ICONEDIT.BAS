@@ -555,23 +555,10 @@ END SUB
 
 SUB IconEdit.MoveIndicator (Direction)
 
-    DIM XPos, YPos, PerformMove
+    DIM XPos, YPos
 
-    PerformMove = False
-    SELECT CASE Direction
-      CASE dirUp
-        IF KeyboardPosY > 0 THEN PerformMove = True
-      CASE dirDown
-        IF KeyboardPosY < 31 THEN PerformMove = True
-      CASE dirLeft
-        IF KeyboardPosX > 0 THEN PerformMove = True
-      CASE dirRight
-        IF KeyboardPosX < 31 THEN PerformMove = True
-    END SELECT
-
-
-    IF (PerformMove AND KeyboardPosVisible) OR (Direction = dirHide AND KeyboardPosVisible) THEN
-
+    IF KeyboardPosVisible OR Direction = dirHide THEN
+      'Remove indicator from previous pixel
       IF KeyboardPosX > -1 AND KeyboardPosY > -1 THEN
         XPos = DrawAreaOffsetX + (KeyboardPosX * PixelSize)
         YPos = DrawAreaOffsetY + (KeyboardPosY * PixelSize)
@@ -581,34 +568,30 @@ SUB IconEdit.MoveIndicator (Direction)
       END IF
     END IF
 
-    IF PerformMove THEN
-      SELECT CASE Direction
-        CASE dirUp
-          KeyboardPosY = KeyboardPosY - 1
-        CASE dirDown
-          KeyboardPosY = KeyboardPosY + 1
-        CASE dirLeft
-          KeyboardPosX = KeyboardPosX - 1
-        CASE dirRight
-          KeyboardPosX = KeyboardPosX + 1
-      END SELECT
-    END IF
+    IF KeyboardPosVisible = False OR Direction = dirHide THEN EXIT SUB
 
-    IF KeyboardPosVisible THEN
-      IF PerformMove OR Direction = dirStay THEN
-        XPos = DrawAreaOffsetX + (KeyboardPosX * PixelSize)
-        YPos = DrawAreaOffsetY + (KeyboardPosY * PixelSize)
-        Mouse.Hide
-        IF PixelSize = 13 THEN
-          LINE (XPos + 3, YPos + 3)-(XPos + 9, YPos + 9), 8, B
-          LINE (XPos + 4, YPos + 4)-(XPos + 8, YPos + 8), 15, B
-        ELSE
-          LINE (XPos + 1, YPos + 1)-(XPos + 6, YPos + 6), 8, B
-          LINE (XPos + 2, YPos + 2)-(XPos + 5, YPos + 5), 15, B
-        END IF
-        Mouse.Show
-      END IF
-    END IF
+    SELECT CASE Direction
+      CASE dirUp
+        KeyboardPosY = KeyboardPosY - 1
+      CASE dirDown
+        KeyboardPosY = KeyboardPosY + 1
+      CASE dirLeft
+        KeyboardPosX = KeyboardPosX - 1
+      CASE dirRight
+        KeyboardPosX = KeyboardPosX + 1
+    END SELECT
+    
+    IF KeyboardPosY < 0 THEN KeyboardPosY = 0
+    IF KeyboardPosY > 31 THEN KeyboardPosY = 31
+    IF KeyboardPosX < 0 THEN KeyboardPosX = 0
+    IF KeyboardPosX > 31 THEN KeyboardPosX = 31
+
+    XPos = DrawAreaOffsetX + (KeyboardPosX * PixelSize)
+    YPos = DrawAreaOffsetY + (KeyboardPosY * PixelSize)
+    Mouse.Hide
+    LINE (XPos + 1, YPos + 1)-(XPos + 6, YPos + 6), 8, B
+    LINE (XPos + 2, YPos + 2)-(XPos + 5, YPos + 5), 15, B
+    Mouse.Show
 
 END SUB
 
