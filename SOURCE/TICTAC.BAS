@@ -17,8 +17,8 @@ DECLARE SUB Tic.PrintStatus ()
 CONST PlayerX = 10
 CONST PlayerO = NOT PlayerX
 
-CONST SoundX = 1
-CONST SoundY = 2
+CONST SoundX = PlayerX
+CONST SoundO = PlayerO
 CONST SoundIllegalMove = 3
 CONST SoundWin = 4
 CONST SoundLoose = 5
@@ -65,75 +65,75 @@ SUB Tic.AIMove ()
 
 		'Check if AI can win
 			'Horizontal
-			IF PlayField(1, 1) = 2 AND PlayField(1, 2) = 2 AND PlayField(1, 3) = 0 THEN PlayField(1, 3) = 2: Tic.DrawXO 1, 3, PlayerTurn: EXIT SUB
-			IF PlayField(1, 1) = 2 AND PlayField(1, 3) = 2 AND PlayField(1, 2) = 0 THEN PlayField(1, 2) = 2: Tic.DrawXO 1, 2, PlayerTurn: EXIT SUB
-			IF PlayField(1, 2) = 2 AND PlayField(1, 3) = 2 AND PlayField(1, 1) = 0 THEN PlayField(1, 1) = 2: Tic.DrawXO 1, 1, PlayerTurn: EXIT SUB
+			IF PlayField(1, 1) = PlayerO AND PlayField(1, 2) = PlayerO AND PlayField(1, 3) = 0 THEN PlayField(1, 3) = PlayerO: Tic.DrawXO 1, 3, PlayerTurn: EXIT SUB
+			IF PlayField(1, 1) = PlayerO AND PlayField(1, 3) = PlayerO AND PlayField(1, 2) = 0 THEN PlayField(1, 2) = PlayerO: Tic.DrawXO 1, 2, PlayerTurn: EXIT SUB
+			IF PlayField(1, 2) = PlayerO AND PlayField(1, 3) = PlayerO AND PlayField(1, 1) = 0 THEN PlayField(1, 1) = PlayerO: Tic.DrawXO 1, 1, PlayerTurn: EXIT SUB
 
-			IF PlayField(2, 1) = 2 AND PlayField(2, 2) = 2 AND PlayField(2, 3) = 0 THEN PlayField(2, 3) = 2: Tic.DrawXO 2, 3, PlayerTurn: EXIT SUB
-			IF PlayField(2, 1) = 2 AND PlayField(2, 3) = 2 AND PlayField(2, 2) = 0 THEN PlayField(2, 2) = 2: Tic.DrawXO 2, 2, PlayerTurn: EXIT SUB
-			IF PlayField(2, 2) = 2 AND PlayField(2, 3) = 2 AND PlayField(2, 1) = 0 THEN PlayField(2, 1) = 2: Tic.DrawXO 2, 1, PlayerTurn: EXIT SUB
+			IF PlayField(2, 1) = PlayerO AND PlayField(2, 2) = PlayerO AND PlayField(2, 3) = 0 THEN PlayField(2, 3) = PlayerO: Tic.DrawXO 2, 3, PlayerTurn: EXIT SUB
+			IF PlayField(2, 1) = PlayerO AND PlayField(2, 3) = PlayerO AND PlayField(2, 2) = 0 THEN PlayField(2, 2) = PlayerO: Tic.DrawXO 2, 2, PlayerTurn: EXIT SUB
+			IF PlayField(2, 2) = PlayerO AND PlayField(2, 3) = PlayerO AND PlayField(2, 1) = 0 THEN PlayField(2, 1) = PlayerO: Tic.DrawXO 2, 1, PlayerTurn: EXIT SUB
 
-			IF PlayField(3, 1) = 2 AND PlayField(3, 2) = 2 AND PlayField(3, 3) = 0 THEN PlayField(3, 3) = 2: Tic.DrawXO 3, 3, PlayerTurn: EXIT SUB
-			IF PlayField(3, 1) = 2 AND PlayField(3, 3) = 2 AND PlayField(3, 2) = 0 THEN PlayField(3, 2) = 2: Tic.DrawXO 3, 2, PlayerTurn: EXIT SUB
-			IF PlayField(3, 2) = 2 AND PlayField(3, 3) = 2 AND PlayField(3, 1) = 0 THEN PlayField(3, 1) = 2: Tic.DrawXO 3, 1, PlayerTurn: EXIT SUB
+			IF PlayField(3, 1) = PlayerO AND PlayField(3, 2) = PlayerO AND PlayField(3, 3) = 0 THEN PlayField(3, 3) = PlayerO: Tic.DrawXO 3, 3, PlayerTurn: EXIT SUB
+			IF PlayField(3, 1) = PlayerO AND PlayField(3, 3) = PlayerO AND PlayField(3, 2) = 0 THEN PlayField(3, 2) = PlayerO: Tic.DrawXO 3, 2, PlayerTurn: EXIT SUB
+			IF PlayField(3, 2) = PlayerO AND PlayField(3, 3) = PlayerO AND PlayField(3, 1) = 0 THEN PlayField(3, 1) = PlayerO: Tic.DrawXO 3, 1, PlayerTurn: EXIT SUB
 
 			'Vertical
-			IF PlayField(1, 1) = 2 AND PlayField(2, 1) = 2 AND PlayField(3, 1) = 0 THEN PlayField(3, 1) = 2: Tic.DrawXO 3, 1, PlayerTurn: EXIT SUB
-			IF PlayField(1, 1) = 2 AND PlayField(3, 1) = 2 AND PlayField(2, 1) = 0 THEN PlayField(2, 1) = 2: Tic.DrawXO 2, 1, PlayerTurn: EXIT SUB
-			IF PlayField(2, 1) = 2 AND PlayField(3, 1) = 2 AND PlayField(1, 1) = 0 THEN PlayField(1, 1) = 2: Tic.DrawXO 1, 1, PlayerTurn: EXIT SUB
+			IF PlayField(1, 1) = PlayerO AND PlayField(2, 1) = PlayerO AND PlayField(3, 1) = 0 THEN PlayField(3, 1) = PlayerO: Tic.DrawXO 3, 1, PlayerTurn: EXIT SUB
+			IF PlayField(1, 1) = PlayerO AND PlayField(3, 1) = PlayerO AND PlayField(2, 1) = 0 THEN PlayField(2, 1) = PlayerO: Tic.DrawXO 2, 1, PlayerTurn: EXIT SUB
+			IF PlayField(2, 1) = PlayerO AND PlayField(3, 1) = PlayerO AND PlayField(1, 1) = 0 THEN PlayField(1, 1) = PlayerO: Tic.DrawXO 1, 1, PlayerTurn: EXIT SUB
 
-			IF PlayField(1, 2) = 2 AND PlayField(2, 2) = 2 AND PlayField(3, 2) = 0 THEN PlayField(3, 2) = 2: Tic.DrawXO 3, 2, PlayerTurn: EXIT SUB
-			IF PlayField(1, 2) = 2 AND PlayField(3, 2) = 2 AND PlayField(2, 2) = 0 THEN PlayField(2, 2) = 2: Tic.DrawXO 2, 2, PlayerTurn: EXIT SUB
-			IF PlayField(2, 2) = 2 AND PlayField(3, 2) = 2 AND PlayField(1, 2) = 0 THEN PlayField(1, 2) = 2: Tic.DrawXO 1, 2, PlayerTurn: EXIT SUB
+			IF PlayField(1, 2) = PlayerO AND PlayField(2, 2) = PlayerO AND PlayField(3, 2) = 0 THEN PlayField(3, 2) = PlayerO: Tic.DrawXO 3, 2, PlayerTurn: EXIT SUB
+			IF PlayField(1, 2) = PlayerO AND PlayField(3, 2) = PlayerO AND PlayField(2, 2) = 0 THEN PlayField(2, 2) = PlayerO: Tic.DrawXO 2, 2, PlayerTurn: EXIT SUB
+			IF PlayField(2, 2) = PlayerO AND PlayField(3, 2) = PlayerO AND PlayField(1, 2) = 0 THEN PlayField(1, 2) = PlayerO: Tic.DrawXO 1, 2, PlayerTurn: EXIT SUB
 
-			IF PlayField(1, 3) = 2 AND PlayField(2, 3) = 2 AND PlayField(3, 3) = 0 THEN PlayField(3, 3) = 2: Tic.DrawXO 3, 3, PlayerTurn: EXIT SUB
-			IF PlayField(1, 3) = 2 AND PlayField(3, 3) = 2 AND PlayField(2, 3) = 0 THEN PlayField(2, 3) = 2: Tic.DrawXO 2, 3, PlayerTurn: EXIT SUB
-			IF PlayField(2, 3) = 2 AND PlayField(3, 3) = 2 AND PlayField(1, 3) = 0 THEN PlayField(1, 3) = 2: Tic.DrawXO 1, 3, PlayerTurn: EXIT SUB
+			IF PlayField(1, 3) = PlayerO AND PlayField(2, 3) = PlayerO AND PlayField(3, 3) = 0 THEN PlayField(3, 3) = PlayerO: Tic.DrawXO 3, 3, PlayerTurn: EXIT SUB
+			IF PlayField(1, 3) = PlayerO AND PlayField(3, 3) = PlayerO AND PlayField(2, 3) = 0 THEN PlayField(2, 3) = PlayerO: Tic.DrawXO 2, 3, PlayerTurn: EXIT SUB
+			IF PlayField(2, 3) = PlayerO AND PlayField(3, 3) = PlayerO AND PlayField(1, 3) = 0 THEN PlayField(1, 3) = PlayerO: Tic.DrawXO 1, 3, PlayerTurn: EXIT SUB
 
 			'Diagonal
-			IF PlayField(1, 1) = 2 AND PlayField(2, 2) = 2 AND PlayField(3, 3) = 0 THEN PlayField(3, 3) = 2: Tic.DrawXO 3, 3, PlayerTurn: EXIT SUB
-			IF PlayField(1, 1) = 2 AND PlayField(3, 3) = 2 AND PlayField(2, 2) = 0 THEN PlayField(2, 2) = 2: Tic.DrawXO 2, 2, PlayerTurn: EXIT SUB
-			IF PlayField(2, 2) = 2 AND PlayField(3, 3) = 2 AND PlayField(1, 1) = 0 THEN PlayField(1, 1) = 2: Tic.DrawXO 1, 1, PlayerTurn: EXIT SUB
+			IF PlayField(1, 1) = PlayerO AND PlayField(2, 2) = PlayerO AND PlayField(3, 3) = 0 THEN PlayField(3, 3) = PlayerO: Tic.DrawXO 3, 3, PlayerTurn: EXIT SUB
+			IF PlayField(1, 1) = PlayerO AND PlayField(3, 3) = PlayerO AND PlayField(2, 2) = 0 THEN PlayField(2, 2) = PlayerO: Tic.DrawXO 2, 2, PlayerTurn: EXIT SUB
+			IF PlayField(2, 2) = PlayerO AND PlayField(3, 3) = PlayerO AND PlayField(1, 1) = 0 THEN PlayField(1, 1) = PlayerO: Tic.DrawXO 1, 1, PlayerTurn: EXIT SUB
 
-			IF PlayField(1, 3) = 2 AND PlayField(2, 2) = 2 AND PlayField(3, 1) = 0 THEN PlayField(3, 1) = 2: Tic.DrawXO 3, 1, PlayerTurn: EXIT SUB
-			IF PlayField(1, 3) = 2 AND PlayField(3, 1) = 2 AND PlayField(2, 2) = 0 THEN PlayField(2, 2) = 2: Tic.DrawXO 2, 2, PlayerTurn: EXIT SUB
-			IF PlayField(2, 2) = 2 AND PlayField(3, 1) = 2 AND PlayField(1, 3) = 0 THEN PlayField(1, 3) = 2: Tic.DrawXO 1, 3, PlayerTurn: EXIT SUB
+			IF PlayField(1, 3) = PlayerO AND PlayField(2, 2) = PlayerO AND PlayField(3, 1) = 0 THEN PlayField(3, 1) = PlayerO: Tic.DrawXO 3, 1, PlayerTurn: EXIT SUB
+			IF PlayField(1, 3) = PlayerO AND PlayField(3, 1) = PlayerO AND PlayField(2, 2) = 0 THEN PlayField(2, 2) = PlayerO: Tic.DrawXO 2, 2, PlayerTurn: EXIT SUB
+			IF PlayField(2, 2) = PlayerO AND PlayField(3, 1) = PlayerO AND PlayField(1, 3) = 0 THEN PlayField(1, 3) = PlayerO: Tic.DrawXO 1, 3, PlayerTurn: EXIT SUB
 
 		'If AI can't win, prevent X from doing so
 			'Horizontal
-			IF PlayField(1, 1) = 1 AND PlayField(1, 2) = 1 AND PlayField(1, 3) = 0 THEN PlayField(1, 3) = 2: Tic.DrawXO 1, 3, PlayerTurn: EXIT SUB
-			IF PlayField(1, 1) = 1 AND PlayField(1, 3) = 1 AND PlayField(1, 2) = 0 THEN PlayField(1, 2) = 2: Tic.DrawXO 1, 2, PlayerTurn: EXIT SUB
-			IF PlayField(1, 2) = 1 AND PlayField(1, 3) = 1 AND PlayField(1, 1) = 0 THEN PlayField(1, 1) = 2: Tic.DrawXO 1, 1, PlayerTurn: EXIT SUB
+			IF PlayField(1, 1) = PlayerX AND PlayField(1, 2) = PlayerX AND PlayField(1, 3) = 0 THEN PlayField(1, 3) = PlayerO: Tic.DrawXO 1, 3, PlayerTurn: EXIT SUB
+			IF PlayField(1, 1) = PlayerX AND PlayField(1, 3) = PlayerX AND PlayField(1, 2) = 0 THEN PlayField(1, 2) = PlayerO: Tic.DrawXO 1, 2, PlayerTurn: EXIT SUB
+			IF PlayField(1, 2) = PlayerX AND PlayField(1, 3) = PlayerX AND PlayField(1, 1) = 0 THEN PlayField(1, 1) = PlayerO: Tic.DrawXO 1, 1, PlayerTurn: EXIT SUB
 
-			IF PlayField(2, 1) = 1 AND PlayField(2, 2) = 1 AND PlayField(2, 3) = 0 THEN PlayField(2, 3) = 2: Tic.DrawXO 2, 3, PlayerTurn: EXIT SUB
-			IF PlayField(2, 1) = 1 AND PlayField(2, 3) = 1 AND PlayField(2, 2) = 0 THEN PlayField(2, 2) = 2: Tic.DrawXO 2, 2, PlayerTurn: EXIT SUB
-			IF PlayField(2, 2) = 1 AND PlayField(2, 3) = 1 AND PlayField(2, 1) = 0 THEN PlayField(2, 1) = 2: Tic.DrawXO 2, 1, PlayerTurn: EXIT SUB
+			IF PlayField(2, 1) = PlayerX AND PlayField(2, 2) = PlayerX AND PlayField(2, 3) = 0 THEN PlayField(2, 3) = PlayerO: Tic.DrawXO 2, 3, PlayerTurn: EXIT SUB
+			IF PlayField(2, 1) = PlayerX AND PlayField(2, 3) = PlayerX AND PlayField(2, 2) = 0 THEN PlayField(2, 2) = PlayerO: Tic.DrawXO 2, 2, PlayerTurn: EXIT SUB
+			IF PlayField(2, 2) = PlayerX AND PlayField(2, 3) = PlayerX AND PlayField(2, 1) = 0 THEN PlayField(2, 1) = PlayerO: Tic.DrawXO 2, 1, PlayerTurn: EXIT SUB
 
-			IF PlayField(3, 1) = 1 AND PlayField(3, 2) = 1 AND PlayField(3, 3) = 0 THEN PlayField(3, 3) = 2: Tic.DrawXO 3, 3, PlayerTurn: EXIT SUB
-			IF PlayField(3, 1) = 1 AND PlayField(3, 3) = 1 AND PlayField(3, 2) = 0 THEN PlayField(3, 2) = 2: Tic.DrawXO 3, 2, PlayerTurn: EXIT SUB
-			IF PlayField(3, 2) = 1 AND PlayField(3, 3) = 1 AND PlayField(3, 1) = 0 THEN PlayField(3, 1) = 2: Tic.DrawXO 3, 1, PlayerTurn: EXIT SUB
+			IF PlayField(3, 1) = PlayerX AND PlayField(3, 2) = PlayerX AND PlayField(3, 3) = 0 THEN PlayField(3, 3) = PlayerO: Tic.DrawXO 3, 3, PlayerTurn: EXIT SUB
+			IF PlayField(3, 1) = PlayerX AND PlayField(3, 3) = PlayerX AND PlayField(3, 2) = 0 THEN PlayField(3, 2) = PlayerO: Tic.DrawXO 3, 2, PlayerTurn: EXIT SUB
+			IF PlayField(3, 2) = PlayerX AND PlayField(3, 3) = PlayerX AND PlayField(3, 1) = 0 THEN PlayField(3, 1) = PlayerO: Tic.DrawXO 3, 1, PlayerTurn: EXIT SUB
 
 			'Vertical
-			IF PlayField(1, 1) = 1 AND PlayField(2, 1) = 1 AND PlayField(3, 1) = 0 THEN PlayField(3, 1) = 2: Tic.DrawXO 3, 1, PlayerTurn: EXIT SUB
-			IF PlayField(1, 1) = 1 AND PlayField(3, 1) = 1 AND PlayField(2, 1) = 0 THEN PlayField(2, 1) = 2: Tic.DrawXO 2, 1, PlayerTurn: EXIT SUB
-			IF PlayField(2, 1) = 1 AND PlayField(3, 1) = 1 AND PlayField(1, 1) = 0 THEN PlayField(1, 1) = 2: Tic.DrawXO 1, 1, PlayerTurn: EXIT SUB
+			IF PlayField(1, 1) = PlayerX AND PlayField(2, 1) = PlayerX AND PlayField(3, 1) = 0 THEN PlayField(3, 1) = PlayerO: Tic.DrawXO 3, 1, PlayerTurn: EXIT SUB
+			IF PlayField(1, 1) = PlayerX AND PlayField(3, 1) = PlayerX AND PlayField(2, 1) = 0 THEN PlayField(2, 1) = PlayerO: Tic.DrawXO 2, 1, PlayerTurn: EXIT SUB
+			IF PlayField(2, 1) = PlayerX AND PlayField(3, 1) = PlayerX AND PlayField(1, 1) = 0 THEN PlayField(1, 1) = PlayerO: Tic.DrawXO 1, 1, PlayerTurn: EXIT SUB
 
-			IF PlayField(1, 2) = 1 AND PlayField(2, 2) = 1 AND PlayField(3, 2) = 0 THEN PlayField(3, 2) = 2: Tic.DrawXO 3, 2, PlayerTurn: EXIT SUB
-			IF PlayField(1, 2) = 1 AND PlayField(3, 2) = 1 AND PlayField(2, 2) = 0 THEN PlayField(2, 2) = 2: Tic.DrawXO 2, 2, PlayerTurn: EXIT SUB
-			IF PlayField(2, 2) = 1 AND PlayField(3, 2) = 1 AND PlayField(1, 2) = 0 THEN PlayField(1, 2) = 2: Tic.DrawXO 1, 2, PlayerTurn: EXIT SUB
+			IF PlayField(1, 2) = PlayerX AND PlayField(2, 2) = PlayerX AND PlayField(3, 2) = 0 THEN PlayField(3, 2) = PlayerO: Tic.DrawXO 3, 2, PlayerTurn: EXIT SUB
+			IF PlayField(1, 2) = PlayerX AND PlayField(3, 2) = PlayerX AND PlayField(2, 2) = 0 THEN PlayField(2, 2) = PlayerO: Tic.DrawXO 2, 2, PlayerTurn: EXIT SUB
+			IF PlayField(2, 2) = PlayerX AND PlayField(3, 2) = PlayerX AND PlayField(1, 2) = 0 THEN PlayField(1, 2) = PlayerO: Tic.DrawXO 1, 2, PlayerTurn: EXIT SUB
 					 
-			IF PlayField(1, 3) = 1 AND PlayField(2, 3) = 1 AND PlayField(3, 3) = 0 THEN PlayField(3, 3) = 2: Tic.DrawXO 3, 3, PlayerTurn: EXIT SUB
-			IF PlayField(1, 3) = 1 AND PlayField(3, 3) = 1 AND PlayField(2, 3) = 0 THEN PlayField(2, 3) = 2: Tic.DrawXO 2, 3, PlayerTurn: EXIT SUB
-			IF PlayField(2, 3) = 1 AND PlayField(3, 3) = 1 AND PlayField(1, 3) = 0 THEN PlayField(1, 3) = 2: Tic.DrawXO 1, 3, PlayerTurn: EXIT SUB
+			IF PlayField(1, 3) = PlayerX AND PlayField(2, 3) = PlayerX AND PlayField(3, 3) = 0 THEN PlayField(3, 3) = PlayerO: Tic.DrawXO 3, 3, PlayerTurn: EXIT SUB
+			IF PlayField(1, 3) = PlayerX AND PlayField(3, 3) = PlayerX AND PlayField(2, 3) = 0 THEN PlayField(2, 3) = PlayerO: Tic.DrawXO 2, 3, PlayerTurn: EXIT SUB
+			IF PlayField(2, 3) = PlayerX AND PlayField(3, 3) = PlayerX AND PlayField(1, 3) = 0 THEN PlayField(1, 3) = PlayerO: Tic.DrawXO 1, 3, PlayerTurn: EXIT SUB
 
 			'Diagonal
-			IF PlayField(1, 1) = 1 AND PlayField(2, 2) = 1 AND PlayField(3, 3) = 0 THEN PlayField(3, 3) = 2: Tic.DrawXO 3, 3, PlayerTurn: EXIT SUB
-			IF PlayField(1, 1) = 1 AND PlayField(3, 3) = 1 AND PlayField(2, 2) = 0 THEN PlayField(2, 2) = 2: Tic.DrawXO 2, 2, PlayerTurn: EXIT SUB
-			IF PlayField(2, 2) = 1 AND PlayField(3, 3) = 1 AND PlayField(1, 1) = 0 THEN PlayField(1, 1) = 2: Tic.DrawXO 1, 1, PlayerTurn: EXIT SUB
+			IF PlayField(1, 1) = PlayerX AND PlayField(2, 2) = PlayerX AND PlayField(3, 3) = 0 THEN PlayField(3, 3) = PlayerO: Tic.DrawXO 3, 3, PlayerTurn: EXIT SUB
+			IF PlayField(1, 1) = PlayerX AND PlayField(3, 3) = PlayerX AND PlayField(2, 2) = 0 THEN PlayField(2, 2) = PlayerO: Tic.DrawXO 2, 2, PlayerTurn: EXIT SUB
+			IF PlayField(2, 2) = PlayerX AND PlayField(3, 3) = PlayerX AND PlayField(1, 1) = 0 THEN PlayField(1, 1) = PlayerO: Tic.DrawXO 1, 1, PlayerTurn: EXIT SUB
 
-			IF PlayField(1, 3) = 1 AND PlayField(2, 2) = 1 AND PlayField(3, 1) = 0 THEN PlayField(3, 1) = 2: Tic.DrawXO 3, 1, PlayerTurn: EXIT SUB
-			IF PlayField(1, 3) = 1 AND PlayField(3, 1) = 1 AND PlayField(2, 2) = 0 THEN PlayField(2, 2) = 2: Tic.DrawXO 2, 2, PlayerTurn: EXIT SUB
-			IF PlayField(2, 2) = 1 AND PlayField(3, 1) = 1 AND PlayField(1, 3) = 0 THEN PlayField(1, 3) = 2: Tic.DrawXO 1, 3, PlayerTurn: EXIT SUB
+			IF PlayField(1, 3) = PlayerX AND PlayField(2, 2) = PlayerX AND PlayField(3, 1) = 0 THEN PlayField(3, 1) = PlayerO: Tic.DrawXO 3, 1, PlayerTurn: EXIT SUB
+			IF PlayField(1, 3) = PlayerX AND PlayField(3, 1) = PlayerX AND PlayField(2, 2) = 0 THEN PlayField(2, 2) = PlayerO: Tic.DrawXO 2, 2, PlayerTurn: EXIT SUB
+			IF PlayField(2, 2) = PlayerX AND PlayField(3, 1) = PlayerX AND PlayField(1, 3) = 0 THEN PlayField(1, 3) = PlayerO: Tic.DrawXO 1, 3, PlayerTurn: EXIT SUB
 
 		'If AI can't win, and X doesn't have two in a row, just pick a random
 		'spot
@@ -146,8 +146,8 @@ SUB Tic.AIMove ()
 				SetRow = INT(RND * 3) + 1
 
 				IF PlayField(SetRow, SetCol) = 0 THEN
-					PlayField(SetRow, SetCol) = 2
-					Tic.DrawXO SetRow, SetCol, PlayerTurn
+					PlayField(SetRow, SetCol) = PlayerO
+					Tic.DrawXO SetRow, SetCol, PlayerO
 					EXIT SUB
 				END IF
 		 LOOP
@@ -354,6 +354,7 @@ SUB Tic.Main ()
 		
 		IF Obj.BtnClick(btnNew) OR Key$ = "n" THEN
 			Tic.NewGame
+			IF EnableAI AND PlayerTurn = PlayerO THEN GOTO PerformAIMove
 		END IF
 
 		IF Obj.BtnClick(btnExit) OR Key$ = "c" THEN
@@ -363,7 +364,7 @@ SUB Tic.Main ()
 		IF Obj.BtnClick(btnAIToggle) OR Key$ = "m" THEN
 			EnableAI = NOT EnableAI
 			Tic.NewGame
-			Tic.PrintStatus
+			IF EnableAI AND PlayerTurn = PlayerO THEN GOTO PerformAIMove
 		END IF
 
 		IF Obj.BtnClick(btnAudio) OR Key$ = "s" THEN
@@ -406,7 +407,7 @@ SUB Tic.Main ()
 PerformAIMove:
 								Tic.PrintMessage msgAITurn
 								Tic.AIMove
-								Tic.PlaySound SoundY
+								Tic.PlaySound SoundO
 								TotalTurns = TotalTurns + 1
 								IF Tic.CheckWin = True THEN
 									Tic.PrintMessage msgWin
