@@ -140,7 +140,7 @@ SUB TView.Main (FileToView AS STRING)
     btnPageDown.Caption = "Page õdown"
     
     Obj.SetSize btnExit.Pos, 545, 2, 92, 22
-    btnExit.Caption = "õClose"
+    btnExit.Caption = "Eõxit"
 
     Obj.SetSize txtEditor.Pos, 2, 32, 635, 314
     
@@ -265,7 +265,7 @@ startofall:
             GOTO startofall
         END IF
 
-        IF Obj.BtnClick(btnExit) OR Key$ = "c" OR Key$ = CHR$(27) THEN
+        IF Obj.BtnClick(btnExit) OR Key$ = "x" OR Key$ = CHR$(27) THEN
             REDIM FileData(1) AS STRING
             EXIT SUB
         END IF

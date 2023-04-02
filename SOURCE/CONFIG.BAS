@@ -64,7 +64,7 @@ SUB Conf.Main ()
     LINE (0, 29)-(639, 349), Theme.Window, BF
     Mouse.Show
 
-    Obj.SetSize btnExit.Pos, 542, 2, 92, 22
+    Obj.SetSize btnExit.Pos, 545, 2, 92, 22
     Obj.SetSize frmSettings.Pos, 14, 43, 330, 170
     Obj.SetSize frmTheme.Pos, 358, 43, 268, 293
     Obj.SetSize frmAssoc.Pos, 14, 43 + 170 + 14, 330, 108
