@@ -713,7 +713,8 @@ SUB Sys.Load ()
 	Sys.LoadSettings
 	Sys.LoadTheme
 	
-	'Clear the keyboard buffer, DOSBox has some issues with leaving keys in it
+	'Clear mouse/keyboard buffer, DOSBox has some issues with leaving data
+	DO: LOOP WHILE Mouse.Clicked
 	DO: LOOP WHILE LEN(INKEY$)
 
 	Mouse.Show
