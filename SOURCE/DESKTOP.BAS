@@ -36,11 +36,8 @@ END TYPE
 REDIM SHARED DeskLink(0 TO 0) AS DeskLinkType
 
 IF COMMAND$ = "/BOOT" THEN
-  'Boot means that we need to initialize Costa, and make sure all paths are
-  'valid. Will not run when returning to the desktop from external program.
-
-    'Make sure all directories are present and that no files from previous
-    'sessions are present
+    'Boot means that we need to initialize Costa, and make sure all paths are
+    'valid. Will not run when returning to the desktop from external program.
     ON ERROR RESUME NEXT
 
     CHDRIVE LEFT$(Temp.Path, 1)
@@ -415,30 +412,6 @@ LinkDialogDraw:
 END SUB
 
 ' =========================================================================
-'          NAME: Desk.LinkLaunch()
-'    PARAMETERS: TargetLink - the position in the DeskLink array
-'                             containing the link to launch
-'       RETURNS: Nothing
-'       ASSUMES: That the array position in the DeskLink array exists
-'   CALLED FROM: DESKTOP.BAS
-' -------------------------------------------------------------------------
-'   DESCRIPTION: Writes a file telling the batch script which program or
-'                command to launch, and exits this program - unless the
-'                command is an internal one, in which case the
-'                corresponding SUB is called
-' =========================================================================
-SUB Desk.LinkLaunch (TargetLink AS INTEGER)
-
-    DIM TargetPath AS STRING
-    DIM FileToOpen AS STRING
-
-    TargetPath = RTRIM$(DeskLink(TargetLink).Path)
-
-    Desk.Run RTRIM$(DeskLink(TargetLink).Filename), RTRIM$(DeskLink(TargetLink).Parameters), RTRIM$(DeskLink(TargetLink).Path), DeskLink(TargetLink).PauseOnExit
-
-END SUB
-
-' =========================================================================
 '          NAME: Desk.LinkLoad()
 '    PARAMETERS: None
 '       RETURNS: Nothing
@@ -583,8 +556,7 @@ SUB Desk.LinkMenu (TargetLink)
     
     'Open/run, or Enter key
     IF Obj.BtnClick(btnOpen) OR Key$ = "o" OR Key$ = CHR$(13) THEN
-      Desk.LinkLaunch TargetLink
-      EXIT SUB
+      Desk.Run RTRIM$(DeskLink(TargetLink).Filename), RTRIM$(DeskLink(TargetLink).Parameters), RTRIM$(DeskLink(TargetLink).Path), DeskLink(TargetLink).PauseOnExit
     END IF
 
     'Configure
@@ -961,10 +933,6 @@ Desk.RedrawAll:
   Obj.DrawBtn btnExitCosta, False
   Font.Print LTRIM$(STR$(Setting.DesktopID)) + "/5", 310, 8, Theme.WindowText, fontHeading
   Desk.DrawDesktop
-
-  'Clear mouse and keyboard buffer, since DOSBox will sometimes leave data
-  DO: LOOP WHILE Mouse.Clicked
-  DO: LOOP WHILE LEN(INKEY$)
 
   DO
 
