@@ -11,14 +11,12 @@ DECLARE SUB Desk.LinkLaunch (TargetLink AS INTEGER)
 DECLARE SUB Desk.LinkLoad ()
 DECLARE SUB Desk.LinkMenu (TargetLink%)
 DECLARE SUB Desk.LinkMove (TargetLink%)
-DECLARE SUB Desk.LinkReset ()
 DECLARE SUB Desk.LinkSave ()
 DECLARE SUB Desk.Main ()
 DECLARE SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
 DECLARE SUB Desk.ProfileSelect ()
 DECLARE SUB Desk.RunDialog ()
 DECLARE SUB Desk.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVAL TargetPath AS STRING, PauseOnExit AS INTEGER)
-DECLARE SUB Desk.TipOfTheDay ()
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
@@ -184,31 +182,6 @@ SUB Desk.DrawDesktop ()
   NEXT
   
   Mouse.Show
-
-END SUB
-
-' =========================================================================
-'          NAME: Desk.ExitGUI()
-'    PARAMETERS: None
-'       RETURNS: Nothing
-'       ASSUMES: Nothing
-'   CALLED FROM: DESKTOP.BAS
-' -------------------------------------------------------------------------
-'   DESCRIPTION: Removes temporary files used in the current session, and
-'                exits the program with an exitcode of 1, signalling to
-'                the batch script that it should terminate itself
-' =========================================================================
-SUB Desk.ExitGUI ()
-    ON LOCAL ERROR RESUME NEXT
-
-    Sys.SaveSettings
-
-    SCREEN 0
-    COLOR 7, 0
-
-    'Errorcode 1 makes the COSTA.BAT file exit its loop, thereby exiting
-    'Costa
-    END 1
 
 END SUB
 
@@ -427,43 +400,24 @@ END SUB
 SUB Desk.LinkLoad ()
   
     DIM LinkCount, LinkLoad, FileHandle
-    DIM ResetMsg
     DIM DeskLinkFile AS STRING
 
     DeskLinkFile = Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(Setting.DesktopID)) + ".DAT"
     FileHandle = FREEFILE
 
     IF NOT File.Exists(DeskLinkFile) THEN
-      Desk.LinkReset
-      ResetMsg = Sys.MsgBox("Desktop links reset to default", "The file in which Costa stores the configuration for desktop links, DESKLNK" + LTRIM$(STR$(Setting.DesktopID)) + ".DAT," + CHR$(13) + "was not found in this profile." + CHR$(13) + CHR$( _
-13) + "A new file has been automatically created, but any custom links will need to be" + CHR$(13) + "created again manually.", msgError)
       EXIT SUB
     END IF
 
     OPEN Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(Setting.DesktopID)) + ".DAT" FOR BINARY AS #FileHandle
     IF NOT LOF(FileHandle) = 0 THEN GET #FileHandle, , LinkCount
 
-    'A value of -1 means no icons exists by user choice, so do nothing
-    IF LinkCount = -1 THEN
+    IF LinkCount <= 1 THEN
       CLOSE #FileHandle
       REDIM DeskLink(0 TO 0) AS DeskLinkType
       EXIT SUB
     END IF
 
-    'If no links found in file, ask to recreate defaults
-    IF LinkCount = 0 THEN
-        IF Sys.MsgBox("No desktop links found", "No desktop links were found. Do you wish to recreate the default links?", msgQuest) THEN
-          CLOSE #FileHandle
-          Desk.LinkReset
-        ELSE
-          'Setting to -1 and saving will prevent Costa from asking again
-          LinkCount = -1
-          PUT #FileHandle, 1, LinkCount
-          CLOSE #FileHandle
-        END IF
-        EXIT SUB
-    END IF
-    
     REDIM DeskLink(0 TO LinkCount - 1) AS DeskLinkType
 
     FOR LinkLoad = 0 TO LinkCount - 1
@@ -704,98 +658,6 @@ SUB Desk.LinkMove (TargetLink)
   Desk.LinkSave
 
   DO: LOOP WHILE Mouse.Clicked
-END SUB
-
-' =========================================================================
-'          NAME: Desk.LinkReset()
-'    PARAMETERS: None
-'       RETURNS: Nothing
-'       ASSUMES: Nothing
-'   CALLED FROM: DESKTOP.BAS
-' -------------------------------------------------------------------------
-'   DESCRIPTION: Resets all desktop links, by recreating the default array
-'                and calling Desk.LinkSave
-' =========================================================================
-'Resets all desk icons, by recreating the array as default
-SUB Desk.LinkReset ()
-
-    REDIM DeskLink(0 TO 8) AS DeskLinkType
-
-    DeskLink(0).Caption = "Tic Tac Toe"
-    DeskLink(0).Filename = "TICTAC.EXE"
-    DeskLink(0).Path = ""
-    DeskLink(0).Parameters = ""
-    DeskLink(0).ImageFile = "TICTAC"
-    DeskLink(0).Left = 15
-    DeskLink(0).Top = 45
-
-    DeskLink(1).Caption = "Text Viewer"
-    DeskLink(1).Filename = "TEXTVIEW.EXE"
-    DeskLink(1).Path = ""
-    DeskLink(1).Parameters = ""
-    DeskLink(1).ImageFile = "DOCUMENT"
-    DeskLink(1).Left = 15
-    DeskLink(1).Top = 90
-
-    DeskLink(2).Caption = "Calculator"
-    DeskLink(2).Filename = "CALC.EXE"
-    DeskLink(2).Path = ""
-    DeskLink(2).Parameters = ""
-    DeskLink(2).ImageFile = "CALC"
-    DeskLink(2).Left = 15
-    DeskLink(2).Top = 135
-
-    DeskLink(3).Caption = "Theme Editor"
-    DeskLink(3).Filename = "THMEDIT.EXE"
-    DeskLink(3).Path = ""
-    DeskLink(3).Parameters = ""
-    DeskLink(3).ImageFile = "THEMES"
-    DeskLink(3).Left = 15
-    DeskLink(3).Top = 180
-
-    DeskLink(4).Caption = "Icon Editor"
-    DeskLink(4).Filename = "ICONEDIT.EXE"
-    DeskLink(4).Path = ""
-    DeskLink(4).Parameters = ""
-    DeskLink(4).ImageFile = "PAINT"
-    DeskLink(4).Left = 15
-    DeskLink(4).Top = 225
-
-    DeskLink(5).Caption = "Configuration"
-    DeskLink(5).Filename = "CONFIG.EXE"
-    DeskLink(5).Path = ""
-    DeskLink(5).Parameters = ""
-    DeskLink(5).ImageFile = "CONFIG"
-    DeskLink(5).Left = 480
-    DeskLink(5).Top = 45
-
-    DeskLink(6).Caption = "DOS-prompt"
-    DeskLink(6).Filename = "COMMAND.COM"
-    DeskLink(6).Path = ""
-    DeskLink(6).Parameters = ""
-    DeskLink(6).ImageFile = "DOSPROG"
-    DeskLink(6).PauseOnExit = True
-    DeskLink(6).Left = 480
-    DeskLink(6).Top = 90
-
-    DeskLink(7).Caption = "What's new?"
-    DeskLink(7).Filename = "DOCS\CHANGES.TXT"
-    DeskLink(7).Path = ""
-    DeskLink(7).Parameters = ""
-    DeskLink(7).ImageFile = "NEWSPAPE"
-    DeskLink(7).Left = 480
-    DeskLink(7).Top = 135
-
-    DeskLink(8).Caption = "User's guide"
-    DeskLink(8).Filename = "DOCS\HELP.TXT"
-    DeskLink(8).Path = ""
-    DeskLink(8).Parameters = ""
-    DeskLink(8).ImageFile = "HELP"
-    DeskLink(8).Left = 480
-    DeskLink(8).Top = 180
-
-    Desk.LinkSave
-
 END SUB
 
 ' =========================================================================
@@ -1044,7 +906,11 @@ Desk.RedrawAll:
 
             IF DoExit = True THEN
                 Mouse.Hide
-                Desk.ExitGUI
+                Sys.SaveSettings
+                SCREEN 0
+                COLOR 7, 0
+                'Errorcode 1 makes the COSTA.BAT file exit its loop
+                END 1
             END IF
         END IF
 
