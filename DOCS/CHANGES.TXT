@@ -1,60 +1,28 @@
 
                          The Costa Graphical Shell
-                               Version 1.7.0
+                               Version 1.7.1
                                By Jacob Palm                   
 
                                  Changelog
 
 
-*1.7.0*
-Version 1.7.0 is all about making it easier to work with files. To fulfil
-this goal, a file selector has been added. This can be used to visually
-browse folders and select a file, instead of having to type path and filename
-in input fields. This is used for example when adding a desktop link, or
-opening a file in the text viewer.
-  -File selector added for easier handling of files, without having to
-   memorize paths and filenames
-  -UI redesign - since Costa is single-tasking, there really was no need for
-   windows. As such, windows are no longer present. All apps run full screen.
-   Dialogs, such as message boxes and input boxes, still appear on top of
-   content.
-  -Setup utility can now auto-detect and suggest the path to Costa, removing
-   the need to type the full path on first run
-  -Previously, deleting the last desktop link recreated default links
-   automatically. Now, Costa will ask the user if that is desired, and will
-   remember the choice
-  -Fixed theme dialog, so that profile switch or restart of desktop is no
-   longer required to switch theme
-  -Costa now uses the TEMP environment variable to place its temporary files,
-   with a fallback to the DATA\TEMP directory. This allows temp files to be
-   moved to a RAM disk, for a great increase in speed on computers with a
-   slow drive
-  -EXEs are now compiled with stub files to remove unnecessary features, such
-   as COM/LPT port access, ISAM database support and advanced input editing,
-   saving a total of 52 KB (6 percent) diskspace for the compiled programs
+The focus for 1.7.1 is performance improvements, and reduction of file sizes.
+Not many new features have been implemented, but some have been removed.
+The config utility has seen a complete rewrite and many icons have been
+remade. VGA support has been removed, as EGA 640x350 looks good on both old
+CRT monitors, and modern widescreen monitors where the aspect radio fits
+nicely.
+  -New icon format - sacrificing transparency for speed. At the same time,
+   a bunch of icons have been remade to fit this new format better
+  -Replaced user profiles with desktop pages - 5 navigateable pages for icons
+  -Remade configuration utility from scratch - much simpler and cleaner UI
+  -Improved UI in Tic Tac Toe, added status bar
+  -Moved input box code to seperate module, to save space on programs that
+   didn't use it
+  -Removed VGA support - Costa now uses EGA 640x350 exclusively
+  -Removed "Tip of the Day" functionality
 
-*1.6.0*
-The most notable change of 1.6.0 is the addiction of EGA support. Now, Costa
-will run on computers with an Enhanced Graphics Adapter with at least 64 KB
-memory, broadening the range of computers on which Costa is supported. The
-new EGA mode is also considerably faster on older machines (pre-1990).
-  -Support for both EGA/VGA (640x350) and VGA (640x480) graphics, and the
-   ability to switch between them on the fly
-  -New default theme - more lively than the one used in 1.5.0
-  -New logo, for the first time ever. Since most other icons have changed,
-   I gave the logo an overhaul as well, to now feature a blue floppy disk
-   instead of the old black one
-  -Font files converted from text format to binary format, reducing load time
-   by 88%
-  -Proprietary icons from Windows and games removed, and replaced with icons
-   drawn by myself. There are two reasons for this - for starters, I don't
-   own these icons, and won't be using them without permission. I also want
-   to make as much as possible myself, rather than using things others have
-   made
-  -FILETYPE.DAT, which hold file association configuration data, will now be
-   recreated automatically if missing. Now, as long as the font files and all
-   EXE files are present, Costa will run even if all other files are deleted
-  -Bug fixes, mostly graphical
+  -Removed many redundant calls to system interrupts, improving performance
+  -Bug fixes
 
-*Older versions*
 For older versions, see the complete changelog at https://costa.jacobpalm.dk

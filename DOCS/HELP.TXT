@@ -1,6 +1,6 @@
 
                           The Costa Graphical Shell
-                                Version 1.7.0
+                                Version 1.7.1
                                 By Jacob Palm                   
 
                           User's guide and reference 
@@ -60,13 +60,12 @@
    Below you'll find a list of Costa's requirements.
 
     - A 286-processor or better (386 recommended, tested down to 16 MHz)
-    - At least 250 KB free conventional RAM is recommended. When running a
+    - At least 200 KB free conventional RAM is recommended. When running a
       program, the resident part of Costa will use only a few hundred bytes
       of RAM
     - 2 MB free hard drive space on the installation drive recommended
-    - VGA capable monitor and graphics card (640x480 pixels, 16 colors), or
-      EGA capapble monitor and graphics card with at least 64KB memory
-      (640x350 pixels, 16 colors)
+    - EGA capable monitor and graphics card with at least 64KB memory
+      (640x350 pixels, 16 colors) - works on all VGA-compliant cards too
     - DOS 3.1 or newer
     
      If your computer doesn't meet one or more of the above requirements,
@@ -84,10 +83,8 @@
     
  ** 1.3 - News in the version **
 
-    This version of Costa has many improvements over the last version, and
-   introduces a few new features. Among them are a file selector, meaning
-   that you no longer have to input full path and name in link dialogs and
-   when opening files.
+    This version of Costa is primarily focused on speed and size
+   improvements.
    
     For a complete listing of changes, see DOCS\CHANGES.TXT.
 
@@ -143,10 +140,6 @@
     Tip: If you have moved Costa, or it doesn't launch properly when running
    COSTA.BAT, run SETUP.EXE again at any time to fix the issue.
 
-    If you are unable to start Costa because your computer doesn't support
-   VGA graphics, delete DATA\CONFIG\COSTA.DAT. This will reset some settings
-   to their defaults, including graphic mode selection.
-
 
  ** 2.2 - Exiting Costa **
 
@@ -154,7 +147,7 @@
    desktop. Once you see the desktop, simply click the "Exit" button and
    then confirm that you want to exit. If you don't have a mouse, you can
    always activate any button by pressing the underlined letter on your
-   keyboard - on the "Exit" button, "E" is underlined, so press the "E" key
+   keyboard - on the "Exit" button, "x" is underlined, so press the "x" key
    to exit.
 
 
@@ -250,51 +243,33 @@
 ------------------------------------------------------------------------------
 | 3.0 - Customizing Costa                                                    |
 ------------------------------------------------------------------------------
- ** 3.1 Profiles **
+ ** 3.1 Desktops **
 
-    Costa supports five different profiles. Each profile has it's one name
-   and icon, it's own settings, and it's own desktop.
-   This feature can be used in several ways, depending on your needs. For
-   instance:
-
-    - If multiple users are using the same computer, each user can name a
-      profile for themselves, and have their own settings, color theme and
-      desktop links.
-
-    - If you use the computer for both work and playing games, you could have
-      a profile with all your work links on the desktop, and another profile
-      with all your game links on the desktop.
-
-    - If you use Costa as a launcher for DOS games, you could make a profile
-      for each genre of games. For instance, separate profiles named "RPGs",
-      "Platform", "Simulation and "Action".
-
-    So, how you use this feature is really up to you. If you don't see any
-   use in the feature, you can go to the Config dialog and set Costa to
-   always launch directly into the last used profile, rather than showing the
-   profile selection dialog at launch. See section 3.2 and 3.5 of this
-   document for more information.
-
+    Costa supports five different desktops. Using the arrow buttons on the
+   menu bar, you can switch back and forth between these (arrow keys can be
+   used as well).
+    Each desktop has its own icons. How you use the desktops is up to you -
+   you can simply use them in order if your icons can't fit on the first, or
+   you can use one for games, one for apps, and so forth.
 
  ** 3.2 Launching the Configuration program **
 
-    On the desktop you will find a button labeld "Config...". Clicking it will
-   open the Configuration program, which allows you to change the appearance
-   and behavior of Costa.
-
+    On the desktop you will find a default icon labeled "Configuration".
+   Open this to launch the Configuration program. If you don't have the icon,
+   simply launch CONFIG.EXE in the path where Costa is installed.
+   
 
  ** 3.3 The theme selector **
 
-    The theme selector can be used to change the appearance of Costa to a
-   number of predefined themes, some made by myself and some submitted by
-   users of earlier versions. To change the theme, open the Configuration
-   program and select "Theme selector".
-   
-    To select a theme, click one of the two arrow buttons on the screen or
-   press the left and right keys to cycle through the themes. Once you've
-   found one you like, click "Save" to apply the changes immediately. Click
-   "Cancel" to discard you changes and return to the desktop without
-   changing the theme.
+    On the right-hand side of the Configuration program, you will find the
+   theme selector. Use this to switch between a number of predefined themes,
+   some made by myself and some submitted by users of earlier versions. Your
+   own themes will also be available here.
+    
+    To select a theme, click one of the two arrow buttons underneath the 
+   preview or press the left and right keys to cycle through the themes. Once
+   you've found one you like, simply exit the program to apply the changes
+   immediately.
     
     If none of the default themes suit your taste, use the included theme
    editor to make your own. User submitted teams are always welcome!
@@ -315,61 +290,50 @@
 
    with the exact same result.
 
-    To edit file associations, Costa includes a small editor. Launch the
-   configuration program, and select "File associations". Once the editor
-   is loaded, it will tell you everything you need to know to edit file
-   associations. It also enables you to disable this feature completely. If
-   you disable it, and later want to enable it again, simple return to the
-   file association editor.
+    To edit file associations, use the bottom-left panel of the Configuration
+   program. Here, you can enter a file type, after which Costa will show you
+   the currently associated command in the "Open with" text box. If the "Open
+   with" text box remains empty, no command is associated with the file type.
+
+    To then assign a command, simply enter it in the "Open with" text box. To
+   clear an associated command, remove the contents of the "Open with" text
+   box. It is not neccessary to save your changes, they take effect right
+   away.
+
+    Hint: Press the "..." button, or press the "." key on your keyboard, to
+   browse your computer for the program you want to associate a file type
+   with.
 
 
  ** 3.5 Other settings **
 
-    The last option in the Configuration program, "Other settings", allows
-   you to tweak various aspects of Costa to make it behave exactly like you
-   want it to. To toggle a feature on or off, click the checkbox in front of
+    The top-left panel in the Configuration program, allows you to tweak
+   various aspects of Costa to your liking.
+    
+    To toggle a feature on or off, click the checkbox in front of
    it. An X in a checkbox indicates an enabled feature, an empty checkbox
-   indicates a disabled feature.
+   indicates a disabled feature. Saving is not neccesary, changes take effect
+   right away.
 
     - Show link descriptions
-      Toggles whether or not the title of a link should be displayed.
+      Toggles whether or not the title of a link should be displayed on the
+      desktop.
 
     - Show link targets
       If "Show link descriptions" is enabled, you can choose to have the
       filename the link points to shown underneath the description.
 
-    - Use VGA mode
-      Costa can run in VGA mode or EGA mode. When running in VGA mode, you
-      have more space available on the screen, and graphics appear smoother.
-      But, due to the way the VGA mode works on PCs, it can be slow on older
-      computers. Disabling this setting will cause Costa to use EGA mode
-      instead, which is faster. You can change this setting on the fly, and
-      choose whichever mode suits you best.
-
     - Confirm link removal
       When enabled, Costa will prompt for confirmation before removing any
       link on the desktop.
 
-    - Animate user interface
-      This setting is deprecated, and currently not in use.
-
-    - Confirm when trying to exit Costa
+    - Confirm before exiting Costa
       If enabled you will be asked if you really want to exit Costa when you
       click the "Exit" button on the desktop.
 
-    - Grey out screen while showing a messagebox
-      Draws a grey grid over the screen while a messagebox is shown, so that
-      only the messagebox is visible. Although it looks nice it results in
-      a delayed showing of the messagebox, and is thus disabled by default.
-
-    - Show start-up "Tip of the Day" messages
-      If enabled, Costa will - once per day - show a messagebox with a tip.
-      These tips help you discover features in Costa, or smarter ways to
-      perform certain tasks.
-
-    - Use last profile on start-up without asking
-      If enabled, Costa will select the last used profile automatically at
-      launch, instead of showing the profile selection dialog. Useful if you
-      don't make use of the profile feature.
+    - Use file type associations
+      Toggles wether or not file type associations are used. If not checked,
+      Costa will only be able to open executable programs, not documents and
+      other file types directly in their associated programs.
 
                            --- End of document ---

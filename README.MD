@@ -7,7 +7,7 @@ command line as a shell.
 It is designed for MS-DOS, but tested with PC-DOS, FreeDOS and DOSBox as
 well. In theory it should run on any MS-DOS compatible operating system with
 a 286 or better CPU, EGA (64K+ memory adapter required) or VGA graphics and
-a recommended minimum of 250 KB RAM.
+a recommended minimum of 200 KB RAM.
 
 Although not required, a 386 or better CPU is recommended, as well as disk
 caching software (SmartDrive or similar) when running on older machines,
