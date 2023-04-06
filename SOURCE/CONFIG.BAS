@@ -121,8 +121,8 @@ SUB Conf.Main ()
     Font.Print "Show link õdescriptions", chkSetting(0).Pos.Left + 20, chkSetting(0).Pos.Top + 3, Theme.WindowText, fontNormal
     Font.Print "Show link õtargets", chkSetting(1).Pos.Left + 20, chkSetting(1).Pos.Top + 3, Theme.WindowText, fontNormal
     Font.Print "Confirm link õremoval", chkSetting(2).Pos.Left + 20, chkSetting(2).Pos.Top + 3, Theme.WindowText, fontNormal
-    Font.Print "Confirm õexit", chkSetting(3).Pos.Left + 20, chkSetting(3).Pos.Top + 3, Theme.WindowText, fontNormal
-    Font.Print "Assign filetõypes", chkSetting(4).Pos.Left + 20, chkSetting(4).Pos.Top + 3, Theme.WindowText, fontNormal
+    Font.Print "Confirm before õexiting Costa", chkSetting(3).Pos.Left + 20, chkSetting(3).Pos.Top + 3, Theme.WindowText, fontNormal
+    Font.Print "Use file tõype associations", chkSetting(4).Pos.Left + 20, chkSetting(4).Pos.Top + 3, Theme.WindowText, fontNormal
 
     Obj.DrawImg imgSetting
     Obj.DrawImg imgAssoc
@@ -130,14 +130,14 @@ SUB Conf.Main ()
     Font.Print "Settings", imgSetting.Pos.Left + 42, imgSetting.Pos.Top + 5, Theme.WindowText, fontHeading
     Font.Print "Tweak various aspects of Costa.", imgSetting.Pos.Left + 42, imgSetting.Pos.Top + 19, Theme.WindowText, fontNormal
     Font.Print "File associations", imgAssoc.Pos.Left + 42, imgAssoc.Pos.Top + 5, Theme.WindowText, fontHeading
-    Font.Print "Assign extensions to programs directly.", imgAssoc.Pos.Left + 42, imgAssoc.Pos.Top + 19, Theme.WindowText, fontNormal
+    Font.Print "Assign file types to programs directly.", imgAssoc.Pos.Left + 42, imgAssoc.Pos.Top + 19, Theme.WindowText, fontNormal
     Font.Print "Theme", imgTheme.Pos.Left + 42, imgTheme.Pos.Top + 5, Theme.WindowText, fontHeading
     Font.Print "Choose colors for the interface.", imgTheme.Pos.Left + 42, imgTheme.Pos.Top + 19, Theme.WindowText, fontNormal
 
     Obj.DrawTxt txtFileType, txtFileTypeText, False
     Obj.DrawTxt txtOpenWith, txtOpenWithText, False
 
-    Font.Print "õFiletype", txtFileType.Pos.Left + 1, txtFileType.Pos.Top - 18, Theme.WindowText, fontHeading
+    Font.Print "õFile type", txtFileType.Pos.Left + 1, txtFileType.Pos.Top - 18, Theme.WindowText, fontHeading
     Font.Print "õOpen with", txtOpenWith.Pos.Left + 1, txtOpenWith.Pos.Top - 18, Theme.WindowText, fontHeading
 
     ThemePreviewId = ThemeActive
