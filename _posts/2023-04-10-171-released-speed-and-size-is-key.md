@@ -49,7 +49,7 @@ CONST PlayerO = 1
 
 ...
 
-IF PlayerTurn = PlayerX Then
+IF PlayerTurn = PlayerX THEN
     PlayerTurn = PlayerO
 ELSE
     PlayerTurn = PlayerX
