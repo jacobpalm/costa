@@ -16,30 +16,30 @@ As a bonus, icon size has been reduced from 2.055 bytes to 527 bytes - almost 75
 ##### Code optimization - for speed
 A lot of work has been put in to optimizing the code. A few examples follow.
 
-Every time Costa needs to check the location of the mouse cursor on the screen, it calls a [software interrupt](https://en.wikipedia.org/wiki/Interrupt#Software_interrupts) to make the CPU hand over control to the resident mouse driver, which then puts the values in to CPU registers and hands over control to Costa again. This process naturally eats up some CPU cycles. The code has been optimized to do this as few times as possible. For example, Costa used to call the mouse interrupt once to get the vertical position of the mouse cursor, and then again to get the horizontal position. This has been streamlined in to one call to get both positions. And, in loops, the mouse position is now only polled once per iteration, and stored in variables during subsequent checks in the code.
+Every time Costa needs to check the location of the mouse cursor on the screen, it calls a [software interrupt](https://en.wikipedia.org/wiki/Interrupt#Software_interrupts) to make the CPU hand over control to the resident mouse driver, which then puts the values in to CPU registers and hands over control to Costa again. This process naturally eats up some CPU cycles. The code has been optimized to do this as few times as possible. For example, Costa used to call the mouse interrupt once to get the vertical position of the mouse cursor, and then again to get the horizontal position. This has been streamlined in to one call to get both positions. And, in loops, the mouse position is now only polled once per iteration and stored in variables during subsequent checks in the code.
 
 Static variables are now used in functions that only need to perform their task once. For example, the Sys.Path function which returns the path where Costa is located used to query the MS-DOS Program Segment Prefix for this information every time it was called. Now, this is only done once, and the value is stored in a static variable. All subsequent calls to the function will just return the static variable, without any queries being done. To read more about how Costa finds the path from the Program Segment Prefix, [read the blog post "Where's my file?"]({{ site.baseURL }}//2022/09/30/wheres-my-file.html).
 
-Every time Costa or one of its accessories launch, a function called "Sys.Load" is called. This function takes care of loading fonts in to memory, loading user settings and theme, and various other things. This function has been greatly optimized and reduced, to help each program start faster. Also, code to make sure the programs could only be started from within the desktop has been removed, because why not just let users run whatever they want, however they want?
+Every time Costa or one of its accessories starts, a function called "Sys.Load" is called. This function takes care of loading fonts into memory, loading user settings and theme, and various other things. This function has been greatly optimized and reduced, to help each program start faster. Also, code to make sure the programs could only be started from within the desktop has been removed, because why not just let users run whatever they want, however they want?
 
 ##### Code optimization - for size
-The inputbox function (containing the dialog that can, for instance, be seen when clicking the "Execute" button on the desktop) was only used in a couple of programs, but took up some space in all programs. This has been moved to a separate code module, which is only included where needed. This helped save 14 KB in total.
+The inputbox function (containing the dialog that can, for instance, be seen when clicking the "Execute" button on the desktop) was only used in a couple of programs but took up some space in all programs. This has been moved to a separate code module, which is only included where needed. This helped save 14 KB in total.
 
-The "Tip of the Day" dialog has been removed. Instead, all tips have been written in to the manual. The code which loaded the tips and selected a random one has been cleaned up.
+The "Tip of the Day" dialog has been removed. Instead, all tips have been written into the manual. The code which loaded the tips and selected a random one has been cleaned up.
 
 VGA support has been removed. Costa will still run on any VGA adapter, but now uses the high-resolution EGA 640x350 with 16-colors mode exclusively. I found that this mode works perfectly on both CRT monitors and modern flat panel displays - on a CRT monitor with 4:3 aspect ratio, the picture is interlaced which, in my opinion, looks super cool. And, and modern 16:9 widescreen flat panel displays, the aspect ratio fits nicely. This saved 49 KB on the size of Costa, and as a bonus the EGA resolution is vastly faster than VGA, since it has an off-screen page I can use as a [screen buffer](https://en.wikipedia.org/wiki/Framebuffer). I no longer use temporary files on disk for this purpose.
 
 The theme editor had two previews of themes - one for selecting the theme you wanted to edit, and one to show a preview of the theme while editing. This code was highly redundant, so it has been merged into one function, saving almost 4 KB.
 
-Profiles have been removed - the feature that allowed 5 different profiles, with different settings, themes and desktop icons. It was not really being used, but took up a lot of space and added complexity to Costa. With the concept of profiles gone, the desktop has instead been fitted with 5 pages. Using buttons at the top of the screen, or the left and right arrow keys, the user can now switch between 5 desktops with ease. Other than being a better implementation that profiles was, this also saved 49 KB disk space. Win-win, if you ask me.
+Profiles have been removed - the feature that allowed 5 different profiles, with different settings, themes and desktop icons. It was not really being used but took up a lot of space and added complexity to Costa. With the concept of profiles gone, the desktop has instead been fitted with 5 pages. Using buttons at the top of the screen, or the left and right arrow keys, the user can now switch between 5 desktops with ease. Other than being a better implementation that profiles was, this also saved 49 KB disk space. Win-win, if you ask me.
 
 In total, **Costa 1.7.1 takes up 186 kilobytes less space** than version 1.7.0 - **a saving of 18%**! Quite impressive, and certainly something that can be felt on vintage DOS machines.
 
 ##### Configuration program rewritten from scratch
-The configuration program has been rewritten from scratch. Not to add new functionality, but because the existing one was kind of a mess, code-wise. The new version is a lot simpler, and also easier to use. It shows all options on the screen at the same time, and all changes are applied instantly - no need to apply or save settings. I'm quite pleased with the look and feel of it.
+The configuration program has been rewritten from scratch. Not to add new functionality, but because the existing one was kind of a mess, code-wise. The new version is a lot simpler, and easier to use. It shows all options on the screen at the same time, and all changes are applied instantly - no need to apply or save settings. I'm quite pleased with the look and feel of it.
 
 ##### Improvements to Tic Tac Toe
-While watching my brother play Tic Tac Toe, I noticed he had some difficulties seeing whether he was starting a singleplayer or multiplayer game. The UI was not really clear on this. So, now I've cleaned it up a bit, and added a status bar.
+While watching my brother play Tic Tac Toe, I noticed he had some difficulties seeing whether he was starting a singleplayer or multiplayer game. The UI was not clear on this. So, now I've cleaned it up a bit, and added a status bar.
 
 While I was at it, I cleaned up the code a bit too. There were some quick gains to be found, for example in the code that changes the player turn to the other player:
 
@@ -56,7 +56,7 @@ ELSE
 END IF
 ```
 
-What this does, is that is checks if it is currently PlayerX's turn. If it is, then it switches the turn to PlayerO. If not, then it must be PlayerO's turn, and the turn is switched to PlayerX. PlayerX and PlayerO have been predefined as [constants](https://en.wikipedia.org/wiki/Constant_(computer_programming)).
+What this does, is that it checks if it is currently PlayerX's turn. If it is, then it switches the turn to PlayerO. If not, then it must be PlayerO's turn, and the turn is switched to PlayerX. PlayerX and PlayerO have been predefined as [constants](https://en.wikipedia.org/wiki/Constant_(computer_programming)).
 
 There's nothing wrong with this approach, but a much simpler and shorter version can be used - using [bitwise operators](https://en.wikipedia.org/wiki/Bitwise_operation):
 

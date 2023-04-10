@@ -6,3 +6,6 @@ baseURL: https://costa.jacobpalm.dk
 
 plugins:
   - jekyll-feed
+
+kramdown:
+  syntax_highlighter: rouge
