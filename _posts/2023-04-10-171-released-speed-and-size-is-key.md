@@ -36,13 +36,14 @@ Profiles have been removed - the feature that allowed 5 different profiles, with
 In total, **Costa 1.7.1 takes up 186 kilobytes less space** than version 1.7.0 - **a saving of 18%**! Quite impressive, and certainly something that can be felt on vintage DOS machines.
 
 ##### Configuration program rewritten from scratch
-The configuration program has been rewritten from scratch. Not to add new functionality, but because the existing one was kind of a mess, code-wise. The new version is a lot simpler, and also easier to use. It shows all options on the screen at the same time, and all changes are applied instantly - no need to apply or save settings. I'm quite please with the look and feel of it.
+The configuration program has been rewritten from scratch. Not to add new functionality, but because the existing one was kind of a mess, code-wise. The new version is a lot simpler, and also easier to use. It shows all options on the screen at the same time, and all changes are applied instantly - no need to apply or save settings. I'm quite pleased with the look and feel of it.
 
 ##### Improvements to Tic Tac Toe
 While watching my brother play Tic Tac Toe, I noticed he had some difficulties seeing whether he was starting a singleplayer or multiplayer game. The UI was not really clear on this. So, now I've cleaned it up a bit, and added a status bar.
 
 While I was at it, I cleaned up the code a bit too. There were some quick gains to be found, for example in the code that changes the player turn to the other player:
 
+```vb
 CONST PlayerX = 0
 CONST PlayerO = 1
 
@@ -53,17 +54,20 @@ IF PlayerTurn = PlayerX Then
 ELSE
     PlayerTurn = PlayerX
 END IF
+```
 
 What this does, is that is checks if it is currently PlayerX's turn. If it is, then it switches the turn to PlayerO. If not, then it must be PlayerO's turn, and the turn is switched to PlayerX. PlayerX and PlayerO have been predefined as [constants](https://en.wikipedia.org/wiki/Constant_(computer_programming)).
 
 There's nothing wrong with this approach, but a much simpler and shorter version can be used - using [bitwise operators](https://en.wikipedia.org/wiki/Bitwise_operation):
 
+```vb
 CONST PlayerX = 0
 CONST PlayerO = NOT PlayerX
 
 ...
 
 PlayerTurn = NOT PlayerTurn
+```
 
 Now, PlayerX is still a constant with the value 0. But PlayerO is not assigned a number - it is assigned the opposite value of PlayerX, on a bit-by-bit basis. This in itself does not change much, but it gives us the ability to change player turn with one single line of code - by setting PlayerTurn to the opposite value using the "NOT" operator.
 
