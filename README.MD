@@ -2,7 +2,7 @@
 Costa is a graphical user interface (GUI), designed to run on top of the
 command line as a shell.
 
-![The Costa GUI](https://costa.jacobpalm.dk/assets/img/screenshots/screen05.png)
+![The Costa GUI](https://costa.jacobpalm.dk/assets/img/screenshots/screen02.png)
 
 It is designed for MS-DOS, but tested with PC-DOS, FreeDOS and DOSBox as
 well. In theory it should run on any MS-DOS compatible operating system with
