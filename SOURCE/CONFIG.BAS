@@ -1,3 +1,4 @@
+DECLARE FUNCTION Conf.Truncate (Text AS STRING, Font%, MaxWidth%) AS STRING
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -118,6 +119,7 @@ SUB Conf.Main ()
     Obj.DrawChk chkSetting(2)
     Obj.DrawChk chkSetting(3)
     Obj.DrawChk chkSetting(4)
+    Mouse.Hide
     Font.Print "Show link õdescriptions", chkSetting(0).Pos.Left + 20, chkSetting(0).Pos.Top + 3, Theme.WindowText, fontNormal
     Font.Print "Show link õtargets", chkSetting(1).Pos.Left + 20, chkSetting(1).Pos.Top + 3, Theme.WindowText, fontNormal
     Font.Print "Confirm link õremoval", chkSetting(2).Pos.Left + 20, chkSetting(2).Pos.Top + 3, Theme.WindowText, fontNormal
@@ -139,6 +141,7 @@ SUB Conf.Main ()
 
     Font.Print "õFile type", txtFileType.Pos.Left + 1, txtFileType.Pos.Top - 18, Theme.WindowText, fontHeading
     Font.Print "õOpen with", txtOpenWith.Pos.Left + 1, txtOpenWith.Pos.Top - 18, Theme.WindowText, fontHeading
+    Mouse.Show
 
     ThemePreviewId = ThemeActive
     Conf.UpdatePreview frmThemePreview.Pos, ThemePreviewId
@@ -339,6 +342,19 @@ SUB Conf.SaveAssoc (FileType AS STRING, Command AS STRING)
 
 END SUB
 
+FUNCTION Conf.Truncate (Text AS STRING, MaxWidth, Font) AS STRING
+
+    DIM TruncatedString AS STRING
+
+    TruncatedString = Text
+    WHILE Font.GetWidth(TruncatedString, Font) > MaxWidth AND LEN(TruncatedString) > 1
+        TruncatedString = LEFT$(TruncatedString, LEN(TruncatedString) - 1)
+    WEND
+
+    Conf.Truncate = TruncatedString
+    
+END FUNCTION
+
 SUB Conf.UpdatePreview (Area AS PosType, ThemeId)
 
     DIM winPreview AS WindowType
@@ -356,9 +372,9 @@ SUB Conf.UpdatePreview (Area AS PosType, ThemeId)
     ViewWidth = Area.Width - 4
     ViewHeight = Area.Height - 4
 
-    Obj.SetSize winPreview.Pos, 14, 12, ViewWidth - 28, 123
-    Obj.SetSize imgLogo.Pos, winPreview.Pos.Top + 12, winPreview.Pos.Left + 12, sizeRetain, sizeRetain
-    Obj.SetSize imgDeskLink.Pos, 14, ViewHeight - 42, sizeRetain, sizeRetain
+    Obj.SetSize winPreview.Pos, Area.Left + 14, Area.Top + 12, ViewWidth - 28, 123
+    Obj.SetSize imgLogo.Pos, winPreview.Pos.Left + 12, winPreview.Pos.Top + 12, sizeRetain, sizeRetain
+    Obj.SetSize imgDeskLink.Pos, winPreview.Pos.Left, Area.Top + Area.Height - 42, sizeRetain, sizeRetain
 
     Obj.SetSize txtPreview.Pos, imgLogo.Pos.Left, imgLogo.Pos.Top + 45, winPreview.Pos.Width - 22, sizeRetain
     Obj.SetSize btnPreview1.Pos, winPreview.Pos.Left + 12, winPreview.Pos.Top + winPreview.Pos.Height - 34, 86, 22
@@ -371,9 +387,7 @@ SUB Conf.UpdatePreview (Area AS PosType, ThemeId)
 
     Mouse.Hide
 
-    'Use VIEW to limit drawing area to inside of frame
-    VIEW (Area.Left + 2, Area.Top + 2)-(Area.Left + Area.Width - 2, Area.Top + Area.Height - 2)
-    LINE (0, 0)-(ViewWidth, ViewHeight), Theme.Desktop, BF
+    LINE (Area.Left + 2, Area.Top + 2)-(Area.Left + Area.Width - 2, Area.Top + Area.Height - 2), Theme.Desktop, BF
 
     Obj.DrawWin winPreview
     Obj.DrawImg imgLogo
@@ -387,12 +401,9 @@ SUB Conf.UpdatePreview (Area AS PosType, ThemeId)
     Font.Print "Preview link", imgDeskLink.Pos.Left + 38, imgDeskLink.Pos.Top + 4, Theme.DesktopText, fontHeading
     Font.Print "preview.exe", imgDeskLink.Pos.Left + 38, imgDeskLink.Pos.Top + 18, Theme.DesktopText, fontNormal
 
-    'Decrease VIEW width, so theme name/author can't go outside winPreview
-    VIEW (Area.Left + 2, Area.Top + 2)-(Area.Left + Area.Width - 28, Area.Top + Area.Height - 2)
-    Font.Print Theme.Name, imgLogo.Pos.Left + 42, imgLogo.Pos.Top + 5, Theme.WindowText, fontHeading
-    Font.Print Theme.Author, imgLogo.Pos.Left + 42, imgLogo.Pos.Top + 19, Theme.WindowText, fontNormal
+    Font.Print Conf.Truncate(Theme.Name, 146, fontHeading), imgLogo.Pos.Left + 42, imgLogo.Pos.Top + 5, Theme.WindowText, fontHeading
+    Font.Print Conf.Truncate(Theme.Author, 146, fontNormal), imgLogo.Pos.Left + 42, imgLogo.Pos.Top + 19, Theme.WindowText, fontNormal
 
-    VIEW
     Mouse.Show
     Setting.ThemeFile = CurrentTheme
     Sys.LoadTheme

@@ -343,10 +343,10 @@ SUB IconEdit.Main (IconToLoad AS STRING)
         LINE (txtDrawArea.Pos.Left + 1 + (XPos * PixelSize), txtDrawArea.Pos.Top + 2)-(txtDrawArea.Pos.Left + 1 + (XPos * PixelSize), txtDrawArea.Pos.Top + txtDrawArea.Pos.Height - 2), 0, , &HAAAA
     NEXT
     
-    Mouse.Show
     Font.Print "õPreview", btnPreview.Pos.Left, btnPreview.Pos.Top - 15, Theme.WindowText, FontHeading
     Font.Print "õColor", txtColor(0).Pos.Left, txtDrawArea.Pos.Top, Theme.WindowText, FontHeading
     Font.Print "Tools", txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 12, txtDrawArea.Pos.Top, Theme.WindowText, FontHeading
+    Mouse.Show
 
     KeyboardPosX = 16
     KeyboardPosY = 16
@@ -793,7 +793,9 @@ SUB IconEdit.ShowLoadDialog ()
     Obj.DrawBtn btnCancel, 0
     Obj.DrawImg imgPreview
 
+    Mouse.Hide
     Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 12, Theme.WindowText, FontHeading
+    Mouse.Show
 
     DO
         REDIM PRESERVE IconFiles(0 TO UBOUND(IconFiles) + 1) AS STRING
@@ -822,9 +824,9 @@ SUB IconEdit.ShowLoadDialog ()
             Mouse.Hide
             LINE (btnLoad.Pos.Left + 11, btnLoad.Pos.Top + 11)-(btnLoad.Pos.Left + 42, btnLoad.Pos.Top + 42), Theme.Window, BF
             LINE (winSelect.Pos.Left + 10, winSelect.Pos.Top + 12)-(winSelect.Pos.Left + winSelect.Pos.Width - 10, winSelect.Pos.Top + 21), Theme.Window, BF
+            Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 12, Theme.WindowText, FontHeading
             Mouse.Show
             Obj.DrawImg imgPreview
-            Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 12, Theme.WindowText, FontHeading
         END IF
 
         IF Obj.BtnClick(btnNext) OR Key$ = CHR$(0) + "m" THEN 'Right arrow
@@ -834,9 +836,9 @@ SUB IconEdit.ShowLoadDialog ()
             Mouse.Hide
             LINE (btnLoad.Pos.Left + 11, btnLoad.Pos.Top + 11)-(btnLoad.Pos.Left + 42, btnLoad.Pos.Top + 42), Theme.Window, BF
             LINE (winSelect.Pos.Left + 10, winSelect.Pos.Top + 12)-(winSelect.Pos.Left + winSelect.Pos.Width - 10, winSelect.Pos.Top + 21), Theme.Window, BF
+            Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 12, Theme.WindowText, FontHeading
             Mouse.Show
             Obj.DrawImg imgPreview
-            Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 12, Theme.WindowText, FontHeading
         END IF
 
         IF Obj.BtnClick(btnLoad) OR Key$ = CHR$(13) THEN

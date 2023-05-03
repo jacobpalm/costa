@@ -66,8 +66,7 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 
     Mouse.Hide
     PCOPY 0, 1
-    Mouse.Show
-
+    
     Obj.DrawWin winInputBox
     Obj.DrawBtn btnOK, False
     Obj.DrawBtn btnCancel, False
@@ -91,6 +90,8 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
     Font.Print "Iõnput:", txtInput.Pos.Left, txtInput.Pos.Top - 16, Theme.WindowText, FontHeading
     
     IF LEN(msgIcon) THEN Obj.DrawImg imgIcon
+
+    Mouse.Show
 
     DIM Key$
     DO

@@ -72,6 +72,7 @@ SUB File.DrawList (TargetList AS TextboxType, HighLightActive, FullRedraw)
 		ListSelection = FolderListSelection
 	END IF
 
+	Mouse.Hide
 	IF FullRedraw = True THEN
 
 		'Full redraw, draw list first and then all visible items within
@@ -88,9 +89,7 @@ SUB File.DrawList (TargetList AS TextboxType, HighLightActive, FullRedraw)
 
 				'Highlight active selected item, if encountered
 				IF I = ListSelection AND ActiveList = TargetList.MaxLen THEN
-					Mouse.Hide
 					LINE (TargetList.Pos.Left + 2, TargetList.Pos.Top + 3 + (Counter * 12))-(TargetList.Pos.Left + TargetList.Pos.Width - 2, TargetList.Pos.Top + 15 + (Counter * 12)), Theme.Select, BF
-					Mouse.Show
 					Font.Print ItemText, TargetList.Pos.Left + 5, TargetList.Pos.Top + 5 + (Counter * 12), Theme.SelectText, FontSystem
 				ELSE
 					Font.Print ItemText, TargetList.Pos.Left + 5, TargetList.Pos.Top + 5 + (Counter * 12), Theme.TextboxText, FontSystem
@@ -120,13 +119,12 @@ SUB File.DrawList (TargetList AS TextboxType, HighLightActive, FullRedraw)
 		I = ListSelection - ListStartPos
 
 		IF NOT ItemText = "" THEN
-			Mouse.Hide
 			LINE (TargetList.Pos.Left + 2, TargetList.Pos.Top + 3 + (I * 12))-(TargetList.Pos.Left + TargetList.Pos.Width - 2, TargetList.Pos.Top + 15 + (I * 12)), BGColor, BF
-			Mouse.Show
 			Font.Print ItemText, TargetList.Pos.Left + 5, TargetList.Pos.Top + 5 + (I * 12), FGColor, FontSystem
 		END IF
 
 	END IF
+	Mouse.Show
 
 END SUB
 
@@ -569,10 +567,12 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	Obj.DrawBtn btnFileNext, False
 	Obj.DrawBtn btnFolderPrev, False
 	Obj.DrawBtn btnFolderNext, False
+	Mouse.Hide
 	Font.Print "õPattern:", 101, winFileSelect.Pos.Top + 14, Theme.WindowText, FontNormal
 	Font.Print "õDrive:", 272, winFileSelect.Pos.Top + 14, Theme.WindowText, FontNormal
 	Font.Print "õFiles:", 101, winFileSelect.Pos.Top + 57, Theme.WindowText, FontNormal
 	Font.Print "Fõolders:", 272, winFileSelect.Pos.Top + 57, Theme.WindowText, FontNormal
+	Mouse.Show
 	
 	MaxVisibleItems = 13
 

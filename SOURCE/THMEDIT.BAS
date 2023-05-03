@@ -123,8 +123,7 @@ SUB ThmEdit.DrawPreview (ThemeFile AS STRING)
     LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 2)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + 27), Theme.Window, BF
     LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 28)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + 28), Theme.Shadow
     LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 29)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + 29), 0
-    Mouse.Show
-
+    
     Obj.DrawWin winPreview
     Obj.DrawTxt txtPreview, txtPreviewText, True
     Obj.DrawBtn btnPreview1, False
@@ -139,14 +138,16 @@ SUB ThmEdit.DrawPreview (ThemeFile AS STRING)
     Obj.DrawImg imgPreview
 
     Obj.DrawTxt txtListPreview, "", False
-    Mouse.Hide
+    
     LINE (txtListPreview.Pos.Left + 2, txtListPreview.Pos.Top + 15)-(txtListPreview.Pos.Left + txtListPreview.Pos.Width - 2, txtListPreview.Pos.Top + 27), Theme.Select, BF
-    Mouse.Show
+    
     Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5, Theme.TextboxText, FontSystem
     Font.Print "Selected item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 12, Theme.SelectText, FontSystem
     Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 24, Theme.TextboxText, FontSystem
     Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 36, Theme.TextboxText, FontSystem
     Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 48, Theme.TextboxText, FontSystem
+
+    Mouse.Show
 
     IF LEN(ThemeFile) THEN
         Setting.ThemeFile = OriginalTheme
@@ -210,6 +211,7 @@ SUB ThmEdit.Edit (BYVAL ThmFile AS STRING)
       XPos = XPos + 25
     NEXT
 
+    Mouse.Hide
     Obj.DrawBtn btnSaveAs, False
     Obj.DrawBtn btnSave, False
     Obj.DrawBtn btnExit, False
@@ -218,9 +220,7 @@ SUB ThmEdit.Edit (BYVAL ThmFile AS STRING)
     Obj.DrawBtn btnObject, False
     FOR I = 0 TO 15
       Obj.DrawBtn btnColor(I), True
-      Mouse.Hide
       LINE (btnColor(I).Pos.Left + 2, btnColor(I).Pos.Top + 2)-(btnColor(I).Pos.Left + btnColor(I).Pos.Width - 2, btnColor(I).Pos.Top + btnColor(I).Pos.Height - 2), I, BF
-      Mouse.Show
     NEXT
     Font.Print "Theme õname:", txtThemeName.Pos.Left, txtThemeName.Pos.Top - 16, Theme.WindowText, fontHeading
     Font.Print "Theme aõuthor:", txtThemeAuthor.Pos.Left, txtThemeAuthor.Pos.Top - 16, Theme.WindowText, fontHeading
@@ -228,9 +228,9 @@ SUB ThmEdit.Edit (BYVAL ThmFile AS STRING)
     Font.Print "õColor for object:", 434, btnColor(0).Pos.Top - 16, Theme.WindowText, fontHeading
 
     'Color indicator
-    Mouse.Hide
     LINE (btnColor(thmClrDesktop).Pos.Left + 4, btnColor(thmClrDesktop).Pos.Top + 4)-(btnColor(thmClrDesktop).Pos.Left + btnColor(thmClrDesktop).Pos.Width - 4, btnColor(thmClrDesktop).Pos.Top + btnColor(thmClrDesktop).Pos.Height - 4), 8, B
     LINE (btnColor(thmClrDesktop).Pos.Left + 5, btnColor(thmClrDesktop).Pos.Top + 5)-(btnColor(thmClrDesktop).Pos.Left + btnColor(thmClrDesktop).Pos.Width - 5, btnColor(thmClrDesktop).Pos.Top + btnColor(thmClrDesktop).Pos.Height - 5), 15, B
+    
     Mouse.Show
 
     DIM Key$
@@ -550,7 +550,6 @@ FUNCTION ThmEdit.Select () AS STRING
 
     Mouse.Hide
     LINE (0, 29)-(639, 349), Theme.Window, BF
-    Mouse.Show
     Obj.DrawMenu
 
     Sys.ShowLoading
@@ -598,7 +597,7 @@ FUNCTION ThmEdit.Select () AS STRING
 
     Font.Print ThemeName$, 434, 59, Theme.WindowText, FontNormal
     Font.Print ThemeAuthor$, 434, 107, Theme.WindowText, FontNormal
-
+    Mouse.Show
     DIM Key$
 
     DO

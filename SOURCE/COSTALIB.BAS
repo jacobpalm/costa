@@ -15,6 +15,8 @@ END TYPE
 DIM SHARED FontData(1 TO 3, 32 TO 127) AS STRING * 54
 DIM SHARED FontWidth(1 TO 2, 32 TO 127) AS INTEGER
 
+DIM SHARED MouseHidden AS INTEGER
+
 FUNCTION File.Exists (TargetFile AS STRING)
 
 	DIM FileHandle
@@ -115,16 +117,14 @@ SUB Font.Print (BYVAL Text AS STRING, X, Y, Col, FontID)
 	ELSE
 		FilteredText = Text
 	END IF
-	
-	'Use PSET to set the drawing position
-	PSET (X, Y + 11), POINT(X, Y + 11)
-	DRAW "C" + LTRIM$(STR$(Col))
 
 	FilteredText = RTRIM$(FilteredText)
-	IF LEN(Text) = 0 OR FontID < 1 OR FontID > 3 THEN EXIT SUB
+	IF LEN(FilteredText) = 0 OR FontID < 1 OR FontID > 3 THEN EXIT SUB
+
+	'Set color using C, move cursor without drawing using BM to x,y
+	DRAW "C" + LTRIM$(STR$(Col)) + "BM" + LTRIM$(STR$(X)) + "," + LTRIM$(STR$(Y + 11))
 
 	'Print the text, char by char
-	Mouse.Hide
 	FOR Char = 1 TO LEN(FilteredText)
 		Ascii = ASC(MID$(FilteredText, Char, 1))
 		IF Ascii >= 32 AND Ascii <= 126 THEN
@@ -139,8 +139,6 @@ SUB Font.Print (BYVAL Text AS STRING, X, Y, Col, FontID)
 	IF HotKey AND NOT FontID = FontSystem THEN
 		LINE (X + Font.GetWidth(LEFT$(FilteredText, HotKey - 1), FontID), Y + 11)-(X + Font.GetWidth(LEFT$(FilteredText, HotKey), FontID), Y + 11), Col
 	END IF
-
-	Mouse.Show
 
 END SUB
 
@@ -164,9 +162,12 @@ END FUNCTION
 
 SUB Mouse.Hide ()
 
-	DIM regs AS RegType
-	regs.ax = 2
-	INTERRUPT 51, regs, regs
+	IF NOT MouseHidden THEN
+		DIM regs AS RegType
+		regs.ax = 2
+		INTERRUPT 51, regs, regs
+		MouseHidden = True
+	END IF
 
 END SUB
 
@@ -210,9 +211,12 @@ END SUB
 
 SUB Mouse.Show ()
 
-	DIM regs AS RegType
-	regs.ax = 1
-	INTERRUPT 51, regs, regs
+	IF MouseHidden THEN
+		DIM regs AS RegType
+		regs.ax = 1
+		INTERRUPT 51, regs, regs
+		MouseHidden = False
+	END IF
 
 END SUB
 
@@ -435,9 +439,9 @@ SUB Obj.DrawImg (TargetImg AS ImageType)
 DrawImgError:
 	'Draw a red box with the text "IMG ERR" to indicate a missing file
 	LINE (X, Y)-(X + 31, Y + 31), 4, BF
-	Mouse.Show
 	Font.Print "IMG", X + 6, Y + 4, 15, FontNormal
 	Font.Print "ERR", X + 6, Y + 19, 15, FontNormal
+	Mouse.Show
 	EXIT SUB
 	RESUME NEXT
 END SUB
@@ -467,9 +471,6 @@ SUB Obj.DrawTxt (TargetTxt AS TextboxType, BYVAL Text AS STRING, IsEditing AS IN
 	LINE (x1, y1)-(x2 - 1, y2 - 1), Theme.Light, B
 	LINE (x1 + 1, y1 + 1)-(x2, y2), Theme.Shadow, B
 
-
-	Mouse.Show
-
 	IF NOT Text = "" THEN
 		'Only print the text that fits in the textbox
 
@@ -483,11 +484,11 @@ SUB Obj.DrawTxt (TargetTxt AS TextboxType, BYVAL Text AS STRING, IsEditing AS IN
 	END IF
 
 	IF IsEditing = True THEN
-		Mouse.Hide
 		x1 = x1 + 7 + Font.GetWidth(Text, FontHeading)
 		LINE (x1, y1 + 4)-(x1, y1 + 15), Theme.TextboxText
-		Mouse.Show
 	END IF
+
+	Mouse.Show
 
 END SUB
 
@@ -564,25 +565,21 @@ SUB Obj.EditTxt (TargetTxt AS TextboxType, Text AS STRING)
 			SELECT CASE ASC(Key$)
 				CASE 8 'Backspace
 					IF LEN(TempTxt) > 0 THEN
-
+						Mouse.Hide
 						IF Font.GetWidth(TempTxt, FontHeading) + 2 < MaxShow THEN
 							'Erase only the last char
 							LineX1 = x1 + Font.GetWidth(TempTxt, FontHeading)
-							Mouse.Hide
 							LINE (LineX1 + 2, y1 - 2)-(LineX1 - Font.GetWidth(RIGHT$(TempTxt, 1), FontHeading), y1 + 11), Theme.Textbox, BF
-							Mouse.Show
 							TempTxt = LEFT$(TempTxt, LEN(TempTxt) - 1)
 							LineX1 = x1 + Font.GetWidth(TempTxt, FontHeading) + 2
-							Mouse.Hide
 							LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), Theme.TextboxText
-							Mouse.Show
 						ELSE
 							'There's more text that's not shown, so we'll
 							'have to redraw the entire textbox
 							TempTxt = LEFT$(TempTxt, LEN(TempTxt) - 1)
 							Obj.DrawTxt TargetTxt, TempTxt, True
 						END IF
-
+						Mouse.Show
 					END IF
 
 				CASE 13 'Enter
@@ -595,21 +592,19 @@ SUB Obj.EditTxt (TargetTxt AS TextboxType, Text AS STRING)
 
 				CASE 32 TO 126 'Any printable character
 					IF NOT LEN(TempTxt) = MaxLen THEN
+						Mouse.Hide
 						IF Font.GetWidth(TempTxt + Key$, FontHeading) + 2 < MaxShow THEN
 							LineX1 = x1 + Font.GetWidth(TempTxt, FontHeading) + 2
-							Mouse.Hide
 							LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), Theme.Textbox
-							Mouse.Show
 							TempTxt = TempTxt + Key$
 							Font.Print TempTxt, x1, y1, Theme.TextboxText, FontHeading
 							LineX1 = x1 + Font.GetWidth(TempTxt, FontHeading) + 2
-							Mouse.Hide
 							LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), Theme.TextboxText
-							Mouse.Show
 						ELSE
 							TempTxt = TempTxt + Key$
 							Obj.DrawTxt TargetTxt, TempTxt, True
 						END IF
+						Mouse.Show
 					END IF
 
 				CASE 27 'Escape
@@ -847,12 +842,14 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	Obj.DrawBtn btnFirst, False
 	IF msgType = msgQuest THEN Obj.DrawBtn btnSecond, False
 
+	Mouse.Hide
 	Font.Print msgTitle, winMsgBox.Pos.Left + 56, winMsgBox.Pos.Top + 15, Theme.WindowText, 1
 	
 	DIM PrintLine
 	FOR PrintLine = 1 TO msgLineCount
 		Font.Print msgLines(PrintLine), winMsgBox.Pos.Left + 56, winMsgBox.Pos.Top + 17 + (15 * PrintLine), Theme.WindowText, 2
 	NEXT
+	Mouse.Show
 	
 	Obj.DrawImg imgIcon
 

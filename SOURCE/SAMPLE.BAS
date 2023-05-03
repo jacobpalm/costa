@@ -56,9 +56,11 @@ SUB App.Main ()
     'and other built-in graphics statements.
     Obj.DrawWin winSample
     Obj.DrawBtn btnExit, False
+    Mouse.Hide
     Font.Print "Sample text, header font", winSample.Pos.Left + 12, winSample.Pos.Top + 70, Theme.WindowText, FontHeading
     Font.Print "Sample text, normal font", winSample.Pos.Left + 12, winSample.Pos.Top + 85, Theme.WindowText, FontNormal
     Font.Print "Sample text, system font", winSample.Pos.Left + 12, winSample.Pos.Top + 100, Theme.WindowText, FontSystem
+    Mouse.Show
     Obj.DrawImg imgSample
 
     'A variable to store keypresses

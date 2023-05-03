@@ -84,7 +84,6 @@ SUB Desk.AboutBox ()
   
   Mouse.Hide
   PCOPY 0, 1
-  Mouse.Show
 
   Obj.DrawWin winAboutBox
   Obj.DrawBtn btnClose, False
@@ -103,6 +102,7 @@ SUB Desk.AboutBox ()
   Font.Print "GUI community - every one of you.", 168, winAboutBox.Pos.Top + 221, 0, 2
 
   Obj.DrawImg imgLogo
+  Mouse.Show
 
   DO: LOOP WHILE Mouse.Clicked
   DO
@@ -276,6 +276,7 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
   btnCancel.Caption = "õCancel"
 
 LinkDialogDraw:
+  Mouse.Hide
   Obj.DrawWin ConfWin
   Obj.DrawTxt txtLinkCapt, txtLinkCaptText, False
   Obj.DrawBtn btnIconPrev, False
@@ -293,10 +294,9 @@ LinkDialogDraw:
   Font.Print "Paõrameters:", 222, txtParams.Pos.Top - 15, Theme.WindowText, 1
   Font.Print "Paõth (including drive):", 222, txtPath.Pos.Top - 15, Theme.WindowText, 1
   Font.Print "Pause after eõxecution", 242, chkPauseOnExit.Pos.Top + 3, Theme.WindowText, 2
-  Mouse.Hide
   LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), Theme.Desktop, BF
-  Mouse.Show
   Obj.DrawImg imgIcon
+  Mouse.Show
   
 
   DIM IconChanged
@@ -469,8 +469,7 @@ SUB Desk.LinkMenu (TargetLink)
   
   Mouse.Hide
   PCOPY 0, 1
-  Mouse.Show
-
+  
   Obj.DrawWin winLinkMenu
   Obj.DrawBtn btnOpen, False
   Obj.DrawBtn btnCustomize, False
@@ -496,6 +495,7 @@ SUB Desk.LinkMenu (TargetLink)
     Font.Print "None", winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 76, Theme.WindowText, FontNormal
   END IF
   VIEW
+  Mouse.Show
 
   DO: LOOP WHILE Mouse.Clicked
   DO: LOOP WHILE LEN(INKEY$)
@@ -786,6 +786,7 @@ SUB Desk.Main ()
 Desk.RedrawAll:
   TabCheck = -1
 
+  Mouse.Hide
   Obj.DrawMenu
   Obj.DrawBtn btnAddLink, False
   Obj.DrawBtn btnRunCmd, False
@@ -795,6 +796,7 @@ Desk.RedrawAll:
   Obj.DrawBtn btnExitCosta, False
   Font.Print LTRIM$(STR$(Setting.DesktopID)) + "/5", 310, 8, Theme.WindowText, fontHeading
   Desk.DrawDesktop
+  Mouse.Show
 
   DO
 
@@ -882,15 +884,15 @@ Desk.RedrawAll:
         IF Key$ = CHR$(0) + "k" OR Key$ = CHR$(0) + "m" THEN
             IF Key$ = CHR$(0) + "k" THEN
                 Setting.DesktopID = Setting.DesktopID - 1
+                IF Setting.DesktopID < 1 THEN Setting.DesktopID = 5
             ELSE
                 Setting.DesktopID = Setting.DesktopID + 1
+                IF Setting.DesktopID > 5 THEN Setting.DesktopID = 1
             END IF
-            IF Setting.DesktopID < 1 THEN Setting.DesktopID = 5
-            IF Setting.DesktopID > 5 THEN Setting.DesktopID = 1
             Mouse.Hide
             LINE (310, 7)-(330, 16), Theme.Window, BF
-            Mouse.Show
             Font.Print LTRIM$(STR$(Setting.DesktopID)) + "/5", 310, 8, Theme.WindowText, fontHeading
+            Mouse.Show
             Desk.LinkLoad
             Desk.DrawDesktop
             TabCheck = -1
