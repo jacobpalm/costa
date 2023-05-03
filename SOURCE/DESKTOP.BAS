@@ -90,6 +90,7 @@ SUB Desk.AboutBox ()
   
   Font.Print appName, 210, winAboutBox.Pos.Top + 17, 0, 1
   Font.Print "Version " + appVersion, 210, winAboutBox.Pos.Top + 31, 0, 2
+  Obj.DrawImg imgLogo
   Font.Print "Made in 2004-" + appYear + " by Jacob Palm.", 168, winAboutBox.Pos.Top + 53, 0, 2
   Font.Print "Released under the MIT License.", 168, winAboutBox.Pos.Top + 67, 0, 2
   Font.Print "Font files made in 1998-1999 by Rush Soft.", 168, winAboutBox.Pos.Top + 95, 0, 2
@@ -100,8 +101,6 @@ SUB Desk.AboutBox ()
   Font.Print "the development with useful tips and ideas. Also", 168, winAboutBox.Pos.Top + 193, 0, 2
   Font.Print "thanks to those people who were part of the QB", 168, winAboutBox.Pos.Top + 207, 0, 2
   Font.Print "GUI community - every one of you.", 168, winAboutBox.Pos.Top + 221, 0, 2
-
-  Obj.DrawImg imgLogo
   Mouse.Show
 
   DO: LOOP WHILE Mouse.Clicked
