@@ -720,13 +720,13 @@ SUB Sys.LoadSettings ()
 
 	DIM FileHandle
 
-	IF NOT File.Exists(Sys.Path + "\DATA\CONFIG\SETTING.DAT") THEN
+	IF NOT File.Exists(Sys.Path + "DATA\CONFIG\SETTING.DAT") THEN
 		GOTO LoadDefaultSettings
 	END IF
 
 	ON LOCAL ERROR GOTO LoadDefaultSettings
 	FileHandle = FREEFILE
-	OPEN Sys.Path + "\DATA\CONFIG\SETTING.DAT" FOR BINARY AS #FileHandle
+	OPEN Sys.Path + "DATA\CONFIG\SETTING.DAT" FOR BINARY AS #FileHandle
 	GET #FileHandle, , Setting
 	CLOSE #FileHandle
 
@@ -754,8 +754,8 @@ SUB Sys.LoadTheme ()
 	DIM FileHandle
 	FileHandle = FREEFILE
 
-	IF File.Exists(Sys.Path + "\DATA\THEMES\" + ThemeFile + ".DAT") THEN
-		OPEN Sys.Path + "\DATA\THEMES\" + ThemeFile + ".DAT" FOR BINARY AS #FileHandle
+	IF File.Exists(Sys.Path + "DATA\THEMES\" + ThemeFile + ".DAT") THEN
+		OPEN Sys.Path + "DATA\THEMES\" + ThemeFile + ".DAT" FOR BINARY AS #FileHandle
 		GET #FileHandle, , Theme
 		CLOSE #FileHandle
 	ELSE
@@ -893,7 +893,7 @@ SUB Sys.SaveSettings ()
 	ON LOCAL ERROR GOTO SaveSettingsError
 	DIM FileHandle
 	FileHandle = FREEFILE
-	OPEN Sys.Path + "\DATA\CONFIG\SETTING.DAT" FOR BINARY AS #FileHandle
+	OPEN Sys.Path + "DATA\CONFIG\SETTING.DAT" FOR BINARY AS #FileHandle
 	PUT #FileHandle, , Setting
 	CLOSE #FileHandle
 	EXIT SUB
