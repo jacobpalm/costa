@@ -1,7 +1,7 @@
-DECLARE FUNCTION Conf.Truncate (Text AS STRING, Font%, MaxWidth%) AS STRING
 OPTION EXPLICIT
 DEFINT A-Z
 
+DECLARE FUNCTION Conf.Truncate (Text AS STRING, Font%, MaxWidth%) AS STRING
 DECLARE SUB Conf.GetThemes ()
 DECLARE SUB Conf.Main ()
 DECLARE SUB Conf.RestoreAssoc ()
@@ -9,6 +9,12 @@ DECLARE SUB Conf.SaveAssoc (FileType AS STRING, Command AS STRING)
 DECLARE SUB Conf.UpdatePreview (Area AS ANY, ThemeId%)
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
+
+CONST LinkDesc = 0
+CONST LinkTarget = 1
+CONST LinkDelete = 2
+CONST ConfExit = 3
+CONST FileType = 4
 
 DIM SHARED ThemeList() AS STRING
 DIM SHARED ThemesFound AS INTEGER
@@ -49,7 +55,7 @@ SUB Conf.Main ()
     DIM frmSettings AS FrameType, frmAssoc AS FrameType, frmTheme AS FrameType
     DIM frmThemePreview AS FrameType
     DIM imgSetting AS ImageType, imgAssoc AS ImageType, imgTheme AS ImageType
-    DIM chkSetting(4) AS CheckboxType
+    DIM chkSetting(FileType) AS CheckboxType
     DIM txtFileType AS TextboxType, txtOpenWith AS TextboxType
     
     DIM txtFileTypeText AS STRING, txtOpenWithText AS STRING
@@ -73,11 +79,11 @@ SUB Conf.Main ()
     Obj.SetSize imgAssoc.Pos, frmAssoc.Pos.Left + 14, frmAssoc.Pos.Top + 14, sizeRetain, sizeRetain
     Obj.SetSize imgTheme.Pos, frmTheme.Pos.Left + 14, frmTheme.Pos.Top + 14, sizeRetain, sizeRetain
 
-    Obj.SetSize chkSetting(0).Pos, frmSettings.Pos.Left + 14, frmSettings.Pos.Top + 14 + 32 + 10, sizeRetain, sizeRetain
-    Obj.SetSize chkSetting(1).Pos, chkSetting(0).Pos.Left, chkSetting(0).Pos.Top + 22, sizeRetain, sizeRetain
-    Obj.SetSize chkSetting(2).Pos, chkSetting(0).Pos.Left, chkSetting(1).Pos.Top + 22, sizeRetain, sizeRetain
-    Obj.SetSize chkSetting(3).Pos, chkSetting(0).Pos.Left, chkSetting(2).Pos.Top + 22, sizeRetain, sizeRetain
-    Obj.SetSize chkSetting(4).Pos, chkSetting(0).Pos.Left, chkSetting(3).Pos.Top + 22, sizeRetain, sizeRetain
+    Obj.SetSize chkSetting(LinkDesc).Pos, frmSettings.Pos.Left + 14, frmSettings.Pos.Top + 14 + 32 + 10, sizeRetain, sizeRetain
+    Obj.SetSize chkSetting(LinkTarget).Pos, chkSetting(LinkDesc).Pos.Left, chkSetting(LinkDesc).Pos.Top + 22, sizeRetain, sizeRetain
+    Obj.SetSize chkSetting(LinkDelete).Pos, chkSetting(LinkDesc).Pos.Left, chkSetting(LinkTarget).Pos.Top + 22, sizeRetain, sizeRetain
+    Obj.SetSize chkSetting(ConfExit).Pos, chkSetting(LinkDesc).Pos.Left, chkSetting(LinkDelete).Pos.Top + 22, sizeRetain, sizeRetain
+    Obj.SetSize chkSetting(FileType).Pos, chkSetting(LinkDesc).Pos.Left, chkSetting(ConfExit).Pos.Top + 22, sizeRetain, sizeRetain
 
     Obj.SetSize txtFileType.Pos, frmAssoc.Pos.Left + 13, frmAssoc.Pos.Top + 78, 50, sizeRetain
     Obj.SetSize txtOpenWith.Pos, txtFileType.Pos.Left + txtFileType.Pos.Width + 14, txtFileType.Pos.Top, 213, sizeRetain
@@ -95,11 +101,11 @@ SUB Conf.Main ()
     imgAssoc.ImageFile = "UNKNOWN"
     imgTheme.ImageFile = "THEMES"
 
-    chkSetting(0).Checked = Setting.ShowLinkDescriptions
-    chkSetting(1).Checked = Setting.ShowLinkTargetFiles
-    chkSetting(2).Checked = Setting.ConfirmLinkDelete
-    chkSetting(3).Checked = Setting.ConfirmExit
-    chkSetting(4).Checked = Setting.AssignFileTypes
+    chkSetting(LinkDesc).Checked = Setting.ShowLinkDescriptions
+    chkSetting(LinkTarget).Checked = Setting.ShowLinkTargetFiles
+    chkSetting(LinkDelete).Checked = Setting.ConfirmLinkDelete
+    chkSetting(ConfExit).Checked = Setting.ConfirmExit
+    chkSetting(FileType).Checked = Setting.AssignFileTypes
     
     txtFileType.MaxLen = 3
     txtOpenWith.MaxLen = 50
@@ -114,17 +120,17 @@ SUB Conf.Main ()
     Obj.DrawFrm frmTheme, 15, Theme.Shadow
     Obj.DrawFrm frmThemePreview, 15, Theme.Shadow
 
-    Obj.DrawChk chkSetting(0)
-    Obj.DrawChk chkSetting(1)
-    Obj.DrawChk chkSetting(2)
-    Obj.DrawChk chkSetting(3)
-    Obj.DrawChk chkSetting(4)
+    Obj.DrawChk chkSetting(LinkDesc)
+    Obj.DrawChk chkSetting(LinkTarget)
+    Obj.DrawChk chkSetting(LinkDelete)
+    Obj.DrawChk chkSetting(ConfExit)
+    Obj.DrawChk chkSetting(FileType)
     Mouse.Hide
-    Font.Print "Show link õdescriptions", chkSetting(0).Pos.Left + 20, chkSetting(0).Pos.Top + 3, Theme.WindowText, fontNormal
-    Font.Print "Show link õtargets", chkSetting(1).Pos.Left + 20, chkSetting(1).Pos.Top + 3, Theme.WindowText, fontNormal
-    Font.Print "Confirm link õremoval", chkSetting(2).Pos.Left + 20, chkSetting(2).Pos.Top + 3, Theme.WindowText, fontNormal
-    Font.Print "Confirm before õexiting Costa", chkSetting(3).Pos.Left + 20, chkSetting(3).Pos.Top + 3, Theme.WindowText, fontNormal
-    Font.Print "Use file tõype associations", chkSetting(4).Pos.Left + 20, chkSetting(4).Pos.Top + 3, Theme.WindowText, fontNormal
+    Font.Print "Show link õdescriptions", chkSetting(LinkDesc).Pos.Left + 20, chkSetting(LinkDesc).Pos.Top + 3, Theme.WindowText, fontNormal
+    Font.Print "Show link õtargets", chkSetting(LinkTarget).Pos.Left + 20, chkSetting(LinkTarget).Pos.Top + 3, Theme.WindowText, fontNormal
+    Font.Print "Confirm link õremoval", chkSetting(LinkDelete).Pos.Left + 20, chkSetting(LinkDelete).Pos.Top + 3, Theme.WindowText, fontNormal
+    Font.Print "Confirm before õexiting Costa", chkSetting(ConfExit).Pos.Left + 20, chkSetting(ConfExit).Pos.Top + 3, Theme.WindowText, fontNormal
+    Font.Print "Use file tõype associations", chkSetting(FileType).Pos.Left + 20, chkSetting(FileType).Pos.Top + 3, Theme.WindowText, fontNormal
 
     Obj.DrawImg imgSetting
     Obj.DrawImg imgAssoc
@@ -162,35 +168,31 @@ SUB Conf.Main ()
             END IF
         END IF
 
-        IF chkSetting(4).Checked THEN
-            'DEBUG - handle file association stuff...
-        END IF
-
-        Obj.ChkClick chkSetting(0)
-        Obj.ChkClick chkSetting(1)
-        Obj.ChkClick chkSetting(2)
-        Obj.ChkClick chkSetting(3)
-        Obj.ChkClick chkSetting(4)
+        Obj.ChkClick chkSetting(LinkDesc)
+        Obj.ChkClick chkSetting(LinkTarget)
+        Obj.ChkClick chkSetting(LinkDelete)
+        Obj.ChkClick chkSetting(ConfExit)
+        Obj.ChkClick chkSetting(FileType)
 
         IF Key$ = "d" THEN
-            chkSetting(0).Checked = NOT chkSetting(0).Checked
-            Obj.DrawChk chkSetting(0)
+            chkSetting(LinkDesc).Checked = NOT chkSetting(LinkDesc).Checked
+            Obj.DrawChk chkSetting(LinkDesc)
         END IF
         IF Key$ = "t" THEN
-            chkSetting(1).Checked = NOT chkSetting(1).Checked
-            Obj.DrawChk chkSetting(1)
+            chkSetting(LinkTarget).Checked = NOT chkSetting(LinkTarget).Checked
+            Obj.DrawChk chkSetting(LinkTarget)
         END IF
         IF Key$ = "r" THEN
-            chkSetting(2).Checked = NOT chkSetting(2).Checked
-            Obj.DrawChk chkSetting(2)
+            chkSetting(LinkDelete).Checked = NOT chkSetting(LinkDelete).Checked
+            Obj.DrawChk chkSetting(LinkDelete)
         END IF
         IF Key$ = "e" THEN
-            chkSetting(3).Checked = NOT chkSetting(3).Checked
-            Obj.DrawChk chkSetting(3)
+            chkSetting(ConfExit).Checked = NOT chkSetting(ConfExit).Checked
+            Obj.DrawChk chkSetting(ConfExit)
         END IF
         IF Key$ = "y" THEN
-            chkSetting(4).Checked = NOT chkSetting(4).Checked
-            Obj.DrawChk chkSetting(4)
+            chkSetting(FileType).Checked = NOT chkSetting(FileType).Checked
+            Obj.DrawChk chkSetting(FileType)
         END IF
 
         IF Obj.BtnClick(btnBrowse) OR Key$ = "." THEN
@@ -242,11 +244,11 @@ SUB Conf.Main ()
             IF ThemesFound > 0 THEN
                 Setting.ThemeFile = ThemeList(ThemePreviewId)
             END IF
-            Setting.ShowLinkDescriptions = chkSetting(0).Checked
-            Setting.ShowLinkTargetFiles = chkSetting(1).Checked
-            Setting.ConfirmLinkDelete = chkSetting(2).Checked
-            Setting.ConfirmExit = chkSetting(3).Checked
-            Setting.AssignFileTypes = chkSetting(4).Checked
+            Setting.ShowLinkDescriptions = chkSetting(LinkDesc).Checked
+            Setting.ShowLinkTargetFiles = chkSetting(LinkTarget).Checked
+            Setting.ConfirmLinkDelete = chkSetting(LinkDelete).Checked
+            Setting.ConfirmExit = chkSetting(ConfExit).Checked
+            Setting.AssignFileTypes = chkSetting(FileType).Checked
             Sys.SaveSettings
             END
         END IF
@@ -261,10 +263,10 @@ SUB Conf.RestoreAssoc ()
     DIM AssocFile
 
     ON LOCAL ERROR RESUME NEXT
-    KILL Sys.Path + "\DATA\CONFIG\FILETYPE.DAT"
+    KILL Sys.Path + "DATA\CONFIG\FILETYPE.DAT"
 
     AssocFile = FREEFILE
-    OPEN Sys.Path + "\DATA\CONFIG\FILETYPE.DAT" FOR BINARY AS #AssocFile
+    OPEN Sys.Path + "DATA\CONFIG\FILETYPE.DAT" FOR BINARY AS #AssocFile
 
     DefaultAssoc(0).FileType = "TXT"
     DefaultAssoc(0).Command = "TEXTVIEW.EXE"
@@ -306,12 +308,12 @@ SUB Conf.SaveAssoc (FileType AS STRING, Command AS STRING)
     DIM FileAssociation AS FileAssociationType
     DIM FileHandle, FilePos, AssocSaved
 
-    IF NOT File.Exists(Sys.Path + "\DATA\CONFIG\FILETYPE.DAT") THEN
+    IF NOT File.Exists(Sys.Path + "DATA\CONFIG\FILETYPE.DAT") THEN
         Conf.RestoreAssoc
     END IF
 
     FileHandle = FREEFILE
-    OPEN Sys.Path + "\DATA\CONFIG\FILETYPE.DAT" FOR BINARY AS #FileHandle
+    OPEN Sys.Path + "DATA\CONFIG\FILETYPE.DAT" FOR BINARY AS #FileHandle
 
     ON LOCAL ERROR RESUME NEXT
 
