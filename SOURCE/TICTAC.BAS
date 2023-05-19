@@ -474,6 +474,7 @@ SUB Tic.NewGame ()
 	PlayerTurn = PlayerStart
 
 	Tic.PrintMessage msgNewGame
+	Tic.PrintStatus
 	Tic.PlaySound SoundNew
 
 END SUB
@@ -630,12 +631,12 @@ END SUB
 
 SUB Tic.PrintStatus ()
 	DIM Message AS STRING
-
+	
 	Message = "Playing "
 	IF EnableAI THEN
 		Message = Message + "against computer"
 	ELSE
-		Message = Message + "two players"
+		Message = Message + "two players            "
 	END IF
 	Message = Message + SPACE$(20) + "Sound: "
 	IF EnableAudio THEN
