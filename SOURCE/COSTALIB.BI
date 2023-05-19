@@ -10,6 +10,7 @@
     DECLARE FUNCTION Mouse.InArea% (TargetArea AS ANY)
     DECLARE SUB Mouse.Hide ()
     DECLARE SUB Mouse.Poll ()
+    DECLARE SUB Mouse.SetBounds (MinX%, MinY%, MaxX%, MaxY%)
     DECLARE SUB Mouse.SetPos (XPos%, YPos%)
     DECLARE SUB Mouse.Show ()
 
