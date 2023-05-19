@@ -1,4 +1,3 @@
-DECLARE SUB ThmEdit.Save ()
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -6,9 +5,10 @@ DECLARE FUNCTION ThmEdit.SelectObject (BYVAL CurrentSelection%) AS INTEGER
 DECLARE FUNCTION ThmEdit.Select () AS STRING
 DECLARE SUB ThmEdit.DrawIndicator (ActiveColor%)
 DECLARE SUB ThmEdit.DrawPreview (ThemeFile AS STRING)
-DECLARE SUB ThmEdit.Main ()
-DECLARE SUB ThmEdit.Load (BYVAL ThmFile AS STRING)
 DECLARE SUB ThmEdit.Edit (BYVAL ThmFile AS STRING)
+DECLARE SUB ThmEdit.Load (BYVAL ThmFile AS STRING)
+DECLARE SUB ThmEdit.Main ()
+DECLARE SUB ThmEdit.Save ()
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
@@ -505,7 +505,7 @@ SUB ThmEdit.Save ()
         DIM TargetFile$
         DIM ThemeToSaveHandle
 
-        TargetFile$ = Sys.Path + "\DATA\THEMES\" + ThemeFile$ + ".DAT"
+        TargetFile$ = Sys.Path + "DATA\THEMES\" + ThemeFile$ + ".DAT"
 
         ThemeToSave.Name = ThemeName$
         ThemeToSave.Author = ThemeAuthor$
