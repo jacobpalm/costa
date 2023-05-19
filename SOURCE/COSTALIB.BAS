@@ -712,6 +712,7 @@ SUB Sys.Load ()
 	DO: LOOP WHILE Mouse.Clicked
 	DO: LOOP WHILE LEN(INKEY$)
 
+	MouseHidden = True 'Force mouse to show
 	Mouse.Show
 
 END SUB
