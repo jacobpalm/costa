@@ -1,6 +1,6 @@
 
                           The Costa Graphical Shell
-                                Version 1.7.1
+                                Version 1.7.2
                                 By Jacob Palm                   
 
                           User's guide and reference 
@@ -18,7 +18,7 @@
 2.0 Using Costa
    2.1 Starting Costa
    2.2 Exiting Costa
-   2.3 Managing desktop links
+   2.3 Managing desktop icons
    2.4 Running DOS commands
    2.5 Using without a mouse
 3.0 Customizing Costa
@@ -151,25 +151,25 @@
    to exit.
 
 
- ** 2.3 - Managing desktop links **
+ ** 2.3 - Managing desktop icon **
     
-    To open a desktop link using the mouse, simply click it. You can also use 
+    To open a desktop icon using the mouse, simply click it. You can also use 
    the TAB key on your keyboard to cycle through the icons from left to
    right, and then press Enter when the desired icon is highlighted. Use
-   Shift+TAB to cycle through links in reverse order.
+   Shift+TAB to cycle through icons in reverse order.
    
-    When you open a desktop link, you will be presented with a dialog with   
-   information about the link, as well as a few options.
+    When you open a desktop icon, you will be presented with a dialog with   
+   information about the icon, as well as a few options.
 
      -Open
-      Run the program or open the target file specified for this desktop link
+      Run the program or open the target file specified for this desktop icon
 
      -Customize
       Opens a dialog where you can change the target filename, path, icon and
       more. If the "Pause after execution" checkbox is selected, Costa will
       wait for a key press before returning to the desktop once the program
-      is ends. This is useful if you need to see the output of a program
-      before returning to the desktop.
+      ends. This is useful if you need to see the output of a program before
+      returning to the desktop.
 
      -Move
       Allows you to move the icon freely around the screen. Once the icon is
@@ -177,16 +177,16 @@
       mouse, use the arrow keys to move the icon and press Enter when done.
 
      -Remove
-      Removes the desktop link permanently. Costa will ask you to confirm
-      this action.
+      Removes the desktop icon permanently. Costa will ask you to confirm
+      this action, by default.
 
     To close the menu without choosing any options, click Cancel or press the 
    Escape key.
 
-    To add a new desktop link, click the "Add link" button in the top right
+    To add a new desktop icon, click the "Add icon" button in the top right
    corner of the desktop. A dialog will appear, allowing you to define the
-   properties of your new link. If you click "Cancel" in this dialog, no new 
-   link will be added.
+   properties of your new icon If you click "Cancel" in this dialog, no new 
+   icon will be added.
 
 
  ** 2.4 Running DOS commands **
@@ -315,17 +315,17 @@
    indicates a disabled feature. Saving is not neccesary, changes take effect
    right away.
 
-    - Show link descriptions
-      Toggles whether or not the title of a link should be displayed on the
-      desktop.
+    - Show icon descriptions
+      Toggles whether or not the title of a lin icon should be displayed on
+      the desktop.
 
-    - Show link targets
-      If "Show link descriptions" is enabled, you can choose to have the
-      filename the link points to shown underneath the description.
+    - Show icon targets
+      If "Show icon descriptions" is enabled, you can choose to have the
+      filename the icon points to shown underneath the description.
 
-    - Confirm link removal
+    - Confirm icon removal
       When enabled, Costa will prompt for confirmation before removing any
-      link on the desktop.
+      icon on the desktop.
 
     - Confirm before exiting Costa
       If enabled you will be asked if you really want to exit Costa when you

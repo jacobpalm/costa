@@ -1,6 +1,6 @@
 
                          The Costa Graphical Shell
-                               Version 1.7.1
+                               Version 1.7.2
                                By Jacob Palm                   
 
                                  Changelog

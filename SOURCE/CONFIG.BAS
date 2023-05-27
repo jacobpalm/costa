@@ -126,9 +126,9 @@ SUB Conf.Main ()
     Obj.DrawChk chkSetting(ConfExit)
     Obj.DrawChk chkSetting(FileType)
     Mouse.Hide
-    Font.Print "Show link õdescriptions", chkSetting(LinkDesc).Pos.Left + 20, chkSetting(LinkDesc).Pos.Top + 3, Theme.WindowText, fontNormal
-    Font.Print "Show link õtargets", chkSetting(LinkTarget).Pos.Left + 20, chkSetting(LinkTarget).Pos.Top + 3, Theme.WindowText, fontNormal
-    Font.Print "Confirm link õremoval", chkSetting(LinkDelete).Pos.Left + 20, chkSetting(LinkDelete).Pos.Top + 3, Theme.WindowText, fontNormal
+    Font.Print "Show icon õdescriptions", chkSetting(LinkDesc).Pos.Left + 20, chkSetting(LinkDesc).Pos.Top + 3, Theme.WindowText, fontNormal
+    Font.Print "Show icon õtargets", chkSetting(LinkTarget).Pos.Left + 20, chkSetting(LinkTarget).Pos.Top + 3, Theme.WindowText, fontNormal
+    Font.Print "Confirm icon õremoval", chkSetting(LinkDelete).Pos.Left + 20, chkSetting(LinkDelete).Pos.Top + 3, Theme.WindowText, fontNormal
     Font.Print "Confirm before õexiting Costa", chkSetting(ConfExit).Pos.Left + 20, chkSetting(ConfExit).Pos.Top + 3, Theme.WindowText, fontNormal
     Font.Print "Use file tõype associations", chkSetting(FileType).Pos.Left + 20, chkSetting(FileType).Pos.Top + 3, Theme.WindowText, fontNormal
 

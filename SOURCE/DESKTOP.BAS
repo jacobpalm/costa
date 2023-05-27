@@ -131,13 +131,15 @@ SUB Desk.DrawDesktop ()
 	'All desklinks will always have an imagefile. Use this to check if any
 	'desklinks exist
 	IF RTRIM$(DeskLink(0).ImageFile) = "" OR DeskLink(0).Caption = STRING$(25, 0) THEN
-	Mouse.Show
-	EXIT SUB
+		Mouse.Show
+		EXIT SUB
 	END IF
 
 	DIM imgDeskLinkIcon AS ImageType
 	DIM TargetLink
 	DIM LinkTargetText AS STRING
+
+	Mouse.Hide
 
 	'Draw desklinks one by one, using imgDeskLinkIcon to draw the imagefile of
 	'each desklink
@@ -262,7 +264,7 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
 	IF NewLink = False THEN
 	btnOK.Caption = "õSave"
 	ELSE
-	btnOK.Caption = "õAdd link"
+	btnOK.Caption = "õAdd icon"
 	END IF
 	btnCancel.Caption = "õCancel"
 
@@ -767,7 +769,7 @@ SUB Desk.Main ()
 	DIM btnPrevious AS ButtonType, btnNext AS ButtonType
 	
 	Obj.SetSize btnAddLink.Pos, 3, 2, 92, 22
-	btnAddLink.Caption = "Add õlink"
+	btnAddLink.Caption = "Add õicon"
 	Obj.SetSize btnRunCmd.Pos, 102, 2, 92, 22
 	btnRunCmd.Caption = "õExecute"
 
@@ -807,7 +809,7 @@ Desk.RedrawAll:
 
 	Key$ = LCASE$(INKEY$)
 
-	IF Obj.BtnClick(btnAddLink) THEN Key$ = "l"
+	IF Obj.BtnClick(btnAddLink) THEN Key$ = "i"
 	IF Obj.BtnClick(btnRunCmd) THEN Key$ = "e"
 	IF Obj.BtnClick(btnPrevious) THEN Key$ = CHR$(0) + "k"
 	IF Obj.BtnClick(btnNext) THEN Key$ = CHR$(0) + "m"
@@ -841,7 +843,7 @@ Desk.RedrawAll:
 
 	IF LEN(Key$) THEN
 
-		IF Key$ = "l" THEN
+		IF Key$ = "i" THEN
 			REDIM PRESERVE DeskLink(0 TO UBOUND(DeskLink) + 1) AS DeskLinkType
 			
 			DeskLink(UBOUND(DeskLink)).Caption = "Unnamed link"
