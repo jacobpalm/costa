@@ -1,21 +1,16 @@
 OPTION EXPLICIT
 DEFINT A-Z
 			 
-DECLARE FUNCTION Desk.GetDailyTip () AS STRING
 DECLARE SUB Conf.Main ()
 DECLARE SUB Desk.AboutBox ()
 DECLARE SUB Desk.DrawDesktop ()
 DECLARE SUB Desk.ExitGUI ()
 DECLARE SUB Desk.LinkDialog (TargetLink%, DidEdit%, NewLink%)
-DECLARE SUB Desk.LinkLaunch (TargetLink AS INTEGER)
 DECLARE SUB Desk.LinkLoad ()
 DECLARE SUB Desk.LinkMenu (TargetLink%)
 DECLARE SUB Desk.LinkMove (TargetLink%)
 DECLARE SUB Desk.LinkSave ()
 DECLARE SUB Desk.Main ()
-DECLARE SUB Desk.ProfileEdit (ProfileNum AS INTEGER)
-DECLARE SUB Desk.ProfileSelect ()
-DECLARE SUB Desk.RunDialog ()
 DECLARE SUB Desk.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVAL TargetPath AS STRING, PauseOnExit AS INTEGER)
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
@@ -160,10 +155,9 @@ SUB Desk.DrawDesktop ()
 
 	'Description (caption) and target file
 	IF Setting.ShowLinkDescriptions THEN
-	
+		Font.Print DeskLink(TargetLink).Caption, DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 4, Theme.DesktopText, 1
+
 		IF Setting.ShowLinkTargetFiles THEN
-			Font.Print DeskLink(TargetLink).Caption, DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 4, Theme.DesktopText, 1
-			
 			LinkTargetText = LCASE$(DeskLink(TargetLink).Filename)
 
 			'Remove path from string, if present
@@ -172,8 +166,6 @@ SUB Desk.DrawDesktop ()
 			LOOP
 
 			Font.Print LinkTargetText, DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 18, Theme.DesktopText, 2
-		ELSE
-			Font.Print DeskLink(TargetLink).Caption, DeskLink(TargetLink).Left + 16 - (Font.GetWidth(RTRIM$(DeskLink(TargetLink).Caption), FontNormal) / 2), DeskLink(TargetLink).Top + 38, Theme.DesktopText, FontNormal
 		END IF
 
 	END IF
@@ -402,12 +394,12 @@ SUB Desk.LinkLoad ()
 	DIM DeskLinkFile AS STRING
 
 	DeskLinkFile = Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(Setting.DesktopID)) + ".DAT"
-	FileHandle = FREEFILE
-
+	
 	IF NOT File.Exists(DeskLinkFile) THEN
 		EXIT SUB
 	END IF
 
+	FileHandle = FREEFILE
 	OPEN Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(Setting.DesktopID)) + ".DAT" FOR BINARY AS #FileHandle
 	IF NOT LOF(FileHandle) = 0 THEN GET #FileHandle, , LinkCount
 
@@ -449,7 +441,6 @@ SUB Desk.LinkMenu (TargetLink)
 	
 	DIM DidEdit, RedrawNeeded
 	DIM Key$, CroppedText AS STRING
-
 	Obj.SetSize winLinkMenu.Pos, sizeCenter, sizeCenter, 413, 165
 	Obj.SetSize btnOpen.Pos, winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + winLinkMenu.Pos.Height - 64, 389, 22
 	Obj.SetSize btnCustomize.Pos, btnOpen.Pos.Left, btnOpen.Pos.Top + 30, 92, 22
@@ -640,6 +631,7 @@ SUB Desk.LinkMove (TargetLink)
 	END IF
 
 	CurGridX = (MouseX - 16) / 16
+	IF CurGridX < 0 THEN CurGridX = 0
 	CurGridY = (MouseY - 16) / 16
 
 	IF (NOT CurGridX = LastGridX) OR (NOT CurGridY = LastGridY) THEN
