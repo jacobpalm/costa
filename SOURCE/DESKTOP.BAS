@@ -853,8 +853,8 @@ Desk.RedrawAll:
 			DeskLink(UBOUND(DeskLink)).Path = ""
 			DeskLink(UBOUND(DeskLink)).Parameters = ""
 			DeskLink(UBOUND(DeskLink)).ImageFile = "PROGRAM"
-			DeskLink(UBOUND(DeskLink)).Left = 16
-			DeskLink(UBOUND(DeskLink)).Top = 48
+			DeskLink(UBOUND(DeskLink)).Left = 8
+			DeskLink(UBOUND(DeskLink)).Top = 40
 
 			Mouse.Hide
 			PCOPY 0, 1
