@@ -576,6 +576,8 @@ SUB Desk.LinkMove (TargetLink)
 
 	DO: LOOP WHILE Mouse.Clicked
 
+	CONST GridSize = 8
+
 	DIM LinkIcon(257), Backdrop(257)
 
 	DIM DrawX, DrawY
@@ -592,8 +594,8 @@ SUB Desk.LinkMove (TargetLink)
 	Mouse.SetPos DrawX + 16, DrawY + 16
 
 	Mouse.Poll
-	CurGridX = MouseX / 16
-	CurGridY = MouseY / 16
+	CurGridX = MouseX / GridSize
+	CurGridY = MouseY / GridSize
 
 	'Limit mouse movement to desktop area
 	Mouse.SetBounds 16, 48, 624, 334
@@ -612,36 +614,36 @@ SUB Desk.LinkMove (TargetLink)
 	Mouse.Poll
 
 	IF Key$ = CHR$(0) + "k" THEN 'Left arrow
-		MouseX = MouseX - 16
+		MouseX = MouseX - GridSize
 		IF MouseX < 0 THEN MouseX = 0
 		Mouse.SetPos MouseX, MouseY
 	END IF
 	IF Key$ = CHR$(0) + "m" THEN 'Right arrow
-		MouseX = MouseX + 15
+		MouseX = MouseX + GridSize - 1
 		IF MouseX > 624 THEN MouseX = 624
 		Mouse.SetPos MouseX, MouseY
 	END IF
 	IF Key$ = CHR$(0) + "h" THEN 'Up arrow
-		MouseY = MouseY - 16
+		MouseY = MouseY - GridSize
 		IF MouseY < 48 THEN MouseY = 48
 		Mouse.SetPos MouseX, MouseY
 	END IF
 	IF Key$ = CHR$(0) + "p" THEN 'Down arrow
-		MouseY = MouseY + 15
+		MouseY = MouseY + GridSize - 1
 		IF MouseY > 334 THEN MouseY = 334
 		Mouse.SetPos MouseX, MouseY
 	END IF
 
-	CurGridX = (MouseX - 16) / 16
+	CurGridX = (MouseX - 16) / GridSize
 	IF CurGridX < 0 THEN CurGridX = 0
-	CurGridY = (MouseY - 16) / 16
+	CurGridY = (MouseY - 16) / GridSize
 
 	IF (NOT CurGridX = LastGridX) OR (NOT CurGridY = LastGridY) THEN
 		Mouse.Hide
 		'Restore backdrop
 		PUT (DrawX, DrawY), Backdrop, PSET
-		DrawX = CurGridX * 16
-		DrawY = CurGridY * 16
+		DrawX = CurGridX * GridSize
+		DrawY = CurGridY * GridSize
 		IF DrawY > 318 THEN DrawY = 318
 		
 		'Save backdrop, plot icon in its place
