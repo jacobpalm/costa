@@ -1,18 +1,13 @@
-DECLARE SUB Mine.PrintStatus (PrintTimeOnly%)
 OPTION EXPLICIT
 DEFINT A-Z
 
 DECLARE FUNCTION Mine.CheckWin% ()
-DECLARE SUB Mine.AIMove ()
-DECLARE SUB Mine.DrawField ()
-DECLARE SUB Mine.DrawXO (FieldRow%, FieldCol%, FieldValue%)
-DECLARE SUB Mine.DrawBackground ()
-DECLARE SUB Mine.NewGame ()
-DECLARE SUB Mine.Main ()
 DECLARE FUNCTION Mine.SetSize% ()
+DECLARE SUB Mine.DrawField ()
+DECLARE SUB Mine.Main ()
+DECLARE SUB Mine.NewGame ()
 DECLARE SUB Mine.PlaySound (SoundType AS INTEGER)
-DECLARE SUB Mine.PrintMessage (MessageType AS INTEGER)
-
+DECLARE SUB Mine.PrintStatus (PrintTimeOnly%)
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
@@ -44,46 +39,61 @@ FUNCTION Mine.CheckWin ()
 
 END FUNCTION
 
-SUB Mine.DrawBackground ()
-	
-	DIM LX
-	Mouse.Hide
-	
-	
-
-	FOR LX = 0 TO 639 STEP 6
-		LINE (LX, 29)-(LX, 349), 14, , &H1111
-	NEXT
-
-	FOR LX = 3 TO 639 STEP 6
-		LINE (LX, 31)-(LX, 349), 14, , &H1111
-	NEXT
-
-	Mouse.Show
-	
-END SUB
-
 SUB Mine.DrawField ()
 
-	DIM btnField AS ButtonType
+	DIM txtMineField AS TextboxType
 	DIM FieldRow, FieldCol
+	DIM XOffset, YOffset
+
+	CONST BoxSize = 16
+
+	XOffset = 8
+	YOffset = 36
 	
-	Obj.SetSize btnField.Pos, SizeRetain, SizeRetain, 16, 16
+
+	Obj.SetSize txtMineField.Pos, SizeCenter, 33, FieldWidth * BoxSize + 4, FieldHeight * BoxSize + 4
+	txtMineField.Pos.Top = 180 - (txtMineField.Pos.Height / 2)
+	XOffset = txtMineField.Pos.Left + 2
+	YOffset = txtMineField.Pos.Top + 2
 
 	Mouse.Hide
 	LINE (0, 29)-(639, 349), Theme.Window, BF
+	Mouse.Show
 
-	'DEBUG - calculate board offset from size...
+	'Obj.DrawTxt txtMineField, "", False
 
-	FOR FieldRow = 0 TO 17
-		btnField.Pos.Top = FieldRow * btnField.Pos.Height + 37
+	Mouse.Hide
+	'Button face color
+	LINE (txtMineField.Pos.Left + 2, txtMineField.Pos.Top + 2)-(txtMineField.Pos.Left + txtMineField.Pos.Width - 2, txtMineField.Pos.Top + txtMineField.Pos.Height - 2), 7, BF
 
-		FOR FieldCol = 0 TO 38
-			btnField.Pos.Left = FieldCol * btnField.Pos.Width + 7
-			'Obj.DrawBtn btnField, False
-		NEXT
+	'Button light and shadows for first row/column
+	LINE (XOffset, YOffset)-(XOffset + txtMineField.Pos.Width - 4, YOffset), 15
+	LINE (XOffset, YOffset)-(XOffset, YOffset + txtMineField.Pos.Height - 4), 15
+	LINE (XOffset + 2, YOffset + txtMineField.Pos.Height - 5)-(XOffset + txtMineField.Pos.Width - 5, YOffset + txtMineField.Pos.Height - 5), 8
+	LINE (XOffset + txtMineField.Pos.Width - 5, YOffset + 2)-(XOffset + txtMineField.Pos.Width - 5, YOffset + txtMineField.Pos.Height - 5), 8
 
+	'Button light and shadows
+	FOR FieldCol = 1 TO FieldWidth - 1
+		LINE (XOffset + FieldCol * BoxSize + 1, YOffset)-(XOffset + FieldCol * BoxSize + 1, YOffset + FieldHeight * BoxSize), 15
+		LINE (XOffset + FieldCol * BoxSize - 1, YOffset)-(XOffset + FieldCol * BoxSize - 1, YOffset + FieldHeight * BoxSize), 8
 	NEXT
+	FOR FieldRow = 1 TO FieldHeight - 1
+		LINE (XOffset, YOffset + FieldRow * BoxSize + 1)-(XOffset + FieldWidth * BoxSize, YOffset + FieldRow * BoxSize + 1), 15
+		LINE (XOffset, YOffset + FieldRow * BoxSize - 1)-(XOffset + FieldWidth * BoxSize, YOffset + FieldRow * BoxSize - 1), 8
+	NEXT
+
+	'Button borders
+	FOR FieldCol = 1 TO FieldWidth - 1
+		LINE (XOffset + FieldCol * BoxSize, YOffset)-(XOffset + FieldCol * BoxSize, YOffset + FieldHeight * BoxSize), 0
+	NEXT
+	FOR FieldRow = 1 TO FieldHeight - 1
+		LINE (XOffset, YOffset + FieldRow * BoxSize)-(XOffset + FieldWidth * BoxSize, YOffset + FieldRow * BoxSize), 0
+	NEXT
+
+	'Borders for last row/column
+	LINE (XOffset + 1, YOffset + txtMineField.Pos.Height - 4)-(XOffset + txtMineField.Pos.Width - 4, YOffset + txtMineField.Pos.Height - 4), 0
+	LINE (XOffset + txtMineField.Pos.Width - 4, YOffset + 1)-(XOffset + txtMineField.Pos.Width - 4, YOffset + txtMineField.Pos.Height - 4), 0
+
 
 	Mouse.Show
 
@@ -141,7 +151,6 @@ SUB Mine.Main ()
 
 		IF Obj.BtnClick(btnSize) OR Key$ = "z" THEN
 			IF Mine.SetSize THEN
-				Mine.DrawBackground
 				Mine.NewGame
 			END IF
 		END IF
@@ -175,8 +184,7 @@ SUB Mine.NewGame ()
 
 	DIM FieldRow, FieldCol
 	
-	'DEBUG
-	'REDIM MineField(MineFieldSize, MineFieldSize) AS INTEGER
+	REDIM MineField(FieldWidth, FieldHeight) AS INTEGER
 
 	Mine.DrawField
 	Mine.PlaySound SoundNew
@@ -213,7 +221,8 @@ SUB Mine.PrintStatus (PrintTimeOnly)
 	Mouse.Hide
 	IF NOT PrintTimeOnly THEN
 		LINE (6, 330)-(632, 342), Theme.Window, BF
-		Message = "Field size:" + STR$(FieldWidth) + "x" + LTRIM$(STR$(FieldHeight))
+		Message = LTRIM$(STR$(FieldWidth)) + "x" + LTRIM$(STR$(FieldHeight))
+		Message = Message + " with" + STR$(MineCount) + " mines"
 		Font.Print Message, 8, 332, Theme.WindowText, fontHeading
 
 		IF EnableAudio THEN
@@ -253,43 +262,81 @@ END SUB
 FUNCTION Mine.SetSize ()
 
 		DIM winSetSize AS WindowType
-		DIM btnSize(0 TO 2) AS ButtonType
-		DIM Key$, I, ActiveSelection
+		DIM btnSize(0 TO 3) AS ButtonType, btnCancel AS ButtonType
+		DIM X, Y
+		DIM Key$
 
-		Obj.SetSize winSetSize.Pos, sizeCenter, sizeCenter, 226, 304
+		Obj.SetSize winSetSize.Pos, SizeCenter, SizeCenter, 236, 264
 
-		FOR I = 0 TO 2
-				Obj.SetSize btnSize(I).Pos, winSetSize.Pos.Left + 13, winSetSize.Pos.Top + (I * 23) - 8, 200, 22
-		NEXT
-		btnSize(0).Caption = "16x16"
-		btnSize(1).Caption = "24x24"
-		btnSize(2).Caption = "18x39"
+		Obj.SetSize btnSize(0).Pos, winSetSize.Pos.Left + 13, winSetSize.Pos.Top + 11, 100, 100
+		Obj.SetSize btnSize(1).Pos, btnSize(0).Pos.Left + 110, winSetSize.Pos.Top + 11, 100, 100
+		Obj.SetSize btnSize(2).Pos, winSetSize.Pos.Left + 13, btnSize(0).Pos.Top + 110, 100, 100
+		Obj.SetSize btnSize(3).Pos, btnSize(2).Pos.Left + 110, btnSize(2).Pos.Top, 100, 100
+		Obj.SetSize btnCancel.Pos, winSetSize.Pos.Left + 13, btnSize(2).Pos.Top + 110, 210, 22
+		
+		btnSize(0).Transparent = True
+		btnSize(1).Transparent = True
+		btnSize(2).Transparent = True
+		btnSize(3).Transparent = True
 
-		ActiveSelection = 1
+		btnCancel.Caption = "õCancel"
 
 		Mouse.Hide
 		PCOPY 0, 1
 		Mouse.Show
 
 		Obj.DrawWin winSetSize
-		Obj.DrawBtn btnSize(0), True
+		Obj.DrawBtn btnSize(0), False
 		Obj.DrawBtn btnSize(1), False
 		Obj.DrawBtn btnSize(2), False
+		Obj.DrawBtn btnSize(3), False
+		Obj.DrawBtn btnCancel, False
+
+		Font.Print "9xõ9", btnSize(0).Pos.Left + ((btnSize(0).Pos.Width - Font.GetWidth("9x9", fontHeading)) / 2), btnSize(0).Pos.Top + 79, Theme.WindowText, fontHeading
+		Font.Print "16x1õ6", btnSize(1).Pos.Left + ((btnSize(1).Pos.Width - Font.GetWidth("16x16", fontHeading)) / 2), btnSize(1).Pos.Top + 79, Theme.WindowText, fontHeading
+		Font.Print "õ22x18", btnSize(2).Pos.Left + ((btnSize(2).Pos.Width - Font.GetWidth("22x18", fontHeading)) / 2), btnSize(2).Pos.Top + 79, Theme.WindowText, fontHeading
+		Font.Print "õ39x18", btnSize(3).Pos.Left + ((btnSize(3).Pos.Width - Font.GetWidth("39x28", fontHeading)) / 2), btnSize(3).Pos.Top + 79, Theme.WindowText, fontHeading
+		
+		Mouse.Hide
+		'9x9
+		FOR X = 0 TO 3
+			LINE (252 + X * 9, 94)-(252 + X * 9, 121), Theme.WindowText
+		NEXT
+		FOR Y = 0 TO 3
+			LINE (252, 94 + Y * 9)-(279, 94 + Y * 9), Theme.WindowText
+		NEXT
+
+		'16x16
+		FOR X = 0 TO 4
+			LINE (357 + X * 9, 90)-(357 + X * 9, 126), Theme.WindowText
+		NEXT
+		FOR Y = 0 TO 4
+			LINE (357, 90 + Y * 9)-(393, 90 + Y * 9), Theme.WindowText
+		NEXT
+
+		'22x18
+		FOR X = 0 TO 6
+			LINE (238 + X * 9, 195)-(238 + X * 9, 240), Theme.WindowText
+		NEXT
+		FOR Y = 0 TO 5
+			LINE (238, 195 + Y * 9)-(292, 195 + Y * 9), Theme.WindowText
+		NEXT
+
+		'39x18
+		FOR X = 0 TO 8
+			LINE (339 + X * 9, 195)-(339 + X * 9, 240), Theme.WindowText
+		NEXT
+		FOR Y = 0 TO 5
+			LINE (339, 195 + Y * 9)-(411, 195 + Y * 9), Theme.WindowText
+		NEXT
+
+		Mouse.Show
 
 		DO
 
 			Key$ = LCASE$(INKEY$)
 
-			IF Key$ = CHR$(13) THEN
-				'DEBUG - set size
-				Mine.SetSize = True
-				Mouse.Hide
-				PCOPY 1, 0
-				Mouse.Show
-				EXIT FUNCTION
-			END IF
-
-			IF Key$ = CHR$(27) THEN
+			IF Obj.BtnClick(btnCancel) OR Key$ = CHR$(27) OR Key$ = "c" THEN
 				Mine.SetSize = False
 				Mouse.Hide
 				PCOPY 1, 0
@@ -298,41 +345,33 @@ FUNCTION Mine.SetSize ()
 			END IF
 
 
-			IF Mouse.Clicked THEN
-				FOR I = 0 TO 2
-					IF Obj.BtnClick(btnSize(I)) THEN
-						Mine.SetSize = I
-						Mouse.Hide
-						PCOPY 1, 0
-						Mouse.Show
-						EXIT FUNCTION
-					END IF
-				NEXT
+			IF Obj.BtnClick(btnSize(0)) OR Key$ = "9" THEN
+				FieldWidth = 9
+				FieldHeight = 9
+				EXIT DO
 			END IF
 
-			IF Key$ = CHR$(0) + "h" THEN
-				Obj.DrawBtn btnSize(ActiveSelection), False
-				IF ActiveSelection > 0 THEN
-					ActiveSelection = ActiveSelection - 1
-				ELSE
-					ActiveSelection = UBOUND(btnSize)
-				END IF
-				Obj.DrawBtn btnSize(ActiveSelection), True
+			IF Obj.BtnClick(btnSize(1)) OR Key$ = "6" THEN
+				FieldWidth = 16
+				FieldHeight = 16
+				EXIT DO
 			END IF
 
-			IF Key$ = CHR$(0) + "p" THEN
-				Obj.DrawBtn btnSize(ActiveSelection), False
-				IF ActiveSelection < 2 THEN
-					ActiveSelection = ActiveSelection + 1
-				ELSE
-					ActiveSelection = 0
-				END IF
-				Obj.DrawBtn btnSize(ActiveSelection), True
+			IF Obj.BtnClick(btnSize(2)) OR Key$ = "2" THEN
+				FieldWidth = 22
+				FieldHeight = 18
+				EXIT DO
+			END IF
+
+			IF Obj.BtnClick(btnSize(3)) OR Key$ = "3" THEN
+				FieldWidth = 39
+				FieldHeight = 18
+				EXIT DO
 			END IF
 
 		LOOP
 
-
-
+		Mine.SetSize = True
+		
 END FUNCTION
 
