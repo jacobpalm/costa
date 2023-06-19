@@ -28,6 +28,7 @@ DIM SHARED GameOver AS INTEGER
 DIM SHARED MineCount AS INTEGER
 DIM SHARED FieldWidth AS INTEGER
 DIM SHARED FieldHeight AS INTEGER
+DIM SHARED posField AS PosType
 DIM SHARED StartTime AS LONG
 REDIM SHARED MineField(16, 16) AS INTEGER
 
@@ -41,36 +42,29 @@ END FUNCTION
 
 SUB Mine.DrawField ()
 
-	DIM txtMineField AS TextboxType
 	DIM FieldRow, FieldCol
 	DIM XOffset, YOffset
 
 	CONST BoxSize = 16
 
-	XOffset = 8
-	YOffset = 36
-	
-
-	Obj.SetSize txtMineField.Pos, SizeCenter, 33, FieldWidth * BoxSize + 4, FieldHeight * BoxSize + 4
-	txtMineField.Pos.Top = 180 - (txtMineField.Pos.Height / 2)
-	XOffset = txtMineField.Pos.Left + 2
-	YOffset = txtMineField.Pos.Top + 2
+	Obj.SetSize posField, SizeCenter, SizeRetain, FieldWidth * BoxSize, FieldHeight * BoxSize
+	posField.Top = 180 - (posField.Height / 2)
+	XOffset = posField.Left
+	YOffset = posField.Top
 
 	Mouse.Hide
 	LINE (0, 29)-(639, 349), Theme.Window, BF
 	Mouse.Show
 
-	'Obj.DrawTxt txtMineField, "", False
-
 	Mouse.Hide
 	'Button face color
-	LINE (txtMineField.Pos.Left + 2, txtMineField.Pos.Top + 2)-(txtMineField.Pos.Left + txtMineField.Pos.Width - 2, txtMineField.Pos.Top + txtMineField.Pos.Height - 2), 7, BF
+	LINE (posField.Left, posField.Top)-(posField.Left + posField.Width, posField.Top + posField.Height), 7, BF
 
 	'Button light and shadows for first row/column
-	LINE (XOffset, YOffset)-(XOffset + txtMineField.Pos.Width - 4, YOffset), 15
-	LINE (XOffset, YOffset)-(XOffset, YOffset + txtMineField.Pos.Height - 4), 15
-	LINE (XOffset + 2, YOffset + txtMineField.Pos.Height - 5)-(XOffset + txtMineField.Pos.Width - 5, YOffset + txtMineField.Pos.Height - 5), 8
-	LINE (XOffset + txtMineField.Pos.Width - 5, YOffset + 2)-(XOffset + txtMineField.Pos.Width - 5, YOffset + txtMineField.Pos.Height - 5), 8
+	LINE (XOffset, YOffset)-(XOffset + posField.Width, YOffset), 15
+	LINE (XOffset, YOffset)-(XOffset, YOffset + posField.Height), 15
+	LINE (XOffset + 2, YOffset + posField.Height - 1)-(XOffset + posField.Width - 1, YOffset + posField.Height - 1), 8
+	LINE (XOffset + posField.Width - 1, YOffset + 2)-(XOffset + posField.Width - 1, YOffset + posField.Height - 1), 8
 
 	'Button light and shadows
 	FOR FieldCol = 1 TO FieldWidth - 1
@@ -91,8 +85,8 @@ SUB Mine.DrawField ()
 	NEXT
 
 	'Borders for last row/column
-	LINE (XOffset + 1, YOffset + txtMineField.Pos.Height - 4)-(XOffset + txtMineField.Pos.Width - 4, YOffset + txtMineField.Pos.Height - 4), 0
-	LINE (XOffset + txtMineField.Pos.Width - 4, YOffset + 1)-(XOffset + txtMineField.Pos.Width - 4, YOffset + txtMineField.Pos.Height - 4), 0
+	LINE (XOffset + 1, YOffset + posField.Height)-(XOffset + posField.Width, YOffset + posField.Height), 0
+	LINE (XOffset + posField.Width, YOffset + 1)-(XOffset + posField.Width, YOffset + posField.Height), 0
 
 
 	Mouse.Show
