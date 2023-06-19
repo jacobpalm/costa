@@ -1,3 +1,4 @@
+DECLARE SUB Mine.DrawBox (Row%, Col%)
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -15,6 +16,7 @@ CONST FieldMined = 1
 CONST FieldFlagged = 2
 CONST FieldCleared = 4
 CONST FieldNumbered = 8
+CONST FieldExploded = 16
 
 CONST SoundNew = 0
 CONST SoundIllegalMove = 1
@@ -22,6 +24,9 @@ CONST SoundWin = 2
 CONST SoundLoose = 3
 CONST SoundClear = 4
 CONST SoundFlag = 5
+
+'Size of each clickable field
+CONST BoxSize = 16
 
 DIM SHARED EnableAudio AS INTEGER
 DIM SHARED GameOver AS INTEGER
@@ -40,17 +45,49 @@ FUNCTION Mine.CheckWin ()
 
 END FUNCTION
 
+SUB Mine.DrawBox (Row, Col)
+
+	DIM x1, y1, x2, y2
+	DIM TextColor, Neighbors AS STRING * 1
+
+	x1 = posField.Left + 1 + Col * BoxSize
+	y1 = posField.Top + 1 + Row * BoxSize
+	x2 = x1 + BoxSize - 2
+	y2 = y1 + BoxSize - 2
+
+	Mouse.Hide
+
+	'Handle the border on the first row and column
+	IF x1 = posField.Left + 1 THEN
+		LINE (x1 - 1, y1)-(x1 - 1, y2), 0
+	END IF
+	IF y1 = posField.Top + 1 THEN
+		LINE (x1, y1 - 1)-(x2, y1 - 1), 0
+	END IF
+	'And handle the single topleft pixel
+	IF x1 = posField.Left + 1 AND y1 = posField.Top + 1 THEN
+		PSET (x1 - 1, y1 - 1), 0
+	END IF
+
+
+	'Remove button
+	LINE (x1, y1)-(x2, y2), 7, BF
+
+	'Text
+	Font.Print "1", x1 + ((BoxSize - Font.GetWidth("1", fontHeading)) / 2), y1 + 3, 1, fontHeading
+
+	Mouse.Show
+
+END SUB
+
 SUB Mine.DrawField ()
 
 	DIM FieldRow, FieldCol
-	DIM XOffset, YOffset
-
-	CONST BoxSize = 16
-
+	
 	Obj.SetSize posField, SizeCenter, SizeRetain, FieldWidth * BoxSize, FieldHeight * BoxSize
 	posField.Top = 180 - (posField.Height / 2)
-	XOffset = posField.Left
-	YOffset = posField.Top
+	posField.Left = posField.Left
+	posField.Top = posField.Top
 
 	Mouse.Hide
 	LINE (0, 29)-(639, 349), Theme.Window, BF
@@ -61,32 +98,32 @@ SUB Mine.DrawField ()
 	LINE (posField.Left, posField.Top)-(posField.Left + posField.Width, posField.Top + posField.Height), 7, BF
 
 	'Button light and shadows for first row/column
-	LINE (XOffset, YOffset)-(XOffset + posField.Width, YOffset), 15
-	LINE (XOffset, YOffset)-(XOffset, YOffset + posField.Height), 15
-	LINE (XOffset + 2, YOffset + posField.Height - 1)-(XOffset + posField.Width - 1, YOffset + posField.Height - 1), 8
-	LINE (XOffset + posField.Width - 1, YOffset + 2)-(XOffset + posField.Width - 1, YOffset + posField.Height - 1), 8
+	LINE (posField.Left, posField.Top)-(posField.Left + posField.Width, posField.Top), 15
+	LINE (posField.Left, posField.Top)-(posField.Left, posField.Top + posField.Height), 15
+	LINE (posField.Left + 2, posField.Top + posField.Height - 1)-(posField.Left + posField.Width - 1, posField.Top + posField.Height - 1), 8
+	LINE (posField.Left + posField.Width - 1, posField.Top + 2)-(posField.Left + posField.Width - 1, posField.Top + posField.Height - 1), 8
 
 	'Button light and shadows
 	FOR FieldCol = 1 TO FieldWidth - 1
-		LINE (XOffset + FieldCol * BoxSize + 1, YOffset)-(XOffset + FieldCol * BoxSize + 1, YOffset + FieldHeight * BoxSize), 15
-		LINE (XOffset + FieldCol * BoxSize - 1, YOffset)-(XOffset + FieldCol * BoxSize - 1, YOffset + FieldHeight * BoxSize), 8
+		LINE (posField.Left + FieldCol * BoxSize + 1, posField.Top)-(posField.Left + FieldCol * BoxSize + 1, posField.Top + FieldHeight * BoxSize), 15
+		LINE (posField.Left + FieldCol * BoxSize - 1, posField.Top + 1)-(posField.Left + FieldCol * BoxSize - 1, posField.Top + FieldHeight * BoxSize), 8
 	NEXT
 	FOR FieldRow = 1 TO FieldHeight - 1
-		LINE (XOffset, YOffset + FieldRow * BoxSize + 1)-(XOffset + FieldWidth * BoxSize, YOffset + FieldRow * BoxSize + 1), 15
-		LINE (XOffset, YOffset + FieldRow * BoxSize - 1)-(XOffset + FieldWidth * BoxSize, YOffset + FieldRow * BoxSize - 1), 8
+		LINE (posField.Left, posField.Top + FieldRow * BoxSize + 1)-(posField.Left + FieldWidth * BoxSize, posField.Top + FieldRow * BoxSize + 1), 15
+		LINE (posField.Left + 1, posField.Top + FieldRow * BoxSize - 1)-(posField.Left + FieldWidth * BoxSize, posField.Top + FieldRow * BoxSize - 1), 8
 	NEXT
 
 	'Button borders
 	FOR FieldCol = 1 TO FieldWidth - 1
-		LINE (XOffset + FieldCol * BoxSize, YOffset)-(XOffset + FieldCol * BoxSize, YOffset + FieldHeight * BoxSize), 0
+		LINE (posField.Left + FieldCol * BoxSize, posField.Top)-(posField.Left + FieldCol * BoxSize, posField.Top + FieldHeight * BoxSize), 0
 	NEXT
 	FOR FieldRow = 1 TO FieldHeight - 1
-		LINE (XOffset, YOffset + FieldRow * BoxSize)-(XOffset + FieldWidth * BoxSize, YOffset + FieldRow * BoxSize), 0
+		LINE (posField.Left, posField.Top + FieldRow * BoxSize)-(posField.Left + FieldWidth * BoxSize, posField.Top + FieldRow * BoxSize), 0
 	NEXT
 
 	'Borders for last row/column
-	LINE (XOffset + 1, YOffset + posField.Height)-(XOffset + posField.Width, YOffset + posField.Height), 0
-	LINE (XOffset + posField.Width, YOffset + 1)-(XOffset + posField.Width, YOffset + posField.Height), 0
+	LINE (posField.Left, posField.Top + posField.Height)-(posField.Left + posField.Width, posField.Top + posField.Height), 0
+	LINE (posField.Left + posField.Width, posField.Top)-(posField.Left + posField.Width, posField.Top + posField.Height), 0
 
 
 	Mouse.Show
@@ -106,7 +143,7 @@ SUB Mine.Main ()
 
 	DIM btnNew AS ButtonType, btnSize AS ButtonType
 	DIM btnAudio AS ButtonType, btnExit AS ButtonType
-	DIM FieldRow, FieldCol
+	DIM FieldRow, FieldCol, MouseButton
 	DIM TimeCompare AS LONG
 	DIM Key$
 
@@ -158,15 +195,32 @@ SUB Mine.Main ()
 			TimeCompare = TIMER + 1
 		END IF
 		
-		IF False = True THEN
+		IF Mouse.Clicked AND Mouse.InArea(posField) THEN
+			MouseButton = Mouse.Clicked
+			Mouse.Poll
+			
+			FieldCol = INT((MouseX - posField.Left) / BoxSize)
+			FieldRow = INT((MouseY - posField.Top) / BoxSize)
+
+			'DEBUG
+			'LOCATE 1, 1
+			'PRINT "X:" + STR$(MouseX) + " (relative" + STR$(MouseX - posField.Left) + ") - calc" + STR$(INT((MouseX - posField.Left) / BoxSize)) + SPACE$(5)
+			'PRINT "COL:" + STR$(FieldCol) + SPACE$(5)
+			'PRINT "Y:" + STR$(MouseY) + " (relative" + STR$(MouseY - posField.Top) + ") - calc" + STR$(INT((MouseY - posField.Top) / BoxSize)) + SPACE$(5)
+			'PRINT "ROW:" + STR$(FieldRow) + SPACE$(5)
+			
+			'if MouseButton = mbLeft Then
+			'if MouseButton = mbRight Then
+
+			Mine.DrawBox FieldRow, FieldCol
+			'IF MineField(FieldRow, FieldCol) = 0 THEN
+			'
+			'ELSE
+			'  Mine.PlaySound SoundIllegalMove
+			'END IF
+
 			'Prevent audio from running wild if mouse/key is held down
 			DO: LOOP WHILE LEN(INKEY$) OR Mouse.Clicked
-			
-			IF MineField(FieldRow, FieldCol) = 0 THEN
-
-			ELSE
-				Mine.PlaySound SoundIllegalMove
-			END IF
 
 		END IF
 
@@ -178,7 +232,7 @@ SUB Mine.NewGame ()
 
 	DIM FieldRow, FieldCol
 	
-	REDIM MineField(FieldWidth, FieldHeight) AS INTEGER
+	REDIM MineField(0 TO FieldWidth - 1, 0 TO FieldHeight - 1) AS INTEGER
 
 	Mine.DrawField
 	Mine.PlaySound SoundNew
@@ -286,12 +340,12 @@ FUNCTION Mine.SetSize ()
 		Obj.DrawBtn btnSize(3), False
 		Obj.DrawBtn btnCancel, False
 
+		Mouse.Hide
 		Font.Print "9xõ9", btnSize(0).Pos.Left + ((btnSize(0).Pos.Width - Font.GetWidth("9x9", fontHeading)) / 2), btnSize(0).Pos.Top + 79, Theme.WindowText, fontHeading
 		Font.Print "16x1õ6", btnSize(1).Pos.Left + ((btnSize(1).Pos.Width - Font.GetWidth("16x16", fontHeading)) / 2), btnSize(1).Pos.Top + 79, Theme.WindowText, fontHeading
 		Font.Print "õ22x18", btnSize(2).Pos.Left + ((btnSize(2).Pos.Width - Font.GetWidth("22x18", fontHeading)) / 2), btnSize(2).Pos.Top + 79, Theme.WindowText, fontHeading
 		Font.Print "õ39x18", btnSize(3).Pos.Left + ((btnSize(3).Pos.Width - Font.GetWidth("39x28", fontHeading)) / 2), btnSize(3).Pos.Top + 79, Theme.WindowText, fontHeading
 		
-		Mouse.Hide
 		'9x9
 		FOR X = 0 TO 3
 			LINE (252 + X * 9, 94)-(252 + X * 9, 121), Theme.WindowText
