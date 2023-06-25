@@ -1,9 +1,10 @@
-DECLARE SUB Mine.DrawBox (Row%, Col%)
 OPTION EXPLICIT
 DEFINT A-Z
 
 DECLARE FUNCTION Mine.CheckWin% ()
+DECLARE FUNCTION Mine.GetNeighbors% (Row%, Col%)
 DECLARE FUNCTION Mine.SetSize% ()
+DECLARE SUB Mine.DrawBox (Row%, Col%)
 DECLARE SUB Mine.DrawField ()
 DECLARE SUB Mine.Main ()
 DECLARE SUB Mine.NewGame ()
@@ -30,7 +31,7 @@ CONST BoxSize = 16
 
 DIM SHARED EnableAudio AS INTEGER
 DIM SHARED GameOver AS INTEGER
-DIM SHARED MineCount AS INTEGER
+DIM SHARED MineCOunt AS INTEGER
 DIM SHARED FieldWidth AS INTEGER
 DIM SHARED FieldHeight AS INTEGER
 DIM SHARED posField AS PosType
@@ -48,7 +49,7 @@ END FUNCTION
 SUB Mine.DrawBox (Row, Col)
 
 	DIM x1, y1, x2, y2
-	DIM TextColor, Neighbors AS STRING * 1
+	DIM TextColor, Neighbors
 
 	x1 = posField.Left + 1 + Col * BoxSize
 	y1 = posField.Top + 1 + Row * BoxSize
@@ -57,24 +58,76 @@ SUB Mine.DrawBox (Row, Col)
 
 	Mouse.Hide
 
-	'Handle the border on the first row and column
-	IF x1 = posField.Left + 1 THEN
-		LINE (x1 - 1, y1)-(x1 - 1, y2), 0
-	END IF
-	IF y1 = posField.Top + 1 THEN
-		LINE (x1, y1 - 1)-(x2, y1 - 1), 0
-	END IF
-	'And handle the single topleft pixel
-	IF x1 = posField.Left + 1 AND y1 = posField.Top + 1 THEN
-		PSET (x1 - 1, y1 - 1), 0
-	END IF
+
+	'Note - all of these graphics will be moved to BSV files, this is just
+	'for generating the graphics - DEBUG
 
 
-	'Remove button
-	LINE (x1, y1)-(x2, y2), 7, BF
+	'Clear button, leave empty field - for all others than flagged
+	'DEBUG - if not field and fieldFlagged
+		LINE (x1, y1)-(x2, y2), 7, BF
+
+
+
+	'Exploded background
+		'LINE (x1, y1)-(x2, y2), 7, BF
+	
+
+	'Mine
+		LINE (x1 + 5, y1 + 3)-(x1 + 9, y1 + 11), 0, BF
+		LINE (x1 + 3, y1 + 5)-(x1 + 11, y1 + 9), 0, BF
+		PSET (x1 + 3, y1 + 3), 0
+		PSET (x1 + 3, y1 + 11), 0
+		PSET (x1 + 4, y1 + 4), 0
+		PSET (x1 + 4, y1 + 10), 0
+		PSET (x1 + 10, y1 + 10), 0
+		PSET (x1 + 11, y1 + 11), 0
+		PSET (x1 + 10, y1 + 4), 0
+		PSET (x1 + 11, y1 + 3), 0
+		LINE (x1 + 1, y1 + 7)-(x2 - 1, y1 + 7), 0
+		LINE (x1 + 7, y1 + 1)-(x1 + 7, y2 - 1), 0
+		LINE (x1 + 5, y1 + 5)-(x1 + 6, y1 + 6), 15, B
+	
+
+	Mouse.Show
+	EXIT SUB
+
+
+
+	'Flagged
+		'Flag pole
+		LINE (x1 + 6, y1 + 2)-(x1 + 6, y1 + 10), 0
+		LINE (x1 + 4, y1 + 11)-(x1 + 8, y1 + 11), 0
+		LINE (x1 + 3, y1 + 12)-(x1 + 9, y1 + 12), 0
+		'Flag
+		LINE (x1 + 7, y1 + 2)-(x1 + 7, y1 + 8), 12
+		LINE (x1 + 8, y1 + 3)-(x1 + 8, y1 + 7), 12
+		LINE (x1 + 9, y1 + 4)-(x1 + 9, y1 + 6), 12
+		PSET (x1 + 10, y1 + 5), 12
+
+
 
 	'Text
-	Font.Print "1", x1 + ((BoxSize - Font.GetWidth("1", fontHeading)) / 2), y1 + 3, 1, fontHeading
+	Neighbors = Mine.GetNeighbors(Row, Col)
+	SELECT CASE Neighbors
+		CASE 1
+			TextColor = 9
+		CASE 2
+			TextColor = 2
+		CASE 3
+			TextColor = 12
+		CASE 4
+			TextColor = 1
+		CASE 5
+			TextColor = 4
+		CASE 6
+			TextColor = 3
+		CASE 7
+			TextColor = 0
+		CASE 8
+			TextColor = 8
+	END SELECT
+	Font.Print LTRIM$(STR$(Neighbors)), x1 + ((BoxSize - Font.GetWidth(LTRIM$(STR$(Neighbors)), fontHeading)) / 2), y1 + 3, TextColor, fontHeading
 
 	Mouse.Show
 
@@ -94,12 +147,12 @@ SUB Mine.DrawField ()
 	Mouse.Show
 
 	Mouse.Hide
-	'Button face color
+	'Button color
 	LINE (posField.Left, posField.Top)-(posField.Left + posField.Width, posField.Top + posField.Height), 7, BF
 
 	'Button light and shadows for first row/column
-	LINE (posField.Left, posField.Top)-(posField.Left + posField.Width, posField.Top), 15
-	LINE (posField.Left, posField.Top)-(posField.Left, posField.Top + posField.Height), 15
+	LINE (posField.Left + 1, posField.Top + 1)-(posField.Left + posField.Width, posField.Top + 1), 15
+	LINE (posField.Left + 1, posField.Top + 1)-(posField.Left + 1, posField.Top + posField.Height), 15
 	LINE (posField.Left + 2, posField.Top + posField.Height - 1)-(posField.Left + posField.Width - 1, posField.Top + posField.Height - 1), 8
 	LINE (posField.Left + posField.Width - 1, posField.Top + 2)-(posField.Left + posField.Width - 1, posField.Top + posField.Height - 1), 8
 
@@ -121,24 +174,23 @@ SUB Mine.DrawField ()
 		LINE (posField.Left, posField.Top + FieldRow * BoxSize)-(posField.Left + FieldWidth * BoxSize, posField.Top + FieldRow * BoxSize), 0
 	NEXT
 
-	'Borders for last row/column
-	LINE (posField.Left, posField.Top + posField.Height)-(posField.Left + posField.Width, posField.Top + posField.Height), 0
-	LINE (posField.Left + posField.Width, posField.Top)-(posField.Left + posField.Width, posField.Top + posField.Height), 0
-
+	'Borders around playfield
+	LINE (posField.Left, posField.Top)-(posField.Left + posField.Width, posField.Top + posField.Height), 0, B
+	
 
 	Mouse.Show
 
 END SUB
 
-' =========================================================================
-'          NAME: Mine.Main()
-'    PARAMETERS: None
-'       RETURNS: Nothing
-'       ASSUMES: Nothing
-'   CALLED FROM: DESKTOP.BAS
-' -------------------------------------------------------------------------
-'   DESCRIPTION: Main UI and logic for the Tic Tac Toe accessory
-' =========================================================================
+FUNCTION Mine.GetNeighbors (Row, Col)
+
+	'DEBUG - check all eight neighbors, mind that some may be out of bounds
+
+	RANDOMIZE TIMER
+	Mine.GetNeighbors = INT(RND * 8) + 1
+
+END FUNCTION
+
 SUB Mine.Main ()
 
 	DIM btnNew AS ButtonType, btnSize AS ButtonType
@@ -202,12 +254,10 @@ SUB Mine.Main ()
 			FieldCol = INT((MouseX - posField.Left) / BoxSize)
 			FieldRow = INT((MouseY - posField.Top) / BoxSize)
 
-			'DEBUG
-			'LOCATE 1, 1
-			'PRINT "X:" + STR$(MouseX) + " (relative" + STR$(MouseX - posField.Left) + ") - calc" + STR$(INT((MouseX - posField.Left) / BoxSize)) + SPACE$(5)
-			'PRINT "COL:" + STR$(FieldCol) + SPACE$(5)
-			'PRINT "Y:" + STR$(MouseY) + " (relative" + STR$(MouseY - posField.Top) + ") - calc" + STR$(INT((MouseY - posField.Top) / BoxSize)) + SPACE$(5)
-			'PRINT "ROW:" + STR$(FieldRow) + SPACE$(5)
+			'Play field is one pixel too wide for calculation above, dirty fix
+			'for this to prevent out of bounds clicks
+			IF FieldCol = FieldWidth THEN FieldCol = FieldCol - 1
+			IF FieldRow = FieldHeight THEN FieldRow = FieldRow - 1
 			
 			'if MouseButton = mbLeft Then
 			'if MouseButton = mbRight Then
@@ -233,6 +283,11 @@ SUB Mine.NewGame ()
 	DIM FieldRow, FieldCol
 	
 	REDIM MineField(0 TO FieldWidth - 1, 0 TO FieldHeight - 1) AS INTEGER
+
+	IF FieldWidth = 9 AND FieldHeight = 9 THEN MineCOunt = 10
+	IF FieldWidth = 16 AND FieldHeight = 16 THEN MineCOunt = 10
+	IF FieldWidth = 18 AND FieldHeight = 22 THEN MineCOunt = 10
+	IF FieldWidth = 18 AND FieldHeight = 39 THEN MineCOunt = 10
 
 	Mine.DrawField
 	Mine.PlaySound SoundNew
@@ -270,7 +325,7 @@ SUB Mine.PrintStatus (PrintTimeOnly)
 	IF NOT PrintTimeOnly THEN
 		LINE (6, 330)-(632, 342), Theme.Window, BF
 		Message = LTRIM$(STR$(FieldWidth)) + "x" + LTRIM$(STR$(FieldHeight))
-		Message = Message + " with" + STR$(MineCount) + " mines"
+		Message = Message + " with" + STR$(MineCOunt) + " mines"
 		Font.Print Message, 8, 332, Theme.WindowText, fontHeading
 
 		IF EnableAudio THEN
