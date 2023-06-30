@@ -1,10 +1,13 @@
+DECLARE SUB Mine.ClickCell (FieldRow%, FieldCol%, MouseButton%)
+
+DECLARE SUB Mine.LoadGraphics ()
 OPTION EXPLICIT
 DEFINT A-Z
 
 DECLARE FUNCTION Mine.CheckWin% ()
 DECLARE FUNCTION Mine.GetNeighbors% (Row%, Col%)
 DECLARE FUNCTION Mine.SetSize% ()
-DECLARE SUB Mine.DrawBox (Row%, Col%)
+DECLARE SUB Mine.DrawCell (Row%, Col%)
 DECLARE SUB Mine.DrawField ()
 DECLARE SUB Mine.Main ()
 DECLARE SUB Mine.NewGame ()
@@ -27,11 +30,11 @@ CONST SoundClear = 4
 CONST SoundFlag = 5
 
 'Size of each clickable field
-CONST BoxSize = 16
+CONST CellSize = 16
 
 DIM SHARED EnableAudio AS INTEGER
 DIM SHARED GameOver AS INTEGER
-DIM SHARED MineCOunt AS INTEGER
+DIM SHARED MineCount AS INTEGER
 DIM SHARED FieldWidth AS INTEGER
 DIM SHARED FieldHeight AS INTEGER
 DIM SHARED posField AS PosType
@@ -46,34 +49,56 @@ FUNCTION Mine.CheckWin ()
 
 END FUNCTION
 
-SUB Mine.DrawBox (Row, Col)
+SUB Mine.ClickCell (FieldRow, FieldCol, MouseButton)
+
+
+	'DEBUG
+	PRINT MouseButton
+	PRINT mbRight
+	LOCATE 4, 1: PRINT "B" + STR$(MineField(FieldRow, FieldCol)) + SPACE$(2)
+	SELECT CASE MouseButton
+		CASE mbRight
+			LOCATE 3, 2: PRINT "Right"
+			IF NOT MineField(FieldRow, FieldCol) AND FieldCleared THEN
+				IF NOT MineField(FieldRow, FieldCol) AND FieldExploded THEN
+					IF MineField(FieldRow, FieldCol) AND FieldFlagged THEN
+						'DEBUG
+						'MineField(FieldRow, FieldCol) = MineField(FieldRow, FieldCol) NOT FieldFlagged
+					ELSE
+						MineField(FieldRow, FieldCol) = MineField(FieldRow, FieldCol) XOR FieldFlagged
+					END IF
+				END IF
+			END IF
+	END SELECT
+
+
+	LOCATE 5, 1: PRINT "A" + STR$(MineField(FieldRow, FieldCol)) + SPACE$(2)
+	Mine.DrawCell FieldRow, FieldCol
+
+END SUB
+
+SUB Mine.DrawCell (Row, Col)
 
 	DIM x1, y1, x2, y2
 	DIM TextColor, Neighbors
+	DIM CellMined, CellFlagged, CellCleared, CellExploded
 
-	x1 = posField.Left + 1 + Col * BoxSize
-	y1 = posField.Top + 1 + Row * BoxSize
-	x2 = x1 + BoxSize - 2
-	y2 = y1 + BoxSize - 2
+	x1 = posField.Left + 1 + Col * CellSize
+	y1 = posField.Top + 1 + Row * CellSize
+	x2 = x1 + CellSize - 2
+	y2 = y1 + CellSize - 2
 
-	Mouse.Hide
-
-
-	'Note - all of these graphics will be moved to BSV files, this is just
-	'for generating the graphics - DEBUG
-
-
-	'Clear button, leave empty field - for all others than flagged
-	'DEBUG - if not field and fieldFlagged
-		LINE (x1, y1)-(x2, y2), 7, BF
-
-
-
-	'Exploded background
-		'LINE (x1, y1)-(x2, y2), 7, BF
+	IF MineField(Row, Col) AND FieldMined THEN CellMined = True
+	IF MineField(Row, Col) AND FieldFlagged THEN CellFlagged = True
+	IF MineField(Row, Col) AND FieldCleared THEN CellCleared = True
+	IF MineField(Row, Col) AND FieldExploded THEN CellExploded = True
 	
+	Mouse.Hide
+	
+	IF CellCleared AND CellMined THEN
 
-	'Mine
+		'Mine
+		LINE (x1, y1)-(x2, y2), 7, BF
 		LINE (x1 + 5, y1 + 3)-(x1 + 9, y1 + 11), 0, BF
 		LINE (x1 + 3, y1 + 5)-(x1 + 11, y1 + 9), 0, BF
 		PSET (x1 + 3, y1 + 3), 0
@@ -87,14 +112,29 @@ SUB Mine.DrawBox (Row, Col)
 		LINE (x1 + 1, y1 + 7)-(x2 - 1, y1 + 7), 0
 		LINE (x1 + 7, y1 + 1)-(x1 + 7, y2 - 1), 0
 		LINE (x1 + 5, y1 + 5)-(x1 + 6, y1 + 6), 15, B
-	
 
-	Mouse.Show
-	EXIT SUB
+	ELSEIF MineField(Row, Col) AND FieldExploded THEN
 
+		'Kaboom!
+		LINE (x1, y1)-(x2, y2), 4, BF
 
+		'Mine
+		LINE (x1 + 5, y1 + 3)-(x1 + 9, y1 + 11), 0, BF
+		LINE (x1 + 3, y1 + 5)-(x1 + 11, y1 + 9), 0, BF
+		PSET (x1 + 3, y1 + 3), 0
+		PSET (x1 + 3, y1 + 11), 0
+		PSET (x1 + 4, y1 + 4), 0
+		PSET (x1 + 4, y1 + 10), 0
+		PSET (x1 + 10, y1 + 10), 0
+		PSET (x1 + 11, y1 + 11), 0
+		PSET (x1 + 10, y1 + 4), 0
+		PSET (x1 + 11, y1 + 3), 0
+		LINE (x1 + 1, y1 + 7)-(x2 - 1, y1 + 7), 0
+		LINE (x1 + 7, y1 + 1)-(x1 + 7, y2 - 1), 0
+		LINE (x1 + 5, y1 + 5)-(x1 + 6, y1 + 6), 15, B
+		
+	ELSEIF MineField(Row, Col) AND FieldFlagged THEN
 
-	'Flagged
 		'Flag pole
 		LINE (x1 + 6, y1 + 2)-(x1 + 6, y1 + 10), 0
 		LINE (x1 + 4, y1 + 11)-(x1 + 8, y1 + 11), 0
@@ -104,30 +144,36 @@ SUB Mine.DrawBox (Row, Col)
 		LINE (x1 + 8, y1 + 3)-(x1 + 8, y1 + 7), 12
 		LINE (x1 + 9, y1 + 4)-(x1 + 9, y1 + 6), 12
 		PSET (x1 + 10, y1 + 5), 12
+		
+	ELSEIF MineField(Row, Col) AND FieldCleared THEN
 
+		'Field has been cleared, clear the cell
+		LINE (x1, y1)-(x2, y2), 7, BF
 
-
-	'Text
-	Neighbors = Mine.GetNeighbors(Row, Col)
-	SELECT CASE Neighbors
-		CASE 1
-			TextColor = 9
-		CASE 2
-			TextColor = 2
-		CASE 3
-			TextColor = 12
-		CASE 4
-			TextColor = 1
-		CASE 5
-			TextColor = 4
-		CASE 6
-			TextColor = 3
-		CASE 7
-			TextColor = 0
-		CASE 8
-			TextColor = 8
-	END SELECT
-	Font.Print LTRIM$(STR$(Neighbors)), x1 + ((BoxSize - Font.GetWidth(LTRIM$(STR$(Neighbors)), fontHeading)) / 2), y1 + 3, TextColor, fontHeading
+		'Draw neighbor count, if any
+		Neighbors = Mine.GetNeighbors(Row, Col)
+		IF Neighbors THEN
+			SELECT CASE Neighbors
+				CASE 1
+					TextColor = 9
+				CASE 2
+					TextColor = 2
+				CASE 3
+					TextColor = 12
+				CASE 4
+					TextColor = 1
+				CASE 5
+					TextColor = 4
+				CASE 6
+					TextColor = 3
+				CASE 7
+					TextColor = 0
+				CASE 8
+					TextColor = 8
+			END SELECT
+			Font.Print LTRIM$(STR$(Neighbors)), x1 + ((CellSize - Font.GetWidth(LTRIM$(STR$(Neighbors)), fontHeading)) / 2), y1 + 3, TextColor, fontHeading
+		END IF
+	END IF
 
 	Mouse.Show
 
@@ -137,7 +183,7 @@ SUB Mine.DrawField ()
 
 	DIM FieldRow, FieldCol
 	
-	Obj.SetSize posField, SizeCenter, SizeRetain, FieldWidth * BoxSize, FieldHeight * BoxSize
+	Obj.SetSize posField, SizeCenter, SizeRetain, FieldWidth * CellSize, FieldHeight * CellSize
 	posField.Top = 180 - (posField.Height / 2)
 	posField.Left = posField.Left
 	posField.Top = posField.Top
@@ -158,20 +204,20 @@ SUB Mine.DrawField ()
 
 	'Button light and shadows
 	FOR FieldCol = 1 TO FieldWidth - 1
-		LINE (posField.Left + FieldCol * BoxSize + 1, posField.Top)-(posField.Left + FieldCol * BoxSize + 1, posField.Top + FieldHeight * BoxSize), 15
-		LINE (posField.Left + FieldCol * BoxSize - 1, posField.Top + 1)-(posField.Left + FieldCol * BoxSize - 1, posField.Top + FieldHeight * BoxSize), 8
+		LINE (posField.Left + FieldCol * CellSize + 1, posField.Top)-(posField.Left + FieldCol * CellSize + 1, posField.Top + FieldHeight * CellSize), 15
+		LINE (posField.Left + FieldCol * CellSize - 1, posField.Top + 1)-(posField.Left + FieldCol * CellSize - 1, posField.Top + FieldHeight * CellSize), 8
 	NEXT
 	FOR FieldRow = 1 TO FieldHeight - 1
-		LINE (posField.Left, posField.Top + FieldRow * BoxSize + 1)-(posField.Left + FieldWidth * BoxSize, posField.Top + FieldRow * BoxSize + 1), 15
-		LINE (posField.Left + 1, posField.Top + FieldRow * BoxSize - 1)-(posField.Left + FieldWidth * BoxSize, posField.Top + FieldRow * BoxSize - 1), 8
+		LINE (posField.Left, posField.Top + FieldRow * CellSize + 1)-(posField.Left + FieldWidth * CellSize, posField.Top + FieldRow * CellSize + 1), 15
+		LINE (posField.Left + 1, posField.Top + FieldRow * CellSize - 1)-(posField.Left + FieldWidth * CellSize, posField.Top + FieldRow * CellSize - 1), 8
 	NEXT
 
 	'Button borders
 	FOR FieldCol = 1 TO FieldWidth - 1
-		LINE (posField.Left + FieldCol * BoxSize, posField.Top)-(posField.Left + FieldCol * BoxSize, posField.Top + FieldHeight * BoxSize), 0
+		LINE (posField.Left + FieldCol * CellSize, posField.Top)-(posField.Left + FieldCol * CellSize, posField.Top + FieldHeight * CellSize), 0
 	NEXT
 	FOR FieldRow = 1 TO FieldHeight - 1
-		LINE (posField.Left, posField.Top + FieldRow * BoxSize)-(posField.Left + FieldWidth * BoxSize, posField.Top + FieldRow * BoxSize), 0
+		LINE (posField.Left, posField.Top + FieldRow * CellSize)-(posField.Left + FieldWidth * CellSize, posField.Top + FieldRow * CellSize), 0
 	NEXT
 
 	'Borders around playfield
@@ -187,7 +233,7 @@ FUNCTION Mine.GetNeighbors (Row, Col)
 	'DEBUG - check all eight neighbors, mind that some may be out of bounds
 
 	RANDOMIZE TIMER
-	Mine.GetNeighbors = INT(RND * 8) + 1
+	Mine.GetNeighbors = INT(RND * 9)
 
 END FUNCTION
 
@@ -251,23 +297,15 @@ SUB Mine.Main ()
 			MouseButton = Mouse.Clicked
 			Mouse.Poll
 			
-			FieldCol = INT((MouseX - posField.Left) / BoxSize)
-			FieldRow = INT((MouseY - posField.Top) / BoxSize)
+			FieldCol = INT((MouseX - posField.Left) / CellSize)
+			FieldRow = INT((MouseY - posField.Top) / CellSize)
 
 			'Play field is one pixel too wide for calculation above, dirty fix
 			'for this to prevent out of bounds clicks
 			IF FieldCol = FieldWidth THEN FieldCol = FieldCol - 1
 			IF FieldRow = FieldHeight THEN FieldRow = FieldRow - 1
 			
-			'if MouseButton = mbLeft Then
-			'if MouseButton = mbRight Then
-
-			Mine.DrawBox FieldRow, FieldCol
-			'IF MineField(FieldRow, FieldCol) = 0 THEN
-			'
-			'ELSE
-			'  Mine.PlaySound SoundIllegalMove
-			'END IF
+			Mine.ClickCell FieldRow, FieldCol, MouseButton
 
 			'Prevent audio from running wild if mouse/key is held down
 			DO: LOOP WHILE LEN(INKEY$) OR Mouse.Clicked
@@ -280,14 +318,25 @@ END SUB
 
 SUB Mine.NewGame ()
 
-	DIM FieldRow, FieldCol
+	DIM FieldRow, FieldCol, MinePlace
 	
+
 	REDIM MineField(0 TO FieldWidth - 1, 0 TO FieldHeight - 1) AS INTEGER
 
-	IF FieldWidth = 9 AND FieldHeight = 9 THEN MineCOunt = 10
-	IF FieldWidth = 16 AND FieldHeight = 16 THEN MineCOunt = 10
-	IF FieldWidth = 18 AND FieldHeight = 22 THEN MineCOunt = 10
-	IF FieldWidth = 18 AND FieldHeight = 39 THEN MineCOunt = 10
+	IF FieldWidth = 9 AND FieldHeight = 9 THEN MineCount = 20
+	IF FieldWidth = 16 AND FieldHeight = 16 THEN MineCount = 30
+	IF FieldWidth = 18 AND FieldHeight = 22 THEN MineCount = 40
+	IF FieldWidth = 18 AND FieldHeight = 39 THEN MineCount = 50
+
+	RANDOMIZE TIMER
+	DO
+		FieldRow = INT(RND * FieldHeight)
+		FieldCol = INT(RND * FieldWidth)
+		IF NOT MineField(FieldRow, FieldCol) AND FieldMined THEN
+			MineField(FieldRow, FieldCol) = FieldMined
+			MinePlace = MinePlace + 1
+		END IF
+	LOOP UNTIL MinePlace = MineCount
 
 	Mine.DrawField
 	Mine.PlaySound SoundNew
@@ -325,7 +374,7 @@ SUB Mine.PrintStatus (PrintTimeOnly)
 	IF NOT PrintTimeOnly THEN
 		LINE (6, 330)-(632, 342), Theme.Window, BF
 		Message = LTRIM$(STR$(FieldWidth)) + "x" + LTRIM$(STR$(FieldHeight))
-		Message = Message + " with" + STR$(MineCOunt) + " mines"
+		Message = Message + " with" + STR$(MineCount) + " mines"
 		Font.Print Message, 8, 332, Theme.WindowText, fontHeading
 
 		IF EnableAudio THEN
