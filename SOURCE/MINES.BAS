@@ -1,12 +1,10 @@
-DECLARE SUB Mine.ClickCell (FieldRow%, FieldCol%, MouseButton%)
-
-DECLARE SUB Mine.LoadGraphics ()
 OPTION EXPLICIT
 DEFINT A-Z
 
 DECLARE FUNCTION Mine.CheckWin% ()
 DECLARE FUNCTION Mine.GetNeighbors% (Row%, Col%)
 DECLARE FUNCTION Mine.SetSize% ()
+DECLARE SUB Mine.ClickCell (FieldRow%, FieldCol%, MouseButton%)
 DECLARE SUB Mine.DrawCell (Row%, Col%)
 DECLARE SUB Mine.DrawField ()
 DECLARE SUB Mine.Main ()
@@ -51,14 +49,30 @@ END FUNCTION
 
 SUB Mine.ClickCell (FieldRow, FieldCol, MouseButton)
 
+	IF MineField(FieldRow, FieldCol) AND FieldCleared THEN EXIT SUB
 
-	'DEBUG
-	PRINT MouseButton
-	PRINT mbRight
-	LOCATE 4, 1: PRINT "B" + STR$(MineField(FieldRow, FieldCol)) + SPACE$(2)
 	SELECT CASE MouseButton
+		CASE mbLeft
+			IF MineField(FieldRow, FieldCol) AND FieldFlagged THEN EXIT SUB
+
+			IF MineField(FieldRow, FieldCol) AND FieldMined THEN
+				FOR FieldRow = 0 TO FieldHeight - 1
+					FOR FieldCol = 0 TO FieldWidth - 1
+						IF MineField(FieldRow, FieldCol) AND FieldMined THEN
+							MineField(FieldRow, FieldCol) = MineField(FieldRow, FieldCol) OR FieldExploded
+							Mine.DrawCell FieldRow, FieldCol
+						END IF
+					NEXT
+				NEXT
+				'DEBUG - set loose state
+				EXIT SUB
+			END IF
+
+			MineField(FieldRow, FieldCol) = MineField(FieldRow, FieldCol) OR FieldCleared
+			
+			'DEBUG - handle clearing of empty adjecent cells
+
 		CASE mbRight
-			LOCATE 3, 2: PRINT "Right"
 			IF NOT MineField(FieldRow, FieldCol) AND FieldCleared THEN
 				IF NOT MineField(FieldRow, FieldCol) AND FieldExploded THEN
 					IF MineField(FieldRow, FieldCol) AND FieldFlagged THEN
@@ -72,7 +86,6 @@ SUB Mine.ClickCell (FieldRow, FieldCol, MouseButton)
 	END SELECT
 
 
-	LOCATE 5, 1: PRINT "A" + STR$(MineField(FieldRow, FieldCol)) + SPACE$(2)
 	Mine.DrawCell FieldRow, FieldCol
 
 END SUB
@@ -230,10 +243,22 @@ END SUB
 
 FUNCTION Mine.GetNeighbors (Row, Col)
 
-	'DEBUG - check all eight neighbors, mind that some may be out of bounds
+	DIM Neighbors
+	DIM CheckRow, CheckCol
 
-	RANDOMIZE TIMER
-	Mine.GetNeighbors = INT(RND * 9)
+	FOR CheckRow = Row - 1 TO Row + 1
+		FOR CheckCol = Col - 1 TO Col + 1
+
+			IF CheckRow >= 0 AND CheckCol >= 0 THEN
+				IF CheckRow < FieldHeight AND CheckCol < FieldWidth THEN
+					IF MineField(CheckRow, CheckCol) AND FieldMined THEN Neighbors = Neighbors + 1
+				END IF
+			END IF
+
+		NEXT
+	NEXT
+
+	Mine.GetNeighbors = Neighbors
 
 END FUNCTION
 
@@ -320,8 +345,7 @@ SUB Mine.NewGame ()
 
 	DIM FieldRow, FieldCol, MinePlace
 	
-
-	REDIM MineField(0 TO FieldWidth - 1, 0 TO FieldHeight - 1) AS INTEGER
+	REDIM MineField(0 TO FieldHeight - 1, 0 TO FieldWidth - 1) AS INTEGER
 
 	IF FieldWidth = 9 AND FieldHeight = 9 THEN MineCount = 20
 	IF FieldWidth = 16 AND FieldHeight = 16 THEN MineCount = 30
