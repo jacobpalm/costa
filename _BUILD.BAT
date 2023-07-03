@@ -44,6 +44,9 @@ echo.
 echo Building calculator object files...
 C:\VBDOS\BC.EXE C:\COSTA\SOURCE\CALC.BAS /E /X /D /G2 /O /T /C:512;
 echo.
+echo Building Minesweeper object files...
+C:\VBDOS\BC.EXE C:\COSTA\SOURCE\MINES.BAS /E /X /D /G2 /O /T /C:512;
+echo.
 echo.
 echo Linking setup...
 C:\VBDOS\LINK.EXE @SOURCE\SETUP.LNK
@@ -68,6 +71,9 @@ C:\VBDOS\LINK.EXE @SOURCE\THMEDIT.LNK
 echo.
 echo Linking tic tac toe...
 C:\VBDOS\LINK.EXE @SOURCE\TICTAC.LNK
+echo.
+echo Linking minesweeper...
+C:\VBDOS\LINK.EXE @SOURCE\MINES.LNK
 echo.
 echo Removing object files...
 DEL C:\COSTA\*.OBJ
