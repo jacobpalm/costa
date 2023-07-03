@@ -49,11 +49,19 @@ END FUNCTION
 
 SUB Mine.ClickCell (FieldRow, FieldCol, MouseButton)
 
-	IF MineField(FieldRow, FieldCol) AND FieldCleared THEN EXIT SUB
+	'DEBUG - exit if game has been won or lost
+
+	IF MineField(FieldRow, FieldCol) AND FieldCleared THEN
+		Mine.PlaySound SoundIllegalMove
+		EXIT SUB
+	END IF
 
 	SELECT CASE MouseButton
 		CASE mbLeft
-			IF MineField(FieldRow, FieldCol) AND FieldFlagged THEN EXIT SUB
+			IF MineField(FieldRow, FieldCol) AND FieldFlagged THEN
+				Mine.PlaySound SoundIllegalMove
+				EXIT SUB
+			END IF
 
 			IF MineField(FieldRow, FieldCol) AND FieldMined THEN
 				FOR FieldRow = 0 TO FieldHeight - 1
@@ -64,25 +72,24 @@ SUB Mine.ClickCell (FieldRow, FieldCol, MouseButton)
 						END IF
 					NEXT
 				NEXT
+				Mine.PlaySound SoundLoose
 				'DEBUG - set loose state
 				EXIT SUB
 			END IF
 
+			'If we reach this point, clear the field and adjacent empty fields
 			MineField(FieldRow, FieldCol) = MineField(FieldRow, FieldCol) OR FieldCleared
+			Mine.PlaySound SoundClear
 			
 			'DEBUG - handle clearing of empty adjecent cells
 
 		CASE mbRight
-			IF NOT MineField(FieldRow, FieldCol) AND FieldCleared THEN
-				IF NOT MineField(FieldRow, FieldCol) AND FieldExploded THEN
-					IF MineField(FieldRow, FieldCol) AND FieldFlagged THEN
-						'DEBUG
-						'MineField(FieldRow, FieldCol) = MineField(FieldRow, FieldCol) NOT FieldFlagged
-					ELSE
-						MineField(FieldRow, FieldCol) = MineField(FieldRow, FieldCol) XOR FieldFlagged
-					END IF
-				END IF
+			IF MineField(FieldRow, FieldCol) AND FieldFlagged THEN
+				MineField(FieldRow, FieldCol) = MineField(FieldRow, FieldCol) AND NOT FieldFlagged
+			ELSE
+				MineField(FieldRow, FieldCol) = MineField(FieldRow, FieldCol) XOR FieldFlagged
 			END IF
+
 	END SELECT
 
 
@@ -91,7 +98,7 @@ SUB Mine.ClickCell (FieldRow, FieldCol, MouseButton)
 END SUB
 
 SUB Mine.DrawCell (Row, Col)
-
+	
 	DIM x1, y1, x2, y2
 	DIM TextColor, Neighbors
 	DIM CellMined, CellFlagged, CellCleared, CellExploded
@@ -186,6 +193,13 @@ SUB Mine.DrawCell (Row, Col)
 			END SELECT
 			Font.Print LTRIM$(STR$(Neighbors)), x1 + ((CellSize - Font.GetWidth(LTRIM$(STR$(Neighbors)), fontHeading)) / 2), y1 + 3, TextColor, fontHeading
 		END IF
+
+	ELSE
+
+		'Not cleared, flagged or exploded - meaning flag must have been removed.
+		'Clear button face
+		LINE (x1 + 1, y1 + 1)-(x2 - 1, y2 - 1), 7, BF
+
 	END IF
 
 	Mouse.Show
@@ -331,6 +345,9 @@ SUB Mine.Main ()
 			IF FieldRow = FieldHeight THEN FieldRow = FieldRow - 1
 			
 			Mine.ClickCell FieldRow, FieldCol, MouseButton
+			IF Mine.CheckWin THEN
+				'DEBUG - game won
+			END IF
 
 			'Prevent audio from running wild if mouse/key is held down
 			DO: LOOP WHILE LEN(INKEY$) OR Mouse.Clicked
