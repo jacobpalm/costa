@@ -398,6 +398,7 @@ SUB Desk.LinkLoad ()
 	DeskLinkFile = Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(Setting.DesktopID)) + ".DAT"
 	
 	IF NOT File.Exists(DeskLinkFile) THEN
+		REDIM DeskLink(0 TO 0) AS DeskLinkType
 		EXIT SUB
 	END IF
 
@@ -405,7 +406,7 @@ SUB Desk.LinkLoad ()
 	OPEN Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(Setting.DesktopID)) + ".DAT" FOR BINARY AS #FileHandle
 	IF NOT LOF(FileHandle) = 0 THEN GET #FileHandle, , LinkCount
 
-	IF LinkCount <= 1 THEN
+	IF LinkCount < 1 THEN
 		CLOSE #FileHandle
 		REDIM DeskLink(0 TO 0) AS DeskLinkType
 		EXIT SUB

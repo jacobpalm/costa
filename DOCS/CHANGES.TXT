@@ -1,10 +1,14 @@
 
                          The Costa Graphical Shell
-                               Version 1.7.2
+                               Version 1.7.3
                                By Jacob Palm                   
 
                                  Changelog
 
+The sole purpose of the 1.7.3 release is to fix a bug that prevents icons
+from being added to the desktop, once the last icon has been deleted.
+
+Below are release notes from 1.7.2, which contained more improvements.
 
 Aside from one minor new feature, 1.7.2 brings bugfixes and further
 optimizations.
