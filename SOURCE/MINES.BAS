@@ -1,3 +1,4 @@
+DECLARE SUB Mine.ClearNeighbors (FieldRow%, FieldCol%)
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -37,15 +38,38 @@ DIM SHARED FieldWidth AS INTEGER
 DIM SHARED FieldHeight AS INTEGER
 DIM SHARED posField AS PosType
 DIM SHARED StartTime AS LONG
+DIM SHARED CellsCleared AS INTEGER
 REDIM SHARED MineField(16, 16) AS INTEGER
 
 Sys.Load
 
 Mine.Main
 
-FUNCTION Mine.CheckWin ()
+SUB Mine.ClearNeighbors (FieldRow, FieldCol)
 
-END FUNCTION
+	DIM CheckRow, CheckCol, NeighborsCleared
+
+	DIM MineMask(0 TO FieldHeight - 1, 0 TO FieldWidth - 1) AS INTEGER
+
+	MineMask(FieldRow, FieldCol) = FieldCleared
+	DO
+		NeighborsCleared = False
+		FOR CheckRow = 0 TO FieldHeight - 1
+			FOR CheckCol = 0 TO FieldWidth - 1
+				IF MineMask(CheckRow, CheckCol) = FieldCleared THEN
+					
+					'IF CheckRow > 0 AND CheckCol > 0 THEN
+					'DEBUG
+
+				END IF
+			NEXT
+		NEXT
+	LOOP UNTIL NeighborsCleared = False
+
+
+
+
+END SUB
 
 SUB Mine.ClickCell (FieldRow, FieldCol, MouseButton)
 
@@ -73,16 +97,23 @@ SUB Mine.ClickCell (FieldRow, FieldCol, MouseButton)
 					NEXT
 				NEXT
 				Mine.PlaySound SoundLoose
+				GameOver = True
 				'DEBUG - set loose state
 				EXIT SUB
 			END IF
 
 			'If we reach this point, clear the field and adjacent empty fields
 			MineField(FieldRow, FieldCol) = MineField(FieldRow, FieldCol) OR FieldCleared
-			Mine.PlaySound SoundClear
-			
-			'DEBUG - handle clearing of empty adjecent cells
-
+			CellsCleared = CellsCleared + 1
+			IF CellsCleared = (FieldHeight * FieldWidth) - MineCount THEN
+				Mine.PlaySound SoundWin
+				GameOver = True
+				PRINT "WIN" 'debug
+			ELSE
+				Mine.PlaySound SoundClear
+				Mine.ClearNeighbors FieldRow, FieldCol
+			END IF
+			LOCATE 2, 2: PRINT CellsCleared; " out of "; (FieldHeight * FieldWidth); " - goal is "; (FieldHeight * FieldWidth) - MineCount
 		CASE mbRight
 			IF MineField(FieldRow, FieldCol) AND FieldFlagged THEN
 				MineField(FieldRow, FieldCol) = MineField(FieldRow, FieldCol) AND NOT FieldFlagged
@@ -332,7 +363,7 @@ SUB Mine.Main ()
 			TimeCompare = TIMER + 1
 		END IF
 		
-		IF Mouse.Clicked AND Mouse.InArea(posField) THEN
+		IF Mouse.Clicked AND Mouse.InArea(posField) AND NOT GameOver THEN
 			MouseButton = Mouse.Clicked
 			Mouse.Poll
 			
@@ -345,9 +376,6 @@ SUB Mine.Main ()
 			IF FieldRow = FieldHeight THEN FieldRow = FieldRow - 1
 			
 			Mine.ClickCell FieldRow, FieldCol, MouseButton
-			IF Mine.CheckWin THEN
-				'DEBUG - game won
-			END IF
 
 			'Prevent audio from running wild if mouse/key is held down
 			DO: LOOP WHILE LEN(INKEY$) OR Mouse.Clicked
@@ -364,10 +392,10 @@ SUB Mine.NewGame ()
 	
 	REDIM MineField(0 TO FieldHeight - 1, 0 TO FieldWidth - 1) AS INTEGER
 
-	IF FieldWidth = 9 AND FieldHeight = 9 THEN MineCount = 20
-	IF FieldWidth = 16 AND FieldHeight = 16 THEN MineCount = 30
-	IF FieldWidth = 18 AND FieldHeight = 22 THEN MineCount = 40
-	IF FieldWidth = 18 AND FieldHeight = 39 THEN MineCount = 50
+	IF FieldWidth = 9 AND FieldHeight = 9 THEN MineCount = 10    '0.12% of 81
+	IF FieldWidth = 16 AND FieldHeight = 16 THEN MineCount = 40  '0.15% of 240
+	IF FieldWidth = 18 AND FieldHeight = 22 THEN MineCount = 67  '0.17% of 396
+	IF FieldWidth = 18 AND FieldHeight = 39 THEN MineCount = 133 '0.19% of 702
 
 	RANDOMIZE TIMER
 	DO
@@ -381,6 +409,8 @@ SUB Mine.NewGame ()
 
 	Mine.DrawField
 	Mine.PlaySound SoundNew
+	GameOver = False
+	CellsCleared = 0
 
 	StartTime = INT(TIMER)
 	Mine.PrintStatus False
@@ -408,8 +438,7 @@ END SUB
 
 SUB Mine.PrintStatus (PrintTimeOnly)
 	DIM Message AS STRING
-	DIM TimeCompare AS LONG
-	DIM Minutes, Seconds
+	DIM Seconds
 
 	Mouse.Hide
 	IF NOT PrintTimeOnly THEN
@@ -429,26 +458,15 @@ SUB Mine.PrintStatus (PrintTimeOnly)
 		LINE (278, 330)-(360, 342), Theme.Window, BF
 	END IF
 
+	IF GameOver THEN EXIT SUB
+
 	IF StartTime > INT(TIMER) THEN
 		'If we cross midnight, start timer over to avoid weird times.
 		'Ugly fix, might change later.
 		'StartTime = INT(TIMER)
 	END IF
 	
-	TimeCompare = TIMER - StartTime
-	IF TimeCompare >= 60 THEN
-		Minutes = TimeCompare / 60
-	ELSE
-		Minutes = 0
-	END IF
-	TimeCompare = TimeCompare - (Minutes * 60)
-	Seconds = TimeCompare
-
-	IF LEN(LTRIM$(STR$(Minutes))) = 1 THEN Message = "0"
-	Message = Message + LTRIM$(STR$(Minutes)) + ":"
-	IF LEN(LTRIM$(STR$(Seconds))) = 1 THEN Message = Message + "0"
-	Message = Message + LTRIM$(STR$(Seconds))
-	Font.Print Message, (640 - Font.GetWidth(Message, fontHeading)) / 2, 332, Theme.WindowText, fontHeading
+	Font.Print LTRIM$(STR$(INT(TIMER - StartTime))), (640 - Font.GetWidth(Message, fontHeading)) / 2, 332, Theme.WindowText, fontHeading
 	Mouse.Show
 END SUB
 
