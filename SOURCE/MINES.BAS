@@ -1,10 +1,9 @@
-DECLARE SUB Mine.ClearNeighbors (FieldRow%, FieldCol%)
 OPTION EXPLICIT
 DEFINT A-Z
 
-DECLARE FUNCTION Mine.CheckWin% ()
 DECLARE FUNCTION Mine.GetNeighbors% (Row%, Col%)
 DECLARE FUNCTION Mine.SetSize% ()
+DECLARE SUB Mine.ClearNeighbors (FieldRow%, FieldCol%)
 DECLARE SUB Mine.ClickCell (FieldRow%, FieldCol%, MouseButton%)
 DECLARE SUB Mine.DrawCell (Row%, Col%)
 DECLARE SUB Mine.DrawField ()
@@ -48,27 +47,64 @@ Mine.Main
 SUB Mine.ClearNeighbors (FieldRow, FieldCol)
 
 	DIM CheckRow, CheckCol, NeighborsCleared
+	DIM CheckNeighborRow, CheckNeighborCol
 
 	DIM MineMask(0 TO FieldHeight - 1, 0 TO FieldWidth - 1) AS INTEGER
 
+	IF Mine.GetNeighbors(FieldRow, FieldCol) THEN EXIT SUB
+
+	'Set the current pos in the mask as cleared, then start a loop that checks
+	'all neighbors to cleared cells Empty cells are cleared as well and marked
+	'in the mask, to be checked on next loop. Repeat until no cells are cleared
 	MineMask(FieldRow, FieldCol) = FieldCleared
 	DO
 		NeighborsCleared = False
+
 		FOR CheckRow = 0 TO FieldHeight - 1
 			FOR CheckCol = 0 TO FieldWidth - 1
-				IF MineMask(CheckRow, CheckCol) = FieldCleared THEN
-					
-					'IF CheckRow > 0 AND CheckCol > 0 THEN
-					'DEBUG
 
+				IF MineMask(CheckRow, CheckCol) = FieldCleared THEN
+					'Remove from mask to avoid redundant checks
+					MineMask(CheckRow, CheckCol) = 0
+
+					'Clear only if has no neighbors
+					IF Mine.GetNeighbors(CheckRow, CheckCol) = 0 THEN
+
+						'Check all neighbors
+						FOR CheckNeighborRow = CheckRow - 1 TO CheckRow + 1
+							FOR CheckNeighborCol = CheckCol - 1 TO CheckCol + 1
+
+								'Prevent "out of bounds" errors
+								IF CheckNeighborRow >= 0 AND CheckNeighborCol >= 0 THEN
+									IF CheckNeighborRow < FieldHeight AND CheckNeighborCol < FieldWidth THEN
+									
+										IF MineField(CheckNeighborRow, CheckNeighborCol) = 0 THEN
+											'If neighbor is empty, clear it
+											MineField(CheckNeighborRow, CheckNeighborCol) = MineField(CheckNeighborRow, CheckNeighborCol) XOR FieldCleared
+											Mine.DrawCell CheckNeighborRow, CheckNeighborCol
+											NeighborsCleared = True
+
+											'If cleared field has no neighbours, add it to the mask
+											IF NOT Mine.GetNeighbors(CheckNeighborRow, CheckNeighborCol) THEN
+												MineMask(CheckNeighborRow, CheckNeighborCol) = FieldCleared
+											END IF
+										END IF
+								
+									END IF
+								END IF
+
+							NEXT
+						NEXT
+
+					END IF
+					
 				END IF
+
 			NEXT
 		NEXT
+
 	LOOP UNTIL NeighborsCleared = False
-
-
-
-
+		
 END SUB
 
 SUB Mine.ClickCell (FieldRow, FieldCol, MouseButton)
@@ -111,6 +147,7 @@ SUB Mine.ClickCell (FieldRow, FieldCol, MouseButton)
 				PRINT "WIN" 'debug
 			ELSE
 				Mine.PlaySound SoundClear
+				Mine.DrawCell FieldRow, FieldCol
 				Mine.ClearNeighbors FieldRow, FieldCol
 			END IF
 			LOCATE 2, 2: PRINT CellsCleared; " out of "; (FieldHeight * FieldWidth); " - goal is "; (FieldHeight * FieldWidth) - MineCount
@@ -392,10 +429,10 @@ SUB Mine.NewGame ()
 	
 	REDIM MineField(0 TO FieldHeight - 1, 0 TO FieldWidth - 1) AS INTEGER
 
-	IF FieldWidth = 9 AND FieldHeight = 9 THEN MineCount = 10    '0.12% of 81
-	IF FieldWidth = 16 AND FieldHeight = 16 THEN MineCount = 40  '0.15% of 240
-	IF FieldWidth = 18 AND FieldHeight = 22 THEN MineCount = 67  '0.17% of 396
-	IF FieldWidth = 18 AND FieldHeight = 39 THEN MineCount = 133 '0.19% of 702
+	IF FieldHeight = 9 AND FieldWidth = 9 THEN MineCount = 10    '0.12% of 81
+	IF FieldHeight = 16 AND FieldWidth = 16 THEN MineCount = 40  '0.15% of 240
+	IF FieldHeight = 18 AND FieldWidth = 22 THEN MineCount = 67  '0.17% of 396
+	IF FieldHeight = 18 AND FieldWidth = 39 THEN MineCount = 133 '0.19% of 702
 
 	RANDOMIZE TIMER
 	DO
@@ -555,28 +592,27 @@ FUNCTION Mine.SetSize ()
 				EXIT FUNCTION
 			END IF
 
-
 			IF Obj.BtnClick(btnSize(0)) OR Key$ = "9" THEN
-				FieldWidth = 9
 				FieldHeight = 9
+				FieldWidth = 9
 				EXIT DO
 			END IF
 
 			IF Obj.BtnClick(btnSize(1)) OR Key$ = "6" THEN
-				FieldWidth = 16
 				FieldHeight = 16
+				FieldWidth = 16
 				EXIT DO
 			END IF
 
 			IF Obj.BtnClick(btnSize(2)) OR Key$ = "2" THEN
-				FieldWidth = 22
 				FieldHeight = 18
+				FieldWidth = 22
 				EXIT DO
 			END IF
 
 			IF Obj.BtnClick(btnSize(3)) OR Key$ = "3" THEN
-				FieldWidth = 39
 				FieldHeight = 18
+				FieldWidth = 39
 				EXIT DO
 			END IF
 
