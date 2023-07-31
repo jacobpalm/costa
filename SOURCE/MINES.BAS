@@ -7,6 +7,7 @@ DECLARE SUB Mine.ClearNeighbors (FieldRow%, FieldCol%)
 DECLARE SUB Mine.ClickCell (FieldRow%, FieldCol%, MouseButton%)
 DECLARE SUB Mine.DrawCell (Row%, Col%)
 DECLARE SUB Mine.DrawField ()
+DECLARE SUB Mine.HelpFirstMove (Row%, Col%)
 DECLARE SUB Mine.Main ()
 DECLARE SUB Mine.NewGame ()
 DECLARE SUB Mine.PlaySound (SoundType AS INTEGER)
@@ -83,6 +84,7 @@ SUB Mine.ClearNeighbors (FieldRow, FieldCol)
 											MineField(CheckNeighborRow, CheckNeighborCol) = MineField(CheckNeighborRow, CheckNeighborCol) XOR FieldCleared
 											Mine.DrawCell CheckNeighborRow, CheckNeighborCol
 											NeighborsCleared = True
+											CellsCleared = CellsCleared + 1
 
 											'If cleared field has no neighbours, add it to the mask
 											IF NOT Mine.GetNeighbors(CheckNeighborRow, CheckNeighborCol) THEN
@@ -109,11 +111,16 @@ END SUB
 
 SUB Mine.ClickCell (FieldRow, FieldCol, MouseButton)
 
-	'DEBUG - exit if game has been won or lost
-
 	IF MineField(FieldRow, FieldCol) AND FieldCleared THEN
 		Mine.PlaySound SoundIllegalMove
 		EXIT SUB
+	END IF
+
+	IF CellsCleared = 0 THEN
+		StartTime = INT(TIMER)
+
+		'If first move, make sure there are no mines where there was clicked
+		Mine.HelpFirstMove FieldRow, FieldCol
 	END IF
 
 	SELECT CASE MouseButton
@@ -134,7 +141,6 @@ SUB Mine.ClickCell (FieldRow, FieldCol, MouseButton)
 				NEXT
 				Mine.PlaySound SoundLoose
 				GameOver = True
-				'DEBUG - set loose state
 				EXIT SUB
 			END IF
 
@@ -142,27 +148,27 @@ SUB Mine.ClickCell (FieldRow, FieldCol, MouseButton)
 			MineField(FieldRow, FieldCol) = MineField(FieldRow, FieldCol) OR FieldCleared
 			CellsCleared = CellsCleared + 1
 			IF CellsCleared = (FieldHeight * FieldWidth) - MineCount THEN
+				Mine.DrawCell FieldRow, FieldCol
 				Mine.PlaySound SoundWin
 				GameOver = True
-				PRINT "WIN" 'debug
 			ELSE
 				Mine.PlaySound SoundClear
 				Mine.DrawCell FieldRow, FieldCol
 				Mine.ClearNeighbors FieldRow, FieldCol
 			END IF
-			LOCATE 2, 2: PRINT CellsCleared; " out of "; (FieldHeight * FieldWidth); " - goal is "; (FieldHeight * FieldWidth) - MineCount
+			
 		CASE mbRight
+
 			IF MineField(FieldRow, FieldCol) AND FieldFlagged THEN
 				MineField(FieldRow, FieldCol) = MineField(FieldRow, FieldCol) AND NOT FieldFlagged
 			ELSE
 				MineField(FieldRow, FieldCol) = MineField(FieldRow, FieldCol) XOR FieldFlagged
 			END IF
+			Mine.DrawCell FieldRow, FieldCol
+			Mine.PlaySound SoundFlag
 
 	END SELECT
-
-
-	Mine.DrawCell FieldRow, FieldCol
-
+																			
 END SUB
 
 SUB Mine.DrawCell (Row, Col)
@@ -344,6 +350,45 @@ FUNCTION Mine.GetNeighbors (Row, Col)
 
 END FUNCTION
 
+SUB Mine.HelpFirstMove (Row, Col)
+	'Called on first click in field. Checks clicked and all adjacent cells, and
+	'moves any mines away from them to prevent loosing right away.
+
+	DIM CheckRow, CheckCol, MinesMoved, MinePlace
+	DO
+		IF MinesMoved THEN
+			'Mines were moved, randomly place them elsewhere
+			RANDOMIZE TIMER
+			DO
+				CheckRow = INT(RND * FieldHeight)
+				CheckCol = INT(RND * FieldWidth)
+				IF NOT MineField(CheckRow, CheckCol) AND FieldMined THEN
+					MineField(CheckRow, CheckCol) = FieldMined
+					MinePlace = MinePlace + 1
+				END IF
+			LOOP UNTIL MinePlace = MinesMoved
+			MinePlace = 0
+			MinesMoved = 0
+		END IF
+
+		FOR CheckRow = Row - 1 TO Row + 1
+			FOR CheckCol = Col - 1 TO Col + 1
+				IF CheckRow >= 0 AND CheckCol >= 0 THEN
+					IF CheckRow < FieldHeight AND CheckCol < FieldWidth THEN
+						IF MineField(CheckRow, CheckCol) AND FieldMined THEN
+							MineField(CheckRow, CheckCol) = 0
+							MinesMoved = MinesMoved + 1
+						END IF
+					END IF
+				END IF
+			NEXT
+		NEXT
+
+	LOOP WHILE MinesMoved
+
+
+END SUB
+
 SUB Mine.Main ()
 
 	DIM btnNew AS ButtonType, btnSize AS ButtonType
@@ -395,7 +440,7 @@ SUB Mine.Main ()
 			EXIT SUB
 		END IF
 
-		IF NOT GameOver AND TimeCompare < TIMER THEN
+		IF NOT GameOver AND StartTime AND TimeCompare < TIMER THEN
 			Mine.PrintStatus True
 			TimeCompare = TIMER + 1
 		END IF
@@ -404,6 +449,7 @@ SUB Mine.Main ()
 			MouseButton = Mouse.Clicked
 			Mouse.Poll
 			
+			'Calculate which cell was clicked
 			FieldCol = INT((MouseX - posField.Left) / CellSize)
 			FieldRow = INT((MouseY - posField.Top) / CellSize)
 
@@ -448,8 +494,8 @@ SUB Mine.NewGame ()
 	Mine.PlaySound SoundNew
 	GameOver = False
 	CellsCleared = 0
+	StartTime = 0
 
-	StartTime = INT(TIMER)
 	Mine.PrintStatus False
 
 END SUB
@@ -459,16 +505,27 @@ SUB Mine.PlaySound (SoundType AS INTEGER)
 	IF NOT EnableAudio THEN EXIT SUB
 
 	SELECT CASE SoundType
+		CASE SoundNew
+			PLAY "O2 T180 C8 C8 E3"
 		CASE SoundIllegalMove
-			SOUND 400, .7
-		CASE SoundWin
-			SOUND 800, .7
-		CASE SoundLoose
 			SOUND 100, .7
-		CASE SoundClear
+		CASE SoundWin
 			PLAY "O2 T100 C D T200 G T400 E"
-		CASE SoundFlag
+		CASE SoundLoose
+			DIM I
+			FOR I = 0 TO 8
+				SOUND 37, .3
+				SOUND 50, .3
+				SOUND 37, .1
+				SOUND 65, .2
+			NEXT
+			Sys.Delay 1
 			PLAY "O1 T400 E3 G3 D6 T100 C9 C9"
+		CASE SoundClear
+			SOUND 400, .3
+		CASE SoundFlag
+			SOUND 800, .3
+			SOUND 400, .3
 	END SELECT
 
 END SUB
@@ -500,10 +557,12 @@ SUB Mine.PrintStatus (PrintTimeOnly)
 	IF StartTime > INT(TIMER) THEN
 		'If we cross midnight, start timer over to avoid weird times.
 		'Ugly fix, might change later.
-		'StartTime = INT(TIMER)
+		StartTime = INT(TIMER)
 	END IF
 	
-	Font.Print LTRIM$(STR$(INT(TIMER - StartTime))), (640 - Font.GetWidth(Message, fontHeading)) / 2, 332, Theme.WindowText, fontHeading
+	IF StartTime THEN
+		Font.Print LTRIM$(STR$(INT(TIMER - StartTime))), (640 - Font.GetWidth(Message, fontHeading)) / 2, 332, Theme.WindowText, fontHeading
+	END IF
 	Mouse.Show
 END SUB
 
