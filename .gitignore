@@ -10,7 +10,7 @@ COSTA.BAT
 DATA/TEMP/
 
 # Costa profile and configuration data
-DATA/CONFIG/
+DATA/CONFIG/*.DAT
 !DATA/CONFIG/FILETYPE.DAT
 
 # Mac system files
