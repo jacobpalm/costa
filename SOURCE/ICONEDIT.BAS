@@ -322,7 +322,9 @@ SUB IconEdit.Main (IconToLoad AS STRING)
         Obj.DrawTxt txtColor(YPos), "", False
         LINE (txtColor(YPos).Pos.Left + 2, txtColor(YPos).Pos.Top + 2)-(txtColor(YPos).Pos.Left + txtColor(YPos).Pos.Width - 2, txtColor(YPos).Pos.Top + txtColor(YPos).Pos.Height - 2), YPos, BF
     NEXT
+    Mouse.Show
 
+    Mouse.Hide
     'Selection marker in color 0
     LINE (txtColor(DrawColor).Pos.Left + 4, txtColor(DrawColor).Pos.Top + 4)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 4, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 4), 8, B
     LINE (txtColor(DrawColor).Pos.Left + 5, txtColor(DrawColor).Pos.Top + 5)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 5, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 5), 15, B
