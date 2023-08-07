@@ -1,3 +1,4 @@
+DECLARE SUB Mine.Reveal ()
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -39,6 +40,7 @@ DIM SHARED FieldHeight AS INTEGER
 DIM SHARED posField AS PosType
 DIM SHARED StartTime AS LONG
 DIM SHARED CellsCleared AS INTEGER
+DIM SHARED DebugMode AS INTEGER
 REDIM SHARED MineField(16, 16) AS INTEGER
 
 Sys.Load
@@ -189,39 +191,15 @@ SUB Mine.DrawCell (Row, Col)
 	
 	DIM x1, y1, x2, y2
 	DIM TextColor, Neighbors
-	'DIM CellMined, CellCleared
-
+	
 	x1 = posField.Left + 1 + Col * CellSize
 	y1 = posField.Top + 1 + Row * CellSize
 	x2 = x1 + CellSize - 2
 	y2 = y1 + CellSize - 2
 
-	'IF MineField(Row, Col) AND FieldMined THEN CellMined = True
-	'IF MineField(Row, Col) AND FieldCleared THEN CellCleared = True
-	
 	Mouse.Hide
 	
-	'IF CellCleared AND CellMined THEN
-	IF (MineField(Row, Col) AND FieldMined) AND (MineField(Row, Col) AND FieldCleared) THEN
-		BEEP
-		SLEEP
-		'Mine
-		LINE (x1, y1)-(x2, y2), 7, BF
-		LINE (x1 + 5, y1 + 3)-(x1 + 9, y1 + 11), 0, BF
-		LINE (x1 + 3, y1 + 5)-(x1 + 11, y1 + 9), 0, BF
-		PSET (x1 + 3, y1 + 3), 0
-		PSET (x1 + 3, y1 + 11), 0
-		PSET (x1 + 4, y1 + 4), 0
-		PSET (x1 + 4, y1 + 10), 0
-		PSET (x1 + 10, y1 + 10), 0
-		PSET (x1 + 11, y1 + 11), 0
-		PSET (x1 + 10, y1 + 4), 0
-		PSET (x1 + 11, y1 + 3), 0
-		LINE (x1 + 1, y1 + 7)-(x2 - 1, y1 + 7), 0
-		LINE (x1 + 7, y1 + 1)-(x1 + 7, y2 - 1), 0
-		LINE (x1 + 5, y1 + 5)-(x1 + 6, y1 + 6), 15, B
-
-	ELSEIF MineField(Row, Col) AND FieldExploded THEN
+	IF MineField(Row, Col) AND FieldExploded THEN
 
 		'Kaboom!
 		LINE (x1, y1)-(x2, y2), 4, BF
@@ -457,6 +435,11 @@ SUB Mine.Main ()
 			EXIT SUB
 		END IF
 
+		IF Key$ = "?" THEN
+			DebugMode = True
+			Mine.Reveal
+		END IF
+
 		IF NOT GameOver AND StartTime AND TimeCompare < TIMER THEN
 			Mine.PrintStatus True, ""
 			TimeCompare = TIMER + 1
@@ -601,6 +584,26 @@ SUB Mine.PrintStatus (PrintTimeOnly, StatusMessage AS STRING)
 		Font.Print Message, (640 - Font.GetWidth(Message, fontHeading)) / 2, 332, Theme.WindowText, fontHeading
 	END IF
 	Mouse.Show
+
+END SUB
+
+SUB Mine.Reveal ()
+	DIM x1, y1, x2, y2, Row, Col
+
+	Mouse.Hide
+	FOR Row = 0 TO FieldHeight - 1
+		FOR Col = 0 TO FieldWidth - 1
+			IF MineField(Row, Col) AND FieldMined THEN
+				x1 = posField.Left + 1 + Col * CellSize
+				y1 = posField.Top + 1 + Row * CellSize
+				x2 = x1 + CellSize - 2
+				y2 = y1 + CellSize - 2
+				LINE (x1, y1)-(x2, y2), 4, B
+			END IF
+		NEXT
+	NEXT
+	Mouse.Show
+						
 END SUB
 
 FUNCTION Mine.SetSize ()
