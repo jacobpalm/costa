@@ -139,8 +139,6 @@ SUB Desk.DrawDesktop ()
 	DIM TargetLink
 	DIM LinkTargetText AS STRING
 
-	Mouse.Hide
-
 	'Draw desklinks one by one, using imgDeskLinkIcon to draw the imagefile of
 	'each desklink
 	FOR TargetLink = 0 TO UBOUND(DeskLink)
@@ -269,7 +267,6 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
 	btnCancel.Caption = "õCancel"
 
 LinkDialogDraw:
-	Mouse.Hide
 	Obj.DrawWin ConfWin
 	Obj.DrawTxt txtLinkCapt, txtLinkCaptText, False
 	Obj.DrawBtn btnIconPrev, False
@@ -282,6 +279,7 @@ LinkDialogDraw:
 	Obj.DrawChk chkPauseOnExit
 	Obj.DrawBtn btnOK, False
 	Obj.DrawBtn btnCancel, False
+	Mouse.Hide
 	Font.Print "õDescription (caption):", 222, txtLinkCapt.Pos.Top - 15, Theme.WindowText, 1
 	Font.Print "õProgram or DOS command:", 222, txtFilename.Pos.Top - 15, Theme.WindowText, 1
 	Font.Print "Paõrameters:", 222, txtParams.Pos.Top - 15, Theme.WindowText, 1
@@ -348,12 +346,12 @@ LinkDialogDraw:
 	IF Obj.BtnClick(btnBrowse) OR Key$ = "." THEN
 		SelectedFile = File.Select("*.exe")
 		IF NOT SelectedFile = "" THEN
-		txtPathText = ""
-		DO WHILE INSTR(SelectedFile, "\")
-			txtPathText = txtPathText + LEFT$(SelectedFile, INSTR(SelectedFile, "\"))
-			SelectedFile = RIGHT$(SelectedFile, LEN(SelectedFile) - INSTR(SelectedFile, "\"))
-		LOOP
-		txtFileNameText = SelectedFile
+			txtPathText = ""
+			DO WHILE INSTR(SelectedFile, "\")
+				txtPathText = txtPathText + LEFT$(SelectedFile, INSTR(SelectedFile, "\"))
+				SelectedFile = RIGHT$(SelectedFile, LEN(SelectedFile) - INSTR(SelectedFile, "\"))
+			LOOP
+			txtFileNameText = SelectedFile
 		END IF
 		Desk.DrawDesktop
 		GOTO LinkDialogDraw
