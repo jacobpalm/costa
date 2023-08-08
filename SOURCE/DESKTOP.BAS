@@ -1,10 +1,9 @@
-DECLARE SUB Desk.ExecuteDialog ()
 OPTION EXPLICIT
 DEFINT A-Z
 			 
-DECLARE SUB Conf.Main ()
 DECLARE SUB Desk.AboutBox ()
 DECLARE SUB Desk.DrawDesktop ()
+DECLARE SUB Desk.ExecuteDialog ()
 DECLARE SUB Desk.ExitGUI ()
 DECLARE SUB Desk.LinkDialog (TargetLink%, DidEdit%, NewLink%)
 DECLARE SUB Desk.LinkLoad ()
