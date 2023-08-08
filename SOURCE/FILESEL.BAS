@@ -72,12 +72,12 @@ SUB File.DrawList (TargetList AS TextboxType, HighLightActive, FullRedraw)
 		ListSelection = FolderListSelection
 	END IF
 
-	Mouse.Hide
 	IF FullRedraw = True THEN
 
 		'Full redraw, draw list first and then all visible items within
 		Obj.DrawTxt TargetList, "", False
 
+		Mouse.Hide
 		Counter = 0
 		FOR I = ListStartPos TO ListStartPos + MaxVisibleItems
 			IF I <= TotalItems THEN
@@ -119,6 +119,7 @@ SUB File.DrawList (TargetList AS TextboxType, HighLightActive, FullRedraw)
 		I = ListSelection - ListStartPos
 
 		IF NOT ItemText = "" THEN
+			Mouse.Hide
 			LINE (TargetList.Pos.Left + 2, TargetList.Pos.Top + 3 + (I * 12))-(TargetList.Pos.Left + TargetList.Pos.Width - 2, TargetList.Pos.Top + 15 + (I * 12)), BGColor, BF
 			Font.Print ItemText, TargetList.Pos.Left + 5, TargetList.Pos.Top + 5 + (I * 12), FGColor, FontSystem
 		END IF
