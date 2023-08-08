@@ -1,3 +1,4 @@
+DECLARE SUB Desk.ExecuteDialog ()
 OPTION EXPLICIT
 DEFINT A-Z
 			 
@@ -179,6 +180,79 @@ SUB Desk.DrawDesktop ()
 
 END SUB
 
+SUB Desk.ExecuteDialog ()
+
+	DIM winExecute AS WindowType
+	DIM txtInput AS TextboxType, txtInputText AS STRING
+	DIM btnOK AS ButtonType, btnCancel AS ButtonType, btnBrowse AS ButtonType
+	DIM imgIcon AS ImageType
+
+	DIM SelectedFile AS STRING
+
+	Obj.SetSize winExecute.Pos, sizeCenter, sizeCenter, 342, 151
+	Obj.SetSize txtInput.Pos, winExecute.Pos.Left + 12, winExecute.Pos.Top + 86, winExecute.Pos.Width - 54, sizeRetain
+	Obj.SetSize btnBrowse.Pos, txtInput.Pos.Left + txtInput.Pos.Width + 9, txtInput.Pos.Top, 19, 19
+	Obj.SetSize btnOK.Pos, winExecute.Pos.Left + winExecute.Pos.Width - 184, txtInput.Pos.Top + 30, 80, 22
+	Obj.SetSize btnCancel.Pos, winExecute.Pos.Left + winExecute.Pos.Width - 94, btnOK.Pos.Top, 80, 22
+	Obj.SetSize imgIcon.Pos, winExecute.Pos.Left + 12, winExecute.Pos.Top + 20, sizeRetain, sizeRetain
+	btnOK.Caption = "õOK"
+	btnCancel.Caption = "õCancel"
+	btnBrowse.Caption = "..."
+	imgIcon.ImageFile = "RUNPROG"
+
+	Mouse.Hide
+	PCOPY 0, 1
+
+DrawExecuteDialog:
+	Obj.DrawWin winExecute
+	Obj.DrawBtn btnOK, False
+	Obj.DrawBtn btnCancel, False
+	Obj.DrawTxt txtInput, txtInputText, False
+	Obj.DrawBtn btnBrowse, False
+	
+	Obj.DrawImg imgIcon
+
+	Mouse.Hide
+	Font.Print "Execute program or command", winExecute.Pos.Left + 53, winExecute.Pos.Top + 15, Theme.WindowText, fontHeading
+	Font.Print "You can also use this dialog to open any file", winExecute.Pos.Left + 53, winExecute.Pos.Top + 17 + 15, Theme.WindowText, fontNormal
+	Font.Print "associated with a program (like README.TXT).", winExecute.Pos.Left + 53, winExecute.Pos.Top + 17 + 30, Theme.WindowText, fontNormal
+	Font.Print "Iõnput:", txtInput.Pos.Left, txtInput.Pos.Top - 16, Theme.WindowText, fontHeading
+	Mouse.Show
+
+	DIM Key$
+	DO
+
+		Key$ = LCASE$(INKEY$)
+
+		IF Obj.BtnClick(btnOK) OR Key$ = "o" OR Key$ = CHR$(13) THEN
+			txtInputText = LTRIM$(RTRIM$(txtInputText))
+			IF LEN(txtInputText) THEN
+				Desk.Run txtInputText, "", "", True
+			END IF
+			EXIT DO
+		END IF
+
+		IF Obj.BtnClick(btnCancel) OR Key$ = "c" OR Key$ = CHR$(27) THEN
+			EXIT DO
+		END IF
+
+		IF Obj.TxtClick(txtInput) OR Key$ = "n" THEN Obj.EditTxt txtInput, txtInputText
+
+		IF Obj.BtnClick(btnBrowse) OR Key$ = "." THEN
+			SelectedFile = File.Select("*.exe")
+			IF LEN(SelectedFile) THEN txtInputText = SelectedFile
+			Desk.DrawDesktop
+			GOTO DrawExecuteDialog
+		END IF
+
+	LOOP
+
+	Mouse.Hide
+	PCOPY 1, 0
+	Mouse.Show
+	
+END SUB
+
 ' =========================================================================
 '          NAME: Desk.LinkDialog()
 '    PARAMETERS: TargetLink - the ID of the icon to edit
@@ -263,9 +337,9 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
 	btnIconPrev.Caption = "<"
 	btnIconNext.Caption = ">"
 	IF NewLink = False THEN
-	btnOK.Caption = "õSave"
+		btnOK.Caption = "õSave"
 	ELSE
-	btnOK.Caption = "õAdd icon"
+		btnOK.Caption = "õAdd icon"
 	END IF
 	btnCancel.Caption = "õCancel"
 
@@ -478,21 +552,21 @@ SUB Desk.LinkMenu (TargetLink)
 	Obj.DrawBtn btnCancel, False
 	Obj.DrawImg imgIcon
 
-	Font.Print DeskLink(TargetLink).Caption, winLinkMenu.Pos.Left + 54, winLinkMenu.Pos.Top + 17, 0, FontHeading
-	Font.Print DeskLink(TargetLink).Filename, winLinkMenu.Pos.Left + 54, winLinkMenu.Pos.Top + 31, 0, FontNormal
-	Font.Print "Path:", winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 59, 0, FontNormal
-	Font.Print "Parameters:", winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 76, 0, FontNormal
+	Font.Print DeskLink(TargetLink).Caption, winLinkMenu.Pos.Left + 54, winLinkMenu.Pos.Top + 17, 0, fontHeading
+	Font.Print DeskLink(TargetLink).Filename, winLinkMenu.Pos.Left + 54, winLinkMenu.Pos.Top + 31, 0, fontNormal
+	Font.Print "Path:", winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 59, 0, fontNormal
+	Font.Print "Parameters:", winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 76, 0, fontNormal
 	
 	VIEW SCREEN (winLinkMenu.Pos.Left + 90, winLinkMenu.Pos.Top + 55)-(winLinkMenu.Pos.Left + winLinkMenu.Pos.Width - 12, winLinkMenu.Pos.Top + 90)
 	IF LEN(RTRIM$(DeskLink(TargetLink).Path)) THEN
-	Font.Print DeskLink(TargetLink).Path, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 59, Theme.WindowText, FontNormal
+	Font.Print DeskLink(TargetLink).Path, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 59, Theme.WindowText, fontNormal
 	ELSE
-	Font.Print "Unspecified", winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 59, Theme.WindowText, FontNormal
+	Font.Print "Unspecified", winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 59, Theme.WindowText, fontNormal
 	END IF
 	IF LEN(RTRIM$(DeskLink(TargetLink).Parameters)) THEN
-	Font.Print DeskLink(TargetLink).Parameters, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 76, Theme.WindowText, FontNormal
+	Font.Print DeskLink(TargetLink).Parameters, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 76, Theme.WindowText, fontNormal
 	ELSE
-	Font.Print "None", winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 76, Theme.WindowText, FontNormal
+	Font.Print "None", winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 76, Theme.WindowText, fontNormal
 	END IF
 	VIEW
 	Mouse.Show
@@ -811,7 +885,7 @@ Desk.RedrawAll:
 	Obj.DrawBtn btnNext, False
 	Obj.DrawBtn btnAboutCosta, False
 	Obj.DrawBtn btnExitCosta, False
-	Font.Print LTRIM$(STR$(Setting.DesktopID)) + "/5", 310, 8, Theme.WindowText, FontHeading
+	Font.Print LTRIM$(STR$(Setting.DesktopID)) + "/5", 310, 8, Theme.WindowText, fontHeading
 	Desk.DrawDesktop
 	Mouse.Show
 
@@ -886,12 +960,7 @@ Desk.RedrawAll:
 		END IF
 
 		IF Key$ = "e" THEN
-			DIM FileToRun AS STRING
-			FileToRun = Sys.InputBox("Execute program or command", "You can also use this dialog to open any file" + CHR$(13) + "associated with a program (like README.TXT).", "RUNPROG", "")
-			IF LEN(FileToRun) THEN
-				DIM RunFile AS STRING
-				Desk.Run FileToRun, "", "", True
-			END IF
+			Desk.ExecuteDialog
 		END IF
 
 		IF Key$ = "a" THEN
@@ -908,7 +977,7 @@ Desk.RedrawAll:
 			END IF
 			Mouse.Hide
 			LINE (310, 7)-(330, 16), Theme.Window, BF
-			Font.Print LTRIM$(STR$(Setting.DesktopID)) + "/5", 310, 8, Theme.WindowText, FontHeading
+			Font.Print LTRIM$(STR$(Setting.DesktopID)) + "/5", 310, 8, Theme.WindowText, fontHeading
 			Mouse.Show
 			Desk.LinkLoad
 			Desk.DrawDesktop
