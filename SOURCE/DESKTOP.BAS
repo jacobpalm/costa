@@ -143,35 +143,38 @@ SUB Desk.DrawDesktop ()
 	'each desklink
 	FOR TargetLink = 0 TO UBOUND(DeskLink)
 
-	'For compatibility - old versions used higher vertical resolution, icons may be
-	'out of view if old data file is carried over
-	IF DeskLink(TargetLink).Top > 318 THEN DeskLink(TargetLink).Top = 318
+		'For compatibility - old versions used higher vertical resolution, icons
+		'may be out of view if old data file is carried over
+		IF DeskLink(TargetLink).Top > 318 THEN DeskLink(TargetLink).Top = 318
 	
-	imgDeskLinkIcon.ImageFile = DeskLink(TargetLink).ImageFile
-	imgDeskLinkIcon.Pos.Left = DeskLink(TargetLink).Left
-	imgDeskLinkIcon.Pos.Top = DeskLink(TargetLink).Top
+		imgDeskLinkIcon.ImageFile = DeskLink(TargetLink).ImageFile
+		imgDeskLinkIcon.Pos.Left = DeskLink(TargetLink).Left
+		imgDeskLinkIcon.Pos.Top = DeskLink(TargetLink).Top
 	
-	Obj.DrawImg imgDeskLinkIcon
+		Obj.DrawImg imgDeskLinkIcon
+	NEXT
 
-	'Description (caption) and target file
-	IF Setting.ShowLinkDescriptions THEN
-		Font.Print DeskLink(TargetLink).Caption, DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 4, Theme.DesktopText, 1
+	'Next, draw icon captions
+	Mouse.Hide
+	FOR TargetLink = 0 TO UBOUND(DeskLink)
+		'Description (caption) and target file
+		IF Setting.ShowLinkDescriptions THEN
+			Font.Print DeskLink(TargetLink).Caption, DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 4, Theme.DesktopText, 1
 
-		IF Setting.ShowLinkTargetFiles THEN
-			LinkTargetText = LCASE$(DeskLink(TargetLink).Filename)
+			IF Setting.ShowLinkTargetFiles THEN
+				LinkTargetText = LCASE$(DeskLink(TargetLink).Filename)
 
-			'Remove path from string, if present
-			DO WHILE INSTR(LinkTargetText, "\")
-				LinkTargetText = RIGHT$(LinkTargetText, LEN(LinkTargetText) - INSTR(LinkTargetText, "\"))
-			LOOP
+				'Remove path from string, if present
+				DO WHILE INSTR(LinkTargetText, "\")
+					LinkTargetText = RIGHT$(LinkTargetText, LEN(LinkTargetText) - INSTR(LinkTargetText, "\"))
+				LOOP
 
-			Font.Print LinkTargetText, DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 18, Theme.DesktopText, 2
+				Font.Print LinkTargetText, DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 18, Theme.DesktopText, 2
+			END IF
+
 		END IF
-
-	END IF
 				 
 	NEXT
-	
 	Mouse.Show
 
 END SUB
