@@ -2,7 +2,7 @@
 'These are in separate file, so that they can be included in CLI tools
 'which don't use the main library
 
-    CONST appName = "The Costa Graphical Shell"
-    CONST appVersion = "1.7.3"
+    CONST appName = "The Costa GUI"
+    CONST appVersion = "1.7.4"
     CONST appYear = "2023"
 

@@ -264,7 +264,7 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     DIM btnPreview AS ButtonType, btnPencil AS ButtonType
     DIM btnFloodFill AS ButtonType
     DIM btnNew AS ButtonType, btnOpen AS ButtonType, btnSave AS ButtonType
-    DIM btnExit AS ButtonType
+    DIM btnExit AS ButtonType, btnAbout AS ButtonType
     DIM txtColor(0 TO 15) AS TextboxType
     
     DIM Key$, YPos, XPos, CursorX, CursorY, DrawColor, Void
@@ -280,11 +280,13 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     Obj.SetSize btnNew.Pos, 2, 2, 92, 22
     Obj.SetSize btnOpen.Pos, 101, 2, 92, 22
     Obj.SetSize btnSave.Pos, 200, 2, 92, 22
+    Obj.SetSize btnAbout.Pos, 446, 2, 92, 22
     Obj.SetSize btnExit.Pos, 545, 2, 92, 22
 
     btnNew.Caption = "õNew"
     btnOpen.Caption = "õLoad"
     btnSave.Caption = "õSave"
+    btnAbout.Caption = "õAbout..."
     btnExit.Caption = "Eõxit"
     
     Obj.SetSize btnPencil.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 12, txtDrawArea.Pos.Top + 14, 52, 22
@@ -309,6 +311,7 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     Obj.DrawBtn btnNew, False
     Obj.DrawBtn btnOpen, False
     Obj.DrawBtn btnSave, False
+    Obj.DrawBtn btnAbout, False
     Obj.DrawBtn btnExit, False
     
     Mouse.Hide
@@ -396,6 +399,10 @@ SUB IconEdit.Main (IconToLoad AS STRING)
 
         IF Obj.BtnClick(btnOpen) OR Key$ = "l" THEN
             IconEdit.ShowLoadDialog
+        END IF
+
+        IF Obj.BtnClick(btnAbout) OR Key$ = "a" THEN
+            Sys.AboutBox "Icon Editor", "PAINT"
         END IF
 
         IF Obj.BtnClick(btnExit) OR Key$ = "x" THEN

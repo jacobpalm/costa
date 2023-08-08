@@ -681,6 +681,50 @@ FUNCTION Obj.TxtClick (TargetTxt AS TextboxType)
 
 END FUNCTION
 
+SUB Sys.AboutBox (ProgramName AS STRING, IconFile AS STRING)
+
+	DIM winAboutBox AS WindowType
+	DIM btnClose AS ButtonType
+	DIM imgLogo AS ImageType
+	DIM Key$
+
+	Obj.SetSize winAboutBox.Pos, sizeCenter, sizeCenter, 329, 174
+	Obj.SetSize imgLogo.Pos, 168, winAboutBox.Pos.Top + 11, sizeRetain, sizeRetain
+	Obj.SetSize btnClose.Pos, 274, winAboutBox.Pos.Top + winAboutBox.Pos.Height - 34, 92, 22
+	btnClose.Caption = "õClose"
+	imgLogo.ImageFile = IconFile
+
+	Mouse.Hide
+	PCOPY 0, 1
+
+	Obj.DrawWin winAboutBox
+	Obj.DrawBtn btnClose, False
+	Obj.DrawImg imgLogo
+
+	Mouse.Hide
+	Font.Print ProgramName, 210, winAboutBox.Pos.Top + 15, 0, 1
+	Font.Print appName + " version " + appVersion, 210, winAboutBox.Pos.Top + 29, 0, 2
+	Font.Print "Made in 2004-" + appYear + " by Jacob Palm.", 168, winAboutBox.Pos.Top + 53, 0, 2
+	Font.Print "Fonts drawn in 1998-1999 by Rush Soft.", 168, winAboutBox.Pos.Top + 67, 0, 2
+	Font.Print "Open sourced and may be freely distributed under", 168, winAboutBox.Pos.Top + 95, 0, 2
+	Font.Print "the terms of the MIT License. More information", 168, winAboutBox.Pos.Top + 109, 0, 2
+	Font.Print "can be found in the LICENSE file.", 168, winAboutBox.Pos.Top + 123, 0, 2
+	Mouse.Show
+
+	DO: LOOP WHILE Mouse.Clicked
+	DO
+
+	Key$ = LCASE$(INKEY$)
+	IF Obj.BtnClick(btnClose) OR Key$ = CHR$(13) OR Key$ = CHR$(27) OR Key$ = "c" THEN EXIT DO
+
+	LOOP
+
+	Mouse.Hide
+	PCOPY 1, 0
+	Mouse.Show
+
+END SUB
+
 DEFSNG A-Z
 SUB Sys.Delay (Seconds AS SINGLE)
 

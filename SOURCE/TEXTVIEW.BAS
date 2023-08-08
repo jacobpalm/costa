@@ -122,7 +122,7 @@ END FUNCTION
 ' =========================================================================
 SUB TView.Main (FileToView AS STRING)
 
-    DIM btnOpen AS ButtonType, btnExit AS ButtonType
+    DIM btnOpen AS ButtonType, btnAbout AS ButtonType, btnExit AS ButtonType
     DIM btnPageUp AS ButtonType, btnPageDown AS ButtonType
     DIM txtEditor AS TextboxType
 
@@ -131,18 +131,18 @@ SUB TView.Main (FileToView AS STRING)
     DIM LineMove, LineData(2371)
 
     Obj.SetSize btnOpen.Pos, 3, 2, 92, 22
-    btnOpen.Caption = "õOpen file..."
-
     Obj.SetSize btnPageUp.Pos, 102, 2, 92, 22
-    btnPageUp.Caption = "Page õup"
-
     Obj.SetSize btnPageDown.Pos, 201, 2, 92, 22
-    btnPageDown.Caption = "Page õdown"
-    
+    Obj.SetSize btnAbout.Pos, 446, 2, 92, 22
     Obj.SetSize btnExit.Pos, 545, 2, 92, 22
+    Obj.SetSize txtEditor.Pos, 2, 32, 635, 314
+
+    btnOpen.Caption = "õOpen file..."
+    btnPageUp.Caption = "Page õup"
+    btnPageDown.Caption = "Page õdown"
+    btnAbout.Caption = "õAbout..."
     btnExit.Caption = "Eõxit"
 
-    Obj.SetSize txtEditor.Pos, 2, 32, 635, 314
     
     IF LEN(LTRIM$(RTRIM$(FileToView))) THEN
         Filename = LTRIM$(RTRIM$(FileToView))
@@ -168,6 +168,7 @@ startofall:
         Obj.DrawBtn btnPageUp, False
         Obj.DrawBtn btnPageDown, False
     END IF
+    Obj.DrawBtn btnAbout, False
     Obj.DrawBtn btnExit, False
     Obj.DrawTxt txtEditor, "", False
 
@@ -250,8 +251,7 @@ startofall:
             IF StartLine < 1 THEN StartLine = 1
             IF NOT StartLine = OldStartLine THEN TView.DrawText StartLine
         END IF
-
-
+        
         IF Obj.BtnClick(btnOpen) OR Key$ = "o" THEN
             OldFileName = Filename
             OldFileOpened = FileOpened
@@ -263,6 +263,10 @@ startofall:
                 Filename = OldFileName
             END IF
             GOTO startofall
+        END IF
+
+        IF Obj.BtnClick(btnAbout) OR Key$ = "a" THEN
+          Sys.AboutBox "Text Viewer for Costa", "DOCUMENT"
         END IF
 
         IF Obj.BtnClick(btnExit) OR Key$ = "x" OR Key$ = CHR$(27) THEN

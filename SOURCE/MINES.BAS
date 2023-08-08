@@ -1,4 +1,3 @@
-DECLARE SUB Mine.Reveal ()
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -13,6 +12,7 @@ DECLARE SUB Mine.Main ()
 DECLARE SUB Mine.NewGame ()
 DECLARE SUB Mine.PlaySound (SoundType AS INTEGER)
 DECLARE SUB Mine.PrintStatus (PrintTimeOnly%, StatusMessage AS STRING)
+DECLARE SUB Mine.Reveal ()
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
@@ -383,8 +383,8 @@ END SUB
 
 SUB Mine.Main ()
 
-	DIM btnNew AS ButtonType, btnSize AS ButtonType
-	DIM btnAudio AS ButtonType, btnExit AS ButtonType
+	DIM btnNew AS ButtonType, btnSize AS ButtonType, btnAudio AS ButtonType
+	DIM btnAbout AS ButtonType, btnExit AS ButtonType
 	DIM FieldRow, FieldCol, MouseButton
 	DIM TimeCompare AS LONG
 	DIM Key$
@@ -392,10 +392,12 @@ SUB Mine.Main ()
 	Obj.SetSize btnNew.Pos, 3, 2, 92, 22
 	Obj.SetSize btnSize.Pos, 102, 2, 92, 22
 	Obj.SetSize btnAudio.Pos, 201, 2, 92, 22
+	Obj.SetSize btnAbout.Pos, 446, 2, 92, 22
 	Obj.SetSize btnExit.Pos, 545, 2, 92, 22
 	btnNew.Caption = "õNew game"
 	btnSize.Caption = "Siõze"
 	btnAudio.Caption = "õSound"
+	btnAbout.Caption = "õAbout..."
 	btnExit.Caption = "Eõxit"
 	
 	Obj.DrawMenu
@@ -403,6 +405,7 @@ SUB Mine.Main ()
 	Obj.DrawBtn btnNew, False
 	Obj.DrawBtn btnSize, False
 	Obj.DrawBtn btnAudio, False
+	Obj.DrawBtn btnAbout, False
 	Obj.DrawBtn btnExit, False
 	
 	'Default settings
@@ -433,6 +436,10 @@ SUB Mine.Main ()
 
 		IF Obj.BtnClick(btnExit) OR Key$ = "x" THEN
 			EXIT SUB
+		END IF
+
+		IF Obj.BtnClick(btnAbout) OR Key$ = "a" THEN
+			Sys.AboutBox "Minesweeper for Costa", "MINE"
 		END IF
 
 		IF Key$ = "?" THEN

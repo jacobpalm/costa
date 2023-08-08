@@ -50,7 +50,7 @@ END SUB
 
 SUB Conf.Main ()
 
-    DIM btnExit AS ButtonType, btnBrowse AS ButtonType
+    DIM btnExit AS ButtonType, btnBrowse AS ButtonType, btnAbout AS ButtonType
     DIM btnPrevious AS ButtonType, btnNext AS ButtonType
     DIM frmSettings AS FrameType, frmAssoc AS FrameType, frmTheme AS FrameType
     DIM frmThemePreview AS FrameType
@@ -72,6 +72,7 @@ SUB Conf.Main ()
     Mouse.Show
 
     Obj.SetSize btnExit.Pos, 545, 2, 92, 22
+    Obj.SetSize btnAbout.Pos, 446, 2, 92, 22
     Obj.SetSize frmSettings.Pos, 14, 43, 330, 170
     Obj.SetSize frmTheme.Pos, 358, 43, 268, 293
     Obj.SetSize frmAssoc.Pos, 14, 43 + 170 + 14, 330, 108
@@ -94,6 +95,7 @@ SUB Conf.Main ()
     Obj.SetSize btnNext.Pos, frmTheme.Pos.Left + frmTheme.Pos.Width - 92 - 14, btnPrevious.Pos.Top, 92, 22
 
     btnExit.Caption = "Eõxit"
+    btnAbout.Caption = "õAbout..."
     btnBrowse.Caption = "..."
     btnPrevious.Caption = "< õPrevious"
     btnNext.Caption = "õNext >"
@@ -111,6 +113,7 @@ SUB Conf.Main ()
     txtOpenWith.MaxLen = 50
 
     Obj.DrawBtn btnExit, False
+    Obj.DrawBtn btnAbout, False
     Obj.DrawBtn btnBrowse, False
     Obj.DrawBtn btnPrevious, False
     Obj.DrawBtn btnNext, False
@@ -251,6 +254,10 @@ SUB Conf.Main ()
             Setting.AssignFileTypes = chkSetting(FileType).Checked
             Sys.SaveSettings
             END
+        END IF
+
+        IF Obj.BtnClick(btnAbout) OR Key$ = "a" THEN
+          Sys.AboutBox "Configuration Utility", "CONFIG"
         END IF
 
     LOOP

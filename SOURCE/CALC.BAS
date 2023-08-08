@@ -87,6 +87,7 @@ SUB Calc.Main ()
     DIM btnC AS ButtonType, btnCE AS ButtonType, btnDivide AS ButtonType
     DIM btnMulti AS ButtonType, btnMinus AS ButtonType, btnPlus AS ButtonType
     DIM btnEquals AS ButtonType, btnDot AS ButtonType, btnExit AS ButtonType
+    DIM btnAbout AS ButtonType
     DIM btnCount
     DIM MathFunc AS STRING * 1
     DIM TotalSum AS CURRENCY, Op1 AS CURRENCY, Op2 AS CURRENCY, NumOps
@@ -115,6 +116,7 @@ SUB Calc.Main ()
 
     Obj.SetSize txtResults.Pos, frmCalc.Pos.Left + frmCalc.Pos.Width + 12, frmCalc.Pos.Top, 385, 295
 
+    Obj.SetSize btnAbout.Pos, 446, 2, 92, 22
     Obj.SetSize btnExit.Pos, 545, 2, 92, 22
     
     btnC.Caption = "õC"
@@ -125,6 +127,7 @@ SUB Calc.Main ()
     btnMinus.Caption = "-"
     btnPlus.Caption = "+"
     btnEquals.Caption = "="
+    btnAbout.Caption = "õAbout..."
     btnExit.Caption = "Eõxit"
     txtCalc.MaxLen = 25
 
@@ -142,6 +145,7 @@ SUB Calc.Main ()
     Obj.DrawBtn btnC, False: Obj.DrawBtn btnCE, False: Obj.DrawBtn btnDivide, False
     Obj.DrawBtn btnMulti, False: Obj.DrawBtn btnMinus, False: Obj.DrawBtn btnPlus, False
     Obj.DrawBtn btnEquals, False: Obj.DrawBtn btnDot, False: Obj.DrawBtn btnExit, False
+    Obj.DrawBtn btnAbout, False
 
     Obj.DrawTxt txtResults, "", False
     Mouse.Show
@@ -157,6 +161,10 @@ StartOfCalc:
 
         IF Obj.BtnClick(btnExit) OR Key$ = "x" OR Key$ = CHR$(27) THEN
             EXIT DO
+        END IF
+
+        IF Obj.BtnClick(btnAbout) OR Key$ = "a" THEN
+          Sys.AboutBox "Calculator", "CALC"
         END IF
 
         FOR btnCount = 0 TO 9

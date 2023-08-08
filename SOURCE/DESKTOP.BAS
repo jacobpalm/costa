@@ -55,64 +55,6 @@ CALL Sys.Load
 Desk.Main
 
 ' =========================================================================
-'          NAME: Desk.AboutBox()
-'    PARAMETERS: None
-'       RETURNS: Nothing
-'       ASSUMES: Nothing
-'   CALLED FROM: DESKTOP.BAS
-' -------------------------------------------------------------------------
-'   DESCRIPTION: Shows a modal window with information about the software.
-' =========================================================================
-SUB Desk.AboutBox ()
-
-	DIM winAboutBox AS WindowType
-	DIM btnClose AS ButtonType
-	DIM imgLogo AS ImageType
-	DIM Key$
-
-	Obj.SetSize winAboutBox.Pos, sizeCenter, sizeCenter, 328, 278
-	Obj.SetSize imgLogo.Pos, 168, winAboutBox.Pos.Top + 11, sizeRetain, sizeRetain
-	Obj.SetSize btnClose.Pos, 274, winAboutBox.Pos.Top + 243, 92, 22
-	btnClose.Caption = "õClose"
-
-	imgLogo.ImageFile = "LOGO"
-	
-	Mouse.Hide
-	PCOPY 0, 1
-
-	Obj.DrawWin winAboutBox
-	Obj.DrawBtn btnClose, False
-	
-	Font.Print appName, 210, winAboutBox.Pos.Top + 17, 0, 1
-	Font.Print "Version " + appVersion, 210, winAboutBox.Pos.Top + 31, 0, 2
-	Obj.DrawImg imgLogo
-	Font.Print "Made in 2004-" + appYear + " by Jacob Palm.", 168, winAboutBox.Pos.Top + 53, 0, 2
-	Font.Print "Released under the MIT License.", 168, winAboutBox.Pos.Top + 67, 0, 2
-	Font.Print "Font files made in 1998-1999 by Rush Soft.", 168, winAboutBox.Pos.Top + 95, 0, 2
-	Font.Print "Costa is open source and may be freely distributed", 168, winAboutBox.Pos.Top + 123, 0, 2
-	Font.Print "as long as the terms of the MIT License is upheld -", 168, winAboutBox.Pos.Top + 137, 0, 2
-	Font.Print "more info can be found in the LICENSE file.", 168, winAboutBox.Pos.Top + 151, 0, 2
-	Font.Print "Special thanks to Todd Suess, who helped during", 168, winAboutBox.Pos.Top + 179, 0, 2
-	Font.Print "the development with useful tips and ideas. Also", 168, winAboutBox.Pos.Top + 193, 0, 2
-	Font.Print "thanks to those people who were part of the QB", 168, winAboutBox.Pos.Top + 207, 0, 2
-	Font.Print "GUI community - every one of you.", 168, winAboutBox.Pos.Top + 221, 0, 2
-	Mouse.Show
-
-	DO: LOOP WHILE Mouse.Clicked
-	DO
-
-	Key$ = LCASE$(INKEY$)
-	IF Obj.BtnClick(btnClose) OR Key$ = CHR$(13) OR Key$ = CHR$(27) OR Key$ = "c" THEN EXIT DO
-
-	LOOP
-
-	Mouse.Hide
-	PCOPY 1, 0
-	Mouse.Show
-	
-END SUB
-
-' =========================================================================
 '          NAME: Desk.DrawDesktop()
 '    PARAMETERS: None
 '       RETURNS: Nothing
@@ -212,10 +154,10 @@ DrawExecuteDialog:
 	Obj.DrawImg imgIcon
 
 	Mouse.Hide
-	Font.Print "Execute program or command", winExecute.Pos.Left + 53, winExecute.Pos.Top + 15, Theme.WindowText, fontHeading
-	Font.Print "You can also use this dialog to open any file", winExecute.Pos.Left + 53, winExecute.Pos.Top + 17 + 15, Theme.WindowText, fontNormal
-	Font.Print "associated with a program (like README.TXT).", winExecute.Pos.Left + 53, winExecute.Pos.Top + 17 + 30, Theme.WindowText, fontNormal
-	Font.Print "Iõnput:", txtInput.Pos.Left, txtInput.Pos.Top - 16, Theme.WindowText, fontHeading
+	Font.Print "Execute program or command", winExecute.Pos.Left + 53, winExecute.Pos.Top + 15, Theme.WindowText, FontHeading
+	Font.Print "You can also use this dialog to open any file", winExecute.Pos.Left + 53, winExecute.Pos.Top + 17 + 15, Theme.WindowText, FontNormal
+	Font.Print "associated with a program (like README.TXT).", winExecute.Pos.Left + 53, winExecute.Pos.Top + 17 + 30, Theme.WindowText, FontNormal
+	Font.Print "Iõnput:", txtInput.Pos.Left, txtInput.Pos.Top - 16, Theme.WindowText, FontHeading
 	Mouse.Show
 
 	DIM Key$
@@ -551,21 +493,21 @@ SUB Desk.LinkMenu (TargetLink)
 	Obj.DrawBtn btnCancel, False
 	Obj.DrawImg imgIcon
 
-	Font.Print DeskLink(TargetLink).Caption, winLinkMenu.Pos.Left + 54, winLinkMenu.Pos.Top + 17, 0, fontHeading
-	Font.Print DeskLink(TargetLink).Filename, winLinkMenu.Pos.Left + 54, winLinkMenu.Pos.Top + 31, 0, fontNormal
-	Font.Print "Path:", winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 59, 0, fontNormal
-	Font.Print "Parameters:", winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 76, 0, fontNormal
+	Font.Print DeskLink(TargetLink).Caption, winLinkMenu.Pos.Left + 54, winLinkMenu.Pos.Top + 17, 0, FontHeading
+	Font.Print DeskLink(TargetLink).Filename, winLinkMenu.Pos.Left + 54, winLinkMenu.Pos.Top + 31, 0, FontNormal
+	Font.Print "Path:", winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 59, 0, FontNormal
+	Font.Print "Parameters:", winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 76, 0, FontNormal
 	
 	VIEW SCREEN (winLinkMenu.Pos.Left + 90, winLinkMenu.Pos.Top + 55)-(winLinkMenu.Pos.Left + winLinkMenu.Pos.Width - 12, winLinkMenu.Pos.Top + 90)
 	IF LEN(RTRIM$(DeskLink(TargetLink).Path)) THEN
-	Font.Print DeskLink(TargetLink).Path, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 59, Theme.WindowText, fontNormal
+	Font.Print DeskLink(TargetLink).Path, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 59, Theme.WindowText, FontNormal
 	ELSE
-	Font.Print "Unspecified", winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 59, Theme.WindowText, fontNormal
+	Font.Print "Unspecified", winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 59, Theme.WindowText, FontNormal
 	END IF
 	IF LEN(RTRIM$(DeskLink(TargetLink).Parameters)) THEN
-	Font.Print DeskLink(TargetLink).Parameters, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 76, Theme.WindowText, fontNormal
+	Font.Print DeskLink(TargetLink).Parameters, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 76, Theme.WindowText, FontNormal
 	ELSE
-	Font.Print "None", winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 76, Theme.WindowText, fontNormal
+	Font.Print "None", winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 76, Theme.WindowText, FontNormal
 	END IF
 	VIEW
 	Mouse.Show
@@ -884,7 +826,7 @@ Desk.RedrawAll:
 	Obj.DrawBtn btnNext, False
 	Obj.DrawBtn btnAboutCosta, False
 	Obj.DrawBtn btnExitCosta, False
-	Font.Print LTRIM$(STR$(Setting.DesktopID)) + "/5", 310, 8, Theme.WindowText, fontHeading
+	Font.Print LTRIM$(STR$(Setting.DesktopID)) + "/5", 310, 8, Theme.WindowText, FontHeading
 	Desk.DrawDesktop
 	Mouse.Show
 
@@ -963,7 +905,7 @@ Desk.RedrawAll:
 		END IF
 
 		IF Key$ = "a" THEN
-			Desk.AboutBox
+			Sys.AboutBox "Desktop", "LOGO"
 		END IF
 
 		IF Key$ = CHR$(0) + "k" OR Key$ = CHR$(0) + "m" THEN
@@ -976,7 +918,7 @@ Desk.RedrawAll:
 			END IF
 			Mouse.Hide
 			LINE (310, 7)-(330, 16), Theme.Window, BF
-			Font.Print LTRIM$(STR$(Setting.DesktopID)) + "/5", 310, 8, Theme.WindowText, fontHeading
+			Font.Print LTRIM$(STR$(Setting.DesktopID)) + "/5", 310, 8, Theme.WindowText, FontHeading
 			Mouse.Show
 			Desk.LinkLoad
 			Desk.DrawDesktop

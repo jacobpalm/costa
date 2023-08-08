@@ -323,7 +323,7 @@ SUB Tic.Main ()
 
 	DIM frmTic AS FrameType
 	DIM btnNew AS ButtonType, btnAIToggle AS ButtonType
-	DIM btnAudio AS ButtonType, btnExit AS ButtonType
+	DIM btnAudio AS ButtonType, btnAbout AS ButtonType, btnExit AS ButtonType
 	DIM FieldRow, FieldCol
 	DIM Key$
 
@@ -344,10 +344,12 @@ SUB Tic.Main ()
 	Obj.SetSize btnNew.Pos, 3, 2, 92, 22
 	Obj.SetSize btnAIToggle.Pos, 102, 2, 92, 22
 	Obj.SetSize btnAudio.Pos, 201, 2, 92, 22
+	Obj.SetSize btnAbout.Pos, 446, 2, 92, 22
 	Obj.SetSize btnExit.Pos, 545, 2, 92, 22
 	btnNew.Caption = "õNew game"
 	btnAIToggle.Caption = "õMode"
 	btnAudio.Caption = "õSound"
+	btnAbout.Caption = "õAbout..."
 	btnExit.Caption = "Eõxit"
 	
 	Obj.DrawMenu
@@ -360,6 +362,7 @@ SUB Tic.Main ()
 	Obj.DrawBtn btnNew, False
 	Obj.DrawBtn btnAIToggle, False
 	Obj.DrawBtn btnAudio, False
+	Obj.DrawBtn btnAbout, False
 	Obj.DrawBtn btnExit, False
 	
 	PlayerTurn = PlayerX
@@ -375,6 +378,10 @@ SUB Tic.Main ()
 		IF Obj.BtnClick(btnNew) OR Key$ = "n" THEN
 			Tic.NewGame
 			IF EnableAI AND PlayerTurn = PlayerO THEN Tic.AIMove
+		END IF
+
+		IF Obj.BtnClick(btnAbout) OR Key$ = "a" THEN
+			Sys.AboutBox "Tic Tac Toe for Costa", "TICTAC"
 		END IF
 
 		IF Obj.BtnClick(btnExit) OR Key$ = "x" THEN

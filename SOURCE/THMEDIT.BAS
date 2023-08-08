@@ -1,3 +1,4 @@
+DECLARE SUB ThmEdit.AboutBox ()
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -33,6 +34,10 @@ END IF
 Sys.Load
 
 ThmEdit.Main
+
+SUB ThmEdit.AboutBox ()
+  Sys.AboutBox "Theme Editor for Costa", "THEMES"
+END SUB
 
 SUB ThmEdit.DrawIndicator (ActiveColor)
 
@@ -130,6 +135,7 @@ SUB ThmEdit.DrawPreview (ThemeFile AS STRING)
     Obj.DrawBtn btnPreview2, True
     Obj.DrawBtn btnPreview3, False
 
+    Mouse.Hide
     Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 14, Theme.WindowText, fontHeading
     Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 30, Theme.WindowText, FontNormal
     Font.Print "Preview link", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 4, Theme.DesktopText, fontHeading
@@ -139,6 +145,7 @@ SUB ThmEdit.DrawPreview (ThemeFile AS STRING)
 
     Obj.DrawTxt txtListPreview, "", False
     
+    Mouse.Hide
     LINE (txtListPreview.Pos.Left + 2, txtListPreview.Pos.Top + 15)-(txtListPreview.Pos.Left + txtListPreview.Pos.Width - 2, txtListPreview.Pos.Top + 27), Theme.Select, BF
     
     Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5, Theme.TextboxText, FontSystem
@@ -168,7 +175,7 @@ END SUB
 ' =========================================================================
 SUB ThmEdit.Edit (BYVAL ThmFile AS STRING)
 
-    DIM btnSave AS ButtonType, btnSaveAs AS ButtonType
+    DIM btnSave AS ButtonType, btnSaveAs AS ButtonType, btnAbout AS ButtonType
     DIM btnExit AS ButtonType, btnObject AS ButtonType
     DIM txtThemeName AS TextboxType, txtThemeAuthor AS TextboxType
 
@@ -186,7 +193,10 @@ SUB ThmEdit.Edit (BYVAL ThmFile AS STRING)
     btnSave.Caption = "õSave"
 
     Obj.SetSize btnSaveAs.Pos, 102, 2, 92, 22
-    btnSaveAs.Caption = "Save õas"
+    btnSaveAs.Caption = "Saõve as"
+
+    Obj.SetSize btnAbout.Pos, 446, 2, 92, 22
+    btnAbout.Caption = "õAbout..."
 
     Obj.SetSize btnExit.Pos, 545, 2, 92, 22
     btnExit.Caption = "Eõxit"
@@ -214,6 +224,7 @@ SUB ThmEdit.Edit (BYVAL ThmFile AS STRING)
     Mouse.Hide
     Obj.DrawBtn btnSaveAs, False
     Obj.DrawBtn btnSave, False
+    Obj.DrawBtn btnAbout, False
     Obj.DrawBtn btnExit, False
     Obj.DrawTxt txtThemeName, ThemeName$, False
     Obj.DrawTxt txtThemeAuthor, ThemeAuthor$, False
@@ -222,6 +233,7 @@ SUB ThmEdit.Edit (BYVAL ThmFile AS STRING)
       Obj.DrawBtn btnColor(I), True
       LINE (btnColor(I).Pos.Left + 2, btnColor(I).Pos.Top + 2)-(btnColor(I).Pos.Left + btnColor(I).Pos.Width - 2, btnColor(I).Pos.Top + btnColor(I).Pos.Height - 2), I, BF
     NEXT
+    Mouse.Hide
     Font.Print "Theme õname:", txtThemeName.Pos.Left, txtThemeName.Pos.Top - 16, Theme.WindowText, fontHeading
     Font.Print "Theme aõuthor:", txtThemeAuthor.Pos.Left, txtThemeAuthor.Pos.Top - 16, Theme.WindowText, fontHeading
     Font.Print "õObject selected:", 434, btnObject.Pos.Top - 16, Theme.WindowText, fontHeading
@@ -397,7 +409,11 @@ TopOfLoop:
         IF NOT ThemeAuthor$ = OriginalText$ THEN ThemeChanged = True
       END IF
 
-      IF Obj.BtnClick(btnSaveAs) OR Key$ = "a" THEN
+      IF Obj.BtnClick(btnAbout) OR Key$ = "a" THEN
+        ThmEdit.AboutBox
+      END IF
+
+      IF Obj.BtnClick(btnSaveAs) OR Key$ = "v" THEN
         TargetFile$ = Sys.InputBox("Save theme", "Type a name for the theme file below, without path or" + CHR$(13) + "extension (8 letters max, for example: MYTHEME).", "THEMES", ThemeFile$)
         IF TargetFile$ = "" THEN GOTO TopOfLoop
 
@@ -544,6 +560,7 @@ FUNCTION ThmEdit.Select () AS STRING
 
     DIM btnBack AS ButtonType, btnNext AS ButtonType
     DIM btnEdit AS ButtonType, btnCancel AS ButtonType
+    DIM btnAbout AS ButtonType
 
     DIM UpdatePreview
     DIM ThemeList() AS STRING
@@ -582,13 +599,17 @@ FUNCTION ThmEdit.Select () AS STRING
     Obj.SetSize btnEdit.Pos, 201, 2, 92, 22
     btnEdit.Caption = "õEdit"
 
+    Obj.SetSize btnAbout.Pos, 446, 2, 92, 22
+    btnAbout.Caption = "õAbout..."
+
     Obj.SetSize btnCancel.Pos, 545, 2, 92, 22
     btnCancel.Caption = "Eõxit"
 
-    Obj.DrawBtn btnEdit, False
-    Obj.DrawBtn btnCancel, False
     Obj.DrawBtn btnBack, False
     Obj.DrawBtn btnNext, False
+    Obj.DrawBtn btnEdit, False
+    Obj.DrawBtn btnAbout, False
+    Obj.DrawBtn btnCancel, False
 
     Font.Print "Theme name:", 434, 43, Theme.WindowText, fontHeading
     Font.Print "Theme author:", 434, 91, Theme.WindowText, fontHeading
@@ -613,6 +634,9 @@ FUNCTION ThmEdit.Select () AS STRING
         EXIT FUNCTION
       END IF
 
+      IF Obj.BtnClick(btnAbout) OR Key$ = "a" THEN
+        ThmEdit.AboutBox
+      END IF
 
       IF Obj.BtnClick(btnNext) OR Key$ = "n" OR Key$ = CHR$(0) + "m" THEN
         ActiveTheme = ActiveTheme + 1

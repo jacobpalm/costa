@@ -30,6 +30,7 @@
   DECLARE FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS STRING, msgDefault AS STRING) AS STRING
   DECLARE FUNCTION Sys.MsgBox% (msgTitle AS STRING, BYVAL msgText AS STRING, msgType%)
   DECLARE FUNCTION Sys.Path () AS STRING
+  DECLARE SUB Sys.AboutBox (ProgramName AS STRING, ImageFile AS STRING)
   DECLARE SUB Sys.Delay (Seconds AS SINGLE)
   DECLARE SUB Sys.Load ()
   DECLARE SUB Sys.LoadProfile (ProfileNum%)
