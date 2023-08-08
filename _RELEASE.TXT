@@ -19,6 +19,7 @@ when releasing a new version.
    any information about new/changes features need to be documented.
    Take note of section 1.3 - "News in this version."
  - Update changelog in DOCS\CHANGES.TXT
+ - Update year in LICENSE, if relevant
  - Compile all EXE files by running _BUILD.BAT
    Manual compiler options, if needed:
      Use 286 optimizations, include run-time error checking.
