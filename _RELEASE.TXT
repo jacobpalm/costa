@@ -24,10 +24,9 @@ when releasing a new version.
    Manual compiler options, if needed:
      Use 286 optimizations, include run-time error checking.
      Compile all with VBDOS standard library loaded (/L parameter)
- - Remove all DESKLNKx.DAT files from the DATA\CONFIG folder - make sure to
-   keep DESKLNK.DEF which contains the default desktop icons.
- - Delete FILETYPE.DAT from DATA\CONFIG - make sure to keep the FILETYPE.DEF
-   file which contains the default file associations
+ - Remove all .DAT files from the DATA\CONFIG folder - make sure to
+   keep .DEF files which contains the default desktop icons, file
+   associations etc.
  - Copy _DISTRUB.BAT to COSTA.BAT (contains "first run" information for the
    user)
  - Exclude the following from the ZIP file:
