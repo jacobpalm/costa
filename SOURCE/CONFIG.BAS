@@ -264,59 +264,27 @@ SUB Conf.Main ()
     
 END SUB
 
-SUB Conf.RestoreAssoc ()
-
-    DIM DefaultAssoc(0 TO 7) AS FileAssociationType
-    DIM AssocFile
-
-    ON LOCAL ERROR RESUME NEXT
-    KILL Sys.Path + "DATA\CONFIG\FILETYPE.DAT"
-
-    AssocFile = FREEFILE
-    OPEN Sys.Path + "DATA\CONFIG\FILETYPE.DAT" FOR BINARY AS #AssocFile
-
-    DefaultAssoc(0).FileType = "TXT"
-    DefaultAssoc(0).Command = "TEXTVIEW.EXE"
-    PUT #AssocFile, , DefaultAssoc(0)
-
-    DefaultAssoc(1).FileType = "INI"
-    DefaultAssoc(1).Command = "TEXTVIEW.EXE"
-    PUT #AssocFile, , DefaultAssoc(1)
-
-    DefaultAssoc(2).FileType = "THM"
-    DefaultAssoc(2).Command = "THMEDIT.EXE"
-    PUT #AssocFile, , DefaultAssoc(2)
-
-    DefaultAssoc(3).FileType = "DOC"
-    DefaultAssoc(3).Command = "TEXTVIEW.EXE"
-    PUT #AssocFile, , DefaultAssoc(3)
-
-    DefaultAssoc(4).FileType = "ME"
-    DefaultAssoc(4).Command = "TEXTVIEW.EXE"
-    PUT #AssocFile, , DefaultAssoc(4)
-
-    DefaultAssoc(5).FileType = "1ST"
-    DefaultAssoc(5).Command = "TEXTVIEW.EXE"
-    PUT #AssocFile, , DefaultAssoc(5)
-
-    DefaultAssoc(6).FileType = "CFG"
-    DefaultAssoc(6).Command = "TEXTVIEW.EXE"
-    PUT #AssocFile, , DefaultAssoc(6)
-
-    DefaultAssoc(7).FileType = "BAS"
-    DefaultAssoc(7).Command = "QBASIC.EXE /RUN"
-    PUT #AssocFile, , DefaultAssoc(7)
-
-    CLOSE #AssocFile
-
-END SUB
-
 SUB Conf.SaveAssoc (FileType AS STRING, Command AS STRING)
     DIM FileAssociation AS FileAssociationType
     DIM FileHandle, FilePos, AssocSaved
 
     IF NOT File.Exists(Sys.Path + "DATA\CONFIG\FILETYPE.DAT") THEN
-        Conf.RestoreAssoc
+      'File association data not found, copy associations from default file
+      'if it exists - using PUT/GET, not MS-DOS copy, as BASIC doesn't have
+      'a built-in function to copy files
+      IF File.Exists(Sys.Path + "DATA\CONFIG\FILETYPE.DEF") THEN
+        DIM CopyHandle
+        CopyHandle = FREEFILE
+        OPEN Sys.Path + "DATA\CONFIG\FILETYPE.DEF" FOR BINARY AS #CopyHandle
+        FileHandle = FREEFILE
+        OPEN Sys.Path + "DATA\CONFIG\FILETYPE.DAT" FOR BINARY AS #FileHandle
+        DO WHILE NOT EOF(CopyHandle)
+          GET #CopyHandle, , FileAssociation
+          PUT #FileHandle, , FileAssociation
+        LOOP
+        CLOSE #CopyHandle
+        CLOSE #FileHandle
+      END IF
     END IF
 
     FileHandle = FREEFILE
