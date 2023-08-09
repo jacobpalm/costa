@@ -40,7 +40,8 @@ END FUNCTION
 
 FUNCTION File.GetAssociation (FileType AS STRING) AS STRING
 
-	DIM OpenWith AS STRING, FileAssociation AS FileAssociationType
+	DIM OpenWith AS STRING, AssociationFile AS STRING
+	DIM FileAssociation AS FileAssociationType
 	DIM FileHandle
 
 	FileType = UCASE$(FileType)
@@ -51,25 +52,35 @@ FUNCTION File.GetAssociation (FileType AS STRING) AS STRING
 		EXIT FUNCTION
 	END IF
 
-	IF File.Exists(Sys.Path + "DATA\CONFIG\FILETYPE.DAT") THEN
-		FileHandle = FREEFILE
-		OPEN Sys.Path + "DATA\CONFIG\FILETYPE.DAT" FOR BINARY AS #FileHandle
+	AssociationFile = Sys.Path + "DATA\CONFIG\FILETYPE.DAT"
 
-		'ON LOCAL ERROR RESUME NEXT
-		DO WHILE NOT EOF(FileHandle)
-
-			GET #FileHandle, , FileAssociation
-		
-			IF FileType = RTRIM$(FileAssociation.FileType) THEN
-				OpenWith = RTRIM$(FileAssociation.Command)
-				EXIT DO
-			END IF
-
-		LOOP
-		CLOSE #FileHandle
-		ON LOCAL ERROR GOTO 0
-
+	'If association data file does not exist, fall back to default association
+	'file. If that doesn't exist either, exit function and return nothing
+	IF NOT File.Exists(AssociationFile) THEN
+		IF File.Exists(Sys.Path + "DATA\CONFIG\FILETYPE.DEF") THEN
+			AssociationFile = Sys.Path + "DATA\CONFIG\FILETYPE.DEF"
+		ELSE
+			File.GetAssociation = ""
+			EXIT FUNCTION
+		END IF
 	END IF
+
+	FileHandle = FREEFILE
+	OPEN AssociationFile FOR BINARY AS #FileHandle
+
+	ON LOCAL ERROR RESUME NEXT
+	DO WHILE NOT EOF(FileHandle)
+
+		GET #FileHandle, , FileAssociation
+
+		IF FileType = RTRIM$(FileAssociation.FileType) THEN
+			OpenWith = RTRIM$(FileAssociation.Command)
+			EXIT DO
+		END IF
+
+	LOOP
+	CLOSE #FileHandle
+	ON LOCAL ERROR GOTO 0
 
 	File.GetAssociation = OpenWith
 
