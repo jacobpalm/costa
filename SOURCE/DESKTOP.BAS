@@ -5,7 +5,7 @@ DECLARE SUB Desk.AboutBox ()
 DECLARE SUB Desk.DrawDesktop ()
 DECLARE SUB Desk.ExecuteDialog ()
 DECLARE SUB Desk.ExitGUI ()
-DECLARE SUB Desk.LinkDialog (TargetLink%, DidEdit%, NewLink%)
+DECLARE SUB Desk.LinkDialog (TargetLink%, DidEdit%)
 DECLARE SUB Desk.LinkLoad ()
 DECLARE SUB Desk.LinkMenu (TargetLink%)
 DECLARE SUB Desk.LinkMove (TargetLink%)
@@ -210,7 +210,7 @@ END SUB
 '   DESCRIPTION: Shows a modal window allowing the user to edit a desktop
 '                link, or create a new one.
 ' =========================================================================
-SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
+SUB Desk.LinkDialog (TargetLink, DidEdit)
 
 	DIM AllIcons() AS STRING, SelectedFile AS STRING
 	DIM ExtractPath AS STRING
@@ -277,11 +277,7 @@ SUB Desk.LinkDialog (TargetLink, DidEdit, NewLink)
 	btnBrowse.Caption = "..."
 	btnIconPrev.Caption = "<"
 	btnIconNext.Caption = ">"
-	IF NewLink = False THEN
-		btnOK.Caption = "õSave"
-	ELSE
-		btnOK.Caption = "õAdd icon"
-	END IF
+	btnOK.Caption = "õSave"
 	btnCancel.Caption = "õCancel"
 
 LinkDialogDraw:
@@ -313,11 +309,9 @@ LinkDialogDraw:
 
 	DO
 	Key$ = LCASE$(INKEY$)
-	IF Key$ = "s" THEN IF NewLink = False THEN Key$ = CHR$(13)
-	IF Key$ = "a" THEN IF NewLink = True THEN Key$ = CHR$(13)
 
-	IF Obj.BtnClick(btnOK) OR Key$ = CHR$(13) THEN
-		IF RTRIM$(txtLinkCaptText) = "" THEN txtLinkCaptText = "Unnamed link"
+	IF Obj.BtnClick(btnOK) OR Key$ = CHR$(13) OR Key$ = "s" THEN
+		IF RTRIM$(txtLinkCaptText) = "" THEN txtLinkCaptText = "Unnamed"
 		DeskLink(TargetLink).Caption = RTRIM$(txtLinkCaptText)
 		DeskLink(TargetLink).Filename = RTRIM$(txtFileNameText)
 		DeskLink(TargetLink).Path = RTRIM$(txtPathText)
@@ -530,7 +524,7 @@ SUB Desk.LinkMenu (TargetLink)
 
 	'Configure
 	IF Obj.BtnClick(btnCustomize) OR Key$ = "u" THEN
-		Desk.LinkDialog TargetLink, DidEdit, False
+		Desk.LinkDialog TargetLink, DidEdit
 		IF DidEdit = True THEN RedrawNeeded = True
 		EXIT DO
 	END IF
@@ -871,7 +865,7 @@ Desk.RedrawAll:
 		IF Key$ = "i" THEN
 			REDIM PRESERVE DeskLink(0 TO UBOUND(DeskLink) + 1) AS DeskLinkType
 			
-			DeskLink(UBOUND(DeskLink)).Caption = "Unnamed link"
+			DeskLink(UBOUND(DeskLink)).Caption = "Unnamed"
 			DeskLink(UBOUND(DeskLink)).Filename = ""
 			DeskLink(UBOUND(DeskLink)).Path = ""
 			DeskLink(UBOUND(DeskLink)).Parameters = ""
@@ -883,7 +877,7 @@ Desk.RedrawAll:
 			PCOPY 0, 1
 			Mouse.Show
 
-			Desk.LinkDialog UBOUND(DeskLink), DidEdit, True
+			Desk.LinkDialog UBOUND(DeskLink), DidEdit
 
 			IF DidEdit THEN
 				TabCheck = -1
