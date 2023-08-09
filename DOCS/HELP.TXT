@@ -1,6 +1,5 @@
 
-                          The Costa Graphical Shell
-                                Version 1.7.3
+                         The Costa GUI, version 1.7.4
                                 By Jacob Palm                   
 
                           User's guide and reference 
