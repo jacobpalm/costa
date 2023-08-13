@@ -4,20 +4,19 @@
 
                                  Changelog
 
-The sole purpose of the 1.7.3 release is to fix a bug that prevents icons
-from being added to the desktop, once the last icon has been deleted.
+Costa 1.7.4 brings a classic PC game to Costa for the first time -
+Minesweeper! Complete with several different difficulty levels, optional
+sound effects and more.
 
-Below are release notes from 1.7.2, which contained more improvements.
-
-Aside from one minor new feature, 1.7.2 brings bugfixes and further
-optimizations.
-  -Implemented an 8x8 pixel grid on the desktop, so that icons are moved in
-   increments of 8 pixels. This makes it much, much easier to align icons with
-   mouse or keyboard.
-  -Fixed extra backslash in some paths, which caused issues on some systems
-  -Minor optimizations, like not constantly showing/hiding mouse while
-   drawing on screen, instead hiding once and showing when done drawing
-  -Fixed bug in status bar display in Tic Tac Toe
-  -Fixed mouse cursor not always showing at launch
+Aside from this, there are as always a number of "under the hood"
+improvements.
+  -Minesweeper is now included
+  -Default files for first desktop page and file associations are now
+   included. Previously, these were distributed with Costa, potentially
+   overwriting user customizations on upgrade
+  -"Execute" dialog on desktop now has option to browse for program to be run
+  -About box implemented in all apps
+  -Various mouse cursor-related graphical glitches fixed
+  -More icons
 
 For older versions, see the complete changelog at https://costa.jacobpalm.dk
