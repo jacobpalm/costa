@@ -35,13 +35,18 @@ SUB App.Main ()
 
     'Create a button
     DIM btnExit AS ButtonType
-    btnExit.Pos.Left = winSample.Pos.Left + 12
-    btnExit.Pos.Top = winSample.Pos.Top + 34
+    'Set its position and size - left, top, width, height
+    Obj.SetSize btnExit.Pos, 545, 2, 92, 22
     btnExit.Caption = "Eõxit"
     'The õ character determines which letter on the button is underlined.
     'This is actually handled by the font routine, and can be used anywhere
     'text is printed.
-    
+
+    'Another button - this time, set size and position using a single function
+    DIM btnAbout AS ButtonType
+    Obj.SetSize btnAbout.Pos, 446, 2, 92, 22
+    btnAbout.Caption = "õAbout..."
+                
     'Create an icon. Only the filename, without extension or path, is set.
     'This is because icons are always in the same folder. An icon does not
     'use the width or height property, they are always 32x32 pixels.
@@ -54,7 +59,16 @@ SUB App.Main ()
     'when drawing using Costa routines, they will take care of that
     'automatically. You must, however, hide the cursor while using LINE, PSET
     'and other built-in graphics statements.
+    Obj.DrawMenu 'Top menu - default for all Costa apps
+
+    'App background - not drawn automatically, as some apps may wish to use
+    'a custom background
+    Mouse.Hide
+    LINE (0, 29)-(639, 349), Theme.Window, BF
+    Mouse.Show
+
     Obj.DrawWin winSample
+    Obj.DrawBtn btnAbout, False
     Obj.DrawBtn btnExit, False
     Mouse.Hide
     Font.Print "Sample text, header font", winSample.Pos.Left + 12, winSample.Pos.Top + 70, Theme.WindowText, FontHeading
@@ -85,6 +99,12 @@ SUB App.Main ()
                 END
             END IF
 
+        END IF
+
+        IF Obj.BtnClick(btnAbout) OR Key$ = "a" THEN
+          'Use the built-in function for showing and about box - this ensures
+          'consistency between all applications
+          Sys.AboutBox "Sample Application", "Jacob Palm", "PROGRAM"
         END IF
         
     LOOP

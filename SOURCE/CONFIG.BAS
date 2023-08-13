@@ -257,7 +257,7 @@ SUB Conf.Main ()
         END IF
 
         IF Obj.BtnClick(btnAbout) OR Key$ = "a" THEN
-          Sys.AboutBox "Configuration Utility", "CONFIG"
+          Sys.AboutBox "Configuration Utility", "Jacob Palm", "CONFIG"
         END IF
 
     LOOP

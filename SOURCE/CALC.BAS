@@ -164,7 +164,7 @@ StartOfCalc:
         END IF
 
         IF Obj.BtnClick(btnAbout) OR Key$ = "a" THEN
-          Sys.AboutBox "Calculator", "CALC"
+          Sys.AboutBox "Calculator", "Jacob Palm", "CALC"
         END IF
 
         FOR btnCount = 0 TO 9

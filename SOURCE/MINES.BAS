@@ -439,7 +439,7 @@ SUB Mine.Main ()
 		END IF
 
 		IF Obj.BtnClick(btnAbout) OR Key$ = "a" THEN
-			Sys.AboutBox "Minesweeper for Costa", "MINE"
+			Sys.AboutBox "Minesweeper", "Jacob Palm", "MINE"
 		END IF
 
 		IF Key$ = "?" THEN

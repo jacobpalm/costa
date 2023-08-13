@@ -402,7 +402,7 @@ SUB IconEdit.Main (IconToLoad AS STRING)
         END IF
 
         IF Obj.BtnClick(btnAbout) OR Key$ = "a" THEN
-            Sys.AboutBox "Icon Editor", "PAINT"
+            Sys.AboutBox "Icon Editor", "Jacob Palm", "PAINT"
         END IF
 
         IF Obj.BtnClick(btnExit) OR Key$ = "x" THEN

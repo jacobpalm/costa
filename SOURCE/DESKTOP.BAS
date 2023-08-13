@@ -899,7 +899,7 @@ Desk.RedrawAll:
 		END IF
 
 		IF Key$ = "a" THEN
-			Sys.AboutBox "Desktop", "LOGO"
+			Sys.AboutBox "Desktop", "Jacob Palm", "LOGO"
 		END IF
 
 		IF Key$ = CHR$(0) + "k" OR Key$ = CHR$(0) + "m" THEN

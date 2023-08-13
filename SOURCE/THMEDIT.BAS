@@ -1,9 +1,9 @@
-DECLARE SUB ThmEdit.AboutBox ()
 OPTION EXPLICIT
 DEFINT A-Z
 
 DECLARE FUNCTION ThmEdit.SelectObject (BYVAL CurrentSelection%) AS INTEGER
 DECLARE FUNCTION ThmEdit.Select () AS STRING
+DECLARE SUB ThmEdit.AboutBox ()
 DECLARE SUB ThmEdit.DrawIndicator (ActiveColor%)
 DECLARE SUB ThmEdit.DrawPreview (ThemeFile AS STRING)
 DECLARE SUB ThmEdit.Edit (BYVAL ThmFile AS STRING)
@@ -36,7 +36,9 @@ Sys.Load
 ThmEdit.Main
 
 SUB ThmEdit.AboutBox ()
-  Sys.AboutBox "Theme Editor for Costa", "THEMES"
+  'Sys.AboutBox is called from multiple places, it's only wrapped in a
+  'function because BASIC doesn't support macros
+  Sys.AboutBox "Theme Editor", "Jacob Palm", "THEMES"
 END SUB
 
 SUB ThmEdit.DrawIndicator (ActiveColor)

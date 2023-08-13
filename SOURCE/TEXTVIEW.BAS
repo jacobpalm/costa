@@ -266,7 +266,7 @@ startofall:
         END IF
 
         IF Obj.BtnClick(btnAbout) OR Key$ = "a" THEN
-          Sys.AboutBox "Text Viewer for Costa", "DOCUMENT"
+          Sys.AboutBox "Text Viewer", "Jacob Palm", "DOCUMENT"
         END IF
 
         IF Obj.BtnClick(btnExit) OR Key$ = "x" OR Key$ = CHR$(27) THEN

@@ -381,7 +381,7 @@ SUB Tic.Main ()
 		END IF
 
 		IF Obj.BtnClick(btnAbout) OR Key$ = "a" THEN
-			Sys.AboutBox "Tic Tac Toe for Costa", "TICTAC"
+			Sys.AboutBox "Tic Tac Toe", "Jacob Palm", "TICTAC"
 		END IF
 
 		IF Obj.BtnClick(btnExit) OR Key$ = "x" THEN
