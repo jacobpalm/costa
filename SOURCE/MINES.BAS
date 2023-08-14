@@ -21,6 +21,7 @@ CONST FieldFlagged = 2
 CONST FieldCleared = 4
 CONST FieldNumbered = 8
 CONST FieldExploded = 16
+CONST FieldMasked = 32
 
 CONST SoundNew = 0
 CONST SoundIllegalMove = 1
@@ -52,23 +53,23 @@ SUB Mine.ClearNeighbors (FieldRow, FieldCol)
 	DIM CheckRow, CheckCol, NeighborsCleared
 	DIM CheckNeighborRow, CheckNeighborCol
 
-	DIM MineMask(0 TO FieldHeight - 1, 0 TO FieldWidth - 1) AS INTEGER
-
+	'If the cell has neighbors, an empty space was not clicked and thus nothing
+	'should be cleared around it
 	IF Mine.GetNeighbors(FieldRow, FieldCol) THEN EXIT SUB
 
 	'Set the current pos in the mask as cleared, then start a loop that checks
 	'all neighbors to cleared cells Empty cells are cleared as well and marked
 	'in the mask, to be checked on next loop. Repeat until no cells are cleared
-	MineMask(FieldRow, FieldCol) = FieldCleared
+	MineField(FieldRow, FieldCol) = MineField(FieldRow, FieldCol) XOR FieldMasked
 	DO
 		NeighborsCleared = False
 
 		FOR CheckRow = 0 TO FieldHeight - 1
 			FOR CheckCol = 0 TO FieldWidth - 1
 
-				IF MineMask(CheckRow, CheckCol) = FieldCleared THEN
+				IF MineField(CheckRow, CheckCol) AND FieldMasked THEN
 					'Remove from mask to avoid redundant checks
-					MineMask(CheckRow, CheckCol) = 0
+					MineField(CheckRow, CheckCol) = MineField(CheckRow, CheckCol) AND NOT FieldMasked
 
 					'Clear only if has no neighbors
 					IF Mine.GetNeighbors(CheckRow, CheckCol) = 0 THEN
@@ -90,7 +91,7 @@ SUB Mine.ClearNeighbors (FieldRow, FieldCol)
 
 											'If cleared field has no neighbours, add it to the mask
 											IF NOT Mine.GetNeighbors(CheckNeighborRow, CheckNeighborCol) THEN
-												MineMask(CheckNeighborRow, CheckNeighborCol) = FieldCleared
+												MineField(CheckNeighborRow, CheckNeighborCol) = MineField(CheckNeighborRow, CheckNeighborCol) XOR FieldMasked
 											END IF
 										END IF
 								
@@ -526,8 +527,6 @@ SUB Mine.PlaySound (SoundType AS INTEGER)
 				SOUND 37, .1
 				SOUND 65, .2
 			NEXT
-			Sys.Delay 1
-			PLAY "O1 T400 E3 G3 D6 T100 C9 C9"
 		CASE SoundClear
 			SOUND 400, .3
 		CASE SoundFlag
