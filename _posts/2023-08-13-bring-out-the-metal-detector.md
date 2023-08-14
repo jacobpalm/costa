@@ -17,7 +17,7 @@ The game follows the same rules as the classic Windows implementation. Not becau
 #### Coding with bitwise operations
 It may sound weird, but I started coding Minesweeper not because I wanted to make that specific game, but because I wanted to test some new knowledge I got about bitwise operations and put it to the test.
 
-Bitwise operations are a method of manipulating individual bits in a byte, allowing for some very powerfull programming. The use I found in Minesweeper is that I can use a single integer variable to store multiple values. Each cell on the board is one integer variable, and the individual bits in it are used to hold different information. For example, one bit determines if the cell has a mine or not, another determines if it has been flagged. This saves a lot of memory (for a DOS computer that is).
+Bitwise operations are a method of manipulating individual bits in a byte, allowing for some very powerful programming. The use I found in Minesweeper is that I can use a single integer variable to store multiple values. Each cell on the board is one integer variable, and the individual bits in it are used to hold different information. For example, one bit determines if the cell has a mine or not, another determines if it has been flagged. This saves a lot of memory (for a DOS computer that is).
 
 In the game code, I have 6 different states for each cell. Some of these can be combined - for example, a field can be both mined and flagged. Rather than having 6 integer variables per cell, I can have just one. I also don't need separate lists to keep track of flags etc. since all information can be in one variable.
 
@@ -40,7 +40,7 @@ Using this scheme, I can combine two states - lets say FieldMined and FieldFlagg
 MineField(1,1) = FieldMined XOR FieldFlagged
 ```
 
-This will combine the bits of the two constans, and leave the cell with a value of 00000011 - the same as the decimal number 3. Later in the code, I can check the state of the cell using the AND operator. For example, I can check if a cell is flagged like so:
+This will combine the bits of the two constants, and leave the cell with a value of 00000011 - the same as the decimal number 3. Later in the code, I can check the state of the cell using the AND operator. For example, I can check if a cell is flagged like so:
 
 ```vb
 IF MineField(1,1) And FieldFlagged THEN
