@@ -525,9 +525,11 @@ SUB IconEdit.Main (IconToLoad AS STRING)
       SELECT CASE CurrentTool
         CASE toolPencil
           DO
-            Mouse.Hide
-            IconEdit.DrawPixel CursorX, CursorY, DrawColor, False
-            Mouse.Show
+            IF NOT IconData.Pixel(CursorX, CursorY) = DrawColor THEN
+              Mouse.Hide
+              IconEdit.DrawPixel CursorX, CursorY, DrawColor, False
+              Mouse.Show
+            END IF
 
             IF Mouse.InArea(txtDrawArea.Pos) THEN
                 Mouse.Poll
