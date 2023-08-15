@@ -143,136 +143,144 @@ SUB TView.Main (FileToView AS STRING)
     btnAbout.Caption = "õAbout..."
     btnExit.Caption = "Eõxit"
 
-    
     IF LEN(LTRIM$(RTRIM$(FileToView))) THEN
-        Filename = LTRIM$(RTRIM$(FileToView))
-        IF NOT File.Exists(Filename) THEN
-            FileOpened = Sys.MsgBox("File not found", FileToView + CHR$(13) + "Textviewer could not find the file you are trying to load.", msgError)
-            EXIT SUB
-        ELSE
-            FileOpened = TView.LoadFile(Filename)
-        END IF
+      Filename = LTRIM$(RTRIM$(FileToView))
+      IF NOT File.Exists(Filename) THEN
+        FileOpened = Sys.MsgBox("File not found", FileToView + CHR$(13) + "Textviewer could not find the file you are trying to load.", msgError)
+        EXIT SUB
+      ELSE
+        FileOpened = TView.LoadFile(Filename)
+      END IF
     ELSE
       REDIM FileData(0) AS STRING
     END IF
 
-startofall:
-
     Obj.DrawMenu
     Mouse.Hide
     LINE (0, 29)-(639, 349), Theme.Window, BF
-    Obj.DrawBtn btnOpen, False
     Mouse.Show
+    Obj.DrawBtn btnOpen, False
 
-    IF FileOpened AND UBOUND(FileData) > 27 THEN
-        Obj.DrawBtn btnPageUp, False
-        Obj.DrawBtn btnPageDown, False
-    END IF
     Obj.DrawBtn btnAbout, False
     Obj.DrawBtn btnExit, False
     Obj.DrawTxt txtEditor, "", False
 
+
+StartOfAll:
+
+    IF FileOpened AND UBOUND(FileData) > 27 THEN
+      'Only visible when file opened
+      Obj.DrawBtn btnPageUp, False
+      Obj.DrawBtn btnPageDown, False
+    ELSEIF FileOpened THEN
+      'Hide when file opened but not longer than what fits on screen
+      Mouse.Hide
+      LINE (102, 2)-(293, 24), Theme.Window, BF
+      Mouse.Show
+    END IF
+
     IF FileOpened THEN
-        StartLine = 1
-        TView.DrawText StartLine
+      StartLine = 1
+      TView.DrawText StartLine
     END IF
     
     DIM Key$
     DO
-        Key$ = LCASE$(INKEY$)
+      Key$ = LCASE$(INKEY$)
 
-        'Key up
-        IF Key$ = CHR$(0) + "h" AND FileOpened THEN
-            OldStartLine = StartLine
-            StartLine = StartLine - 1
-            IF StartLine = 0 THEN StartLine = 1
-            IF NOT StartLine = OldStartLine THEN
-                Mouse.Hide
+      'Key up
+      IF Key$ = CHR$(0) + "h" AND FileOpened THEN
+        OldStartLine = StartLine
+        StartLine = StartLine - 1
+        IF StartLine = 0 THEN StartLine = 1
+        IF NOT StartLine = OldStartLine THEN
+          Mouse.Hide
 
-                FOR LineMove = MaxLinesShown TO 1 STEP -1
-                    GET (7, (15 * (LineMove)) + 21)-(633, 15 * (LineMove) + 35), LineData
-                    PUT (7, (15 * (LineMove + 1)) + 21), LineData, PSET
-                NEXT
-                LINE (7, (15 * (1)) + 21)-(633, 15 * (1) + 35), Theme.Textbox, BF
-                Font.Print FileData(StartLine), 9, (15 * (1)) + 22, Theme.TextboxText, FontSystem
+          FOR LineMove = MaxLinesShown TO 1 STEP -1
+            GET (7, (15 * (LineMove)) + 21)-(633, 15 * (LineMove) + 35), LineData
+            PUT (7, (15 * (LineMove + 1)) + 21), LineData, PSET
+          NEXT
+          LINE (7, (15 * (1)) + 21)-(633, 15 * (1) + 35), Theme.Textbox, BF
+          Font.Print FileData(StartLine), 9, (15 * (1)) + 22, Theme.TextboxText, FontSystem
 
-                Mouse.Show
-            END IF
+          Mouse.Show
         END IF
-        
-        'Key down
-        IF Key$ = CHR$(0) + "p" AND FileOpened THEN
-            OldStartLine = StartLine
-            StartLine = StartLine + 1
-            IF StartLine > UBOUND(FileData) - 26 THEN
-                StartLine = UBOUND(FileData) - 26
-                IF StartLine < 1 THEN StartLine = 1
-            END IF
-            IF NOT StartLine = OldStartLine THEN
-                Mouse.Hide
-                FOR LineMove = 1 TO MaxLinesShown
-                    GET (7, (15 * (LineMove + 1)) + 22)-(633, 15 * (LineMove + 1) + 36), LineData
-                    PUT (7, (15 * (LineMove)) + 22), LineData, PSET
-                NEXT
-                LINE (7, (15 * (MaxLinesShown + 1)) + 21)-(633, 15 * (MaxLinesShown + 1) + 35), Theme.Textbox, BF
-                Font.Print FileData(StartLine + MaxLinesShown), 9, (15 * (MaxLinesShown + 1)) + 22, Theme.TextboxText, FontSystem
-                Mouse.Show
-            END IF
-        END IF
+      END IF
 
-        'Page up
-        IF (Obj.BtnClick(btnPageUp) OR Key$ = "u" OR Key$ = CHR$(0) + "i") AND FileOpened THEN
-            OldStartLine = StartLine
-            StartLine = StartLine - (MaxLinesShown + 1)
-            IF StartLine < 1 THEN StartLine = 1
-            IF NOT StartLine = OldStartLine THEN TView.DrawText StartLine
+      'Key down
+      IF Key$ = CHR$(0) + "p" AND FileOpened THEN
+        OldStartLine = StartLine
+        StartLine = StartLine + 1
+        IF StartLine > UBOUND(FileData) - 26 THEN
+          StartLine = UBOUND(FileData) - 26
+          IF StartLine < 1 THEN StartLine = 1
         END IF
+        IF NOT StartLine = OldStartLine THEN
+          Mouse.Hide
+          FOR LineMove = 1 TO MaxLinesShown
+            GET (7, (15 * (LineMove + 1)) + 22)-(633, 15 * (LineMove + 1) + 36), LineData
+            PUT (7, (15 * (LineMove)) + 22), LineData, PSET
+          NEXT
+          LINE (7, (15 * (MaxLinesShown + 1)) + 21)-(633, 15 * (MaxLinesShown + 1) + 35), Theme.Textbox, BF
+          Font.Print FileData(StartLine + MaxLinesShown), 9, (15 * (MaxLinesShown + 1)) + 22, Theme.TextboxText, FontSystem
+          Mouse.Show
+        END IF
+      END IF
 
-        'Page down
-        IF (Obj.BtnClick(btnPageDown) OR Key$ = "d" OR Key$ = CHR$(0) + "q") AND FileOpened THEN
-            OldStartLine = StartLine
-            StartLine = StartLine + MaxLinesShown + 1
-            IF StartLine > UBOUND(FileData) - MaxLinesShown THEN
-                StartLine = UBOUND(FileData) - MaxLinesShown
-                IF StartLine < 1 THEN StartLine = 1
-            END IF
-            IF NOT StartLine = OldStartLine THEN TView.DrawText StartLine
-        END IF
+      'Page up
+      IF (Obj.BtnClick(btnPageUp) OR Key$ = "u" OR Key$ = CHR$(0) + "i") AND FileOpened THEN
+        OldStartLine = StartLine
+        StartLine = StartLine - (MaxLinesShown + 1)
+        IF StartLine < 1 THEN StartLine = 1
+        IF NOT StartLine = OldStartLine THEN TView.DrawText StartLine
+      END IF
 
-        'Home
-        IF Key$ = CHR$(0) + "g" THEN
-            IF NOT StartLine = 1 THEN StartLine = 1: TView.DrawText StartLine
+      'Page down
+      IF (Obj.BtnClick(btnPageDown) OR Key$ = "d" OR Key$ = CHR$(0) + "q") AND FileOpened THEN
+        OldStartLine = StartLine
+        StartLine = StartLine + MaxLinesShown + 1
+        IF StartLine > UBOUND(FileData) - MaxLinesShown THEN
+          StartLine = UBOUND(FileData) - MaxLinesShown
+          IF StartLine < 1 THEN StartLine = 1
         END IF
+        IF NOT StartLine = OldStartLine THEN TView.DrawText StartLine
+      END IF
 
-        'End
-        IF Key$ = CHR$(0) + "o" THEN
-            OldStartLine = StartLine
-            StartLine = UBOUND(FileData) - MaxLinesShown
-            IF StartLine < 1 THEN StartLine = 1
-            IF NOT StartLine = OldStartLine THEN TView.DrawText StartLine
-        END IF
-        
-        IF Obj.BtnClick(btnOpen) OR Key$ = "o" THEN
-            OldFileName = Filename
-            OldFileOpened = FileOpened
-            Filename = File.Select("*.TXT")
-            IF NOT Filename = "" AND NOT Filename = OldFileName THEN
-                FileOpened = TView.LoadFile(Filename)
-            ELSE
-                FileOpened = OldFileOpened
-                Filename = OldFileName
-            END IF
-            GOTO startofall
-        END IF
+      'Home
+      IF Key$ = CHR$(0) + "g" THEN
+        IF NOT StartLine = 1 THEN StartLine = 1: TView.DrawText StartLine
+      END IF
 
-        IF Obj.BtnClick(btnAbout) OR Key$ = "a" THEN
-          Sys.AboutBox "Text Viewer", "Jacob Palm", "DOCUMENT"
-        END IF
+      'End
+      IF Key$ = CHR$(0) + "o" THEN
+        OldStartLine = StartLine
+        StartLine = UBOUND(FileData) - MaxLinesShown
+        IF StartLine < 1 THEN StartLine = 1
+        IF NOT StartLine = OldStartLine THEN TView.DrawText StartLine
+      END IF
 
-        IF Obj.BtnClick(btnExit) OR Key$ = "x" OR Key$ = CHR$(27) THEN
-            REDIM FileData(1) AS STRING
-            EXIT SUB
+      IF Obj.BtnClick(btnOpen) OR Key$ = "o" THEN
+        OldFileName = Filename
+        OldFileOpened = FileOpened
+        Filename = File.Select("*.TXT")
+        IF NOT Filename = "" AND NOT Filename = OldFileName THEN
+          FileOpened = TView.LoadFile(Filename)
+        ELSE
+          FileOpened = OldFileOpened
+          Filename = OldFileName
         END IF
+        Obj.DrawTxt txtEditor, "", False
+        GOTO StartOfAll
+      END IF
+
+      IF Obj.BtnClick(btnAbout) OR Key$ = "a" THEN
+        Sys.AboutBox "Text Viewer", "Jacob Palm", "DOCUMENT"
+      END IF
+
+      IF Obj.BtnClick(btnExit) OR Key$ = "x" OR Key$ = CHR$(27) THEN
+        REDIM FileData(1) AS STRING
+        EXIT SUB
+      END IF
 
     LOOP
             

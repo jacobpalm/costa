@@ -594,21 +594,21 @@ SUB Obj.EditTxt (TargetTxt AS TextboxType, Text AS STRING)
 			SELECT CASE ASC(Key$)
 				CASE 8 'Backspace
 					IF LEN(TempTxt) > 0 THEN
-						Mouse.Hide
 						IF Font.GetWidth(TempTxt, FontHeading) + 2 < MaxShow THEN
 							'Erase only the last char
+							Mouse.Hide
 							LineX1 = x1 + Font.GetWidth(TempTxt, FontHeading)
 							LINE (LineX1 + 2, y1 - 2)-(LineX1 - Font.GetWidth(RIGHT$(TempTxt, 1), FontHeading), y1 + 11), Theme.Textbox, BF
 							TempTxt = LEFT$(TempTxt, LEN(TempTxt) - 1)
 							LineX1 = x1 + Font.GetWidth(TempTxt, FontHeading) + 2
 							LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), Theme.TextboxText
+							Mouse.Show
 						ELSE
 							'There's more text that's not shown, so we'll
 							'have to redraw the entire textbox
 							TempTxt = LEFT$(TempTxt, LEN(TempTxt) - 1)
 							Obj.DrawTxt TargetTxt, TempTxt, True
 						END IF
-						Mouse.Show
 					END IF
 
 				CASE 13 'Enter
@@ -621,19 +621,19 @@ SUB Obj.EditTxt (TargetTxt AS TextboxType, Text AS STRING)
 
 				CASE 32 TO 126 'Any printable character
 					IF NOT LEN(TempTxt) = MaxLen THEN
-						Mouse.Hide
 						IF Font.GetWidth(TempTxt + Key$, FontHeading) + 2 < MaxShow THEN
+							Mouse.Hide
 							LineX1 = x1 + Font.GetWidth(TempTxt, FontHeading) + 2
 							LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), Theme.Textbox
 							TempTxt = TempTxt + Key$
 							Font.Print TempTxt, x1, y1, Theme.TextboxText, FontHeading
 							LineX1 = x1 + Font.GetWidth(TempTxt, FontHeading) + 2
 							LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), Theme.TextboxText
+							Mouse.Show
 						ELSE
 							TempTxt = TempTxt + Key$
 							Obj.DrawTxt TargetTxt, TempTxt, True
 						END IF
-						Mouse.Show
 					END IF
 
 				CASE 27 'Escape
@@ -707,6 +707,7 @@ SUB Sys.AboutBox (ProgramName AS STRING, ProgramAuthor AS STRING, IconFile AS ST
 
 	Mouse.Hide
 	PCOPY 0, 1
+	Mouse.Show
 
 	Obj.DrawWin winAboutBox
 	Obj.DrawBtn btnClose, False
@@ -720,17 +721,15 @@ SUB Sys.AboutBox (ProgramName AS STRING, ProgramAuthor AS STRING, IconFile AS ST
 	Font.Print "Open sourced and may be freely distributed under", 168, winAboutBox.Pos.Top + 95, 0, 2
 	Font.Print "the terms of the MIT License. More details can", 168, winAboutBox.Pos.Top + 109, 0, 2
 	Font.Print "be found in the LICENSE file.", 168, winAboutBox.Pos.Top + 123, 0, 2
-
 	Font.Print "More information and news can be found online at", 168, winAboutBox.Pos.Top + 151, 0, 2
 	Font.Print "https://costa.jacobpalm.dk", 168, winAboutBox.Pos.Top + 165, 0, 2
-
 	Mouse.Show
 
 	DO: LOOP WHILE Mouse.Clicked
 	DO
 
-	Key$ = LCASE$(INKEY$)
-	IF Obj.BtnClick(btnClose) OR Key$ = CHR$(13) OR Key$ = CHR$(27) OR Key$ = "c" THEN EXIT DO
+		Key$ = LCASE$(INKEY$)
+		IF Obj.BtnClick(btnClose) OR Key$ = CHR$(13) OR Key$ = CHR$(27) OR Key$ = "c" THEN EXIT DO
 
 	LOOP
 
@@ -919,6 +918,7 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	Obj.DrawWin winMsgBox
 	Obj.DrawBtn btnFirst, False
 	IF msgType = msgQuest THEN Obj.DrawBtn btnSecond, False
+	Obj.DrawImg imgIcon
 
 	Mouse.Hide
 	Font.Print msgTitle, winMsgBox.Pos.Left + 56, winMsgBox.Pos.Top + 15, Theme.WindowText, 1
@@ -929,8 +929,6 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	NEXT
 	Mouse.Show
 	
-	Obj.DrawImg imgIcon
-
 	DIM Key$
 	DO
 

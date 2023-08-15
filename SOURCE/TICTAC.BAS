@@ -264,49 +264,47 @@ END SUB
 ' =========================================================================
 SUB Tic.DrawXO (FieldRow, FieldCol, FieldValue)
 
-		DIM XCoord, YCoord
-		XCoord = txtPlayField(FieldRow, FieldCol).Pos.Left
-		YCoord = txtPlayField(FieldRow, FieldCol).Pos.Top
-		
-		SELECT CASE FieldValue
-			CASE PlayerX
-				Mouse.Hide
-				LINE (XCoord + 11, YCoord + 12)-(XCoord + 48, YCoord + 49), 0
-				LINE (XCoord + 11, YCoord + 13)-(XCoord + 47, YCoord + 49), 0
-				LINE (XCoord + 12, YCoord + 12)-(XCoord + 49, YCoord + 49), 0
-				LINE (XCoord + 13, YCoord + 12)-(XCoord + 49, YCoord + 48), 0
-				LINE (XCoord + 11, YCoord + 48)-(XCoord + 47, YCoord + 12), 0
-				LINE (XCoord + 11, YCoord + 49)-(XCoord + 48, YCoord + 12), 0
-				LINE (XCoord + 12, YCoord + 49)-(XCoord + 49, YCoord + 12), 0
-				LINE (XCoord + 13, YCoord + 49)-(XCoord + 49, YCoord + 13), 0
-				Mouse.Show
-			CASE PlayerO
-				Mouse.Hide
-				CIRCLE (XCoord + 30, YCoord + 30), 19, 0, , , 1
-				CIRCLE (XCoord + 30, YCoord + 30), 18, 0, , , 1
-				CIRCLE (XCoord + 30, YCoord + 30), 17, 0, , , 1
-				PSET (XCoord + 14, YCoord + 23), 0
-				PSET (XCoord + 15, YCoord + 21), 0
-				PSET (XCoord + 21, YCoord + 15), 0
-				PSET (XCoord + 23, YCoord + 14), 0
-				PSET (XCoord + 14, YCoord + 37), 0
-				PSET (XCoord + 15, YCoord + 39), 0
-				PSET (XCoord + 21, YCoord + 45), 0
-				PSET (XCoord + 23, YCoord + 46), 0
-				PSET (XCoord + 37, YCoord + 46), 0
-				PSET (XCoord + 39, YCoord + 45), 0
-				PSET (XCoord + 45, YCoord + 39), 0
-				PSET (XCoord + 46, YCoord + 37), 0
-				PSET (XCoord + 46, YCoord + 23), 0
-				PSET (XCoord + 45, YCoord + 21), 0
-				PSET (XCoord + 39, YCoord + 15), 0
-				PSET (XCoord + 37, YCoord + 14), 0
-				LINE (XCoord + 16, YCoord + 18)-(XCoord + 18, YCoord + 16), 0
-				LINE (XCoord + 42, YCoord + 16)-(XCoord + 44, YCoord + 18), 0
-				LINE (XCoord + 44, YCoord + 42)-(XCoord + 42, YCoord + 44), 0
-				LINE (XCoord + 16, YCoord + 42)-(XCoord + 18, YCoord + 44), 0
-				Mouse.Show
-		END SELECT
+	DIM XCoord, YCoord
+	XCoord = txtPlayField(FieldRow, FieldCol).Pos.Left
+	YCoord = txtPlayField(FieldRow, FieldCol).Pos.Top
+
+	Mouse.Hide
+	SELECT CASE FieldValue
+		CASE PlayerX
+			LINE (XCoord + 11, YCoord + 12)-(XCoord + 48, YCoord + 49), 0
+			LINE (XCoord + 11, YCoord + 13)-(XCoord + 47, YCoord + 49), 0
+			LINE (XCoord + 12, YCoord + 12)-(XCoord + 49, YCoord + 49), 0
+			LINE (XCoord + 13, YCoord + 12)-(XCoord + 49, YCoord + 48), 0
+			LINE (XCoord + 11, YCoord + 48)-(XCoord + 47, YCoord + 12), 0
+			LINE (XCoord + 11, YCoord + 49)-(XCoord + 48, YCoord + 12), 0
+			LINE (XCoord + 12, YCoord + 49)-(XCoord + 49, YCoord + 12), 0
+			LINE (XCoord + 13, YCoord + 49)-(XCoord + 49, YCoord + 13), 0
+		CASE PlayerO
+			CIRCLE (XCoord + 30, YCoord + 30), 19, 0, , , 1
+			CIRCLE (XCoord + 30, YCoord + 30), 18, 0, , , 1
+			CIRCLE (XCoord + 30, YCoord + 30), 17, 0, , , 1
+			PSET (XCoord + 14, YCoord + 23), 0
+			PSET (XCoord + 15, YCoord + 21), 0
+			PSET (XCoord + 21, YCoord + 15), 0
+			PSET (XCoord + 23, YCoord + 14), 0
+			PSET (XCoord + 14, YCoord + 37), 0
+			PSET (XCoord + 15, YCoord + 39), 0
+			PSET (XCoord + 21, YCoord + 45), 0
+			PSET (XCoord + 23, YCoord + 46), 0
+			PSET (XCoord + 37, YCoord + 46), 0
+			PSET (XCoord + 39, YCoord + 45), 0
+			PSET (XCoord + 45, YCoord + 39), 0
+			PSET (XCoord + 46, YCoord + 37), 0
+			PSET (XCoord + 46, YCoord + 23), 0
+			PSET (XCoord + 45, YCoord + 21), 0
+			PSET (XCoord + 39, YCoord + 15), 0
+			PSET (XCoord + 37, YCoord + 14), 0
+			LINE (XCoord + 16, YCoord + 18)-(XCoord + 18, YCoord + 16), 0
+			LINE (XCoord + 42, YCoord + 16)-(XCoord + 44, YCoord + 18), 0
+			LINE (XCoord + 44, YCoord + 42)-(XCoord + 42, YCoord + 44), 0
+			LINE (XCoord + 16, YCoord + 42)-(XCoord + 18, YCoord + 44), 0
+	END SELECT
+	Mouse.Show
 
 END SUB
 
@@ -656,5 +654,6 @@ SUB Tic.PrintStatus ()
 	LINE (162, 316)-(477, 332), 2, BF
 	Font.Print Message, (640 - Font.GetWidth(Message, fontHeading)) / 2, 320, 0, fontHeading
 	Mouse.Show
+
 END SUB
 

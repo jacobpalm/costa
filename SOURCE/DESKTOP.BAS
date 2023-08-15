@@ -303,7 +303,6 @@ LinkDialogDraw:
 	Mouse.Show
 	Obj.DrawImg imgIcon
 
-	DIM IconChanged
 	DIM Key$
 
 	DO
@@ -316,11 +315,8 @@ LinkDialogDraw:
 			DeskLink(TargetLink).Path = RTRIM$(txtPathText)
 			DeskLink(TargetLink).Parameters = RTRIM$(txtParamsText)
 			DeskLink(TargetLink).PauseOnExit = chkPauseOnExit.Checked
-
-			IF IconChanged = True THEN
-				DeskLink(TargetLink).ImageFile = AllIcons(CurrentIcon)
-			END IF
-
+			DeskLink(TargetLink).ImageFile = AllIcons(CurrentIcon)
+			
 			Desk.LinkSave
 			DidEdit = -1
 
@@ -333,7 +329,6 @@ LinkDialogDraw:
 		END IF
 
 		IF Obj.BtnClick(btnIconPrev) OR Key$ = CHR$(0) + "k" THEN
-			IconChanged = True
 			CurrentIcon = CurrentIcon - 1
 			IF CurrentIcon < 0 THEN CurrentIcon = UBOUND(AllIcons)
 			Mouse.Hide
@@ -344,7 +339,6 @@ LinkDialogDraw:
 		END IF
 
 		IF Obj.BtnClick(btnIconNext) OR Key$ = CHR$(0) + "m" THEN
-			IconChanged = True
 			CurrentIcon = CurrentIcon + 1
 			IF CurrentIcon > UBOUND(AllIcons) THEN CurrentIcon = 0
 			Mouse.Hide
@@ -477,6 +471,7 @@ SUB Desk.LinkMenu (TargetLink)
 	
 	Mouse.Hide
 	PCOPY 0, 1
+	Mouse.Show
 	
 	Obj.DrawWin winLinkMenu
 	Obj.DrawBtn btnOpen, False
@@ -486,6 +481,7 @@ SUB Desk.LinkMenu (TargetLink)
 	Obj.DrawBtn btnCancel, False
 	Obj.DrawImg imgIcon
 
+	Mouse.Hide
 	Font.Print DeskLink(TargetLink).Caption, winLinkMenu.Pos.Left + 54, winLinkMenu.Pos.Top + 17, 0, FontHeading
 	Font.Print DeskLink(TargetLink).Filename, winLinkMenu.Pos.Left + 54, winLinkMenu.Pos.Top + 31, 0, FontNormal
 	Font.Print "Path:", winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 59, 0, FontNormal
@@ -493,86 +489,88 @@ SUB Desk.LinkMenu (TargetLink)
 	
 	VIEW SCREEN (winLinkMenu.Pos.Left + 90, winLinkMenu.Pos.Top + 55)-(winLinkMenu.Pos.Left + winLinkMenu.Pos.Width - 12, winLinkMenu.Pos.Top + 90)
 	IF LEN(RTRIM$(DeskLink(TargetLink).Path)) THEN
-	Font.Print DeskLink(TargetLink).Path, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 59, Theme.WindowText, FontNormal
+		Font.Print DeskLink(TargetLink).Path, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 59, Theme.WindowText, FontNormal
 	ELSE
-	Font.Print "Unspecified", winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 59, Theme.WindowText, FontNormal
+		Font.Print "Unspecified", winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 59, Theme.WindowText, FontNormal
 	END IF
 	IF LEN(RTRIM$(DeskLink(TargetLink).Parameters)) THEN
-	Font.Print DeskLink(TargetLink).Parameters, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 76, Theme.WindowText, FontNormal
+		Font.Print DeskLink(TargetLink).Parameters, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 76, Theme.WindowText, FontNormal
 	ELSE
-	Font.Print "None", winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 76, Theme.WindowText, FontNormal
+		Font.Print "None", winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 76, Theme.WindowText, FontNormal
 	END IF
 	VIEW
 	Mouse.Show
 
+	'Clear buffers, sometimes needed on DOSBox
 	DO: LOOP WHILE Mouse.Clicked
 	DO: LOOP WHILE LEN(INKEY$)
+
 	DO
 
-	Key$ = LCASE$(INKEY$)
+		Key$ = LCASE$(INKEY$)
 	
-	'Cancel, or Escape key
-	IF Obj.BtnClick(btnCancel) OR Key$ = "c" OR Key$ = CHR$(27) THEN
-		EXIT DO
-	END IF
+		'Cancel, or Escape key
+		IF Obj.BtnClick(btnCancel) OR Key$ = "c" OR Key$ = CHR$(27) THEN
+			EXIT DO
+		END IF
 	
-	'Open/run, or Enter key
-	IF Obj.BtnClick(btnOpen) OR Key$ = "o" OR Key$ = CHR$(13) THEN
-		Desk.Run RTRIM$(DeskLink(TargetLink).Filename), RTRIM$(DeskLink(TargetLink).Parameters), RTRIM$(DeskLink(TargetLink).Path), DeskLink(TargetLink).PauseOnExit
-	END IF
-
-	'Configure
-	IF Obj.BtnClick(btnCustomize) OR Key$ = "u" THEN
-		Desk.LinkDialog TargetLink, DidEdit
-		IF DidEdit = True THEN RedrawNeeded = True
-		EXIT DO
-	END IF
-
-	'Move
-	IF Obj.BtnClick(btnMove) OR Key$ = "m" THEN
-
-		IF RedrawNeeded THEN
-		Desk.DrawDesktop
-		ELSE
-		Mouse.Hide
-		PCOPY 1, 0
-		Mouse.Show
+		'Open/run, or Enter key
+		IF Obj.BtnClick(btnOpen) OR Key$ = "o" OR Key$ = CHR$(13) THEN
+			Desk.Run RTRIM$(DeskLink(TargetLink).Filename), RTRIM$(DeskLink(TargetLink).Parameters), RTRIM$(DeskLink(TargetLink).Path), DeskLink(TargetLink).PauseOnExit
 		END IF
 
-		Desk.LinkMove TargetLink
-		Desk.DrawDesktop
-		EXIT SUB
-	END IF
-
-	'Remove
-	IF Obj.BtnClick(btnRemove) OR Key$ = "r" THEN
-		DIM DoDelete
-
-		RedrawNeeded = True
-		IF Setting.ConfirmLinkDelete THEN
-		DoDelete = Sys.MsgBox("Remove desktop link", "This will permanently delete this" + CHR$(13) + "desktop link. Are you sure?", msgQuest)
-		ELSE
-		DoDelete = True
+		'Configure
+		IF Obj.BtnClick(btnCustomize) OR Key$ = "u" THEN
+			Desk.LinkDialog TargetLink, DidEdit
+			IF DidEdit = True THEN RedrawNeeded = True
+			EXIT DO
 		END IF
 
-		IF DoDelete THEN
-		DeskLink(TargetLink).Caption = ""
-		Desk.LinkSave
-		Desk.LinkLoad
-		Desk.DrawDesktop
-		DO: LOOP WHILE Mouse.Clicked
-		EXIT SUB
+		'Move
+		IF Obj.BtnClick(btnMove) OR Key$ = "m" THEN
+
+			IF RedrawNeeded THEN
+				Desk.DrawDesktop
+			ELSE
+				Mouse.Hide
+				PCOPY 1, 0
+				Mouse.Show
+			END IF
+
+			Desk.LinkMove TargetLink
+			Desk.DrawDesktop
+			EXIT SUB
 		END IF
-	END IF
+
+		'Remove
+		IF Obj.BtnClick(btnRemove) OR Key$ = "r" THEN
+			DIM DoDelete
+
+			RedrawNeeded = True
+			IF Setting.ConfirmLinkDelete THEN
+				DoDelete = Sys.MsgBox("Remove desktop link", "This will permanently delete this" + CHR$(13) + "desktop link. Are you sure?", msgQuest)
+			ELSE
+				DoDelete = True
+			END IF
+
+			IF DoDelete THEN
+				DeskLink(TargetLink).Caption = ""
+				Desk.LinkSave
+				Desk.LinkLoad
+				Desk.DrawDesktop
+				DO: LOOP WHILE Mouse.Clicked
+				EXIT SUB
+			END IF
+		END IF
 
 	LOOP
 
 	IF RedrawNeeded THEN
-	Desk.DrawDesktop
+		Desk.DrawDesktop
 	ELSE
-	Mouse.Hide
-	PCOPY 1, 0
-	Mouse.Show
+		Mouse.Hide
+		PCOPY 1, 0
+		Mouse.Show
 	END IF
 			 
 END SUB
@@ -787,18 +785,17 @@ SUB Desk.Main ()
 	DIM btnPrevious AS ButtonType, btnNext AS ButtonType
 	
 	Obj.SetSize btnAddLink.Pos, 3, 2, 92, 22
-	btnAddLink.Caption = "Add õicon"
 	Obj.SetSize btnRunCmd.Pos, 102, 2, 92, 22
-	btnRunCmd.Caption = "õExecute"
-
 	Obj.SetSize btnPrevious.Pos, 255, 2, 42, 22
-	btnPrevious.Caption = "õ<"
 	Obj.SetSize btnNext.Pos, 343, 2, 42, 22
-	btnNext.Caption = "õ>"
-
 	Obj.SetSize btnAboutCosta.Pos, 446, 2, 92, 22
-	btnAboutCosta.Caption = "õAbout..."
 	Obj.SetSize btnExitCosta.Pos, 545, 2, 92, 22
+
+	btnAddLink.Caption = "Add õicon"
+	btnRunCmd.Caption = "õExecute"
+	btnPrevious.Caption = "õ<"
+	btnNext.Caption = "õ>"
+	btnAboutCosta.Caption = "õAbout..."
 	btnExitCosta.Caption = "Eõxit"
 
 	DIM DeskLinkCheck, ClickedX, ClickedY, ClickedB, DidEdit, Key$
@@ -811,7 +808,6 @@ SUB Desk.Main ()
 Desk.RedrawAll:
 	TabCheck = -1
 
-	Mouse.Hide
 	Obj.DrawMenu
 	Obj.DrawBtn btnAddLink, False
 	Obj.DrawBtn btnRunCmd, False
@@ -819,169 +815,168 @@ Desk.RedrawAll:
 	Obj.DrawBtn btnNext, False
 	Obj.DrawBtn btnAboutCosta, False
 	Obj.DrawBtn btnExitCosta, False
+	Mouse.Hide
 	Font.Print LTRIM$(STR$(Setting.DesktopID)) + "/5", 310, 8, Theme.WindowText, FontHeading
-	Desk.DrawDesktop
 	Mouse.Show
-
+	Desk.DrawDesktop
+	
 	DO
 
-	Key$ = LCASE$(INKEY$)
+		Key$ = LCASE$(INKEY$)
 
-	IF Obj.BtnClick(btnAddLink) THEN Key$ = "i"
-	IF Obj.BtnClick(btnRunCmd) THEN Key$ = "e"
-	IF Obj.BtnClick(btnPrevious) THEN Key$ = CHR$(0) + "k"
-	IF Obj.BtnClick(btnNext) THEN Key$ = CHR$(0) + "m"
-	IF Obj.BtnClick(btnAboutCosta) THEN Key$ = "a"
-	IF Obj.BtnClick(btnExitCosta) THEN Key$ = "x"
+		IF Obj.BtnClick(btnAddLink) THEN Key$ = "i"
+		IF Obj.BtnClick(btnRunCmd) THEN Key$ = "e"
+		IF Obj.BtnClick(btnPrevious) THEN Key$ = CHR$(0) + "k"
+		IF Obj.BtnClick(btnNext) THEN Key$ = CHR$(0) + "m"
+		IF Obj.BtnClick(btnAboutCosta) THEN Key$ = "a"
+		IF Obj.BtnClick(btnExitCosta) THEN Key$ = "x"
 
-	Mouse.Poll
-	IF Mouse.Clicked AND MouseY > 32 THEN
-		ClickedB = Mouse.Clicked: ClickedX = MouseX: ClickedY = MouseY
+		Mouse.Poll
+		IF Mouse.Clicked AND MouseY > 32 THEN
+			ClickedB = Mouse.Clicked: ClickedX = MouseX: ClickedY = MouseY
 		
-		'The mouse was clicked. Before checking if a desktop link was clicked,
-		'check to see if any desktop links are present
-		IF NOT RTRIM$(DeskLink(0).Caption) = "" THEN
-		FOR DeskLinkCheck = UBOUND(DeskLink) TO 0 STEP -1
+			'The mouse was clicked. Before checking if a desktop link was clicked,
+			'check to see if any desktop links are present
+			IF NOT RTRIM$(DeskLink(0).Caption) = "" THEN
+			FOR DeskLinkCheck = UBOUND(DeskLink) TO 0 STEP -1
 
-			'Check if the mouse was within the coordinates of the link
-			IF ClickedX >= DeskLink(DeskLinkCheck).Left AND ClickedX <= DeskLink(DeskLinkCheck).Left + 31 THEN
-			IF ClickedY >= DeskLink(DeskLinkCheck).Top AND ClickedY <= DeskLink(DeskLinkCheck).Top + 31 THEN
+				'Check if the mouse was within the coordinates of the link
+				IF ClickedX >= DeskLink(DeskLinkCheck).Left AND ClickedX <= DeskLink(DeskLinkCheck).Left + 31 THEN
+				IF ClickedY >= DeskLink(DeskLinkCheck).Top AND ClickedY <= DeskLink(DeskLinkCheck).Top + 31 THEN
 
-				'If we reach this point, the link was clicked.
-				Desk.LinkMenu DeskLinkCheck
-				'Exit FOR, otherwise overlapping icons will also be clicked
-				EXIT FOR
+					'If we reach this point, the link was clicked.
+					Desk.LinkMenu DeskLinkCheck
+					'Exit FOR, otherwise overlapping icons will also be clicked
+					EXIT FOR
 
-			END IF
-			END IF
-
-		NEXT
-		END IF
-	END IF
-
-	IF LEN(Key$) THEN
-
-		IF Key$ = "i" THEN
-			REDIM PRESERVE DeskLink(0 TO UBOUND(DeskLink) + 1) AS DeskLinkType
-			
-			DeskLink(UBOUND(DeskLink)).Caption = "Unnamed"
-			DeskLink(UBOUND(DeskLink)).Filename = ""
-			DeskLink(UBOUND(DeskLink)).Path = ""
-			DeskLink(UBOUND(DeskLink)).Parameters = ""
-			DeskLink(UBOUND(DeskLink)).ImageFile = "PROGRAM"
-			DeskLink(UBOUND(DeskLink)).Left = 8
-			DeskLink(UBOUND(DeskLink)).Top = 40
-
-			Mouse.Hide
-			PCOPY 0, 1
-			Mouse.Show
-
-			Desk.LinkDialog UBOUND(DeskLink), DidEdit
-
-			IF DidEdit THEN
-				TabCheck = -1
-				Desk.LinkLoad
-				Mouse.Hide
-				Desk.DrawDesktop
-				Mouse.Show
-			ELSE
-				REDIM PRESERVE DeskLink(0 TO UBOUND(DeskLink) - 1) AS DeskLinkType
-				Mouse.Hide
-				PCOPY 1, 0
-				Mouse.Show
-			END IF
-
-		END IF
-
-		IF Key$ = "e" THEN
-			Desk.ExecuteDialog
-		END IF
-
-		IF Key$ = "a" THEN
-			Sys.AboutBox "Desktop", "Jacob Palm", "LOGO"
-		END IF
-
-		IF Key$ = CHR$(0) + "k" OR Key$ = CHR$(0) + "m" THEN
-			IF Key$ = CHR$(0) + "k" THEN
-				Setting.DesktopID = Setting.DesktopID - 1
-				IF Setting.DesktopID < 1 THEN Setting.DesktopID = 5
-			ELSE
-				Setting.DesktopID = Setting.DesktopID + 1
-				IF Setting.DesktopID > 5 THEN Setting.DesktopID = 1
-			END IF
-			Mouse.Hide
-			LINE (310, 7)-(330, 16), Theme.Window, BF
-			Font.Print LTRIM$(STR$(Setting.DesktopID)) + "/5", 310, 8, Theme.WindowText, FontHeading
-			Mouse.Show
-			Desk.LinkLoad
-			Desk.DrawDesktop
-			TabCheck = -1
-		END IF
-
-		IF Key$ = "x" OR Key$ = CHR$(27) THEN
-			DIM DoExit
-			IF Setting.ConfirmExit THEN
-				DoExit = Sys.MsgBox("Exit " + appName, "This will exit Costa and return you to the DOS" + CHR$(13) + "prompt. Are you sure?", msgQuest)
-			ELSE
-				DoExit = True
-			END IF
-
-			IF DoExit = True THEN
-				Mouse.Hide
-				Sys.SaveSettings
-				SCREEN 0
-				COLOR 7, 0
-				'Errorcode 1 makes the COSTA.BAT file exit its loop
-				END 1
-			END IF
-		END IF
-
-		'TAB or Shift+TAB
-		IF Key$ = CHR$(9) OR Key$ = CHR$(0) + CHR$(15) THEN
-			'If there's only one item in the DESKLINK array, and it has no caption
-			'then there are no desktop links to cycle
-			IF NOT (UBOUND(DeskLink) = 0 AND RTRIM$(DeskLink(0).Caption) = "") THEN
-				IF TabCheck > -1 THEN
-					Mouse.Hide
-					LINE (DeskLink(TabCheck).Left - 3, DeskLink(TabCheck).Top - 3)-(DeskLink(TabCheck).Left + 35, DeskLink(TabCheck).Top + 35), Theme.Desktop, BF
-					Obj.DrawImg imgTab
-					Mouse.Show
+				END IF
 				END IF
 
-				IF Key$ = CHR$(9) THEN
-					TabCheck = TabCheck + 1
-					IF TabCheck > UBOUND(DeskLink) THEN TabCheck = 0
-				ELSE
-					TabCheck = TabCheck - 1
-					IF TabCheck < 0 THEN TabCheck = UBOUND(DeskLink)
-				END IF
+			NEXT
+			END IF
+		END IF
+
+		IF LEN(Key$) THEN
+
+			IF Key$ = "i" THEN
+				REDIM PRESERVE DeskLink(0 TO UBOUND(DeskLink) + 1) AS DeskLinkType
 			
-				IF DeskLink(TabCheck).ImageFile = STRING$(8, 0) THEN
+				DeskLink(UBOUND(DeskLink)).Caption = "Unnamed"
+				DeskLink(UBOUND(DeskLink)).Filename = ""
+				DeskLink(UBOUND(DeskLink)).Path = ""
+				DeskLink(UBOUND(DeskLink)).Parameters = ""
+				DeskLink(UBOUND(DeskLink)).ImageFile = "PROGRAM"
+				DeskLink(UBOUND(DeskLink)).Left = 8
+				DeskLink(UBOUND(DeskLink)).Top = 40
+
+				Mouse.Hide
+				PCOPY 0, 1
+				Mouse.Show
+
+				Desk.LinkDialog UBOUND(DeskLink), DidEdit
+
+				IF DidEdit THEN
 					TabCheck = -1
-				ELSE
+					Desk.LinkLoad
 					Mouse.Hide
-					imgTab.ImageFile = DeskLink(TabCheck).ImageFile
-					imgTab.Pos.Left = DeskLink(TabCheck).Left: imgTab.Pos.Top = DeskLink(TabCheck).Top
-					btnTab.Pos.Left = DeskLink(TabCheck).Left - 3: btnTab.Pos.Top = DeskLink(TabCheck).Top - 3
-					btnTab.Pos.Width = 37: btnTab.Pos.Height = 37
-					Obj.DrawBtn btnTab, False
-					Obj.DrawImg imgTab
+					Desk.DrawDesktop
+					Mouse.Show
+				ELSE
+					REDIM PRESERVE DeskLink(0 TO UBOUND(DeskLink) - 1) AS DeskLinkType
+					Mouse.Hide
+					PCOPY 1, 0
 					Mouse.Show
 				END IF
-			END IF
-		END IF
 
-		IF (Key$ = CHR$(13) OR Key$ = CHR$(32)) AND TabCheck > -1 THEN
-			Mouse.Hide
-			LINE (DeskLink(TabCheck).Left - 3, DeskLink(TabCheck).Top - 3)-(DeskLink(TabCheck).Left + 35, DeskLink(TabCheck).Top + 35), Theme.Desktop, BF
-			Obj.DrawImg imgTab
-			Mouse.Show
-
-			IF Key$ = CHR$(13) THEN
-				Desk.LinkMenu TabCheck
 			END IF
-			TabCheck = -1
-		END IF
+
+			IF Key$ = "e" THEN
+				Desk.ExecuteDialog
+			END IF
+
+			IF Key$ = "a" THEN
+				Sys.AboutBox "Desktop", "Jacob Palm", "LOGO"
+			END IF
+
+			IF Key$ = CHR$(0) + "k" OR Key$ = CHR$(0) + "m" THEN
+				IF Key$ = CHR$(0) + "k" THEN
+					Setting.DesktopID = Setting.DesktopID - 1
+					IF Setting.DesktopID < 1 THEN Setting.DesktopID = 5
+				ELSE
+					Setting.DesktopID = Setting.DesktopID + 1
+					IF Setting.DesktopID > 5 THEN Setting.DesktopID = 1
+				END IF
+				Mouse.Hide
+				LINE (310, 7)-(330, 16), Theme.Window, BF
+				Font.Print LTRIM$(STR$(Setting.DesktopID)) + "/5", 310, 8, Theme.WindowText, FontHeading
+				Mouse.Show
+				Desk.LinkLoad
+				Desk.DrawDesktop
+				TabCheck = -1
+			END IF
+
+			IF Key$ = "x" OR Key$ = CHR$(27) THEN
+				DIM DoExit
+				IF Setting.ConfirmExit THEN
+					DoExit = Sys.MsgBox("Exit " + appName, "This will exit Costa and return you to the DOS" + CHR$(13) + "prompt. Are you sure?", msgQuest)
+				ELSE
+					DoExit = True
+				END IF
+
+				IF DoExit = True THEN
+					Mouse.Hide
+					Sys.SaveSettings
+					SCREEN 0
+					COLOR 7, 0
+					'Errorcode 1 makes the COSTA.BAT file exit its loop
+					END 1
+				END IF
+			END IF
+
+			'TAB or Shift+TAB
+			IF Key$ = CHR$(9) OR Key$ = CHR$(0) + CHR$(15) THEN
+				'If there's only one item in the DESKLINK array, and it has no caption
+				'then there are no desktop links to cycle
+				IF NOT (UBOUND(DeskLink) = 0 AND RTRIM$(DeskLink(0).Caption) = "") THEN
+					IF TabCheck > -1 THEN
+						Mouse.Hide
+						LINE (DeskLink(TabCheck).Left - 3, DeskLink(TabCheck).Top - 3)-(DeskLink(TabCheck).Left + 35, DeskLink(TabCheck).Top + 35), Theme.Desktop, BF
+						Mouse.Show
+						Obj.DrawImg imgTab
+					END IF
+
+					IF Key$ = CHR$(9) THEN
+						TabCheck = TabCheck + 1
+						IF TabCheck > UBOUND(DeskLink) THEN TabCheck = 0
+					ELSE
+						TabCheck = TabCheck - 1
+						IF TabCheck < 0 THEN TabCheck = UBOUND(DeskLink)
+					END IF
+			
+					IF DeskLink(TabCheck).ImageFile = STRING$(8, 0) THEN
+						TabCheck = -1
+					ELSE
+						imgTab.ImageFile = DeskLink(TabCheck).ImageFile
+						imgTab.Pos.Left = DeskLink(TabCheck).Left: imgTab.Pos.Top = DeskLink(TabCheck).Top
+						btnTab.Pos.Left = DeskLink(TabCheck).Left - 3: btnTab.Pos.Top = DeskLink(TabCheck).Top - 3
+						btnTab.Pos.Width = 37: btnTab.Pos.Height = 37
+						Obj.DrawBtn btnTab, False
+						Obj.DrawImg imgTab
+					END IF
+				END IF
+			END IF
+
+			IF (Key$ = CHR$(13) OR Key$ = CHR$(32)) AND TabCheck > -1 THEN
+				Mouse.Hide
+				LINE (DeskLink(TabCheck).Left - 3, DeskLink(TabCheck).Top - 3)-(DeskLink(TabCheck).Left + 35, DeskLink(TabCheck).Top + 35), Theme.Desktop, BF
+				Mouse.Show
+				Obj.DrawImg imgTab
+				
+				IF Key$ = CHR$(13) THEN
+					Desk.LinkMenu TabCheck
+				END IF
+				TabCheck = -1
+			END IF
 
 		END IF
 	
@@ -1058,15 +1053,18 @@ SUB Desk.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVA
 	OPEN Temp.Path + "RUN.BAT" FOR OUTPUT AS #RunHandle
 	PRINT #RunHandle, "@ECHO OFF"
 	IF LEN(TargetDrive) THEN PRINT #RunHandle, TargetDrive
+
 	IF LEN(TargetPath) THEN
-	PRINT #RunHandle, "CD\"
-	PRINT #RunHandle, "CD " + TargetPath
+		PRINT #RunHandle, "CD\"
+		PRINT #RunHandle, "CD " + TargetPath
 	END IF
+
 	PRINT #RunHandle, TargetFile + " " + TargetParameters
+
 	IF PauseOnExit = True THEN
-	PRINT #RunHandle, "ECHO."
-	PRINT #RunHandle, "ECHO."
-	PRINT #RunHandle, "PAUSE"
+		PRINT #RunHandle, "ECHO."
+		PRINT #RunHandle, "ECHO."
+		PRINT #RunHandle, "PAUSE"
 	END IF
 
 	'Make the batch file return to the path of Costa, so that relative paths
