@@ -69,11 +69,11 @@ SUB Desk.DrawDesktop ()
 	 
 	Mouse.Hide
 	LINE (0, 29)-(639, 349), Theme.Desktop, BF
-	
+	Mouse.Show
+
 	'All desklinks will always have an imagefile. Use this to check if any
 	'desklinks exist
 	IF RTRIM$(DeskLink(0).ImageFile) = "" OR DeskLink(0).Caption = STRING$(25, 0) THEN
-		Mouse.Show
 		EXIT SUB
 	END IF
 
@@ -96,26 +96,26 @@ SUB Desk.DrawDesktop ()
 		Obj.DrawImg imgDeskLinkIcon
 	NEXT
 
+	IF NOT Setting.ShowLinkDescriptions THEN EXIT SUB
+
 	'Next, draw icon captions
 	Mouse.Hide
 	FOR TargetLink = 0 TO UBOUND(DeskLink)
 		'Description (caption) and target file
-		IF Setting.ShowLinkDescriptions THEN
-			Font.Print DeskLink(TargetLink).Caption, DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 4, Theme.DesktopText, 1
+		
+		Font.Print DeskLink(TargetLink).Caption, DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 4, Theme.DesktopText, 1
 
-			IF Setting.ShowLinkTargetFiles THEN
-				LinkTargetText = LCASE$(DeskLink(TargetLink).Filename)
+		IF Setting.ShowLinkTargetFiles THEN
+			LinkTargetText = LCASE$(DeskLink(TargetLink).Filename)
 
-				'Remove path from string, if present
-				DO WHILE INSTR(LinkTargetText, "\")
-					LinkTargetText = RIGHT$(LinkTargetText, LEN(LinkTargetText) - INSTR(LinkTargetText, "\"))
-				LOOP
+			'Remove path from string, if present
+			DO WHILE INSTR(LinkTargetText, "\")
+				LinkTargetText = RIGHT$(LinkTargetText, LEN(LinkTargetText) - INSTR(LinkTargetText, "\"))
+			LOOP
 
-				Font.Print LinkTargetText, DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 18, Theme.DesktopText, 2
-			END IF
-
+			Font.Print LinkTargetText, DeskLink(TargetLink).Left + 38, DeskLink(TargetLink).Top + 18, Theme.DesktopText, 2
 		END IF
-				 
+		
 	NEXT
 	Mouse.Show
 
@@ -300,88 +300,87 @@ LinkDialogDraw:
 	Font.Print "Paõth (including drive):", 222, txtPath.Pos.Top - 15, Theme.WindowText, 1
 	Font.Print "Pause after eõxecution", 242, chkPauseOnExit.Pos.Top + 3, Theme.WindowText, 2
 	LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), Theme.Desktop, BF
-	Obj.DrawImg imgIcon
 	Mouse.Show
-	
+	Obj.DrawImg imgIcon
 
 	DIM IconChanged
 	DIM Key$
 
 	DO
-	Key$ = LCASE$(INKEY$)
+		Key$ = LCASE$(INKEY$)
 
-	IF Obj.BtnClick(btnOK) OR Key$ = CHR$(13) OR Key$ = "s" THEN
-		IF RTRIM$(txtLinkCaptText) = "" THEN txtLinkCaptText = "Unnamed"
-		DeskLink(TargetLink).Caption = RTRIM$(txtLinkCaptText)
-		DeskLink(TargetLink).Filename = RTRIM$(txtFileNameText)
-		DeskLink(TargetLink).Path = RTRIM$(txtPathText)
-		DeskLink(TargetLink).Parameters = RTRIM$(txtParamsText)
-		DeskLink(TargetLink).PauseOnExit = chkPauseOnExit.Checked
+		IF Obj.BtnClick(btnOK) OR Key$ = CHR$(13) OR Key$ = "s" THEN
+			IF RTRIM$(txtLinkCaptText) = "" THEN txtLinkCaptText = "Unnamed"
+			DeskLink(TargetLink).Caption = RTRIM$(txtLinkCaptText)
+			DeskLink(TargetLink).Filename = RTRIM$(txtFileNameText)
+			DeskLink(TargetLink).Path = RTRIM$(txtPathText)
+			DeskLink(TargetLink).Parameters = RTRIM$(txtParamsText)
+			DeskLink(TargetLink).PauseOnExit = chkPauseOnExit.Checked
 
-		IF IconChanged = True THEN
-			DeskLink(TargetLink).ImageFile = AllIcons(CurrentIcon)
+			IF IconChanged = True THEN
+				DeskLink(TargetLink).ImageFile = AllIcons(CurrentIcon)
+			END IF
+
+			Desk.LinkSave
+			DidEdit = -1
+
+			EXIT SUB
 		END IF
 
-		Desk.LinkSave
-		DidEdit = -1
-
-		EXIT SUB
-	END IF
-
-	IF Obj.BtnClick(btnCancel) OR Key$ = CHR$(27) OR Key$ = "c" THEN
-		DidEdit = 0
-		EXIT SUB
-	END IF
-
-	IF Obj.BtnClick(btnIconPrev) OR Key$ = CHR$(0) + "k" THEN
-		IconChanged = True
-		CurrentIcon = CurrentIcon - 1
-		IF CurrentIcon < 0 THEN CurrentIcon = UBOUND(AllIcons)
-		Mouse.Hide
-		LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), Theme.Desktop, BF
-		Mouse.Show
-		imgIcon.ImageFile = AllIcons(CurrentIcon)
-		Obj.DrawImg imgIcon
-	END IF
-
-	IF Obj.BtnClick(btnIconNext) OR Key$ = CHR$(0) + "m" THEN
-		IconChanged = True
-		CurrentIcon = CurrentIcon + 1
-		IF CurrentIcon > UBOUND(AllIcons) THEN CurrentIcon = 0
-		Mouse.Hide
-		LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), Theme.Desktop, BF
-		Mouse.Show
-		imgIcon.ImageFile = AllIcons(CurrentIcon)
-		Obj.DrawImg imgIcon
-	END IF
-
-	IF Obj.BtnClick(btnBrowse) OR Key$ = "." THEN
-		SelectedFile = File.Select("*.exe")
-		IF NOT SelectedFile = "" THEN
-			txtPathText = ""
-			DO WHILE INSTR(SelectedFile, "\")
-				txtPathText = txtPathText + LEFT$(SelectedFile, INSTR(SelectedFile, "\"))
-				SelectedFile = RIGHT$(SelectedFile, LEN(SelectedFile) - INSTR(SelectedFile, "\"))
-			LOOP
-			txtFileNameText = SelectedFile
+		IF Obj.BtnClick(btnCancel) OR Key$ = CHR$(27) OR Key$ = "c" THEN
+			DidEdit = 0
+			EXIT SUB
 		END IF
-		Desk.DrawDesktop
-		GOTO LinkDialogDraw
-	END IF
+
+		IF Obj.BtnClick(btnIconPrev) OR Key$ = CHR$(0) + "k" THEN
+			IconChanged = True
+			CurrentIcon = CurrentIcon - 1
+			IF CurrentIcon < 0 THEN CurrentIcon = UBOUND(AllIcons)
+			Mouse.Hide
+			LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), Theme.Desktop, BF
+			Mouse.Show
+			imgIcon.ImageFile = AllIcons(CurrentIcon)
+			Obj.DrawImg imgIcon
+		END IF
+
+		IF Obj.BtnClick(btnIconNext) OR Key$ = CHR$(0) + "m" THEN
+			IconChanged = True
+			CurrentIcon = CurrentIcon + 1
+			IF CurrentIcon > UBOUND(AllIcons) THEN CurrentIcon = 0
+			Mouse.Hide
+			LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), Theme.Desktop, BF
+			Mouse.Show
+			imgIcon.ImageFile = AllIcons(CurrentIcon)
+			Obj.DrawImg imgIcon
+		END IF
+
+		IF Obj.BtnClick(btnBrowse) OR Key$ = "." THEN
+			SelectedFile = File.Select("*.exe")
+			IF NOT SelectedFile = "" THEN
+				txtPathText = ""
+				DO WHILE INSTR(SelectedFile, "\")
+					txtPathText = txtPathText + LEFT$(SelectedFile, INSTR(SelectedFile, "\"))
+					SelectedFile = RIGHT$(SelectedFile, LEN(SelectedFile) - INSTR(SelectedFile, "\"))
+				LOOP
+				txtFileNameText = SelectedFile
+			END IF
+			Desk.DrawDesktop
+			GOTO LinkDialogDraw
+		END IF
 	
-	IF Obj.TxtClick(txtLinkCapt) OR Key$ = "d" THEN Obj.EditTxt txtLinkCapt, txtLinkCaptText
-	IF Obj.TxtClick(txtFilename) OR Key$ = "p" THEN Obj.EditTxt txtFilename, txtFileNameText
-	IF Obj.TxtClick(txtParams) OR Key$ = "r" THEN Obj.EditTxt txtParams, txtParamsText
-	IF Obj.TxtClick(txtPath) OR Key$ = "t" THEN
-		Obj.EditTxt txtPath, txtPathText
-		IF LEN(txtPathText) AND NOT RIGHT$(txtPathText, 1) = "\" THEN txtPathText = txtPathText + "\": Obj.DrawTxt txtPath, txtPathText, False
-	END IF
+		IF Obj.TxtClick(txtLinkCapt) OR Key$ = "d" THEN Obj.EditTxt txtLinkCapt, txtLinkCaptText
+		IF Obj.TxtClick(txtFilename) OR Key$ = "p" THEN Obj.EditTxt txtFilename, txtFileNameText
+		IF Obj.TxtClick(txtParams) OR Key$ = "r" THEN Obj.EditTxt txtParams, txtParamsText
+		IF Obj.TxtClick(txtPath) OR Key$ = "t" THEN
+			Obj.EditTxt txtPath, txtPathText
+			IF LEN(txtPathText) AND NOT RIGHT$(txtPathText, 1) = "\" THEN txtPathText = txtPathText + "\": Obj.DrawTxt txtPath, txtPathText, False
+		END IF
 
-	Obj.ChkClick chkPauseOnExit
-	IF Key$ = "x" THEN
-		chkPauseOnExit.Checked = NOT chkPauseOnExit.Checked
-		Obj.DrawChk chkPauseOnExit
-	END IF
+		Obj.ChkClick chkPauseOnExit
+		IF Key$ = "x" THEN
+			chkPauseOnExit.Checked = NOT chkPauseOnExit.Checked
+			Obj.DrawChk chkPauseOnExit
+		END IF
 			
 	LOOP
 

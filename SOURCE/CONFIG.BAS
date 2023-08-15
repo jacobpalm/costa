@@ -128,6 +128,13 @@ SUB Conf.Main ()
     Obj.DrawChk chkSetting(LinkDelete)
     Obj.DrawChk chkSetting(ConfExit)
     Obj.DrawChk chkSetting(FileType)
+    Obj.DrawImg imgSetting
+    Obj.DrawImg imgAssoc
+    Obj.DrawImg imgTheme
+
+    Obj.DrawTxt txtFileType, txtFileTypeText, False
+    Obj.DrawTxt txtOpenWith, txtOpenWithText, False
+
     Mouse.Hide
     Font.Print "Show icon õdescriptions", chkSetting(LinkDesc).Pos.Left + 20, chkSetting(LinkDesc).Pos.Top + 3, Theme.WindowText, fontNormal
     Font.Print "Show icon õtargets", chkSetting(LinkTarget).Pos.Left + 20, chkSetting(LinkTarget).Pos.Top + 3, Theme.WindowText, fontNormal
@@ -135,18 +142,12 @@ SUB Conf.Main ()
     Font.Print "Confirm before õexiting Costa", chkSetting(ConfExit).Pos.Left + 20, chkSetting(ConfExit).Pos.Top + 3, Theme.WindowText, fontNormal
     Font.Print "Use file tõype associations", chkSetting(FileType).Pos.Left + 20, chkSetting(FileType).Pos.Top + 3, Theme.WindowText, fontNormal
 
-    Obj.DrawImg imgSetting
-    Obj.DrawImg imgAssoc
-    Obj.DrawImg imgTheme
     Font.Print "Settings", imgSetting.Pos.Left + 42, imgSetting.Pos.Top + 5, Theme.WindowText, fontHeading
     Font.Print "Tweak various aspects of Costa.", imgSetting.Pos.Left + 42, imgSetting.Pos.Top + 19, Theme.WindowText, fontNormal
     Font.Print "File associations", imgAssoc.Pos.Left + 42, imgAssoc.Pos.Top + 5, Theme.WindowText, fontHeading
     Font.Print "Assign file types to programs directly.", imgAssoc.Pos.Left + 42, imgAssoc.Pos.Top + 19, Theme.WindowText, fontNormal
     Font.Print "Theme", imgTheme.Pos.Left + 42, imgTheme.Pos.Top + 5, Theme.WindowText, fontHeading
     Font.Print "Choose colors for the interface.", imgTheme.Pos.Left + 42, imgTheme.Pos.Top + 19, Theme.WindowText, fontNormal
-
-    Obj.DrawTxt txtFileType, txtFileTypeText, False
-    Obj.DrawTxt txtOpenWith, txtOpenWithText, False
 
     Font.Print "õFile type", txtFileType.Pos.Left + 1, txtFileType.Pos.Top - 18, Theme.WindowText, fontHeading
     Font.Print "õOpen with", txtOpenWith.Pos.Left + 1, txtOpenWith.Pos.Top - 18, Theme.WindowText, fontHeading
@@ -363,9 +364,8 @@ SUB Conf.UpdatePreview (Area AS PosType, ThemeId)
     imgDeskLink.ImageFile = "PAINT"
 
     Mouse.Hide
-
     LINE (Area.Left + 2, Area.Top + 2)-(Area.Left + Area.Width - 2, Area.Top + Area.Height - 2), Theme.Desktop, BF
-
+    
     Obj.DrawWin winPreview
     Obj.DrawImg imgLogo
     Obj.DrawImg imgDeskLink
@@ -375,13 +375,14 @@ SUB Conf.UpdatePreview (Area AS PosType, ThemeId)
 
     Obj.DrawTxt txtPreview, "Example textbox", False
     
+    Mouse.Hide
     Font.Print "Preview link", imgDeskLink.Pos.Left + 38, imgDeskLink.Pos.Top + 4, Theme.DesktopText, fontHeading
     Font.Print "preview.exe", imgDeskLink.Pos.Left + 38, imgDeskLink.Pos.Top + 18, Theme.DesktopText, fontNormal
 
     Font.Print Conf.Truncate(Theme.Name, 146, fontHeading), imgLogo.Pos.Left + 42, imgLogo.Pos.Top + 5, Theme.WindowText, fontHeading
     Font.Print Conf.Truncate(Theme.Author, 146, fontNormal), imgLogo.Pos.Left + 42, imgLogo.Pos.Top + 19, Theme.WindowText, fontNormal
-
     Mouse.Show
+
     Setting.ThemeFile = CurrentTheme
     Sys.LoadTheme
 
