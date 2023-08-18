@@ -73,7 +73,9 @@ SUB ThmEdit.DrawPreview (ThemeFile AS STRING)
   DIM txtListPreview AS TextboxType
 
   Obj.SetSize frmPreview.Pos, 12, 42, 410, 293
+  Mouse.Hide
   Obj.DrawFrm frmPreview, 15, Theme.Shadow
+  Mouse.Show
 
   IF LEN(ThemeFile) THEN
     OriginalTheme = Setting.ThemeFile
@@ -130,7 +132,6 @@ SUB ThmEdit.DrawPreview (ThemeFile AS STRING)
   LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 2)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + 27), Theme.Window, BF
   LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 28)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + 28), Theme.Shadow
   LINE (frmPreview.Pos.Left + 2, frmPreview.Pos.Top + 29)-(frmPreview.Pos.Left + frmPreview.Pos.Width - 2, frmPreview.Pos.Top + 29), 0
-  Mouse.Show
 
   Obj.DrawWin winPreview
   Obj.DrawTxt txtPreview, txtPreviewText, True
@@ -140,7 +141,6 @@ SUB ThmEdit.DrawPreview (ThemeFile AS STRING)
   Obj.DrawImg imgPreview
   Obj.DrawTxt txtListPreview, "", False
 
-  Mouse.Hide
   Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 14, Theme.WindowText, fontHeading
   Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 30, Theme.WindowText, FontNormal
   Font.Print "Preview link", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 4, Theme.DesktopText, fontHeading
@@ -217,6 +217,7 @@ SUB ThmEdit.Edit (BYVAL ThmFile AS STRING)
       XPos = XPos + 25
     NEXT
 
+    Mouse.Hide
     Obj.DrawBtn btnSaveAs, False
     Obj.DrawBtn btnSave, False
     Obj.DrawBtn btnAbout, False
@@ -226,12 +227,9 @@ SUB ThmEdit.Edit (BYVAL ThmFile AS STRING)
     Obj.DrawBtn btnObject, False
     FOR I = 0 TO 15
       Obj.DrawBtn btnColor(I), True
-      Mouse.Hide
       LINE (btnColor(I).Pos.Left + 2, btnColor(I).Pos.Top + 2)-(btnColor(I).Pos.Left + btnColor(I).Pos.Width - 2, btnColor(I).Pos.Top + btnColor(I).Pos.Height - 2), I, BF
-      Mouse.Show
     NEXT
 
-    Mouse.Hide
     Font.Print "Theme õname:", txtThemeName.Pos.Left, txtThemeName.Pos.Top - 16, Theme.WindowText, fontHeading
     Font.Print "Theme aõuthor:", txtThemeAuthor.Pos.Left, txtThemeAuthor.Pos.Top - 16, Theme.WindowText, fontHeading
     Font.Print "õObject selected:", 434, btnObject.Pos.Top - 16, Theme.WindowText, fontHeading
@@ -391,7 +389,9 @@ TopOfLoop:
             btnObject.Caption = "Titlebar text"
             ThmEdit.DrawIndicator thmClrTitlebarText
         END SELECT
+        Mouse.Hide
         Obj.DrawBtn btnObject, False
+        Mouse.Show
       END IF
 
       IF Obj.TxtClick(txtThemeName) OR Key$ = "n" THEN
@@ -564,9 +564,8 @@ FUNCTION ThmEdit.Select () AS STRING
 
   Mouse.Hide
   LINE (0, 29)-(639, 349), Theme.Window, BF
-  Mouse.Show
-
   Obj.DrawMenu
+  Mouse.Show
 
   Sys.ShowLoading
 
@@ -601,13 +600,13 @@ FUNCTION ThmEdit.Select () AS STRING
   btnAbout.Caption = "õAbout..."
   btnCancel.Caption = "Eõxit"
 
+  Mouse.Hide
   Obj.DrawBtn btnBack, False
   Obj.DrawBtn btnNext, False
   Obj.DrawBtn btnEdit, False
   Obj.DrawBtn btnAbout, False
   Obj.DrawBtn btnCancel, False
 
-  Mouse.Hide
   Font.Print "Theme name:", 434, 43, Theme.WindowText, fontHeading
   Font.Print "Theme author:", 434, 91, Theme.WindowText, fontHeading
   Mouse.Show
@@ -706,8 +705,7 @@ FUNCTION ThmEdit.SelectObject (BYVAL CurrentSelection) AS INTEGER
 
     Mouse.Hide
     PCOPY 0, 1
-    Mouse.Show
-
+    
     Obj.DrawWin winSelectObject
     FOR I = 1 TO 12
       IF I = CurrentSelection THEN
@@ -716,6 +714,7 @@ FUNCTION ThmEdit.SelectObject (BYVAL CurrentSelection) AS INTEGER
         Obj.DrawBtn btnObject(I), False
       END IF
     NEXT
+    Mouse.Show
 
     DO
 
@@ -751,6 +750,7 @@ FUNCTION ThmEdit.SelectObject (BYVAL CurrentSelection) AS INTEGER
       END IF
 
       IF Key$ = CHR$(0) + "h" THEN
+        Mouse.Hide
         Obj.DrawBtn btnObject(ActiveSelection), False
         IF ActiveSelection > 1 THEN
           ActiveSelection = ActiveSelection - 1
@@ -758,9 +758,11 @@ FUNCTION ThmEdit.SelectObject (BYVAL CurrentSelection) AS INTEGER
           ActiveSelection = UBOUND(btnObject)
         END IF
         Obj.DrawBtn btnObject(ActiveSelection), True
+        Mouse.Show
       END IF
 
       IF Key$ = CHR$(0) + "p" THEN
+        Mouse.Hide
         Obj.DrawBtn btnObject(ActiveSelection), False
         IF ActiveSelection < 12 THEN
           ActiveSelection = ActiveSelection + 1
@@ -768,6 +770,7 @@ FUNCTION ThmEdit.SelectObject (BYVAL CurrentSelection) AS INTEGER
           ActiveSelection = 1
         END IF
         Obj.DrawBtn btnObject(ActiveSelection), True
+        Mouse.Show
       END IF
 
     LOOP

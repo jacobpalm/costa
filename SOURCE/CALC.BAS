@@ -62,9 +62,7 @@ SUB Calc.LogLine (Text AS STRING, TargetTxt AS TextboxType)
     Obj.DrawTxt TargetTxt, "", False
   END IF
 
-  Mouse.Hide
   Font.Print Text, 624 - LEN(Text) * 8, TopOffset + (LogLinesWritten * 15), Theme.WindowText, FontSystem
-  Mouse.Show
   
 END SUB
 
@@ -132,10 +130,10 @@ SUB Calc.Main ()
     txtCalc.MaxLen = 25
 
     Mouse.Hide
-    LINE (0, 29)-(639, 349), Theme.Window, BF
-    Mouse.Show
-    Obj.DrawMenu
 
+    Obj.DrawMenu
+    LINE (0, 29)-(639, 349), Theme.Window, BF
+    
     Obj.DrawFrm frmCalc, 15, Theme.Shadow
     Obj.DrawTxt txtCalc, "", False
     FOR btnCount = 0 TO 9
@@ -172,6 +170,7 @@ StartOfCalc:
                 IF LEN(txtCalcText) < 22 THEN
                     Key$ = LTRIM$(STR$(btnCount))
                     IF NOT (Key$ = "0" AND txtCalcText = "0") THEN
+                        Mouse.Hide
                         IF LastClick = "EQUAL" THEN
                           NumOps = 0
                           Op1 = 0
@@ -180,6 +179,7 @@ StartOfCalc:
                         LastClick = "NUMB"
                         txtCalcText = txtCalcText + Key$
                         Obj.DrawTxt txtCalc, Calc.FormatNum(txtCalcText), False
+                        Mouse.Show
                     END IF
                 END IF
             END IF
@@ -188,13 +188,17 @@ StartOfCalc:
 
         IF Obj.BtnClick(btnC) OR Key$ = "c" THEN
             txtCalcText = ""
+            Mouse.Hide
             Obj.DrawTxt txtCalc, "", False
+            Mouse.Show
         END IF
 
         IF Obj.BtnClick(btnCE) OR Key$ = "e" THEN
             txtCalcText = ""
+            Mouse.Hide
             Obj.DrawTxt txtCalc, "", False
             Calc.LogLine "", txtResults
+            Mouse.Show
             TotalSum = 0: MathFunc = "": NumOps = 0: Op1 = 0: LastClick = ""
         END IF
 
@@ -207,13 +211,16 @@ StartOfCalc:
                 LastClick = "NUMB"
                 IF txtCalcText = "" THEN txtCalcText = "0"
                 txtCalcText = txtCalcText + "."
+                Mouse.Hide
                 Obj.DrawTxt txtCalc, Calc.FormatNum(txtCalcText), False
+                Mouse.Show
             END IF
         END IF
 
         IF Obj.BtnClick(btnEquals) OR Key$ = "=" OR Key$ = CHR$(13) THEN
             IF NumOps = 1 AND LastClick = "NUMB" THEN
                 Op1 = VAL(txtCalcText)
+                Mouse.Hide
                 Calc.LogLine MathFunc + " " + Calc.FormatNum(LTRIM$(STR$(Op1))), txtResults
 
                 IF MathFunc = "+" THEN TotalSum = TotalSum + Op1
@@ -232,16 +239,20 @@ StartOfCalc:
                         LastClick = ""
                         Calc.LogLine "Division by zero", txtResults
                         Calc.LogLine "", txtResults
+                        Mouse.Show
                         GOTO StartOfCalc
                     END IF
                 END IF
                 
                 Calc.LogLine "= " + Calc.FormatNum(LTRIM$(STR$(TotalSum))), txtResults
+                Mouse.Show
             END IF
 
             IF NOT MathFunc = CHR$(0) AND NOT MathFunc = "" AND NOT MathFunc = " " THEN
+                Mouse.Hide
                 Obj.DrawTxt txtCalc, Calc.FormatNum(LTRIM$(STR$(TotalSum))), False
                 Op1 = TotalSum: txtCalcText = "": NumOps = 1: MathFunc = "": LastClick = "EQUAL"
+                Mouse.Show
             END IF
         END IF
 
@@ -253,6 +264,7 @@ StartOfCalc:
         IF LEN(Key$) THEN
             
             IF Key$ = "+" OR Key$ = "-" OR Key$ = "*" OR Key$ = "/" THEN
+                Mouse.Hide
                 IF NumOps = 1 AND LastClick = "NUMB" THEN
                     Op1 = VAL(txtCalcText)
                     Calc.LogLine MathFunc + " " + Calc.FormatNum(LTRIM$(STR$(Op1))), txtResults
@@ -272,6 +284,7 @@ StartOfCalc:
                             LastClick = ""
                             Calc.LogLine "Division by zero", txtResults
                             Calc.LogLine "", txtResults
+                            Mouse.Show
                             GOTO StartOfCalc
                         END IF
                     END IF
@@ -286,13 +299,14 @@ StartOfCalc:
                     TotalSum = VAL(txtCalcText)
                     Calc.LogLine Calc.FormatNum(LTRIM$(STR$(TotalSum))), txtResults
                 END IF
+                Mouse.Show
                 IF LastClick = "NUMB" THEN txtCalcText = ""
-
                 NumOps = 1
                 LastClick = "OP"
             END IF
 
             IF Key$ = CHR$(8) THEN
+                Mouse.Hide
                 IF LEN(txtCalcText) = 1 THEN
                     txtCalcText = ""
                     Obj.DrawTxt txtCalc, Calc.FormatNum(txtCalcText), False
@@ -300,6 +314,7 @@ StartOfCalc:
                     txtCalcText = LEFT$(txtCalcText, LEN(txtCalcText) - 1)
                     Obj.DrawTxt txtCalc, Calc.FormatNum(txtCalcText), False
                 END IF
+                Mouse.Show
             END IF
 
         END IF

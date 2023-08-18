@@ -155,29 +155,28 @@ SUB TView.Main (FileToView AS STRING)
       REDIM FileData(0) AS STRING
     END IF
 
-    Obj.DrawMenu
     Mouse.Hide
+    Obj.DrawMenu
     LINE (0, 29)-(639, 349), Theme.Window, BF
-    Mouse.Show
     Obj.DrawBtn btnOpen, False
 
     Obj.DrawBtn btnAbout, False
     Obj.DrawBtn btnExit, False
     Obj.DrawTxt txtEditor, "", False
-
+    Mouse.Show
 
 StartOfAll:
 
+    Mouse.Hide
     IF FileOpened AND UBOUND(FileData) > 27 THEN
       'Only visible when file opened
       Obj.DrawBtn btnPageUp, False
       Obj.DrawBtn btnPageDown, False
     ELSEIF FileOpened THEN
       'Hide when file opened but not longer than what fits on screen
-      Mouse.Hide
       LINE (102, 2)-(293, 24), Theme.Window, BF
-      Mouse.Show
     END IF
+    Mouse.Show
 
     IF FileOpened THEN
       StartLine = 1
@@ -269,7 +268,9 @@ StartOfAll:
           FileOpened = OldFileOpened
           Filename = OldFileName
         END IF
+        Mouse.Hide
         Obj.DrawTxt txtEditor, "", False
+        Mouse.Show
         GOTO StartOfAll
       END IF
 

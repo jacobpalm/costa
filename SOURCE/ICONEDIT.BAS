@@ -108,16 +108,11 @@ SUB IconEdit.FillArea (X, Y, BYVAL FillColor)
     DIM ReplaceColor
     ReplaceColor = IconData.Pixel(X, Y)
 
-    'Drawing routines hide mouse automatically, but we do it anyway since
-    'there might be cursor flicker if filling many pixels
-    Mouse.Hide
-
     'Fill the specified pixel
     IconEdit.DrawPixel X, Y, FillColor, False
     FillMask.Pixel(X, Y) = FilledNeedsCheck
     PixelsFilled = True
     
-
     'Loop through FillMask as long as pixels are changing in direct
     'neighbours
     DO WHILE PixelsFilled
@@ -178,9 +173,6 @@ SUB IconEdit.FillArea (X, Y, BYVAL FillColor)
 
     LOOP
 
-    Mouse.Show
-
-    
     'Stick around as long as the mouse is clicked - to avoid fill while mouse
     'is moved around. We only want one fill per click.
     DO: LOOP WHILE Mouse.Clicked
@@ -231,12 +223,10 @@ SUB IconEdit.LoadIcon (IconToLoad AS STRING)
   DEF SEG
   Mouse.Hide
   PUT (PreviewOffsetX, PreviewOffsetY), scrBuffer, PSET
-  Mouse.Show
   ON LOCAL ERROR RESUME NEXT
 
   IconFileName = IconToLoad
 
-  Mouse.Hide
   FOR XPos = 0 TO 31
     FOR YPos = 0 TO 31
       IconEdit.DrawPixel XPos, YPos, POINT(PreviewOffsetX + XPos, PreviewOffsetY + YPos), True
@@ -248,6 +238,7 @@ SUB IconEdit.LoadIcon (IconToLoad AS STRING)
   EXIT SUB
 
 LoadIconError:
+  Mouse.Show
   ErrMsg = Sys.MsgBox("Invalid image file", "The icon you selected does not contain a valid icon. The" + CHR$(13) + "file might be damaged, or not an icon file at all.", msgError)
   IconEdit.NewIcon
   EXIT SUB
@@ -266,13 +257,7 @@ SUB IconEdit.Main (IconToLoad AS STRING)
   DIM Key$, YPos, XPos, CursorX, CursorY, DrawColor, Void
   DIM ColChk, FillColor, CurrentTool
 
-  Obj.DrawMenu
-  Mouse.Hide
-  LINE (0, 29)-(639, 349), Theme.Window, BF
-  Mouse.Show
-
   Obj.SetSize txtDrawArea.Pos, 175, 44, 290, 290
-
   Obj.SetSize btnNew.Pos, 2, 2, 92, 22
   Obj.SetSize btnOpen.Pos, 101, 2, 92, 22
   Obj.SetSize btnSave.Pos, 200, 2, 92, 22
@@ -299,6 +284,9 @@ SUB IconEdit.Main (IconToLoad AS STRING)
   DrawAreaOffsetX = txtDrawArea.Pos.Left + 2
   DrawAreaOffsetY = txtDrawArea.Pos.Top + 2
   
+  Mouse.Hide
+  Obj.DrawMenu
+  LINE (0, 29)-(639, 349), Theme.Window, BF
   Obj.DrawTxt txtDrawArea, "", False
   Obj.DrawBtn btnPencil, True
   Obj.DrawBtn btnFloodFill, False
@@ -312,19 +300,14 @@ SUB IconEdit.Main (IconToLoad AS STRING)
   FOR YPos = 0 TO 7
     Obj.SetSize txtColor(YPos).Pos, txtDrawArea.Pos.Left - 51, txtDrawArea.Pos.Top + (YPos * 21) + 14, 20, 20
     Obj.DrawTxt txtColor(YPos), "", False
-    Mouse.Hide
     LINE (txtColor(YPos).Pos.Left + 2, txtColor(YPos).Pos.Top + 2)-(txtColor(YPos).Pos.Left + txtColor(YPos).Pos.Width - 2, txtColor(YPos).Pos.Top + txtColor(YPos).Pos.Height - 2), YPos, BF
-    Mouse.Show
   NEXT
   FOR YPos = 8 TO 15
     Obj.SetSize txtColor(YPos).Pos, txtDrawArea.Pos.Left - 30, txtDrawArea.Pos.Top + ((YPos - 8) * 21) + 14, 20, 20
     Obj.DrawTxt txtColor(YPos), "", False
-    Mouse.Hide
     LINE (txtColor(YPos).Pos.Left + 2, txtColor(YPos).Pos.Top + 2)-(txtColor(YPos).Pos.Left + txtColor(YPos).Pos.Width - 2, txtColor(YPos).Pos.Top + txtColor(YPos).Pos.Height - 2), YPos, BF
-    Mouse.Show
   NEXT
   
-  Mouse.Hide
   'Selection marker in color 0
   LINE (txtColor(DrawColor).Pos.Left + 4, txtColor(DrawColor).Pos.Top + 4)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 4, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 4), 8, B
   LINE (txtColor(DrawColor).Pos.Left + 5, txtColor(DrawColor).Pos.Top + 5)-(txtColor(DrawColor).Pos.Left + txtColor(DrawColor).Pos.Width - 5, txtColor(DrawColor).Pos.Top + txtColor(DrawColor).Pos.Height - 5), 15, B
@@ -420,19 +403,23 @@ SUB IconEdit.Main (IconToLoad AS STRING)
 
     IF (Mouse.Clicked AND Mouse.InArea(btnPencil.Pos)) OR Key$ = "e" THEN
       IF NOT CurrentTool = toolPencil THEN
+        Mouse.Hide
         Obj.DrawBtn btnPencil, True
-        DO: LOOP WHILE Mouse.Clicked
-        CurrentTool = toolPencil
         Obj.DrawBtn btnFloodFill, False
+        CurrentTool = toolPencil
+        Mouse.Show
+        DO: LOOP WHILE Mouse.Clicked
       END IF
     END IF
 
     IF (Mouse.Clicked AND Mouse.InArea(btnFloodFill.Pos)) OR Key$ = "f" THEN
       IF NOT CurrentTool = toolFloodFill THEN
-        Obj.DrawBtn btnFloodFill, True
-        DO: LOOP WHILE Mouse.Clicked
-        CurrentTool = toolFloodFill
+        Mouse.Hide
         Obj.DrawBtn btnPencil, False
+        Obj.DrawBtn btnFloodFill, True
+        CurrentTool = toolFloodFill
+        Mouse.Show
+        DO: LOOP WHILE Mouse.Clicked
       END IF
     END IF
 
@@ -483,11 +470,13 @@ SUB IconEdit.Main (IconToLoad AS STRING)
             IconEdit.DrawPixel KeyboardPosX, KeyboardPosY, DrawColor, False
             Mouse.Show
           CASE toolFloodFill
+            Mouse.Hide
             IconEdit.FillArea KeyboardPosX, KeyboardPosY, DrawColor
             'After flood fill, switch back to the pencil tools
             Obj.DrawBtn btnPencil, True
             Obj.DrawBtn btnFloodFill, False
             CurrentTool = toolPencil
+            Mouse.Show
         END SELECT
         IconEdit.MoveIndicator dirStay
       ELSE
@@ -550,11 +539,13 @@ SUB IconEdit.Main (IconToLoad AS STRING)
           KeyboardPosY = CursorY
 
         CASE toolFloodFill
+          Mouse.Hide
           IconEdit.FillArea CursorX, CursorY, DrawColor
           'After flood fill, switch back to the pencil tools
           Obj.DrawBtn btnPencil, True
           Obj.DrawBtn btnFloodFill, False
           CurrentTool = toolPencil
+          Mouse.Show
 
       END SELECT
 
@@ -645,13 +636,11 @@ SUB IconEdit.Preview ()
   Mouse.Hide
   PCOPY 0, 1
   GET (PreviewOffsetX - 1, PreviewOffsetY - 1)-(PreviewOffsetX + 32, PreviewOffsetY + 32), scrBuffer
-  Mouse.Show
 
   Obj.DrawWin winPreview
   Obj.DrawBtn btnClose, False
   Obj.DrawTxt txtPreview, "", False
 
-  Mouse.Hide
   LINE (txtPreview.Pos.Left + 2, txtPreview.Pos.Top + 2)-(txtPreview.Pos.Left + 62, txtPreview.Pos.Top + 62), 0, BF
   LINE (txtPreview.Pos.Left + 63, txtPreview.Pos.Top + 2)-(txtPreview.Pos.Left + 123, txtPreview.Pos.Top + 62), 1, BF
   LINE (txtPreview.Pos.Left + 124, txtPreview.Pos.Top + 2)-(txtPreview.Pos.Left + 184, txtPreview.Pos.Top + 62), 2, BF
@@ -800,6 +789,7 @@ SUB IconEdit.ShowLoadDialog ()
   btnLoad.Transparent = True
   imgPreview.ImageFile = IconFiles(0)
 
+  Mouse.Hide
   Obj.DrawWin winSelect
   Obj.DrawBtn btnPrev, 0
   Obj.DrawBtn btnLoad, 0
@@ -807,7 +797,6 @@ SUB IconEdit.ShowLoadDialog ()
   Obj.DrawBtn btnCancel, 0
   Obj.DrawImg imgPreview
 
-  Mouse.Hide
   Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 12, Theme.WindowText, FontHeading
   Mouse.Show
 
@@ -829,8 +818,8 @@ SUB IconEdit.ShowLoadDialog ()
       LINE (btnLoad.Pos.Left + 11, btnLoad.Pos.Top + 11)-(btnLoad.Pos.Left + 42, btnLoad.Pos.Top + 42), Theme.Window, BF
       LINE (winSelect.Pos.Left + 10, winSelect.Pos.Top + 12)-(winSelect.Pos.Left + winSelect.Pos.Width - 10, winSelect.Pos.Top + 21), Theme.Window, BF
       Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 12, Theme.WindowText, FontHeading
-      Mouse.Show
       Obj.DrawImg imgPreview
+      Mouse.Show
     END IF
 
     IF Obj.BtnClick(btnNext) OR Key$ = CHR$(0) + "m" THEN 'Right arrow
@@ -841,8 +830,8 @@ SUB IconEdit.ShowLoadDialog ()
       LINE (btnLoad.Pos.Left + 11, btnLoad.Pos.Top + 11)-(btnLoad.Pos.Left + 42, btnLoad.Pos.Top + 42), Theme.Window, BF
       LINE (winSelect.Pos.Left + 10, winSelect.Pos.Top + 12)-(winSelect.Pos.Left + winSelect.Pos.Width - 10, winSelect.Pos.Top + 21), Theme.Window, BF
       Font.Print IconFiles(IconIndex), (winSelect.Pos.Left + (winSelect.Pos.Width / 2)) - (Font.GetWidth(IconFiles(IconIndex), FontHeading) / 2), winSelect.Pos.Top + 12, Theme.WindowText, FontHeading
-      Mouse.Show
       Obj.DrawImg imgPreview
+      Mouse.Show
     END IF
 
     IF Obj.BtnClick(btnLoad) OR Key$ = CHR$(13) THEN

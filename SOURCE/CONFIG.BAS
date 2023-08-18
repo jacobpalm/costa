@@ -63,14 +63,13 @@ SUB Conf.Main ()
     DIM ThemePreviewId
     DIM Key$
     
-    Obj.DrawMenu
-
-    Conf.GetThemes
-
     Mouse.Hide
+    Obj.DrawMenu
     LINE (0, 29)-(639, 349), Theme.Window, BF
     Mouse.Show
+    Sys.ShowLoading
 
+    Conf.GetThemes
     Obj.SetSize btnExit.Pos, 545, 2, 92, 22
     Obj.SetSize btnAbout.Pos, 446, 2, 92, 22
     Obj.SetSize frmSettings.Pos, 14, 43, 330, 170
@@ -111,7 +110,12 @@ SUB Conf.Main ()
     
     txtFileType.MaxLen = 3
     txtOpenWith.MaxLen = 50
+    ThemePreviewId = ThemeActive
 
+RedrawConf:
+    Mouse.Hide
+    LINE (0, 29)-(639, 349), Theme.Window, BF
+    
     Obj.DrawBtn btnExit, False
     Obj.DrawBtn btnAbout, False
     Obj.DrawBtn btnBrowse, False
@@ -135,7 +139,6 @@ SUB Conf.Main ()
     Obj.DrawTxt txtFileType, txtFileTypeText, False
     Obj.DrawTxt txtOpenWith, txtOpenWithText, False
 
-    Mouse.Hide
     Font.Print "Show icon õdescriptions", chkSetting(LinkDesc).Pos.Left + 20, chkSetting(LinkDesc).Pos.Top + 3, Theme.WindowText, fontNormal
     Font.Print "Show icon õtargets", chkSetting(LinkTarget).Pos.Left + 20, chkSetting(LinkTarget).Pos.Top + 3, Theme.WindowText, fontNormal
     Font.Print "Confirm icon õremoval", chkSetting(LinkDelete).Pos.Left + 20, chkSetting(LinkDelete).Pos.Top + 3, Theme.WindowText, fontNormal
@@ -153,8 +156,8 @@ SUB Conf.Main ()
     Font.Print "õOpen with", txtOpenWith.Pos.Left + 1, txtOpenWith.Pos.Top - 18, Theme.WindowText, fontHeading
     Mouse.Show
 
-    ThemePreviewId = ThemeActive
     Conf.UpdatePreview frmThemePreview.Pos, ThemePreviewId
+
     DO
         Key$ = LCASE$(INKEY$)
 
@@ -180,39 +183,43 @@ SUB Conf.Main ()
 
         IF Key$ = "d" THEN
             chkSetting(LinkDesc).Checked = NOT chkSetting(LinkDesc).Checked
+            Mouse.Hide
             Obj.DrawChk chkSetting(LinkDesc)
+            Mouse.Show
         END IF
         IF Key$ = "t" THEN
             chkSetting(LinkTarget).Checked = NOT chkSetting(LinkTarget).Checked
+            Mouse.Hide
             Obj.DrawChk chkSetting(LinkTarget)
+            Mouse.Show
         END IF
         IF Key$ = "r" THEN
             chkSetting(LinkDelete).Checked = NOT chkSetting(LinkDelete).Checked
+            Mouse.Hide
             Obj.DrawChk chkSetting(LinkDelete)
+            Mouse.Show
         END IF
         IF Key$ = "e" THEN
             chkSetting(ConfExit).Checked = NOT chkSetting(ConfExit).Checked
+            Mouse.Hide
             Obj.DrawChk chkSetting(ConfExit)
+            Mouse.Show
         END IF
         IF Key$ = "y" THEN
             chkSetting(FileType).Checked = NOT chkSetting(FileType).Checked
+            Mouse.Hide
             Obj.DrawChk chkSetting(FileType)
+            Mouse.Show
         END IF
 
         IF Obj.BtnClick(btnBrowse) OR Key$ = "." THEN
             IF LEN(txtFileTypeText) THEN
-                Mouse.Hide
-                PCOPY 0, 1
-                Mouse.Show
                 strValidate = File.Select("*.EXE")
-                Mouse.Hide
-                PCOPY 1, 0
-                Mouse.Show
                 IF LEN(strValidate) THEN
                     txtOpenWithText = strValidate
-                    Obj.DrawTxt txtOpenWith, txtOpenWithText, False
                     Conf.SaveAssoc txtFileTypeText, txtOpenWithText
                 END IF
+                GOTO RedrawConf
             ELSE
                 Key$ = "f" 'Gives focus to edit file type
             END IF
@@ -226,7 +233,9 @@ SUB Conf.Main ()
                 IF NOT txtOpenWithText = strValidate THEN
                     txtOpenWithText = UCASE$(txtOpenWithText)
                     Conf.SaveAssoc txtFileTypeText, txtOpenWithText
+                    Mouse.Hide
                     Obj.DrawTxt txtOpenWith, txtOpenWithText, False
+                    Mouse.Show
                 END IF
             ELSE
                 Key$ = "f" 'Gives focus to edit file type
@@ -239,8 +248,10 @@ SUB Conf.Main ()
             txtFileTypeText = LTRIM$(RTRIM$(UCASE$(txtFileTypeText)))
             IF NOT txtFileTypeText = strValidate THEN
                 txtOpenWithText = File.GetAssociation(txtFileTypeText)
+                Mouse.Hide
                 Obj.DrawTxt txtFileType, txtFileTypeText, False
                 Obj.DrawTxt txtOpenWith, txtOpenWithText, False
+                Mouse.Show
             END IF
         END IF
 
@@ -375,7 +386,6 @@ SUB Conf.UpdatePreview (Area AS PosType, ThemeId)
 
     Obj.DrawTxt txtPreview, "Example textbox", False
     
-    Mouse.Hide
     Font.Print "Preview link", imgDeskLink.Pos.Left + 38, imgDeskLink.Pos.Top + 4, Theme.DesktopText, fontHeading
     Font.Print "preview.exe", imgDeskLink.Pos.Left + 38, imgDeskLink.Pos.Top + 18, Theme.DesktopText, fontNormal
 

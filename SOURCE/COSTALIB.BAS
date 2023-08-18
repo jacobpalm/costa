@@ -179,7 +179,7 @@ SUB Mouse.Hide ()
 		INTERRUPT 51, regs, regs
 		MouseHidden = True
 	END IF
-
+	
 END SUB
 
 FUNCTION Mouse.InArea (TargetArea AS PosType)
@@ -257,21 +257,37 @@ FUNCTION Obj.BtnClick (TargetBtn AS ButtonType)
 
 		
 		'Draw the button pressed
+		Mouse.Hide
 		Obj.DrawBtn TargetBtn, True
+		Mouse.Show
 
 		DO
 			'Draw the button pressed when the mouse is over it, and unpressed
 			'when the mouse leaves it
 			IF Mouse.InArea(TargetBtn.Pos) THEN
-				IF IsUp = 1 THEN IsUp = 0: Obj.DrawBtn TargetBtn, True
+				IF IsUp = 1 THEN
+					IsUp = 0
+					Mouse.Hide
+					Obj.DrawBtn TargetBtn, True
+					Mouse.Show
+				END IF
 			ELSE
-				IF IsUp = 0 THEN IsUp = 1: Obj.DrawBtn TargetBtn, False
+				IF IsUp = 0 THEN
+					IsUp = 1
+					Mouse.Hide
+					Obj.DrawBtn TargetBtn, False
+					Mouse.Show
+				END IF
 			END IF
 
 		LOOP WHILE Mouse.Clicked
 
 		'Make sure the button looks released
-		IF IsUp = 0 THEN Obj.DrawBtn TargetBtn, False
+		IF IsUp = 0 THEN
+			Mouse.Hide
+			Obj.DrawBtn TargetBtn, False
+			Mouse.Show
+		END IF
 
 		IF Mouse.InArea(TargetBtn.Pos) THEN
 			Obj.BtnClick = True
@@ -292,7 +308,9 @@ SUB Obj.ChkClick (TargetChk AS CheckBoxType)
 		IF Mouse.InArea(TargetChk.Pos) THEN
 			
 			TargetChk.Checked = NOT TargetChk.Checked
+			Mouse.Hide
 			Obj.DrawChk TargetChk
+			Mouse.Show
 
 		END IF
 
@@ -348,7 +366,6 @@ SUB Obj.DrawBtn (TargetBtn AS ButtonType, Pressed AS INTEGER)
 		END IF
 	END IF
 	 
-	Mouse.Hide
 	IF TargetBtn.Transparent = False THEN
 		LINE (x1, y1)-(x2 - 1, y2 - 1), Color2, BF
 	ELSE
@@ -370,8 +387,6 @@ SUB Obj.DrawBtn (TargetBtn AS ButtonType, Pressed AS INTEGER)
 		Font.Print TargetBtn.Caption, x1, y1, Color4, FontHeading
 	END IF
 
-	Mouse.Show
-
 END SUB
 
 SUB Obj.DrawChk (TargetChk AS CheckBoxType)
@@ -387,7 +402,6 @@ SUB Obj.DrawChk (TargetChk AS CheckBoxType)
 	IF TargetChk.Pos.Width = 0 THEN TargetChk.Pos.Width = 14
 	IF TargetChk.Pos.Height = 0 THEN TargetChk.Pos.Height = 14
 
-	Mouse.Hide
 	LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 2), Theme.Textbox, BF
 
 	IF Theme.Window = 0 THEN
@@ -418,8 +432,6 @@ SUB Obj.DrawChk (TargetChk AS CheckBoxType)
 
 	END IF
 
-	Mouse.Show
-
 END SUB
 
 SUB Obj.DrawFrm (TargetFrm AS FrameType, LightColor, DarkColor)
@@ -432,11 +444,9 @@ SUB Obj.DrawFrm (TargetFrm AS FrameType, LightColor, DarkColor)
 	x2 = TargetFrm.Pos.Left + TargetFrm.Pos.Width
 	y2 = TargetFrm.Pos.Top + TargetFrm.Pos.Height
 
-	Mouse.Hide
 	LINE (x1 + 1, y1 + 1)-(x2, y2), LightColor, B
 	LINE (x1, y1)-(x2 - 1, y2 - 1), DarkColor, B
-	Mouse.Show
-
+	
 END SUB
 
 SUB Obj.DrawImg (TargetImg AS ImageType)
@@ -448,7 +458,6 @@ SUB Obj.DrawImg (TargetImg AS ImageType)
 	TargetImg.Pos.Width = 31
 	TargetImg.Pos.Height = 31
 
-	Mouse.Hide
 	LINE (X - 1, Y - 1)-(X + 32, Y - 1), Theme.Light
 	LINE (X - 1, Y)-(X - 1, Y + 32), Theme.Light
 	LINE (X, Y + 32)-(X + 32, Y + 32), Theme.Shadow
@@ -462,7 +471,6 @@ SUB Obj.DrawImg (TargetImg AS ImageType)
 	DEF SEG
 	PUT (X, Y), scrBuffer, PSET
 
-	Mouse.Show
 	EXIT SUB
 
 DrawImgError:
@@ -470,17 +478,14 @@ DrawImgError:
 	LINE (X, Y)-(X + 31, Y + 31), 4, BF
 	Font.Print "IMG", X + 6, Y + 4, 15, FontNormal
 	Font.Print "ERR", X + 6, Y + 19, 15, FontNormal
-	Mouse.Show
 	EXIT SUB
 	RESUME NEXT
 END SUB
 
 SUB Obj.DrawMenu ()
-	Mouse.Hide
 	LINE (0, 0)-(639, 26), Theme.Window, BF
 	LINE (0, 27)-(639, 27), Theme.Shadow
 	LINE (0, 28)-(639, 28), 0
-	Mouse.Show
 END SUB
 
 SUB Obj.DrawTxt (TargetTxt AS TextboxType, BYVAL Text AS STRING, IsEditing AS INTEGER)
@@ -494,7 +499,6 @@ SUB Obj.DrawTxt (TargetTxt AS TextboxType, BYVAL Text AS STRING, IsEditing AS IN
 	x2 = TargetTxt.Pos.Left + TargetTxt.Pos.Width
 	y2 = TargetTxt.Pos.Top + TargetTxt.Pos.Height
 
-	Mouse.Hide
 	LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 2), Theme.Textbox, BF
 
 	LINE (x1, y1)-(x2 - 1, y2 - 1), Theme.Light, B
@@ -517,8 +521,6 @@ SUB Obj.DrawTxt (TargetTxt AS TextboxType, BYVAL Text AS STRING, IsEditing AS IN
 		LINE (x1, y1 + 4)-(x1, y1 + 15), Theme.TextboxText
 	END IF
 
-	Mouse.Show
-
 END SUB
 
 SUB Obj.DrawWin (TargetWin AS WindowType)
@@ -529,8 +531,6 @@ SUB Obj.DrawWin (TargetWin AS WindowType)
 	x2 = TargetWin.Pos.Left + TargetWin.Pos.Width
 	y2 = TargetWin.Pos.Top + TargetWin.Pos.Height
 
-	Mouse.Hide
-	
 	'Window border
 	LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 1), Theme.TitleBar, BF
 
@@ -550,8 +550,6 @@ SUB Obj.DrawWin (TargetWin AS WindowType)
 	'Inner border
 	LINE (x1 + 5, y1 + 5)-(x2 - 5, y2 - 5), Theme.Shadow, B
 	LINE (x1 + 6, y1 + 6)-(x2 - 6, y2 - 6), Theme.Light, B
-
-	Mouse.Show
 
 END SUB
 
@@ -582,7 +580,9 @@ SUB Obj.EditTxt (TargetTxt AS TextboxType, Text AS STRING)
 		LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), Theme.TextboxText
 		Mouse.Show
 	ELSE
+		Mouse.Hide
 		Obj.DrawTxt TargetTxt, TempTxt, True
+		Mouse.Show
 	END IF
 
 	DO
@@ -594,21 +594,21 @@ SUB Obj.EditTxt (TargetTxt AS TextboxType, Text AS STRING)
 			SELECT CASE ASC(Key$)
 				CASE 8 'Backspace
 					IF LEN(TempTxt) > 0 THEN
+						Mouse.Hide
 						IF Font.GetWidth(TempTxt, FontHeading) + 2 < MaxShow THEN
 							'Erase only the last char
-							Mouse.Hide
 							LineX1 = x1 + Font.GetWidth(TempTxt, FontHeading)
 							LINE (LineX1 + 2, y1 - 2)-(LineX1 - Font.GetWidth(RIGHT$(TempTxt, 1), FontHeading), y1 + 11), Theme.Textbox, BF
 							TempTxt = LEFT$(TempTxt, LEN(TempTxt) - 1)
 							LineX1 = x1 + Font.GetWidth(TempTxt, FontHeading) + 2
 							LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), Theme.TextboxText
-							Mouse.Show
 						ELSE
 							'There's more text that's not shown, so we'll
 							'have to redraw the entire textbox
 							TempTxt = LEFT$(TempTxt, LEN(TempTxt) - 1)
 							Obj.DrawTxt TargetTxt, TempTxt, True
 						END IF
+						Mouse.Show
 					END IF
 
 				CASE 13 'Enter
@@ -621,30 +621,31 @@ SUB Obj.EditTxt (TargetTxt AS TextboxType, Text AS STRING)
 
 				CASE 32 TO 126 'Any printable character
 					IF NOT LEN(TempTxt) = MaxLen THEN
+						Mouse.Hide
 						IF Font.GetWidth(TempTxt + Key$, FontHeading) + 2 < MaxShow THEN
-							Mouse.Hide
 							LineX1 = x1 + Font.GetWidth(TempTxt, FontHeading) + 2
 							LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), Theme.Textbox
 							TempTxt = TempTxt + Key$
 							Font.Print TempTxt, x1, y1, Theme.TextboxText, FontHeading
 							LineX1 = x1 + Font.GetWidth(TempTxt, FontHeading) + 2
 							LINE (LineX1, y1 - 1)-(LineX1, y1 + 10), Theme.TextboxText
-							Mouse.Show
 						ELSE
 							TempTxt = TempTxt + Key$
 							Obj.DrawTxt TargetTxt, TempTxt, True
 						END IF
+						Mouse.Show
 					END IF
 
 				CASE 27 'Escape
 					Text = OrigTxt
+					Mouse.Hide
 					Obj.DrawTxt TargetTxt, Text, False
+					Mouse.Show
 					EXIT SUB
 
 			END SELECT
 		END IF
-
-		 
+						
 	LOOP
 	
 END SUB
@@ -707,13 +708,11 @@ SUB Sys.AboutBox (ProgramName AS STRING, ProgramAuthor AS STRING, IconFile AS ST
 
 	Mouse.Hide
 	PCOPY 0, 1
-	Mouse.Show
-
+	
 	Obj.DrawWin winAboutBox
 	Obj.DrawBtn btnClose, False
 	Obj.DrawImg imgLogo
 
-	Mouse.Hide
 	Font.Print ProgramName + " by " + ProgramAuthor, 210, winAboutBox.Pos.Top + 15, 0, 1
 	Font.Print appName + " version " + appVersion, 210, winAboutBox.Pos.Top + 29, 0, 2
 	Font.Print "Costa made in 2004-" + appYear + " by Jacob Palm.", 168, winAboutBox.Pos.Top + 53, 0, 2
@@ -913,14 +912,12 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 	
 	Mouse.Hide
 	PCOPY 0, 1
-	Mouse.Show
 	
 	Obj.DrawWin winMsgBox
 	Obj.DrawBtn btnFirst, False
 	IF msgType = msgQuest THEN Obj.DrawBtn btnSecond, False
 	Obj.DrawImg imgIcon
 
-	Mouse.Hide
 	Font.Print msgTitle, winMsgBox.Pos.Left + 56, winMsgBox.Pos.Top + 15, Theme.WindowText, 1
 	
 	DIM PrintLine
@@ -985,7 +982,9 @@ SUB Sys.ShowLoading ()
 		DIM btnLoading AS ButtonType
 		Obj.SetSize btnLoading.Pos, sizeCenter, sizeCenter, 110, 34
 		btnLoading.Caption = "Loading..."
+		Mouse.Hide
 		Obj.DrawBtn btnLoading, False
+		Mouse.Show
 
 END SUB
 

@@ -72,12 +72,12 @@ SUB File.DrawList (TargetList AS TextboxType, HighLightActive, FullRedraw)
 		ListSelection = FolderListSelection
 	END IF
 
+	Mouse.Hide
 	IF FullRedraw = True THEN
 
 		'Full redraw, draw list first and then all visible items within
 		Obj.DrawTxt TargetList, "", False
 
-		Mouse.Hide
 		Counter = 0
 		FOR I = ListStartPos TO ListStartPos + MaxVisibleItems
 			IF I <= TotalItems THEN
@@ -119,7 +119,6 @@ SUB File.DrawList (TargetList AS TextboxType, HighLightActive, FullRedraw)
 		I = ListSelection - ListStartPos
 
 		IF NOT ItemText = "" THEN
-			Mouse.Hide
 			LINE (TargetList.Pos.Left + 2, TargetList.Pos.Top + 3 + (I * 12))-(TargetList.Pos.Left + TargetList.Pos.Width - 2, TargetList.Pos.Top + 15 + (I * 12)), BGColor, BF
 			Font.Print ItemText, TargetList.Pos.Left + 5, TargetList.Pos.Top + 5 + (I * 12), FGColor, FontSystem
 		END IF
@@ -559,6 +558,7 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	btnFolderPrev.Caption = "<"
 	btnFolderNext.Caption = ">"
 
+	Mouse.Hide
 	Obj.DrawWin winFileSelect
 	Obj.DrawTxt txtPattern, txtPatternText, False
 	Obj.DrawTxt txtDrive, txtDriveText, False
@@ -568,7 +568,6 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	Obj.DrawBtn btnFileNext, False
 	Obj.DrawBtn btnFolderPrev, False
 	Obj.DrawBtn btnFolderNext, False
-	Mouse.Hide
 	Font.Print "õPattern:", 101, winFileSelect.Pos.Top + 14, Theme.WindowText, FontNormal
 	Font.Print "õDrive:", 272, winFileSelect.Pos.Top + 14, Theme.WindowText, FontNormal
 	Font.Print "õFiles:", 101, winFileSelect.Pos.Top + 57, Theme.WindowText, FontNormal
@@ -725,13 +724,17 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 			Obj.EditTxt txtPattern, txtPatternText
 			IF NOT txtPatternText = UCASE$(LTRIM$(RTRIM$(txtPatternText))) THEN
 				txtPatternText = UCASE$(LTRIM$(RTRIM$(txtPatternText)))
+				Mouse.Hide
 				Obj.DrawTxt txtPattern, txtPatternText, False
+				Mouse.Show
 			END IF
 
 			'Input validation
 			IF LEN(txtPatternText) > 12 THEN
 				txtPatternText = LEFT$(txtPatternText, 12)
+				Mouse.Hide
 				Obj.DrawTxt txtPattern, txtPatternText, False
+				Mouse.Show
 			END IF
 
 			IF NOT txtPatternText = Pattern THEN
@@ -749,7 +752,9 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 
 			IF NOT txtDriveText = UCASE$(LTRIM$(RTRIM$(txtDriveText))) THEN
 				txtDriveText = UCASE$(LTRIM$(RTRIM$(txtDriveText)))
+				Mouse.Hide
 				Obj.DrawTxt txtDrive, txtDriveText, False
+				Mouse.Show
 			END IF
 			
 			IF txtDriveText = "" THEN txtDriveText = Drive
@@ -758,10 +763,13 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 				'Input validation
 				IF LEN(txtDriveText) > 1 THEN
 					txtDriveText = LEFT$(txtDriveText, 1)
+					Mouse.Hide
 					Obj.DrawTxt txtDrive, txtDriveText, False
+					Mouse.Show
 				END IF
 				
 				IF File.SetDrive(txtDriveText) THEN
+					'CURDIR has been set by File.SetDrive, extract path/drive
 					Path = CURDIR$
 					Drive = LEFT$(Path, 1)
 					File.GetChildFiles Path, Pattern
@@ -769,10 +777,12 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 					FileListSelection = 0
 					FolderListSelection = 0
 					File.DrawList txtFileList, True, True
-					File.DrawList txtFileList, True, True
+					File.DrawList txtFolderList, True, True
 				ELSE
 					txtDriveText = Drive
+					Mouse.Hide
 					Obj.DrawTxt txtDrive, txtDriveText, False
+					Mouse.Show
 				END IF
 			END IF
 		END IF

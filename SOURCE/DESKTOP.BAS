@@ -69,11 +69,11 @@ SUB Desk.DrawDesktop ()
 	 
 	Mouse.Hide
 	LINE (0, 29)-(639, 349), Theme.Desktop, BF
-	Mouse.Show
-
+	
 	'All desklinks will always have an imagefile. Use this to check if any
 	'desklinks exist
 	IF RTRIM$(DeskLink(0).ImageFile) = "" OR DeskLink(0).Caption = STRING$(25, 0) THEN
+		Mouse.Show
 		EXIT SUB
 	END IF
 
@@ -99,7 +99,6 @@ SUB Desk.DrawDesktop ()
 	IF NOT Setting.ShowLinkDescriptions THEN EXIT SUB
 
 	'Next, draw icon captions
-	Mouse.Hide
 	FOR TargetLink = 0 TO UBOUND(DeskLink)
 		'Description (caption) and target file
 		
@@ -117,6 +116,7 @@ SUB Desk.DrawDesktop ()
 		END IF
 		
 	NEXT
+	
 	Mouse.Show
 
 END SUB
@@ -143,8 +143,10 @@ SUB Desk.ExecuteDialog ()
 
 	Mouse.Hide
 	PCOPY 0, 1
+	Mouse.Show
 
 DrawExecuteDialog:
+	Mouse.Hide
 	Obj.DrawWin winExecute
 	Obj.DrawBtn btnOK, False
 	Obj.DrawBtn btnCancel, False
@@ -153,7 +155,6 @@ DrawExecuteDialog:
 	
 	Obj.DrawImg imgIcon
 
-	Mouse.Hide
 	Font.Print "Execute program or command", winExecute.Pos.Left + 53, winExecute.Pos.Top + 15, Theme.WindowText, FontHeading
 	Font.Print "You can also use this dialog to open any file", winExecute.Pos.Left + 53, winExecute.Pos.Top + 17 + 15, Theme.WindowText, FontNormal
 	Font.Print "associated with a program (like README.TXT).", winExecute.Pos.Left + 53, winExecute.Pos.Top + 17 + 30, Theme.WindowText, FontNormal
@@ -281,6 +282,7 @@ SUB Desk.LinkDialog (TargetLink, DidEdit)
 	btnCancel.Caption = "õCancel"
 
 LinkDialogDraw:
+	Mouse.Hide
 	Obj.DrawWin ConfWin
 	Obj.DrawTxt txtLinkCapt, txtLinkCaptText, False
 	Obj.DrawBtn btnIconPrev, False
@@ -293,15 +295,14 @@ LinkDialogDraw:
 	Obj.DrawChk chkPauseOnExit
 	Obj.DrawBtn btnOK, False
 	Obj.DrawBtn btnCancel, False
-	Mouse.Hide
 	Font.Print "õDescription (caption):", 222, txtLinkCapt.Pos.Top - 15, Theme.WindowText, 1
 	Font.Print "õProgram or DOS command:", 222, txtFilename.Pos.Top - 15, Theme.WindowText, 1
 	Font.Print "Paõrameters:", 222, txtParams.Pos.Top - 15, Theme.WindowText, 1
 	Font.Print "Paõth (including drive):", 222, txtPath.Pos.Top - 15, Theme.WindowText, 1
 	Font.Print "Pause after eõxecution", 242, chkPauseOnExit.Pos.Top + 3, Theme.WindowText, 2
 	LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), Theme.Desktop, BF
-	Mouse.Show
 	Obj.DrawImg imgIcon
+	Mouse.Show
 
 	DIM Key$
 
@@ -333,9 +334,9 @@ LinkDialogDraw:
 			IF CurrentIcon < 0 THEN CurrentIcon = UBOUND(AllIcons)
 			Mouse.Hide
 			LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), Theme.Desktop, BF
-			Mouse.Show
 			imgIcon.ImageFile = AllIcons(CurrentIcon)
 			Obj.DrawImg imgIcon
+			Mouse.Show
 		END IF
 
 		IF Obj.BtnClick(btnIconNext) OR Key$ = CHR$(0) + "m" THEN
@@ -343,9 +344,9 @@ LinkDialogDraw:
 			IF CurrentIcon > UBOUND(AllIcons) THEN CurrentIcon = 0
 			Mouse.Hide
 			LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), Theme.Desktop, BF
-			Mouse.Show
 			imgIcon.ImageFile = AllIcons(CurrentIcon)
 			Obj.DrawImg imgIcon
+			Mouse.Show
 		END IF
 
 		IF Obj.BtnClick(btnBrowse) OR Key$ = "." THEN
@@ -373,7 +374,9 @@ LinkDialogDraw:
 		Obj.ChkClick chkPauseOnExit
 		IF Key$ = "x" THEN
 			chkPauseOnExit.Checked = NOT chkPauseOnExit.Checked
+			Mouse.Hide
 			Obj.DrawChk chkPauseOnExit
+			Mouse.Show
 		END IF
 			
 	LOOP
@@ -471,7 +474,6 @@ SUB Desk.LinkMenu (TargetLink)
 	
 	Mouse.Hide
 	PCOPY 0, 1
-	Mouse.Show
 	
 	Obj.DrawWin winLinkMenu
 	Obj.DrawBtn btnOpen, False
@@ -481,7 +483,6 @@ SUB Desk.LinkMenu (TargetLink)
 	Obj.DrawBtn btnCancel, False
 	Obj.DrawImg imgIcon
 
-	Mouse.Hide
 	Font.Print DeskLink(TargetLink).Caption, winLinkMenu.Pos.Left + 54, winLinkMenu.Pos.Top + 17, 0, FontHeading
 	Font.Print DeskLink(TargetLink).Filename, winLinkMenu.Pos.Left + 54, winLinkMenu.Pos.Top + 31, 0, FontNormal
 	Font.Print "Path:", winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 59, 0, FontNormal
@@ -801,13 +802,12 @@ SUB Desk.Main ()
 	DIM DeskLinkCheck, ClickedX, ClickedY, ClickedB, DidEdit, Key$
 	DIM TabCheck, btnTab AS ButtonType, imgTab AS ImageType
 	
-	Mouse.Show
-
 	Desk.LinkLoad
 
 Desk.RedrawAll:
 	TabCheck = -1
 
+	Mouse.Hide
 	Obj.DrawMenu
 	Obj.DrawBtn btnAddLink, False
 	Obj.DrawBtn btnRunCmd, False
@@ -815,9 +815,9 @@ Desk.RedrawAll:
 	Obj.DrawBtn btnNext, False
 	Obj.DrawBtn btnAboutCosta, False
 	Obj.DrawBtn btnExitCosta, False
-	Mouse.Hide
 	Font.Print LTRIM$(STR$(Setting.DesktopID)) + "/5", 310, 8, Theme.WindowText, FontHeading
 	Mouse.Show
+
 	Desk.DrawDesktop
 	
 	DO
@@ -941,8 +941,8 @@ Desk.RedrawAll:
 					IF TabCheck > -1 THEN
 						Mouse.Hide
 						LINE (DeskLink(TabCheck).Left - 3, DeskLink(TabCheck).Top - 3)-(DeskLink(TabCheck).Left + 35, DeskLink(TabCheck).Top + 35), Theme.Desktop, BF
-						Mouse.Show
 						Obj.DrawImg imgTab
+						Mouse.Show
 					END IF
 
 					IF Key$ = CHR$(9) THEN
@@ -960,8 +960,10 @@ Desk.RedrawAll:
 						imgTab.Pos.Left = DeskLink(TabCheck).Left: imgTab.Pos.Top = DeskLink(TabCheck).Top
 						btnTab.Pos.Left = DeskLink(TabCheck).Left - 3: btnTab.Pos.Top = DeskLink(TabCheck).Top - 3
 						btnTab.Pos.Width = 37: btnTab.Pos.Height = 37
+						Mouse.Hide
 						Obj.DrawBtn btnTab, False
 						Obj.DrawImg imgTab
+						Mouse.Show
 					END IF
 				END IF
 			END IF
@@ -969,8 +971,8 @@ Desk.RedrawAll:
 			IF (Key$ = CHR$(13) OR Key$ = CHR$(32)) AND TabCheck > -1 THEN
 				Mouse.Hide
 				LINE (DeskLink(TabCheck).Left - 3, DeskLink(TabCheck).Top - 3)-(DeskLink(TabCheck).Left + 35, DeskLink(TabCheck).Top + 35), Theme.Desktop, BF
-				Mouse.Show
 				Obj.DrawImg imgTab
+				Mouse.Show
 				
 				IF Key$ = CHR$(13) THEN
 					Desk.LinkMenu TabCheck

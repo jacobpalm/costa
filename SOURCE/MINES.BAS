@@ -57,6 +57,7 @@ SUB Mine.ClearNeighbors (FieldRow, FieldCol)
 	'should be cleared around it
 	IF Mine.GetNeighbors(FieldRow, FieldCol) THEN EXIT SUB
 
+	Mouse.Hide
 	'Set the current pos in the mask as cleared, then start a loop that checks
 	'all neighbors to cleared cells Empty cells are cleared as well and marked
 	'in the mask, to be checked on next loop. Repeat until no cells are cleared
@@ -109,6 +110,7 @@ SUB Mine.ClearNeighbors (FieldRow, FieldCol)
 		NEXT
 
 	LOOP UNTIL NeighborsCleared = False
+	Mouse.Show
 		
 END SUB
 
@@ -134,6 +136,7 @@ SUB Mine.ClickCell (FieldRow, FieldCol, MouseButton)
 			END IF
 
 			IF MineField(FieldRow, FieldCol) AND FieldMined THEN
+				Mouse.Hide
 				FOR FieldRow = 0 TO FieldHeight - 1
 					FOR FieldCol = 0 TO FieldWidth - 1
 						IF MineField(FieldRow, FieldCol) AND FieldMined THEN
@@ -142,6 +145,7 @@ SUB Mine.ClickCell (FieldRow, FieldCol, MouseButton)
 						END IF
 					NEXT
 				NEXT
+				Mouse.Show
 				Mine.PrintStatus False, "Kaboom! Game over."
 				Mine.PlaySound SoundLoose
 				GameOver = True
@@ -149,6 +153,7 @@ SUB Mine.ClickCell (FieldRow, FieldCol, MouseButton)
 			END IF
 
 			'If we reach this point, clear the field and adjacent empty fields
+			Mouse.Hide
 			MineField(FieldRow, FieldCol) = MineField(FieldRow, FieldCol) OR FieldCleared
 			CellsCleared = CellsCleared + 1
 			IF CellsCleared = (FieldHeight * FieldWidth) - MineCount THEN
@@ -164,14 +169,16 @@ SUB Mine.ClickCell (FieldRow, FieldCol, MouseButton)
 						END IF
 					NEXT
 				NEXT
-
+				Mouse.Show
 				Mine.PrintStatus False, "Minefield cleared, good job!"
 				Mine.PlaySound SoundWin
 				GameOver = True
 			ELSE
 				Mine.PlaySound SoundClear
+				Mouse.Hide
 				Mine.DrawCell FieldRow, FieldCol
 				Mine.ClearNeighbors FieldRow, FieldCol
+				Mouse.Show
 			END IF
 			
 		CASE mbRight
@@ -181,7 +188,9 @@ SUB Mine.ClickCell (FieldRow, FieldCol, MouseButton)
 			ELSE
 				MineField(FieldRow, FieldCol) = MineField(FieldRow, FieldCol) XOR FieldFlagged
 			END IF
+			Mouse.Hide
 			Mine.DrawCell FieldRow, FieldCol
+			Mouse.Show
 			Mine.PlaySound SoundFlag
 
 	END SELECT
@@ -198,8 +207,6 @@ SUB Mine.DrawCell (Row, Col)
 	x2 = x1 + CellSize - 2
 	y2 = y1 + CellSize - 2
 
-	Mouse.Hide
-	
 	IF MineField(Row, Col) AND FieldExploded THEN
 
 		'Kaboom!
@@ -269,8 +276,6 @@ SUB Mine.DrawCell (Row, Col)
 
 	END IF
 
-	Mouse.Show
-
 END SUB
 
 SUB Mine.DrawField ()
@@ -284,9 +289,7 @@ SUB Mine.DrawField ()
 
 	Mouse.Hide
 	LINE (0, 29)-(639, 349), Theme.Window, BF
-	Mouse.Show
 
-	Mouse.Hide
 	'Button color
 	LINE (posField.Left, posField.Top)-(posField.Left + posField.Width, posField.Top + posField.Height), 7, BF
 
@@ -317,7 +320,6 @@ SUB Mine.DrawField ()
 	'Borders around playfield
 	LINE (posField.Left, posField.Top)-(posField.Left + posField.Width, posField.Top + posField.Height), 0, B
 	
-
 	Mouse.Show
 
 END SUB
@@ -401,6 +403,7 @@ SUB Mine.Main ()
 	btnAbout.Caption = "õAbout..."
 	btnExit.Caption = "Eõxit"
 	
+	Mouse.Hide
 	Obj.DrawMenu
 	
 	Obj.DrawBtn btnNew, False
@@ -408,7 +411,8 @@ SUB Mine.Main ()
 	Obj.DrawBtn btnAudio, False
 	Obj.DrawBtn btnAbout, False
 	Obj.DrawBtn btnExit, False
-	
+	Mouse.Show
+
 	'Default settings
 	EnableAudio = True
 	FieldWidth = 16
@@ -636,7 +640,6 @@ FUNCTION Mine.SetSize ()
 
 		Mouse.Hide
 		PCOPY 0, 1
-		Mouse.Show
 
 		Obj.DrawWin winSetSize
 		Obj.DrawBtn btnSize(0), False
@@ -645,7 +648,6 @@ FUNCTION Mine.SetSize ()
 		Obj.DrawBtn btnSize(3), False
 		Obj.DrawBtn btnCancel, False
 
-		Mouse.Hide
 		Font.Print "9xõ9", btnSize(0).Pos.Left + ((btnSize(0).Pos.Width - Font.GetWidth("9x9", fontHeading)) / 2), btnSize(0).Pos.Top + 79, Theme.WindowText, fontHeading
 		Font.Print "16x1õ6", btnSize(1).Pos.Left + ((btnSize(1).Pos.Width - Font.GetWidth("16x16", fontHeading)) / 2), btnSize(1).Pos.Top + 79, Theme.WindowText, fontHeading
 		Font.Print "õ22x18", btnSize(2).Pos.Left + ((btnSize(2).Pos.Width - Font.GetWidth("22x18", fontHeading)) / 2), btnSize(2).Pos.Top + 79, Theme.WindowText, fontHeading

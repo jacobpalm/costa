@@ -204,8 +204,7 @@ END FUNCTION
 SUB Tic.DrawBackground ()
 	
 	DIM LX
-	Mouse.Hide
-	
+
 	LINE (0, 29)-(639, 349), 2, BF
 
 	FOR LX = 0 TO 639 STEP 6
@@ -215,8 +214,6 @@ SUB Tic.DrawBackground ()
 	FOR LX = 3 TO 639 STEP 6
 		LINE (LX, 31)-(LX, 349), 10, , &H1111
 	NEXT
-
-	Mouse.Show
 	
 END SUB
 
@@ -244,8 +241,6 @@ SUB Tic.DrawBoard ()
 			LINE (x1 + 2, y1 + 2)-(x2 - 2, y2 - 2), 15, BF
 			LINE (x1, y1)-(x2 - 1, y2 - 1), 10, B
 			LINE (x1 + 1, y1 + 1)-(x2, y2), 8, B
-			
-			Tic.DrawXO FieldRow, FieldCol, PlayField(FieldRow, FieldCol)
 		NEXT
 	NEXT
 	Mouse.Show
@@ -350,19 +345,19 @@ SUB Tic.Main ()
 	btnAbout.Caption = "õAbout..."
 	btnExit.Caption = "Eõxit"
 	
+	Mouse.Hide
 	Obj.DrawMenu
 	Tic.DrawBackground
 
-	Mouse.Hide
 	LINE (frmTic.Pos.Left + 2, frmTic.Pos.Top + 2)-(frmTic.Pos.Left + frmTic.Pos.Width - 2, frmTic.Pos.Top + frmTic.Pos.Height - 2), 2, BF
-	Mouse.Show
 	Obj.DrawFrm frmTic, 10, 8
 	Obj.DrawBtn btnNew, False
 	Obj.DrawBtn btnAIToggle, False
 	Obj.DrawBtn btnAudio, False
 	Obj.DrawBtn btnAbout, False
 	Obj.DrawBtn btnExit, False
-	
+	Mouse.Show
+
 	PlayerTurn = PlayerX
 	PlayerStart = PlayerX
 	Tic.DrawBoard
