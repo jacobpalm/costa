@@ -15,3 +15,4 @@ DATA/CONFIG/*.DAT
 
 # Mac system files
 .DS_Store
+DATA/CONFIG/FILETYPE.DAT
