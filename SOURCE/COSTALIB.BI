@@ -85,7 +85,7 @@
   END TYPE
 
   'The textbox doesn't have a TEXT property. Uses a string variable instead.
-  'This is to avoid fixed-lenght strings
+  'This is to avoid fixed-length strings
   TYPE TextboxType
     Pos AS PosType
     MaxLen AS INTEGER
