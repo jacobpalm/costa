@@ -1,3 +1,4 @@
+DECLARE SUB Mine.Pause ()
 DECLARE SUB Mine.PrintTime ()
 OPTION EXPLICIT
 DEFINT A-Z
@@ -392,7 +393,7 @@ END SUB
 SUB Mine.Main ()
 
 	DIM btnNew AS ButtonType, btnSize AS ButtonType, btnAudio AS ButtonType
-	DIM btnAbout AS ButtonType, btnExit AS ButtonType
+	DIM btnPause AS ButtonType, btnAbout AS ButtonType, btnExit AS ButtonType
 	DIM FieldRow, FieldCol, MouseButton
 	DIM TimeCompare AS LONG
 	DIM Key$
@@ -400,11 +401,13 @@ SUB Mine.Main ()
 	Obj.SetSize btnNew.Pos, 3, 2, 92, 22
 	Obj.SetSize btnSize.Pos, 102, 2, 92, 22
 	Obj.SetSize btnAudio.Pos, 201, 2, 92, 22
+	Obj.SetSize btnPause.Pos, 300, 2, 92, 22
 	Obj.SetSize btnAbout.Pos, 446, 2, 92, 22
 	Obj.SetSize btnExit.Pos, 545, 2, 92, 22
 	btnNew.Caption = "õNew game"
 	btnSize.Caption = "Siõze"
 	btnAudio.Caption = "õSound"
+	btnPause.Caption = "õPause"
 	btnAbout.Caption = "õAbout..."
 	btnExit.Caption = "Eõxit"
 	
@@ -414,6 +417,7 @@ SUB Mine.Main ()
 	Obj.DrawBtn btnNew, False
 	Obj.DrawBtn btnSize, False
 	Obj.DrawBtn btnAudio, False
+	Obj.DrawBtn btnPause, False
 	Obj.DrawBtn btnAbout, False
 	Obj.DrawBtn btnExit, False
 	Mouse.Show
@@ -436,6 +440,10 @@ SUB Mine.Main ()
 		IF Obj.BtnClick(btnAudio) OR Key$ = "s" THEN
 			EnableAudio = NOT EnableAudio
 			Mine.PrintStatus False, ""
+		END IF
+
+		IF Obj.BtnClick(btnPause) OR Key$ = "p" THEN
+			Mine.Pause
 		END IF
 
 		IF Obj.BtnClick(btnSize) OR Key$ = "z" THEN
@@ -515,6 +523,46 @@ SUB Mine.NewGame ()
 	StartTime = 0
 
 	Mine.PrintStatus False, ""
+
+END SUB
+
+SUB Mine.Pause ()
+
+	DIM btnResume AS ButtonType, btnExit AS ButtonType
+	DIM PauseTime AS SINGLE
+	DIM Key$
+
+	PauseTime = TIMER
+	
+	Obj.SetSize btnResume.Pos, 3, 2, 92, 22
+	Obj.SetSize btnExit.Pos, 545, 2, 92, 22
+	btnResume.Caption = "õResume"
+	btnExit.Caption = "Eõxit"
+
+	Mouse.Hide
+	PCOPY 0, 1
+	LINE (0, 29)-(639, 329), Theme.Window, BF
+	Obj.DrawMenu
+	Obj.DrawBtn btnResume, False
+	Obj.DrawBtn btnExit, False
+	Mouse.Show
+
+	DO
+		Key$ = LCASE$(INKEY$)
+
+		IF Key$ = CHR$(32) OR Key$ = CHR$(13) OR Key$ = CHR$(27) THEN EXIT DO
+		IF Obj.BtnClick(btnResume) OR Key$ = "r" THEN EXIT DO
+
+		IF Obj.BtnClick(btnExit) THEN END
+		
+	LOOP
+
+	Mouse.Hide
+	PCOPY 1, 0
+	Mouse.Show
+
+	StartTime = StartTime + (TIMER - PauseTime)
+	Mine.PrintTime
 
 END SUB
 
