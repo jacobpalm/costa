@@ -399,9 +399,9 @@ SUB Mine.Main ()
 	DIM Key$
 
 	Obj.SetSize btnNew.Pos, 3, 2, 92, 22
-	Obj.SetSize btnSize.Pos, 102, 2, 92, 22
-	Obj.SetSize btnAudio.Pos, 201, 2, 92, 22
-	Obj.SetSize btnPause.Pos, 300, 2, 92, 22
+	Obj.SetSize btnPause.Pos, 102, 2, 92, 22
+	Obj.SetSize btnSize.Pos, 201, 2, 92, 22
+	Obj.SetSize btnAudio.Pos, 300, 2, 92, 22
 	Obj.SetSize btnAbout.Pos, 446, 2, 92, 22
 	Obj.SetSize btnExit.Pos, 545, 2, 92, 22
 	btnNew.Caption = "õNew game"
