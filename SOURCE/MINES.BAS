@@ -1,3 +1,4 @@
+DECLARE SUB Mine.PrintTime ()
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -11,7 +12,7 @@ DECLARE SUB Mine.HelpFirstMove (Row%, Col%)
 DECLARE SUB Mine.Main ()
 DECLARE SUB Mine.NewGame ()
 DECLARE SUB Mine.PlaySound (SoundType AS INTEGER)
-DECLARE SUB Mine.PrintStatus (PrintTimeOnly%, StatusMessage AS STRING)
+DECLARE SUB Mine.PrintStatus (MineCountOnly, StatusMessage AS STRING)
 DECLARE SUB Mine.Reveal ()
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
@@ -41,6 +42,7 @@ DIM SHARED FieldHeight AS INTEGER
 DIM SHARED posField AS PosType
 DIM SHARED StartTime AS LONG
 DIM SHARED CellsCleared AS INTEGER
+DIM SHARED CellsFlagged AS INTEGER
 DIM SHARED DebugMode AS INTEGER
 REDIM SHARED MineField(16, 16) AS INTEGER
 
@@ -184,12 +186,15 @@ SUB Mine.ClickCell (FieldRow, FieldCol, MouseButton)
 		CASE mbRight
 
 			IF MineField(FieldRow, FieldCol) AND FieldFlagged THEN
+				CellsFlagged = CellsFlagged - 1
 				MineField(FieldRow, FieldCol) = MineField(FieldRow, FieldCol) AND NOT FieldFlagged
 			ELSE
+				CellsFlagged = CellsFlagged + 1
 				MineField(FieldRow, FieldCol) = MineField(FieldRow, FieldCol) XOR FieldFlagged
 			END IF
 			Mouse.Hide
 			Mine.DrawCell FieldRow, FieldCol
+			Mine.PrintStatus True, ""
 			Mouse.Show
 			Mine.PlaySound SoundFlag
 
@@ -273,7 +278,7 @@ SUB Mine.DrawCell (Row, Col)
 		'Not cleared, flagged or exploded - meaning flag must have been removed.
 		'Clear button face
 		LINE (x1 + 1, y1 + 1)-(x2 - 1, y2 - 1), 7, BF
-
+		
 	END IF
 
 END SUB
@@ -453,7 +458,7 @@ SUB Mine.Main ()
 		END IF
 
 		IF NOT GameOver AND StartTime AND TimeCompare < TIMER THEN
-			Mine.PrintStatus True, ""
+			Mine.PrintTime
 			TimeCompare = TIMER + 1
 		END IF
 		
@@ -506,6 +511,7 @@ SUB Mine.NewGame ()
 	Mine.PlaySound SoundNew
 	GameOver = False
 	CellsCleared = 0
+	CellsFlagged = 0
 	StartTime = 0
 
 	Mine.PrintStatus False, ""
@@ -540,43 +546,64 @@ SUB Mine.PlaySound (SoundType AS INTEGER)
 
 END SUB
 
-SUB Mine.PrintStatus (PrintTimeOnly, StatusMessage AS STRING)
+SUB Mine.PrintStatus (MineCountOnly, StatusMessage AS STRING)
 	DIM Message AS STRING
-	DIM Hours, Minutes, Seconds
 	
 	'Only hide mouse if it's near the timer, to avoid cursor flicker on old PCs
 	Mouse.Poll
 	IF MouseY > 310 THEN Mouse.Hide
 
-	IF NOT PrintTimeOnly THEN
-		LINE (6, 330)-(632, 343), Theme.Window, BF
-		IF LEN(StatusMessage) THEN
-			Message = StatusMessage
-		ELSE
-			Message = LTRIM$(STR$(FieldWidth)) + "x" + LTRIM$(STR$(FieldHeight))
-			Message = Message + " with" + STR$(MineCount) + " mines"
-		END IF
-		Font.Print Message, 8, 332, Theme.WindowText, fontHeading
-
-		IF EnableAudio THEN
-			Message = "Sound: On"
-		ELSE
-			Message = "Sound: Off"
-		END IF
-		Font.Print Message, (630 - Font.GetWidth(Message, fontHeading)), 332, Theme.WindowText, fontHeading
-	ELSE
-		'Clear timer only
-		LINE (278, 330)-(360, 343), Theme.Window, BF
+	IF MineCountOnly THEN
+		LINE (106, 330)-(184, 343), Theme.Window, BF
+		Message = LTRIM$(STR$(CellsFlagged)) + "/" + LTRIM$(STR$(MineCount))
+		Font.Print Message, 110, 332, Theme.WindowText, fontHeading
+		Mouse.Show
+		EXIT SUB
 	END IF
 
+	'Clear both sides of timer
+	LINE (6, 330)-(277, 343), Theme.Window, BF
+	LINE (361, 330)-(632, 343), Theme.Window, BF
+
+	IF LEN(StatusMessage) THEN
+		Message = StatusMessage
+	ELSE
+		Message = "Flagged mines: " + STR$(CellsFlagged) + "/" + LTRIM$(STR$(MineCount))
+	END IF
+	Font.Print Message, 8, 332, Theme.WindowText, fontHeading
+
+	IF EnableAudio THEN
+		Message = "Sound: On"
+	ELSE
+		Message = "Sound: Off"
+	END IF
+	Font.Print Message, (630 - Font.GetWidth(Message, fontHeading)), 332, Theme.WindowText, fontHeading
+	
+	Mouse.Show
+
+END SUB
+
+SUB Mine.PrintTime ()
+
+	DIM Message AS STRING
+	DIM Hours, Minutes, Seconds
+
+	'Only draw time if we are still playing
 	IF GameOver THEN EXIT SUB
+
+	'Only hide mouse if it's near the timer, to avoid cursor flicker on old PCs
+	Mouse.Poll
+	IF MouseY > 310 THEN Mouse.Hide
+
+	'Clear timer only
+	LINE (278, 330)-(360, 343), Theme.Window, BF
 
 	IF StartTime > INT(TIMER) THEN
 		'If we cross midnight, start timer over to avoid weird times.
 		'Ugly fix, might change later.
 		StartTime = INT(TIMER)
 	END IF
-	
+
 	IF StartTime THEN
 		Seconds = INT(TIMER - StartTime)
 		Hours = Seconds \ 3600
@@ -593,8 +620,8 @@ SUB Mine.PrintStatus (PrintTimeOnly, StatusMessage AS STRING)
 
 		Font.Print Message, (640 - Font.GetWidth(Message, fontHeading)) / 2, 332, Theme.WindowText, fontHeading
 	END IF
-	Mouse.Show
 
+	Mouse.Show
 END SUB
 
 SUB Mine.Reveal ()
