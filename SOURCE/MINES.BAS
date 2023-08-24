@@ -1,5 +1,3 @@
-DECLARE SUB Mine.Pause ()
-DECLARE SUB Mine.PrintTime ()
 OPTION EXPLICIT
 DEFINT A-Z
 
@@ -12,8 +10,10 @@ DECLARE SUB Mine.DrawField ()
 DECLARE SUB Mine.HelpFirstMove (Row%, Col%)
 DECLARE SUB Mine.Main ()
 DECLARE SUB Mine.NewGame ()
+DECLARE SUB Mine.Pause ()
 DECLARE SUB Mine.PlaySound (SoundType AS INTEGER)
 DECLARE SUB Mine.PrintStatus (MineCountOnly, StatusMessage AS STRING)
+DECLARE SUB Mine.PrintTime ()
 DECLARE SUB Mine.Reveal ()
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
@@ -24,6 +24,7 @@ CONST FieldCleared = 4
 CONST FieldNumbered = 8
 CONST FieldExploded = 16
 CONST FieldMasked = 32
+CONST FieldKBSelected = 64
 
 CONST SoundNew = 0
 CONST SoundIllegalMove = 1
@@ -45,6 +46,8 @@ DIM SHARED StartTime AS LONG
 DIM SHARED CellsCleared AS INTEGER
 DIM SHARED CellsFlagged AS INTEGER
 DIM SHARED DebugMode AS INTEGER
+DIM SHARED KeyRow AS INTEGER
+DIM SHARED KeyCol AS INTEGER
 REDIM SHARED MineField(16, 16) AS INTEGER
 
 Sys.Load
@@ -235,6 +238,13 @@ SUB Mine.DrawCell (Row, Col)
 		
 	ELSEIF MineField(Row, Col) AND FieldFlagged THEN
 
+		'Background
+		IF MineField(Row, Col) AND FieldKBSelected THEN
+			LINE (x1 + 1, y1 + 1)-(x2 - 1, y2 - 1), 15, BF
+		ELSE
+			LINE (x1 + 1, y1 + 1)-(x2 - 1, y2 - 1), 7, BF
+		END IF
+
 		'Flag pole
 		LINE (x1 + 6, y1 + 2)-(x1 + 6, y1 + 10), 0
 		LINE (x1 + 4, y1 + 11)-(x1 + 8, y1 + 11), 0
@@ -249,6 +259,11 @@ SUB Mine.DrawCell (Row, Col)
 
 		'Field has been cleared, clear the cell
 		LINE (x1, y1)-(x2, y2), 7, BF
+
+		'Draw keyboard indicator if selected
+		IF MineField(Row, Col) AND FieldKBSelected THEN
+			LINE (x1 + 1, y1 + 1)-(x2 - 1, y2 - 1), 15, BF
+		END IF
 
 		'Draw neighbor count, if any
 		Neighbors = Mine.GetNeighbors(Row, Col)
@@ -273,14 +288,24 @@ SUB Mine.DrawCell (Row, Col)
 			END SELECT
 			Font.Print LTRIM$(STR$(Neighbors)), x1 + ((CellSize - Font.GetWidth(LTRIM$(STR$(Neighbors)), fontHeading)) / 2), y1 + 3, TextColor, fontHeading
 		END IF
+	
+	ELSEIF MineField(Row, Col) AND FieldKBSelected THEN
+
+		'Draw keyboard indicator if selected
+		IF MineField(Row, Col) AND FieldKBSelected THEN
+			LINE (x1 + 1, y1 + 1)-(x2 - 1, y2 - 1), 15, BF
+		END IF
 
 	ELSE
 
-		'Not cleared, flagged or exploded - meaning flag must have been removed.
+		'Not cleared, flagged, exploded or selected - meaning flag must have been
+		'removed.
+
 		'Clear button face
 		LINE (x1 + 1, y1 + 1)-(x2 - 1, y2 - 1), 7, BF
-		
+
 	END IF
+
 
 END SUB
 
@@ -395,6 +420,7 @@ SUB Mine.Main ()
 	DIM btnNew AS ButtonType, btnSize AS ButtonType, btnAudio AS ButtonType
 	DIM btnPause AS ButtonType, btnAbout AS ButtonType, btnExit AS ButtonType
 	DIM FieldRow, FieldCol, MouseButton
+	DIM KeyVisible
 	DIM TimeCompare AS LONG
 	DIM Key$
 
@@ -435,6 +461,7 @@ SUB Mine.Main ()
 		
 		IF Obj.BtnClick(btnNew) OR Key$ = "n" THEN
 			Mine.NewGame
+			KeyVisible = False
 		END IF
 
 		IF Obj.BtnClick(btnAudio) OR Key$ = "s" THEN
@@ -460,33 +487,113 @@ SUB Mine.Main ()
 			Sys.AboutBox "Minesweeper", "Jacob Palm", "MINE"
 		END IF
 
-		IF Key$ = "?" THEN
-			DebugMode = True
-			Mine.Reveal
-		END IF
+		IF NOT GameOver THEN
+			IF Key$ = "?" THEN
+				DebugMode = True
+				Mine.Reveal
+			END IF
 
-		IF NOT GameOver AND StartTime AND TimeCompare < TIMER THEN
-			Mine.PrintTime
-			TimeCompare = TIMER + 1
-		END IF
+			IF (Key$ = CHR$(32) OR Key$ = CHR$(13)) AND KeyVisible = False THEN
+				KeyVisible = True
+				MineField(KeyRow, KeyCol) = MineField(KeyRow, KeyCol) XOR FieldKBSelected
+				Mouse.Hide
+				Mine.DrawCell KeyRow, KeyCol
+				Mouse.Show
+				Key$ = ""
+				DO: LOOP WHILE LEN(INKEY$)
+			END IF
+
+			IF Key$ = CHR$(13) AND KeyVisible THEN
+				Mine.ClickCell KeyRow, KeyCol, mbLeft
+			END IF
+
+			IF Key$ = CHR$(32) AND KeyVisible THEN
+				Mine.ClickCell KeyRow, KeyCol, mbRight
+			END IF
 		
-		IF Mouse.Clicked AND Mouse.InArea(posField) AND NOT GameOver THEN
-			MouseButton = Mouse.Clicked
-			Mouse.Poll
-			
-			'Calculate which cell was clicked
-			FieldCol = INT((MouseX - posField.Left) / CellSize)
-			FieldRow = INT((MouseY - posField.Top) / CellSize)
+			'Up
+			IF Key$ = CHR$(0) + "h" AND KeyRow > 0 THEN
+				KeyVisible = True
+				MineField(KeyRow, KeyCol) = MineField(KeyRow, KeyCol) AND NOT FieldKBSelected
+				Mouse.Hide
+				Mine.DrawCell KeyRow, KeyCol
+				KeyRow = KeyRow - 1
+				MineField(KeyRow, KeyCol) = MineField(KeyRow, KeyCol) XOR FieldKBSelected
+				Mine.DrawCell KeyRow, KeyCol
+				Mouse.Show
+			END IF
 
-			'Play field is one pixel too wide for calculation above, dirty fix
-			'for this to prevent out of bounds clicks
-			IF FieldCol = FieldWidth THEN FieldCol = FieldCol - 1
-			IF FieldRow = FieldHeight THEN FieldRow = FieldRow - 1
-			
-			Mine.ClickCell FieldRow, FieldCol, MouseButton
+			'Down
+			IF Key$ = CHR$(0) + "p" AND KeyRow < FieldHeight - 1 THEN
+				KeyVisible = True
+				MineField(KeyRow, KeyCol) = MineField(KeyRow, KeyCol) AND NOT FieldKBSelected
+				Mouse.Hide
+				Mine.DrawCell KeyRow, KeyCol
+				KeyRow = KeyRow + 1
+				MineField(KeyRow, KeyCol) = MineField(KeyRow, KeyCol) XOR FieldKBSelected
+				Mine.DrawCell KeyRow, KeyCol
+				Mouse.Show
+			END IF
 
-			'Prevent audio from running wild if mouse/key is held down
-			DO: LOOP WHILE LEN(INKEY$) OR Mouse.Clicked
+			'Left
+			IF Key$ = CHR$(0) + "k" AND KeyCol > 0 THEN
+				KeyVisible = True
+				MineField(KeyRow, KeyCol) = MineField(KeyRow, KeyCol) AND NOT FieldKBSelected
+				Mouse.Hide
+				Mine.DrawCell KeyRow, KeyCol
+				KeyCol = KeyCol - 1
+				MineField(KeyRow, KeyCol) = MineField(KeyRow, KeyCol) XOR FieldKBSelected
+				Mine.DrawCell KeyRow, KeyCol
+				Mouse.Show
+			END IF
+
+			'Right
+			IF Key$ = CHR$(0) + "m" AND KeyCol < FieldWidth - 1 THEN
+				KeyVisible = True
+				MineField(KeyRow, KeyCol) = MineField(KeyRow, KeyCol) AND NOT FieldKBSelected
+				Mouse.Hide
+				Mine.DrawCell KeyRow, KeyCol
+				KeyCol = KeyCol + 1
+				MineField(KeyRow, KeyCol) = MineField(KeyRow, KeyCol) XOR FieldKBSelected
+				Mine.DrawCell KeyRow, KeyCol
+				Mouse.Show
+			END IF
+			
+			IF StartTime AND TimeCompare < TIMER THEN
+				Mine.PrintTime
+				TimeCompare = TIMER + 1
+			END IF
+		
+			IF Mouse.Clicked AND Mouse.InArea(posField) THEN
+				MouseButton = Mouse.Clicked
+				Mouse.Poll
+			
+				'Calculate which cell was clicked
+				FieldCol = INT((MouseX - posField.Left) / CellSize)
+				FieldRow = INT((MouseY - posField.Top) / CellSize)
+
+				'Play field is one pixel too wide for calculation above, dirty fix
+				'for this to prevent out of bounds clicks
+				IF FieldCol = FieldWidth THEN FieldCol = FieldCol - 1
+				IF FieldRow = FieldHeight THEN FieldRow = FieldRow - 1
+			
+				IF KeyVisible THEN
+					KeyVisible = False
+					MineField(KeyRow, KeyCol) = MineField(KeyRow, KeyCol) AND NOT FieldKBSelected
+					Mouse.Hide
+					Mine.DrawCell KeyRow, KeyCol
+					Mouse.Show
+				END IF
+
+				Mine.ClickCell FieldRow, FieldCol, MouseButton
+
+				KeyRow = FieldRow
+				KeyCol = FieldCol
+
+				'Prevent audio from running wild if mouse/key is held down
+				DO: LOOP WHILE LEN(INKEY$) OR Mouse.Clicked
+
+			END IF
 
 		END IF
 
@@ -521,7 +628,9 @@ SUB Mine.NewGame ()
 	CellsCleared = 0
 	CellsFlagged = 0
 	StartTime = 0
-
+	KeyRow = FieldHeight / 2
+	KeyCol = FieldWidth / 2
+	
 	Mine.PrintStatus False, ""
 
 END SUB

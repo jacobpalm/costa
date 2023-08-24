@@ -236,6 +236,9 @@
     In Tic Tac Toe, you can use the numeric keypad to place an X or O on the
    game board.
 
+    In Minesweeper, use the arrow keys to navigate the mine field. Then, use
+   the Space key to flag or unflag a cell, and the Enter key to clear a cell.
+
     Lastly, the "Select object" dialog in the theme editor can be navigated
    using the arrow up and arrow down keys, with the Enter key being used to
    confirm the selection.
