@@ -77,8 +77,9 @@ SUB ThmEdit.DrawPreview (ThemeFile AS STRING)
   Obj.DrawFrm frmPreview, 15, Theme.Shadow
   Mouse.Show
 
+  OriginalTheme = Setting.ThemeFile
+
   IF LEN(ThemeFile) THEN
-    OriginalTheme = Setting.ThemeFile
     Setting.ThemeFile = ThemeFile
     Sys.LoadTheme
 
@@ -154,11 +155,9 @@ SUB ThmEdit.DrawPreview (ThemeFile AS STRING)
   Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 48, Theme.TextboxText, FontSystem
   Mouse.Show
 
-  IF LEN(ThemeFile) THEN
-    Setting.ThemeFile = OriginalTheme
-    Sys.LoadTheme
-  END IF
-    
+  Setting.ThemeFile = OriginalTheme
+  Sys.LoadTheme
+  
 END SUB
 
 ' =========================================================================
