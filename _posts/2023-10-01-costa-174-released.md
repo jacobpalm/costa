@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Costa 1.7.4 released"
-image: 2023-08-20.png
+image: 2023-10-01.png
 ---
 Costa 1.7.4 has landed, and includes - like previous versions in the 1.7.x series - mostly fixes and performance improvements.
 
