@@ -50,7 +50,9 @@ title: Archive - The Costa Graphical User Interface
 					<a class="btn btn-default" href="{{ site.baseURL }}/downloads/costa{{ archiveversion.versionid }}.zip"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> Download</a></p>
 				{% endif %}
 				{{ archiveversion.content }}
-				Name: {{ archiveversion.name }}
+				Path: {{ archiveversion.path }}
+				Url: {{ archiveversion.url }}
+				ID from path: {% archiveversion.path | split:"/" | last | split:"." | first %}
 				<p><a href="{{ site.baseURL }}/archive.html#sitetop">Back to top</a></p>
 			</div>
 		</div>
