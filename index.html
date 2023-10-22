@@ -21,14 +21,13 @@ title: Home
             <div class="col-lg-8 col-lg-offset-2 centered">
                 <h3>Screenshots</h3>
             </div>
-            <div class="col-xs-6 col-md-4">
-                <a href="{{ site.baseURL }}/screenshots/{{ screenshot.name }}.html" class="thumbnail">
-                    <img src="{{ site.baseURL }}/assets/img/screenshots/{{ screenshot.name }}.png" alt="Screenshot">
-                </a>
-            </div>
             {% assign screenshots = site.static_files | where: "screenshot", true %}
             {% for screenshot in screenshots %}
-                {{ screenshot.path }}
+                <div class="col-xs-6 col-md-4">
+                    <a href="{{ site.baseURL }}{{ screenshot.path }}" class="thumbnail">
+                        <img src="{{ site.baseURL }}{{ screenshot.path }}" alt="Screenshot of Costa">
+                    </a>
+                </div>
             {% endfor %}
         </div>
     </div>
