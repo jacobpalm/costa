@@ -18,7 +18,7 @@ layout: default
 					</button>
 					<ul class="dropdown-menu centerDropdown" aria-labelledby="dropdownMenu1">
 						{% for archiveversion in archiveversions %}
-						<li><a href="{{ site.baseURL }}/archive/{{ archiveversion.versionid }}.html#versioninfo">{{ archiveversion.title }}</a></li>
+						<li><a href="{{ site.baseURL }}/archive/{{ archiveversion.title | remove: '.' }}.html#versioninfo">{{ archiveversion.title }}</a></li>
 						{% endfor %}
 					</ul>
 				</div>
@@ -44,14 +44,14 @@ layout: default
 						{% else %}{{ day }}th
 						{% endcase %}
 						{{ page.date | date: "of %B, %Y" }}</p>
-                    <p><a href="{{ site.baseURL }}/assets/img/archive/{{ page.versionid }}.png"><img src="{{ site.baseURL }}/assets/img/archive/{{ page.versionid }}.png" alt="Screenshot" style="width: 100%"></a></p>
+                    <p><a href="{{ site.baseURL }}/assets/img/archive/{{ page.title | remove: '.' }}.png"><img src="{{ site.baseURL }}/assets/img/archive/{{ page.title | remove: '.' }}.png" alt="Screenshot" style="width: 100%"></a></p>
                 {% endif %}
 				{{ content | markdownify }}
                 {% if page.unavailable %}
                 {% else %}
                 <p></p>
                 <div class="centered">
-                    <a class="btn btn-default" href="{{ site.baseURL }}/downloads/costa{{ page.versionid }}.zip"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> Download Costa {{ page.title | remove: "." }}</a></p>
+                    <a class="btn btn-default" href="{{ site.baseURL }}/downloads/costa{{ page.title | remove: '.' }}.zip"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> Download Costa {{ page.title }}</a></p>
                 </div>
                 {% endif %}
                 <p></p>

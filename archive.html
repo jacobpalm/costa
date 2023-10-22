@@ -19,7 +19,7 @@ title: Archive
 					</button>
 					<ul class="dropdown-menu centerDropdown" aria-labelledby="dropdownMenu1">
 						{% for archiveversion in archiveversions %}
-						<li><a href="{{ site.baseURL }}/archive/{{ archiveversion.versionid }}.html#versioninfo">{{ archiveversion.title }}</a></li>
+						<li><a href="{{ site.baseURL }}/archive/{{ archiveversion.title | remove: '.' }}.html#versioninfo">{{ archiveversion.title }}</a></li>
 						{% endfor %}
 					</ul>
 				</div>
