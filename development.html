@@ -21,8 +21,6 @@ title: Development Blog
     </div>
 </div>
 
-
-
 {% for post in site.posts %}
     <div class="{% cycle 'white', 'grey' %}">
         <div class="container">
@@ -43,21 +41,21 @@ title: Development Blog
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2">
                     {% if post.image %}
-                    <div class="col-md-8" style="padding-left: 0px;">
+                        <div class="col-md-8" style="padding-left: 0px;">
                     {% else %}
-                    <div class="col-md-12" style="padding-left: 0px;"></div>
+                        <div class="col-md-12" style="padding-left: 0px;"></div>
                     {% endif %}    
-                        {% if post.image %}
-                            <a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}" class="thumbnail visible-xs-block visible-sm-block"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}" alt="Screenshot"></a>
-                        {% else %}
-                        {% endif %}
-                        {{ post.excerpt }}
-                        <p><a href="{{post.url | prepend: site.baseurl}}">Read more...</a></p>
+                    {% if post.image %}
+                        <a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}" class="thumbnail visible-xs-block visible-sm-block"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}" alt="Screenshot"></a>
+                    {% else %}
+                    {% endif %}
+                    {{ post.excerpt }}
+                    <p><a href="{{post.url | prepend: site.baseurl}}">Read more...</a></p>
                     </div>
                     {% if post.image %}
-                    <div class="col-md-4 hidden-xs hidden-sm" style="padding-right: 0px;">
-                        <a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}" class="thumbnail"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}" alt="Screenshot"></a>
-                    </div>
+                        <div class="col-md-4 hidden-xs hidden-sm" style="padding-right: 0px;">
+                            <a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}" class="thumbnail"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}" alt="Screenshot"></a>
+                        </div>
                     {% else %}
                     {% endif %}
                 </div>
