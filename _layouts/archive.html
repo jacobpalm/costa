@@ -19,9 +19,12 @@ layout: default
 						{% endcase %}
 						{{ page.date | date: "of %B, %Y" }}</p>
                     <p><a href="{{ site.baseURL }}/assets/img/archive/{{ page.versionid }}.png"><img src="{{ site.baseURL }}/assets/img/archive/{{ page.versionid }}.png" alt="Screenshot" style="width: 100%"></a></p>
-                    <a class="btn btn-default" href="{{ site.baseURL }}/downloads/costa{{ page.versionid }}.zip"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> Download</a></p>
-				{% endif %}
+                {% endif %}
 				{{ content | markdownify }}
+                {% if page.unreleased %}
+                {% else %}
+                <a class="btn btn-default" href="{{ site.baseURL }}/downloads/costa{{ page.versionid }}.zip"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> Download</a></p>
+                {% endif %}
                 <p></p>
 				<p><a href="{{ site.baseURL }}/archive.html">Back to archive</a></p>
 			</div>
