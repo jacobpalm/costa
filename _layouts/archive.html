@@ -1,0 +1,55 @@
+---
+layout: default
+---
+<div class="white">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2">
+                <h4>{{ page.title }}</h4>
+                <p>Posted on the {% assign day = page.date | date: "%-d"  %}
+                    {% case day %}
+                      {% when '1' or '21' or '31' %}{{ day }}st
+                      {% when '2' or '22' %}{{ day }}nd
+                      {% when '3' or '23' %}{{ day }}rd
+                      {% else %}{{ day }}th
+                    {% endcase %}
+                    {{ page.date | date: "of %B, %Y" }}</p>
+                {% if page.image %}
+                <p><a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.image}}"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.image}}" alt="Screenshot" style="width: 100%"></a></p>
+                {% else %}
+                {% endif %}
+                {{ content | markdownify }}
+                <hr>
+                <p><a href="{{ site.baseURL }}/development.html">Back</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="white" id="version{{ archiveversion.versionid }}">
+	<div class="container">
+		<div class="row">
+			<div class="col-lg-8 col-lg-offset-2">
+				<h4>Version {{ page.version }}</h4>
+				{% if page.unreleased %}
+					<p>Unreleased</p>
+					<p></p>
+				{% else %}
+					<p>Released on the {% assign day = page.date | date: "%-d"  %}
+						{% case day %}
+						{% when '1' or '21' or '31' %}{{ day }}st
+						{% when '2' or '22' %}{{ day }}nd
+						{% when '3' or '23' %}{{ day }}rd
+						{% else %}{{ day }}th
+						{% endcase %}
+						{{ page.date | date: "of %B, %Y" }}</p>
+					<p><a class="btn btn-default" href="{{ site.baseURL }}/screenshots/{{ page.versionid }}.html"><span class="glyphicon glyphicon-picture" aria-hidden="true"></span> Screenshot</a>
+					<a class="btn btn-default" href="{{ site.baseURL }}/downloads/costa{{ page.versionid }}.zip"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> Download</a></p>
+				{% endif %}
+				{{ archiveversion.content }}
+                <p></p>
+				<p><a href="{{ site.baseURL }}/archive.html">Back to archive</a></p>
+			</div>
+		</div>
+	</div>
+</div>

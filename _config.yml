@@ -12,3 +12,11 @@ kramdown:
 
 collections:
   archive:
+    output: true
+
+defaults:
+  - scope:
+      path: ""
+      type: "archive"
+    values:
+      layout: "archive"
