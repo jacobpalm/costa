@@ -1,6 +1,5 @@
 ---
 layout: default
-title: Archived version
 ---
 {% assign archiveversions = site.archive | sort: 'date' | reverse  %}
 
@@ -19,7 +18,7 @@ title: Archived version
 					</button>
 					<ul class="dropdown-menu centerDropdown" aria-labelledby="dropdownMenu1">
 						{% for archiveversion in archiveversions %}
-						<li><a href="{{ site.baseURL }}/archive/{{ archiveversion.versionid }}.html#versioninfo">{{ archiveversion.version }}</a></li>
+						<li><a href="{{ site.baseURL }}/archive/{{ archiveversion.versionid }}.html#versioninfo">{{ archiveversion.title }}</a></li>
 						{% endfor %}
 					</ul>
 				</div>
@@ -32,7 +31,7 @@ title: Archived version
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
-				<h4>Version {{ page.version }}</h4>
+				<h4>Version {{ page.title }}</h4>
 				{% if page.unavailable %}
 					<p>Unreleased</p>
 					<p></p>
@@ -52,11 +51,11 @@ title: Archived version
                 {% else %}
                 <p></p>
                 <div class="centered">
-                    <a class="btn btn-default" href="{{ site.baseURL }}/downloads/costa{{ page.versionid }}.zip"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> Download Costa {{ page.version }}</a></p>
+                    <a class="btn btn-default" href="{{ site.baseURL }}/downloads/costa{{ page.versionid }}.zip"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> Download Costa {{ page.tilte | remove "." }}</a></p>
                 </div>
                 {% endif %}
                 <p></p>
-				<p><a href="{{site.url}}{{page.url}}#sitetop">Back to top</a></p>
+				<p><a href="{{site.url}}{{page.url}}.html#sitetop">Back to top</a></p>
 			</div>
 		</div>
 	</div>
