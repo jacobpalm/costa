@@ -22,35 +22,14 @@ title: Home
                 <h3>Screenshots</h3>
             </div>
             <div class="col-xs-6 col-md-4">
-                <a href="{{ site.baseURL }}/screenshots/01.html" class="thumbnail">
-                    <img src="{{ site.baseURL }}/assets/img/screenshots/screen01.png" alt="Screenshot">
+                <a href="{{ site.baseURL }}/screenshots/{{ screenshot.name }}.html" class="thumbnail">
+                    <img src="{{ site.baseURL }}/assets/img/screenshots/{{ screenshot.name }}.png" alt="Screenshot">
                 </a>
             </div>
-            <div class="col-xs-6 col-md-4">
-                <a href="{{ site.baseURL }}/screenshots/02.html" class="thumbnail">
-                    <img src="{{ site.baseURL }}/assets/img/screenshots/screen02.png" alt="Screenshot">
-                </a>
-            </div>
-            <div class="col-xs-6 col-md-4">
-                <a href="{{ site.baseURL }}/screenshots/03.html" class="thumbnail">
-                    <img src="{{ site.baseURL }}/assets/img/screenshots/screen03.png" alt="Screenshot">
-                </a>
-            </div>
-            <div class="col-xs-6 col-md-4">
-                <a href="{{ site.baseURL }}/screenshots/04.html" class="thumbnail">
-                    <img src="{{ site.baseURL }}/assets/img/screenshots/screen04.png" alt="Screenshot">
-                </a>
-            </div>
-            <div class="col-xs-6 col-md-4">
-                <a href="{{ site.baseURL }}/screenshots/05.html" class="thumbnail">
-                    <img src="{{ site.baseURL }}/assets/img/screenshots/screen05.png" alt="Screenshot">
-                </a>
-            </div>
-            <div class="col-xs-6 col-md-4">
-                <a href="{{ site.baseURL }}/screenshots/06.html" class="thumbnail">
-                    <img src="{{ site.baseURL }}/assets/img/screenshots/screen06.png" alt="Screenshot">
-                </a>
-            </div>
+            {% assign screenshots = site.static_files | where: "screenshot", true %}
+            {% for screenshot in screenshots %}
+                {{ screenshot.path }}
+            {% endfor %}
         </div>
     </div>
 </div>

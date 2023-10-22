@@ -21,3 +21,7 @@ defaults:
       type: "archive"
     values:
       layout: "archive"
+  - scope:
+      path: "assets/img/screenshots"
+    values:
+      screenshot: true
