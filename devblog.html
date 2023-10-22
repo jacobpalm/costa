@@ -34,17 +34,23 @@ title: Archive - The Costa Graphical User Interface
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
 				<h4>Version {{ archiveversion.version }}</h4>
-				<p>Released on the {% assign day = archiveversion.date | date: "%-d"  %}
-                    {% case day %}
-                      {% when '1' or '21' or '31' %}{{ day }}st
-                      {% when '2' or '22' %}{{ day }}nd
-                      {% when '3' or '23' %}{{ day }}rd
-                      {% else %}{{ day }}th
-                    {% endcase %}
-                    {{ archiveversion.date | date: "of %B, %Y" }}</p>
-				<p><a class="btn btn-default" href="{{ site.baseURL }}/screenshots/{{ archiveversion.versionid }}.html"><span class="glyphicon glyphicon-picture" aria-hidden="true"></span> Screenshot</a>
-				<a class="btn btn-default" href="{{ site.baseURL }}/downloads/costa{{ archiveversion.versionid }}.zip"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> Download</a></p>				
+				{% if archiveversion.unreleased then %}
+					<p>Unreleased</p>
+					<p></p>
+				{% else %}
+					<p>Released on the {% assign day = archiveversion.date | date: "%-d"  %}
+						{% case day %}
+						{% when '1' or '21' or '31' %}{{ day }}st
+						{% when '2' or '22' %}{{ day }}nd
+						{% when '3' or '23' %}{{ day }}rd
+						{% else %}{{ day }}th
+						{% endcase %}
+						{{ archiveversion.date | date: "of %B, %Y" }}</p>
+					<p><a class="btn btn-default" href="{{ site.baseURL }}/screenshots/{{ archiveversion.versionid }}.html"><span class="glyphicon glyphicon-picture" aria-hidden="true"></span> Screenshot</a>
+					<a class="btn btn-default" href="{{ site.baseURL }}/downloads/costa{{ archiveversion.versionid }}.zip"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> Download</a></p>
+				{% endif %}
 				{{ archiveversion.content }}
+				Name: {{ archiveversion.name }}
 				<p><a href="{{ site.baseURL }}/archive.html#sitetop">Back to top</a></p>
 			</div>
 		</div>
