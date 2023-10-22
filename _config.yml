@@ -13,6 +13,7 @@ kramdown:
 collections:
   archive:
     output: true
+    permalink: /:collection/:name
 
 defaults:
   - scope:
