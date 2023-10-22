@@ -5,19 +5,21 @@ layout: default
     <div class="container">
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2">
-                <h4>{{ page.title }}</h4>
-                <p>Posted on the {% assign day = page.date | date: "%-d"  %}
-                    {% case day %}
-                      {% when '1' or '21' or '31' %}{{ day }}st
-                      {% when '2' or '22' %}{{ day }}nd
-                      {% when '3' or '23' %}{{ day }}rd
-                      {% else %}{{ day }}th
-                    {% endcase %}
-                    {{ page.date | date: "of %B, %Y" }}</p>
-                {% if page.image %}
-                <p><a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.image}}"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.image}}" alt="Screenshot" style="width: 100%"></a></p>
-                {% else %}
-                {% endif %}
+                <div class="centered">
+                    <h1>{{ page.title }}</h1>
+                    <p>Posted on the {% assign day = page.date | date: "%-d"  %}
+                        {% case day %}
+                        {% when '1' or '21' or '31' %}{{ day }}st
+                        {% when '2' or '22' %}{{ day }}nd
+                        {% when '3' or '23' %}{{ day }}rd
+                        {% else %}{{ day }}th
+                        {% endcase %}
+                        {{ page.date | date: "of %B, %Y" }}</p>
+                    {% if page.image %}
+                    <p><a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.image}}"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.image}}" alt="Screenshot" style="width: 100%"></a></p>
+                    {% else %}
+                    {% endif %}
+                </div>
                 {{ content | markdownify }}
                 <hr>
                 <p><a href="{{ site.baseURL }}/development.html">Back</a></p>
