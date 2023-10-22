@@ -19,7 +19,7 @@ title: Archive - The Costa Graphical User Interface
 					</button>
 					<ul class="dropdown-menu centerDropdown" aria-labelledby="dropdownMenu1">
 						{% for archiveversion in archiveversions %}
-						<li><a href="{{ site.baseURL }}/archive.html#version{{ archiveversion.versionid }}">{{ archiveversion.version }}</a></li>
+						<li><a href="{{ site.baseURL }}/archive/{{ archiveversion.versionid }}.html">{{ archiveversion.version }}</a></li>
 						{% endfor %}
 					</ul>
 				</div>
@@ -35,7 +35,7 @@ title: Archive - The Costa Graphical User Interface
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
 				<h4>Version {{ archiveversion.version }}</h4>
-				{% if archiveversion.unreleased %}
+				{% if archiveversion.unavailable %}
 					<p>Unreleased</p>
 					<p></p>
 				{% else %}

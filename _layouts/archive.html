@@ -1,12 +1,12 @@
 ---
 layout: default
 ---
-<div class="white" id="version{{ archiveversion.versionid }}">
+<div class="white">
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2">
 				<h4>Version {{ page.version }}</h4>
-				{% if page.unreleased %}
+				{% if page.unavailable %}
 					<p>Unreleased</p>
 					<p></p>
 				{% else %}
@@ -21,9 +21,12 @@ layout: default
                     <p><a href="{{ site.baseURL }}/assets/img/archive/{{ page.versionid }}.png"><img src="{{ site.baseURL }}/assets/img/archive/{{ page.versionid }}.png" alt="Screenshot" style="width: 100%"></a></p>
                 {% endif %}
 				{{ content | markdownify }}
-                {% if page.unreleased %}
+                {% if page.unavailable %}
                 {% else %}
-                <a class="btn btn-default" href="{{ site.baseURL }}/downloads/costa{{ page.versionid }}.zip"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> Download</a></p>
+                <p></p>
+                <div style="text-align: center;">
+                    <a class="btn btn-default" href="{{ site.baseURL }}/downloads/costa{{ page.versionid }}.zip"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> Download</a></p>
+                </div>
                 {% endif %}
                 <p></p>
 				<p><a href="{{ site.baseURL }}/archive.html">Back to archive</a></p>
