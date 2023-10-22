@@ -9,3 +9,7 @@ plugins:
 
 kramdown:
   syntax_highlighter: rouge
+
+collections:
+  archive:
+    output: true
