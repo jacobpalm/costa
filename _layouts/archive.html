@@ -51,12 +51,12 @@ title: Archived version
                 {% if page.unavailable %}
                 {% else %}
                 <p></p>
-                <div style="text-align: center;">
-                    <a class="btn btn-default" href="{{ site.baseURL }}/downloads/costa{{ page.versionid }}.zip"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> Download</a></p>
+                <div class="centered">
+                    <a class="btn btn-default" href="{{ site.baseURL }}/downloads/costa{{ page.versionid }}.zip"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> Download Costa {{ page.version }}</a></p>
                 </div>
                 {% endif %}
                 <p></p>
-				<p><a href="#sitetop">Back to top</a></p>
+				<p><a href="{{site.url}}{{page.url}}#sitetop">Back to top</a></p>
 			</div>
 		</div>
 	</div>
