@@ -6,13 +6,13 @@ excerpt_separator: <!--more-->
 ---
 Over the past couple of weeks, I have been working to improve the Icon Editor. Visually, nothing has changed - but under the hood, three major improvements have been made!<!--more-->
 
-##### Flood fill
+### Flood fill
 Until now, right-clicking a pixel has made that pixel transparent. But now, this will instead trigger a flood fill of the clicked area. This makes icon editing a breeze compared to the old method of having to paint each individual pixel.
 
-##### Major code cleanup and optimization
+### Major code cleanup and optimization
 The underlying code has been massively cleaned up and optimized. No longer will you see the editor redraw the drawing area - only changed pixels will be redrawn, even on flood fill, loading and creating a new icon. Code that was reused in multiple places have also been put into reusable functions/subs - this doesn't improve the speed, but it makes the code much cleaner.
 
-##### New icon format
+### New icon format
 Another major improvement is a new format for icons. Until now, Costa has used the homebrewed BIF image format, which consisted of two elements:
 * A header to identify the file as a Costa icon file
 * A two-dimensional array of 16-bit integers, the smallest integer size available in the VBDOS language, each containing a number corresponding to one of the 16 available colors in the VGA palette, or -1 to indicate a transparent pixel

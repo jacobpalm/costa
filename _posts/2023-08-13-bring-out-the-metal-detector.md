@@ -9,12 +9,12 @@ image: 2023-08-13.png
 
 The game follows the same rules as the classic Windows implementation. Not because I wanted to copy Microsoft, but because it’s the version most of us grew up with in the 90’s and spent far too much time playing on our non-internet connected PCs. It features the simple graphics that characterize the game, as well as multiple difficulty levels to choose from and optional PC speaker sound.
 
-##### Screenshots
+### Screenshots
 ![Kaboom! Accidentially clicking a mine will trigger a chain reaction and blow all the mines]({{ site.baseURL }}/assets/img/blog/2023-08-13_kaboom.png "Kaboom! Accidentially clicking a mine will trigger a chain reaction and blow all the mines"){:class="img-responsive"}
 
 ![Feeling up for a REAL challenge, or just a quick game? Multiple difficulty levels allow variation]({{ site.baseURL }}/assets/img/blog/2023-08-13_difficulty.png "Feeling up for a REAL challenge, or just a quick game? Multiple difficulty levels allow variation"){:class="img-responsive"}
 
-#### Coding with bitwise operations
+### Coding with bitwise operations
 It may sound weird, but I started coding Minesweeper not because I wanted to make that specific game, but because I wanted to test some new knowledge I got about bitwise operations and put it to the test.
 
 Bitwise operations are a method of manipulating individual bits in a byte, allowing for some very powerful programming. The use I found in Minesweeper is that I can use a single integer variable to store multiple values. Each cell on the board is one integer variable, and the individual bits in it are used to hold different information. For example, one bit determines if the cell has a mine or not, another determines if it has been flagged. This saves a lot of memory (for a DOS computer that is).
@@ -52,12 +52,12 @@ As you can see this also helps produce readable code - it's easy to read from th
 
 These are just a few examples of how bitwise operations can be used, there's tons of things they can be used for. But for Costa, packing more data into fewer variables fits very well with the overall theme of making Costa as small and fast as I can. If you are in to software development and haven't used bitwise operations before, you should absolutely read more about them.
 
-##### Common about box for all apps
+### Common about box for all apps
 Historically, Costa could only be started via the desktop, and all apps had to be run from there. This was, however, an artificial limit to make everything seem more "connected". I decided that this was kind of pointless, and that the user should have the freedom to start each app as they wanted. Only the desktop included information about the author (yours truly), and so I wanted information about each app to be shown in the app itself. I also figured this would make it easier for others to get proper credit, should anyone decide to make an app for Costa in the future.
 
 For that reason, I have now implemented a standard "About box" function, that can be called from all apps that use the Costa library and implemented it in all existing apps, including Minesweeper.
 
 ![The common about box allows others to make apps for Costa and get proper credit]({{ site.baseURL }}/assets/img/blog/2023-08-13_about.png "The common about box allows others to make apps for Costa and get proper credit"){:class="img-responsive"}
 
-#### Coming soon
+### Coming soon
 The Minesweeper game, and other goodies mentioned here, will be made available when Costa 1.7.4 releases - any day now.

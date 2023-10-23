@@ -6,14 +6,14 @@ image: 2023-04-10.png
 For once, a new version of Costa - version 1.7.1 - does not bring any new features. Instead, focus has been on improving performance, and on reducing the size of Costa on disk.
 <!--more-->
 
-##### New icon format
+### New icon format
 Costa is now using a new icon format, which does away with transparency. All icons now have a solid background color. The reason for this is that the old format was slow. Icons were drawn on the screen 1 pixel at a time, which meant that for each 32x32 pixel icon, 1024 draw operations were called. Given the [planar graphics](https://en.wikipedia.org/wiki/Planar_(computer_graphics)) involved with high resolution EGA and VGA, this took far too long on real hardware.
 
 So, Costa now uses a much simpler format. The icon editor simply captures a chunk of video memory and saves it to disk, and the icon drawing routine then loads this chunk of puts it back in to video memory. In my testing on an IBM PS/2 55SX equipped with a 16 MHz [Intel i386 CPU](https://en.wikipedia.org/wiki/I386), I found the new routine to be somewhere around 6 times as fast.
 
 As a bonus, icon size has been reduced from 2.055 bytes to 527 bytes - almost 75% saved space per icon.
 
-##### Code optimization - for speed
+### Code optimization - for speed
 A lot of work has been put into optimizing the code. A few examples follow.
 
 Every time Costa needs to check the location of the mouse cursor on the screen, it calls a [software interrupt](https://en.wikipedia.org/wiki/Interrupt#Software_interrupts) to make the CPU hand over control to the resident mouse driver, which then puts the values in to CPU registers and hands over control to Costa again. This process naturally eats up some CPU cycles. The code has been optimized to do this as few times as possible. For example, Costa used to call the mouse interrupt once to get the vertical position of the mouse cursor, and then again to get the horizontal position. This has been streamlined into one call to get both positions. And, in loops, the mouse position is now only polled once per iteration and stored in variables during subsequent checks in the code.
@@ -22,7 +22,7 @@ Static variables are now used in functions that only need to perform their task 
 
 Every time Costa or one of its accessories starts, a function called "Sys.Load" is called. This function takes care of loading fonts into memory, loading user settings and theme, and various other things. This function has been greatly optimized and reduced, to help each program start faster. Also, code to make sure the programs could only be started from within the desktop has been removed, because why not just let users run whatever they want, however they want?
 
-##### Code optimization - for size
+### Code optimization - for size
 The inputbox function (containing the dialog that can, for instance, be seen when clicking the "Execute" button on the desktop) was only used in a couple of programs but took up some space in all programs. This has been moved to a separate code module, which is only included where needed. This helped save 14 KB in total.
 
 The "Tip of the Day" dialog has been removed. Instead, all tips have been written into the manual. The code which loaded the tips and selected a random one has been cleaned up.
@@ -35,10 +35,10 @@ Profiles have been removed - the feature that allowed 5 different profiles, with
 
 In total, **Costa 1.7.1 takes up 186 kilobytes less space** than version 1.7.0 - **a saving of 18%**! Quite impressive, and certainly something that can be felt on vintage DOS machines.
 
-##### Configuration program rewritten from scratch
+### Configuration program rewritten from scratch
 The configuration program has been rewritten from scratch. Not to add new functionality, but because the existing one was kind of a mess, code-wise. The new version is a lot simpler, and easier to use. It shows all options on the screen at the same time, and all changes are applied instantly - no need to apply or save settings. I'm quite pleased with the look and feel of it.
 
-##### Improvements to Tic Tac Toe
+### Improvements to Tic Tac Toe
 While watching my brother play Tic Tac Toe, I noticed he had some difficulties seeing whether he was starting a singleplayer or multiplayer game. The UI was not clear on this. So, now I've cleaned it up a bit, and added a status bar.
 
 While I was at it, I cleaned up the code a bit too. There were some quick gains to be found, for example in the code that changes the player turn to the other player:
@@ -73,5 +73,5 @@ Now, PlayerX is still a constant with the value 0. But PlayerO is not assigned a
 
 A long description of a simple change to the code, I know, but bitwise operations really are a powerful concept all developers should familiarize themselves with. I didn't fully grasp the concept years ago when I started developing Costa, but I now know that it would have helped me out in many situations.
 
-##### Download Costa 1.7.1
+### Download Costa 1.7.1
 [Head on over to the download section]({{ site.baseURL }}/index.html#downloads) to get a copy of Costa 1.7.1 today!
