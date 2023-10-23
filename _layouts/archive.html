@@ -24,13 +24,12 @@ layout: default
 					{% endif %}
 				</div>
 				{{ content | markdownify }}
-                {% if page.unavailable %}
-                {% else %}
-                <p></p>
-                <div class="centered">
-                    <a class="btn btn-default" href="{{ site.baseURL }}/downloads/costa{{ page.title | remove: '.' }}.zip"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> Download Costa {{ page.title }}</a></p>
-                </div>
-                {% endif %}
+                {% unless page.unavailable %}
+					<p></p>
+					<div class="centered">
+						<a class="btn btn-default" href="{{ site.baseURL }}/downloads/costa{{ page.title | remove: '.' }}.zip"><span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> Download Costa {{ page.title }}</a></p>
+					</div>
+                {% endunless %}
                 <p>To download the most recent version of Costa, <a href="{{ site.baseURL }}/index.html#downloads">head on over to the Download section</a>.</p>
                 <hr>
 				<p><a href="{{site.url}}{{page.url}}.html#sitetop">Back</a></p>
