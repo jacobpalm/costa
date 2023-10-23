@@ -24,7 +24,13 @@ h1 {
 	margin-bottom: 30px;
 }
 
+h2 {
+	font-size: 24px;
+	margin-bottom: 30px;
+}
+
 h3 {
+	font-size: 18px;
 	margin-bottom: 30px;
 }
 
@@ -124,7 +130,7 @@ a:after {
 	color: white;
 }
 
-#footer h4 {
+#footer h3 {
 	color: white;
 	text-transform: uppercase;
 	padding-bottom: 20px;
