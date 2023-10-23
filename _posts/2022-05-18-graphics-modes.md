@@ -2,7 +2,7 @@
 title:  "Graphics modes - EGA and VGA"
 image: 2022-05-18.png
 ---
-Since it's inception in 2004, Costa has always used [VGA](https://en.wikipedia.org/wiki/Video_Graphics_Array) graphics. More specifically, it uses the standard VGA 640x480 pixels resolution, with 16 colors. I chose this resolution, because I liked the relatively sharp graphics it can produce, and the amount of screen real estate it provides. But, this graphics mode has a couple of drawbacks.
+Since its inception in 2004, Costa has always used [VGA](https://en.wikipedia.org/wiki/Video_Graphics_Array) graphics. More specifically, it used the standard VGA 640x480 pixels resolution, with 16 colors. I chose this resolution, because I liked the relatively sharp graphics it can produce, and the amount of screen real estate it provides. But, this graphics mode has a couple of drawbacks.<!--more-->
 
 Most importantly, it doesn't support screen pages. This means that there is no off-screen buffer I can use to store graphics. Everything is drawn directly to the screen, erasing what was there before. This results in having to redraw the entire screen when a window or dialog is closed, slowing down Costa significantly on older machines like the one from 1987 I am testing on.
 

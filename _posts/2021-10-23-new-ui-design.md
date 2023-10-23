@@ -4,7 +4,7 @@ image: 2021-10-23.png
 ---
 It's been a while since there's been news on the development of Costa. But the last couple of days have yielded some newsworthy developments.
 
-Firstly, the entire UI code - that is, the code that draws windows, buttons etc. - has been rewritten. Costa now uses the same UI as [version 0.9.4](https://costa.jacobpalm.dk/archive.html#version094) did, but with the addition of themes. All existing themes have been ported to the new UI, and I think they look great!
+Firstly, the entire UI code - that is, the code that draws windows, buttons etc. - has been rewritten. <!--more-->Costa now uses the same UI as [version 0.9.4](https://costa.jacobpalm.dk/archive.html#version094) did, but with the addition of themes. All existing themes have been ported to the new UI, and I think they look great!
 
 Now, some may wonder why I felt the need to change this all of a sudden. The answer is simple - someone linked to Costa on a blog, and called it a "Windows clone". My first reaction was to think that statement was wrong, but comparing a few screenshots to [Windows 95](https://en.wikipedia.org/wiki/Windows_95) shows that Costa quite clearly is a clone. So now I am going to move away from that design, to something of my own making. I want to give Costa its own unique expression. That also means that I'll be looking at a lot of the icons, to fully redesign everything. That's going to take a while, naturally, and so I expect it to happen over time.
 
