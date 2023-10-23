@@ -40,6 +40,11 @@ p {
 	margin-bottom: 25px;
 }
 
+.subheading {
+	font-weight: bold;
+	margin-top: -20px;
+}
+
 .centered {
 	text-align: center;
 }
@@ -71,7 +76,7 @@ a:after {
 	transition: color 0.1s ease-in, background 0.1s ease-in;
 }
 
- hr {
+hr {
 	display: block;
 	height: 1px;
 	border: 0;

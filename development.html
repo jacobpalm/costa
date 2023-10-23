@@ -27,7 +27,7 @@ title: Development Blog
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2">
                     <h2>{{ post.title }}</h2>
-                    <p>Posted on the {% assign day = post.date | date: "%-d"  %}
+                    <p class="subheading">Posted on the {% assign day = post.date | date: "%-d"  %}
                         {% case day %}
                           {% when '1' or '21' or '31' %}{{ day }}st
                           {% when '2' or '22' %}{{ day }}nd
