@@ -1,5 +1,4 @@
 ---
-layout: post
 title:  "Costa 1.7.4 released"
 image: 2023-10-01.png
 ---

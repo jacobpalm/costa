@@ -1,5 +1,4 @@
 ---
-layout: post
 title:  "Costa 0.8.0 released"
 image: 2005-07-30.png
 ---

@@ -1,5 +1,4 @@
 ---
-layout: post
 title:  "New UI design in the works"
 image: 2021-10-23.png
 ---

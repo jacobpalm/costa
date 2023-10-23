@@ -1,5 +1,4 @@
 ---
-layout: post
 title:  "Continually optimizing, and replacing icons"
 image: 2022-05-02.png
 ---

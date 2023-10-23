@@ -1,5 +1,4 @@
 ---
-layout: post
 title:  "Site online again"
 image: 2008-08-18.png
 ---

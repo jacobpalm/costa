@@ -1,5 +1,4 @@
 ---
-layout: post
 title:  "New release of Costa - version 1.2.0"
 image: 2018-05-27.png
 ---

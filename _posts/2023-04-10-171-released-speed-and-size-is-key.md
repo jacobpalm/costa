@@ -1,5 +1,4 @@
 ---
-layout: post
 title:  "1.7.1 released - speed and size is key"
 image: 2023-04-10.png
 ---

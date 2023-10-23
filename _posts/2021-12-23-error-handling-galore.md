@@ -1,5 +1,4 @@
 ---
-layout: post
 title:  "Error handling galore - and optimizations"
 image: 2021-12-23.png
 ---

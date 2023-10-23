@@ -1,5 +1,4 @@
 ---
-layout: post
 title:  "Building a better feature"
 image: 2022-10-27.png
 ---

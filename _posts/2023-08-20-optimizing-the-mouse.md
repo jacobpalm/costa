@@ -1,5 +1,4 @@
 ---
-layout: post
 title:  "Optimizing the mouse"
 image: 2023-08-20.png
 ---

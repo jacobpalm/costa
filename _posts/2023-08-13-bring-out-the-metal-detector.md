@@ -1,5 +1,4 @@
 ---
-layout: post
 title:  "Bring out the metal detector..."
 image: 2023-08-13.png
 ---

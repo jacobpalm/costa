@@ -1,5 +1,4 @@
 ---
-layout: post
 title:  "New year, new release of Costa"
 image: 2023-01-07.png
 ---

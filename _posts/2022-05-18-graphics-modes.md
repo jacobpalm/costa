@@ -1,5 +1,4 @@
 ---
-layout: post
 title:  "Graphics modes - EGA and VGA"
 image: 2022-05-18.png
 ---

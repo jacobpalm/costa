@@ -1,5 +1,4 @@
 ---
-layout: post
 title:  "Where's my file?"
 image: 2022-09-30.png
 ---

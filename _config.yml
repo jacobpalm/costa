@@ -18,6 +18,12 @@ collections:
 defaults:
   - scope:
       path: ""
+      type: "posts"
+    values:
+      layout: "post"
+      excerpt_separator: <!--more-->
+  - scope:
+      path: ""
       type: "archive"
     values:
       layout: "archive"

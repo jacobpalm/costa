@@ -1,8 +1,6 @@
 ---
-layout: post
 title:  "Icon Editor improved, new icon format introduced"
 image: 2021-04-21.png
-excerpt_separator: <!--more-->
 ---
 Over the past couple of weeks, I have been working to improve the Icon Editor. Visually, nothing has changed - but under the hood, three major improvements have been made!<!--more-->
 
