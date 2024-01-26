@@ -863,12 +863,14 @@ SUB Desk.Main ()
 	btnExitCosta.Caption = "Eõxit"
 
 	DIM DeskLinkCheck, ClickedX, ClickedY, ClickedB, DidEdit, Key$
+	DIM CheckDesktopID
 	DIM TabCheck, btnTab AS ButtonType, imgTab AS ImageType
 	
 	Desk.LinkLoad
 
 Desk.RedrawAll:
 	TabCheck = -1
+	CheckDesktopID = Setting.DesktopID
 
 	Mouse.Hide
 	Obj.DrawMenu
@@ -973,14 +975,20 @@ Desk.RedrawAll:
 				Sys.AboutBox "Desktop", "Jacob Palm", "LOGO"
 			END IF
 
-			IF Key$ = CHR$(0) + "k" OR Key$ = CHR$(0) + "m" THEN
-				IF Key$ = CHR$(0) + "k" THEN
-					Setting.DesktopID = Setting.DesktopID - 1
-					IF Setting.DesktopID < 1 THEN Setting.DesktopID = 5
-				ELSE
-					Setting.DesktopID = Setting.DesktopID + 1
-					IF Setting.DesktopID > 5 THEN Setting.DesktopID = 1
-				END IF
+			IF Key$ = CHR$(0) + "k" THEN
+				Setting.DesktopID = Setting.DesktopID - 1
+				IF Setting.DesktopID < 1 THEN Setting.DesktopID = 5
+			ELSE
+				Setting.DesktopID = Setting.DesktopID + 1
+				IF Setting.DesktopID > 5 THEN Setting.DesktopID = 1
+			END IF
+			IF Key$ = "1" THEN Setting.DesktopID = 1
+			IF Key$ = "2" THEN Setting.DesktopID = 2
+			IF Key$ = "3" THEN Setting.DesktopID = 3
+			IF Key$ = "4" THEN Setting.DesktopID = 4
+			IF Key$ = "5" THEN Setting.DesktopID = 5
+
+			IF NOT CheckDesktopID = Setting.DesktopID THEN
 				Mouse.Hide
 				LINE (310, 7)-(330, 16), Theme.Window, BF
 				Font.Print LTRIM$(STR$(Setting.DesktopID)) + "/5", 310, 8, Theme.WindowText, FontHeading
@@ -988,8 +996,9 @@ Desk.RedrawAll:
 				Desk.LinkLoad
 				Desk.DrawDesktop
 				TabCheck = -1
+				CheckDesktopID = Setting.DesktopID
 			END IF
-
+			
 			IF Key$ = "x" OR Key$ = CHR$(27) THEN
 				DIM DoExit
 				IF Setting.ConfirmExit THEN
