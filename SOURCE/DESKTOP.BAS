@@ -914,6 +914,7 @@ Desk.RedrawAll:
 
 					'After menu has been shown, buttons might be missing from
 					'top bar due to Desk.LinkMove hiding them
+					CheckDesktopID = Setting.DesktopID
 					Mouse.Hide
 					Obj.DrawBtn btnAddLink, False
 					Obj.DrawBtn btnRunCmd, False
@@ -1061,6 +1062,7 @@ Desk.RedrawAll:
 				
 				IF Key$ = CHR$(13) THEN
 					Desk.LinkMenu TabCheck
+					CheckDesktopID = Setting.DesktopID
 					Mouse.Hide
 					Obj.DrawBtn btnAddLink, False
 					Obj.DrawBtn btnRunCmd, False
