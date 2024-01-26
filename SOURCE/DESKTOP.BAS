@@ -722,6 +722,7 @@ SUB Desk.LinkMove (TargetLink)
 			Font.Print LTRIM$(STR$(Setting.DesktopID)) + "/5", 310, 8, Theme.WindowText, FontHeading
 			Desk.DrawDesktop
 			Mouse.Hide
+			GET (DrawX, DrawY)-(DrawX + 31, DrawY + 31), Backdrop
 			PUT (DrawX, DrawY), LinkIcon, PSET
 			Mouse.Show
 		END IF
@@ -908,6 +909,18 @@ Desk.RedrawAll:
 
 					'If we reach this point, the link was clicked.
 					Desk.LinkMenu DeskLinkCheck
+
+					'After menu has been shown, buttons might be missing from
+					'top bar due to Desk.LinkMove hiding them
+					Mouse.Hide
+					Obj.DrawBtn btnAddLink, False
+					Obj.DrawBtn btnRunCmd, False
+					Obj.DrawBtn btnPrevious, False
+					Obj.DrawBtn btnNext, False
+					Obj.DrawBtn btnAboutCosta, False
+					Obj.DrawBtn btnExitCosta, False
+					Mouse.Show
+
 					'Exit FOR, otherwise overlapping icons will also be clicked
 					EXIT FOR
 
@@ -1038,6 +1051,14 @@ Desk.RedrawAll:
 				
 				IF Key$ = CHR$(13) THEN
 					Desk.LinkMenu TabCheck
+					Mouse.Hide
+					Obj.DrawBtn btnAddLink, False
+					Obj.DrawBtn btnRunCmd, False
+					Obj.DrawBtn btnPrevious, False
+					Obj.DrawBtn btnNext, False
+					Obj.DrawBtn btnAboutCosta, False
+					Obj.DrawBtn btnExitCosta, False
+					Mouse.Show
 				END IF
 				TabCheck = -1
 			END IF
