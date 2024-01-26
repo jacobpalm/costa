@@ -1,22 +1,14 @@
 
-                         The Costa GUI, version 1.7.4
+                         The Costa GUI, version 1.7.5
                                By Jacob Palm                   
 
                                  Changelog
 
-Costa 1.7.4 brings a classic PC game to Costa for the first time -
-Minesweeper! Complete with several different difficulty levels, optional
-sound effects and more.
-
-Aside from this, there are as always a number of "under the hood"
-improvements.
-  -Minesweeper is now included
-  -Default files for first desktop page and file associations are now
-   included. Previously, these were distributed with Costa, potentially
-   overwriting user customizations on upgrade
-  -"Execute" dialog on desktop now has option to browse for program to be run
-  -About box implemented in all apps
-  -Various mouse cursor-related graphical glitches fixed
-  -More icons
+Costa 1.7.5 is a minor release, with few enhancements. Most notable is the
+ability to move icons between desktops, without having to delete and recreate
+them.
+  -Icons can now be moved between desktops
+  -Desktops can be switched using the 1-5 keys on the keyboard, for faster
+   access than cycling through them
 
 For older versions, see the complete changelog at https://costa.jacobpalm.dk

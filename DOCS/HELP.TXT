@@ -1,5 +1,5 @@
 
-                         The Costa GUI, version 1.7.4
+                         The Costa GUI, version 1.7.5
                                 By Jacob Palm                   
 
                           User's guide and reference 
@@ -174,6 +174,9 @@
       Allows you to move the icon freely around the screen. Once the icon is
       where you want it to be, click any mouse button. If you don't have a
       mouse, use the arrow keys to move the icon and press Enter when done.
+      You can also move icons to other desktops using the buttons in the top
+      menu, or by switching to another desktop using the 1-5 keys on your
+      keyboard.
 
      -Remove
       Removes the desktop icon permanently. Costa will ask you to confirm
