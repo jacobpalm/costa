@@ -5,22 +5,24 @@ command line as a shell.
 The low system requirements make Costa especially useful for older machines,
 which are also the machines that typically run the MS-DOS operating system.
 
-![The Costa GUI](https://costa.jacobpalm.dk/assets/img/screenshots/screen02.png)
+![The Costa GUI](https://costa.jacobpalm.dk/assets/img/screenshots/aboutbox.png)
 
 ## System requirements
 Costa is designed for MS-DOS, but tested with PC-DOS, FreeDOS and DOSBox as
 well. In theory it should run on any MS-DOS compatible operating system with:
 
-  * A 286 or better CPU
-  * EGA (256KB or more VRAM required) or VGA graphics (any compatible card
-    should do)
-  * A recommended minimum of 200 KB available memory
+  * A 286 or better CPU (386 recommended)
+  * EGA (256KB or more VRAM required) or VGA graphics (any VGA compatible
+    card should do)
+  * A recommended minimum of 200 KB available memory while running Costa.
+    When running external programs or games, Costa will exit first and then
+    reload after, taking no memory from your other programs.
 
 Although not required, a 386 or better CPU is recommended, as well as disk
-caching software (SmartDrive or similar) when running on older machines,
-since Costa uses the disk where it is located for temporary storage
-(actually, Costa uses the TEMP path defined in AUTOEXEC.BAT, so it is
-possible to use a RAM disk if desired).
+caching software (SmartDrive or similar) when running on older machines.
+Costa uses the path defined in the TEMP environment variable in AUTOEXEC.BAT
+for temporary file storage, so it is possible to use a RAM disk if desired.
+If TEMP is not defined, Costa will use the path where it is located.
 
 ## Further information
 See the included documentation for more information, or visit the homepage
