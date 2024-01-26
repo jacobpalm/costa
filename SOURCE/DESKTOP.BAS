@@ -593,14 +593,36 @@ SUB Desk.LinkMove (TargetLink)
 
 	CONST GridSize = 8
 
+	DIM btnPrevious AS ButtonType, btnNext AS ButtonType
+
 	DIM LinkIcon(257), Backdrop(257)
 
 	DIM DrawX, DrawY
 	DIM CurGridX, CurGridY, LastGridX, LastGridY
+	DIM OriginalDesktop, NewDesktop, Desktops
+	DIM IconToMove AS DeskLinkType
 	
+	OriginalDesktop = Setting.DesktopID
+	NewDesktop = Setting.DesktopID
 	DrawX = DeskLink(TargetLink).Left
 	DrawY = DeskLink(TargetLink).Top
+	IconToMove = DeskLink(TargetLink)
+
+	'Delete current icon - it will be recreated after move to same or other
+	'desktop
+	DeskLink(TargetLink).Caption = ""
+	Desk.LinkSave
+
+	Obj.SetSize btnPrevious.Pos, 255, 2, 42, 22
+	Obj.SetSize btnNext.Pos, 343, 2, 42, 22
+	btnPrevious.Caption = "<"
+	btnNext.Caption = ">"
+
+	Obj.DrawMenu
+	Obj.DrawBtn btnPrevious, False
+	Obj.DrawBtn btnNext, False
 	Mouse.Hide
+	Font.Print LTRIM$(STR$(Setting.DesktopID)) + "/5", 310, 8, Theme.WindowText, FontHeading
 	GET (DrawX, DrawY)-(DrawX + 31, DrawY + 31), LinkIcon
 	GET (DrawX, DrawY)-(DrawX + 31, DrawY + 31), Backdrop
 	Mouse.Show
@@ -613,73 +635,113 @@ SUB Desk.LinkMove (TargetLink)
 	CurGridY = MouseY / GridSize
 
 	'Limit mouse movement to desktop area
-	Mouse.SetBounds 16, 48, 624, 334
+	Mouse.SetBounds 16, 0, 624, 334
 
 	DIM Key$
 	DO
-	Key$ = LCASE$(INKEY$)
-	
-	IF Key$ = CHR$(27) THEN
-		Mouse.SetBounds 0, 0, 639, 349
-		EXIT SUB
-	END IF
-
-	IF Key$ = CHR$(13) THEN EXIT DO
-
-	Mouse.Poll
-
-	IF Key$ = CHR$(0) + "k" THEN 'Left arrow
-		MouseX = MouseX - GridSize
-		IF MouseX < 0 THEN MouseX = 0
-		Mouse.SetPos MouseX, MouseY
-	END IF
-	IF Key$ = CHR$(0) + "m" THEN 'Right arrow
-		MouseX = MouseX + GridSize - 1
-		IF MouseX > 624 THEN MouseX = 624
-		Mouse.SetPos MouseX, MouseY
-	END IF
-	IF Key$ = CHR$(0) + "h" THEN 'Up arrow
-		MouseY = MouseY - GridSize
-		IF MouseY < 48 THEN MouseY = 48
-		Mouse.SetPos MouseX, MouseY
-	END IF
-	IF Key$ = CHR$(0) + "p" THEN 'Down arrow
-		MouseY = MouseY + GridSize - 1
-		IF MouseY > 334 THEN MouseY = 334
-		Mouse.SetPos MouseX, MouseY
-	END IF
-
-	CurGridX = (MouseX - 16) / GridSize
-	IF CurGridX < 0 THEN CurGridX = 0
-	CurGridY = (MouseY - 16) / GridSize
-
-	IF (NOT CurGridX = LastGridX) OR (NOT CurGridY = LastGridY) THEN
-		Mouse.Hide
-		'Restore backdrop
-		PUT (DrawX, DrawY), Backdrop, PSET
-		DrawX = CurGridX * GridSize
-		DrawY = CurGridY * GridSize
-		IF DrawY > 318 THEN DrawY = 318
+		Key$ = LCASE$(INKEY$)
 		
-		'Save backdrop, plot icon in its place
-		GET (DrawX, DrawY)-(DrawX + 31, DrawY + 31), Backdrop
-		PUT (DrawX, DrawY), LinkIcon, PSET
-		Mouse.Show
-		LastGridX = CurGridX
-		LastGridY = CurGridY
+		IF Key$ = CHR$(27) THEN
+			Mouse.SetBounds 0, 0, 639, 349
+			EXIT SUB
+		END IF
 
-		'Reduce flicker
-		Sys.Delay .01
-		WAIT &H3DA, 8
-	END IF
+		IF Key$ = CHR$(13) THEN EXIT DO
 
-	LOOP UNTIL Mouse.Clicked
+		Mouse.Poll
 
-	DeskLink(TargetLink).Left = DrawX
-	DeskLink(TargetLink).Top = DrawY
-	Desk.LinkSave
+		IF Key$ = CHR$(0) + "k" THEN 'Left arrow
+			MouseX = MouseX - GridSize
+			IF MouseX < 0 THEN MouseX = 0
+			Mouse.SetPos MouseX, MouseY
+		END IF
+		IF Key$ = CHR$(0) + "m" THEN 'Right arrow
+			MouseX = MouseX + GridSize - 1
+			IF MouseX > 624 THEN MouseX = 624
+			Mouse.SetPos MouseX, MouseY
+		END IF
+		IF Key$ = CHR$(0) + "h" THEN 'Up arrow
+			MouseY = MouseY - GridSize
+			IF MouseY < 48 THEN MouseY = 48
+			Mouse.SetPos MouseX, MouseY
+		END IF
+		IF Key$ = CHR$(0) + "p" THEN 'Down arrow
+			MouseY = MouseY + GridSize - 1
+			IF MouseY > 334 THEN MouseY = 334
+			Mouse.SetPos MouseX, MouseY
+		END IF
+
+		CurGridX = (MouseX - 16) / GridSize
+		IF CurGridX < 0 THEN CurGridX = 0
+		CurGridY = (MouseY - 16) / GridSize
+		IF CurGridY < 4 THEN CurGridY = 4
+
+		IF (NOT CurGridX = LastGridX) OR (NOT CurGridY = LastGridY) THEN
+			Mouse.Hide
+			'Restore backdrop
+			PUT (DrawX, DrawY), Backdrop, PSET
+			DrawX = CurGridX * GridSize
+			DrawY = CurGridY * GridSize
+			IF DrawY > 318 THEN DrawY = 318
+		
+			'Save backdrop, plot icon in its place
+			GET (DrawX, DrawY)-(DrawX + 31, DrawY + 31), Backdrop
+			PUT (DrawX, DrawY), LinkIcon, PSET
+			Mouse.Show
+			LastGridX = CurGridX
+			LastGridY = CurGridY
+
+			'Reduce flicker
+			Sys.Delay .01
+			WAIT &H3DA, 8
+		END IF
+
+		FOR Desktops = 1 TO 5
+			IF Key$ = LTRIM$(STR$(Desktops)) THEN
+				IF NOT Desktops = Setting.DesktopID THEN
+					NewDesktop = Desktops
+				END IF
+			END IF
+		NEXT
+
+		IF Obj.BtnClick(btnPrevious) THEN
+			NewDesktop = NewDesktop - 1
+			IF NewDesktop = 0 THEN NewDesktop = 5
+		END IF
+
+		IF Obj.BtnClick(btnNext) THEN
+			NewDesktop = NewDesktop + 1
+			IF NewDesktop = 6 THEN NewDesktop = 1
+		END IF
+
+		IF NOT Setting.DesktopID = NewDesktop THEN
+			Setting.DesktopID = NewDesktop
+			Desk.LinkLoad
+			Mouse.Hide
+			LINE (310, 7)-(330, 16), Theme.Window, BF
+			Font.Print LTRIM$(STR$(Setting.DesktopID)) + "/5", 310, 8, Theme.WindowText, FontHeading
+			Desk.DrawDesktop
+			Mouse.Hide
+			PUT (DrawX, DrawY), LinkIcon, PSET
+			Mouse.Show
+		END IF
+
+	LOOP UNTIL Mouse.Clicked AND MouseY > 28
 
 	Mouse.SetBounds 0, 0, 639, 349
+
+	Setting.DesktopID = NewDesktop
+	Desk.LinkLoad
+	IF NOT DeskLink(UBOUND(DeskLink)).Caption = STRING$(25, 0) THEN
+		'Only add a new item to DeskLink array if the last item isn't empty
+		'or icon move will fail when there's no icons on target desktop
+		REDIM PRESERVE DeskLink(0 TO UBOUND(DeskLink) + 1) AS DeskLinkType
+	END IF
+	DeskLink(UBOUND(DeskLink)) = IconToMove
+	DeskLink(UBOUND(DeskLink)).Left = DrawX
+	DeskLink(UBOUND(DeskLink)).Top = DrawY
+	Desk.LinkSave
+	
 	DO: LOOP WHILE Mouse.Clicked
 
 END SUB
@@ -721,7 +783,7 @@ SUB Desk.LinkSave ()
 			DeskLink(AddNext).Top = 999
 			SortCount = SortCount + 1
 
-		LOOP UNTIL SortCount = UBOUND(DeskLink) + 1 OR INKEY$ = CHR$(27)
+		LOOP UNTIL SortCount = UBOUND(DeskLink) + 1
 
 		FOR SortCount = 0 TO UBOUND(DeskLink)
 			DeskLink(SortCount) = SortedLinks(SortCount)
