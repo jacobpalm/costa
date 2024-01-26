@@ -978,7 +978,8 @@ Desk.RedrawAll:
 			IF Key$ = CHR$(0) + "k" THEN
 				Setting.DesktopID = Setting.DesktopID - 1
 				IF Setting.DesktopID < 1 THEN Setting.DesktopID = 5
-			ELSE
+			END IF
+			IF Key$ = CHR$(0) + "m" THEN
 				Setting.DesktopID = Setting.DesktopID + 1
 				IF Setting.DesktopID > 5 THEN Setting.DesktopID = 1
 			END IF
