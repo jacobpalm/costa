@@ -634,7 +634,7 @@ SUB Desk.LinkMove (TargetLink)
 	CurGridX = MouseX / GridSize
 	CurGridY = MouseY / GridSize
 
-	'Limit mouse movement to desktop area
+	'Limit mouse movement to desktop area and top menu
 	Mouse.SetBounds 16, 0, 624, 334
 
 	DIM Key$
@@ -642,14 +642,17 @@ SUB Desk.LinkMove (TargetLink)
 		Key$ = LCASE$(INKEY$)
 		
 		IF Key$ = CHR$(27) THEN
+			'Escape - free the mouse and exit
 			Mouse.SetBounds 0, 0, 639, 349
 			EXIT SUB
 		END IF
 
+		'Enter
 		IF Key$ = CHR$(13) THEN EXIT DO
 
 		Mouse.Poll
 
+		'Arrow keys - move mouse cursor in direction pressed
 		IF Key$ = CHR$(0) + "k" THEN 'Left arrow
 			MouseX = MouseX - GridSize
 			IF MouseX < 0 THEN MouseX = 0
