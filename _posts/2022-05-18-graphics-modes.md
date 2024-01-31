@@ -16,14 +16,16 @@ Wether you prefer the EGA or the VGA resolution is a matter of taste, and on any
 
 To sum up, I'll list some of the differences between the EGA and VGA resolution.
 
-**EGA**
+#### EGA
+
 - 640x350 pixels, 16 colors
 - Lower resolution, thus less space for objects on the screen
 - Supports screen pages, resulting in significant speed increases in some drawing operations
 - When running on a [CRT](https://en.wikipedia.org/wiki/Cathode-ray_tube) display, this resolution has horizontal [scan lines](https://en.wikipedia.org/wiki/Scan_line). Which looks super cool, in my opinion.
 - Works on both EGA and VGA adapters, provided the EGA adapter has at least 64 KB memory. Better compatibility with old systems.
 
-**VGA**
+#### VGA
+
 - 640x480 pixels, 16 colors
 - Higher resolution, more space for objects on the screen
 - Much slower for some graphics operations

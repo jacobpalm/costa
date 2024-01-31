@@ -16,6 +16,7 @@ Here comes a hairy explanation for those interested in knowing how this is achie
 ![The Visual Basic for DOS editor, showing part of the code to retrieve the Program Segment Prefix location]({{ site.baseURL }}/assets/img/blog/2022-09-30_psp.png "The Visual Basic for DOS editor, showing part of the code to retrieve the Program Segment Prefix location"){:class="img-responsive"}
 
 So, to find the program path, you have to:
+
 - Retrieve the memory address of the [Program Segment Prefix](https://en.wikipedia.org/wiki/Program_Segment_Prefix) from the DOS API
 - Calculate where in memory after the Program Segment Prefix the environment variables are stored
 - Iterate through memory from the start location of the environment variables, until you find a two-byte gap, signaling the end of the environment variables

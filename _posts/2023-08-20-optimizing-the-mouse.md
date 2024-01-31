@@ -19,12 +19,12 @@ The following code hides and shows the mouse, respectively:
 ```vb
 SUB Mouse.Hide ()
 
-	IF NOT MouseHidden THEN
-		DIM regs AS RegType
-		regs.ax = 2
-		INTERRUPT 51, regs, regs
-		MouseHidden = True
-	END IF
+  IF NOT MouseHidden THEN
+    DIM regs AS RegType
+    regs.ax = 2
+    INTERRUPT 51, regs, regs
+    MouseHidden = True
+  END IF
 
 END SUB
 ```
@@ -32,12 +32,12 @@ END SUB
 ```vb
 SUB Mouse.Show ()
 
-	IF MouseHidden THEN
-		DIM regs AS RegType
-		regs.ax = 1
-		INTERRUPT 51, regs, regs
-		MouseHidden = False
-	END IF
+    IF MouseHidden THEN
+    DIM regs AS RegType
+    regs.ax = 1
+    INTERRUPT 51, regs, regs
+    MouseHidden = False
+  END IF
 
 END SUB
 ```
