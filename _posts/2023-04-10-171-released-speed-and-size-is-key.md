@@ -43,7 +43,7 @@ The configuration program has been rewritten from scratch. Not to add new functi
 
 ### Improvements to Tic Tac Toe
 
-While watching my brother play Tic Tac Toe, I noticed he had some difficulties seeing whether he was starting a singleplayer or multiplayer game. The UI was not clear on this. So, now I've cleaned it up a bit, and added a status bar.
+While watching my brother play Tic Tac Toe, I noticed he had some difficulties seeing whether he was starting a single player or multiplayer game. The UI was not clear on this. So, now I've cleaned it up a bit, and added a status bar.
 
 While I was at it, I cleaned up the code a bit too. There were some quick gains to be found, for example in the code that changes the player turn to the other player:
 

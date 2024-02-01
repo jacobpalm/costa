@@ -10,7 +10,7 @@ The game follows the same rules as the classic Windows implementation. Not becau
 
 ### Screenshots
 
-![Kaboom! Accidentially clicking a mine will trigger a chain reaction and blow all the mines]({{ site.baseURL }}/assets/img/blog/2023-08-13_kaboom.png "Kaboom! Accidentially clicking a mine will trigger a chain reaction and blow all the mines"){:class="img-responsive"}
+![Kaboom! Accidentally clicking a mine will trigger a chain reaction and blow all the mines]({{ site.baseURL }}/assets/img/blog/2023-08-13_kaboom.png "Kaboom! Accidentally clicking a mine will trigger a chain reaction and blow all the mines"){:class="img-responsive"}
 
 ![Feeling up for a REAL challenge, or just a quick game? Multiple difficulty levels allow variation]({{ site.baseURL }}/assets/img/blog/2023-08-13_difficulty.png "Feeling up for a REAL challenge, or just a quick game? Multiple difficulty levels allow variation"){:class="img-responsive"}
 
