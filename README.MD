@@ -17,6 +17,7 @@ well. In theory it should run on any MS-DOS compatible operating system with:
   * A recommended minimum of 200 KB available memory while running Costa.
     When running external programs or games, Costa will exit first and then
     reload after, taking no memory from your other programs.
+  * MS-DOS 4.0 or newer, or a compatible operating system
 
 Although not required, a 386 or better CPU is recommended, as well as disk
 caching software (SmartDrive or similar) when running on older machines.

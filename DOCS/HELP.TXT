@@ -65,7 +65,7 @@
     - 2 MB free hard drive space on the installation drive recommended
     - EGA capable monitor and graphics card with at least 64KB memory
       (640x350 pixels, 16 colors) - works on all VGA-compliant cards too
-    - DOS 3.1 or newer
+    - MS-DOS 4.0 or newer, or a compatible operating system
     
      If your computer doesn't meet one or more of the above requirements,
     Costa might behave strangely or not work at all.
