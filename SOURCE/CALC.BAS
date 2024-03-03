@@ -47,7 +47,6 @@ FUNCTION Calc.FormatNum (TargetStr AS STRING) AS STRING
         Calc.FormatNum = BeforeDot + "." + AfterDot
     END IF
     
-    
 END FUNCTION
 
 SUB Calc.LogLine (Text AS STRING, TargetTxt AS TextboxType)
@@ -58,8 +57,8 @@ SUB Calc.LogLine (Text AS STRING, TargetTxt AS TextboxType)
   LogLinesWritten = LogLinesWritten + 1
 
   IF LogLinesWritten > MaxLogLines THEN
-    LogLinesWritten = 0
-    Obj.DrawTxt TargetTxt, "", False
+      LogLinesWritten = 0
+      Obj.DrawTxt TargetTxt, "", False
   END IF
 
   Font.Print Text, 624 - LEN(Text) * 8, TopOffset + (LogLinesWritten * 15), Theme.WindowText, FontSystem
@@ -162,7 +161,7 @@ StartOfCalc:
         END IF
 
         IF Obj.BtnClick(btnAbout) OR Key$ = "a" THEN
-          Sys.AboutBox "Calculator", "Jacob Palm", "CALC"
+            Sys.AboutBox "Calculator", "Jacob Palm", "CALC"
         END IF
 
         FOR btnCount = 0 TO 9
@@ -172,9 +171,9 @@ StartOfCalc:
                     IF NOT (Key$ = "0" AND txtCalcText = "0") THEN
                         Mouse.Hide
                         IF LastClick = "EQUAL" THEN
-                          NumOps = 0
-                          Op1 = 0
-                          Calc.LogLine "", txtResults
+                            NumOps = 0
+                            Op1 = 0
+                            Calc.LogLine "", txtResults
                         END IF
                         LastClick = "NUMB"
                         txtCalcText = txtCalcText + Key$
@@ -205,8 +204,8 @@ StartOfCalc:
         IF Obj.BtnClick(btnDot) OR (Key$ = "." OR Key$ = ",") THEN
             IF LEN(txtCalcText) < 22 AND (INSTR(txtCalcText$, ".") = 0) THEN
                 IF LastClick = "EQUAL" THEN
-                  NumOps = 0
-                  Op1 = 0
+                    NumOps = 0
+                    Op1 = 0
                 END IF
                 LastClick = "NUMB"
                 IF txtCalcText = "" THEN txtCalcText = "0"
