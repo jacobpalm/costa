@@ -8,8 +8,9 @@ which are also the machines that typically run the MS-DOS operating system.
 ![The Costa GUI](https://costa.jacobpalm.dk/assets/img/screenshots/aboutbox.png)
 
 ## System requirements
-Costa is designed for MS-DOS, but tested with PC-DOS, DR-DOS, FreeDOS and
-DOSBox as well. In theory it should run on any IBM compatible system with:
+Costa is designed for MS-DOS, but tested with PC-DOS, DR-DOS, FreeDOS, 
+Novell DR Multiuser DOS and DOSBox as well. In theory it should run on any
+IBM compatible system with:
 
   * A 286 or better CPU (386 recommended)
   * EGA (256KB or more VRAM required) or VGA graphics (any VGA compatible
