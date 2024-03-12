@@ -106,12 +106,16 @@ hr {
 	background-color: #000000 !important;
 }
 
+.navbar-inverse .navbar-toggle:hover, .navbar-inverse .navbar-toggle:focus {
+    background-color: #ffffff;
+}
+
 .navbar-inverse .navbar-toggle {
     border-color: #00AAAA;
 }
 
 .navbar-inverse .navbar-nav > li > a {
-    color: #9d9d9d;
+    color: #000000;
 }
 
 
