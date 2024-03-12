@@ -103,11 +103,15 @@ hr {
 }
 
 .navbar-inverse .navbar-toggle .icon-bar {
-	background-color: #00AAAA !important;
+	background-color: #000000 !important;
 }
 
 .navbar-inverse .navbar-toggle {
     border-color: #00AAAA;
+}
+
+.navbar-inverse .navbar-nav > li > a {
+    color: #9d9d9d;
 }
 
 
