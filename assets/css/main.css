@@ -93,14 +93,21 @@ hr {
 	font-weight: 700;
 	font-size: 20px;
 	letter-spacing: 2px;
+	color: #000000 !important;
+}
+
+.navbar-inverse {
+	background-color: #00AAAA !important;
+	border-color: #029191 !important;
+	color: #000000 !important;
 }
 
 .navbar-inverse .navbar-toggle .icon-bar {
-	background-color: #9D9D9D !important;
+	background-color: #00AAAA !important;
 }
 
 .navbar-inverse .navbar-toggle {
-    border-color: #9D9D9D;
+    border-color: #00AAAA;
 }
 
 
