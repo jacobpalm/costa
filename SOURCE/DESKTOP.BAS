@@ -634,19 +634,13 @@ SUB Desk.LinkMove (TargetLink)
 	CurGridX = MouseX / GridSize
 	CurGridY = MouseY / GridSize
 
-	'Limit mouse movement to desktop area and top menu
-	Mouse.SetBounds 16, 0, 624, 334
-
 	DIM Key$
 	DO
 		Key$ = LCASE$(INKEY$)
 		
-		IF Key$ = CHR$(27) THEN
-			'Escape - free the mouse and exit
-			Mouse.SetBounds 0, 0, 639, 349
-			EXIT SUB
-		END IF
-
+		'Escape
+		IF Key$ = CHR$(27) THEN EXIT SUB
+		
 		'Enter
 		IF Key$ = CHR$(13) THEN EXIT DO
 
@@ -655,25 +649,29 @@ SUB Desk.LinkMove (TargetLink)
 		'Arrow keys - move mouse cursor in direction pressed
 		IF Key$ = CHR$(0) + "k" THEN 'Left arrow
 			MouseX = MouseX - GridSize
-			IF MouseX < 0 THEN MouseX = 0
-			Mouse.SetPos MouseX, MouseY
 		END IF
 		IF Key$ = CHR$(0) + "m" THEN 'Right arrow
 			MouseX = MouseX + GridSize - 1
-			IF MouseX > 624 THEN MouseX = 624
-			Mouse.SetPos MouseX, MouseY
 		END IF
 		IF Key$ = CHR$(0) + "h" THEN 'Up arrow
 			MouseY = MouseY - GridSize
-			IF MouseY < 48 THEN MouseY = 48
-			Mouse.SetPos MouseX, MouseY
 		END IF
 		IF Key$ = CHR$(0) + "p" THEN 'Down arrow
 			MouseY = MouseY + GridSize - 1
-			IF MouseY > 334 THEN MouseY = 334
+		END IF
+		
+		'Make sure we're within boundaries
+		IF MouseX < 0 THEN MouseX = 0
+		IF MouseX > 624 THEN MouseX = 624
+		IF MouseY < 48 THEN MouseY = 48
+		IF MouseY > 334 THEN MouseY = 334
+
+		'If an arrow key was pressed earlier, move cursor accordingly
+		IF LEFT$(Key$, 1) = CHR$(0) THEN
 			Mouse.SetPos MouseX, MouseY
 		END IF
 
+		'Calculate grid position
 		CurGridX = (MouseX - 16) / GridSize
 		IF CurGridX < 0 THEN CurGridX = 0
 		CurGridY = (MouseY - 16) / GridSize
@@ -731,8 +729,6 @@ SUB Desk.LinkMove (TargetLink)
 		END IF
 
 	LOOP UNTIL Mouse.Clicked AND MouseY > 28
-
-	Mouse.SetBounds 0, 0, 639, 349
 
 	Setting.DesktopID = NewDesktop
 	Desk.LinkLoad
