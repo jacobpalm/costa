@@ -31,7 +31,7 @@ when releasing a new version.
    user)
  - Exclude the following from the ZIP file:
    SOURCE folder
-   .gif folder
+   .git folder
    .gitignore
    .ds_store files from all subfolders if packaging on a Mac
    README.MD
