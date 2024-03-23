@@ -210,24 +210,6 @@ SUB Mouse.Poll ()
 
 END SUB
 
-SUB Mouse.SetBounds (MinX, MinY, MaxX, MaxY)
-
-	DIM regs AS RegType
-
-	'Horizontal limits
-	regs.ax = 7
-	regs.cx = MinX
-	regs.dx = MaxX
-	INTERRUPT 51, regs, regs
-
-	'Vertical limits
-	regs.ax = 8
-	regs.cx = MinY
-	regs.dx = MaxY
-	INTERRUPT 51, regs, regs
-
-END SUB
-
 SUB Mouse.SetPos (XPos, YPos)
 
 	DIM regs AS RegType
