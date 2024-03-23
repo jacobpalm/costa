@@ -82,8 +82,8 @@
     
  ** 1.3 - News in the version **
 
-    Aside from a number of "under the hood" improvements, this version brings
-   a classic PC game to Costa for the first time - Minesweeper!
+    Version 1.7.5 is a minor release, without any major new features. The
+   ability to move icons between desktops is one addition to this version.
    
     For a complete listing of changes, see DOCS\CHANGES.TXT.
 

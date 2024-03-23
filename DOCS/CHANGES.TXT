@@ -10,5 +10,6 @@ them.
   -Icons can now be moved between desktops
   -Desktops can be switched using the 1-5 keys on the keyboard, for faster
    access than cycling through them
+  -A bunch of new icons added
 
 For older versions, see the complete changelog at https://costa.jacobpalm.dk
