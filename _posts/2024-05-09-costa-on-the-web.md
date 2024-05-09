@@ -26,6 +26,8 @@ A repository of FreeDOS-compatible freeware and open-source software, [freedos-r
 
 The main subject of [Multiboot Windows](https://multiboot-windows.dscloud.me/) is topics about multi-booting various versions of Windows and other systems on older machines, and it's an interesting read for sure. The site also features a huge collection of DOS GUIs, alternate Windows 3.x shells, and DOS/Windows file managers. Costa is featured in [the DOS GUIs section](https://multiboot-windows.dscloud.me/All_Pages_for_DOS_GUIs/DG06_Costa.html), and the author has provided a bootable VM image of DOS and Costa.
 
+The author also uploaded Costa 1.6.0 to [the Internet Archive](https://archive.org/details/DOS-GUI-DOS-COSTA-v1.6.0-2022).
+
 ### Vintage2000
 
 The homepage of a vintage computer enthusiast, [Vintage2000](https://vintage2000.org/) features many pages and subpages for Mac, DOS, Windows, Linux, mobile devices and others, each with a bunch of interesting stuff. There's a lot here, so be sure to check it out. Costa is mentioned on the [DOS GUI Shells](https://vintage2000.org/dos/gui_shells) page.
