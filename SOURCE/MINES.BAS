@@ -15,6 +15,7 @@ DECLARE SUB Mine.PlaySound (SoundType AS INTEGER)
 DECLARE SUB Mine.PrintStatus (MineCountOnly, StatusMessage AS STRING)
 DECLARE SUB Mine.PrintTime ()
 DECLARE SUB Mine.Reveal ()
+DECLARE SUB Mine.Win ()
 
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 
@@ -164,26 +165,14 @@ SUB Mine.ClickCell (FieldRow, FieldCol, MouseButton)
 			CellsCleared = CellsCleared + 1
 			IF CellsCleared = (FieldHeight * FieldWidth) - MineCount THEN
 				Mine.DrawCell FieldRow, FieldCol
-
-				FOR FieldRow = 0 TO FieldHeight - 1
-					FOR FieldCol = 0 TO FieldWidth - 1
-						IF MineField(FieldRow, FieldCol) AND FieldMined THEN
-							IF NOT MineField(FieldRow, FieldCol) AND FieldFlagged THEN
-								MineField(FieldRow, FieldCol) = MineField(FieldRow, FieldCol) XOR FieldFlagged
-								Mine.DrawCell FieldRow, FieldCol
-							END IF
-						END IF
-					NEXT
-				NEXT
+				Mine.Win
 				Mouse.Show
-				Mine.PrintStatus False, "Minefield cleared, good job!"
-				Mine.PlaySound SoundWin
-				GameOver = True
 			ELSE
 				Mine.PlaySound SoundClear
 				Mouse.Hide
 				Mine.DrawCell FieldRow, FieldCol
 				Mine.ClearNeighbors FieldRow, FieldCol
+				IF CellsCleared = (FieldHeight * FieldWidth) - MineCount THEN Mine.Win
 				Mouse.Show
 			END IF
 			
@@ -912,4 +901,22 @@ FUNCTION Mine.SetSize ()
 		Mine.SetSize = True
 		
 END FUNCTION
+
+SUB Mine.Win ()
+	'Victory! Reveal mines, show status and end game
+	DIM FieldRow, FieldCol
+	FOR FieldRow = 0 TO FieldHeight - 1
+		FOR FieldCol = 0 TO FieldWidth - 1
+			IF MineField(FieldRow, FieldCol) AND FieldMined THEN
+				IF NOT MineField(FieldRow, FieldCol) AND FieldFlagged THEN
+					MineField(FieldRow, FieldCol) = MineField(FieldRow, FieldCol) XOR FieldFlagged
+					Mine.DrawCell FieldRow, FieldCol
+				END IF
+			END IF
+		NEXT
+	NEXT
+	Mine.PrintStatus False, "Minefield cleared, good job!"
+	Mine.PlaySound SoundWin
+	GameOver = True
+END SUB
 
