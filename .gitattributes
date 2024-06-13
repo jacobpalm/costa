@@ -1,0 +1,9 @@
+* binary
+*.* binary
+
+*.mak text eol=crlf
+*.bi text eol=crlf
+*.bas text eol=crlf
+*.txt text eol=crlf
+*.lnk text eol=crlf
+*.bat text eol=crlf
