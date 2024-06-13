@@ -1,6 +1,2 @@
-*.* text eol=crlf
 * text eol=crlf
 *.com -text
-*.bsv -diff
-*.dat -diff
-*.def -diff
