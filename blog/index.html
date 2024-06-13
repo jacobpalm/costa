@@ -15,7 +15,7 @@ title: Blog
 </div>
 
 {% for post in paginator.posts %}
-    <div class="{% cycle 'white', 'grey' %}">
+    <div class="{% cycle 'white', 'grey' %}" id="post{{ forloop.index }}">
         <div class="container">
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2">
@@ -69,14 +69,14 @@ title: Blog
                             {% if page == paginator.page %}
                                 <li class="active"><span>{{ page }}</span></li>
                             {% elsif page == 1 %}
-                                <li><a href="{{ '/blog' | relative_url }}">{{ page }}</a></li>
+                                <li><a href="{{ '/blog' | relative_url }}#post0">{{ page }}</a></li>
                             {% else %}
-                                <li><a href="{{ site.paginate_path | relative_url | replace: ':num', page }}">{{ page }}</a></li>
+                                <li><a href="{{ site.paginate_path | relative_url | replace: ':num', page }}#post0">{{ page }}</a></li>
                             {% endif %}
                         {% endfor %}
 
                         {% if paginator.next_page %}
-                            <li><a href="{{ paginator.next_page_path | relative_url }}">&raquo;</a></li>
+                            <li><a href="{{ paginator.next_page_path | relative_url }}#post0">&raquo;</a></li>
                         {% else %}
                             <li class="disabled"><span>&raquo;</span></li>
                         {% endif %}
