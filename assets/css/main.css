@@ -211,3 +211,12 @@ bt {
 .pagination {
 	margin: 0px;
 }
+
+.pagination li a {
+	color: #00AAAA;
+}
+
+.pagination .active span {
+	background-color: #00AAAA;
+    border-color: #00AAAA;
+}
