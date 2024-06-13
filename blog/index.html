@@ -60,7 +60,7 @@ title: Blog
                 <div>
                     <ul class="pagination">
                         {% if paginator.previous_page %}
-                            <li><a href="{{ paginator.previous_page_path | relative_url }}">&laquo;</a></li>
+                            <li><a href="{{ paginator.previous_page_path | relative_url }}#post1">&laquo;</a></li>
                         {% else %}
                             <li class="disabled"><span>&laquo;</span></li>
                         {% endif %}
