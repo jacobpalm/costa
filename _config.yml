@@ -4,6 +4,9 @@ author: Jacob Palm
 markdown: kramdown
 baseURL: https://costa.jacobpalm.dk
 
+paginate: 5
+paginate_path: "/blog/page:num/"
+
 plugins:
   - jekyll-feed
 
