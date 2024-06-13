@@ -69,12 +69,12 @@ title: Blog
                         {% if paginator.previous_page %}
                             <li><a href="{{ paginator.previous_page_path | relative_url }}">&laquo;</a></li>
                         {% else %}
-                            <li class="disabled">&laquo;</li>
+                            <li><span class="disabled">&laquo;</span></li>
                         {% endif %}
 
                         {% for page in (1..paginator.total_pages) %}
                             {% if page == paginator.page %}
-                                <li class="active">{{ page }}</li>
+                                <li><span class="active">{{ page }}</span></li>
                             {% elsif page == 1 %}
                                 <li><a href="{{ '/blog' | relative_url }}">{{ page }}</a></li>
                             {% else %}
@@ -85,7 +85,7 @@ title: Blog
                         {% if paginator.next_page %}
                             <li><a href="{{ paginator.next_page_path | relative_url }}">&raquo;</a></li>
                         {% else %}
-                            <li class="disabled">&raquo;</li>
+                            <li><span class="disabled">&raquo;</span></li>
                         {% endif %}
                     </ul>
                 </div>
