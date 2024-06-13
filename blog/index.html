@@ -1,0 +1,87 @@
+---
+layout: default
+title: Blog
+---
+<div class="grey">
+	<div class="container">
+		<div class="row">
+			<div class="col-lg-8 col-lg-offset-2 centered">
+				<h1>Blog</h1>
+                <p>Since September 2017, the full source code has been available on GitHub, released for free usage under the MIT license.
+                Visit GitHub to see the source code, and to pull a copy for your own use.
+                <p>
+                    <a class="btn btn-default" href="https://github.com/jacobpalm/costa/" role="button">
+                        <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span>&nbsp;Get source code
+                    </a>
+                </p>
+                <p>At this blog you will be able to follow the development of Costa. Every now and then I will post about the current status of the project, tell news about Costa, and talk a little about future goals.
+                <a href="{{site.baseurl}}/feed.xml">Atom feed is available</a>, for those who want to keep posted.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% for post in paginator.posts %}
+    <div class="{% cycle 'white', 'grey' %}">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2">
+                    <h2>{{ post.title }}</h2>
+                    <p class="subheading">Posted on the {% assign day = post.date | date: "%-d"  %}
+                        {% case day %}
+                          {% when '1' or '21' or '31' %}{{ day }}st
+                          {% when '2' or '22' %}{{ day }}nd
+                          {% when '3' or '23' %}{{ day }}rd
+                          {% else %}{{ day }}th
+                        {% endcase %}
+                        {{ post.date | date: "of %B, %Y" }}
+                    </p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2">
+                    {% if post.image %}
+                        <div class="col-md-8" style="padding-left: 0px;">
+                        <a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}" class="thumbnail visible-xs-block visible-sm-block"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}" alt="Screenshot"></a>
+                    {% else %}
+                        <div class="col-md-12" style="padding-left: 0px;"></div>
+                    {% endif %}    
+                    {{ post.excerpt }}
+                    <p><a href="{{post.url | prepend: site.baseurl}}">Read more...</a></p>
+                    </div>
+                    {% if post.image %}
+                        <div class="col-md-4 hidden-xs hidden-sm" style="padding-right: 0px;">
+                            <a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}" class="thumbnail"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}" alt="Screenshot"></a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+{% if paginator.total_pages > 1 %}
+<div class="pagination">
+    {% if paginator.previous_page %}
+        <a href="{{ paginator.previous_page_path | relative_url }}">&laquo; Prev</a>
+    {% else %}
+        <span>&laquo; Prev</span>
+    {% endif %}
+
+    {% for page in (1..paginator.total_pages) %}
+        {% if page == paginator.page %}
+            <em>{{ page }}</em>
+        {% elsif page == 1 %}
+            <a href="{{ '/' | relative_url }}">{{ page }}</a>
+        {% else %}
+            <a href="{{ site.paginate_path | relative_url | replace: ':num', page }}">{{ page }}</a>
+        {% endif %}
+    {% endfor %}
+
+    {% if paginator.next_page %}
+        <a href="{{ paginator.next_page_path | relative_url }}">Next &raquo;</a>
+    {% else %}
+        <span>Next &raquo;</span>
+    {% endif %}
+</div>
+{% endif %}
