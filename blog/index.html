@@ -64,25 +64,26 @@ title: Blog
     <div class="container">
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2 centered">
-
                 <div class="pagination">
-                    {% if paginator.previous_page %}
-                        <a href="{{ paginator.previous_page_path | relative_url }}">&laquo; Newer</a>
-                    {% endif %}
-
-                    {% for page in (1..paginator.total_pages) %}
-                        {% if page == paginator.page %}
-                            <em>{{ page }}</em>
-                        {% elsif page == 1 %}
-                            <a href="{{ '/blog' | relative_url }}">{{ page }}</a>
-                        {% else %}
-                            <a href="{{ site.paginate_path | relative_url | replace: ':num', page }}">{{ page }}</a>
+                    <ul>
+                        {% if paginator.previous_page %}
+                            <li><a href="{{ paginator.previous_page_path | relative_url }}">&lt;</a></li>
                         {% endif %}
-                    {% endfor %}
 
-                    {% if paginator.next_page %}
-                        <a href="{{ paginator.next_page_path | relative_url }}">Older &raquo;</a>
-                    {% endif %}
+                        {% for page in (1..paginator.total_pages) %}
+                            {% if page == paginator.page %}
+                                <li class="active">{{ page }}</li>
+                            {% elsif page == 1 %}
+                                <li><a class="btn btn-default" href="{{ '/blog' | relative_url }}">{{ page }}</a></li>
+                            {% else %}
+                                <li><a class="btn btn-default" href="{{ site.paginate_path | relative_url | replace: ':num', page }}">{{ page }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if paginator.next_page %}
+                            <li><a class="btn btn-default" href="{{ paginator.next_page_path | relative_url }}">&gt;</a></li>
+                        {% endif %}
+                    </ul>
                 </div>
             </div>
         </div>
