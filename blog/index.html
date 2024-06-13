@@ -64,24 +64,28 @@ title: Blog
     <div class="container">
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2 centered">
-                <div class="pagination">
-                    <ul>
+                <div>
+                    <ul class="pagination">
                         {% if paginator.previous_page %}
-                            <li><a href="{{ paginator.previous_page_path | relative_url }}">&lt;</a></li>
+                            <li><a href="{{ paginator.previous_page_path | relative_url }}">&laquo;</a></li>
+                        {% else %}
+                            <li class="disabled">&laquo;</li>
                         {% endif %}
 
                         {% for page in (1..paginator.total_pages) %}
                             {% if page == paginator.page %}
                                 <li class="active">{{ page }}</li>
                             {% elsif page == 1 %}
-                                <li><a class="btn btn-default" href="{{ '/blog' | relative_url }}">{{ page }}</a></li>
+                                <li><a href="{{ '/blog' | relative_url }}">{{ page }}</a></li>
                             {% else %}
-                                <li><a class="btn btn-default" href="{{ site.paginate_path | relative_url | replace: ':num', page }}">{{ page }}</a></li>
+                                <li><a href="{{ site.paginate_path | relative_url | replace: ':num', page }}">{{ page }}</a></li>
                             {% endif %}
                         {% endfor %}
 
                         {% if paginator.next_page %}
-                            <li><a class="btn btn-default" href="{{ paginator.next_page_path | relative_url }}">&gt;</a></li>
+                            <li><a href="{{ paginator.next_page_path | relative_url }}">&raquo;</a></li>
+                        {% else %}
+                            <li class="disabled">&raquo;</li>
                         {% endif %}
                     </ul>
                 </div>
@@ -89,3 +93,12 @@ title: Blog
         </div>
     </div>
 </div>
+
+
+<nav aria-label="...">
+    <ul class="pagination">
+      <li class="disabled"><a href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
+      <li class="active"><a href="#">1 <span class="sr-only">(current)</span></a></li>
+      ...
+    </ul>
+  </nav>
