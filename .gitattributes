@@ -1,23 +1,14 @@
-*.bsv binary
-*.BSV binary
-*.com binary
-*.COM binary
-*.def binary
-*.DEF binary
-*.dat binary
-*.DAT binary
-*.exe binary
-*.EXE binary
+* text=auto
 
-*.mak text eol=crlf
-*.MAK text eol=crlf
-*.bi text eol=crlf
-*.BI text eol=crlf
-*.bas text eol=crlf
-*.BAS text eol=crlf
-*.txt text eol=crlf
-*.TXT text eol=crlf
-*.lnk text eol=crlf
-*.LNK text eol=crlf
-*.bat text eol=crlf
-*.BAT text eol=crlf
+*.{bsv,[bB][sS][vV]} binary
+*.{com,[cC][oO][mM]} binary
+*.{def,[dD][eE][fF]} binary
+*.{dat,[dD][aA][tT]} binary
+*.{exe,[eE][xX][eE]} binary
+
+*.{mak,[mM][aA][kK]} eol=crlf
+*.{bi,[bB][iI]} eol=crlf
+*.{bas,[bB][aA][sS]} eol=crlf
+*.{txt,[tT][xX][tT]} eol=crlf
+*.{lnk,[lL][nN][kK]} eol=crlf
+*.{bat,[bB][aA][tT]} eol=crlf
