@@ -1,97 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="description" content="{{site.description}}">
+    <title>{{ page.title }} - {{ site.name }}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="{{site.description}}">
 	<meta name="keywords" content="costa, gui, jacob, palm, qbasic, vbdos, visual, basic, walrus, hvalrossen, vb, qb, quickbasic, dos, shell">
 	<meta name="author" content="Jacob Palm">
 
-	<base href="{{ site.baseURL }}">
-	
-	<title>{{ page.title }} - {{ site.name }}</title>
+    <base href="{{ site.baseURL }}">
 
-	<link rel="shortcut icon" href="{{ site.baseURL }}/favicon.ico">
+    <link rel="shortcut icon" href="{{ site.baseURL }}/favicon.ico">
 
-	<link rel="stylesheet" href="{{ site.baseURL }}/assets/css/bootstrap.css">
-	<link rel="stylesheet" href="{{ site.baseURL }}/assets/css/main.css">
-
-	<link rel="canonical" href="{{ site.baseURL }}">
+    <link rel="stylesheet" href="assets/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+    
+    <link rel="canonical" href="{{ site.baseURL }}">
 	<link rel="alternate" type="application/atom+xml" title="{{ site.name }}" href="{{ site.baseURL }}/feed.xml">
-
-	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-	<!--[if lt IE 9]>
-		<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-		<script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
-	<![endif]-->
+    
+    <style>
+        body,h1,h2,h3,h4,h5,h6 {font-family: "Montserrat", sans-serif;}
+        h1,h2,h3,h4,h5,h6 {font-weight: 700; color: #333;}
+        body {font-size: 16px; font-weight: 400; -webkit-font-smoothing: antialiased;}
+        a {color:teal; text-decoration: none;}
+        a:hover, a:focus {color: #7b7b7b;}
+        footer {color: #fff; background-color: #222;}
+        footer h5 {color: #fff; text-transform: uppercase;}
+        footer div.w3-padding-32 {padding: 32px;}
+        .w3-button { width: auto;}
+        .topnav-right {float:right;}
+    </style>
 </head>
-
 <body id="sitetop">
 
-  <nav class="navbar navbar-inverse navbar-fixed-top">
-    <div class="container">
-      <div class="navbar-header">
-        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#costa-navbar-collapse" aria-expanded="false">
-          <span class="sr-only">Toggle navigation</span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="index.html">{{ site.name }}</a>
-      </div>
-
-      <div class="collapse navbar-collapse" id="costa-navbar-collapse">
-        <ul class="nav navbar-nav navbar-right">
-          <li><a href="{{ site.baseURL }}/index.html#about" class="hidden-xs">About</a></li>
-          <li><a href="{{ site.baseURL }}/index.html#screens" class="hidden-xs">Screenshots</a></li>
-          <li><a href="{{ site.baseURL }}/index.html#downloads" class="hidden-xs">Download</a></li>
-          <li><a href="{{ site.baseURL }}/blog/" class="hidden-xs">Blog</a></li>
-          <li><a href="{{ site.baseURL }}/archive.html" class="hidden-xs">Archive</a></li>
-          
-          <li><a href="{{ site.baseURL }}/index.html#about" data-toggle="collapse" data-target="#costa-navbar-collapse" class="visible-xs">About</a></li>
-          <li><a href="{{ site.baseURL }}/index.html#screens" data-toggle="collapse" data-target="#costa-navbar-collapse" class="visible-xs">Screenshots</a></li>
-          <li><a href="{{ site.baseURL }}/index.html#downloads" data-toggle="collapse" data-target="#costa-navbar-collapse" class="visible-xs">Download</a></li>
-          <li><a href="{{ site.baseURL }}/blog/" data-toggle="collapse" data-target="#costa-navbar-collapse" class="visible-xs">Blog</a></li>
-          <li><a href="{{ site.baseURL }}/archive.html" data-toggle="collapse" data-target="#costa-navbar-collapse" class="visible-xs">Archive</a></li>
-        </ul>
-      </div>
+<!-- Navbar -->
+<div class="w3-bar w3-mobile w3-teal w3-card w3-large">
+    <div class="w3-content">
+        <a href="#" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile">The Costa GUI</a>
+        <div class="topnav-right">
+            <a href="#" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile">About</a>
+            <a href="#" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile">Screenshots</a>
+            <a href="#" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile">Download</a>
+            <a href="#" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile">Blog</a>
+            <a href="#" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile">Archive</a>
+        </div>
     </div>
-  </nav>
+</div>
 
+<!-- Content -->
 {{ content }}
 
-	<div id="footer">
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-4">
-					<h3>The Author</h3>
-					<p>Developed by <a href="https://jacobpalm.dk">Jacob Palm</a>, a Danish IT-professional and hobby developer. Former maintainer of JacobPalm.dk GUI Reviews, one of the largest QB GUI sites at its time.
-					</p>
-				</div>
+<!-- Footer -->
+<footer class="w3-container">  
+    <div class="w3-content">
+        <div class="w3-third w3-padding-32">
+            <h5>The Author</h5>
+            <p>Developed by <a href="https://jacobpalm.dk">Jacob Palm</a>, a Danish IT-professional and hobby developer. Former maintainer of JacobPalm.dk GUI Reviews, one of the largest QB GUI sites at its time.
+            </p>
+        </div>
+        <div class="w3-third w3-padding-32">
+            <h5>Interesting Links</h5>
+            <p>
+                <a href="https://dosprograms.info.tt/apps.htm" target="_blank">Interesting DOS programs</a><br/>
+                <a href="https://clasqm.github.io/freedos-repo/Launchers.html" target="_blank">freeDOS-repo</a><br/>
+                <a href="https://multiboot-windows.dscloud.me/All_Pages_for_DOS_GUIs/DG06_Costa.html" target="_blank">Multiboot Windows</a><br/>
+                <a href="http://toastytech.com/guis/" target="_blank">ToastyTech GUI Gallery</a><br/>
+                <a href="http://www.guidebookgallery.org/" target="_blank">GUIdebook Gallery</a><br/>
+                <a href="http://qbasicgui.datacomponents.net/192_costa080.html" target="_blank">Data Components GUI Reviews</a><br/>
+                <a href="http://theguiblog.com/review?id=1" target="_blank">The GUI Blog</a>
+            </p>
+        </div>
+        <div class="w3-third w3-padding-32">
+            <h5>About Costa</h5>
+            <p>Costa is a small and lightweight GUI (Graphical User Interface) for MS-DOS compatible systems, provided to you free of charge. Site &copy; 2004-{{ 'now' | date: "%Y" }} by <a href="https://github.com/jacobpalm">Jacob Palm</a>, software released under the MIT License.</p>
+        </div>
+    </div>
+</footer>
 
-				<div class="col-lg-4">
-					<h3>Interesting Links</h3>
-					<p>
-						<a href="https://dosprograms.info.tt/apps.htm" target="_blank">Interesting DOS programs</a><br/>
-						<a href="https://clasqm.github.io/freedos-repo/Launchers.html" target="_blank">freeDOS-repo</a><br/>
-						<a href="https://multiboot-windows.dscloud.me/All_Pages_for_DOS_GUIs/DG06_Costa.html" target="_blank">Multiboot Windows</a><br/>
-						<a href="http://toastytech.com/guis/" target="_blank">ToastyTech GUI Gallery</a><br/>
-						<a href="http://www.guidebookgallery.org/" target="_blank">GUIdebook Gallery</a><br/>
-						<a href="http://qbasicgui.datacomponents.net/192_costa080.html" target="_blank">Data Components GUI Reviews</a><br/>
-						<a href="http://theguiblog.com/review?id=1" target="_blank">The GUI Blog</a>
-					</p>
-				</div>
-
-				<div class="col-lg-4">
-					<h3>About Costa</h3>
-					<p>Costa is a small and lightweight GUI (Graphical User Interface) for MS-DOS compatible systems, provided to you free of charge. Site &copy; 2004-{{ 'now' | date: "%Y" }} by <a href="https://github.com/jacobpalm">Jacob Palm</a>, software released under the MIT License.</p>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-	<script src="{{ site.baseURL }}/assets/js/bootstrap.min.js"></script>
 </body>
 </html>

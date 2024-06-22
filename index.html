@@ -2,57 +2,43 @@
 layout: default
 title: Home
 ---
-<div class="grey" id="about">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8 col-lg-offset-2 centered">
-                <h1>The Costa GUI</h1>
-                <p>Costa is a program which runs on top of MS-DOS or compatible operating systems, and replaces the DOS-prompt with a clean, user-friendly interface - a so called GUI (Graphical User Interface). Costa comes with full mouse and keyboard support, and a bunch of useful accessories.</p>
-                <p>The first release came in 2004, and over the years - and through several releases - Costa has gradually evolved into what it is today.</p>
-                <p>Did I mention that Costa is provided absolutely free of charge?</p>
-            </div>
-        </div>
+<div class="w3-row-padding w3-light-grey w3-padding-64 w3-container w3-center" id="about">
+    <div class="w3-content">
+        <h1>The Costa GUI</h1>
+        <p>Costa is a program which runs on top of MS-DOS or compatible operating systems, and replaces the DOS-prompt with a clean, user-friendly interface - a so called GUI (Graphical User Interface). Costa comes with full mouse and keyboard support, and a bunch of useful accessories.</p>
+        <p>The first release came in 2004, and over the years - and through several releases - Costa has gradually evolved into what it is today.</p>
+        <p>Did I mention that Costa is provided absolutely free of charge?</p>
     </div>
 </div>
 
-<div class="white" id="screens">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8 col-lg-offset-2 centered">
-                <h2>Screenshots</h2>
-            </div>
-            {% assign screenshots = site.static_files | where: "screenshot", true %}
+<div class="w3-row-padding w3-padding-64 w3-container w3-center" id="screens">
+  <div class="w3-content">
+    <h2>Screenshots</h2>
+
+    <div class="w3-row-padding">
+        {% assign screenshots = site.static_files | where: "screenshot", true %}
             {% for screenshot in screenshots %}
-                <div class="col-xs-6 col-md-4">
-                    <a href="{{ site.baseURL }}{{ screenshot.path }}" class="thumbnail">
-                        <img src="{{ site.baseURL }}{{ screenshot.path }}" alt="Screenshot of Costa">
+                <div class="w3-third">
+                    <a href="{{ site.baseURL }}{{ screenshot.path }}">
+                        <img class="w3-image" src="{{ site.baseURL }}{{ screenshot.path }}" alt="Screenshot of Costa">
                     </a>
                 </div>
             {% endfor %}
-        </div>
     </div>
+  </div>
 </div>
 
 {% assign newestversion = site.archive | sort: 'date' | reverse | first %}
-<div class="grey" id="downloads">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8 col-lg-offset-2 centered">
-                <h2>Download</h2>
-                <p>You can download the latest version of Costa now, absolutely free of charge.</p>
-                <p>To get started, simply unzip the downloaded archive and run Costa. Full documentation is included in the download.</p>
-                <p>Since September 2017, the full source code has been available on GitHub, released for free usage under the MIT license.
-                    Visit GitHub to see the source code, and to pull a copy for your own use.</p>
-                <p>
-                    <a class="btn btn-default" href="{{ site.baseURL }}/downloads/costa{{ newestversion.title | remove: '.' }}.zip">
-                        <span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> Download Costa {{ newestversion.title }}
-                    </a>
-                    <a class="btn btn-default" href="https://github.com/jacobpalm/costa/" role="button">
-                        <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span>&nbsp;&nbsp;Get source code
-                    </a>
-                </p>
-                <p>Looking for older versions? <a href="{{ site.baseURL }}/archive.html">Check the archive</a>, which also has a complete log of changes in every version. To get your hands on the source code, check out the <a href="{{ site.baseURL }}/development.html">development page</a>.</p>
-            </div>
-        </div>
-    </div>
+<div class="w3-row-padding w3-light-grey w3-padding-64 w3-container w3-center" id="downloads">
+  <div class="w3-content">
+    <h2>Download</h2>
+    <p>You can download the latest version of Costa now, absolutely free of charge. To get started, simply unzip the downloaded archive and run Costa. Full documentation is included in the download.</p>
+    <p>Since September 2017, the full source code has been available on GitHub, released for free usage under the MIT license.
+        Visit GitHub to see the source code, and to pull a copy for your own use.</p>
+    <p>
+        <a class="w3-button w3-teal" href="{{ site.baseURL }}/downloads/costa{{ newestversion.title | remove: '.' }}.zip">Download Costa {{ newestversion.title }}</a>
+        <a class="w3-button w3-teal" href="https://github.com/jacobpalm/costa/">Get source code</a>
+    </p>
+    <p>Looking for older versions? <a href="{{ site.baseURL }}/archive.html">Check the archive</a>, which also has a complete log of changes in every version.</p>
+  </div>
 </div>

@@ -1,26 +1,23 @@
 ---
 layout: default
 ---
-<div class="white">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8 col-lg-offset-2">
-                <div class="centered">
-                    <h1>{{ page.title }}</h1>
-                    <p class="subheading">Posted on the {% assign day = page.date | date: "%-d"  %}
-                        {% case day %}
-                        {% when '1' or '21' or '31' %}{{ day }}st
-                        {% when '2' or '22' %}{{ day }}nd
-                        {% when '3' or '23' %}{{ day }}rd
-                        {% else %}{{ day }}th
-                        {% endcase %}
-                        {{ page.date | date: "of %B, %Y" }}</p>
-                    {% if page.image %}
-                        <p><a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.image}}"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.image}}" alt="Screenshot" style="width: 100%"></a></p>
-                    {% endif %}
-                </div>
-                {{ content | markdownify }}
-            </div>
+<div class="w3-row-padding w3-light-grey w3-padding-64 w3-container">
+    <div class="w3-content">
+        <div class="w3-center">
+            <h1>{{ page.title }}</h1>
+            <p>Posted on the {% assign day = page.date | date: "%-d"  %}
+                {% case day %}
+                    {% when '1' or '21' or '31' %}{{ day }}st
+                    {% when '2' or '22' %}{{ day }}nd
+                    {% when '3' or '23' %}{{ day }}rd
+                {% else %}
+                    {{ day }}th
+                {% endcase %}
+                {{ page.date | date: "of %B, %Y" }}</p>
+            {% if page.image %}
+                <p><a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.image}}"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.image}}" alt="Screenshot" style="width: 100%"></a></p>
+            {% endif %}
         </div>
+        {{ content | markdownify }}
     </div>
 </div>
