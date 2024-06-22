@@ -14,7 +14,7 @@ title: Blog
     <div class="w3-row-padding w3-padding-32 w3-container {% cycle '', 'w3-light-grey' %}" id="post{{ forloop.index }}">
         <div class="w3-content">
             <h2>{{ post.title }}</h2>
-            <p>Posted on the {% assign day = post.date | date: "%-d"  %}
+            <div class="posttime">Posted on the {% assign day = post.date | date: "%-d"  %}
                 {% case day %}
                     {% when '1' or '21' or '31' %}{{ day }}st
                     {% when '2' or '22' %}{{ day }}nd
@@ -22,7 +22,7 @@ title: Blog
                     {% else %}{{ day }}th
                 {% endcase %}
                 {{ post.date | date: "of %B, %Y" }}
-            </p>
+            </div>
             {% if post.image %}
                 <div class="w3-row">
                     <div class="w3-twothird">

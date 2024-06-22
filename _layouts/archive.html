@@ -8,18 +8,18 @@ layout: default
 		<div class="w3-center">
 			<h2>Version {{ page.title }}</h2>
 			{% if page.unavailable %}
-				<p class="subheading">Unreleased</p>
+				<div class="posttime">Unreleased</div>
 				<p></p>
 			{% else %}
-				<p class="subheading">Released on the {% assign day = page.date | date: "%-d"  %}
+				<div class="posttime">Released on the {% assign day = page.date | date: "%-d"  %}
 					{% case day %}
 					{% when '1' or '21' or '31' %}{{ day }}st
 					{% when '2' or '22' %}{{ day }}nd
 					{% when '3' or '23' %}{{ day }}rd
 					{% else %}{{ day }}th
 					{% endcase %}
-					{{ page.date | date: "of %B, %Y" }}</p>
-				<p><a href="{{ site.baseURL }}/assets/img/archive/{{ page.title | remove: '.' }}.png"><img src="{{ site.baseURL }}/assets/img/archive/{{ page.title | remove: '.' }}.png" alt="Screenshot" style="max-width: 100%"></a></p>
+					{{ page.date | date: "of %B, %Y" }}</div>
+				<a href="{{ site.baseURL }}/assets/img/archive/{{ page.title | remove: '.' }}.png"><img class="w3-image" src="{{ site.baseURL }}/assets/img/archive/{{ page.title | remove: '.' }}.png" alt="Screenshot of Costa {{ page.title }}"></a>
 			{% endif %}
 		</div>
 		{{ content | markdownify }}

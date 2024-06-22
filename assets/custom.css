@@ -58,4 +58,12 @@ footer h5 {
 .blogpost p img {
     max-width: 100%;
     height: auto;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.posttime {
+    font-size: 22px;
+    margin-top: -10px;
 }

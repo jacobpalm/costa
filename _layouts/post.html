@@ -5,7 +5,7 @@ layout: default
     <div class="w3-content blogpost">
         <div class="w3-center">
             <h1>{{ page.title }}</h1>
-            <p>Posted on the {% assign day = page.date | date: "%-d"  %}
+            <div class="posttime">Posted on the {% assign day = page.date | date: "%-d"  %}
                 {% case day %}
                     {% when '1' or '21' or '31' %}{{ day }}st
                     {% when '2' or '22' %}{{ day }}nd
@@ -13,9 +13,9 @@ layout: default
                 {% else %}
                     {{ day }}th
                 {% endcase %}
-                {{ page.date | date: "of %B, %Y" }}</p>
+                {{ page.date | date: "of %B, %Y" }}</div>
             {% if page.image %}
-                <p><a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.image}}"><img class="w3-image" src="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.image}}"></a></p>
+                <a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.image}}"><img class="w3-image" src="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.image}}"></a>
             {% endif %}
         </div>
         {{ content | markdownify }}
