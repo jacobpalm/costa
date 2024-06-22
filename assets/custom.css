@@ -55,6 +55,7 @@ footer h5 {
     font-weight: 700;
 }
 
-.blockpost img {
+.blockpost p img {
     max-width: 100%;
+    height: auto;
 }
