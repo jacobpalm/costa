@@ -15,12 +15,12 @@ title: Home
   <div class="w3-content">
     <h2>Screenshots</h2>
 
-    <div class="w3-row-padding">
+    <div class="w3-row">
         {% assign screenshots = site.static_files | where: "screenshot", true %}
             {% for screenshot in screenshots %}
                 <div class="w3-third">
                     <a href="{{ site.baseURL }}{{ screenshot.path }}">
-                        <img class="w3-image" src="{{ site.baseURL }}{{ screenshot.path }}" alt="Screenshot of Costa">
+                        <img class="w3-image w3-padding" src="{{ site.baseURL }}{{ screenshot.path }}" alt="Screenshot of Costa">
                     </a>
                 </div>
             {% endfor %}
