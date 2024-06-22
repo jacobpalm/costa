@@ -2,7 +2,7 @@
 layout: default
 ---
 <div class="w3-row-padding w3-light-grey w3-padding-32 w3-container">
-    <div class="w3-content blogpost">
+    <div class="w3-content">
         <div class="w3-center">
             <h1>{{ page.title }}</h1>
             <p>Posted on the {% assign day = page.date | date: "%-d"  %}
@@ -18,6 +18,8 @@ layout: default
                 <p><a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.image}}"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.image}}" alt="Screenshot" style="width: 100%"></a></p>
             {% endif %}
         </div>
-        {{ content | markdownify }}
+        <div class="blogpost">
+            {{ content | markdownify }}
+        </div>
     </div>
 </div>

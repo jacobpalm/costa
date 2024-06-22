@@ -19,6 +19,6 @@ Lastly, I implemented the logic to actually move the icon to another desktop beh
 
 I am quite pleased with how the feature turned out. I think it turned out both simple and elegant - take a look and judge for yourself:
 
-![Screenshot of icon being moved between desktops]({{ site.baseURL }}/assets/img/blog/2024-01-27_moveicon.gif "Screenshot of icon being moved between desktops")
+![Screenshot of icon being moved between desktops]({{ site.baseURL }}/assets/img/blog/2024-01-27_moveicon.gif)
 
 The feature will be released as part of the minor 1.7.5 update. The date is yet to be determined.

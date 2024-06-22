@@ -8,7 +8,7 @@ One of the goals when developing Costa is to include full - but optional - mouse
 
 On MS-DOS and compatible systems, there is no built-in mouse support. A mouse driver must be loaded before programs can use the mouse. The mouse driver is a small [background program](https://en.wikipedia.org/wiki/Terminate-and-stay-resident_program) which handles all the mouse related functions - including showing and hiding the [mouse cursor](https://en.wikipedia.org/wiki/Cursor_(user_interface)#Pointer). The cursor is not drawn by hardware, but by software, and because of this the mouse cursor is "imprinted" onto whatever is shown on screen. So, if your program draws something on screen, let's say a button, where the mouse cursor is, your drawing will overwrite the mouse cursor, leaving a strange visual artifact or glitch. This is demonstrated in the following screenshots, where the mouse was located where text was printed, which leaves a visual artifact once the mouse is moved:
 
-![Visual artifact produced by not hiding mouse cursor before drawing]({{ site.baseURL }}/assets/img/blog/2023-08-20_mouseglitch.png "Visual artifact produced by not hiding mouse cursor before drawing")
+![Visual artifact produced by not hiding mouse cursor before drawing]({{ site.baseURL }}/assets/img/blog/2023-08-20_mouseglitch.png)
 
 To overcome this, the mouse cursor needs to be hidden before drawing, and then shown again afterwards. To do this, the mouse driver must be contacted and told to do so. This is done via a [software interrupt](https://en.wikipedia.org/wiki/Interrupt#Software_interrupts) - a way to tell the operating system to hand over control to the program hooked onto that software interrupt (there's a little more to it than that, but I'll keep it simple here). The program can then do what it needs to do, and hand control back.
 
@@ -53,7 +53,7 @@ So, to optimize, we have to reduce the number of times the mouse driver is calle
 
 So, what impact has this had? Well, before optimizing, I built in some simple logging that recorded how many times the mouse driver was called. I then ran all accessories, and immediately exited them, to have some comparable data. Then I modified the code, made all optimizations and ran the accessories again. The gain was substantial. The number of times the mouse driver was called was reduced from 407 to 87. That's a **78.6 percent** decrease, and that's just from launching the accessories without actually doing anything with them. I've included a screenshot from Microsoft Excel below, where you can see how many times each accessory hid and showed the mouse cursor, both before and after the optimizations. As you can see it's quite an improvement.
 
-![Screenshot from Excel showing massive improvements in number of times the mouse driver is invoked]({{ site.baseURL }}/assets/img/blog/2023-08-20_numbers.png "Screenshot from Excel showing massive improvements in number of times the mouse driver is invoked")
+![Screenshot from Excel showing massive improvements in number of times the mouse driver is invoked]({{ site.baseURL }}/assets/img/blog/2023-08-20_numbers.png)
 
 I could maybe optimize further by only hiding and showing the cursor if the drawing is taking place where the cursor is, but I frankly don't think that there would be much gained this, given the overhead in code this would produce and the inherently slow nature of the BASIC language. I think it may end up actually worsening performance, or make no notable difference at all.
 

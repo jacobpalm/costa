@@ -10,9 +10,9 @@ The game follows the same rules as the classic Windows implementation. Not becau
 
 ### Screenshots
 
-![Kaboom! Accidentally clicking a mine will trigger a chain reaction and blow all the mines]({{ site.baseURL }}/assets/img/blog/2023-08-13_kaboom.png "Kaboom! Accidentally clicking a mine will trigger a chain reaction and blow all the mines")
+![Kaboom! Accidentally clicking a mine will trigger a chain reaction and blow all the mines]({{ site.baseURL }}/assets/img/blog/2023-08-13_kaboom.png)
 
-![Feeling up for a REAL challenge, or just a quick game? Multiple difficulty levels allow variation]({{ site.baseURL }}/assets/img/blog/2023-08-13_difficulty.png "Feeling up for a REAL challenge, or just a quick game? Multiple difficulty levels allow variation")
+![Feeling up for a REAL challenge, or just a quick game? Multiple difficulty levels allow variation]({{ site.baseURL }}/assets/img/blog/2023-08-13_difficulty.png)
 
 ### Coding with bitwise operations
 
@@ -59,7 +59,7 @@ Historically, Costa could only be started via the desktop, and all apps had to b
 
 For that reason, I have now implemented a standard "About box" function, that can be called from all apps that use the Costa library and implemented it in all existing apps, including Minesweeper.
 
-![The common about box allows others to make apps for Costa and get proper credit]({{ site.baseURL }}/assets/img/blog/2023-08-13_about.png "The common about box allows others to make apps for Costa and get proper credit")
+![The common about box allows others to make apps for Costa and get proper credit]({{ site.baseURL }}/assets/img/blog/2023-08-13_about.png)
 
 ### Coming soon
 

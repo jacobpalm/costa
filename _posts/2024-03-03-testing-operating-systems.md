@@ -18,6 +18,6 @@ Costa has now been tested to work on the following DOS versions:
 
 It was kind of cool to see Costa running on Multiuser DR-DOS. I made a short recording of it. In it, I launch Costa, then launch the Icon Editor. I then switch to another user session, where the desktop is already running. Lastly, I switch to a new user session and end up on the command line. In this instance, Costa is running on two sessions simultaneously.
 
-![Screen recording of Costa on Multiuser DR DOS]({{ site.baseURL }}/assets/img/blog/2024-03-03_multiuserdos.gif "Screen recording of Costa on Multiuser DR DOS")
+![Screen recording of Costa on Multiuser DR DOS]({{ site.baseURL }}/assets/img/blog/2024-03-03_multiuserdos.gif)
 
 While it works perfectly, I suspect that editing the desktop or changing settings could have some weird side effects, since Costa caches some of these things in memory and only writes to disk when something has changed. So I think the right label for Multiuser DR DOS support would be "Supported, but use with care".
