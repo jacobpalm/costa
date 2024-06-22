@@ -19,7 +19,7 @@ layout: default
 					{% else %}{{ day }}th
 					{% endcase %}
 					{{ page.date | date: "of %B, %Y" }}</p>
-				<p><a href="{{ site.baseURL }}/assets/img/archive/{{ page.title | remove: '.' }}.png"><img src="{{ site.baseURL }}/assets/img/archive/{{ page.title | remove: '.' }}.png" alt="Screenshot" style="width: 100%"></a></p>
+				<p><a href="{{ site.baseURL }}/assets/img/archive/{{ page.title | remove: '.' }}.png"><img src="{{ site.baseURL }}/assets/img/archive/{{ page.title | remove: '.' }}.png" alt="Screenshot" style="max-width: 100%"></a></p>
 			{% endif %}
 		</div>
 		{{ content | markdownify }}

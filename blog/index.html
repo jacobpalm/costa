@@ -35,7 +35,7 @@ title: Blog
                 </div>
             {% else %}
                 {{ post.excerpt }}
-                <a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}"><img class="w3-image" src="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}" alt="Screenshot"></a>
+                <p><a href="{{post.url | prepend: site.baseurl}}">Read more...</a></p>  
             {% endif %}                    
         </div>        
     </div>
