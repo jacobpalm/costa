@@ -13,7 +13,7 @@ Another way in which version 1.7.0 aims to make file operations easier, is by ha
 
 Here comes a hairy explanation for those interested in knowing how this is achieved - as a good example of how seemingly simple things can sometimes be a bit cumbersome to achieve when programming for old systems. Through old DOS documentation and example code, I learned that the path to the currently running program is stored after the environment variables in memory, separated from these by a four-byte gap. The environment variables themselves are stored at a memory location a certain amount of bytes after the program segment prefix.
 
-![The Visual Basic for DOS editor, showing part of the code to retrieve the Program Segment Prefix location]({{ site.baseURL }}/assets/img/blog/2022-09-30_psp.png "The Visual Basic for DOS editor, showing part of the code to retrieve the Program Segment Prefix location"){:class="img-responsive"}
+![The Visual Basic for DOS editor, showing part of the code to retrieve the Program Segment Prefix location]({{ site.baseURL }}/assets/img/blog/2022-09-30_psp.png "The Visual Basic for DOS editor, showing part of the code to retrieve the Program Segment Prefix location")
 
 So, to find the program path, you have to:
 

@@ -14,4 +14,4 @@ Oh - and Tic Tac Toe will now save its state between sessions, meaning you can c
 
 Let's finish this post with a photo of Costa being tested on physical hardware! Pictured below is Costa running happily along on an [IBM PS/2](https://en.wikipedia.org/wiki/IBM_PS/2) model 55SX. This specific machine has a 16 MHz [Intel 386](https://en.wikipedia.org/wiki/I386) processor, 8 megabytes of RAM and a 120 megabyte hard drive.
 
-![Costa running on a 16 MHz IBM PS/2 55SX]({{ site.baseURL }}/assets/img/blog/2021-10-23.jpg "Costa running on a 16 MHz IBM PS/2 55SX"){:class="img-responsive"}
+![Costa running on a 16 MHz IBM PS/2 55SX]({{ site.baseURL }}/assets/img/blog/2021-10-23.jpg "Costa running on a 16 MHz IBM PS/2 55SX")

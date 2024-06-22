@@ -54,3 +54,7 @@ footer h5 {
 .sitetitle {
     font-weight: 700;
 }
+
+.blockpost img {
+    max-width: 100%;
+}

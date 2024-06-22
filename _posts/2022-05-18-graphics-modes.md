@@ -10,7 +10,7 @@ So, for a long time I was thinking about using another graphics mode. And I chos
 
 Below is a screenshot comparing the icon editor in VGA and EGA resolution. When running in the smaller EGA resolution, the grid is resized to be smaller, and the buttons are moved around to fit the screen better.
 
-![The icon editor in VGA and EGA resolution]({{ site.baseURL }}/assets/img/blog/2022-05-18_egavga.png "The icon editor in VGA and EGA resolution"){:class="img-responsive"}
+![The icon editor in VGA and EGA resolution]({{ site.baseURL }}/assets/img/blog/2022-05-18_egavga.png "The icon editor in VGA and EGA resolution")
 
 Wether you prefer the EGA or the VGA resolution is a matter of taste, and on any computer that can run it just fine, I would say that the VGA resolution is the way to go. So, to make Costa as flexible as possible, I have made an option in the configuration dialog to change resolution. You can do this on the fly, it's not necessary to exit and restart Costa. Pretty nifty, I think.
 
