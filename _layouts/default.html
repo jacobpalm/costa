@@ -26,27 +26,41 @@
     <div class="w3-content">
         <a href="{{ site.baseURL }}" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile sitetitle">{{ site.name }}</a>
         <div class="topnav-right">
-            <a href="{{ site.baseURL }}/index.html#about" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile">About</a>
-            <a href="{{ site.baseURL }}/index.html#screens" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile">Screenshots</a>
-            <a href="{{ site.baseURL }}/index.html#downloads" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile">Download</a>
-            <a href="{{ site.baseURL }}/blog/" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile">Blog</a>
-            <a href="{{ site.baseURL }}/archive.html" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile">Archive</a>
+            <a href="{{ site.baseURL }}/index.html#about" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile w3-hide-small">About</a>
+            <a href="{{ site.baseURL }}/index.html#screens" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile w3-hide-small">Screenshots</a>
+            <a href="{{ site.baseURL }}/index.html#downloads" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile w3-hide-small">Download</a>
+            <a href="{{ site.baseURL }}/blog/" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile w3-hide-small">Blog</a>
+            <a href="{{ site.baseURL }}/archive.html" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile w3-hide-small">Archive</a>
+            <a href="javascript:void(0)" class="w3-bar-item w3-button w3-right w3-hide-large w3-hide-medium" onclick="toggleMenu()">&#9776;</a>
+          
+            <div id="mobilemenu" class="w3-hide w3-hide-large w3-hide-medium">
+                <a href="{{ site.baseURL }}/index.html#about" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile">About</a>
+                <a href="{{ site.baseURL }}/index.html#screens" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile">Screenshots</a>
+                <a href="{{ site.baseURL }}/index.html#downloads" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile">Download</a>
+                <a href="{{ site.baseURL }}/blog/" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile">Blog</a>
+                <a href="{{ site.baseURL }}/archive.html" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile">Archive</a>
+            </div>
         </div>
     </div>
 </div>
 
+
+
+
+
+  
 <!-- Content -->
 {{ content }}
 
 <!-- Footer -->
 <footer class="w3-container">  
     <div class="w3-content">
-        <div class="w3-third w3-padding-32">
+        <div class="w3-third w3-padding-large">
             <h5>The Author</h5>
             <p>Developed by <a href="https://jacobpalm.dk">Jacob Palm</a>, a Danish IT-professional and hobby developer. Former maintainer of JacobPalm.dk GUI Reviews, one of the largest QB GUI sites at its time.
             </p>
         </div>
-        <div class="w3-third w3-padding-32">
+        <div class="w3-third w3-padding-large">
             <h5>Interesting Links</h5>
             <p>
                 <a href="https://dosprograms.info.tt/apps.htm" target="_blank">Interesting DOS programs</a><br/>
@@ -58,12 +72,24 @@
                 <a href="http://theguiblog.com/review?id=1" target="_blank">The GUI Blog</a>
             </p>
         </div>
-        <div class="w3-third w3-padding-32">
+        <div class="w3-third w3-padding-large">
             <h5>About Costa</h5>
             <p>Costa is a small and lightweight GUI (Graphical User Interface) for MS-DOS compatible systems, provided to you free of charge. Site &copy; 2004-{{ 'now' | date: "%Y" }} by <a href="https://github.com/jacobpalm">Jacob Palm</a>, software released under the MIT License.</p>
         </div>
     </div>
 </footer>
+
+<!-- Menu code -->
+<script>
+    function toggleMenu() {
+        var x = document.getElementById("mobilemenu");
+        if (x.className.indexOf("w3-show") == -1) {
+            x.className += " w3-show";
+        } else { 
+            x.className = x.className.replace(" w3-show", "");
+        }
+    }
+</script>
 
 </body>
 </html>
