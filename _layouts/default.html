@@ -14,7 +14,6 @@
 
     <link rel="stylesheet" href="assets/w3.css">
     <link rel="stylesheet" href="assets/custom.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
     
     <link rel="canonical" href="{{ site.baseURL }}">
 	<link rel="alternate" type="application/atom+xml" title="{{ site.name }}" href="{{ site.baseURL }}/feed.xml">
@@ -22,7 +21,7 @@
 <body id="sitetop">
 
 <!-- Navbar -->
-<div class="w3-bar w3-mobile w3-teal w3-card w3-large w3-hide-small">
+<div class="w3-bar w3-mobile w3-teal w3-card w3-large w3-hide-medium w3-hide-small">
     <div class="w3-content">
         <a href="{{ site.baseURL }}" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile sitetitle">{{ site.name }}</a>
         <div class="topnav-right">
@@ -35,11 +34,11 @@
     </div>
 </div>
 
-<div class="w3-mobile w3-teal w3-card w3-large w3-hide-medium w3-hide-large">
+<div class="w3-mobile w3-teal w3-card w3-large w3-hide-large">
     <div class="w3-content">
         <a href="{{ site.baseURL }}" class="w3-button w3-padding-large w3-hover-white sitetitle">{{ site.name }}</a>
-        <a href="javascript:void(0)" class="w3-button w3-padding-large w3-hover-white w3-right w3-hide-large w3-hide-medium" onclick="toggleMenu()">&#9776;</a>
-        <div id="mobilemenu" class="w3-hide w3-hide-large w3-hide-medium">
+        <a href="javascript:void(0)" class="w3-button w3-padding-large w3-hover-white w3-right" onclick="toggleMenu()">&#9776;</a>
+        <div id="mobilemenu" class="w3-hide">
             <a href="{{ site.baseURL }}/index.html#about" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile">About</a>
             <a href="{{ site.baseURL }}/index.html#screens" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile">Screenshots</a>
             <a href="{{ site.baseURL }}/index.html#downloads" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile">Download</a>
