@@ -26,11 +26,12 @@ title: Blog
             {% if post.image %}
                 <div class="w3-row">
                     <div class="w3-twothird">
+                        <a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}"><img class="w3-image w3-hide-medium w3-hide-large" src="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}" alt="Screenshot"></a>
                         {{ post.excerpt }}
                         <p><a href="{{post.url | prepend: site.baseurl}}">Read more...</a></p>    
                     </div>
                     <div class="w3-third">
-                        <a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}"><img class="w3-image" src="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}" alt="Screenshot"></a>
+                        <a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}"><img class="w3-image w3-hide-small" src="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}" alt="Screenshot"></a>
                     </div>
                 </div>
             {% else %}
