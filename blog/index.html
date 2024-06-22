@@ -23,41 +23,28 @@ title: Blog
                 {% endcase %}
                 {{ post.date | date: "of %B, %Y" }}
             </p>
-        </div>
-            <div>
-                <div class="col-lg-8 col-lg-offset-2">
-                    {% if post.image %}
-                        <a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}" class="w3-hide-medium w3-hide-large"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}" alt="Screenshot"></a>
-                    {% else %}
-                        <div class="col-md-12" style="padding-left: 0px;"></div>
-                    {% endif %}    
-                    {{ post.excerpt }}
-                    <p><a href="{{post.url | prepend: site.baseurl}}">Read more...</a></p>
-                    </div>
-                    {% if post.image %}
-                        <div class="col-md-4 hidden-xs hidden-sm" style="padding-right: 0px;">
-                            <a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}" class="w3-hide-large"><img src="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}" alt="Screenshot"></a>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+            {% if post.image %}
+                <a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}"><img class="w3-image" src="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}" alt="Screenshot"></a>
+            {% endif %} 
+            {{ post.excerpt }}
+            <p><a href="{{post.url | prepend: site.baseurl}}">Read more...</a></p>            
+        </div>        
     </div>
 {% endfor %}
 
 <div class="w3-row-padding w3-light-grey w3-padding-64 w3-container w3-center {% cycle '', 'w3-light-grey' %}">
     <div class="w3-content">
         
-        <div class="w3-bar w3-border w3-teal">
+        <div class="w3-bar w3-border w3-teal w3-hover-white">
             {% if paginator.previous_page %}
                 <a class="w3-bar-item w3-button" href="{{ paginator.previous_page_path | relative_url }}#post1">&laquo;</a>
             {% else %}
-                <a class="w3-bar-item w3-button w3-disabled" href="#"><span>&laquo;</span></a>
+                <a class="w3-bar-item w3-button w3-disabled"><span>&laquo;</span></a>
             {% endif %}
 
             {% for page in (1..paginator.total_pages) %}
                 {% if page == paginator.page %}
-                    <a class="w3-bar-item w3-button w3-white" href="#">{{ page }}</a>
+                    <a class="w3-bar-item w3-button w3-white">{{ page }}</a>
                 {% elsif page == 1 %}
                     <a class="w3-bar-item w3-button" href="{{ '/blog' | relative_url }}#post1">{{ page }}</a>
                 {% else %}
@@ -68,7 +55,7 @@ title: Blog
             {% if paginator.next_page %}
                 <a class="w3-bar-item w3-button" href="{{ paginator.next_page_path | relative_url }}#post1"><span>&raquo;</span></a>
             {% else %}
-                <a class="w3-bar-item w3-button w3-disabled" href="#"><span>&raquo;</span></a>
+                <a class="w3-bar-item w3-button w3-disabled"><span>&raquo;</span></a>
             {% endif %}
         </div>
                
