@@ -67,14 +67,14 @@ title: Blog
                             <a class="w3-bar-item w3-button w3-hover-white" href="{{ site.paginate_path | relative_url | replace: ':num', page }}#post1">{{ page }}</a>
                         {% endif %}
                     {% else %}
-                        {% unless minshown %}
-                            {% assign maxshow = true %}
+                        {% unless maxshown %}
+                            {% assign maxshown = true %}
                             <a class="w3-bar-item w3-button w3-disabled w3-hover-teal"><span>&middot;&middot;&middot;</span></a>
-                        {% endunless %}
+                        {% endif %}
                     {% endif %}
                 {% else %}
                     {% unless minshown %}
-                        {% assign minshow = true %}
+                        {% assign minshown = true %}
                         <a class="w3-bar-item w3-button w3-disabled w3-hover-teal"><span>&middot;&middot;&middot;</span></a>
                     {% endunless %}
                 {% endif %}
