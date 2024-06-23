@@ -51,7 +51,7 @@ title: Blog
         
         <div class="w3-bar w3-border w3-teal">
             {% if paginator.previous_page %}
-                <a class="w3-bar-item w3-button w3-hover-white" href="{{ paginator.previous_page_path | relative_url }}#post1">&lt;</a>
+                <a class="w3-bar-item w3-button w3-hover-white" href="{{ paginator.previous_page_path | relative_url }}#post1">&laquo;</a>
             {% else %}
                 <a class="w3-bar-item w3-button w3-disabled w3-hover-teal"><span>&laquo;</span></a>
             {% endif %}
@@ -69,19 +69,19 @@ title: Blog
                     {% else %}
                         {% unless maxshown %}
                             {% assign maxshown = true %}
-                            <a class="w3-bar-item w3-button w3-disabled w3-hover-teal"><span>&middot;&middot;&middot;</span></a>
+                            <a class="w3-bar-item w3-button w3-disabled w3-hover-teal w3-hide-small"><span>&middot;&middot;&middot;</span></a>
                         {% endunless %}
                     {% endif %}
                 {% else %}
                     {% unless minshown %}
                         {% assign minshown = true %}
-                        <a class="w3-bar-item w3-button w3-disabled w3-hover-teal"><span>&middot;&middot;&middot;</span></a>
+                        <a class="w3-bar-item w3-button w3-disabled w3-hover-teal w3-hide-small"><span>&middot;&middot;&middot;</span></a>
                     {% endunless %}
                 {% endif %}
             {% endfor %}
 
             {% if paginator.next_page %}
-                <a class="w3-bar-item w3-button w3-hover-white" href="{{ paginator.next_page_path | relative_url }}#post1"><span>&gt;</span></a>
+                <a class="w3-bar-item w3-button w3-hover-white" href="{{ paginator.next_page_path | relative_url }}#post1"><span>&raquo;</span></a>
             {% else %}
                 <a class="w3-bar-item w3-button w3-disabled w3-hover-teal"><span>&raquo;</span></a>
             {% endif %}
