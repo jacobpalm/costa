@@ -49,11 +49,9 @@ title: Blog
         
         <div class="w3-bar w3-border w3-teal">
             {% if paginator.previous_page %}
-                <a class="w3-bar-item w3-button w3-hover-white" href="{{ paginator.first_page_path | relative_url }}#post1">&laquo;</a>
                 <a class="w3-bar-item w3-button w3-hover-white" href="{{ paginator.previous_page_path | relative_url }}#post1">&lt;</a>
             {% else %}
                 <a class="w3-bar-item w3-button w3-disabled w3-hover-teal"><span>&laquo;</span></a>
-                <a class="w3-bar-item w3-button w3-disabled w3-hover-teal"><span>&lt;</span></a>
             {% endif %}
 
             {% for page in (1..paginator.total_pages) %}
@@ -72,9 +70,7 @@ title: Blog
 
             {% if paginator.next_page %}
                 <a class="w3-bar-item w3-button w3-hover-white" href="{{ paginator.next_page_path | relative_url }}#post1"><span>&gt;</span></a>
-                <a class="w3-bar-item w3-button w3-hover-white" href="{{ paginator.last_page_path | relative_url }}#post1"><span>&raquo;</span></a>
             {% else %}
-                <a class="w3-bar-item w3-button w3-disabled w3-hover-teal"><span>&gt;</span></a>
                 <a class="w3-bar-item w3-button w3-disabled w3-hover-teal"><span>&raquo;</span></a>
             {% endif %}
         </div>
