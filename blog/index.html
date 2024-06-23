@@ -44,6 +44,8 @@ title: Blog
 
 {% assign minpage = paginator.page | minus: 3 %}
 {% assign maxpage = paginator.page | plus: 3 %}
+{% assign minshown = false %}
+{% assign maxshown = false %}
 <div class="w3-row-padding w3-light-grey w3-padding-32 w3-container w3-center {% cycle 'w3-white', 'w3-light-grey' %}">
     <div class="w3-content">
         
@@ -64,7 +66,17 @@ title: Blog
                         {% else %}
                             <a class="w3-bar-item w3-button w3-hover-white" href="{{ site.paginate_path | relative_url | replace: ':num', page }}#post1">{{ page }}</a>
                         {% endif %}
+                    {% else %}
+                        {% unless minshown %}
+                            {% assign maxshow = true %}
+                            <a class="w3-bar-item w3-button w3-disabled w3-hover-teal"><span>&middot;&middot;&middot;</span></a>
+                        {% endunless %}
                     {% endif %}
+                {% else %}
+                    {% unless minshown %}
+                        {% assign minshow = true %}
+                        <a class="w3-bar-item w3-button w3-disabled w3-hover-teal"><span>&middot;&middot;&middot;</span></a>
+                    {% endunless %}
                 {% endif %}
             {% endfor %}
 
