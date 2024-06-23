@@ -56,7 +56,7 @@ title: Blog
 
             {% for page in (1..paginator.total_pages) %}
                 {% if page > minpage %}
-                    {% if page < maxpage}
+                    {% if page < maxpage %}
                         {% if page == paginator.page %}
                             <a class="w3-bar-item w3-button w3-white w3-hover-white">{{ page }}</a>
                         {% elsif page == 1 %}
