@@ -366,10 +366,10 @@ FUNCTION File.MouseSelection (TargetList AS TextboxType)
 				END IF
 			END IF
 
-			'Row height is 12, and there is a 4 pixel border to first item.
+			'Row height is 12, and there is a 3 pixel border to first item.
 			'Calculate clicked item, and substract one to account for lower bound
 			'of 0
-			ClickedItem = ((ClickedY + 4) / 12) - 1
+			ClickedItem = ((ClickedY + 3) / 12) - 1
 
 			IF ClickedItem > MaxVisibleItems THEN
 				'Clicked inside list area, but in the small gap after last item.
