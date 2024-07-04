@@ -59,9 +59,10 @@ END IF
 Then, add the *LIBRARY\COSTALIB.BAS* file to your program as well. The library does not come precompiled as a QuickLibrary at this time, but you could compile it yourself if you wanted to.
 
 **Important!** Do not write any of your programs code in *COSTALIB.BAS*, use a separate module for all your code and set it as the main module.
-{:.w3-panel w3-pale-yellow w3-border}
+{:.infobox}
 
 **Important!** Your program will only run from within the VBDOS IDE if you use the command line switch `/DEV`, and if you place your program in *C:\COSTA*. This is due to the function that returns the path to the currently running program, when you run from the IDE this will return the path to VBDOS.EXE instead. The `/DEV` command line switch tells this function to always return *C:\COSTA*.
+{:.infobox}
 
 The INCLUDE directive tells the compiler to include all definitions from *COSTALIB.BI* in your program. These definitions include constants, SUBs and FUNCTIONs from the library which you can use in your program.
 
@@ -377,6 +378,7 @@ Draw_Context conAboutbox%
 Whenever an object is drawn, a redraw event for that object will be triggered. This can be useful if you want to draw something manually on an object, like drawing an icon on a button instead of text. In that case, put your drawing code inside the event handling code of your program to ensure that whatever you draw will be redrawn when the object is redrawn.
 
 **Important!** When you draw manually, you must hide the mouse cursor while doing so. Unlike modern platforms, the DOS mouse drivers will not take care of this for you. So, before drawing call `Mouse_Hide`, and when you're done, call `Mouse_Show`. This way you will avoid some nasty graphical glitches.
+{:.infobox}
 
 ## Working with the Mouse
 
@@ -494,6 +496,7 @@ CLOSE #FileHandle%
 ```
 
 **Important!** This function does not work correctly when run inside VBDOS. The issue is that DOS will not return the path of your program, as it does not exist yet. It will instead return the path to VBDOS.EXE. To overcome this, run your program with the "/DEV" command line switch from within VBDOS and the default path "C:\COSTA\" will be used instead.
+{:.infobox}
 
 Another function, `Check_FileExists%`, can be used to determine wether or not a file exists. It will return True if it does, or False if it doesn't.
 
