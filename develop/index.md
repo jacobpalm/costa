@@ -101,6 +101,7 @@ The Costa UI library uses a series of conventions for variable naming. Although 
 
 Object names should describe their function, prepended by a three letter abbreviation for the object type. The following abbreviations should be used:
 
+{:.w3-table-all}
 | Abbreviation | Object type  | Example          |
 |:-------------|:-------------|:-----------------|
 | btn          | Button       | btnCancel%       |
@@ -179,6 +180,7 @@ Whenever you want to show something on screen or interact with the user, you sho
 
 ### Object Types
 
+{:.w3-table-all}
 | Object type  | Description                                                                          | Constant used to create |
 |:-------------|:-------------------------------------------------------------------------------------|:------------------------|
 | Button       | Clickable button.                                                                    | objButton               |
@@ -286,6 +288,7 @@ All objects have a range of properties. These define where to object is placed o
 
 The following table lists all properties of objects and their use:
 
+{:.w3-table-all}
 | Property | Description | Can be used with | Set | Retrieve |
 |:---------|:------------|:-----------------|:----|:---------|
 | Caption | The text shown on next to an object, depending on the type of object. Used to describe the object. Examples could include "OK" for an OK-button, or "Name" for a textbox for the user to enter their name into. | All object types | Set_Caption | - |
@@ -392,6 +395,7 @@ All events are added to the event queue, which can hold up to 100 events. Every 
 
 There are a few different event types. CONSTANTs are declared to help you identify these in your code.
 
+{:.w3-table-all}
 | Event       | Description                                                 | Constant        |
 |:------------|:------------------------------------------------------------|:----------------|
 | Click       | Mouse click, left button                                    | eventClick      |
@@ -411,6 +415,7 @@ Events are returned as a variable of the user defined TYPE **EventType**. You mu
 
 The **EventType** user defined TYPE will have these elements:
 
+{:.w3-table-all}
 | Element | Description |
 |:--------|:------------|
 | ID      | ID (handle) of the object the user interacted with. Use the value returned by Create_Object to compare. For mouse clicks outside any object, the constant objMouse will be returned. For key presses unrelated to any object, the constant objKeyboard will be returned. For context redraws, the constant objScreen will be returned. |
@@ -492,3 +497,5 @@ The Costa UI library can use color themes for the interface. These can be loaded
 Theme files can be edited using the Theme Editor included with the Costa Graphical Shell, available at [https://costa.jacobpalm.dk](https://costa.jacobpalm.dk). Themes must be placed in the DATA\THEMES subdirectory of your program.
 
 ## Procedure References
+
+Yet to be written, stay tuned.
