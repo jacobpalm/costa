@@ -34,13 +34,13 @@ Basically, events are everything you might want to act on in your program. Using
 
 To use the library, you will need to run Visual Basic for DOS (VBDOS) with the /L parameter. This tells VBDOS to include the VBDOS.QLB QuickLibrary, which contains some functions that are required by the Costa UI Library.
 
-```VisualBasic
+```vb
 VBDOS.EXE /L
 ```
 
 Once you have started VBDOS, add the following code at the start of your program:
 
-```VisualBasic
+```vb
 '$INCLUDE: 'LIBRARY\COSTALIB.BI'
 
 DIM InitMessage$
@@ -54,7 +54,7 @@ Then, add the LIBRARY\COSTALIB.BAS file to your program as well. The library doe
 
 **Important!** Do not write any of your programs code in COSTALIB.BAS, use a separate module for all your code and set it as the main module.
 
-**Important!** Your program will only run from within the VBDOS IDE if you use the command line switch "/DEV", and if you place your program in "C:\COSTA\". This is due to the function that returns the path to the currently running program, when you run from the IDE this will return the path to VBDOS.EXE instead. The "/DEV" command line switch tells this function to always return "C:\COSTA\".
+**Important!** Your program will only run from within the VBDOS IDE if you use the command line switch `*/`DEV`, and if you place your program in "C:\COSTA\". This is due to the function that returns the path to the currently running program, when you run from the IDE this will return the path to VBDOS.EXE instead. The "/DEV" command line switch tells this function to always return "C:\COSTA\".
 
 The INCLUDE directive tells the compiler to include all definitions from COSTALIB.BI in your program. These definitions include constants, SUBs and FUNCTIONs from the library which you can use in your program.
 
@@ -66,6 +66,7 @@ If the function returns TRUE, you are good to go and can start using the library
 
 The recommended structure for your program is the following tree structure:
 
+{:.w3-table-all}
 | Folder      | Description                                                                              |
 |:------------|:-----------------------------------------------------------------------------------------|
 | (root)      | Keep your projekt (.MAK) files here.                                                     |
@@ -85,7 +86,7 @@ There are a couple of *Boolean constants* defined, which can be used to emulate 
 
 They are declared as follows:
 
-```VisualBasic
+```vb
 CONST True = -1
 CONST False = 0
 ```
@@ -121,7 +122,7 @@ As previously described, contexts are used to group objects together for easier 
 
 Creating a context is easy, using the library function. To create a context, simply do the following:
 
-```VisualBasic
+```vb
 'Declare variable for main context
 DIM conMain%
 
@@ -137,7 +138,7 @@ In theory, you can have millions of contexts - but in practice you will be limit
 
 Removing a context is as easy as creating one - there's a SUB for that:
 
-```VisualBasic
+```vb
 'Assume we have the handle we got when creating the context
 'stored in conMain%
 
@@ -154,7 +155,7 @@ There may be situations when you want to switch to a certain context. As mention
 
 Switching context can be done like so:
 
-```VisualBasic
+```vb
 'Save current context to be restored on exit sub
 conCurrent% = Get_Context%
 
@@ -303,7 +304,7 @@ The following table lists all properties of objects and their use:
 
 Creating an object is easy - there's a simple function for that:
 
-```VisualBasic
+```vb
 DIM btnCancel%
 btnCancel% = New_Object(objButton)
 ```
@@ -314,7 +315,7 @@ You call the New_Object function, with a constant defining which type of object 
 
 Removing an object is equally simple:
 
-```VisualBasic
+```vb
 'Assume we have the handle of the button stored in btnCancel%
 
 Remove_Object btnCancel%
@@ -334,7 +335,7 @@ Objects can be drawn in one of two ways: Individually, or as part of a context.
 
 To draw an object individually:
 
-```VisualBasic
+```vb
 'Create object and set properties
 btnClose% = New_Object(objButton)
 Set_Size btnClose%, 274, 249, 92, 22
@@ -346,7 +347,7 @@ Draw_Object btnClose%
 
 To draw an entire context, meaning any object associated with the context:
 
-```VisualBasic
+```vb
 conAboutbox% = New_Context%
 
 'Create two objects and set properties
@@ -371,7 +372,7 @@ Whenever an object is drawn, a redraw event for that object will be triggered. T
 
 Assuming that a mouse driver is loaded before your program is run, the mouse will work straight away once you initialize the library. If needed, you can show/hide the cursor manually using the provided SUBs:
 
-```VisualBasic
+```vb
 'Hide the mouse cursor
 Hide_Mouse
 
@@ -420,7 +421,7 @@ The **EventType** user defined TYPE will have these elements:
 
 An example of how you can catch events follows here:
 
-```VisualBasic
+```vb
 'This example assumes three objects (btnClose%, lblWelcomeMessage% and txtName%)
 'have already been created
 
@@ -460,7 +461,7 @@ It is possible to manually add an event to the queue. This can be useful in some
 
 Events are queued using the `Queue_Event` SUB. For full reference, see the *Procedure References* section.
 
-```VisualBasic
+```vb
 'Add a click event for the button btnSave% to the event queue
 Queue_Event btnSave%, eventClick, 0, 0, ""
 
@@ -474,7 +475,7 @@ The Costa UI library, while focused on user interfaces, provides a few helper fu
 
 The `Get_AppPath$` FUNCTION returns the path to the current program. This path is retrieved from DOS, and will always point to the location where the EXE file is stored, including a trailing backslash. This is useful if you want to open a file relative to the path of your program:
 
-```VisualBasic
+```vb
 FileHandle% = FREEFILE
 OPEN Get_AppPath$ + "DOCS\HELP.TXT" FOR INPUT AS #FileHandle%
 CLOSE #FileHandle%

@@ -72,3 +72,7 @@ footer h5 {
 .padding-left {
     padding-left: 8px;
 }
+
+.documentation h2, h3, h4, h5, h6 {
+    margin-top: 32px;
+}
