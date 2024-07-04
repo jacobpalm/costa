@@ -93,15 +93,3 @@ div .language-powershell {
 code .c1 {
     color: green;
 }
-
-.infobox {
-    background-color: #ffffcc!important;
-    border: 1px solid #ccc!important;
-    padding: 0.01em 16px;
-    margin-top: 16px;
-    margin-bottom: 16px;
-}
-.infobox:before, .infobox:after {
-    float:left;
-    width:100%;
-}
