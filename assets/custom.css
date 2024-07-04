@@ -80,6 +80,9 @@ footer h5 {
 div .highlighter-rouge {
     background-color: #f1f1f1;
     border: 1px solid #ccc;
+}
+
+div .language-vb {
     padding-left: 16px;
     padding-right: 16px;
 }
