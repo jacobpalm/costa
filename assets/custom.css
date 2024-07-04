@@ -82,7 +82,8 @@ div .highlighter-rouge {
     border: 1px solid #ccc;
 }
 
-div .language-vb {
+div .language-vb,
+div .language-powershell {
     padding-left: 16px;
     padding-right: 16px;
 }

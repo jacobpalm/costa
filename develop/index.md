@@ -77,7 +77,7 @@ The recommended structure for your program is the following tree structure:
 {:.w3-table-all}
 | Folder      | Description                                                                              |
 |:------------|:-----------------------------------------------------------------------------------------|
-| (root)      | Keep your projekt (.MAK) files here.                                                     |
+| (root)      | Keep your project (.MAK) files here.                                                     |
 | SOURCE      | Keep your own .BAS and .BI files here - not those pertaining to the library.             |
 | LIBRARY     | Keep the .BAS and .BI files of the Costa UI Library here.                                |
 | DATA        | Place font data here.                                                                    |
@@ -171,7 +171,7 @@ conCurrent% = Get_Context%
 'Create new context for aboutbox
 conAbout% = New_Context%
 
-(program code here)
+'(program code here)
 
 'Remove aboutbox context
 Remove_Context conAbout%
@@ -491,20 +491,33 @@ The `Get_AppPath$` FUNCTION returns the path to the current program. This path i
 
 ```vb
 FileHandle% = FREEFILE
+
+'Get_AppPath$ will return C:\COSTA\ or a similar path to your exe file
 OPEN Get_AppPath$ + "DOCS\HELP.TXT" FOR INPUT AS #FileHandle%
 CLOSE #FileHandle%
 ```
 
-**Important!** This function does not work correctly when run inside VBDOS. The issue is that DOS will not return the path of your program, as it does not exist yet. It will instead return the path to VBDOS.EXE. To overcome this, run your program with the "/DEV" command line switch from within VBDOS and the default path "C:\COSTA\" will be used instead.
+**Important!** This function does not work correctly when run inside VBDOS. The issue is that DOS will not return the path of your program, as it does not exist yet. It will instead return the path to VBDOS.EXE. To overcome this, run your program with the "/DEV" command line switch from within VBDOS and the default path *C:\COSTA* will be used instead.
 {:.infobox}
 
-Another function, `Check_FileExists%`, can be used to determine wether or not a file exists. It will return True if it does, or False if it doesn't.
+The function `Check_FileExists%`, can be used to determine wether or not a file exists. It will return True if it does, or False if it doesn't. This can be useful to check if a file exists before opening, avoiding run-time errors if it doesn't.
+
+```vb
+'Check if file exists before opening
+IF Check_FileExists%("C:\MYFILE.TXT") THEN
+    'File exists, open it
+    FileHandle% = FREEFILE
+    OPEN "C:\MYFILE.TXT" FOR INPUT AS #FileHandle%
+    '(program code here)
+    CLOSE #FileHandle%
+END IF
+```
 
 ## Themes
 
 The Costa UI Library can use color themes for the interface. These can be loaded using the `Set_Theme` SUB. If the chosen theme does not exist, default colors will be used. If you are fine with the default colors of the interface, you do not need to worry about themes at all. But if you want to use custom colors, themes allow you to easily do so.
 
-Theme files can be edited using the Theme Editor included with the Costa Graphical Shell, available at [https://costa.jacobpalm.dk](https://costa.jacobpalm.dk). Themes must be placed in the DATA\THEMES subdirectory of your program.
+Theme files can be edited using the Theme Editor included with the Costa Graphical Shell, available at [https://costa.jacobpalm.dk](https://costa.jacobpalm.dk). Themes must be placed in the *DATA\THEMES* subdirectory of your program.
 
 ## Procedure References
 
