@@ -4,17 +4,23 @@ title: Developers Guide
 ---
 ## Introduction
 
+Costa is written in Visual Basic for DOS. The name might mislead you to think that Visual Basic handles everything on the screen, like it does in Visual Basic for Windows - objects, drawing and such. However, Visual Basic for DOS (VBDOS) only supports text-mode user interfaces. When you take that part out, which I do because I'm not using any of it, all you have left is essentially QuickBASIC with a more modern user interface. All graphics have to be done by the developer, and no concept of objects exist. This makes software development a somewhat tedious task, as a lot of time and effort goes into the UI, rather than the actual program you want to write. It's also not easy to maintain consistency between programs, as each program has to implement a user interface for itself.
+
+That's where the *Costa UI Library* originated from - I wanted to make development for Costa easier and more consistent. So I set out to create a library of procedures (FUNCTIONs and SUBs) that would make this task easier. Currently, the programs included in Costa utilize and older, somewhat cumbersome library. The plan is to gradually convert all programs to this new library, to simplify and align the programs. An added benefit is that it will be much easier for others to create programs using my library, regardless of wether they want to create a stand-alone program or an accessory for Costa.
+
 ### Downloading the Library
 
 The library is still under development, and as such is not yet available for download. I am working on getting it ready as soon as possible.
 
+I have chosen not to release it yet, because I am still changing things up a bit as I go along, while working out the right way for everything to work. It would not be fun to write a program using a library that's constantly changing! Once it has stabilized and is deemed ready to use, I will put it here and also inform about the release on the blog.
+
 ### Concepts
 
-There are several concepts that are important to understand when working with the Costa UI library. Developers familiar with programming for Windows or other graphical environments may have an understanding of some of these already.
+There are several concepts that are important to understand when working with the Costa UI Library. Developers familiar with programming for Windows or other graphical environments may have an understanding of some of these already.
 
 #### Objects
 
-Visual Basic for DOS is not an object-oriented language. This makes programming something like a graphical user interface, which consists of many on-screen objects, somewhat challenging. To ease development, the Costa UI library implements SUBs and FUNCTIONs that mimic object oriented programming. In reality, a bunch of arrays of custom TYPEs and strings contain all the "objects", but the developer cannot access these directly from their programs. Instead, all object manipulation is done through these procedures, which also implement some validation of the data passed to ensure smooth operation.
+VBDOS is not an object-oriented language. This makes programming something like a graphical user interface, which consists of many on-screen objects, somewhat challenging. To ease development, the Costa UI Library implements SUBs and FUNCTIONs that mimic object oriented programming. In reality, a bunch of arrays of custom TYPEs and strings contain all the "objects", but the developer cannot access these directly from their programs. Instead, all object manipulation is done through these procedures, which also implement some validation of the data passed to ensure smooth operation.
 
 An example of an object is a button. The button is declared simply as an integer variable. This variable is then set to the return value of a function that creates an object. The value of the variable can then be considered a "handle". No matter how the internal arrays in the UI library change as objects are created and removed, this handle will remain valid for use until the object is removed. The handle can be used with procedures, for example to set the caption or enable/disable the button, and it can be used to determine when an object has been clicked, if it was this particular button that was clicked.
 
@@ -26,15 +32,15 @@ Another benefit of contexts is that you can draw all objects in a context in one
 
 #### Events
 
-The Costa UI library uses events extensively. Every action the user takes is an event - a key press, a mouse click. Some events are also generated automatically, like a redraw event whenever an object is drawn, an object switches state (for example, a radio button is selected/deselected) and more.
+The Costa UI Library uses events extensively. Every action the user takes is an event - a key press, a mouse click. Some events are also generated automatically, like a redraw event whenever an object is drawn, an object switches state (for example, a radio button is selected/deselected) and more.
 
 Basically, events are everything you might want to act on in your program. Using the event system of the UI library, you don't have to check for button clicks, textboxes being edited or any other action - the library will inform you. All you need to do in your programs main loop is act on these events.
 
 ### Using the library
 
-To use the library, you will need to run Visual Basic for DOS (VBDOS) with the /L parameter. This tells VBDOS to include the VBDOS.QLB QuickLibrary, which contains some functions that are required by the Costa UI Library.
+To use the library, you will need to run VBDOS with the `/L` parameter. This tells VBDOS to include the *VBDOS.QLB* QuickLibrary, which contains some functions that are required by the Costa UI Library.
 
-```vb
+```powershell
 VBDOS.EXE /L
 ```
 
@@ -50,17 +56,17 @@ IF NOT Init_Library(InitMessage$) THEN
 END IF
 ```
 
-Then, add the LIBRARY\COSTALIB.BAS file to your program as well. The library does not come precompiled as a QuickLibrary at this time, but you could compile it yourself if you wanted to.
+Then, add the *LIBRARY\COSTALIB.BAS* file to your program as well. The library does not come precompiled as a QuickLibrary at this time, but you could compile it yourself if you wanted to.
 
-**Important!** Do not write any of your programs code in COSTALIB.BAS, use a separate module for all your code and set it as the main module.
+**Important!** Do not write any of your programs code in *COSTALIB.BAS*, use a separate module for all your code and set it as the main module.
 
-**Important!** Your program will only run from within the VBDOS IDE if you use the command line switch `*/`DEV`, and if you place your program in "C:\COSTA\". This is due to the function that returns the path to the currently running program, when you run from the IDE this will return the path to VBDOS.EXE instead. The "/DEV" command line switch tells this function to always return "C:\COSTA\".
+**Important!** Your program will only run from within the VBDOS IDE if you use the command line switch `/DEV`, and if you place your program in *C:\COSTA*. This is due to the function that returns the path to the currently running program, when you run from the IDE this will return the path to VBDOS.EXE instead. The `/DEV` command line switch tells this function to always return *C:\COSTA*.
 
-The INCLUDE directive tells the compiler to include all definitions from COSTALIB.BI in your program. These definitions include constants, SUBs and FUNCTIONs from the library which you can use in your program.
+The INCLUDE directive tells the compiler to include all definitions from *COSTALIB.BI* in your program. These definitions include constants, SUBs and FUNCTIONs from the library which you can use in your program.
 
-The `Init_Library` function is used to initialize the library, and must always be called before you start using any other procedures. It will load fonts into memory, set the correct theme and initialize the display. It will return one of the constants TRUE or FALSE, telling you wether it succeeded in loading. If not, the error message will be stored in the string variable passed to the function. You should always terminate your program if `Init_Library` fails.
+The `Init_Library` function is used to initialize the library, and must always be called before you start using any other procedures. It will load fonts into memory, set the correct theme and initialize the display. It will return one of the constants `True` or `False`, telling you wether it succeeded in loading. If not, the error message will be stored in the string variable passed to the function. You should always terminate your program if `Init_Library` fails.
 
-If the function returns TRUE, you are good to go and can start using the library!
+If the function returns `True`, you are good to go and can start using the library!
 
 ### File Structure
 
@@ -82,7 +88,7 @@ The recommended structure for your program is the following tree structure:
 
 Several useful constants are declared in the library, and can be used in your program. Most of these are related to objects, events or other specific areas, and will be covered in respective sections later on.
 
-There are a couple of *Boolean constants* defined, which can be used to emulate the BOOLEAN datatype (true/false) that VBDOS lacks. All library functions that return a true/false value uses these.
+There are a couple of boolean constants defined, which can be used to emulate the BOOLEAN datatype (true/false) that VBDOS lacks. All library functions that return a true/false value uses these.
 
 They are declared as follows:
 
@@ -91,11 +97,11 @@ CONST True = -1
 CONST False = 0
 ```
 
-The NOT operator will work on these just fine - meaning NOT TRUE = FALSE. This can be useful in many situations to write clearer code.
+The `NOT` operator will work on these just fine - meaning `NOT TRUE = FALSE`. This can be useful in many situations to write clearer code.
 
 ### Conventions
 
-The Costa UI library uses a series of conventions for variable naming. Although this is completely optional to follow, it is recommended to do so to ensure that all programs made using the library follow the same pattern and are easily maintained and understood.
+The Costa UI Library uses a series of conventions for variable naming. Although this is completely optional to follow, it is recommended to do so to ensure that all programs made using the library follow the same pattern and are easily maintained and understood.
 
 #### Naming
 
@@ -113,7 +119,7 @@ Object names should describe their function, prepended by a three letter abbrevi
 | dlg          | Dialog       | dlgAboutbox%     |
 | chk          | Checkbox     | chkShowFilename% |
 
-It is recommended to follow the BASIC practice of declaring the data type of a variable using the identifier. In the table above, % is used to specify the integer data type. Describing data types are out of scope for this documentation, but make a note to remember that the library almost exclusively uses the integer data type.
+It is recommended to follow the BASIC practice of declaring the data type of a variable using the identifier. In the table above, `%` is used to specify the integer data type. Describing data types are out of scope for this documentation, but make a note to remember that the library almost exclusively uses the integer data type.
 
 ## Working with Contexts
 
@@ -241,7 +247,7 @@ Triggered events:
 
 #### Images
 
-Images are always 32x32 pixels, and drawn with a slim border. Image objects use the native format used by the Costa UI library. This means that you cannot load a .BMP or .JPG image and display using the library, for that you will have to write your own code. Images can be created or edited using the Icon Editor that comes with the Costa Graphical Shell, available at [https://costa.jacobpalm.dk](https://costa.jacobpalm.dk).
+Images are always 32x32 pixels, and drawn with a slim border. Image objects use the native format used by the Costa UI Library. This means that you cannot load a .BMP or .JPG image and display using the library, for that you will have to write your own code. Images can be created or edited using the Icon Editor that comes with the Costa Graphical Shell, available at [https://costa.jacobpalm.dk](https://costa.jacobpalm.dk).
 
 Triggered events:
 
@@ -312,7 +318,7 @@ DIM btnCancel%
 btnCancel% = New_Object(objButton)
 ```
 
-You call the New_Object function, with a constant defining which type of object you want. See the *Object types* section for a list of constants.
+You call the `New_Object` function, with a constant defining which type of object you want. See the *Object types* section for a list of constants.
 
 ### Removing an Object
 
@@ -328,7 +334,7 @@ Remember - if you remove a context, you don't need to remove each object in it. 
 
 ### Modifying an Object
 
-As underlined earlier, you cannot by default modify objects directly - nor should you ever try to do so. Instead, the Costa UI library provides a variety of procedures for this purpose. Once you have created an object, use the handle you got from Create_Object to call these procedures and modify the properties of the object, or to retrieve certain properties.
+As underlined earlier, you cannot by default modify objects directly - nor should you ever try to do so. Instead, the Costa UI Library provides a variety of procedures for this purpose. Once you have created an object, use the handle you got from `Create_Object` to call these procedures and modify the properties of the object, or to retrieve certain properties.
 
 See the table in the *Object Properties* section for an overview of properties, and which procedures can be used to set/retrieve them. Full description of each procedures can be found in the *Procedure References* section.
 
@@ -348,7 +354,7 @@ Set_Caption btnClose%, "&Close"
 Draw_Object btnClose%
 ```
 
-To draw an entire context, meaning any object associated with the context:
+To draw an entire context - meaning any object associated with the context:
 
 ```vb
 conAboutbox% = New_Context%
@@ -379,7 +385,7 @@ Assuming that a mouse driver is loaded before your program is run, the mouse wil
 'Hide the mouse cursor
 Hide_Mouse
 
-(program code here)
+'(program code here)
 
 'Show the mouse cursor again
 Show_Mouse
@@ -387,7 +393,7 @@ Show_Mouse
 
 ## Working with Events
 
-Events are the heart of the Costa UI library. Contexts and objects design your interface, but it's the events tie it all together and makes stuff happen. Whenever the user interacts with your program, events are triggered which you can then act upon. Some events are triggered by the library itself, for instance any object that is drawn will trigger a redraw event.
+Events are the heart of the Costa UI Library. Contexts and objects design your interface, but it's the events that tie it all together and makes stuff happen. Whenever the user interacts with your program, events are triggered which you can then act upon. Some events are triggered by the library itself, for instance any object that is drawn will trigger a redraw event.
 
 All events are added to the event queue, which can hold up to 100 events. Every time you query the event queue for an event, you will be returned to oldest triggered event, which will then be removed from the queue. Many events may be triggered that you don't really care about. In that case, you can simply ignore the event and it will disappear from the queue. Acting upon events is optional.
 
@@ -411,9 +417,9 @@ In your code, you can use the handle of the object the event pertains to, and th
 
 You catch events by putting a call to the Get_Event SUB in your programs main loop. You can choose to have the function return only if an event has been triggered, effectively pausing your code until that is the case - or you can have it return no event if nothing has happened. If you need to have your code still running while checking for events, if for instance you need to display a running timer on screen, this can be useful. If your program doesn't need to perform any actions until an event is triggered, you can choose to let the library take the reigns until that happens.
 
-Events are returned as a variable of the user defined TYPE **EventType**. You must declare a variable of this type, and pass it to the **Get_Event** SUB. You can then use *SELECT CASE* or *IF* statements to check the variable and determine what event was triggered.
+Events are returned as a variable of the user defined TYPE `EventType`. You must declare a variable of this type, and pass it to the `Get_Event` SUB. You can then use `SELECT CASE` or `IF` statements to check the variable and determine what event was triggered.
 
-The **EventType** user defined TYPE will have these elements:
+The `EventType` user defined TYPE will have these elements:
 
 {:.w3-table-all}
 | Element | Description |
@@ -476,7 +482,7 @@ Queue_Event txtFilename%, eventEdit, 0,0, ""
 
 ## Files and Paths
 
-The Costa UI library, while focused on user interfaces, provides a few helper functions commonly used in programs.
+The Costa UI Library, while focused on user interfaces, provides a few helper functions commonly used in programs.
 
 The `Get_AppPath$` FUNCTION returns the path to the current program. This path is retrieved from DOS, and will always point to the location where the EXE file is stored, including a trailing backslash. This is useful if you want to open a file relative to the path of your program:
 
@@ -492,7 +498,7 @@ Another function, `Check_FileExists%`, can be used to determine wether or not a 
 
 ## Themes
 
-The Costa UI library can use color themes for the interface. These can be loaded using the `Set_Theme` SUB. If the chosen theme does not exist, default colors will be used. If you are fine with the default colors of the interface, you do not need to worry about themes at all. But if you want to use custom colors, themes allow you to easily do so.
+The Costa UI Library can use color themes for the interface. These can be loaded using the `Set_Theme` SUB. If the chosen theme does not exist, default colors will be used. If you are fine with the default colors of the interface, you do not need to worry about themes at all. But if you want to use custom colors, themes allow you to easily do so.
 
 Theme files can be edited using the Theme Editor included with the Costa Graphical Shell, available at [https://costa.jacobpalm.dk](https://costa.jacobpalm.dk). Themes must be placed in the DATA\THEMES subdirectory of your program.
 
