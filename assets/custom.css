@@ -77,9 +77,11 @@ footer h5 {
     margin-top: 32px;
 }
 
-div .highlight {
+div .highlighter-rouge {
     background-color: #f1f1f1;
-    border: 1px solid #000;
+    border: 1px solid #ccc;
+    padding-left: 5px;
+    padding-right: 5px;
 }
 
 /* Comment */

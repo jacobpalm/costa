@@ -59,6 +59,7 @@ END IF
 Then, add the *LIBRARY\COSTALIB.BAS* file to your program as well. The library does not come precompiled as a QuickLibrary at this time, but you could compile it yourself if you wanted to.
 
 **Important!** Do not write any of your programs code in *COSTALIB.BAS*, use a separate module for all your code and set it as the main module.
+{:.w3-panel w3-pale-yellow w3-border}
 
 **Important!** Your program will only run from within the VBDOS IDE if you use the command line switch `/DEV`, and if you place your program in *C:\COSTA*. This is due to the function that returns the path to the currently running program, when you run from the IDE this will return the path to VBDOS.EXE instead. The `/DEV` command line switch tells this function to always return *C:\COSTA*.
 
