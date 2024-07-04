@@ -76,3 +76,13 @@ footer h5 {
 .documentation h2, h3, h4, h5, h6 {
     margin-top: 32px;
 }
+
+div .highlight {
+    background-color: #f1f1f1;
+    border: 1px solid #000;
+}
+
+/* Comment */
+code .c1 {
+    color: green;
+}
