@@ -20,8 +20,8 @@
 </head>
 <body id="sitetop">
 
-<!-- Navbar -->
-<div class="w3-bar w3-mobile w3-teal w3-card w3-large w3-hide-medium w3-hide-small">
+<!-- Navbar desktop -->
+<div class="w3-bar w3-mobile w3-teal w3-card w3-large w3-hide-medium w3-hide-small hidden-print">
     <div class="w3-content">
         <a href="{{ site.baseURL }}" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile sitetitle">{{ site.name }}</a>
         <div class="topnav-right">
@@ -34,7 +34,8 @@
     </div>
 </div>
 
-<div class="w3-bar-block w3-mobile w3-teal w3-card w3-large w3-hide-large">
+<!-- Navbar mobile -->
+<div class="w3-bar-block w3-mobile w3-teal w3-card w3-large w3-hide-large hidden-print">
     <div class="w3-content">
         <a href="{{ site.baseURL }}" class="w3-button w3-padding-large w3-hover-white sitetitle">{{ site.name }}</a>
         <a href="javascript:void(0)" class="w3-button w3-padding-large w3-hover-white w3-right" onclick="toggleMenu()">&#9776;</a>
@@ -47,17 +48,12 @@
         </div>
     </div>
 </div>
-
-
-
-
-
   
 <!-- Content -->
 {{ content }}
 
 <!-- Footer -->
-<footer class="w3-container">  
+<footer class="w3-container hidden-print">  
     <div class="w3-content">
         <div class="w3-third w3-padding-large">
             <h5>The Author</h5>

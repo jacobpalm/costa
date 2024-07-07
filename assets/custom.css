@@ -93,3 +93,13 @@ div .language-powershell {
 code .c1 {
     color: green;
 }
+
+@media print {
+    .hidden-print {
+      display: none !important;
+    }
+
+    .w3-content {
+        max-width: 100%;
+    }
+}
