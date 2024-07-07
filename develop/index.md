@@ -538,7 +538,12 @@ Yet to be written, stay tuned.
 ### Init_Library%
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -558,7 +563,12 @@ Example:
 ### Get_AppPath$
 
 Description:
-**INSERT DESCRIPTION HERE**..
+
+**INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -577,7 +587,12 @@ Example:
 ### Show_Aboutbox
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -598,7 +613,12 @@ Example:
 ### Get_Event
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -612,7 +632,12 @@ Return value:
 ### Queue_Event
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -635,7 +660,12 @@ Example:
 ### New_Context%
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -654,7 +684,12 @@ Example:
 ### Set_Context
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -673,7 +708,12 @@ Example:
 ### Get_Context%
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -692,7 +732,12 @@ Example:
 ### Remove_Context
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -711,7 +756,12 @@ Example:
 ### New_RadioGroup%
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -730,7 +780,12 @@ Example:
 ### New_Object%
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -749,7 +804,12 @@ Example:
 ### Get_Enabled%
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -768,7 +828,12 @@ Example:
 ### Get_Hotkey$
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -787,7 +852,12 @@ Example:
 ### Get_Selected%
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -806,7 +876,12 @@ Example:
 ### Get_Value$
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -825,7 +900,12 @@ Example:
 ### Set_Background
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -845,7 +925,12 @@ Example:
 ### Set_Caption
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -865,7 +950,12 @@ Example:
 ### Set_Enabled
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -885,7 +975,12 @@ Example:
 ### Set_Font
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -905,7 +1000,12 @@ Example:
 ### Set_Hotkey
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -925,7 +1025,12 @@ Example:
 ### Set_MaxLength
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -945,7 +1050,12 @@ Example:
 ### Set_Selected
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -966,7 +1076,12 @@ Example:
 ### Set_Size
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -989,7 +1104,12 @@ Example:
 ### Set_RadioGroup
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -1009,7 +1129,12 @@ Example:
 ### Set_Transparent
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -1029,7 +1154,12 @@ Example:
 ### Set_Value
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -1049,7 +1179,12 @@ Example:
 ### Remove_Object
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -1068,7 +1203,12 @@ Example:
 ### Draw_Context
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -1087,7 +1227,12 @@ Example:
 ### Draw_Object
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -1106,7 +1251,12 @@ Example:
 ### Draw_Text
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -1129,7 +1279,12 @@ Example:
 ### Show_Mouse
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -1148,7 +1303,12 @@ Example:
 ### Hide_Mouse
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -1167,7 +1327,12 @@ Example:
 ### Get_Mouse
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -1188,7 +1353,12 @@ Example:
 ### Get_TextWidth%
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -1208,7 +1378,12 @@ Example:
 ### Test_FileExists%
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
@@ -1227,7 +1402,12 @@ Example:
 ### Set_Theme
 
 Description:
+
 **INSERT DESCRIPTION HERE**.
+
+Definition:
+
+`A% = FUNCTION(PARAM1%, PARAM2%)`
 
 Parameters:
 
