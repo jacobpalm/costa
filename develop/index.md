@@ -6,7 +6,7 @@ title: Developers Guide
 
 Costa is written in Visual Basic for DOS. The name might mislead you to think that Visual Basic handles everything on the screen, like it does in Visual Basic for Windows - objects, drawing and such. However, Visual Basic for DOS (VBDOS) only supports text-mode user interfaces. When you take that part out, which I do because I'm not using any of it, all you have left is essentially QuickBASIC with a more modern user interface. All graphics have to be done by the developer, and no concept of objects exist. This makes software development a somewhat tedious task, as a lot of time and effort goes into the UI, rather than the actual program you want to write. It's also not easy to maintain consistency between programs, as each program has to implement a user interface for itself.
 
-That's where the *Costa UI Library* originated from - I wanted to make development for Costa easier and more consistent. So I set out to create a library of procedures (FUNCTIONs and SUBs) that would make this task easier. Currently, the programs included in Costa utilize and older, somewhat cumbersome library. The plan is to gradually convert all programs to this new library, to simplify and align the programs. An added benefit is that it will be much easier for others to create programs using my library, regardless of wether they want to create a stand-alone program or an accessory for Costa.
+That's where the *Costa UI Library* originated from - I wanted to make development for Costa easier and more consistent. So I set out to create a library of procedures (FUNCTIONs and SUBs) that would make this task easier. Currently, the programs included in Costa utilize an older, somewhat cumbersome library. The plan is to gradually convert all programs to this new library, to simplify and align the programs. An added benefit is that it will be much easier for others to create programs using my library, regardless of wether they want to create a stand-alone program or an accessory for Costa.
 
 ### Downloading the Library
 
@@ -44,6 +44,9 @@ To use the library, you will need to run VBDOS with the `/L` parameter. This tel
 VBDOS.EXE /L
 ```
 
+**Important!** Your program will only run from within the VBDOS IDE if you use the *Run > Modify COMMAND$* menu to set the command line options for your program to contain the parameter `/DEV`, and if you place your program code in *C:\COSTA*. This is due to the function that returns the path to the currently running program, when you run from the IDE this will return the path to VBDOS.EXE instead. The `/DEV` command line switch tells this function to always return *C:\COSTA*.
+{: .w3-panel .w3-pale-yellow .w3-border}
+
 Once you have started VBDOS, add the following code at the start of your program:
 
 ```vb
@@ -58,10 +61,7 @@ END IF
 
 Then, add the *LIBRARY\COSTALIB.BAS* file to your program as well. The library does not come precompiled as a QuickLibrary at this time, but you could compile it yourself if you wanted to.
 
-**Important!** Do not write any of your programs code in *COSTALIB.BAS*, use a separate module for all your code and set it as the main module.
-{: .w3-panel .w3-pale-yellow .w3-border}
-
-**Important!** Your program will only run from within the VBDOS IDE if you use the command line switch `/DEV`, and if you place your program in *C:\COSTA*. This is due to the function that returns the path to the currently running program, when you run from the IDE this will return the path to VBDOS.EXE instead. The `/DEV` command line switch tells this function to always return *C:\COSTA*.
+**Important!** Do not write any of your program code in *COSTALIB.BAS*, use a separate module for all your code and set it as the main module.
 {: .w3-panel .w3-pale-yellow .w3-border}
 
 The INCLUDE directive tells the compiler to include all definitions from *COSTALIB.BI* in your program. These definitions include constants, SUBs and FUNCTIONs from the library which you can use in your program.
@@ -78,17 +78,18 @@ The recommended structure for your program is the following tree structure:
 | Folder      | Description                                                                              |
 |:------------|:-----------------------------------------------------------------------------------------|
 | (root)      | Keep your project (.MAK) files here.                                                     |
-| SOURCE      | Keep your own .BAS and .BI files here - not those pertaining to the library.             |
+| SOURCE      | Keep your own code here - .BAS and .BI files here.                                       |
 | LIBRARY     | Keep the .BAS and .BI files of the Costa UI Library here.                                |
 | DATA        | Place font data here.                                                                    |
 | DATA\CONFIG | Config files should be placed here.                                                      |
 | DATA\IMAGES | Image files, in the library's native .BSV format.                                        |
 | DATA\TEMP   | Can be used instead of the TEMP location specified by environment variable, if desired.  |
 | DATA\THEMES | Themes should be located here.                                                           |
+| DOCS        | Documentation/help files.                                                                |
 
 ### Constants
 
-Several useful constants are declared in the library, and can be used in your program. Most of these are related to objects, events or other specific areas, and will be covered in respective sections later on.
+Several useful constants are declared in the library and can be used in your program. Most of these are related to objects, events or other specific areas, and will be covered in respective sections later on.
 
 There are a couple of boolean constants defined, which can be used to emulate the BOOLEAN datatype (true/false) that VBDOS lacks. All library functions that return a true/false value uses these.
 
@@ -136,12 +137,13 @@ Creating a context is easy, using the library function. To create a context, sim
 DIM conMain%
 
 'Create a context
-conMain% = New_Context
+conMain% = New_Context%
 ```
 
-That's it. You will now have a new context, ready to use and already active. Any objects you create will now be created in this context, until you either switch to another, existing context, remove the context, or set another context as active.
+That's it. You will now have a new context, ready to use and already active. Any objects you create will now be created in this context, until you either switch to another, existing context, remove the context, or create a new context.
 
-In theory, you can have millions of contexts - but in practice you will be limited by available memory.
+**Information:** The only memory required for a context is the memory used by your handle variable - 2 bytes (the size of an integer variable). Internally, the library also uses one integer variable to keep track of all contexts. This limits the total number of calls to New_Context during a run of your program to 32,767 - which should be more than adequate for most use cases.
+{: .w3-panel .w3-pale-blue .w3-border}
 
 ### Removing a Context
 
@@ -156,7 +158,8 @@ Remove_Context conMain%
 
 When you remove a context, the library will go through all objects and check if they belong to the context being removed. If they do, they will be removed as well, freeing up memory for objects that are no longer needed.
 
-If you remove the active context, the library will choose the most recently created context still in existence and make it active instead.
+**Information:** If you remove the active context, the library will choose the most recently created context with objects in it, and make it the new active context.
+{: .w3-panel .w3-pale-blue .w3-border}
 
 ### Switching Context
 
@@ -321,6 +324,9 @@ btnCancel% = New_Object(objButton)
 ```
 
 You call the `New_Object` function, with a constant defining which type of object you want. See the *Object types* section for a list of constants.
+
+**Information:** Each object you create will use 42 bytes of memory internally in the library, plus 2 bytes for your handle variables (size of an integer). In addition, one byte is used for each character added to the caption or value of an object. The maximum number of simultaneous objects is 32,768 in theory, but you will run out of memory before reaching this limit.
+{: .w3-panel .w3-pale-blue .w3-border}
 
 ### Removing an Object
 
@@ -498,14 +504,14 @@ OPEN Get_AppPath$ + "DOCS\HELP.TXT" FOR INPUT AS #FileHandle%
 CLOSE #FileHandle%
 ```
 
-**Important!** This function does not work correctly when run inside VBDOS. The issue is that DOS will not return the path of your program, as it does not exist yet. It will instead return the path to VBDOS.EXE. To overcome this, run your program with the "/DEV" command line switch from within VBDOS and the default path *C:\COSTA* will be used instead.
+**Important!** This function does not work correctly when run inside VBDOS. The issue is that DOS will not return the path of your program, as it does not exist yet. It will instead return the path to VBDOS.EXE. To overcome this, run your program with the "/DEV" command line switch from within VBDOS using the *Run > Modify COMMAND$* menu, and the default path *C:\COSTA* will be used instead.
 {: .w3-panel .w3-pale-yellow .w3-border}
 
-The function `Check_FileExists%`, can be used to determine wether or not a file exists. It will return True if it does, or False if it doesn't. This can be useful to check if a file exists before opening, avoiding run-time errors if it doesn't.
+The function `Test_Path%`, can be used to determine wether or not a file exists. It will return True if it does, or False if it doesn't. This can be useful to check if a file exists before opening, avoiding run-time errors if it doesn't.
 
 ```vb
 'Check if file exists before opening
-IF Check_FileExists%("C:\MYFILE.TXT") THEN
+IF Test_Path%("C:\MYFILE.TXT") THEN
     'File exists, open it
     FileHandle% = FREEFILE
     OPEN "C:\MYFILE.TXT" FOR INPUT AS #FileHandle%
