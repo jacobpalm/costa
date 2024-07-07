@@ -2,6 +2,9 @@
 layout: develop
 title: Developers Guide
 ---
+**Important:** This guide is currently being written and is subject to change - some content may be missing or wrong.
+{: .w3-panel .w3-red .w3-border}
+
 ## Introduction
 
 Costa is written in Visual Basic for DOS. The name might mislead you to think that Visual Basic handles everything on the screen, like it does in Visual Basic for Windows - objects, drawing and such. However, Visual Basic for DOS (VBDOS) only supports text-mode user interfaces. When you take that part out, which I do because I'm not using any of it, all you have left is essentially QuickBASIC with a more modern user interface. All graphics have to be done by the developer, and no concept of objects exist. This makes software development a somewhat tedious task, as a lot of time and effort goes into the UI, rather than the actual program you want to write. It's also not easy to maintain consistency between programs, as each program has to implement a user interface for itself.
