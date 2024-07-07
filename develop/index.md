@@ -531,3 +531,711 @@ Theme files can be edited using the Theme Editor included with the Costa Graphic
 ## Procedure References
 
 Yet to be written, stay tuned.
+
+### Init_Library%
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Message$
+
+Return value:
+
+- Integer value `True` or `False`, indicating wether or not the library was initialized successfully.
+- The Message$ variable passed to the function will contain an error message if initialization failed.
+
+Example:
+
+```vb
+'Code example
+```
+
+### Get_AppPath$
+
+Description:
+**INSERT DESCRIPTION HERE**..
+
+Parameters:
+
+- None.
+
+Return value:
+
+- A string containing the path of your program.
+
+Example:
+
+```vb
+'Code example
+```
+
+### Show_Aboutbox
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- AppName$ - the name of your program.
+- Author$ - your name (author of the program).
+- IconFile$ - filename without path or extension of an image file to show in the dialog
+
+Return value:
+
+- None.
+
+Example:
+
+```vb
+'Code example
+```
+
+### Get_Event
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- EventObject
+- WaitForEvent%
+
+Return value:
+
+- **INSERT TEXT**
+
+### Queue_Event
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Handle% - Integer handle of an object.
+- EventID%
+- X%
+- Y%
+- Key$
+
+Return value:
+
+- None
+
+Example:
+
+```vb
+'Code example
+```
+
+### New_Context%
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- None.
+
+Return value:
+
+- Integer handle of the new context.
+
+Example:
+
+```vb
+'Code example
+```
+
+### Set_Context
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Context% - handle of a context
+
+Return value:
+
+- None.
+
+Example:
+
+```vb
+'Code example
+```
+
+### Get_Context%
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- None.
+
+Return value:
+
+- Integer handle of currently active context.
+
+Example:
+
+```vb
+'Code example
+```
+
+### Remove_Context
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Context% - handle of context to remove.
+
+Return value:
+
+- None
+
+Example:
+
+```vb
+'Code example
+```
+
+### New_RadioGroup%
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- None.
+
+Return value:
+
+- Integer handle of the new radio group.
+
+Example:
+
+```vb
+'Code example
+```
+
+### New_Object%
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- ObjectType% - integer value defining which type of object to create. Use of predefined constants is recommended for code readability.
+
+Return value:
+
+- Integer handle of the new object.
+
+Example:
+
+```vb
+'Code example
+```
+
+### Get_Enabled%
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Handle% - Integer handle of an object. - handle of object to return enabled/disabled state of
+
+Return value:
+
+- Integer value `True` or `False` indicating wether the object is enabled
+
+Example:
+
+```vb
+'Code example
+```
+
+### Get_Hotkey$
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Handle% - Integer handle of an object.
+
+Return value:
+
+- String containing the hotkey of the specified object
+
+Example:
+
+```vb
+'Code example
+```
+
+### Get_Selected%
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Handle% - Integer handle of an object.
+
+Return value:
+
+- **ADD TEXT**
+
+Example:
+
+```vb
+'Code example
+```
+
+### Get_Value$
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Handle% - Integer handle of an object.
+
+Return value:
+
+- **ADD TEXT**
+
+Example:
+
+```vb
+'Code example
+```
+
+### Set_Background
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Handle% - Integer handle of an object.
+- Background%
+
+Return value:
+
+- **ADD TEXT**
+
+Example:
+
+```vb
+'Code example
+```
+
+### Set_Caption
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Handle% - Integer handle of an object.
+- Caption$
+
+Return value:
+
+- **ADD TEXT**
+
+Example:
+
+```vb
+'Code example
+```
+
+### Set_Enabled
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Handle% - Integer handle of an object.
+- Enabled%
+
+Return value:
+
+- **ADD TEXT**
+
+Example:
+
+```vb
+'Code example
+```
+
+### Set_Font
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Handle% - Integer handle of an object.
+- Font%
+
+Return value:
+
+- **ADD TEXT**
+
+Example:
+
+```vb
+'Code example
+```
+
+### Set_Hotkey
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Handle% - Integer handle of an object.
+- Hotkey$
+
+Return value:
+
+- **ADD TEXT**
+
+Example:
+
+```vb
+'Code example
+```
+
+### Set_MaxLength
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Handle% - Integer handle of an object.
+- MaxLength%
+
+Return value:
+
+- **ADD TEXT**
+
+Example:
+
+```vb
+'Code example
+```
+
+### Set_Selected
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Handle% - Integer handle of an object.
+- Selected%
+- TriggerToggleEvent%
+
+Return value:
+
+- **ADD TEXT**
+
+Example:
+
+```vb
+'Code example
+```
+
+### Set_Size
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Handle% - Integer handle of an object.
+- X%
+- Y%
+- Length%
+- Height%
+
+Return value:
+
+- **ADD TEXT**
+
+Example:
+
+```vb
+'Code example
+```
+
+### Set_RadioGroup
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Handle% - Integer handle of an object.
+- RadioGroup%
+
+Return value:
+
+- **ADD TEXT**
+
+Example:
+
+```vb
+'Code example
+```
+
+### Set_Transparent
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Handle% - Integer handle of an object.
+- Transparent%
+
+Return value:
+
+- **ADD TEXT**
+
+Example:
+
+```vb
+'Code example
+```
+
+### Set_Value
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Handle% - Integer handle of an object.
+- Value$
+
+Return value:
+
+- **ADD TEXT**
+
+Example:
+
+```vb
+'Code example
+```
+
+### Remove_Object
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Handle% - Integer handle of an object.
+
+Return value:
+
+- **ADD TEXT**
+
+Example:
+
+```vb
+'Code example
+```
+
+### Draw_Context
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Context%
+
+Return value:
+
+- **ADD TEXT**
+
+Example:
+
+```vb
+'Code example
+```
+
+### Draw_Object
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Handle% - Integer handle of an object.
+
+Return value:
+
+- **ADD TEXT**
+
+Example:
+
+```vb
+'Code example
+```
+
+### Draw_Text
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Text$
+- X%
+- Y%
+- TextColor%
+- Font%
+
+Return value:
+
+- **ADD TEXT**
+
+Example:
+
+```vb
+'Code example
+```
+
+### Show_Mouse
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- None.
+
+Return value:
+
+- None.
+
+Example:
+
+```vb
+'Code example
+```
+
+### Hide_Mouse
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- None.
+
+Return value:
+
+- None.
+
+Example:
+
+```vb
+'Code example
+```
+
+### Get_Mouse
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Button%
+- X%
+- Y%
+
+Return value:
+
+- **ADD TEXT**
+
+Example:
+
+```vb
+'Code example
+```
+
+### Get_TextWidth%
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Text$
+- Font%
+
+Return value:
+
+- Integer value corresponding to the width of the text, in pixels.
+
+Example:
+
+```vb
+'Code example
+```
+
+### Test_FileExists%
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Filename$
+
+Return value:
+
+- Integer value `True` or `False` indicating wether the file exists.
+
+Example:
+
+```vb
+'Code example
+```
+
+### Set_Theme
+
+Description:
+**INSERT DESCRIPTION HERE**.
+
+Parameters:
+
+- Filename$ - the filename without path or extension of the theme to load.
+
+Return value:
+
+- None.
+
+Example:
+
+```vb
+'Code example
+```
