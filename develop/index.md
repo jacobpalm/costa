@@ -311,8 +311,8 @@ The following table lists all properties of objects and their use:
 | Value | The value of an object. For textboxes, the value entered by the user. For images, the filename (without extension or filetype) of the image file to display. | Textboxes, images | Set_Value | Get_Value$ |
 | Size | Size specified as four values, measured in pixels: Left, Top, Width and Height. Together, these specify the location and size of the object on screen. | All object types | Set_Size | - |
 | Enabled | An object can only be interacted with by the user if it is enabled. A disabled object will not trigger any events. | All objects | Set_Enabled | Get_Enabled% |
-| Transparent | If set to True, the object will not draw a background color. For instance, a button or textbox will only have its border drawn, but the middle will remain whatever was already drawn there. |  | Set_Transparent | - |
-| Background color | Unless the object has "Transparent" set to True, this color will be used to draw the background of the object. Can be set to the colorDefault constant to restore default background color if needed. |  | Set_Background | - |
+| Transparent | If set to `True`, the object will not draw a background color. For instance, a button or textbox will only have its border drawn, but the middle will remain whatever was already drawn there. |  | Set_Transparent | - |
+| Background color | Unless the object has "Transparent" set to `True`, this color will be used to draw the background of the object. Can be set to the colorDefault constant to restore default background color if needed. |  | Set_Background | - |
 | Selected | For checkboxes or radio buttons, this property indicates if the object has been checked (for checkboxes) or is the currently selected radio button in a group of radio buttons. | Checkboxes, radio buttons | Set_Selected | Get_Selected% |
 | Radio Group | Specifies which radio group, created using the New_RadioGroup% function, a radio button belongs to. Only one radio button in each radio group can be selected at a time. | Radio buttons | Set_RadioGroup | - |
 | Font | The font with which to draw the text in the label. Use one of the three font constants fontNormal, fontHeading or fontSystem. | Labels | Set_Font | - |
@@ -512,7 +512,7 @@ CLOSE #FileHandle%
 **Important!** This function does not work correctly when run inside VBDOS. The issue is that DOS will not return the path of your program, as it does not exist yet. It will instead return the path to VBDOS.EXE. To overcome this, run your program with the "/DEV" command line switch from within VBDOS using the *Run > Modify COMMAND$* menu, and the default path *C:\COSTA* will be used instead.
 {: .w3-panel .w3-pale-yellow .w3-border}
 
-The function `Test_Path%`, can be used to determine wether or not a file exists. It will return True if it does, or False if it doesn't. This can be useful to check if a file exists before opening, avoiding run-time errors if it doesn't.
+The function `Test_Path%`, can be used to determine wether or not a file exists. It will return `True` if it does, or `False` if it doesn't. This can be useful to check if a file exists before opening, avoiding run-time errors if it doesn't.
 
 ```vb
 'Check if file exists before opening
