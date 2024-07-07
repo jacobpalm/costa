@@ -210,6 +210,8 @@ Whenever you want to show something on screen or interact with the user, you sho
 
 Buttons are simply that - a button that can be clicked. Examples could be an "OK" or a "Cancel" button.
 
+![Screenshot of buttons in various states]({{ site.baseURL }}/develop/img/obj_button.png)
+
 Triggered events:
 
 - **eventClick** on click
