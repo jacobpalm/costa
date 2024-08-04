@@ -368,7 +368,12 @@ LinkDialogDraw:
 		IF Obj.TxtClick(txtParams) OR Key$ = "r" THEN Obj.EditTxt txtParams, txtParamsText
 		IF Obj.TxtClick(txtPath) OR Key$ = "t" THEN
 			Obj.EditTxt txtPath, txtPathText
-			IF LEN(txtPathText) AND NOT RIGHT$(txtPathText, 1) = "\" THEN txtPathText = txtPathText + "\": Obj.DrawTxt txtPath, txtPathText, False
+			IF LEN(txtPathText) AND NOT RIGHT$(txtPathText, 1) = "\" THEN
+				txtPathText = txtPathText + "\"
+				Mouse.Hide
+				Obj.DrawTxt txtPath, txtPathText, False
+				Mouse.Show
+			END IF
 		END IF
 
 		Obj.ChkClick chkPauseOnExit
@@ -1093,52 +1098,49 @@ END SUB
 '       ASSUMES: Nothing
 '   CALLED FROM: DESKTOP.BAS
 ' -------------------------------------------------------------------------
-'   DESCRIPTION: Saves information about what program to run to RUN.BAT,
-'                then exits. COSTA.BAT will relaunch desktop after
+'   DESCRIPTION: Saves information about what program to run to RUN.DAT,
+'                then exits. COSTA.EXE will relaunch desktop after
 '                external command is done.
 ' =========================================================================
 SUB Desk.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVAL TargetPath AS STRING, PauseOnExit AS INTEGER)
 
 	DIM RunHandle, DotPos, I
-	DIM TargetDrive AS STRING, SysDrive AS STRING, FileType AS STRING
+	DIM FileType AS STRING
 	DIM OpenWith AS STRING
 	
 	TargetFile = LTRIM$(RTRIM$(TargetFile))
 	TargetParameters = LTRIM$(RTRIM$(TargetParameters))
 
-	'Get drive, if any, from path
-	IF MID$(TargetPath, 2, 2) = ":\" THEN TargetDrive = LEFT$(TargetPath, 2)
-
-	'Remove trailing \ from path
+	'Remove trailing \ from path, if any
 	IF LEN(TargetPath) THEN
-	IF RIGHT$(TargetPath, 1) = "\" AND LEN(TargetPath) > 1 THEN TargetPath = LEFT$(TargetPath, LEN(TargetPath) - 1)
+		IF RIGHT$(TargetPath, 1) = "\" AND LEN(TargetPath) > 1 THEN TargetPath = LEFT$(TargetPath, LEN(TargetPath) - 1)
 	END IF
 
 	'Get the file extension, and see if it's associated with a program
 	'Don't check if target is too short, or if it contains a space (if space is
 	'found, then it's not a filename, but a command)
 	IF LEN(TargetFile) > 1 AND NOT INSTR(TargetFile, " ") THEN
-	FOR I = LEN(TargetFile) TO 1 STEP -1
+		FOR I = LEN(TargetFile) TO 1 STEP -1
 
-		'If backslash is found before a dot, then any dot would be part of path
-		'and should be ignored
-		IF MID$(TargetFile, I, 1) = "\" THEN EXIT FOR
+			'If backslash is found before a dot, then any dot would be part of path
+			'and should be ignored
+			IF MID$(TargetFile, I, 1) = "\" THEN EXIT FOR
 
-		IF MID$(TargetFile, I, 1) = "." THEN
-		FileType = RIGHT$(TargetFile, LEN(TargetFile) - I)
-		OpenWith = File.GetAssociation(FileType)
+			IF MID$(TargetFile, I, 1) = "." THEN
+				FileType = RIGHT$(TargetFile, LEN(TargetFile) - I)
+				OpenWith = File.GetAssociation(FileType)
 
-		IF NOT OpenWith = "" THEN
-			IF LEN(TargetPath) THEN
-			TargetFile = OpenWith + " " + TargetPath + "\" + TargetFile
-			TargetPath = ""
-			ELSE
-			TargetFile = OpenWith + " " + TargetFile
+				IF NOT OpenWith = "" THEN
+					IF LEN(TargetPath) THEN
+						TargetParameters = TargetPath + "\" + TargetFile
+						TargetPath = ""
+					ELSE
+						TargetParameters = TargetFile
+					END IF
+					TargetFile = OpenWith
+				END IF
 			END IF
-		END IF
-
-		END IF
-	NEXT
+		NEXT
 	END IF
 	
 	'Print the filename, parameters, path and wether to pause on exit to
@@ -1146,35 +1148,21 @@ SUB Desk.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVA
 	'relaunch the desktop
 	RunHandle = FREEFILE
 
-	OPEN Temp.Path + "RUN.BAT" FOR OUTPUT AS #RunHandle
-	PRINT #RunHandle, "@ECHO OFF"
-	IF LEN(TargetDrive) THEN PRINT #RunHandle, TargetDrive
-
-	IF LEN(TargetPath) THEN
-		PRINT #RunHandle, "CD\"
-		PRINT #RunHandle, "CD " + TargetPath
-	END IF
-
-	PRINT #RunHandle, TargetFile + " " + TargetParameters
-
+	OPEN Temp.Path + "RUN.DAT" FOR OUTPUT AS #RunHandle
+	PRINT #RunHandle, TargetPath
+	PRINT #RunHandle, TargetFile
+	PRINT #RunHandle, TargetParameters
 	IF PauseOnExit = True THEN
-		PRINT #RunHandle, "ECHO."
-		PRINT #RunHandle, "ECHO."
-		PRINT #RunHandle, "PAUSE"
+		PRINT #RunHandle, "1"
+	ELSE
+		PRINT #RunHandle, "0"
 	END IF
-
-	'Make the batch file return to the path of Costa, so that relative paths
-	'within it work
-	IF MID$(Sys.Path, 2, 2) = ":\" THEN SysDrive = LEFT$(Sys.Path, 2)
-	IF LEN(SysDrive) THEN PRINT #RunHandle, SysDrive
-	PRINT #RunHandle, "CD " + LEFT$(Sys.Path, LEN(Sys.Path) - 1)
-
 	CLOSE #RunHandle
 
 	Sys.SaveSettings
 
 	DO: LOOP WHILE LEN(INKEY$)
-	END 2
+	END
 
 END SUB
 
