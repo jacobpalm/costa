@@ -76,10 +76,12 @@ END; {ÿExePath }
 
 
 BEGIN
-	{ Low byte of DosVersion contains major DOS version }
-	IF Lo(DosVersion) < 3 THEN
+	{ Low byte of DosVersion contains major DOS version.
+	  This program will actually run on DOS 3.0, but the other
+	  included programs won't, so might as well check here }
+	IF Lo(DosVersion) < 4 THEN
 	BEGIN
-		Writeln('DOS 3.0 or higher required.');
+		Writeln('DOS 4.0 or higher required.');
 		Halt(1);
 	END;
 
