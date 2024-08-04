@@ -1,4 +1,13 @@
 PROGRAM CostaLauncher;
+
+{ The Costa GUI launcher
+  Runs DESKTOP.EXE and any external programs requested by the desktop.
+  This allows the desktop to exit and memory to be freed while external
+  programs are run.
+  Written using Microsoft QuickPascal 1.0
+}
+
+{ Set stack to 2000 bytes }
 {$M 2000, 0, 0}
 
 USES
@@ -31,8 +40,12 @@ BEGIN
 	{ Low memory condition }
 	IF DosError = 8 THEN
 	BEGIN
-		writeln('Out of memory - ' + command);
-		halt(1);
+		Writeln('Out of memory - ' + command);
+		pause := '1';
+		{ If desktop can't be launched, exit }
+		IF command = desktop_exe THEN
+			Halt(1);
+
 	END;
 
 	{ Wait for keypress before returning? }
@@ -101,6 +114,7 @@ BEGIN
 			Readln(file_name, run_params);
 			Read(file_name, run_pause);
 			Erase(file_name);
+			Close(file_name);
 
 			{ Run program - obviously }
 			RunProgram(run_command, run_path, run_params, run_pause)
