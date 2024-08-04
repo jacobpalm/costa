@@ -1,13 +1,15 @@
-program CostaLauncher;
-{$M 1200, 0, 0}
-uses
+PROGRAM CostaLauncher;
+{$M 2000, 0, 0}
+
+USES
 	DOS;
-const
+
+CONST
 	costa_exe     = 'COSTA.EXE';
 	desktop_exe   = 'DESKTOP.EXE';
 	run_dat       = 'DATA\TEMP\RUN.DAT';
-	current_drive = 0;                   { current drive }
-var
+
+VAR
 	current_dir   : STRING;
 	sresults      : SearchRec;
 	file_name     : TEXT;
@@ -16,71 +18,94 @@ var
 	run_params    : STRING;
 	run_pause     : CHAR;
 
-begin
-	{GetDir(current_drive, current_dir);}
-	current_dir := paramstr(0);
-	delete(current_dir, pos('\' + costa_exe, current_dir), 11); { 11 = max 8.3 filename lenght 10 + backslash }
-	writeln(current_dir);
+{ Run an external program - handle errors }
+PROCEDURE RunProgram(command, path, params: STRING; pause: CHAR);
+BEGIN
+	{I-}
+	chdir(path);
+	{I+}
+	SwapVectors;
+	Exec(command, params);
+	SwapVectors;
+
+	{ Low memory condition }
+	IF DosError = 8 THEN
+	BEGIN
+		writeln('Out of memory - ' + command);
+		halt(1);
+	END;
+
+	{ Wait for keypress before returning? }
+	IF pause = '1' THEN
+	BEGIN
+		Writeln;
+		Write('Press Enter to continue...');
+		Readln;
+	END;
+END; { RunProgram }
+
+{ Return path to current executable }
+FUNCTION ExePath: STRING;
+VAR
+	path : STRING;
+
+BEGIN
+	{ Retrieve path of self from paramstr, used later on to find relative paths regardless
+		of current path when this program was executed }
+	path := ParamStr(0);
+
+	{ Remove last backslash and name of this executable, leaving only path }
+	{ 13 = max 8.3 filename lenght 12 including the dot, plus a backslash }
+	Delete(path, pos('\' + costa_exe, path), 13);
+
+	ExePath := path;
+END; {ÿExePath }
 
 
-	FindFirst(desktop_exe, Archive, sresults);
-	if DosError > 0 then
-		begin
-			writeln(desktop_exe, ' could not be found in the current directory.');
-			writeln('Make sure to run Costa from its installation directory.');
-			halt(0);
-		end;
+BEGIN
+	{ Low byte of DosVersion contains major DOS version }
+	IF Lo(DosVersion) < 3 THEN
+	BEGIN
+		Writeln('DOS 3.0 or higher required.');
+		Halt(1);
+	END;
 
-	while true do
-	begin
+	current_dir := ExePath;
+
+	{ Verify that desktop exe exists in same path as this executable }
+	FindFirst(current_dir + '\' + desktop_exe, Archive, sresults);
+	IF DosError > 0 THEN
+	BEGIN
+		Writeln(desktop_exe + ' not found in ' + current_dir);
+		Halt(1);
+	END;
+
+	WHILE True DO
+	BEGIN
 
 		{ Run the desktop }
-		{I-}
-		chdir(current_dir);
-		{I+}
-		SwapVectors;
-		Exec(current_dir + '\' + desktop_exe, '');
-		SwapVectors;
+		RunProgram(desktop_exe, current_dir, '', '0');
 		{ Exit code 1 means exit }
-		if DosExitCode = 1 Then
+		IF DosExitCode = 1 THEN
 			halt(0);
-
-		{ Low memory condition }
-		if DosError = 8 then
-			begin
-				writeln('Not enough memory to run desktop.');
-				halt(0);
-			end;
 
 		{ If run.dat exists, run it and delete it }
 		FindFirst(current_dir + '\' + run_dat, Archive, sresults);
-		if DosError = 0 then
-			begin
-				{ Open file, read data and delete file }
-				assign(file_name, current_dir + '\' + run_dat);
-				reset(file_name);
-				readln(file_name, run_path);
-				readln(file_name, run_command);
-				readln(file_name, run_params);
-				read(file_name, run_pause);
-				erase(file_name);
+		IF DosError = 0 THEN
+		BEGIN
+			{ Open file, read data and delete file }
+			Assign(file_name, current_dir + '\' + run_dat);
+			Reset(file_name);
+			Readln(file_name, run_path);
+			Readln(file_name, run_command);
+			Readln(file_name, run_params);
+			Read(file_name, run_pause);
+			Erase(file_name);
 
-				{$I-}
-				chdir(run_path);
-				{$I+}
-				SwapVectors;
-				exec(run_command, run_params);
-				SwapVectors;
+			{ Run program - obviously }
+			RunProgram(run_command, run_path, run_params, run_pause)
+		END;
 
-				if run_pause = '1' then
-					begin
-						writeln;
-						write('Press Enter to continue...');
-						readln;
-					end;
+	END; { main loop }
 
-
-			end;
-	end;
-
-end.
+END.
