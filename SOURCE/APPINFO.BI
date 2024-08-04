@@ -3,6 +3,6 @@
 'which don't use the main library
 
     CONST appName = "The Costa GUI"
-    CONST appVersion = "1.7.5"
+    CONST appVersion = "1.8.0"
     CONST appYear = "2024"
 
