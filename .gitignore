@@ -5,6 +5,7 @@ COSTA.BAT
 # Compiler leftovers
 *.OBJ
 ~ELNK.TMP
+*.QDB
 
 # Costa run-time data
 DATA/TEMP/
