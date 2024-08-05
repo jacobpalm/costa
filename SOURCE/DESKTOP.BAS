@@ -124,23 +124,26 @@ END SUB
 SUB Desk.ExecuteDialog ()
 
 	DIM winExecute AS WindowType
-	DIM txtInput AS TextboxType, txtInputText AS STRING
+	DIM txtProgram AS TextboxType, txtProgramText AS STRING
+	DIM txtParameters AS TextboxType, txtParametersText AS STRING
 	DIM btnOK AS ButtonType, btnCancel AS ButtonType, btnBrowse AS ButtonType
 	DIM imgIcon AS ImageType
 
 	DIM SelectedFile AS STRING
+	DIM Path AS STRING
 
-	Obj.SetSize winExecute.Pos, sizeCenter, sizeCenter, 342, 151
-	Obj.SetSize txtInput.Pos, winExecute.Pos.Left + 12, winExecute.Pos.Top + 86, winExecute.Pos.Width - 54, sizeRetain
-	Obj.SetSize btnBrowse.Pos, txtInput.Pos.Left + txtInput.Pos.Width + 9, txtInput.Pos.Top, 19, 19
-	Obj.SetSize btnOK.Pos, winExecute.Pos.Left + winExecute.Pos.Width - 184, txtInput.Pos.Top + 30, 80, 22
+	Obj.SetSize winExecute.Pos, sizeCenter, sizeCenter, 342, 196
+	Obj.SetSize txtProgram.Pos, winExecute.Pos.Left + 12, winExecute.Pos.Top + 86, winExecute.Pos.Width - 54, sizeRetain
+	Obj.SetSize txtParameters.Pos, winExecute.Pos.Left + 12, txtProgram.Pos.Top + 46, winExecute.Pos.Width - 26, sizeRetain
+	Obj.SetSize btnBrowse.Pos, txtProgram.Pos.Left + txtProgram.Pos.Width + 9, txtProgram.Pos.Top, 19, 19
+	Obj.SetSize btnOK.Pos, winExecute.Pos.Left + winExecute.Pos.Width - 184, txtParameters.Pos.Top + 30, 80, 22
 	Obj.SetSize btnCancel.Pos, winExecute.Pos.Left + winExecute.Pos.Width - 94, btnOK.Pos.Top, 80, 22
 	Obj.SetSize imgIcon.Pos, winExecute.Pos.Left + 12, winExecute.Pos.Top + 20, sizeRetain, sizeRetain
 	btnOK.Caption = "õOK"
 	btnCancel.Caption = "õCancel"
 	btnBrowse.Caption = "..."
 	imgIcon.ImageFile = "RUNPROG"
-
+	
 	Mouse.Hide
 	PCOPY 0, 1
 	Mouse.Show
@@ -150,15 +153,18 @@ DrawExecuteDialog:
 	Obj.DrawWin winExecute
 	Obj.DrawBtn btnOK, False
 	Obj.DrawBtn btnCancel, False
-	Obj.DrawTxt txtInput, txtInputText, False
+	Obj.DrawTxt txtProgram, txtProgramText, False
+	Obj.DrawTxt txtParameters, txtParametersText, False
+	LINE (txtProgram.Pos.Left + 2, txtProgram.Pos.Top + 2)-(txtProgram.Pos.Left + txtProgram.Pos.Width - 2, txtProgram.Pos.Top + txtProgram.Pos.Height - 2), Theme.Window, BF
 	Obj.DrawBtn btnBrowse, False
 	
 	Obj.DrawImg imgIcon
 
-	Font.Print "Execute program or command", winExecute.Pos.Left + 53, winExecute.Pos.Top + 15, Theme.WindowText, FontHeading
+	Font.Print "Execute program", winExecute.Pos.Left + 53, winExecute.Pos.Top + 15, Theme.WindowText, FontHeading
 	Font.Print "You can also use this dialog to open any file", winExecute.Pos.Left + 53, winExecute.Pos.Top + 17 + 15, Theme.WindowText, FontNormal
 	Font.Print "associated with a program (like README.TXT).", winExecute.Pos.Left + 53, winExecute.Pos.Top + 17 + 30, Theme.WindowText, FontNormal
-	Font.Print "Iõnput:", txtInput.Pos.Left, txtInput.Pos.Top - 16, Theme.WindowText, FontHeading
+	Font.Print "õProgram:", txtProgram.Pos.Left, txtProgram.Pos.Top - 16, Theme.WindowText, FontHeading
+	Font.Print "Paõrameters:", txtParameters.Pos.Left, txtParameters.Pos.Top - 16, Theme.WindowText, FontHeading
 	Mouse.Show
 
 	DIM Key$
@@ -167,9 +173,12 @@ DrawExecuteDialog:
 		Key$ = LCASE$(INKEY$)
 
 		IF Obj.BtnClick(btnOK) OR Key$ = "o" OR Key$ = CHR$(13) THEN
-			txtInputText = LTRIM$(RTRIM$(txtInputText))
-			IF LEN(txtInputText) THEN
-				Desk.Run txtInputText, "", "", True
+			IF LEN(txtProgramText) THEN
+				DO WHILE INSTR(txtProgramText, "\")
+					Path = Path + LEFT$(txtProgramText, INSTR(txtProgramText, "\"))
+					txtProgramText = RIGHT$(txtProgramText, LEN(txtProgramText) - INSTR(txtProgramText, "\"))
+				LOOP
+				Desk.Run txtProgramText, txtParametersText, Path, True
 			END IF
 			EXIT DO
 		END IF
@@ -178,13 +187,15 @@ DrawExecuteDialog:
 			EXIT DO
 		END IF
 
-		IF Obj.TxtClick(txtInput) OR Key$ = "n" THEN Obj.EditTxt txtInput, txtInputText
-
-		IF Obj.BtnClick(btnBrowse) OR Key$ = "." THEN
+		IF Obj.BtnClick(btnBrowse) OR Obj.TxtClick(txtProgram) OR Key$ = "." OR Key$ = "p" THEN
 			SelectedFile = File.Select("*.exe")
-			IF LEN(SelectedFile) THEN txtInputText = SelectedFile
+			IF LEN(SelectedFile) THEN txtProgramText = SelectedFile
 			Desk.DrawDesktop
 			GOTO DrawExecuteDialog
+		END IF
+
+		IF Obj.TxtClick(txtParameters) THEN
+			Obj.EditTxt txtParameters, txtParametersText
 		END IF
 
 	LOOP
@@ -296,7 +307,7 @@ LinkDialogDraw:
 	Obj.DrawBtn btnOK, False
 	Obj.DrawBtn btnCancel, False
 	Font.Print "õDescription (caption):", 222, txtLinkCapt.Pos.Top - 15, Theme.WindowText, 1
-	Font.Print "õProgram or DOS command:", 222, txtFilename.Pos.Top - 15, Theme.WindowText, 1
+	Font.Print "õProgram:", 222, txtFilename.Pos.Top - 15, Theme.WindowText, 1
 	Font.Print "Paõrameters:", 222, txtParams.Pos.Top - 15, Theme.WindowText, 1
 	Font.Print "Paõth (including drive):", 222, txtPath.Pos.Top - 15, Theme.WindowText, 1
 	Font.Print "Pause after eõxecution", 242, chkPauseOnExit.Pos.Top + 3, Theme.WindowText, 2
