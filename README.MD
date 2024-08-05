@@ -37,6 +37,10 @@ perhaps a nifty theme, feel free to drop me a message. I am always looking
 to add more to Costa, and credit will of course be given! 
 
 ## Using this code
+Most of the code has been written using Visual Basic for DOS (VBDOS). One
+exception is the main launcher which stays in memory when running external
+programs (COSTA.EXE) - it is written in Pascal to keep the size to a minimum.
+
 When opening project files (.MAK), use the /L parameter for all project files
 like so:
 
@@ -48,12 +52,16 @@ This will cause VBDOS to load the libraries neccesary for Costa to work.
 If you get an error relating to "CALL ABSOLUTE" or "CALL INTERRUPT", you have 
 probably not used this parameter when starting VBDOS.
 
+COSTA.PAS is written using Microsoft QuickPascal, but should be compatible
+with Borland Turbo Pascal as well - although this has not been tested.
+
 The source code and build script assume the following:
   * That the source code has been extracted/cloned to C:\COSTA (this path is
     only required for development, once built Costa will run from any path)
   * That Visual Basic for DOS is installed to C:\VBDOS, in a flat structure -
     that is, all files placed in the folder directly, including libraries and
     include files
+  * That QuickPascal is installed in C:\QP
 
 ## Building Costa
 To build Costa, run the build script from the command line:

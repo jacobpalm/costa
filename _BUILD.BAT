@@ -4,7 +4,7 @@ REM Assumes:
 REM   - Costa is located in C:\COSTA
 REM   - VBDOS is located in C:\VBDOS in a flat structure (that is, all VBDOS
 REM     libaries etc. are in that path directly
-REM that path)
+REM   - QuickPascal is located in C:\QP
 
 CD C:\COSTA
 
@@ -69,7 +69,14 @@ echo.
 echo Linking minesweeper...
 C:\VBDOS\LINK.EXE @SOURCE\MINES.LNK
 echo.
-echo Removing object files...
+echo Compiling launcher (COSTA.EXE)...
+REM a+ = align, d- = disable debug
+REM s- = disable stack check, r- = disable range check
+C:\QP\QPL.COM /$ a+,d-,s-,r- COSTA.PAS
+
+echo.
+echo Removing object and debug files...
 DEL C:\COSTA\*.OBJ
+DEL C:\COSTA\*.QDB
 echo.
 echo Build run finished.
