@@ -1029,7 +1029,7 @@ Desk.RedrawAll:
 					Sys.SaveSettings
 					SCREEN 0
 					COLOR 7, 0
-					'Errorcode 1 makes the COSTA.BAT file exit its loop
+					'Errorcode 1 makes the COSTA.EXE file exit its loop
 					END 1
 				END IF
 			END IF
@@ -1155,7 +1155,7 @@ SUB Desk.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVA
 	END IF
 	
 	'Print the filename, parameters, path and wether to pause on exit to
-	'RUN.BAT, and exit. COSTA.BAT will detect that file and run it, and then
+	'RUN.BAT, and exit. COSTA.EXE will detect that file and run it, and then
 	'relaunch the desktop
 	RunHandle = FREEFILE
 

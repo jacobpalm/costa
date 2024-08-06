@@ -747,7 +747,7 @@ SUB Sys.Load ()
 		PRINT "One or more font files were not found in " + Sys.Path + "DATA\FONTS."
 		PRINT "Press any key to exit."
 		DO: LOOP WHILE INKEY$ = ""
-		END 1 'Error 1 makes costa.bat terminate
+		END 1 'Error 1 makes COSTA.EXE terminate
 	END IF
 
 	'EGA/VGA 640x350, 16 colors
