@@ -72,7 +72,8 @@ echo.
 echo Compiling launcher (COSTA.EXE)...
 REM a+ = align, d- = disable debug
 REM s- = disable stack check, r- = disable range check
-C:\QP\QPL.COM /$ a+,d-,s-,r- COSTA.PAS
+REM i- = disable runtime io check
+C:\QP\QPL.COM /$ a+,d-,s-,r-,i- COSTA.PAS
 
 echo.
 echo Removing object and debug files...

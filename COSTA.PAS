@@ -30,9 +30,9 @@ VAR
 { Run an external program - handle errors }
 PROCEDURE RunProgram(command, params: ComStr; path: PathStr; pause: CHAR);
 BEGIN
-	{I-}
+
 	chdir(path);
-	{I+}
+
 	SwapVectors;
 	Exec(command, params);
 	SwapVectors;
