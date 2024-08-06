@@ -1,14 +1,14 @@
 PROGRAM CostaLauncher;
 
 { The Costa GUI launcher
-  Runs DESKTOP.EXE and any external programs requested by the desktop.
-  This allows the desktop to exit and memory to be freed while external
-  programs are run.
-  Written using Microsoft QuickPascal 1.0
+	Runs DESKTOP.EXE and any external programs requested by the desktop.
+	This allows the desktop to exit and memory to be freed while external
+	programs are run.
+	Written using Microsoft QuickPascal 1.0
 }
 
 { Set stack to 2000 bytes }
-{$M 2000, 0, 0}
+{$M 1536, 0, 0}
 
 USES
 	DOS;
@@ -19,16 +19,16 @@ CONST
 	run_dat       = 'DATA\TEMP\RUN.DAT';
 
 VAR
-	current_dir   : STRING;
+	current_dir   : PathStr;
 	sresults      : SearchRec;
 	file_name     : TEXT;
-	run_command   : STRING;
-	run_path      : STRING;
-	run_params    : STRING;
+	run_command   : ComStr;
+	run_path      : PathStr;
+	run_params    : ComStr;
 	run_pause     : CHAR;
 
 { Run an external program - handle errors }
-PROCEDURE RunProgram(command, path, params: STRING; pause: CHAR);
+PROCEDURE RunProgram(command, params: ComStr; path: PathStr; pause: CHAR);
 BEGIN
 	{I-}
 	chdir(path);
@@ -57,35 +57,23 @@ BEGIN
 	END;
 END; { RunProgram }
 
-{ Return path to current executable }
-FUNCTION ExePath: STRING;
-VAR
-	path : STRING;
-
-BEGIN
-	{ Retrieve path of self from paramstr, used later on to find relative paths regardless
-		of current path when this program was executed }
-	path := ParamStr(0);
-
-	{ Remove last backslash and name of this executable, leaving only path }
-	{ 13 = max 8.3 filename lenght 12 including the dot, plus a backslash }
-	Delete(path, pos('\' + costa_exe, path), 13);
-
-	ExePath := path;
-END; {ÿExePath }
-
-
 BEGIN
 	{ Low byte of DosVersion contains major DOS version.
-	  This program will actually run on DOS 3.0, but the other
-	  included programs won't, so might as well check here }
+		This program will actually run on DOS 3.0, but the other
+		included programs won't, so might as well check here }
 	IF Lo(DosVersion) < 4 THEN
 	BEGIN
 		Writeln('DOS 4.0 or higher required.');
 		Halt(1);
 	END;
 
-	current_dir := ExePath;
+	{ Retrieve path of self from paramstr, used later on to find relative paths regardless
+		of current path when this program was executed }
+	current_dir := ParamStr(0);
+
+	{ Remove last backslash and name of this executable, leaving only path }
+	{ 13 = max 8.3 filename lenght 12 including the dot, plus a backslash }
+	Delete(current_dir, pos('\' + costa_exe, current_dir), 13);
 
 	{ Verify that desktop exe exists in same path as this executable }
 	FindFirst(current_dir + '\' + desktop_exe, Archive, sresults);
