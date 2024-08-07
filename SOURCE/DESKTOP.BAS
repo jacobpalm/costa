@@ -155,7 +155,6 @@ DrawExecuteDialog:
 	Obj.DrawBtn btnCancel, False
 	Obj.DrawTxt txtProgram, txtProgramText, False
 	Obj.DrawTxt txtParameters, txtParametersText, False
-	LINE (txtProgram.Pos.Left + 2, txtProgram.Pos.Top + 2)-(txtProgram.Pos.Left + txtProgram.Pos.Width - 2, txtProgram.Pos.Top + txtProgram.Pos.Height - 2), Theme.Window, BF
 	Obj.DrawBtn btnBrowse, False
 	
 	Obj.DrawImg imgIcon
