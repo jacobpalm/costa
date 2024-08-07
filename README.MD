@@ -52,8 +52,8 @@ This will cause VBDOS to load the libraries neccesary for Costa to work.
 If you get an error relating to "CALL ABSOLUTE" or "CALL INTERRUPT", you have 
 probably not used this parameter when starting VBDOS.
 
-COSTA.PAS is written using Microsoft QuickPascal, but should be compatible
-with Borland Turbo Pascal as well - although this has not been tested.
+COSTA.PAS is written using Borland Turbo Pascal, but should be compatible
+with Microsoft QuickPascal as well - although this has not been fully tested.
 
 The source code and build script assume the following:
   * That the source code has been extracted/cloned to C:\COSTA (this path is
@@ -61,7 +61,8 @@ The source code and build script assume the following:
   * That Visual Basic for DOS is installed to C:\VBDOS, in a flat structure -
     that is, all files placed in the folder directly, including libraries and
     include files
-  * That QuickPascal is installed in C:\QP
+  * That QuickPascal is installed in C:\TP using default folder structure
+    (compiler placed in the BIN subdirectory of that path).
 
 ## Building Costa
 To build Costa, run the build script from the command line:

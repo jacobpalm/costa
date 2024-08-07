@@ -1,13 +1,13 @@
-PROGRAM CostaLauncher;
+PROGRAM costa_launcher;
 
 { The Costa GUI launcher
 	Runs DESKTOP.EXE and any external programs requested by the desktop.
 	This allows the desktop to exit and memory to be freed while external
 	programs are run.
-	Written using Microsoft QuickPascal 1.0
+	Written using Borland Turbo Pascal 7.01
 }
 
-{ Set stack to 2000 bytes }
+{ Set stack to minimal size }
 {$M 1536, 0, 0}
 
 USES
@@ -40,7 +40,7 @@ BEGIN
 	{ Low memory condition }
 	IF DosError = 8 THEN
 	BEGIN
-		Writeln('Out of memory - ' + command);
+		Writeln('Out of memory.');
 		pause := '1';
 		{ If desktop can't be launched, exit }
 		IF command = desktop_exe THEN
@@ -57,13 +57,14 @@ BEGIN
 	END;
 END; { RunProgram }
 
+
 BEGIN
 	{ Low byte of DosVersion contains major DOS version.
 		This program will actually run on DOS 3.0, but the other
 		included programs won't, so might as well check here }
 	IF Lo(DosVersion) < 4 THEN
 	BEGIN
-		Writeln('DOS 4.0 or higher required.');
+		Writeln('DOS 4+ required.');
 		Halt(1);
 	END;
 
@@ -79,7 +80,7 @@ BEGIN
 	FindFirst(current_dir + '\' + desktop_exe, Archive, sresults);
 	IF DosError > 0 THEN
 	BEGIN
-		Writeln(desktop_exe + ' not found in ' + current_dir);
+		Writeln(desktop_exe + ' not found.');
 		Halt(1);
 	END;
 
