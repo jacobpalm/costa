@@ -6,6 +6,7 @@ COSTA.BAT
 *.OBJ
 ~ELNK.TMP
 *.QDB
+*.DSK
 
 # Costa run-time data
 DATA/TEMP/
