@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>{{ page.title }} - {{ site.name }}</title>
+    <title>{{ page.title }} - {{ site.title }}</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="{{site.description}}">
@@ -16,19 +16,18 @@
     <link rel="stylesheet" href="assets/custom.css">
     
     <link rel="canonical" href="{{ site.baseURL }}">
-	<link rel="alternate" type="application/atom+xml" title="{{ site.name }}" href="{{ site.baseURL }}/feed.xml">
+	<link rel="alternate" type="application/atom+xml" title="{{ site.title }}" href="{{ site.baseURL }}/feed.xml">
 </head>
 <body id="sitetop">
 
 <!-- Navbar desktop -->
 <div class="w3-bar w3-mobile w3-teal w3-card w3-large w3-hide-medium w3-hide-small hidden-print">
     <div class="w3-content">
-        <a href="{{ site.baseURL }}" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile sitetitle">{{ site.name }}</a>
+        <a href="{{ site.baseURL }}" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile sitetitle">{{ site.title }}</a>
         <div class="topnav-right">
             <a href="{{ site.baseURL }}/index.html#about" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile">About</a>
             <a href="{{ site.baseURL }}/index.html#downloads" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile">Download</a>
             <a href="{{ site.baseURL }}/blog/" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile">Blog</a>
-            <a href="{{ site.baseURL }}/develop/" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile">Development</a>
             <a href="{{ site.baseURL }}/archive.html" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile">Archive</a>
         </div>
     </div>
@@ -37,7 +36,7 @@
 <!-- Navbar mobile -->
 <div class="w3-bar-block w3-mobile w3-teal w3-card w3-large w3-hide-large hidden-print">
     <div class="w3-content">
-        <a href="{{ site.baseURL }}" class="w3-button w3-padding-large w3-hover-white sitetitle">{{ site.name }}</a>
+        <a href="{{ site.baseURL }}" class="w3-button w3-padding-large w3-hover-white sitetitle">{{ site.title }}</a>
         <a href="javascript:void(0)" class="w3-button w3-padding-large w3-hover-white w3-right" onclick="toggleMenu()">&#9776;</a>
         <div id="mobilemenu" class="w3-hide">
             <a href="{{ site.baseURL }}/index.html#about" class="w3-bar-item w3-button w3-padding-large w3-hover-white w3-mobile">About</a>
