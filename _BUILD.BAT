@@ -81,6 +81,7 @@ C:\TP\BIN\TPC -$D- -$E- -$I- -$L- -$S- costa.pas
 echo.
 echo Removing object and debug files...
 DEL C:\COSTA\*.OBJ
-DEL C:\COSTA\*.QDB
+DEL C:\COSTA\*.BAK
+DEL C:\COSTA\*.DSK
 echo.
 echo Build run finished.
