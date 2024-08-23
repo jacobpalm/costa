@@ -1,1 +1,7 @@
 * text=auto
+
+*.{png,[pP][nN][gG]} binary
+*.{jpg,[jJ][pP][gG]} binary
+*.{gif,[gG][iI][fF]} binary
+*.{ico,[iI][cC][oO]} binary
+*.{zip,[zZ][iI][pP]} binary
