@@ -1,0 +1,91 @@
+---
+layout: default
+title: Blog
+---
+<div class="w3-row-padding w3-light-grey w3-padding-32 w3-container w3-center">
+    <div class="w3-content">
+        <h1>Blog</h1>
+        <p>At this blog you will be able to follow the development of Costa. Every now and then I will post about the current status of the project, tell news about Costa, and talk a little about future goals.
+        <a href="{{site.baseurl}}/feed.xml">Atom feed is available</a>, for those who want to keep posted.</p>
+    </div>
+</div>
+
+{% for post in paginator.posts %}
+    <div class="w3-row-padding w3-padding-32 w3-container {% cycle 'w3-white', 'w3-light-grey' %}" id="post{{ forloop.index }}">
+        <div class="w3-content">
+            <h2>{{ post.title }}</h2>
+            <div class="posttime">Posted on the {% assign day = post.date | date: "%-d"  %}
+                {% case day %}
+                    {% when '1' or '21' or '31' %}{{ day }}st
+                    {% when '2' or '22' %}{{ day }}nd
+                    {% when '3' or '23' %}{{ day }}rd
+                    {% else %}{{ day }}th
+                {% endcase %}
+                {{ post.date | date: "of %B, %Y" }}
+            </div>
+            {% if post.image %}
+                <div class="w3-row">
+                    <div class="w3-twothird">
+                        <a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}"><img class="w3-image w3-hide-medium w3-hide-large" src="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}" alt="Screenshot"></a>
+                        {{ post.excerpt }}
+                        <p><a href="{{post.url | prepend: site.baseurl}}">Read more...</a></p>    
+                    </div>
+                    <div class="w3-third">
+                        <a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}"><img class="w3-image w3-padding-small w3-hide-small" src="{{"/assets/img/blog/" | prepend: site.baseurl | append : post.image}}" alt="Screenshot"></a>
+                    </div>
+                </div>
+            {% else %}
+                {{ post.excerpt }}
+                <p><a href="{{post.url | prepend: site.baseurl}}">Read more...</a></p>  
+            {% endif %}                    
+        </div>        
+    </div>
+{% endfor %}
+
+{% assign minpage = paginator.page | minus: 3 %}
+{% assign maxpage = paginator.page | plus: 3 %}
+{% assign minshown = false %}
+{% assign maxshown = false %}
+<div class="w3-row-padding w3-light-grey w3-padding-32 w3-container w3-center {% cycle 'w3-white', 'w3-light-grey' %}">
+    <div class="w3-content">
+        
+        <div class="w3-bar w3-border w3-teal">
+            {% if paginator.previous_page %}
+                <a class="w3-bar-item w3-button w3-hover-white" href="{{ paginator.previous_page_path | relative_url }}#post1">&laquo;</a>
+            {% else %}
+                <a class="w3-bar-item w3-button w3-disabled w3-hover-teal"><span>&laquo;</span></a>
+            {% endif %}
+
+            {% for page in (1..paginator.total_pages) %}
+                {% if page > minpage %}
+                    {% if page < maxpage %}
+                        {% if page == paginator.page %}
+                            <a class="w3-bar-item w3-button w3-white w3-hover-white">{{ page }}</a>
+                        {% elsif page == 1 %}
+                            <a class="w3-bar-item w3-button w3-hover-white" href="{{ '/blog' | relative_url }}#post1">{{ page }}</a>
+                        {% else %}
+                            <a class="w3-bar-item w3-button w3-hover-white" href="{{ site.paginate_path | relative_url | replace: ':num', page }}#post1">{{ page }}</a>
+                        {% endif %}
+                    {% else %}
+                        {% unless maxshown %}
+                            {% assign maxshown = true %}
+                            <a class="w3-bar-item w3-button w3-disabled w3-hover-teal w3-hide-small"><span>&middot;&middot;&middot;</span></a>
+                        {% endunless %}
+                    {% endif %}
+                {% else %}
+                    {% unless minshown %}
+                        {% assign minshown = true %}
+                        <a class="w3-bar-item w3-button w3-disabled w3-hover-teal w3-hide-small"><span>&middot;&middot;&middot;</span></a>
+                    {% endunless %}
+                {% endif %}
+            {% endfor %}
+
+            {% if paginator.next_page %}
+                <a class="w3-bar-item w3-button w3-hover-white" href="{{ paginator.next_page_path | relative_url }}#post1"><span>&raquo;</span></a>
+            {% else %}
+                <a class="w3-bar-item w3-button w3-disabled w3-hover-teal"><span>&raquo;</span></a>
+            {% endif %}
+        </div>
+               
+    </div>
+</div>

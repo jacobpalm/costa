@@ -1,0 +1,36 @@
+name: The Costa GUI
+description: Costa is a small and lightweight GUI (Graphical User Interface) for MS-DOS compatible systems, provided to you free of charge.
+author: Jacob Palm
+markdown: kramdown
+baseURL: https://costa.jacobpalm.dk
+
+paginate: 5
+paginate_path: "/blog/page:num/"
+
+plugins:
+  - jekyll-feed
+
+kramdown:
+  syntax_highlighter: rouge
+
+collections:
+  archive:
+    output: true
+    permalink: /:collection/:name
+
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
+      excerpt_separator: <!--more-->
+  - scope:
+      path: ""
+      type: "archive"
+    values:
+      layout: "archive"
+  - scope:
+      path: "assets/img/screenshots"
+    values:
+      screenshot: true
