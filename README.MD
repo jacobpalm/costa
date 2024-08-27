@@ -12,7 +12,7 @@ Costa is designed for MS-DOS, but tested with PC-DOS, DR-DOS, FreeDOS,
 Novell DR Multiuser DOS and DOSBox as well. In theory it should run on any
 IBM compatible system with:
 
-  * A 286 or better CPU (386 recommended)
+  * An 8088 or better CPU (386 or better recommended)
   * EGA (256KB or more VRAM required) or VGA graphics (any VGA compatible
     card should do)
   * A recommended minimum of 200 KB available memory while running Costa.
