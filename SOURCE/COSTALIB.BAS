@@ -1,8 +1,6 @@
 OPTION EXPLICIT
 DEFINT A-Z
 
-DECLARE FUNCTION Temp.Path () AS STRING
-
 '$INCLUDE: 'C:\COSTA\SOURCE\COSTALIB.BI'
 '$INCLUDE: 'C:\VBDOS\VBDOS.BI'
 
@@ -990,25 +988,4 @@ SUB Sys.ShowLoading ()
 		Mouse.Show
 
 END SUB
-
-FUNCTION Temp.Path () AS STRING
-
-	'Used to retrieve the path where Costa saves temp files - from
-	'environment variable, with fallback to default path.
-	'Value only retrieved on first call, cached in static variable.
-
-	STATIC TempPathInternal AS STRING
-
-	IF NOT LEN(TempPathInternal) THEN
-		TempPathInternal = ENVIRON$("TEMP")
-		IF TempPathInternal = "" THEN
-			TempPathInternal = "DATA\TEMP\"
-		ELSE
-			IF NOT RIGHT$(TempPathInternal, 1) = "\" THEN TempPathInternal = TempPathInternal + "\"
-		END IF
-	END IF
-
-	Temp.Path = TempPathInternal
-	
-END FUNCTION
 

@@ -173,7 +173,7 @@ DrawExecuteDialog:
 			GOTO DrawExecuteDialog
 		END IF
 
-		IF Obj.TxtClick(txtParameters) THEN
+		IF Obj.TxtClick(txtParameters) OR Key$ = "r" THEN
 			Obj.EditTxt txtParameters, txtParametersText
 		END IF
 
@@ -1138,7 +1138,7 @@ SUB Desk.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVA
 	'relaunch the desktop
 	RunHandle = FREEFILE
 
-	OPEN Temp.Path + "RUN.DAT" FOR OUTPUT AS #RunHandle
+	OPEN "DATA\RUN.DAT" FOR OUTPUT AS #RunHandle
 	PRINT #RunHandle, TargetFile
 	PRINT #RunHandle, TargetParameters
 	PRINT #RunHandle, TargetPath

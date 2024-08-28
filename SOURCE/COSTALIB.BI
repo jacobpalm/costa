@@ -39,8 +39,6 @@
   DECLARE SUB Sys.SaveSettings ()
   DECLARE SUB Sys.ShowLoading ()
 
-  DECLARE FUNCTION Temp.Path () AS STRING
-
 'App name, version etc.
   '$INCLUDE: 'C:\COSTA\SOURCE\APPINFO.BI'
 

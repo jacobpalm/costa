@@ -16,7 +16,7 @@ USES
 CONST
 	costa_exe     = 'COSTA.EXE';
 	desktop_exe   = 'DESKTOP.EXE';
-	run_dat       = 'DATA\TEMP\RUN.DAT';
+	run_dat       = 'DATA\RUN.DAT';
         continuestr   = 'Press Enter to continue...';
 
 VAR
