@@ -9,20 +9,6 @@ DECLARE SUB File.GetChildFolders (Path$)
 DECLARE SUB File.MoveSelection (TargetList AS ANY, Direction%)
 DECLARE SUB File.SetFolder (BYVAL TargetPath AS STRING)
 
-TYPE DTAtype
-	Drive AS STRING * 1
-	SearchTemplate AS STRING * 11
-	SearchAttr AS STRING * 1
-	EntryCount AS STRING * 2
-	ClusterNumber AS STRING * 2
-	Reserved AS STRING * 4
-	FileBits AS STRING * 1
-	FileTime AS STRING * 2
-	FileDate AS STRING * 2
-	FileSize AS STRING * 4
-	ASCIIZfilename AS STRING * 13
-END TYPE
-
 '$INCLUDE: 'C:\VBDOS\VBDOS.BI'
 '$INCLUDE: 'SOURCE\COSTALIB.BI'
 

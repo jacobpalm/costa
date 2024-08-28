@@ -17,6 +17,7 @@ CONST
 	costa_exe     = 'COSTA.EXE';
 	desktop_exe   = 'DESKTOP.EXE';
 	run_dat       = 'DATA\TEMP\RUN.DAT';
+        continuestr   = 'Press Enter to continue...';
 
 VAR
 	current_dir   : PathStr;
@@ -31,7 +32,23 @@ VAR
 PROCEDURE RunProgram(command, params: ComStr; path: PathStr; pause: CHAR);
 BEGIN
 
-	chdir(path);
+        {$IFDEF DEBUG}
+               Writeln('Changing path to ', path);
+               Writeln('Running program ', command);
+               Writeln('With parameters ', path);
+               Write(continuestr);
+               Readln;
+        {$ENDIF}
+
+        IF Length(path) > 0 THEN
+	BEGIN
+             chdir(path);
+        END
+        ELSE
+        BEGIN
+            chdir(current_dir);
+        END;
+
 
 	SwapVectors;
 	Exec(command, params);
@@ -52,7 +69,7 @@ BEGIN
 	IF pause = '1' THEN
 	BEGIN
 		Writeln;
-		Write('Press Enter to continue...');
+		Write(continuestr);
 		Readln;
 	END;
 END; { RunProgram }
@@ -76,6 +93,12 @@ BEGIN
 	{ 13 = max 8.3 filename lenght 12 including the dot, plus a backslash }
 	Delete(current_dir, pos('\' + costa_exe, current_dir), 13);
 
+        {$IFDEF DEBUG}
+                Writeln('Path to Costa is ', current_dir);
+                Write(continuestr);
+                Readln;
+        {$ENDIF}
+
 	{ Verify that desktop exe exists in same path as this executable }
 	FindFirst(current_dir + '\' + desktop_exe, Archive, sresults);
 	IF DosError > 0 THEN
@@ -95,21 +118,21 @@ BEGIN
 
 		{ If run.dat exists, run it and delete it }
 		FindFirst(current_dir + '\' + run_dat, Archive, sresults);
-		IF DosError = 0 THEN
-		BEGIN
-			{ Open file, read data and delete file }
-			Assign(file_name, current_dir + '\' + run_dat);
-			Reset(file_name);
-			Readln(file_name, run_path);
-			Readln(file_name, run_command);
-			Readln(file_name, run_params);
-			Read(file_name, run_pause);
-			Erase(file_name);
-			Close(file_name);
+		IF DosError > 0 THEN
+                   continue;
 
-			{ Run program - obviously }
-			RunProgram(run_command, run_path, run_params, run_pause)
-		END;
+		{ Open file, read data and delete file }
+		Assign(file_name, current_dir + '\' + run_dat);
+		Reset(file_name);
+		Readln(file_name, run_command);
+	        Readln(file_name, run_params);
+                Readln(file_name, run_path);
+		Read(file_name, run_pause);
+		Erase(file_name);
+		Close(file_name);
+
+		{ Run program - obviously }
+		RunProgram(run_command, run_params, run_path, run_pause)
 
 	END; { main loop }
 

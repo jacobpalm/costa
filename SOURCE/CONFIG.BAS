@@ -30,7 +30,7 @@ SUB Conf.GetThemes ()
     DIM TmpName$, Void
 
     REDIM ThemeList(0 TO 0) AS STRING
-    TmpName$ = DIR$(Sys.Path + "DATA\THEMES\*.DAT")
+    TmpName$ = DIR$("DATA\THEMES\*.DAT")
     ThemesFound = 0
     DO WHILE NOT TmpName$ = ""
         TmpName$ = LEFT$(TmpName$, LEN(TmpName$) - 4)
@@ -280,16 +280,16 @@ SUB Conf.SaveAssoc (FileType AS STRING, Command AS STRING)
     DIM FileAssociation AS FileAssociationType
     DIM FileHandle, FilePos, AssocSaved
 
-    IF NOT File.Exists(Sys.Path + "DATA\CONFIG\FILETYPE.DAT") THEN
+    IF NOT File.Exists("DATA\CONFIG\FILETYPE.DAT") THEN
       'File association data not found, copy associations from default file
       'if it exists - using PUT/GET, not MS-DOS copy, as BASIC doesn't have
       'a built-in function to copy files
-      IF File.Exists(Sys.Path + "DATA\CONFIG\FILETYPE.DEF") THEN
+      IF File.Exists("DATA\CONFIG\FILETYPE.DEF") THEN
         DIM CopyHandle
         CopyHandle = FREEFILE
-        OPEN Sys.Path + "DATA\CONFIG\FILETYPE.DEF" FOR BINARY AS #CopyHandle
+        OPEN "DATA\CONFIG\FILETYPE.DEF" FOR BINARY AS #CopyHandle
         FileHandle = FREEFILE
-        OPEN Sys.Path + "DATA\CONFIG\FILETYPE.DAT" FOR BINARY AS #FileHandle
+        OPEN "DATA\CONFIG\FILETYPE.DAT" FOR BINARY AS #FileHandle
         DO WHILE NOT EOF(CopyHandle)
           GET #CopyHandle, , FileAssociation
           PUT #FileHandle, , FileAssociation
@@ -300,7 +300,7 @@ SUB Conf.SaveAssoc (FileType AS STRING, Command AS STRING)
     END IF
 
     FileHandle = FREEFILE
-    OPEN Sys.Path + "DATA\CONFIG\FILETYPE.DAT" FOR BINARY AS #FileHandle
+    OPEN "DATA\CONFIG\FILETYPE.DAT" FOR BINARY AS #FileHandle
 
     ON LOCAL ERROR RESUME NEXT
 

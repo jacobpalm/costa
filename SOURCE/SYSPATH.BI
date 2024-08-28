@@ -1,2 +1,0 @@
-DECLARE FUNCTION Sys.Path () AS STRING
-

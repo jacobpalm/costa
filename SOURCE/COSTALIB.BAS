@@ -19,23 +19,44 @@ DIM SHARED MouseHidden AS INTEGER
 
 FUNCTION File.Exists (TargetFile AS STRING)
 
-	DIM FileHandle
-	FileHandle = FREEFILE
-	ON LOCAL ERROR RESUME NEXT
-	OPEN TargetFile FOR BINARY AS #FileHandle
+	DIM InRegsX AS RegTypeX, OutRegsX AS RegTypeX
+	DIM DTAfile AS DTAtype
+	DIM ASCIIZ AS STRING * 260
+	DIM Current.DTA.SEG AS INTEGER, Current.DTA.OFF AS INTEGER
+	
+	ASCIIZ = TargetFile + CHR$(0)
 
-	IF LOF(FileHandle) = 0 THEN
-		'File doesn't exist
-		CLOSE #FileHandle
-		KILL TargetFile
-		File.Exists = False
-		EXIT FUNCTION
-	ELSE
-		CLOSE #FileHandle
+	'Retrieve current DTA, so it can be reset later
+	InRegsX.ax = &H2F00
+	CALL INTERRUPTX(&H21, InRegsX, OutRegsX)
+	Current.DTA.SEG = OutRegsX.es
+	Current.DTA.OFF = OutRegsX.bx
+
+	'Store function DTA
+	InRegsX.ax = &H1A00
+	InRegsX.ds = VARSEG(DTAfile)
+	InRegsX.dx = VARPTR(DTAfile)
+	CALL INTERRUPTX(&H21, InRegsX, OutRegsX)
+
+	'Find first file
+	InRegsX.ax = &H4E00
+	InRegsX.cx = &H37
+	InRegsX.ds = VARSEG(ASCIIZ)
+	InRegsX.dx = VARPTR(ASCIIZ)
+	CALL INTERRUPTX(&H21, InRegsX, OutRegsX)
+
+	IF (OutRegsX.flags AND &H1) = &H0 THEN
 		File.Exists = True
-		EXIT FUNCTION
+	ELSE
+		File.Exists = False
 	END IF
-
+	
+	'Restore previous DTA
+	InRegsX.ax = &H1A00
+	InRegsX.ds = Current.DTA.SEG
+	InRegsX.dx = Current.DTA.OFF
+	CALL INTERRUPTX(&H21, InRegsX, OutRegsX)
+	
 END FUNCTION
 
 FUNCTION File.GetAssociation (FileType AS STRING) AS STRING
@@ -52,13 +73,13 @@ FUNCTION File.GetAssociation (FileType AS STRING) AS STRING
 		EXIT FUNCTION
 	END IF
 
-	AssociationFile = Sys.Path + "DATA\CONFIG\FILETYPE.DAT"
+	AssociationFile = "DATA\CONFIG\FILETYPE.DAT"
 
 	'If association data file does not exist, fall back to default association
 	'file. If that doesn't exist either, exit function and return nothing
 	IF NOT File.Exists(AssociationFile) THEN
-		IF File.Exists(Sys.Path + "DATA\CONFIG\FILETYPE.DEF") THEN
-			AssociationFile = Sys.Path + "DATA\CONFIG\FILETYPE.DEF"
+		IF File.Exists("DATA\CONFIG\FILETYPE.DEF") THEN
+			AssociationFile = "DATA\CONFIG\FILETYPE.DEF"
 		ELSE
 			File.GetAssociation = ""
 			EXIT FUNCTION
@@ -445,11 +466,11 @@ SUB Obj.DrawImg (TargetImg AS ImageType)
 	LINE (X, Y + 32)-(X + 32, Y + 32), Theme.Shadow
 	LINE (X + 32, Y)-(X + 32, Y + 31), Theme.Shadow
 
-	IF NOT File.Exists(Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".BSV") THEN GOTO DrawImgError
+	IF NOT File.Exists("DATA\IMAGES\" + TargetImg.ImageFile + ".BSV") THEN GOTO DrawImgError
 
 	DIM scrBuffer(260)
 	DEF SEG = VARSEG(scrBuffer(0))
-	BLOAD Sys.Path + "DATA\IMAGES\" + TargetImg.ImageFile + ".BSV", VARPTR(scrBuffer(0))
+	BLOAD "DATA\IMAGES\" + TargetImg.ImageFile + ".BSV", VARPTR(scrBuffer(0))
 	DEF SEG
 	PUT (X, Y), scrBuffer, PSET
 
@@ -739,26 +760,26 @@ SUB Sys.Load ()
 
 	'Prepare fonts for use
 	DIM FontErr
-	IF NOT File.Exists(Sys.Path + "DATA\FONTDATA.BSV") THEN FontErr = True
-	IF NOT File.Exists(Sys.Path + "DATA\FONTINFO.BSV") THEN FontErr = True
+	IF NOT File.Exists("DATA\FONTDATA.BSV") THEN FontErr = True
+	IF NOT File.Exists("DATA\FONTINFO.BSV") THEN FontErr = True
 
 	IF FontErr THEN
 		CLS
-		PRINT "One or more font files were not found in " + Sys.Path + "DATA\FONTS."
+		PRINT "One or more font files were not found in " + "DATA."
 		PRINT "Press any key to exit."
 		DO: LOOP WHILE INKEY$ = ""
-		END 1 'Error 1 makes COSTA.EXE terminate
+		END 1 'Error 1 makes COSTA.EXE terminate if current app is desktop
 	END IF
 
 	'EGA/VGA 640x350, 16 colors
 	SCREEN 9
 	
 	DEF SEG = VARSEG(FontData(1, 32))
-	BLOAD Sys.Path + "DATA\FONTDATA.BSV", VARPTR(FontData(1, 32))
+	BLOAD "DATA\FONTDATA.BSV", VARPTR(FontData(1, 32))
 	DEF SEG
 
 	DEF SEG = VARSEG(FontWidth(1, 32))
-	BLOAD Sys.Path + "DATA\FONTINFO.BSV", VARPTR(FontWidth(1, 32))
+	BLOAD "DATA\FONTINFO.BSV", VARPTR(FontWidth(1, 32))
 	DEF SEG
 
 	'Load settings
@@ -778,13 +799,13 @@ SUB Sys.LoadSettings ()
 
 	DIM FileHandle
 
-	IF NOT File.Exists(Sys.Path + "DATA\CONFIG\SETTING.DAT") THEN
+	IF NOT File.Exists("DATA\CONFIG\SETTING.DAT") THEN
 		GOTO LoadDefaultSettings
 	END IF
 
 	ON LOCAL ERROR GOTO LoadDefaultSettings
 	FileHandle = FREEFILE
-	OPEN Sys.Path + "DATA\CONFIG\SETTING.DAT" FOR BINARY AS #FileHandle
+	OPEN "DATA\CONFIG\SETTING.DAT" FOR BINARY AS #FileHandle
 	GET #FileHandle, , Setting
 	CLOSE #FileHandle
 
@@ -812,8 +833,8 @@ SUB Sys.LoadTheme ()
 	DIM FileHandle
 	FileHandle = FREEFILE
 
-	IF File.Exists(Sys.Path + "DATA\THEMES\" + ThemeFile + ".DAT") THEN
-		OPEN Sys.Path + "DATA\THEMES\" + ThemeFile + ".DAT" FOR BINARY AS #FileHandle
+	IF File.Exists("DATA\THEMES\" + ThemeFile + ".DAT") THEN
+		OPEN "DATA\THEMES\" + ThemeFile + ".DAT" FOR BINARY AS #FileHandle
 		GET #FileHandle, , Theme
 		CLOSE #FileHandle
 	ELSE
@@ -948,7 +969,7 @@ SUB Sys.SaveSettings ()
 	ON LOCAL ERROR GOTO SaveSettingsError
 	DIM FileHandle
 	FileHandle = FREEFILE
-	OPEN Sys.Path + "DATA\CONFIG\SETTING.DAT" FOR BINARY AS #FileHandle
+	OPEN "DATA\CONFIG\SETTING.DAT" FOR BINARY AS #FileHandle
 	PUT #FileHandle, , Setting
 	CLOSE #FileHandle
 	EXIT SUB
@@ -981,7 +1002,7 @@ FUNCTION Temp.Path () AS STRING
 	IF NOT LEN(TempPathInternal) THEN
 		TempPathInternal = ENVIRON$("TEMP")
 		IF TempPathInternal = "" THEN
-			TempPathInternal = Sys.Path + "DATA\TEMP\"
+			TempPathInternal = "DATA\TEMP\"
 		ELSE
 			IF NOT RIGHT$(TempPathInternal, 1) = "\" THEN TempPathInternal = TempPathInternal + "\"
 		END IF

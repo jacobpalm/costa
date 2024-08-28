@@ -183,7 +183,7 @@ SUB IconEdit.LoadIcon (IconToLoad AS STRING)
 
   DIM ErrMsg, XPos, YPos
   
-  IF NOT File.Exists(Sys.Path + "DATA\IMAGES\" + IconToLoad + ".BSV") THEN
+  IF NOT File.Exists("DATA\IMAGES\" + IconToLoad + ".BSV") THEN
     ErrMsg = Sys.MsgBox("File not found", "Could not open the specified icon." + CHR$(13) + "Verify the filename and try again.", msgError)
     EXIT SUB
   END IF
@@ -219,7 +219,7 @@ SUB IconEdit.LoadIcon (IconToLoad AS STRING)
   ON LOCAL ERROR GOTO LoadIconError
   DIM scrBuffer(260)
   DEF SEG = VARSEG(scrBuffer(0))
-  BLOAD Sys.Path + "DATA\IMAGES\" + IconToLoad + ".BSV", VARPTR(scrBuffer(0))
+  BLOAD "DATA\IMAGES\" + IconToLoad + ".BSV", VARPTR(scrBuffer(0))
   DEF SEG
   Mouse.Hide
   PUT (PreviewOffsetX, PreviewOffsetY), scrBuffer, PSET
@@ -707,13 +707,13 @@ TopOfSave:
     EXIT FUNCTION
   END IF
 
-  IF File.Exists(Sys.Path + "DATA\IMAGES\" + SaveAs + ".BSV") THEN
+  IF File.Exists("DATA\IMAGES\" + SaveAs + ".BSV") THEN
     IF NOT UCASE$(SaveAs) = IconFileName THEN
       DoSave = Sys.MsgBox("File already exists", "The specified icon file already exists. Do you want" + CHR$(13) + "to owerwrite it with this icon?", msgQuest)
       IF DoSave = False THEN GOTO TopOfSave
     END IF
 
-    KILL Sys.Path + "DATA\IMAGES\" + SaveAs + ".BSV"
+    KILL "DATA\IMAGES\" + SaveAs + ".BSV"
   END IF
 
   ON LOCAL ERROR GOTO SaveIconError
@@ -722,7 +722,7 @@ TopOfSave:
   GET (PreviewOffsetX, PreviewOffsetY)-(PreviewOffsetX + 31, PreviewOffsetY + 31), scrBuffer
   Mouse.Show
   DEF SEG = VARSEG(scrBuffer(0))
-  BSAVE Sys.Path + "DATA\IMAGES\" + SaveAs + ".BSV", VARPTR(scrBuffer(0)), UBOUND(scrBuffer) * 2
+  BSAVE "DATA\IMAGES\" + SaveAs + ".BSV", VARPTR(scrBuffer(0)), UBOUND(scrBuffer) * 2
   DEF SEG
   ON LOCAL ERROR GOTO 0
 
@@ -756,7 +756,7 @@ SUB IconEdit.ShowLoadDialog ()
   Mouse.Show
   Sys.ShowLoading
 
-  IconFiles(0) = DIR$(Sys.Path + "DATA\IMAGES\*.BSV")
+  IconFiles(0) = DIR$("DATA\IMAGES\*.BSV")
   IF IconFiles(0) = "" THEN
     DIM Void
     Void = Sys.MsgBox("No icons found", "It appears that no icons exist - create a new one" + CHR$(13) + "by clicking the ""New"" button in the main window.", msgInfo)

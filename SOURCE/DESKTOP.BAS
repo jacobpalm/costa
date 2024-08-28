@@ -28,26 +28,6 @@ END TYPE
 
 REDIM SHARED DeskLink(0 TO 0) AS DeskLinkType
 
-IF COMMAND$ = "/BOOT" THEN
-	'Boot means that we need to initialize Costa, and make sure all paths are
-	'valid. Will not run when returning to the desktop from external program.
-	ON ERROR RESUME NEXT
-
-	CHDRIVE LEFT$(Temp.Path, 1)
-	MKDIR LEFT$(Temp.Path, LEN(Temp.Path) - 1)
-
-	CHDRIVE LEFT$(Sys.Path, 1)
-	CHDIR LEFT$(Sys.Path, LEN(Sys.Path) - 1)
-	MKDIR "DATA"
-	CHDIR "DATA"
-	MKDIR "TEMP"
-	MKDIR "CONFIG"
-	MKDIR "IMAGES"
-	MKDIR "THEMES"
-	CHDIR ".."
-	ON ERROR GOTO 0
-END IF
-
 STACK 5120
 
 CALL Sys.Load
@@ -229,7 +209,7 @@ SUB Desk.LinkDialog (TargetLink, DidEdit)
 
 	Sys.ShowLoading
 
-	IconFile = DIR$(Sys.Path + "DATA\IMAGES\*.BSV")
+	IconFile = DIR$("DATA\IMAGES\*.BSV")
 	IconCount = 0
 
 	REDIM PRESERVE AllIcons(0) AS STRING
@@ -416,13 +396,13 @@ SUB Desk.LinkLoad ()
 	DIM LinkCount, LinkLoad, FileHandle
 	DIM DeskLinkFile AS STRING
 
-	DeskLinkFile = Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(Setting.DesktopID)) + ".DAT"
+	DeskLinkFile = "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(Setting.DesktopID)) + ".DAT"
 	
 	IF NOT File.Exists(DeskLinkFile) THEN
-		IF File.Exists(Sys.Path + "DATA\CONFIG\DESKLNK.DEF") AND Setting.DesktopID = 1 THEN
+		IF File.Exists("DATA\CONFIG\DESKLNK.DEF") AND Setting.DesktopID = 1 THEN
 			'If we're on the first page and it doesn't exist, but the default file
 			'does, load that instead
-			DeskLinkFile = Sys.Path + "DATA\CONFIG\DESKLNK.DEF"
+			DeskLinkFile = "DATA\CONFIG\DESKLNK.DEF"
 		ELSE
 			REDIM DeskLink(0 TO 0) AS DeskLinkType
 			EXIT SUB
@@ -827,8 +807,8 @@ SUB Desk.LinkSave ()
 	NEXT
 	
 	FileHandle = FREEFILE
-	IF File.Exists(Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(Setting.DesktopID)) + ".DAT") THEN KILL Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(Setting.DesktopID)) + ".DAT"
-	OPEN Sys.Path + "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(Setting.DesktopID)) + ".DAT" FOR BINARY AS #FileHandle
+	IF File.Exists("DATA\CONFIG\DESKLNK" + LTRIM$(STR$(Setting.DesktopID)) + ".DAT") THEN KILL "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(Setting.DesktopID)) + ".DAT"
+	OPEN "DATA\CONFIG\DESKLNK" + LTRIM$(STR$(Setting.DesktopID)) + ".DAT" FOR BINARY AS #FileHandle
 	PUT #FileHandle, , LinkCount
 
 	IF LinkCount = 0 THEN CLOSE #FileHandle: EXIT SUB
@@ -1159,9 +1139,9 @@ SUB Desk.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVA
 	RunHandle = FREEFILE
 
 	OPEN Temp.Path + "RUN.DAT" FOR OUTPUT AS #RunHandle
-	PRINT #RunHandle, TargetPath
 	PRINT #RunHandle, TargetFile
 	PRINT #RunHandle, TargetParameters
+	PRINT #RunHandle, TargetPath
 	IF PauseOnExit = True THEN
 		PRINT #RunHandle, "1"
 	ELSE

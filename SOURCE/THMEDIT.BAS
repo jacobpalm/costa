@@ -418,7 +418,7 @@ TopOfLoop:
             GOTO TopOfLoop
         END IF
 
-        IF File.Exists(Sys.Path + "DATA\THEMES\" + TargetFile$ + ".DAT") THEN
+        IF File.Exists("DATA\THEMES\" + TargetFile$ + ".DAT") THEN
           IF NOT UCASE$(TargetFile$) = ThemeFile$ THEN
             DIM DoSave
             DoSave = Sys.MsgBox("File already exists", "The specified theme file already exists. Do you want" + CHR$(13) + "to owerwrite it with this theme?", msgQuest)
@@ -426,7 +426,7 @@ TopOfLoop:
           END IF
 
           'Make sure we start with a clean file
-          KILL Sys.Path + "DATA\THEMES\" + TargetFile$ + ".DAT"
+          KILL "DATA\THEMES\" + TargetFile$ + ".DAT"
         END IF
 
         'Output to file
@@ -495,7 +495,7 @@ SUB ThmEdit.Main ()
         END
       END IF
 
-      IF File.Exists(Sys.Path + "DATA\THEMES\" + ThemeFile$ + ".DAT") = False THEN
+      IF File.Exists("DATA\THEMES\" + ThemeFile$ + ".DAT") = False THEN
         I = Sys.MsgBox("File not found", "The filename you specified was not found." + CHR$(13) + "Do not type a path or extension, only a filename" + CHR$(13) + "with a maximun lenght of 8 characters.", msgError)
         END
       END IF
@@ -517,7 +517,7 @@ SUB ThmEdit.Save ()
   DIM TargetFile$
   DIM ThemeToSaveHandle
 
-  TargetFile$ = Sys.Path + "DATA\THEMES\" + ThemeFile$ + ".DAT"
+  TargetFile$ = "DATA\THEMES\" + ThemeFile$ + ".DAT"
 
   ThemeToSave.Name = ThemeName$
   ThemeToSave.Author = ThemeAuthor$
@@ -571,7 +571,7 @@ FUNCTION ThmEdit.Select () AS STRING
   'Load theme filenames into array
   DIM TmpName$, TmpCount, ActiveTheme
   REDIM ThemeList(0 TO 0) AS STRING
-  TmpName$ = DIR$(Sys.Path + "DATA\THEMES\*.DAT")
+  TmpName$ = DIR$("DATA\THEMES\*.DAT")
   TmpCount = 0
   DO WHILE NOT TmpName$ = ""
     TmpName$ = LEFT$(TmpName$, LEN(TmpName$) - 4)
