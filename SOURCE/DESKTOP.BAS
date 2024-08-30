@@ -18,7 +18,7 @@ DECLARE SUB Desk.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRI
 TYPE DeskLinkType
 	Caption AS STRING * 25
 	Filename AS STRING * 50
-	Path AS STRING * 50
+	path AS STRING * 50
 	Parameters AS STRING * 50
 	ImageFile AS STRING * 8
 	PauseOnExit AS INTEGER
@@ -110,7 +110,7 @@ SUB Desk.ExecuteDialog ()
 	DIM imgIcon AS ImageType
 
 	DIM SelectedFile AS STRING
-	DIM Path AS STRING
+	DIM path AS STRING
 
 	Obj.SetSize winExecute.Pos, sizeCenter, sizeCenter, 342, 196
 	Obj.SetSize txtProgram.Pos, winExecute.Pos.Left + 12, winExecute.Pos.Top + 86, winExecute.Pos.Width - 54, sizeRetain
@@ -154,10 +154,10 @@ DrawExecuteDialog:
 		IF Obj.BtnClick(btnOK) OR Key$ = "o" OR Key$ = CHR$(13) THEN
 			IF LEN(txtProgramText) THEN
 				DO WHILE INSTR(txtProgramText, "\")
-					Path = Path + LEFT$(txtProgramText, INSTR(txtProgramText, "\"))
+					path = path + LEFT$(txtProgramText, INSTR(txtProgramText, "\"))
 					txtProgramText = RIGHT$(txtProgramText, LEN(txtProgramText) - INSTR(txtProgramText, "\"))
 				LOOP
-				Desk.Run txtProgramText, txtParametersText, Path, True
+				Desk.Run txtProgramText, txtParametersText, path, True
 			END IF
 			EXIT DO
 		END IF
@@ -261,7 +261,7 @@ SUB Desk.LinkDialog (TargetLink, DidEdit)
 	txtPath.MaxLen = 50
 	txtFileNameText = RTRIM$(DeskLink(TargetLink).Filename)
 	txtParamsText = RTRIM$(DeskLink(TargetLink).Parameters)
-	txtPathText = RTRIM$(DeskLink(TargetLink).Path)
+	txtPathText = RTRIM$(DeskLink(TargetLink).path)
 	txtLinkCaptText = RTRIM$(DeskLink(TargetLink).Caption)
 	imgIcon.ImageFile = DeskLink(TargetLink).ImageFile
 	chkPauseOnExit.Checked = DeskLink(TargetLink).PauseOnExit
@@ -303,7 +303,7 @@ LinkDialogDraw:
 			IF RTRIM$(txtLinkCaptText) = "" THEN txtLinkCaptText = "Unnamed"
 			DeskLink(TargetLink).Caption = RTRIM$(txtLinkCaptText)
 			DeskLink(TargetLink).Filename = RTRIM$(txtFileNameText)
-			DeskLink(TargetLink).Path = RTRIM$(txtPathText)
+			DeskLink(TargetLink).path = RTRIM$(txtPathText)
 			DeskLink(TargetLink).Parameters = RTRIM$(txtParamsText)
 			DeskLink(TargetLink).PauseOnExit = chkPauseOnExit.Checked
 			DeskLink(TargetLink).ImageFile = AllIcons(CurrentIcon)
@@ -484,8 +484,8 @@ SUB Desk.LinkMenu (TargetLink)
 	Font.Print "Parameters:", winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 76, 0, FontNormal
 	
 	VIEW SCREEN (winLinkMenu.Pos.Left + 90, winLinkMenu.Pos.Top + 55)-(winLinkMenu.Pos.Left + winLinkMenu.Pos.Width - 12, winLinkMenu.Pos.Top + 90)
-	IF LEN(RTRIM$(DeskLink(TargetLink).Path)) THEN
-		Font.Print DeskLink(TargetLink).Path, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 59, Theme.WindowText, FontNormal
+	IF LEN(RTRIM$(DeskLink(TargetLink).path)) THEN
+		Font.Print DeskLink(TargetLink).path, winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 59, Theme.WindowText, FontNormal
 	ELSE
 		Font.Print "Unspecified", winLinkMenu.Pos.Left + 92, winLinkMenu.Pos.Top + 59, Theme.WindowText, FontNormal
 	END IF
@@ -512,7 +512,9 @@ SUB Desk.LinkMenu (TargetLink)
 	
 		'Open/run, or Enter key
 		IF Obj.BtnClick(btnOpen) OR Key$ = "o" OR Key$ = CHR$(13) THEN
-			Desk.Run RTRIM$(DeskLink(TargetLink).Filename), RTRIM$(DeskLink(TargetLink).Parameters), RTRIM$(DeskLink(TargetLink).Path), DeskLink(TargetLink).PauseOnExit
+			Desk.Run RTRIM$(DeskLink(TargetLink).Filename), RTRIM$(DeskLink(TargetLink).Parameters), RTRIM$(DeskLink(TargetLink).path), DeskLink(TargetLink).PauseOnExit
+			RedrawNeeded = True
+			EXIT DO
 		END IF
 
 		'Configure
@@ -788,9 +790,9 @@ SUB Desk.LinkSave ()
 	'If there's only one link, and it has no caption or path, clear it as
 	'that means that the last link has been removed from the desktop
 	IF UBOUND(DeskLink) = 0 AND RTRIM$(DeskLink(0).Caption) = "" THEN
-		DeskLink(0).Path = ""
+		DeskLink(0).path = ""
 		DeskLink(0).Filename = ""
-		DeskLink(0).Path = ""
+		DeskLink(0).path = ""
 		DeskLink(0).Parameters = ""
 		DeskLink(0).ImageFile = ""
 		DeskLink(0).PauseOnExit = 0
@@ -935,7 +937,7 @@ Desk.RedrawAll:
 			
 				DeskLink(UBOUND(DeskLink)).Caption = "Unnamed"
 				DeskLink(UBOUND(DeskLink)).Filename = ""
-				DeskLink(UBOUND(DeskLink)).Path = ""
+				DeskLink(UBOUND(DeskLink)).path = ""
 				DeskLink(UBOUND(DeskLink)).Parameters = ""
 				DeskLink(UBOUND(DeskLink)).ImageFile = "PROGRAM"
 				DeskLink(UBOUND(DeskLink)).Left = 16
@@ -1094,7 +1096,7 @@ END SUB
 ' =========================================================================
 SUB Desk.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVAL TargetPath AS STRING, PauseOnExit AS INTEGER)
 
-	DIM RunHandle, DotPos, I
+	DIM RunHandle, I, ShowErr
 	DIM FileType AS STRING
 	DIM OpenWith AS STRING
 	
@@ -1102,39 +1104,52 @@ SUB Desk.Run (BYVAL TargetFile AS STRING, BYVAL TargetParameters AS STRING, BYVA
 	TargetParameters = LTRIM$(RTRIM$(TargetParameters))
 
 	'Remove trailing \ from path, if any
-	IF LEN(TargetPath) THEN
-		IF RIGHT$(TargetPath, 1) = "\" AND LEN(TargetPath) > 1 THEN TargetPath = LEFT$(TargetPath, LEN(TargetPath) - 1)
+	IF LEN(TargetPath) > 1 THEN
+		IF RIGHT$(TargetPath, 1) = "\" THEN TargetPath = LEFT$(TargetPath, LEN(TargetPath) - 1)
 	END IF
 
-	'Get the file extension, and see if it's associated with a program
-	'Don't check if target is too short, or if it contains a space (if space is
-	'found, then it's not a filename, but a command)
-	IF LEN(TargetFile) > 1 AND NOT INSTR(TargetFile, " ") THEN
+	'Get the file extension for file association check
+	IF LEN(TargetFile) > 1 THEN
 		FOR I = LEN(TargetFile) TO 1 STEP -1
 
-			'If backslash is found before a dot, then any dot would be part of path
-			'and should be ignored
+			'If backslash is found before a dot, then any dot would be part of
+			'path and should be ignored
 			IF MID$(TargetFile, I, 1) = "\" THEN EXIT FOR
 
 			IF MID$(TargetFile, I, 1) = "." THEN
-				FileType = RIGHT$(TargetFile, LEN(TargetFile) - I)
-				OpenWith = File.GetAssociation(FileType)
-
-				IF NOT OpenWith = "" THEN
-					IF LEN(TargetPath) THEN
-						TargetParameters = TargetPath + "\" + TargetFile
-						TargetPath = ""
-					ELSE
-						TargetParameters = TargetFile
-					END IF
-					TargetFile = OpenWith
-				END IF
+				FileType = UCASE$(RIGHT$(TargetFile, LEN(TargetFile) - I))
+				EXIT FOR
 			END IF
 		NEXT
 	END IF
+
+	IF LEN(FileType) THEN
+		OpenWith = File.GetAssociation(FileType)
+		IF LEN(OpenWith) THEN
+			IF LEN(TargetPath) THEN
+				TargetParameters = TargetPath + "\" + TargetFile + " " + TargetParameters
+				TargetPath = ""
+			ELSE
+				TargetParameters = TargetFile
+			END IF
+			IF FileType = "BAT" THEN TargetParameters = "/c " + TargetParameters
+			TargetFile = OpenWith
+		END IF
+	END IF
+
+	IF TargetPath = "" THEN
+		IF NOT File.Exists(TargetFile) THEN ShowErr = True
+	ELSE
+		IF NOT File.Exists(TargetPath + "\" + TargetFile) THEN ShowErr = True
+	END IF
+
+	IF ShowErr = True THEN
+		ShowErr = Sys.MsgBox("File not found", "The program you are trying to run (" + TargetFile + ") does not exist" + CHR$(13) + "in the specified path.", msgError)
+		EXIT SUB
+	END IF
 	
 	'Print the filename, parameters, path and wether to pause on exit to
-	'RUN.BAT, and exit. COSTA.EXE will detect that file and run it, and then
+	'RUN.DAT, and exit. COSTA.EXE will detect that file and run it, and then
 	'relaunch the desktop
 	RunHandle = FREEFILE
 

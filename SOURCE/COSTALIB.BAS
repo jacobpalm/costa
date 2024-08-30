@@ -66,8 +66,13 @@ FUNCTION File.GetAssociation (FileType AS STRING) AS STRING
 	FileType = UCASE$(FileType)
 
 	'Do not allow executables to be associated with anything
-	IF FileType = "EXE" OR FileType = "COM" OR FileType = "BAT" THEN
+	IF FileType = "EXE" OR FileType = "COM" THEN
 		File.GetAssociation = ""
+		EXIT FUNCTION
+	END IF
+
+	IF FileType = "BAT" THEN
+		File.GetAssociation = ENVIRON$("COMSPEC")
 		EXIT FUNCTION
 	END IF
 
