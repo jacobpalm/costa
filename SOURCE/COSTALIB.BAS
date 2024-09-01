@@ -187,6 +187,11 @@ FUNCTION Mouse.Clicked ()
 	'  mbRight 2 if right button is clicked
 	'  mbBoth  3 if both buttons are clicked
 
+	IF NOT MouseSupport THEN
+		Mouse.Clicked = 0
+		EXIT FUNCTION
+	END IF
+
 	DIM regs AS RegType
 
 	regs.ax = 3
@@ -197,7 +202,7 @@ END FUNCTION
 
 SUB Mouse.Hide ()
 
-	IF NOT MouseHidden THEN
+	IF NOT MouseHidden AND MouseSupport THEN
 		DIM regs AS RegType
 		regs.ax = 2
 		INTERRUPT 51, regs, regs
@@ -210,6 +215,11 @@ FUNCTION Mouse.InArea (TargetArea AS PosType)
 
 	'Returns True if the mouse cursor is within the area
 	'regs.cx = X, regs.dx = y
+
+	IF NOT MouseSupport THEN
+		Mouse.InArea = False
+		EXIT FUNCTION
+	END IF
 
 	DIM regs AS RegType
 	regs.ax = 3
@@ -226,6 +236,8 @@ END FUNCTION
 SUB Mouse.Poll ()
 	'Stores mouse coordinates in shared variables MouseX and MouseY
 
+	IF NOT MouseSupport THEN EXIT SUB
+
 	DIM regs AS RegType
 	regs.ax = 3
 	INTERRUPT 51, regs, regs
@@ -237,6 +249,9 @@ END SUB
 SUB Mouse.SetPos (XPos, YPos)
 
 	DIM regs AS RegType
+
+	IF NOT MouseSupport THEN EXIT SUB
+
 	regs.ax = 4
 	regs.cx = XPos
 	regs.dx = YPos
@@ -246,7 +261,7 @@ END SUB
 
 SUB Mouse.Show ()
 
-	IF MouseHidden THEN
+	IF MouseHidden AND MouseSupport THEN
 		DIM regs AS RegType
 		regs.ax = 1
 		INTERRUPT 51, regs, regs
@@ -761,8 +776,10 @@ END SUB
 DEFINT A-Z
 SUB Sys.Load ()
 
-	'Prepare fonts for use
 	DIM FontErr
+	DIM regs AS RegType
+
+	'Prepare fonts for use
 	IF NOT File.Exists("DATA\FONTDATA.BSV") THEN FontErr = True
 	IF NOT File.Exists("DATA\FONTINFO.BSV") THEN FontErr = True
 
@@ -788,6 +805,10 @@ SUB Sys.Load ()
 	'Load settings
 	Sys.LoadSettings
 	Sys.LoadTheme
+	
+	'Detect mouse
+	INTERRUPT 51, regs, regs
+	IF regs.ax THEN MouseSupport = True
 	
 	'Clear mouse/keyboard buffer, DOSBox has some issues with leaving data
 	DO: LOOP WHILE Mouse.Clicked
