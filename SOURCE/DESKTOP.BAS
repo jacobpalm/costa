@@ -627,6 +627,13 @@ SUB Desk.LinkMove (TargetLink)
 	'Center mouse on icon
 	Mouse.SetPos DrawX + 16, DrawY + 16
 
+	IF NOT MouseSupport THEN
+		'Set mouse pos variables manually to make the rest of the code work
+		'if no mouse is present
+		MouseX = DrawX + 16
+		MouseY = DrawY + 16
+	END IF
+
 	Mouse.Poll
 	CurGridX = MouseX / GridSize
 	CurGridY = MouseY / GridSize
