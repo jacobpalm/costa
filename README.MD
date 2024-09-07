@@ -12,19 +12,18 @@ Costa is designed for MS-DOS, but tested with PC-DOS, DR-DOS, FreeDOS,
 Novell DR Multiuser DOS and DOSBox as well. In theory it should run on any
 IBM compatible system with:
 
-  * An 8088 or better CPU (386 or better recommended)
-  * EGA (256KB or more VRAM required) or VGA graphics (any VGA compatible
-    card should do)
+  * An 8088 or better CPU (386 or better recommended).
+  * EGA or VGA graphics supporting 640x350 pixels at 16 colors (most newer EGA
+    or any VGA compatible card should do).
   * A recommended minimum of 200 KB available memory while running Costa.
-    When running external programs or games, Costa will exit first and then
-    reload after, taking no memory from your other programs.
-  * MS-DOS 4.0 or newer, or a compatible operating system
+    When running external programs or games, Costa will use about 8 KB RAM.
+  * MS-DOS 4.0 or newer, or a compatible operating system.
+  * A mouse is optional. If used, a mouse driver must be loaded (DOSBox
+    has a built-in mouse driver).
 
 Although not required, a 386 or better CPU is recommended, as well as disk
-caching software (SmartDrive or similar) when running on older machines.
-Costa uses the path defined in the TEMP environment variable in AUTOEXEC.BAT
-for temporary file storage, so it is possible to use a RAM disk if desired.
-If TEMP is not defined, Costa will use the path where it is located.
+caching software (SmartDrive or similar) when running on older machines -
+especially if running Costa from a floppy drive.
 
 ## Further information
 See the included documentation for more information, or visit the homepage
@@ -61,7 +60,7 @@ The source code and build script assume the following:
   * That Visual Basic for DOS is installed to C:\VBDOS, in a flat structure -
     that is, all files placed in the folder directly, including libraries and
     include files
-  * That QuickPascal is installed in C:\TP using default folder structure
+  * That Turbo Pascal is installed in C:\TP using default folder structure
     (compiler placed in the BIN subdirectory of that path).
 
 ## Building Costa
