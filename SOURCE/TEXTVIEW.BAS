@@ -15,11 +15,7 @@ STACK 6144
 
 Sys.Load
 
-IF NOT COMMAND$ = "/DEV" THEN
-    TView.Main COMMAND$
-ELSE
-    TView.Main ""
-END IF
+TView.Main COMMAND$
 
 ' =========================================================================
 '          NAME: TView.DrawText()
@@ -38,7 +34,7 @@ SUB TView.DrawText (StartLine)
     FOR LineCount = StartLine TO StartLine + MaxLinesShown
         IF NOT LineCount > UBOUND(FileData) THEN
             LINE (7, (15 * (LineCount - StartLine + 1)) + 22)-(633, 15 * (LineCount - StartLine + 1) + 36), Theme.Textbox, BF
-            Font.Print FileData(LineCount), 9, (15 * (LineCount - StartLine + 1)) + 24, Theme.TextboxText, FontSystem
+            Font.Print FileData(LineCount), 9, (15 * (LineCount - StartLine + 1)) + 24, Theme.TextboxText, FontNormal
         END IF
     NEXT
     Mouse.Show
@@ -56,7 +52,7 @@ END SUB
 ' =========================================================================
 FUNCTION TView.LoadFile (TargetFile AS STRING)
 
-    DIM FileHandle, LineCount
+    DIM FileHandle, TrimLine
 
     IF NOT File.Exists(TargetFile) THEN
         FileHandle = Sys.MsgBox("File not found", "Textviewer could not find the file you are trying to load.", msgError)
@@ -72,18 +68,20 @@ FUNCTION TView.LoadFile (TargetFile AS STRING)
     REDIM FileData(1 TO 1) AS STRING
     ON LOCAL ERROR GOTO TViewLoadErr
     DO WHILE NOT EOF(FileHandle)
-        LineCount = LineCount + 1
-        REDIM PRESERVE FileData(1 TO LineCount) AS STRING
-        LINE INPUT #FileHandle, FileData(LineCount)
+        LINE INPUT #FileHandle, FileData(UBOUND(FileData))
 
-        DO WHILE LEN(FileData(LineCount)) > 80
-            LineCount = LineCount + 1
-            REDIM PRESERVE FileData(1 TO LineCount) AS STRING
-
-            FileData(LineCount) = RIGHT$(FileData(LineCount - 1), LEN(FileData(LineCount - 1)) - 78)
-            FileData(LineCount - 1) = LEFT$(FileData(LineCount - 1), 78)
+        DO WHILE Font.GetWidth(FileData(UBOUND(FileData)), FontNormal) > 622
+            FOR TrimLine = LEN(FileData(UBOUND(FileData))) TO 1 STEP -1
+                IF Font.GetWidth(LEFT$(FileData(UBOUND(FileData)), TrimLine), FontNormal) < 622 THEN
+                    REDIM PRESERVE FileData(1 TO UBOUND(FileData) + 1) AS STRING
+                    FileData(UBOUND(FileData)) = RIGHT$(FileData(UBOUND(FileData) - 1), LEN(FileData(UBOUND(FileData) - 1)) - TrimLine)
+                    FileData(UBOUND(FileData) - 1) = LEFT$(FileData(UBOUND(FileData) - 1), TrimLine)
+                    EXIT FOR
+                END IF
+            NEXT
         LOOP
 
+        IF NOT EOF(FileHandle) THEN REDIM PRESERVE FileData(1 TO UBOUND(FileData) + 1) AS STRING
     LOOP
     REDIM PRESERVE FileData(1 TO UBOUND(FileData) + 2) AS STRING
     FileData(UBOUND(FileData)) = "* end of file *"
@@ -200,7 +198,7 @@ StartOfAll:
             PUT (7, (15 * (LineMove + 1)) + 21), LineData, PSET
           NEXT
           LINE (7, (15 * (1)) + 21)-(633, 15 * (1) + 35), Theme.Textbox, BF
-          Font.Print FileData(StartLine), 9, (15 * (1)) + 22, Theme.TextboxText, FontSystem
+          Font.Print FileData(StartLine), 9, (15 * (1)) + 22, Theme.TextboxText, FontNormal
 
           Mouse.Show
         END IF
@@ -221,7 +219,7 @@ StartOfAll:
             PUT (7, (15 * (LineMove)) + 22), LineData, PSET
           NEXT
           LINE (7, (15 * (MaxLinesShown + 1)) + 21)-(633, 15 * (MaxLinesShown + 1) + 35), Theme.Textbox, BF
-          Font.Print FileData(StartLine + MaxLinesShown), 9, (15 * (MaxLinesShown + 1)) + 22, Theme.TextboxText, FontSystem
+          Font.Print FileData(StartLine + MaxLinesShown), 9, (15 * (MaxLinesShown + 1)) + 22, Theme.TextboxText, FontNormal
           Mouse.Show
         END IF
       END IF
