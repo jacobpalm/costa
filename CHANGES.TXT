@@ -1,15 +1,27 @@
+The Costa GUI, version 1.8.0
+By Jacob Palm
 
-                         The Costa GUI, version 1.7.5
-                               By Jacob Palm                   
+Changelog
+------------------------------------------------------------------------------
 
-                                 Changelog
-
-Costa 1.7.5 is a minor release, with few enhancements. Most notable is the
-ability to move icons between desktops, without having to delete and recreate
-them.
-  -Icons can now be moved between desktops
-  -Desktops can be switched using the 1-5 keys on the keyboard, for faster
-   access than cycling through them
-  -A bunch of new icons added
+Costa 1.8.0 is a minor release, mostly focused on bugfixes. One new feature
+is that COSTA.BAT has been replaced with COSTA.EXE.
+ -New launcher, COSTA.EXE, which works independently of current path, making
+  the SETUP.EXE program that created COSTA.BAT obsolete. SETUP.EXE has been
+  removed, and setup of Costa is no longer required. Internal code to handle
+  paths removed, resulting in quicker execution.
+ -Fixed a bug that resulted in Minesweeper mistakingly thinking 1 field had
+  yet to be cleared, when the game had actually been won.
+ -Fix mouse selection in file browser dialog, that was offset by a few
+  pixels.
+ -Fix bug that resulted in icons being unmovable when no mouse driver was
+  loaded.
+ -Optimized mouse code to only call mouse driver interrupts if a mouse was
+  detected at startup, improving speed on systems without a mouse.
+ -Code to check if file exists rewritten to use MS-DOS interrupt calls,
+  resulting in quicker execution.
+ -General optimizations to reduce overall size of Costa.
+ -Text viewer now uses a variable width font, allowing much longer lines to
+  be displayed.
 
 For older versions, see the complete changelog at https://costa.jacobpalm.dk
