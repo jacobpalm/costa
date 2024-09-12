@@ -10,7 +10,7 @@ TYPE IconDataType
 	Pixel(31, 31) AS INTEGER
 END TYPE
 
-DIM SHARED FontData(1 TO 3, 32 TO 127) AS STRING * 54
+DIM SHARED FontData(1 TO 2, 32 TO 127) AS STRING * 54
 DIM SHARED FontWidth(1 TO 2, 32 TO 127) AS INTEGER
 
 DIM SHARED MouseHidden AS INTEGER
@@ -171,7 +171,7 @@ SUB Font.Print (BYVAL Text AS STRING, X, Y, Col, FontID)
 	NEXT
 	
 	'Underline hotkey, if any
-	IF HotKey AND NOT FontID = FontSystem THEN
+	IF HotKey THEN
 		LINE (X + Font.GetWidth(LEFT$(FilteredText, HotKey - 1), FontID), Y + 11)-(X + Font.GetWidth(LEFT$(FilteredText, HotKey), FontID), Y + 11), Col
 	END IF
 

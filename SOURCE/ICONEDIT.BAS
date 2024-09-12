@@ -50,12 +50,7 @@ STACK 6144
 
 Sys.Load
 
-IF NOT COMMAND$ = "/?" AND NOT COMMAND$ = "/VER" AND NOT COMMAND$ = "/DEV" THEN
-    'Icon specified as param, pass along
-    IconEdit.Main COMMAND$
-ELSE
-    IconEdit.Main ""
-END IF
+IconEdit.Main COMMAND$
 
 SUB IconEdit.DrawPixel (X, Y, DrawColor, ForceDraw)
 

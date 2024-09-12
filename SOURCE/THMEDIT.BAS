@@ -142,17 +142,17 @@ SUB ThmEdit.DrawPreview (ThemeFile AS STRING)
   Obj.DrawImg imgPreview
   Obj.DrawTxt txtListPreview, "", False
 
-  Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 14, Theme.WindowText, fontHeading
+  Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 14, Theme.WindowText, FontHeading
   Font.Print "This is a preview of the theme.", winPreview.Pos.Left + 12, winPreview.Pos.Top + 30, Theme.WindowText, FontNormal
-  Font.Print "Preview link", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 4, Theme.DesktopText, fontHeading
+  Font.Print "Preview link", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 4, Theme.DesktopText, FontHeading
   Font.Print "preview.exe", imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 18, Theme.DesktopText, FontNormal
 
   LINE (txtListPreview.Pos.Left + 2, txtListPreview.Pos.Top + 15)-(txtListPreview.Pos.Left + txtListPreview.Pos.Width - 2, txtListPreview.Pos.Top + 27), Theme.Select, BF
-  Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5, Theme.TextboxText, FontSystem
-  Font.Print "Selected item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 12, Theme.SelectText, FontSystem
-  Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 24, Theme.TextboxText, FontSystem
-  Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 36, Theme.TextboxText, FontSystem
-  Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 48, Theme.TextboxText, FontSystem
+  Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5, Theme.TextboxText, FontHeading
+  Font.Print "Selected item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 12, Theme.SelectText, FontHeading
+  Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 24, Theme.TextboxText, FontHeading
+  Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 36, Theme.TextboxText, FontHeading
+  Font.Print "List item", txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 48, Theme.TextboxText, FontHeading
   Mouse.Show
 
   Setting.ThemeFile = OriginalTheme
@@ -229,10 +229,10 @@ SUB ThmEdit.Edit (BYVAL ThmFile AS STRING)
       LINE (btnColor(I).Pos.Left + 2, btnColor(I).Pos.Top + 2)-(btnColor(I).Pos.Left + btnColor(I).Pos.Width - 2, btnColor(I).Pos.Top + btnColor(I).Pos.Height - 2), I, BF
     NEXT
 
-    Font.Print "Theme õname:", txtThemeName.Pos.Left, txtThemeName.Pos.Top - 16, Theme.WindowText, fontHeading
-    Font.Print "Theme aõuthor:", txtThemeAuthor.Pos.Left, txtThemeAuthor.Pos.Top - 16, Theme.WindowText, fontHeading
-    Font.Print "õObject selected:", 434, btnObject.Pos.Top - 16, Theme.WindowText, fontHeading
-    Font.Print "õColor for object:", 434, btnColor(0).Pos.Top - 16, Theme.WindowText, fontHeading
+    Font.Print "Theme õname:", txtThemeName.Pos.Left, txtThemeName.Pos.Top - 16, Theme.WindowText, FontHeading
+    Font.Print "Theme aõuthor:", txtThemeAuthor.Pos.Left, txtThemeAuthor.Pos.Top - 16, Theme.WindowText, FontHeading
+    Font.Print "õObject selected:", 434, btnObject.Pos.Top - 16, Theme.WindowText, FontHeading
+    Font.Print "õColor for object:", 434, btnColor(0).Pos.Top - 16, Theme.WindowText, FontHeading
 
     'Color indicator
     LINE (btnColor(thmClrDesktop).Pos.Left + 4, btnColor(thmClrDesktop).Pos.Top + 4)-(btnColor(thmClrDesktop).Pos.Left + btnColor(thmClrDesktop).Pos.Width - 4, btnColor(thmClrDesktop).Pos.Top + btnColor(thmClrDesktop).Pos.Height - 4), 8, B
@@ -606,8 +606,8 @@ FUNCTION ThmEdit.Select () AS STRING
   Obj.DrawBtn btnAbout, False
   Obj.DrawBtn btnCancel, False
 
-  Font.Print "Theme name:", 434, 43, Theme.WindowText, fontHeading
-  Font.Print "Theme author:", 434, 91, Theme.WindowText, fontHeading
+  Font.Print "Theme name:", 434, 43, Theme.WindowText, FontHeading
+  Font.Print "Theme author:", 434, 91, Theme.WindowText, FontHeading
   Mouse.Show
 
   ThmEdit.DrawPreview ThemeList(ActiveTheme)

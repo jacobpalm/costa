@@ -54,7 +54,6 @@
 'Font type constants
   CONST FontHeading = 1
   CONST FontNormal = 2
-  CONST FontSystem = 3
 
 'Messagebox constants
   CONST msgInfo = 1
@@ -160,7 +159,7 @@
   COMMON SHARED Setting AS SettingType
   COMMON SHARED Theme AS ThemeType
 
-  COMMON SHARED MouseSupport
+  COMMON SHARED MouseSupport AS INTEGER
   COMMON SHARED MouseX AS INTEGER
   COMMON SHARED MouseY AS INTEGER
 

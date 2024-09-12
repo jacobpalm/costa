@@ -76,9 +76,9 @@ SUB File.DrawList (TargetList AS TextboxType, HighLightActive, FullRedraw)
 				'Highlight active selected item, if encountered
 				IF I = ListSelection AND ActiveList = TargetList.MaxLen THEN
 					LINE (TargetList.Pos.Left + 2, TargetList.Pos.Top + 3 + (Counter * 12))-(TargetList.Pos.Left + TargetList.Pos.Width - 2, TargetList.Pos.Top + 15 + (Counter * 12)), Theme.Select, BF
-					Font.Print ItemText, TargetList.Pos.Left + 5, TargetList.Pos.Top + 5 + (Counter * 12), Theme.SelectText, FontSystem
+					Font.Print ItemText, TargetList.Pos.Left + 5, TargetList.Pos.Top + 5 + (Counter * 12), Theme.SelectText, FontHeading
 				ELSE
-					Font.Print ItemText, TargetList.Pos.Left + 5, TargetList.Pos.Top + 5 + (Counter * 12), Theme.TextboxText, FontSystem
+					Font.Print ItemText, TargetList.Pos.Left + 5, TargetList.Pos.Top + 5 + (Counter * 12), Theme.TextboxText, FontHeading
 				END IF
 
 				Counter = Counter + 1
@@ -106,7 +106,7 @@ SUB File.DrawList (TargetList AS TextboxType, HighLightActive, FullRedraw)
 
 		IF NOT ItemText = "" THEN
 			LINE (TargetList.Pos.Left + 2, TargetList.Pos.Top + 3 + (I * 12))-(TargetList.Pos.Left + TargetList.Pos.Width - 2, TargetList.Pos.Top + 15 + (I * 12)), BGColor, BF
-			Font.Print ItemText, TargetList.Pos.Left + 5, TargetList.Pos.Top + 5 + (I * 12), FGColor, FontSystem
+			Font.Print ItemText, TargetList.Pos.Left + 5, TargetList.Pos.Top + 5 + (I * 12), FGColor, FontHeading
 		END IF
 
 	END IF

@@ -61,7 +61,7 @@ SUB Calc.LogLine (Text AS STRING, TargetTxt AS TextboxType)
       Obj.DrawTxt TargetTxt, "", False
   END IF
 
-  Font.Print Text, 624 - LEN(Text) * 8, TopOffset + (LogLinesWritten * 15), Theme.WindowText, FontSystem
+  Font.Print Text, 624 - LEN(Text) * 8, TopOffset + (LogLinesWritten * 15), Theme.WindowText, FontHeading
   
 END SUB
 
