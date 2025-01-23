@@ -11,7 +11,7 @@
 			{% for archiveversion in archiveversions %}
 				<a href="{{ site.baseURL }}/archive/{{ archiveversion.title | remove: '.' }}.html#expandeditem" class="w3-bar-item w3-border-bottom w3-mobile w3-center w3-white w3-hover-black">Version {{ archiveversion.title }}</a>
 				{% if archiveversion.title == page.title %}
-					<div class="w3-content w3-padding-16" id="expandeditem">
+					<div class="w3-content" style="padding: 16px;" id="expandeditem">
 						<div class="w3-center">
 							<h2>Version {{ page.title }}</h2>
 							{% if page.unavailable %}
