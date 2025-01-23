@@ -14,7 +14,7 @@
 				  Jump to version
 			</button>
 			<div class="w3-dropdown-content w3-bar-block w3-border">
-			  			  {% for archiveversion in archiveversions %}
+			  	{% for archiveversion in archiveversions %}
 					<a href="{{ site.baseURL }}/archive/{{ archiveversion.title | remove: '.' }}.html#versioninfo" class="w3-bar-item w3-button">{{ archiveversion.title }}</a>
 				{% endfor %}
 			</div>

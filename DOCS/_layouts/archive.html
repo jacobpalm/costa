@@ -1,9 +1,24 @@
 ---
 layout: default
 ---
-{% include archivelist.html %}
+<div class="w3-row-padding w3-light-grey w3-padding-32 w3-container w3-center">
+    <div class="w3-content">
+		<h1>The Archive</h1>
+		<p>I have decided to make every previous version of Costa available for download, to preserve its history and to allow anyone interested in seeing how Costa has evolved to do so.</p>
+		<p>In the archive you will find a complete list of releases, with changelog for each version, as well as a screenshot.</p>
+		<p>It's a long list, with releases spanning nearly two decades.</p>
 
-<div class="w3-row-padding w3-white w3-padding-32 w3-container" id="versioninfo">
+		<div class="w3-bar-block w3-border w3-center">
+			{% for archiveversion in archiveversions %}
+			<a href="{{ site.baseURL }}/archive/{{ archiveversion.title | remove: '.' }}.html#expandeditem" class="w3-bar-item w3-border-bottom w3-mobile w3-white w3-hover-black">Version {{ archiveversion.title }}</a>
+			{% endfor %}
+		</div>
+
+		<p>To download the most recent version of Costa, <a href="{{ site.baseURL }}/index.html#downloads">head on over to the Download section</a>.</p>
+	</div>
+</div>
+
+<div class="w3-row-padding w3-white w3-padding-32 w3-container" id="expandeditem">
     <div class="w3-content">
 		<div class="w3-center">
 			<h2>Version {{ page.title }}</h2>
@@ -35,6 +50,5 @@ layout: default
 				</a>
 			</div>
 		{% endunless %}
-		<p>To download the most recent version of Costa, <a href="{{ site.baseURL }}/index.html#downloads">head on over to the Download section</a>.</p>
     </div>
 </div>
