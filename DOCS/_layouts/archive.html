@@ -12,7 +12,7 @@ layout: default
 		<div class="w3-bar-block w3-border w3-center">
 			{% for archiveversion in archiveversions %}
 				<a href="{{ site.baseURL }}/archive/{{ archiveversion.title | remove: '.' }}.html#expandeditem" class="w3-bar-item w3-border-bottom w3-mobile w3-white w3-hover-black">Version {{ archiveversion.title }}</a>
-				{% if arhiveversion.title == page.title %}
+				{% if archiveversion.title == page.title %}
 					<div class="w3-content" id="expandeditem">
 						<div class="w3-center">
 							<h2>Version {{ page.title }}</h2>
