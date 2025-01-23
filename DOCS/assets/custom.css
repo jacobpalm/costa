@@ -94,6 +94,17 @@ code .c1 {
     color: green;
 }
 
+/* Buttons */
+.w3-button {
+    width: auto;
+    border-radius: 15px;
+    border: 1px solid #000;
+}
+
+.w3-button:hover {
+    box-shadow: inset 0 0 0 1px black, inset 0 0 0 2px white;
+}
+
 @media print {
     .hidden-print {
       display: none !important;
