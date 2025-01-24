@@ -16,7 +16,7 @@
 							<h2>Version {{ page.title }}</h2>
 							{% if page.unavailable %}
 								<div class="posttime">Unreleased</div>
-								<p></p>
+								<p>&nbsp;</p>
 							{% else %}
 								<div class="posttime">Released on the {% assign day = page.date | date: "%-d"  %}
 									{% case day %}
@@ -26,12 +26,13 @@
 									{% else %}{{ day }}th
 									{% endcase %}
 									{{ page.date | date: "of %B, %Y" }}</div>
+								<p>&nbsp;</p>
 								<a href="{{ site.baseURL }}/assets/img/archive/{{ page.title | remove: '.' }}.png"><img class="w3-image" src="{{ site.baseURL }}/assets/img/archive/{{ page.title | remove: '.' }}.png" alt="Screenshot of Costa {{ page.title }}"></a>
 							{% endif %}
 						</div>
 						{{ content | markdownify }}
 						{% unless page.unavailable %}
-							<p></p>
+							<p>&nbsp;</p>
 							<div class="w3-center">
 								<a class="w3-button  w3-white w3-hover-black" href="{{ site.baseURL }}/downloads/costa{{ page.title | remove: '.' }}.zip">
 									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-floppy2-fill" viewBox="0 0 16 16">
