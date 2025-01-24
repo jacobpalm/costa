@@ -13,7 +13,9 @@ layout: default
                 {% else %}
                     {{ day }}th
                 {% endcase %}
-                {{ page.date | date: "of %B, %Y" }}</div>
+                {{ page.date | date: "of %B, %Y" }}<br>
+                &nbsp;
+            </div>
             {% if page.image %}
                 <a href="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.image}}"><img class="w3-image" src="{{"/assets/img/blog/" | prepend: site.baseurl | append : page.image}}"></a>
             {% endif %}
