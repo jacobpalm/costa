@@ -15,8 +15,10 @@
 						<div class="w3-center">
 							<h2>Version {{ page.title }}</h2>
 							{% if page.unavailable %}
-								<div class="posttime">Unreleased</div>
-								<p>&nbsp;</p>
+								<div class="posttime">
+									Unreleased<br>
+									&nbsp;
+								</div>
 							{% else %}
 								<div class="posttime">Released on the {% assign day = page.date | date: "%-d"  %}
 									{% case day %}
@@ -25,8 +27,9 @@
 									{% when '3' or '23' %}{{ day }}rd
 									{% else %}{{ day }}th
 									{% endcase %}
-									{{ page.date | date: "of %B, %Y" }}</div>
-								<p>&nbsp;</p>
+									{{ page.date | date: "of %B, %Y" }}<br>
+									&nbsp;
+								</div>
 								<a href="{{ site.baseURL }}/assets/img/archive/{{ page.title | remove: '.' }}.png"><img class="w3-image" src="{{ site.baseURL }}/assets/img/archive/{{ page.title | remove: '.' }}.png" alt="Screenshot of Costa {{ page.title }}"></a>
 							{% endif %}
 						</div>
