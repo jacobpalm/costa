@@ -17,38 +17,37 @@ CONST
 	costa_exe     = 'COSTA.EXE';
 	desktop_exe   = 'DESKTOP.EXE';
 	run_dat       = 'DATA\RUN.DAT';
-        continuestr   = 'Press Enter to continue...';
+	continuestr   = 'Press Enter to continue...';
 
 VAR
-	current_dir   : PathStr;
+	current_dir   : DirStr;
 	sresults      : SearchRec;
 	file_name     : TEXT;
 	run_command   : ComStr;
-	run_path      : PathStr;
+	run_path      : DirStr;
 	run_params    : ComStr;
 	run_pause     : CHAR;
 
 { Run an external program - handle errors }
-PROCEDURE RunProgram(command, params: ComStr; path: PathStr; pause: CHAR);
+PROCEDURE RunProgram(command, params: ComStr; path: DirStr; pause: CHAR);
 BEGIN
 
-        {$IFDEF DEBUG}
-               Writeln('Changing path to ', path);
-               Writeln('Running program ', command);
-               Writeln('With parameters ', path);
-               Write(continuestr);
-               Readln;
-        {$ENDIF}
+	{$IFDEF DEBUG}
+		Writeln('Changing path to ', path);
+		Writeln('Running program ', command);
+		Writeln('With parameters ', path);
+		Write(continuestr);
+		Readln;
+	{$ENDIF}
 
-        IF Length(path) > 0 THEN
+	IF Length(path) > 0 THEN
 	BEGIN
-             chdir(path);
-        END
-        ELSE
-        BEGIN
-            chdir(current_dir);
-        END;
-
+		chdir(path);
+	END
+	ELSE
+	BEGIN
+		chdir(current_dir);
+	END;
 
 	SwapVectors;
 	Exec(command, params);
@@ -62,7 +61,6 @@ BEGIN
 		{ If desktop can't be launched, exit }
 		IF command = desktop_exe THEN
 			Halt(1);
-
 	END;
 
 	{ Wait for keypress before returning? }
@@ -93,11 +91,11 @@ BEGIN
 	{ 13 = max 8.3 filename lenght 12 including the dot, plus a backslash }
 	Delete(current_dir, pos('\' + costa_exe, current_dir), 13);
 
-        {$IFDEF DEBUG}
-                Writeln('Path to Costa is ', current_dir);
-                Write(continuestr);
-                Readln;
-        {$ENDIF}
+	{$IFDEF DEBUG}
+		Writeln('Path to Costa is ', current_dir);
+		Write(continuestr);
+		Readln;
+	{$ENDIF}
 
 	{ Verify that desktop exe exists in same path as this executable }
 	FindFirst(current_dir + '\' + desktop_exe, Archive, sresults);
@@ -119,14 +117,14 @@ BEGIN
 		{ If run.dat exists, run it and delete it }
 		FindFirst(current_dir + '\' + run_dat, Archive, sresults);
 		IF DosError > 0 THEN
-                   continue;
+			continue;
 
 		{ Open file, read data and delete file }
 		Assign(file_name, current_dir + '\' + run_dat);
 		Reset(file_name);
 		Readln(file_name, run_command);
-	        Readln(file_name, run_params);
-                Readln(file_name, run_path);
+		Readln(file_name, run_params);
+		Readln(file_name, run_path);
 		Read(file_name, run_pause);
 		Erase(file_name);
 		Close(file_name);
