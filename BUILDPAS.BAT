@@ -2,7 +2,7 @@
 if "%1"=="" goto noparams
 
 del %1.exe
-tpc -m source\%1.pas -E. -USOURCE -ISOURCE -OSOURCES
+tpc -m source\%1.pas -E. -USOURCE -ISOURCE -OSOURCE
 goto end
 
 :noparams

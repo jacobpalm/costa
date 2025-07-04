@@ -159,6 +159,8 @@ begin
       MouseHide;
       ObjDrawTxt(txtCalc, '', False);
       MouseShow;
+      SysMsgBox('Calculator', 'Cleared the calculator input.' + #13 + 'It was hard but I did it.', msgError);
+       {Just debug stuff, remove later}
     end;
 
     if ObjBtnClick(btnCE) or (KeyStr = 'e') then

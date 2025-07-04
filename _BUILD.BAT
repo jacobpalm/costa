@@ -73,7 +73,7 @@ REM e- = disabel 80x87 emulation
 REM i- = disable runtime io checking
 REM l- = disable local debug symbols
 REM s- = disable stack check     
-C:\TP\BIN\TPC -$D- -$E- -$I- -$L- -$S- costa.pas
+C:\TP\BIN\TPC -$D- -$E- -$I- -$L- -$S-  source\costa.pas -USOURCE -ISOURCE -OSOURCE
 
 echo.
 echo Removing object and debug files...

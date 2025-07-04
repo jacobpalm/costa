@@ -18,7 +18,6 @@ const
   msgWarn      = 2;
   msgQuest     = 3;
   msgError     = 4;
-  msgTip       = 5;
   {$I APPINFO.INC}
 
 type
@@ -489,8 +488,10 @@ var
 begin
   X := TargetImg.Pos.Left;
   Y := TargetImg.Pos.Top;
-  TargetImg.Pos.Width := 31;
+  TargetImg.Pos.Width := 31;  {Width/height are set here to make sure they match icon size in click detection etc.}
   TargetImg.Pos.Height := 31;
+
+  {Image border}
   SetColor(Theme.Light);
   Line(X-1, Y-1, X+32, Y-1);
   Line(X-1, Y, X-1, Y+32);
@@ -498,8 +499,7 @@ begin
   Line(X, Y+32, X+32, Y+32);
   Line(X+32, Y, X+32, Y+31);
 
-  Size := ImageSize(0, 0, 31, 31);
-  
+  Size := ImageSize(0, 0, 31, 31); {Coords don't matter, just size}
   Assign(ImageFile, 'DATA\IMAGES\' + TargetImg.ImageFile + '.BIN');
   {$I-}
   Reset(ImageFile, 1);
@@ -512,13 +512,13 @@ begin
     FontPrint('ERR', X+5, Y+19, 15, FontNormal);
     Exit;
   end;
-  SetFillStyle(SolidFill, Red);
-    Bar(X-5, Y-5, X+36, Y+36);
   GetMem(ImagePointer, Size);
   BlockRead(ImageFile, ImagePointer^, Size);
   Close(ImageFile);
+  MouseHide;
+  PutImage(x, y, ImagePointer^, CopyPut);
+  MouseShow;
   FreeMem(ImagePointer, Size);
-  PutImage(x, y, ImagePointer^, NormalPut);
 end;
 
 procedure ObjDrawMenu;
@@ -722,6 +722,9 @@ var
   winAboutBox: WindowType;
   btnClose: ButtonType;
   imgLogo: ImageType;
+  x1, y1, x2, y2: Integer;
+  BackgroundSize: Word;
+  BackgroundP: Pointer;
   Key: Char;
 begin
   ObjSetSize(winAboutBox.Pos, sizeCenter, sizeCenter, 329, 216);
@@ -731,6 +734,16 @@ begin
   btnClose.Transparent := False;
   imgLogo.ImageFile := IconFile;
   MouseHide;
+  
+  {Save background to restore when window is closed}
+  x1 := winAboutBox.Pos.Left;
+  y1 := winAboutBox.Pos.Top;
+  x2 := winAboutBox.Pos.Left + winAboutBox.Pos.Width;
+  y2 := winAboutBox.Pos.Top + winAboutBox.Pos.Height;
+  BackgroundSize := ImageSize(x1, y1, x2, y2);
+  GetMem(BackgroundP, BackgroundSize);
+  GetImage(x1, y1, x2, y2, BackgroundP^);
+
   ObjDrawWin(winAboutBox);
   ObjDrawBtn(btnClose, False);
   ObjDrawImg(imgLogo);
@@ -751,6 +764,10 @@ begin
     if ObjBtnClick(btnClose) or (Key = #13) or (Key = #27) or (Key = 'c') then Break;
     Key := #0;
   until False;
+  MouseHide;
+  PutImage(x1, y1, BackgroundP^, NormalPut);
+  FreeMem(BackgroundP, BackgroundSize);
+  MouseShow;
 end;
 
 procedure SysLoad;
@@ -862,6 +879,9 @@ var
   S, T: string;
   Key: Char;
   P, L: Integer;
+  x1, y1, x2, y2: Integer;
+  BackgroundSize: Word;
+  BackgroundP: Pointer;
 begin
   S := msgText;
   if (S <> '') and (S[Length(S)] = #13) then
@@ -903,7 +923,6 @@ begin
     msgWarn: imgIcon.ImageFile := 'MSGWARN';
     msgQuest: imgIcon.ImageFile := 'MSGQUEST';
     msgError: imgIcon.ImageFile := 'MSGERROR';
-    msgTip: imgIcon.ImageFile := 'TIPBULB';
   end;
   ObjSetSize(btnFirst.Pos, sizeRetain, winMsgBox.Pos.Top+42+(15*msgLineCount), 80, 22);
   if msgType = msgQuest then
@@ -918,7 +937,18 @@ begin
   end;
   ObjSetSize(btnSecond.Pos, 326, btnFirst.Pos.Top, 80, 22);
   btnSecond.Caption := '?No';
+
   MouseHide;
+
+  {Save background to restore when window is closed}
+  x1 := winMsgBox.Pos.Left;
+  y1 := winMsgBox.Pos.Top;
+  x2 := winMsgBox.Pos.Left + winMsgBox.Pos.Width;
+  y2 := winMsgBox.Pos.Top + winMsgBox.Pos.Height;
+  BackgroundSize := ImageSize(x1, y1, x2, y2);
+  GetMem(BackgroundP, BackgroundSize);
+  GetImage(x1, y1, x2, y2, BackgroundP^);
+
   ObjDrawWin(winMsgBox);
   ObjDrawBtn(btnFirst, False);
   if msgType = msgQuest then ObjDrawBtn(btnSecond, False);
@@ -929,40 +959,42 @@ begin
   MouseShow;
   repeat
     if KeyPressed then
-    begin
       Key := ReadKey;
-      if ObjBtnClick(btnFirst) then Key := #13;
+      
+    if ObjBtnClick(btnFirst) then Key := #13;
+    if msgType = msgQuest then
+    begin
+      if ObjBtnClick(btnSecond) then Key := #27;
+    end;
+    if Key <> '' then
+    begin
       if msgType = msgQuest then
       begin
-        if ObjBtnClick(btnSecond) then Key := #27;
-      end;
-      if Key <> '' then
-      begin
-        if msgType = msgQuest then
+        if (Key = 'y') or (Key = #13) then
         begin
-          if (Key = 'y') or (Key = #13) then
-          begin
-            SysMsgBox := True;
-            Break;
-          end
-          else if (Key = 'n') or (Key = #27) then
-          begin
-            SysMsgBox := False;
-            Break;
-          end;
+          SysMsgBox := True;
+          Break;
         end
-        else
+        else if (Key = 'n') or (Key = #27) then
         begin
-          if (Key = #13) or (Key = #27) or (Key = #32) or (Key = 'o') then
-          begin
-            SysMsgBox := True;
-            Break;
-          end;
+          SysMsgBox := False;
+          Break;
+        end;
+      end
+      else
+      begin
+        if (Key = #13) or (Key = #27) or (Key = #32) or (Key = 'o') then
+        begin
+          SysMsgBox := True;
+          Break;
         end;
       end;
     end;
+    Key := #0;
   until False;
   MouseHide;
+  PutImage(x1, y1, BackgroundP^, NormalPut);
+  FreeMem(BackgroundP, BackgroundSize);
   MouseShow;
 end;
 

@@ -5,6 +5,7 @@
 *.{def,[dD][eE][fF]} binary
 *.{dat,[dD][aA][tT]} binary
 *.{exe,[eE][xX][eE]} binary
+*.{bin,[bB][iI][nN]} binary
 
 *.{mak,[mM][aA][kK]} eol=crlf
 *.{bi,[bB][iI]} eol=crlf
@@ -12,3 +13,6 @@
 *.{txt,[tT][xX][tT]} eol=crlf
 *.{lnk,[lL][nN][kK]} eol=crlf
 *.{bat,[bB][aA][tT]} eol=crlf
+*.{pas[pP][aA][sS]} eol=crlf
+*.{inc,[iI][nN][cC]} eol=crlf
+
