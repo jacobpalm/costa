@@ -133,7 +133,7 @@ procedure SysLoad;
 procedure SysLoadSettings;
 procedure SysLoadTheme;
 procedure SysSaveSettings;
-
+procedure SysShowLoading;
 implementation
 
 function FileExists(const FileName: string): Boolean;
@@ -754,8 +754,8 @@ begin
   FontPrint('May be freely distributed under the', 168, winAboutBox.Pos.Top + 95, 0, 2);
   FontPrint('terms of the MIT License. More details', 168, winAboutBox.Pos.Top + 109, 0, 2);
   FontPrint('can be found in the LICENSE file.', 168, winAboutBox.Pos.Top + 123, 0, 2);
-  FontPrint('More information and news can be found', 168, winAboutBox.Pos.Top + 151, 0, 2);
-  FontPrint('online at https://costa.jacobpalm.dk', 168, winAboutBox.Pos.Top + 165, 0, 2);
+  FontPrint('More information and news online at:', 168, winAboutBox.Pos.Top + 151, 0, 2);
+  FontPrint('https://costa.jacobpalm.dk', 168, winAboutBox.Pos.Top + 165, 0, 2);
   MouseShow;
   repeat until MouseClicked = 0;
   repeat
@@ -1079,6 +1079,17 @@ begin
   for i := 1 to Length(s) do
     s[i] := UpCase(s[i]);
   UpperCase := s;
+end;
+
+procedure SysShowLoading;
+var
+  btnLoading: ButtonType;
+begin
+  ObjSetSize(btnLoading.Pos, sizeCenter, sizeCenter, 110, 34);
+  btnLoading.Caption := 'Loading...';
+  MouseHide;
+  ObjDrawBtn(btnLoading, False);
+  MouseShow;
 end;
 
 begin
