@@ -21,3 +21,4 @@ DATA/CONFIG/*.DAT
 # Mac system files
 .DS_Store
 *.TPU
+*.RAW
