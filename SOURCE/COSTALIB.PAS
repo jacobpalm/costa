@@ -725,7 +725,7 @@ var
   x1, y1, x2, y2: Integer;
   BackgroundSize: Word;
   BackgroundP: Pointer;
-  Key: Char;
+  Key: String;
 begin
   ObjSetSize(winAboutBox.Pos, sizeCenter, sizeCenter, 329, 216);
   ObjSetSize(imgLogo.Pos, 168, winAboutBox.Pos.Top + 11, sizeRetain, sizeRetain);
@@ -759,10 +759,11 @@ begin
   MouseShow;
   repeat until MouseClicked = 0;
   repeat
+    Key := '';
     if KeyPressed then
       Key := ReadKey;
+
     if ObjBtnClick(btnClose) or (Key = #13) or (Key = #27) or (Key = 'c') then Break;
-    Key := #0;
   until False;
   MouseHide;
   PutImage(x1, y1, BackgroundP^, NormalPut);
@@ -877,7 +878,7 @@ var
   imgIcon: ImageType;
   winMsgBox: WindowType;
   S, T: string;
-  Key: Char;
+  Key: String;
   P, L: Integer;
   x1, y1, x2, y2: Integer;
   BackgroundSize: Word;
@@ -958,6 +959,7 @@ begin
     FontPrint(msgLines[i], winMsgBox.Pos.Left+56, winMsgBox.Pos.Top+17+(15*i), Theme.WindowText, 2);
   MouseShow;
   repeat
+    Key := '';
     if KeyPressed then
       Key := ReadKey;
       
