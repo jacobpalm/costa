@@ -1,4 +1,4 @@
-PROGRAM costa_launcher;
+program costa_launcher;
 
 { The Costa GUI launcher
 	Runs DESKTOP.EXE and any external programs requested by the desktop.
@@ -10,16 +10,16 @@ PROGRAM costa_launcher;
 { Set stack to minimal size }
 {$M 1536, 0, 0}
 
-USES
+uses
 	DOS;
 
-CONST
+const
 	costa_exe     = 'COSTA.EXE';
 	desktop_exe   = 'DESKTOP.EXE';
 	run_dat       = 'DATA\RUN.DAT';
 	continuestr   = 'Press Enter to continue...';
 
-VAR
+var
 	current_dir   : DirStr;
 	sresults      : SearchRec;
 	file_name     : TEXT;
@@ -29,8 +29,8 @@ VAR
 	run_pause     : CHAR;
 
 { Run an external program - handle errors }
-PROCEDURE RunProgram(command, params: ComStr; path: DirStr; pause: CHAR);
-BEGIN
+procedure RunProgram(command, params: ComStr; path: DirStr; pause: Char);
+begin
 
 	{$IFDEF DEBUG}
 		Writeln('Changing path to ', path);
@@ -40,48 +40,48 @@ BEGIN
 		Readln;
 	{$ENDIF}
 
-	IF Length(path) > 0 THEN
-	BEGIN
+	if Length(path) > 0 then
+	begin
 		chdir(path);
-	END
-	ELSE
-	BEGIN
+	end
+	else
+	begin
 		chdir(current_dir);
-	END;
+	end;
 
 	SwapVectors;
 	Exec(command, params);
 	SwapVectors;
 
 	{ Low memory condition }
-	IF DosError = 8 THEN
-	BEGIN
+	if DosError = 8 then
+	begin
 		Writeln('Out of memory.');
 		pause := '1';
 		{ If desktop can't be launched, exit }
-		IF command = desktop_exe THEN
+		if command = desktop_exe then
 			Halt(1);
-	END;
+	end;
 
 	{ Wait for keypress before returning? }
-	IF pause = '1' THEN
-	BEGIN
+	if pause = '1' then
+	begin
 		Writeln;
 		Write(continuestr);
 		Readln;
-	END;
-END; { RunProgram }
+	end;
+end; { RunProgram }
 
 
-BEGIN
+begin
 	{ Low byte of DosVersion contains major DOS version.
 		This program will actually run on DOS 3.0, but the other
 		included programs won't, so might as well check here }
-	IF Lo(DosVersion) < 4 THEN
-	BEGIN
+	if Lo(DosVersion) < 4 then
+	begin
 		Writeln('DOS 4+ required.');
 		Halt(1);
-	END;
+	end;
 
 	{ Retrieve path of self from paramstr, used later on to find relative paths regardless
 		of current path when this program was executed }
@@ -99,25 +99,25 @@ BEGIN
 
 	{ Verify that desktop exe exists in same path as this executable }
 	FindFirst(current_dir + '\' + desktop_exe, Archive, sresults);
-	IF DosError > 0 THEN
-	BEGIN
+	if DosError > 0 then
+	begin
 		Writeln(desktop_exe + ' not found.');
 		Halt(1);
-	END;
+	end;
 
-	WHILE True DO
-	BEGIN
+	while True do
+	begin
 
 		{ Run the desktop }
 		RunProgram(desktop_exe, current_dir, '', '0');
 		{ Exit code 1 means exit }
-		IF DosExitCode = 1 THEN
+		if DosExitCode = 1 then
 			halt(0);
 
 		{ If run.dat exists, run it and delete it }
 		FindFirst(current_dir + '\' + run_dat, Archive, sresults);
-		IF DosError > 0 THEN
-			continue;
+		if DosError > 0 then
+			Continue;
 
 		{ Open file, read data and delete file }
 		Assign(file_name, current_dir + '\' + run_dat);
@@ -132,6 +132,6 @@ BEGIN
 		{ Run program - obviously }
 		RunProgram(run_command, run_params, run_path, run_pause)
 
-	END; { main loop }
+	end; { main loop }
 
-END.
+end.

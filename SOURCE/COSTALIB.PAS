@@ -483,6 +483,9 @@ end;
 procedure ObjDrawImg(var TargetImg: ImageType);
 var
   X, Y: Integer;
+  ImagePointer: Pointer;
+  Size: Word;
+  ImageFile: File;
 begin
   X := TargetImg.Pos.Left;
   Y := TargetImg.Pos.Top;
@@ -494,7 +497,14 @@ begin
   SetColor(Theme.Shadow);
   Line(X, Y+32, X+32, Y+32);
   Line(X+32, Y, X+32, Y+31);
-  if not FileExists('DATA\IMAGES\' + TargetImg.ImageFile + '.BSV') then
+
+  Size := ImageSize(0, 0, 31, 31);
+  
+  Assign(ImageFile, 'DATA\IMAGES\' + TargetImg.ImageFile + '.BIN');
+  {$I-}
+  Reset(ImageFile, 1);
+  {$I+}
+  if (IOResult <> 0) or (FileSize(ImageFile) <> Size) then
   begin
     SetFillStyle(SolidFill, Red);
     Bar(X, Y, X+31, Y+31);
@@ -502,7 +512,13 @@ begin
     FontPrint('ERR', X+5, Y+19, 15, FontNormal);
     Exit;
   end;
-  { Image loading is not implemented; placeholder for BLOAD equivalent. }
+  SetFillStyle(SolidFill, Red);
+    Bar(X-5, Y-5, X+36, Y+36);
+  GetMem(ImagePointer, Size);
+  BlockRead(ImageFile, ImagePointer^, Size);
+  Close(ImageFile);
+  FreeMem(ImagePointer, Size);
+  PutImage(x, y, ImagePointer^, NormalPut);
 end;
 
 procedure ObjDrawMenu;
