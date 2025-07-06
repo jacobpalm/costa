@@ -6,21 +6,20 @@ uses
   Crt, Dos, Graph, Strings;
 
 const
-  MaxFontID    = 2;
   FontHeading  = 1;
   FontNormal   = 2;
   sizeRetain   = -1;
   sizeCenter   = -2;
-  mbLeft       = 1;
-  mbRight      = 2;
-  mbBoth       = 3;
-  msgInfo      = 1;
-  msgWarn      = 2;
-  msgQuest     = 3;
-  msgError     = 4;
+
+  NewLine: Char = #13;
+
+  {$I KEYCODES.INC}
   {$I APPINFO.INC}
 
 type
+  TMouseButton = (mbNone, mbLeft, mbRight, mbBoth);
+  TMsgBoxType = (msgInfo, msgWarn, msgQuest, msgError);
+
   IconDataType = record
     Pixel: array[0..31, 0..31] of Integer;
   end;
@@ -70,7 +69,7 @@ type
     ConfirmLinkDelete   : Boolean;
     ConfirmExit         : Boolean;
     AssignFileTypes     : Boolean;
-    ThemeFile           : string[32];
+    ThemeFile           : string[8];
   end;
 
   ThemeType = record
@@ -101,18 +100,20 @@ var
 function FileExists(const FileName: string): Boolean;
 function FileGetAssociation(const FileType: string): string;
 function FontGetWidth(const TargetText: string; FontID: Integer): Integer;
+function GetKey: string;
 function LowCase(c: Char): Char;
 function LowerCase(s: string): string;
 function LTrim(s: string): string;
-function MouseClicked: Integer;
+function MouseClicked: TMouseButton;
 function MouseInArea(const TargetArea: PosType): Boolean;
 function ObjBtnClick(var TargetBtn: ButtonType): Boolean;
 function ObjTxtClick(const TargetTxt: TextboxType): Boolean;
 function RTrim(s: string): string;
-function SysMsgBox(const msgTitle, msgText: string; msgType: Integer): Boolean;
+function SysMsgBox(const msgTitle, msgText: string; msgType: TMsgBoxType): Boolean;
 Function SysPath: DirStr;
 function Trim(s: string): string;
 function UpperCase(s: string): string;
+procedure ClearKeyBuffer;
 procedure FontPrint(const Text: string; X, Y, Col, FontID: Integer);
 procedure MouseHide;
 procedure MousePoll;
@@ -131,9 +132,10 @@ procedure ObjSetSize(var TargetArea: PosType; TargetLeft, TargetTop, TargetWidth
 procedure SysAboutBox(const ProgramName, ProgramVersion, ProgramAuthor, IconFile: string);
 procedure SysLoad;
 procedure SysLoadSettings;
-procedure SysLoadTheme;
+procedure SysLoadTheme(ThemeFile: String);
 procedure SysSaveSettings;
 procedure SysShowLoading;
+
 implementation
 
 function FileExists(const FileName: string): Boolean;
@@ -170,13 +172,13 @@ begin
     FileGetAssociation := GetEnv('COMSPEC');
     Exit;
   end;
-  AssociationFile := 'DATA\CONFIG\FILETYPE.DAT';
+  AssociationFile := 'CONFIG\FILETYPE.DAT';
   FileExistsResult := FileExists(AssociationFile);
   if not FileExistsResult then
   begin
-    FileExistsResult := FileExists('DATA\CONFIG\FILETYPE.DEF');
+    FileExistsResult := FileExists('CONFIG\FILETYPE.DEF');
     if FileExistsResult then
-      AssociationFile := 'DATA\CONFIG\FILETYPE.DEF'
+      AssociationFile := 'CONFIG\FILETYPE.DEF'
     else
     begin
       FileGetAssociation := '';
@@ -242,18 +244,18 @@ begin
   LowerCase := s;
 end;
 
-function MouseClicked: Integer;
+function MouseClicked: TMouseButton;
 var
   regs: registers;
 begin
   if not MouseSupport then
   begin
-    MouseClicked := 0;
-    Exit;
+    MouseClicked := mbNone;
+    exit;
   end;
   regs.ax := 3;
   Intr($33, regs);
-  MouseClicked := regs.bx;
+  MouseClicked := TMouseButton(regs.bx);
 end;
 
 Procedure MouseHide;
@@ -345,7 +347,7 @@ begin
           MouseShow;
         end;
       end;
-    until MouseClicked = 0;
+    until MouseClicked = mbNone;
     if IsUp = 0 then
     begin
       MouseHide;
@@ -361,7 +363,7 @@ procedure ObjChkClick(var TargetChk: CheckBoxType);
 begin
   if (MouseClicked = mbLeft) and MouseInArea(TargetChk.Pos) then
   begin
-    repeat until MouseClicked = 0;
+    repeat until MouseClicked = mbNone;
     if MouseInArea(TargetChk.Pos) then
     begin
       TargetChk.Checked := not TargetChk.Checked;
@@ -500,7 +502,7 @@ begin
   Line(X+32, Y, X+32, Y+31);
 
   Size := ImageSize(0, 0, 31, 31); {Coords don't matter, just size}
-  Assign(ImageFile, 'DATA\IMAGES\' + TargetImg.ImageFile + '.BIN');
+  Assign(ImageFile, 'IMAGES\' + TargetImg.ImageFile + '.BIN');
   {$I-}
   Reset(ImageFile, 1);
   {$I+}
@@ -515,9 +517,7 @@ begin
   GetMem(ImagePointer, Size);
   BlockRead(ImageFile, ImagePointer^, Size);
   Close(ImageFile);
-  MouseHide;
   PutImage(x, y, ImagePointer^, CopyPut);
-  MouseShow;
   FreeMem(ImagePointer, Size);
 end;
 
@@ -625,7 +625,7 @@ begin
     if KeyPressed then
     begin
       Ch := ReadKey;
-      if Ch = #8 then
+      if Ch = KeyBackspace then
       begin
         if Length(TempTxt) > 0 then
         begin
@@ -647,7 +647,7 @@ begin
           MouseShow;
         end;
       end
-      else if Ch = #13 then
+      else if Ch = KeyEnter then
       begin
         Text := TempTxt;
         LineX1 := x1 + FontGetWidth(Text, FontHeading) + 2;
@@ -711,7 +711,7 @@ begin
   ObjTxtClick := False;
   if (MouseClicked = mbLeft) and MouseInArea(TargetTxt.Pos) then
   begin
-    repeat until MouseClicked = 0;
+    repeat until MouseClicked = mbNone;
     if MouseInArea(TargetTxt.Pos) then
       ObjTxtClick := True;
   end;
@@ -757,18 +757,14 @@ begin
   FontPrint('More information and news online at:', 168, winAboutBox.Pos.Top + 151, 0, 2);
   FontPrint('https://costa.jacobpalm.dk', 168, winAboutBox.Pos.Top + 165, 0, 2);
   MouseShow;
-  repeat until MouseClicked = 0;
   repeat
-    Key := '';
-    if KeyPressed then
-      Key := ReadKey;
-
-    if ObjBtnClick(btnClose) or (Key = #13) or (Key = #27) or (Key = 'c') then Break;
+    Key := GetKey;
+    if ObjBtnClick(btnClose) or (Key = KeyEnter) or (Key = KeyEscape) or (Key = KeyAltC) then Break;
   until False;
   MouseHide;
   PutImage(x1, y1, BackgroundP^, NormalPut);
-  FreeMem(BackgroundP, BackgroundSize);
   MouseShow;
+  FreeMem(BackgroundP, BackgroundSize);
 end;
 
 procedure SysLoad;
@@ -789,12 +785,12 @@ begin
     Halt(1);
   End;
   SysLoadSettings;
-  SysLoadTheme;
+  SysLoadTheme('DEFAULT'); {Debugging: Use default theme for now}
 
   Intr($33, regs);
   MouseSupport := Regs.ax > 0;
 
-  repeat until MouseClicked = 0;
+  repeat until MouseClicked = mbNone;
   while KeyPressed do ReadKey;
   MouseShow;
 end;
@@ -804,7 +800,7 @@ var
   f: file of SettingType;
 begin
   Exit; {Debugging: Disable settings loading for now}
-  if not FileExists('DATA\CONFIG\SETTING.DAT') then
+  if not FileExists('CONFIG\SETTING.DAT') then
   begin
     {Use defaults}
     Setting.DesktopID := 1;
@@ -817,7 +813,7 @@ begin
     Exit;
   end;
 
-  Assign(f, 'DATA\CONFIG\SETTING.DAT');
+  Assign(f, 'CONFIG\SETTING.DAT');
   {$I-}
   Reset(f);
   {$I+}
@@ -839,38 +835,39 @@ begin
     Setting.DesktopID := 1;
 end;
 
-procedure SysLoadTheme;
+procedure SysLoadTheme(ThemeFile: String);
 var
-  ThemeFile: string;
-  f: file of ThemeType;
+  f: file;
 begin
-  {ThemeFile := RTrim(Setting.ThemeFile);
-  if FileExists('DATA\THEMES\' + ThemeFile + '.DAT') then
+  if FileExists('THEMES\' + ThemeFile + '.BIN') then
   begin
-    Assign(f, 'DATA\THEMES\' + ThemeFile + '.DAT');
-    Reset(f);
-    Read(f, Theme);
+    Assign(f, 'THEMES\' + ThemeFile + '.BIN');
+    {$I-}
+    Reset(f, SizeOf(ThemeType));
+    {$I+}
+    if IOResult = 0 then
+      BlockRead(f, Theme, 1);
     Close(f);
-  end
-  else
-  begin}
-    Theme.Desktop := LightGray;
-    Theme.DesktopText := Black;
-    Theme.Window := LightGray;
-    Theme.Button := LightGray;
-    Theme.Textbox := White;
-    Theme.TextboxText := Black;
-    Theme.WindowText := Black;
-    Theme.TitleBar := Cyan;
-    Theme.TitleBarText := Black;
-    Theme.Light := LightGray;
-    Theme.Shadow := DarkGray;
-    Theme.Select := DarkGray;
-    Theme.SelectText := White;
-  {end;}
+    Exit;
+  end;
+  
+  {If file didn't exist or colors couldn't be read, use default theme}
+  Theme.Desktop := LightGray;
+  Theme.DesktopText := Black;
+  Theme.Window := LightGray;
+  Theme.Button := LightGray;
+  Theme.Textbox := White;
+  Theme.TextboxText := Black;
+  Theme.WindowText := Black;
+  Theme.TitleBar := Cyan;
+  Theme.TitleBarText := Black;
+  Theme.Light := LightGray;
+  Theme.Shadow := DarkGray;
+  Theme.Select := DarkGray;
+  Theme.SelectText := White;
 end;
 
-function SysMsgBox(const msgTitle, msgText: string; msgType: Integer): Boolean;
+function SysMsgBox(const msgTitle, msgText: string; msgType: TMsgBoxType): Boolean;
 var
   msgLines: array[1..16] of string;
   msgLineCount, msgTextWidth, i: Integer;
@@ -885,12 +882,12 @@ var
   BackgroundP: Pointer;
 begin
   S := msgText;
-  if (S <> '') and (S[Length(S)] = #13) then
+  if (S <> '') and (S[Length(S)] = NewLine) then
     Delete(S, Length(S), 1);
   msgLineCount := 0;
   msgTextWidth := 0;
   repeat
-    P := Pos(#13, S);
+    P := Pos(NewLine, S);
     if P = 0 then
     begin
       Inc(msgLineCount);
@@ -963,21 +960,21 @@ begin
     if KeyPressed then
       Key := ReadKey;
       
-    if ObjBtnClick(btnFirst) then Key := #13;
+    if ObjBtnClick(btnFirst) then Key := KeyEnter;
     if msgType = msgQuest then
     begin
-      if ObjBtnClick(btnSecond) then Key := #27;
+      if ObjBtnClick(btnSecond) then Key := KeyEscape;
     end;
     if Key <> '' then
     begin
       if msgType = msgQuest then
       begin
-        if (Key = 'y') or (Key = #13) then
+        if (Key = KeyAltY) or (Key = KeyEnter) then
         begin
           SysMsgBox := True;
           Break;
         end
-        else if (Key = 'n') or (Key = #27) then
+        else if (Key = KeyAltN) or (Key = KeyEscape) then
         begin
           SysMsgBox := False;
           Break;
@@ -985,7 +982,7 @@ begin
       end
       else
       begin
-        if (Key = #13) or (Key = #27) or (Key = #32) or (Key = 'o') then
+        if (Key = KeyEnter) or (Key = KeyEscape) or (Key = KeySpace) or (Key = KeyAltO) then
         begin
           SysMsgBox := True;
           Break;
@@ -1018,7 +1015,7 @@ var
   f: file of SettingType;
 begin
   Exit; {Debugging: Disable settings saving for now}
-  Assign(f, 'DATA\CONFIG\SETTING.DAT');
+  Assign(f, 'CONFIG\SETTING.DAT');
   {$I-}
   Rewrite(f);
   Write(f, Setting);
@@ -1079,6 +1076,36 @@ begin
   for i := 1 to Length(s) do
     s[i] := UpCase(s[i]);
   UpperCase := s;
+end;
+
+function GetKey: string;
+var
+  OutString: String;
+begin
+  if not KeyPressed then
+  begin
+    GetKey := '';
+    Exit;
+  end;
+
+  { Read the key pressed }
+  OutString := ReadKey;
+  if OutString = #0 then
+  begin
+    OutString := OutString + ReadKey;  { Read the next key for special keys }
+  end;
+
+  GetKey := OutString;
+end;
+
+procedure ClearKeyBuffer;
+var
+  k: char;
+begin
+  while KeyPressed do
+  begin
+    k := ReadKey;  {Read and discard any keys in the buffer}
+  end;
 end;
 
 procedure SysShowLoading;

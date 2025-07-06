@@ -2,8 +2,12 @@ program Textview;
 
 uses
   CostaLib, Strings, Graph, Crt;
+
 const
   MaxLinesShown = 19;
+  AppName = 'Text Viewer';
+  AppVersion = '2.0';
+  AppAuthor = 'Jacob Palm';
 
 type
   TStringArray = array[0..49] of string;
@@ -60,7 +64,7 @@ var
 begin
   if not FileExists(TargetFile) then
   begin
-    SysMsgBox('File not found', 'Textviewer could not find the file you are trying to load.', msgError);
+    SysMsgBox('File not found', 'Textviewer could not find the file:' + NewLine + TargetFile, msgError);
     LoadFile := False;
     Exit;
   end;
@@ -109,16 +113,7 @@ begin
   if ParamStr(1) <> '' then
   begin
     Filename := ParamStr(1);
-    if not FileExists(Filename) then
-    begin
-      SysMsgBox('File not found', Filename + #13 + 'Textviewer could not find the file you are trying to load.', msgError);
-      CloseGraph;
-      Halt;
-    end
-    else
-    begin
-      FileOpened := LoadFile(Filename);
-    end;
+    FileOpened := LoadFile(Filename);
   end;
 
   MouseHide;
@@ -136,15 +131,12 @@ begin
     DrawText(StartLine);
 
   repeat
-    if KeyPressed then
-      Key := ReadKey
-    else
-      Key := '';
+    Key := GetKey;
     
-    if ObjBtnClick(btnAbout) or (Key = 'a') then
-      SysAboutBox('Text Viewer', '2.0', 'Jacob Palm', 'DOCUMENT');
+    if ObjBtnClick(btnAbout) or (Key = KeyAltA) then
+      SysAboutBox(AppName, AppVersion, AppAuthor, 'DOCUMENT');
 
-    if ObjBtnClick(btnOpen) or (Key = 'o') then
+    if ObjBtnClick(btnOpen) or (Key = KeyAltO) then
     begin
       Readln(Filename);
       if Length(Filename) > 0 then
@@ -158,8 +150,8 @@ begin
       end;
     end;
     
-    if ObjBtnClick(btnExit) or (Key = 'x') or (Key = #27) then
-      Break;
+    if ObjBtnClick(btnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
+      break;
     
   until False;
   

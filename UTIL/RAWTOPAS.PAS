@@ -49,7 +49,7 @@ var
 begin
     GraphDriver := EGA;
     GraphMode := EGAHI;
-    InitGraph(GraphDriver, GraphMode, 'C:\COSTA');
+    InitGraph(GraphDriver, GraphMode, '..');
     ErrorCode := GraphResult;
     if ErrorCode <> GrOk then
     begin
@@ -83,7 +83,7 @@ begin
         GetMem(P, Size);
         GetImage(0, 0, 31, 31, P^);
 
-        Assign(outputfile, '..\DATA\IMAGES\'+FName+'.BIN');
+        Assign(outputfile, '..\IMAGES\'+FName+'.BIN');
         {$I-}
         Rewrite(outputfile, 1);
         {$I+}
@@ -98,7 +98,7 @@ begin
 
         {IFDEF DEBUG}
             {Test reading the image back}
-            Assign(outputfile, '..\DATA\IMAGES\'+FName+'.BIN');
+            Assign(outputfile, '..\IMAGES\'+FName+'.BIN');
             {$I-}
             Reset(outputfile, 1);
             {$I+}
@@ -147,8 +147,9 @@ begin
         Reset(f);
         {$I+}
 
-        FillChar(ThemeAuthor, SizeOf(ThemeAuthor), #32);
-        FillChar(ThemeName, SizeOf(ThemeAuthor), #32);
+        FillChar(ThemeAuthor, SizeOf(ThemeAuthor), 0);
+        FillChar(ThemeName, SizeOf(ThemeAuthor), 0);
+        FillChar(Theme, SizeOf(Theme), 0);
         ReadLn(f, ThemeAuthor);
         ReadLn(f, ThemeName);
         ReadLn(f, Theme.Desktop);
@@ -167,7 +168,7 @@ begin
 
         Close(f);
 
-        Assign(OutputFile, '..\DATA\THEMES\'+FName+'.BIN');
+        Assign(OutputFile, '..\THEMES\'+FName+'.BIN');
         {$I-}
         Rewrite(OutputFile, 1);
         {$I+}
@@ -217,8 +218,8 @@ begin
             Halt(1);
         end;
         
-        Assign(OutputFile, '..\DATA\CONFIG\'+FName+'.BIN');
-        Writeln('..\DATA\CONFIG\'+FName+'.BIN');
+        Assign(OutputFile, '..\CONFIG\'+FName+'.BIN');
+        Writeln('..\CONFIG\'+FName+'.BIN');
         {$I-}
         Rewrite(OutputFile, 1);
         {$I+}
@@ -261,5 +262,7 @@ begin
 end;
 
 begin
+    ImageConvert;
+    ThemeConvert;
     DeskLinkConvert;
 end.

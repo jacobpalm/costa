@@ -18,7 +18,7 @@ var
   MathFunc: string[1];
   TotalSum, Op1: Integer;
   NumOps: Integer;
-  KeyStr, txtCalcText, LastClick: string;
+  Key, txtCalcText, LastClick: string;
   ch: Char;
   CalcErr: Boolean;
   TempGraphMode, TempMax: Integer;
@@ -128,42 +128,37 @@ begin
 
   { Main calculator loop }
   repeat
-    KeyStr := '';
-    if KeyPressed then
-    begin
-      ch := ReadKey;
-      KeyStr := LowerCase(ch);
-    end;
+    Key := GetKey;
 
-    if ObjBtnClick(btnExit) or (KeyStr = 'x') or (KeyStr = #27) then
+    if ObjBtnClick(btnExit) or (Key = KeyAltX) or (Key = KeyEscape) then
     begin
       MouseHide;
       CloseGraph;
       Halt;
     end;
 
-    if ObjBtnClick(btnAbout) or (KeyStr = 'a') then
+    if ObjBtnClick(btnAbout) or (Key = KeyAltA) then
       SysAboutBox(AppName, AppVersion, AppAuthor, 'CALC');
 
     for btnCount := 0 to 9 do
     begin
-      if ObjBtnClick(btnNumb[btnCount]) then {or (KeyStr = IntToStr(btnCount)) then}
+      if ObjBtnClick(btnNumb[btnCount]) then {or (Key = IntToStr(btnCount)) then}
       begin
         
       end;
     end;
 
-    if ObjBtnClick(btnC) or (KeyStr = 'c') then
+    if ObjBtnClick(btnC) or (Key = 'c') then
     begin
       txtCalcText := '';
       MouseHide;
       ObjDrawTxt(txtCalc, '', False);
       MouseShow;
-      SysMsgBox('Calculator', 'Cleared the calculator input.' + #13 + 'It was hard but I did it.', msgError);
+      SysMsgBox('Calculator', 'Cleared the calculator input.' + NewLine + 'It was hard but I did it.', msgError);
        {Just debug stuff, remove later}
     end;
 
-    if ObjBtnClick(btnCE) or (KeyStr = 'e') then
+    if ObjBtnClick(btnCE) or (Key = 'e') then
     begin
       txtCalcText := '';
       MouseHide;
@@ -176,7 +171,7 @@ begin
       LastClick := '';
     end;
 
-    if ObjBtnClick(btnDot) or ((KeyStr = '.') or (KeyStr = ',')) then
+    if ObjBtnClick(btnDot) or ((Key = '.') or (Key = ',')) then
     begin
       if (Length(txtCalcText) < 22) and (Pos('.', txtCalcText) = 0) then
       begin
@@ -194,17 +189,15 @@ begin
       end;
     end;
 
-    if ObjBtnClick(btnEquals) or (KeyStr = '=') or (KeyStr = #13) then
+    if ObjBtnClick(btnEquals) or (Key = '=') or (Key = KeyEnter) then
     begin
       
     end;
 
-    if ObjBtnClick(btnMulti) then KeyStr := '*';
-    if ObjBtnClick(btnDivide) then KeyStr := '/';
-    if ObjBtnClick(btnPlus) then KeyStr := '+';
-    if ObjBtnClick(btnMinus) then KeyStr := '-';
-
-    
+    if ObjBtnClick(btnMulti) then Key := '*';
+    if ObjBtnClick(btnDivide) then Key := '/';
+    if ObjBtnClick(btnPlus) then Key := '+';
+    if ObjBtnClick(btnMinus) then Key := '-';
 
   until False;
 
