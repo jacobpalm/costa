@@ -7,19 +7,21 @@ COSTA.BAT
 ~ELNK.TMP
 *.QDB
 *.DSK
+*.TPU
 
 # Costa run-time data
 DATA/TEMP/
 
 # Costa profile and configuration data
 DATA/CONFIG/*.DAT
+CONFIG/DESKLNK?.BIN
 !DATA/CONFIG/FILETYPE.DAT
+
+#Intermediate file formats used when converting data
+*.RAW
 
 #Backups
 *.BAK
 
 # Mac system files
 .DS_Store
-*.TPU
-*.RAW
-CONFIG/DESKLNK?.BIN
