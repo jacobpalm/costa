@@ -4,21 +4,23 @@ uses
   CostaLib, Strings, Graph, Crt;
 
 const
-  MaxLinesShown = 19;
   AppName = 'Text Viewer';
   AppVersion = '2.0';
   AppAuthor = 'Jacob Palm';
+  MaxLinesShown = 22;
+  MaxLineLength = 78;
 
 type
-  TStringArray = array[0..49] of string;
+  TStringArray = array[0..100] of string;
 
 var
   FileData: TStringArray;
   btnOpen, btnAbout, btnExit, btnPageUp, btnPageDown: ButtonType;
   txtEditor: TextboxType;
-  Filename, OldFileName: string;
-  StartLine, OldStartLine: Integer;
-  FileOpened, OldFileOpened: Boolean;
+  Filename, NewFileName: string;
+  StartLine: Integer;
+  LineCount: Integer;
+  FileOpened: Boolean;
   Key: String;
 
 { ========================================================================= }
@@ -30,18 +32,24 @@ var
 { ------------------------------------------------------------------------- }
 {   DESCRIPTION: Writes file content to the main textbox                    }
 { ========================================================================= }
-procedure DrawText(StartLine: Integer);
+procedure DrawText;
 var
-  LineCount: Integer;
+  i, DrawnLines: Integer;
 begin
   MouseHide;
-  for LineCount := StartLine to StartLine + MaxLinesShown do
+  SetFillStyle(SolidFill, Theme.Textbox);
+  DrawnLines := 0;
+  for i := StartLine to StartLine + MaxLinesShown do
   begin
-    if LineCount <= High(FileData) then
+    Inc(DrawnLines);
+    if DrawnLines = MaxLinesShown then
+      Break;
+
+    {Clear line}
+    Bar(7, (15 * (i - StartLine + 1)) + 22, 633, 15 * (i - StartLine + 1) + 36);
+    if i <= High(FileData) then
     begin
-      SetFillStyle(SolidFill, Theme.Textbox);
-      Bar(7, (15 * (LineCount - StartLine + 1)) + 22, 633, 15 * (LineCount - StartLine + 1) + 36);
-      FontPrint(FileData[LineCount], 9, (15 * (LineCount - StartLine + 1)) + 24, Theme.TextboxText, FontNormal);
+      FontPrint(FileData[i], 9, (15 * (i - StartLine + 1)) + 24, Theme.TextboxText, FontNormal);
     end;
   end;
   MouseShow;
@@ -58,41 +66,69 @@ end;
 { ========================================================================= }
 function LoadFile(TargetFile: string): Boolean;
 var
-  FileHandle: Text;
-  Line: string;
-  TrimLine, LoadedLines: Integer;
+  f: Text;
+  ReadData, Truncated: string;
 begin
   if not FileExists(TargetFile) then
   begin
-    SysMsgBox('File not found', 'Textviewer could not find the file:' + NewLine + TargetFile, msgError);
+    SysMsgBox('File not found', 'Error while trying to find the file:' + NewLine + TargetFile, msgError);
+    LoadFile := False;
+    Exit;
+  end;
+
+  Assign(f, TargetFile);
+  {$I-}
+  Reset(f);
+  {$I+}
+  if IOResult <> 0 then
+  begin
+    SysMsgBox('File error', 'Error while opening the file: ' + NewLine + TargetFile, msgError);
     LoadFile := False;
     Exit;
   end;
 
   SysShowLoading;
-
-  Assign(FileHandle, TargetFile);
-  {$I-}
-  Reset(FileHandle);
-  {$I+}
-  if IOResult <> 0 then
-  begin
-    SysMsgBox('File error', 'An error occurred while trying to open the file: ' + TargetFile, msgError);
-    LoadFile := False;
-    Exit;
-  end;
-
-  LoadedLines := 0;
   
-  while not EOF(FileHandle) do
+  For LineCount := 0 to High(FileData) do
+    FileData[LineCount] := '';  
+  
+  LineCount := -1;
+  while not Eof(F) and (LineCount < High(FileData) - 1) do
   begin
-    ReadLn(FileHandle, Line);
-    LoadedLines := LoadedLines + 1;
-    FileData[LoadedLines] := Line;
-  end;
+    ReadLn(F, ReadData);
 
-  FileData[LoadedLines + 1] := '* end of file *';
-  Close(FileHandle);
+    {Blank lines}
+    if Length(ReadData) = 0 then
+    begin
+      Inc(LineCount);
+      FileData[LineCount] := '';
+      Continue;
+    end;
+
+    {Add each line to the array, truncate at MaxLineLength if necessary}
+    while Length(ReadData) > 0 do
+    begin
+      Inc(LineCount);
+      if LineCount > High(FileData) - 1 then
+        Break;
+
+      if Length(ReadData) > MaxLineLength then
+      begin
+        Truncated := Copy(ReadData, 1, MaxLineLength);
+        Delete(ReadData, 1, MaxLineLength);
+      end
+      else
+      begin
+        Truncated := ReadData;
+        ReadData := '';
+      end;
+
+      FileData[LineCount] := Truncated;
+    end;
+  end;
+  Close(F);
+
+  FileData[LineCount + 1] := '* end of file *';
   LoadFile := True;
 end;
 
@@ -102,7 +138,7 @@ begin
   ObjSetSize(btnPageDown.Pos, 201, 2, 92, 22);
   ObjSetSize(btnAbout.Pos, 446, 2, 92, 22);
   ObjSetSize(btnExit.Pos, 545, 2, 92, 22);
-  ObjSetSize(txtEditor.Pos, 2, 32, 635, 314);
+  ObjSetSize(txtEditor.Pos, -2, 32, 644, 319);
 
   btnOpen.Caption := 'Open...';
   btnPageUp.Caption := 'Page up';
@@ -114,21 +150,27 @@ begin
   begin
     Filename := ParamStr(1);
     FileOpened := LoadFile(Filename);
+    if not FileOpened then Filename := '';
   end;
 
   MouseHide;
   ObjDrawMenu;
   SetFillStyle(SolidFill, Theme.Window);
-  Bar(0, 29, 639, 349);
+  Bar(0, 29, 639, 33);
   ObjDrawBtn(btnOpen, False);
   ObjDrawBtn(btnAbout, False);
+  if FileOpened then
+  begin
+    ObjDrawBtn(btnPageUp, False);
+    ObjDrawBtn(btnPageDown, False);
+  end;
   ObjDrawBtn(btnExit, False);
   ObjDrawTxt(txtEditor, '', False);
   MouseShow;
 
-  StartLine := 1;
+  StartLine := 0;
   if FileOpened then
-    DrawText(StartLine);
+    DrawText;
 
   repeat
     Key := GetKey;
@@ -138,20 +180,55 @@ begin
 
     if ObjBtnClick(btnOpen) or (Key = KeyAltO) then
     begin
-      Readln(Filename);
-      if Length(Filename) > 0 then
+      Readln(NewFilename);
+      if Length(NewFilename) > 0 then
       begin
-        if LoadFile(Filename) then
+        if LoadFile(NewFilename) then
         begin
+          Filename := NewFilename;
           FileOpened := True;
-          StartLine := 1;
-          DrawText(StartLine);
+          StartLine := 0;
+          MouseHide;
+          ObjDrawTxt(txtEditor, '', False);
+          ObjDrawBtn(btnPageUp, False);
+          ObjDrawBtn(btnPageDown, False);
+          MouseShow;
+          DrawText;
         end;
       end;
     end;
     
     if ObjBtnClick(btnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
       break;
+
+    if FileOpened then
+    begin
+      if ObjBtnClick(btnPageUp) or (Key = KeyPageUp) then
+      begin
+        if StartLine > 0 then
+        begin
+          Dec(StartLine, MaxLinesShown);
+          if StartLine < 0 then
+            StartLine := 0;
+          MouseHide;
+          DrawText;
+          MouseShow;
+        end;
+      end;
+
+      if ObjBtnClick(btnPageDown) or (Key = KeyPageDown) then
+      begin
+        if StartLine < LineCount then
+        begin
+          Inc(StartLine, MaxLinesShown);
+          if StartLine > LineCount then
+            StartLine := LineCount;
+          MouseHide;
+          DrawText;
+          MouseShow;
+        end;
+      end;
+    end;
     
   until False;
   
