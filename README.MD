@@ -1,4 +1,9 @@
-# The Costa GUI
+# The Costa GUI 1.x
+> [!IMPORTANT]
+> Please note that this branch is an archive for the old 1.x series of Costa,
+> written in BASIC. Costa 2.0 and newer is written in Pascal, and this old
+> branch is no longer maintained and only preserved for historical reasons.
+
 Costa is a graphical user interface (GUI), designed to run on top of the
 command line as a shell.
 
