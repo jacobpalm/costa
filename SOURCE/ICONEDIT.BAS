@@ -259,17 +259,17 @@ SUB IconEdit.Main (IconToLoad AS STRING)
   Obj.SetSize btnAbout.Pos, 446, 2, 92, 22
   Obj.SetSize btnExit.Pos, 545, 2, 92, 22
 
-  btnNew.Caption = "õNew"
-  btnOpen.Caption = "õLoad"
-  btnSave.Caption = "õSave"
-  btnAbout.Caption = "õAbout..."
-  btnExit.Caption = "Eõxit"
+  btnNew.Caption = HotkeySymbol + "New"
+  btnOpen.Caption = HotkeySymbol + "Load"
+  btnSave.Caption = HotkeySymbol + "Save"
+  btnAbout.Caption = HotkeySymbol + "About..."
+  btnExit.Caption = "E" + HotkeySymbol + "xit"
 
   Obj.SetSize btnPencil.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 12, txtDrawArea.Pos.Top + 14, 52, 22
-  btnPencil.Caption = "Põencil"
+  btnPencil.Caption = "P" + HotkeySymbol + "encil"
 
   Obj.SetSize btnFloodFill.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 12, txtDrawArea.Pos.Top + 40, 52, 22
-  btnFloodFill.Caption = "õFill"
+  btnFloodFill.Caption = HotkeySymbol + "Fill"
 
   Obj.SetSize btnPreview.Pos, txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 12, btnFloodFill.Pos.Top + 51, 52, 52
   btnPreview.Transparent = True
@@ -323,8 +323,8 @@ SUB IconEdit.Main (IconToLoad AS STRING)
     LINE (txtDrawArea.Pos.Left + 1 + (XPos * PixelSize), txtDrawArea.Pos.Top + 2)-(txtDrawArea.Pos.Left + 1 + (XPos * PixelSize), txtDrawArea.Pos.Top + txtDrawArea.Pos.Height - 2), 0, , &HAAAA
   NEXT
 
-  Font.Print "õPreview", btnPreview.Pos.Left, btnPreview.Pos.Top - 15, Theme.WindowText, FontHeading
-  Font.Print "õColor", txtColor(0).Pos.Left, txtDrawArea.Pos.Top, Theme.WindowText, FontHeading
+  Font.Print HotkeySymbol + "Preview", btnPreview.Pos.Left, btnPreview.Pos.Top - 15, Theme.WindowText, FontHeading
+  Font.Print HotkeySymbol + "Color", txtColor(0).Pos.Left, txtDrawArea.Pos.Top, Theme.WindowText, FontHeading
   Font.Print "Tools", txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 12, txtDrawArea.Pos.Top, Theme.WindowText, FontHeading
   Mouse.Show
 
@@ -626,7 +626,7 @@ SUB IconEdit.Preview ()
   Obj.SetSize btnClose.Pos, winPreview.Pos.Left + winPreview.Pos.Width - 112, winPreview.Pos.Top + winPreview.Pos.Height - 34, 100, 22
   Obj.SetSize txtPreview.Pos, winPreview.Pos.Left + 12, winPreview.Pos.Top + 12, 247, 247
 
-  btnClose.Caption = "õClose"
+  btnClose.Caption = HotkeySymbol + "Close"
 
   Mouse.Hide
   PCOPY 0, 1
@@ -780,7 +780,7 @@ SUB IconEdit.ShowLoadDialog ()
 
   btnPrev.Caption = "<"
   btnNext.Caption = ">"
-  btnCancel.Caption = "õCancel"
+  btnCancel.Caption = HotkeySymbol + "Cancel"
   btnLoad.Transparent = True
   imgPreview.ImageFile = IconFiles(0)
 

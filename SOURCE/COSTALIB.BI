@@ -163,3 +163,6 @@
   COMMON SHARED MouseX AS INTEGER
   COMMON SHARED MouseY AS INTEGER
 
+  'Hotkey symbol used to underline a letter in a caption
+  COMMON SHARED HotkeySymbol AS STRING * 1
+

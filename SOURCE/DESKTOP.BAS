@@ -119,8 +119,8 @@ SUB Desk.ExecuteDialog ()
 	Obj.SetSize btnOK.Pos, winExecute.Pos.Left + winExecute.Pos.Width - 184, txtParameters.Pos.Top + 30, 80, 22
 	Obj.SetSize btnCancel.Pos, winExecute.Pos.Left + winExecute.Pos.Width - 94, btnOK.Pos.Top, 80, 22
 	Obj.SetSize imgIcon.Pos, winExecute.Pos.Left + 12, winExecute.Pos.Top + 20, sizeRetain, sizeRetain
-	btnOK.Caption = "õOK"
-	btnCancel.Caption = "õCancel"
+	btnOK.Caption = HotkeySymbol + "OK"
+	btnCancel.Caption = HotkeySymbol + "Cancel"
 	btnBrowse.Caption = "..."
 	imgIcon.ImageFile = "RUNPROG"
 	
@@ -142,8 +142,8 @@ DrawExecuteDialog:
 	Font.Print "Execute program", winExecute.Pos.Left + 53, winExecute.Pos.Top + 15, Theme.WindowText, FontHeading
 	Font.Print "You can also use this dialog to open any file", winExecute.Pos.Left + 53, winExecute.Pos.Top + 17 + 15, Theme.WindowText, FontNormal
 	Font.Print "associated with a program (like README.TXT).", winExecute.Pos.Left + 53, winExecute.Pos.Top + 17 + 30, Theme.WindowText, FontNormal
-	Font.Print "õProgram:", txtProgram.Pos.Left, txtProgram.Pos.Top - 16, Theme.WindowText, FontHeading
-	Font.Print "Paõrameters:", txtParameters.Pos.Left, txtParameters.Pos.Top - 16, Theme.WindowText, FontHeading
+	Font.Print HotkeySymbol + "Program:", txtProgram.Pos.Left, txtProgram.Pos.Top - 16, Theme.WindowText, FontHeading
+	Font.Print "Pa" + HotkeySymbol + "rameters:", txtParameters.Pos.Left, txtParameters.Pos.Top - 16, Theme.WindowText, FontHeading
 	Mouse.Show
 
 	DIM Key$
@@ -268,8 +268,8 @@ SUB Desk.LinkDialog (TargetLink, DidEdit)
 	btnBrowse.Caption = "..."
 	btnIconPrev.Caption = "<"
 	btnIconNext.Caption = ">"
-	btnOK.Caption = "õSave"
-	btnCancel.Caption = "õCancel"
+	btnOK.Caption = HotkeySymbol + "Save"
+	btnCancel.Caption = HotkeySymbol + "Cancel"
 
 LinkDialogDraw:
 	Mouse.Hide
@@ -285,11 +285,11 @@ LinkDialogDraw:
 	Obj.DrawChk chkPauseOnExit
 	Obj.DrawBtn btnOK, False
 	Obj.DrawBtn btnCancel, False
-	Font.Print "õDescription (caption):", 222, txtLinkCapt.Pos.Top - 15, Theme.WindowText, 1
-	Font.Print "õProgram:", 222, txtFilename.Pos.Top - 15, Theme.WindowText, 1
-	Font.Print "Paõrameters:", 222, txtParams.Pos.Top - 15, Theme.WindowText, 1
-	Font.Print "Paõth (including drive):", 222, txtPath.Pos.Top - 15, Theme.WindowText, 1
-	Font.Print "Pause after eõxecution", 242, chkPauseOnExit.Pos.Top + 3, Theme.WindowText, 2
+	Font.Print HotkeySymbol + "Description (caption):", 222, txtLinkCapt.Pos.Top - 15, Theme.WindowText, 1
+	Font.Print HotkeySymbol + "Program:", 222, txtFilename.Pos.Top - 15, Theme.WindowText, 1
+	Font.Print "Pa" + HotkeySymbol + "rameters:", 222, txtParams.Pos.Top - 15, Theme.WindowText, 1
+	Font.Print "Pa" + HotkeySymbol + "th (including drive):", 222, txtPath.Pos.Top - 15, Theme.WindowText, 1
+	Font.Print "Pause after e" + HotkeySymbol + "xecution", 242, chkPauseOnExit.Pos.Top + 3, Theme.WindowText, 2
 	LINE (frmIconFrame.Pos.Left + 2, frmIconFrame.Pos.Top + 2)-(frmIconFrame.Pos.Left + frmIconFrame.Pos.Width - 2, frmIconFrame.Pos.Top + frmIconFrame.Pos.Height - 2), Theme.Desktop, BF
 	Obj.DrawImg imgIcon
 	Mouse.Show
@@ -461,11 +461,11 @@ SUB Desk.LinkMenu (TargetLink)
 	Obj.SetSize imgIcon.Pos, winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 11, sizeRetain, sizeRetain
 	imgIcon.ImageFile = DeskLink(TargetLink).ImageFile
 
-	btnOpen.Caption = "õOpen"
-	btnCustomize.Caption = "Cõustomize"
-	btnMove.Caption = "õMove"
-	btnRemove.Caption = "õRemove"
-	btnCancel.Caption = "õCancel"
+	btnOpen.Caption = HotkeySymbol + "Open"
+	btnCustomize.Caption = "C" + HotkeySymbol + "ustomize"
+	btnMove.Caption = HotkeySymbol + "Move"
+	btnRemove.Caption = HotkeySymbol + "Remove"
+	btnCancel.Caption = HotkeySymbol + "Cancel"
 	
 	Mouse.Hide
 	PCOPY 0, 1
@@ -858,12 +858,12 @@ SUB Desk.Main ()
 	Obj.SetSize btnAboutCosta.Pos, 446, 2, 92, 22
 	Obj.SetSize btnExitCosta.Pos, 545, 2, 92, 22
 
-	btnAddLink.Caption = "Add õicon"
-	btnRunCmd.Caption = "õExecute"
-	btnPrevious.Caption = "õ<"
-	btnNext.Caption = "õ>"
-	btnAboutCosta.Caption = "õAbout..."
-	btnExitCosta.Caption = "Eõxit"
+	btnAddLink.Caption = "Add " + HotkeySymbol + "icon"
+	btnRunCmd.Caption = HotkeySymbol + "Execute"
+	btnPrevious.Caption = HotkeySymbol + "<"
+	btnNext.Caption = HotkeySymbol + ">"
+	btnAboutCosta.Caption = HotkeySymbol + "About..."
+	btnExitCosta.Caption = "E" + HotkeySymbol + "xit"
 
 	DIM DeskLinkCheck, ClickedX, ClickedY, ClickedB, DidEdit, Key$
 	DIM CheckDesktopID

@@ -419,12 +419,12 @@ SUB Mine.Main ()
 	Obj.SetSize btnAudio.Pos, 300, 2, 92, 22
 	Obj.SetSize btnAbout.Pos, 446, 2, 92, 22
 	Obj.SetSize btnExit.Pos, 545, 2, 92, 22
-	btnNew.Caption = "õNew game"
-	btnSize.Caption = "Siõze"
-	btnAudio.Caption = "õSound"
-	btnPause.Caption = "õPause"
-	btnAbout.Caption = "õAbout..."
-	btnExit.Caption = "Eõxit"
+	btnNew.Caption = HotkeySymbol + "New game"
+	btnSize.Caption = "Si" + HotkeySymbol + "ze"
+	btnAudio.Caption = HotkeySymbol + "Sound"
+	btnPause.Caption = HotkeySymbol + "Pause"
+	btnAbout.Caption = HotkeySymbol + "About..."
+	btnExit.Caption = "E" + HotkeySymbol + "xit"
 	
 	Mouse.Hide
 	Obj.DrawMenu
@@ -634,8 +634,8 @@ SUB Mine.Pause ()
 	
 	Obj.SetSize btnResume.Pos, 3, 2, 92, 22
 	Obj.SetSize btnExit.Pos, 545, 2, 92, 22
-	btnResume.Caption = "õResume"
-	btnExit.Caption = "Eõxit"
+	btnResume.Caption = HotkeySymbol + "Resume"
+	btnExit.Caption = "E" + HotkeySymbol + "xit"
 
 	Mouse.Hide
 	PCOPY 0, 1
@@ -809,7 +809,7 @@ FUNCTION Mine.SetSize ()
 		btnSize(2).Transparent = True
 		btnSize(3).Transparent = True
 
-		btnCancel.Caption = "õCancel"
+		btnCancel.Caption = HotkeySymbol + "Cancel"
 
 		Mouse.Hide
 		PCOPY 0, 1
@@ -821,10 +821,10 @@ FUNCTION Mine.SetSize ()
 		Obj.DrawBtn btnSize(3), False
 		Obj.DrawBtn btnCancel, False
 
-		Font.Print "9xõ9", btnSize(0).Pos.Left + ((btnSize(0).Pos.Width - Font.GetWidth("9x9", fontHeading)) / 2), btnSize(0).Pos.Top + 79, Theme.WindowText, fontHeading
-		Font.Print "16x1õ6", btnSize(1).Pos.Left + ((btnSize(1).Pos.Width - Font.GetWidth("16x16", fontHeading)) / 2), btnSize(1).Pos.Top + 79, Theme.WindowText, fontHeading
-		Font.Print "õ22x18", btnSize(2).Pos.Left + ((btnSize(2).Pos.Width - Font.GetWidth("22x18", fontHeading)) / 2), btnSize(2).Pos.Top + 79, Theme.WindowText, fontHeading
-		Font.Print "õ39x18", btnSize(3).Pos.Left + ((btnSize(3).Pos.Width - Font.GetWidth("39x28", fontHeading)) / 2), btnSize(3).Pos.Top + 79, Theme.WindowText, fontHeading
+		Font.Print "9x" + HotkeySymbol + "9", btnSize(0).Pos.Left + ((btnSize(0).Pos.Width - Font.GetWidth("9x9", fontHeading)) / 2), btnSize(0).Pos.Top + 79, Theme.WindowText, fontHeading
+		Font.Print "16x1" + HotkeySymbol + "6", btnSize(1).Pos.Left + ((btnSize(1).Pos.Width - Font.GetWidth("16x16", fontHeading)) / 2), btnSize(1).Pos.Top + 79, Theme.WindowText, fontHeading
+		Font.Print HotkeySymbol + "22x18", btnSize(2).Pos.Left + ((btnSize(2).Pos.Width - Font.GetWidth("22x18", fontHeading)) / 2), btnSize(2).Pos.Top + 79, Theme.WindowText, fontHeading
+		Font.Print HotkeySymbol + "39x18", btnSize(3).Pos.Left + ((btnSize(3).Pos.Width - Font.GetWidth("39x28", fontHeading)) / 2), btnSize(3).Pos.Top + 79, Theme.WindowText, fontHeading
 		
 		'9x9
 		FOR X = 0 TO 3
