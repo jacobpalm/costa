@@ -6,6 +6,7 @@
 *.{dat,[dD][aA][tT]} binary
 *.{exe,[eE][xX][eE]} binary
 *.{bin,[bB][iI][nN]} binary
+*.{bgi,[bB][gG][iI]} binary
 
 *.{mak,[mM][aA][kK]} eol=crlf
 *.{bi,[bB][iI]} eol=crlf

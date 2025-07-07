@@ -1,7 +1,7 @@
 program Textview;
 
 uses
-  CostaLib, Strings, Graph, Crt;
+  Costalib, Inputbox, Strings, Graph, Crt;
 
 const
   AppName = 'Text Viewer';
@@ -253,8 +253,8 @@ begin
   ObjSetSize(BtnExit.Pos, 545, 2, 92, 22);
 
   BtnOpen.Caption := HotkeySymbol + 'Open...';
-  BtnPageUp.Caption := 'Page ' + HotkeySymbol + 'pup';
-  BtnPageDown.Caption := 'Page ' + HotkeySymbol + 'gdown';
+  BtnPageUp.Caption := 'Page ' + HotkeySymbol + 'up';
+  BtnPageDown.Caption := 'Page ' + HotkeySymbol + 'down';
   BtnAbout.Caption := HotkeySymbol + 'About...';
   BtnExit.Caption := 'E' + HotkeySymbol + 'xit';
 
@@ -287,6 +287,8 @@ begin
 
     if ObjBtnClick(BtnOpen) or (Key = KeyAltO) then
     begin
+      {DEBUG - replace with file open dialog as soon as it is translated}
+      NewFileName := SysInputbox('Open file', 'Type the name of the file you wish to open below.', 'TEXTVIEW', '');
       Readln(NewFilename);
       if Length(NewFilename) > 0 then
       begin
