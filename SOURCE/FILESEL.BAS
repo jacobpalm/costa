@@ -537,8 +537,8 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	txtFileList.MaxLen = FileList
 	txtFolderList.MaxLen = FolderList
 
-	btnSelect.Caption = "õSelect"
-	btnCancel.Caption = "õCancel"
+	btnSelect.Caption = HotkeySymbol + "Select"
+	btnCancel.Caption = HotkeySymbol + "Cancel"
 	btnFilePrev.Caption = "<"
 	btnFileNext.Caption = ">"
 	btnFolderPrev.Caption = "<"
@@ -554,10 +554,10 @@ FUNCTION File.Select (DefaultPattern AS STRING) AS STRING
 	Obj.DrawBtn btnFileNext, False
 	Obj.DrawBtn btnFolderPrev, False
 	Obj.DrawBtn btnFolderNext, False
-	Font.Print "õPattern:", 101, winFileSelect.Pos.Top + 14, Theme.WindowText, FontNormal
-	Font.Print "õDrive:", 272, winFileSelect.Pos.Top + 14, Theme.WindowText, FontNormal
-	Font.Print "õFiles:", 101, winFileSelect.Pos.Top + 57, Theme.WindowText, FontNormal
-	Font.Print "Fõolders:", 272, winFileSelect.Pos.Top + 57, Theme.WindowText, FontNormal
+	Font.Print HotkeySymbol + "Pattern:", 101, winFileSelect.Pos.Top + 14, Theme.WindowText, FontNormal
+	Font.Print HotkeySymbol + "Drive:", 272, winFileSelect.Pos.Top + 14, Theme.WindowText, FontNormal
+	Font.Print HotkeySymbol + "Files:", 101, winFileSelect.Pos.Top + 57, Theme.WindowText, FontNormal
+	Font.Print "F" + HotkeySymbol + "olders:", 272, winFileSelect.Pos.Top + 57, Theme.WindowText, FontNormal
 	Mouse.Show
 	
 	MaxVisibleItems = 13

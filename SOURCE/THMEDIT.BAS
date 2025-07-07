@@ -194,10 +194,10 @@ SUB ThmEdit.Edit (BYVAL ThmFile AS STRING)
     Obj.SetSize txtThemeAuthor.Pos, 434, txtThemeName.Pos.Top + 48, 194, 0
     Obj.SetSize btnObject.Pos, 434, txtThemeAuthor.Pos.Top + 48, 194, 0
 
-    btnSave.Caption = "õSave"
-    btnSaveAs.Caption = "Saõve as"
-    btnAbout.Caption = "õAbout..."
-    btnExit.Caption = "Eõxit"
+    btnSave.Caption = HotkeySymbol + "Save"
+    btnSaveAs.Caption = "Sa" + HotkeySymbol + "ve as"
+    btnAbout.Caption = HotkeySymbol + "About..."
+    btnExit.Caption = "E" + HotkeySymbol + "xit"
     txtThemeName.MaxLen = 25
     txtThemeAuthor.MaxLen = 25
     btnObject.Caption = "Desktop"
@@ -229,10 +229,10 @@ SUB ThmEdit.Edit (BYVAL ThmFile AS STRING)
       LINE (btnColor(I).Pos.Left + 2, btnColor(I).Pos.Top + 2)-(btnColor(I).Pos.Left + btnColor(I).Pos.Width - 2, btnColor(I).Pos.Top + btnColor(I).Pos.Height - 2), I, BF
     NEXT
 
-    Font.Print "Theme õname:", txtThemeName.Pos.Left, txtThemeName.Pos.Top - 16, Theme.WindowText, FontHeading
-    Font.Print "Theme aõuthor:", txtThemeAuthor.Pos.Left, txtThemeAuthor.Pos.Top - 16, Theme.WindowText, FontHeading
-    Font.Print "õObject selected:", 434, btnObject.Pos.Top - 16, Theme.WindowText, FontHeading
-    Font.Print "õColor for object:", 434, btnColor(0).Pos.Top - 16, Theme.WindowText, FontHeading
+    Font.Print "Theme " + HotkeySymbol + "name:", txtThemeName.Pos.Left, txtThemeName.Pos.Top - 16, Theme.WindowText, FontHeading
+    Font.Print "Theme a" + HotkeySymbol + "uthor:", txtThemeAuthor.Pos.Left, txtThemeAuthor.Pos.Top - 16, Theme.WindowText, FontHeading
+    Font.Print HotkeySymbol + "Object selected:", 434, btnObject.Pos.Top - 16, Theme.WindowText, FontHeading
+    Font.Print HotkeySymbol + "Color for object:", 434, btnColor(0).Pos.Top - 16, Theme.WindowText, FontHeading
 
     'Color indicator
     LINE (btnColor(thmClrDesktop).Pos.Left + 4, btnColor(thmClrDesktop).Pos.Top + 4)-(btnColor(thmClrDesktop).Pos.Left + btnColor(thmClrDesktop).Pos.Width - 4, btnColor(thmClrDesktop).Pos.Top + btnColor(thmClrDesktop).Pos.Height - 4), 8, B
@@ -593,11 +593,11 @@ FUNCTION ThmEdit.Select () AS STRING
   Obj.SetSize btnAbout.Pos, 446, 2, 92, 22
   Obj.SetSize btnCancel.Pos, 545, 2, 92, 22
 
-  btnBack.Caption = "õPrevious"
-  btnNext.Caption = "õNext"
-  btnEdit.Caption = "õEdit"
-  btnAbout.Caption = "õAbout..."
-  btnCancel.Caption = "Eõxit"
+  btnBack.Caption = HotkeySymbol + "Previous"
+  btnNext.Caption = HotkeySymbol + "Next"
+  btnEdit.Caption = HotkeySymbol + "Edit"
+  btnAbout.Caption = HotkeySymbol + "About..."
+  btnCancel.Caption = "E" + HotkeySymbol + "xit"
 
   Mouse.Hide
   Obj.DrawBtn btnBack, False

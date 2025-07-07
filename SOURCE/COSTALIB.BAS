@@ -142,7 +142,7 @@ SUB Font.Print (BYVAL Text AS STRING, X, Y, Col, FontID)
 	DIM FilteredText AS STRING
 
 	'If there's a hotkey in the text, save its position and remove the char
-	HotKey = INSTR(Text, "õ")
+	HotKey = INSTR(Text, HotkeySymbol)
 	IF HotKey AND LEN(Text) > 1 THEN
 		IF HotKey = 1 THEN
 			FilteredText = RIGHT$(Text, LEN(Text) - 1)
@@ -154,7 +154,7 @@ SUB Font.Print (BYVAL Text AS STRING, X, Y, Col, FontID)
 	END IF
 
 	FilteredText = RTRIM$(FilteredText)
-	IF LEN(FilteredText) = 0 OR FontID < 1 OR FontID > 3 THEN EXIT SUB
+	IF LEN(FilteredText) = 0 OR FontID < 1 OR FontID > 2 THEN EXIT SUB
 
 	'Set color using C, move cursor without drawing using BM to x,y
 	DRAW "C" + LTRIM$(STR$(Col)) + "BM" + LTRIM$(STR$(X)) + "," + LTRIM$(STR$(Y + 11))
@@ -724,7 +724,7 @@ SUB Sys.AboutBox (ProgramName AS STRING, ProgramAuthor AS STRING, IconFile AS ST
 	Obj.SetSize winAboutBox.Pos, sizeCenter, sizeCenter, 329, 216
 	Obj.SetSize imgLogo.Pos, 168, winAboutBox.Pos.Top + 11, sizeRetain, sizeRetain
 	Obj.SetSize btnClose.Pos, 274, winAboutBox.Pos.Top + winAboutBox.Pos.Height - 34, 92, 22
-	btnClose.Caption = "õClose"
+	btnClose.Caption = HotkeySymbol + "Close"
 	imgLogo.ImageFile = IconFile
 
 	Mouse.Hide
@@ -801,6 +801,9 @@ SUB Sys.Load ()
 	DEF SEG = VARSEG(FontWidth(1, 32))
 	BLOAD "DATA\FONTINFO.BSV", VARPTR(FontWidth(1, 32))
 	DEF SEG
+
+	'Set hotkey symbol
+	HotkeySymbol = CHR$(21)
 
 	'Load settings
 	Sys.LoadSettings
@@ -927,15 +930,15 @@ FUNCTION Sys.MsgBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgType)
 
 	Obj.SetSize btnFirst.Pos, sizeRetain, winMsgBox.Pos.Top + 42 + (15 * msgLineCount), 80, 22
 	IF msgType = msgQuest THEN
-		btnFirst.Caption = "õYes"
+		btnFirst.Caption = HotkeySymbol + "Yes"
 		btnFirst.Pos.Left = 320 - 86
 	ELSE
-		btnFirst.Caption = "õOK"
+		btnFirst.Caption = HotkeySymbol + "OK"
 		btnFirst.Pos.Left = (640 - btnFirst.Pos.Width) / 2
 	END IF
 	
 	Obj.SetSize btnSecond.Pos, 326, btnFirst.Pos.Top, 80, 22
-	btnSecond.Caption = "õNo"
+	btnSecond.Caption = HotkeySymbol + "No"
 	
 	Mouse.Hide
 	PCOPY 0, 1

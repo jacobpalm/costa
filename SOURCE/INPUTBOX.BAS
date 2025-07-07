@@ -50,11 +50,11 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
 
     DIM btnOK AS ButtonType
     Obj.SetSize btnOK.Pos, winInputBox.Pos.Left + winInputBox.Pos.Width - 182, txtInput.Pos.Top + 30, 80, 22
-    btnOK.Caption = "õOK"
+    btnOK.Caption = HotkeySymbol + "OK"
     
     DIM btnCancel AS ButtonType
     Obj.SetSize btnCancel.Pos, winInputBox.Pos.Left + winInputBox.Pos.Width - 92, btnOK.Pos.Top, 80, 22
-    btnCancel.Caption = "õCancel"
+    btnCancel.Caption = HotkeySymbol + "Cancel"
 
     DIM imgIcon AS ImageType
     IF LEN(msgIcon) THEN
@@ -87,7 +87,7 @@ FUNCTION Sys.InputBox (msgTitle AS STRING, BYVAL msgText AS STRING, msgIcon AS S
         END IF
     NEXT
 
-    Font.Print "Iõnput:", txtInput.Pos.Left, txtInput.Pos.Top - 16, Theme.WindowText, FontHeading
+    Font.Print "I" + HotkeySymbol + "nput:", txtInput.Pos.Left, txtInput.Pos.Top - 16, Theme.WindowText, FontHeading
     
     IF LEN(msgIcon) THEN Obj.DrawImg imgIcon
 

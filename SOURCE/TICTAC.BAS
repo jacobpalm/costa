@@ -339,11 +339,11 @@ SUB Tic.Main ()
 	Obj.SetSize btnAudio.Pos, 201, 2, 92, 22
 	Obj.SetSize btnAbout.Pos, 446, 2, 92, 22
 	Obj.SetSize btnExit.Pos, 545, 2, 92, 22
-	btnNew.Caption = "õNew game"
-	btnAIToggle.Caption = "õMode"
-	btnAudio.Caption = "õSound"
-	btnAbout.Caption = "õAbout..."
-	btnExit.Caption = "Eõxit"
+	btnNew.Caption = HotkeySymbol + "New game"
+	btnAIToggle.Caption = HotkeySymbol + "Mode"
+	btnAudio.Caption = HotkeySymbol + "Sound"
+	btnAbout.Caption = HotkeySymbol + "About..."
+	btnExit.Caption = "E" + HotkeySymbol + "xit"
 	
 	Mouse.Hide
 	Obj.DrawMenu

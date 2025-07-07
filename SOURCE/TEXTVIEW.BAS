@@ -135,11 +135,11 @@ SUB TView.Main (FileToView AS STRING)
     Obj.SetSize btnExit.Pos, 545, 2, 92, 22
     Obj.SetSize txtEditor.Pos, 2, 32, 635, 314
 
-    btnOpen.Caption = "õOpen file..."
-    btnPageUp.Caption = "Page õup"
-    btnPageDown.Caption = "Page õdown"
-    btnAbout.Caption = "õAbout..."
-    btnExit.Caption = "Eõxit"
+    btnOpen.Caption = HotkeySymbol + "Open file..."
+    btnPageUp.Caption = "Page " + HotkeySymbol + "up"
+    btnPageDown.Caption = "Page " + HotkeySymbol + "down"
+    btnAbout.Caption = HotkeySymbol + "About..."
+    btnExit.Caption = "E" + HotkeySymbol + "xit"
 
     IF LEN(LTRIM$(RTRIM$(FileToView))) THEN
       Filename = LTRIM$(RTRIM$(FileToView))
