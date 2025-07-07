@@ -1112,6 +1112,7 @@ var
 begin
   ObjSetSize(btnLoading.Pos, sizeCenter, sizeCenter, 110, 34);
   btnLoading.Caption := 'Loading...';
+  btnLoading.Transparent := False;
   MouseHide;
   ObjDrawBtn(btnLoading, False);
   MouseShow;
