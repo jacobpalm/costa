@@ -89,8 +89,6 @@ type
   end;
 
 var
-  FontData: array[1..2, 32..127] of string[54];
-  FontWidth: array[1..2, 32..127] of Integer;
   MouseVisible: Boolean;
   MouseSupport: Boolean;
   MouseX, MouseY: Integer;
@@ -223,7 +221,7 @@ begin
   begin
     Ch := Ord(TargetText[StrPos]);
     if (Ch >= 32) and (Ch <= 126) then
-      TotalWidth := TotalWidth + 8
+      Inc(TotalWidth, 8);
   end;
   FontGetWidth := TotalWidth - 2;
 end;
