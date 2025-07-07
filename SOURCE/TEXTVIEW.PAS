@@ -252,11 +252,11 @@ begin
   ObjSetSize(BtnAbout.Pos, 446, 2, 92, 22);
   ObjSetSize(BtnExit.Pos, 545, 2, 92, 22);
 
-  BtnOpen.Caption := 'Open...';
-  BtnPageUp.Caption := 'Page up';
-  BtnPageDown.Caption := 'Page down';
-  BtnAbout.Caption := 'About...';
-  BtnExit.Caption := 'Exit';
+  BtnOpen.Caption := HotkeySymbol + 'Open...';
+  BtnPageUp.Caption := 'Page ' + HotkeySymbol + 'pup';
+  BtnPageDown.Caption := 'Page ' + HotkeySymbol + 'gdown';
+  BtnAbout.Caption := HotkeySymbol + 'About...';
+  BtnExit.Caption := 'E' + HotkeySymbol + 'xit';
 
   MouseHide;
   ObjDrawMenu;
@@ -308,7 +308,7 @@ begin
 
     if FileOpened then
     begin
-      if ObjBtnClick(BtnPageUp) or (Key = KeyPageUp) or (Key = KeyUp) then
+      if ObjBtnClick(BtnPageUp) or (Key = KeyPageUp) or (Key = KeyUp) or (Key = KeyAltU) then
       begin
         if StartLine > 1 then
         begin
@@ -322,7 +322,7 @@ begin
         end;
       end;
 
-      if ObjBtnClick(BtnPageDown) or (Key = KeyPageDown) or (Key = KeyDown) then
+      if ObjBtnClick(BtnPageDown) or (Key = KeyPageDown) or (Key = KeyDown) or (Key = KeyAltD) then
       begin
         if StartLine < LineCount then
         begin

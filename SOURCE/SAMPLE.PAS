@@ -35,14 +35,14 @@ begin
 
     {Set Exit button position and size - left, top, width, height}
     ObjSetSize(btnExit.Pos, 545, 2, 92, 22);
-    btnExit.Caption := 'E?xit';
+    btnExit.Caption := HotkeySymbol + 'Exit';
     {The ? character determines which letter on the button is underlined.
      This is actually handled by the FontPrint procedure, and can be used
      anywhere text is printed.}
 
     {About button}
     ObjSetSize(btnAbout.Pos, 446, 2, 92, 22);
-    btnAbout.Caption := '?About...';
+    btnAbout.Caption := HotkeySymbol + 'About...';
                 
     {Create an icon. Only the filename, without extension or path, is set.
      This is because icons are always in the same folder. An icon does not

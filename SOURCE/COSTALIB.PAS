@@ -12,6 +12,7 @@ const
   sizeCenter   = -2;
 
   NewLine: Char = #13;
+  HotkeySymbol: Char = #127;  {This is used to mark hotkeys in object captions}
 
   {$I KEYCODES.INC}
   {$I APPINFO.INC}
@@ -97,7 +98,7 @@ var
 
 function FileExists(const FileName: string): Boolean;
 function FileGetAssociation(const FileType: string): string;
-function FontGetWidth(const TargetText: string; FontID: Integer): Integer;
+function FontGetWidth(TargetText: String; FontID: Integer): Integer;
 function GetKey: string;
 function LowCase(c: Char): Char;
 function LowerCase(s: string): string;
@@ -112,7 +113,7 @@ Function SysPath: DirStr;
 function Trim(s: string): string;
 function UpperCase(s: string): string;
 procedure ClearKeyBuffer;
-procedure FontPrint(const Text: string; X, Y, Col, FontID: Integer);
+procedure FontPrint(Text: string; X, Y, Col, FontID: Integer);
 procedure MouseHide;
 procedure MousePoll;
 procedure MouseSetPos(XPos, YPos: Integer);
@@ -207,29 +208,34 @@ begin
 end;
 
 
-function FontGetWidth(const TargetText: string; FontID: Integer): Integer;
+function FontGetWidth(TargetText: String; FontID: Integer): Integer;
 var
-  TotalWidth, StrPos, Ch: Integer;
+  Width: Integer;
 begin
-  TotalWidth := 0;
-  if (TargetText = '') or ((FontID <> FontHeading) and (FontID <> FontNormal)) then
-  begin
-    FontGetWidth := 0;
-    Exit;
-  end;
-  for StrPos := 1 to Length(TargetText) do
-  begin
-    Ch := Ord(TargetText[StrPos]);
-    if (Ch >= 32) and (Ch <= 126) then
-      Inc(TotalWidth, 8);
-  end;
-  FontGetWidth := TotalWidth - 2;
+  Width := Length(TargetText) * 8; {Each character is 8 pixels wide}
+  
+  if Pos(HotkeySymbol, TargetText) > 0 then
+    Width := Width - 8; {Don't count the hotkey symbol}
+
+  FontGetWidth := Width;
 end;
 
-procedure FontPrint(const Text: string; X, Y, Col, FontID: Integer);
+procedure FontPrint(Text: String; X, Y, Col, FontID: Integer);
+var
+  HotkeyPos: Integer;
 begin
   SetTextJustify(LeftText, TopText);
   SetColor(Col);
+
+  {If the text contains a hotkey symbol, remove it and draw an underline under
+   the next character}
+  HotkeyPos := Pos(HotkeySymbol, Text);
+  if HotkeyPos > 0 then
+  begin
+    Delete(Text, HotkeyPos, 1);
+    Rectangle(X + HotkeyPos * 8 - 9, Y + 9, X + HotkeyPos * 8 - 1, Y + 10);
+  end;
+
   OutTextXY(X, Y, Text);
 end;
 
@@ -414,15 +420,14 @@ begin
   if RTrim(TargetBtn.Caption) <> '' then
   begin
     x1 := (x2 - x1) div 2 + x1;
-    y1 := (y2 - y1) div 2 + y1;
+    y1 := (y2 - y1) div 2 + y1 - 3; {3 is the offset to center text vertically}
+    x1 := x1 - FontGetWidth(TargetBtn.Caption, FontHeading) div 2;
     if Pressed then
     begin
       Inc(x1);
       Inc(y1);
     end;
-    SetTextJustify(CenterText, CenterText);
-    SetColor(Color4);
-    OutTextXY(x1, y1, TargetBtn.Caption);
+    FontPrint(TargetBtn.Caption, x1, y1, Color4, FontHeading);
   end;
 end;
 
@@ -728,7 +733,7 @@ begin
   ObjSetSize(winAboutBox.Pos, sizeCenter, sizeCenter, 329, 216);
   ObjSetSize(imgLogo.Pos, 168, winAboutBox.Pos.Top + 11, sizeRetain, sizeRetain);
   ObjSetSize(btnClose.Pos, 274, winAboutBox.Pos.Top + winAboutBox.Pos.Height-34, 92, 22);
-  btnClose.Caption := 'Close';
+  btnClose.Caption := HotkeySymbol + 'Close';
   btnClose.Transparent := False;
   imgLogo.ImageFile := IconFile;
   MouseHide;
@@ -923,16 +928,16 @@ begin
   ObjSetSize(btnFirst.Pos, sizeRetain, winMsgBox.Pos.Top+42+(15*msgLineCount), 80, 22);
   if msgType = msgQuest then
   begin
-    btnFirst.Caption := '?Yes';
+    btnFirst.Caption := HotkeySymbol + 'Yes';
     btnFirst.Pos.Left := 320 - 86;
   end
   else
   begin
-    btnFirst.Caption := '?OK';
+    btnFirst.Caption := HotkeySymbol + 'OK';
     btnFirst.Pos.Left := (640 - btnFirst.Pos.Width) div 2;
   end;
   ObjSetSize(btnSecond.Pos, 326, btnFirst.Pos.Top, 80, 22);
-  btnSecond.Caption := '?No';
+  btnSecond.Caption := HotkeySymbol + 'No';
 
   MouseHide;
 
