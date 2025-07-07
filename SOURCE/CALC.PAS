@@ -19,36 +19,50 @@ var
   TotalSum, Op1: Integer;
   NumOps: Integer;
   Key, txtCalcText, LastClick: string;
-  ch: Char;
+  ch: string[1];
   CalcErr: Boolean;
-  TempGraphMode, TempMax: Integer;
-  TempDriver: String;
 
 function Calc_FormatNum(TargetStr: string): string;
 var
-  BeforeDot, AfterDot, TempStr: string;
-  i: Integer;
+  IntPart, DecPart, TempStr, SignStr: string;
+  i, Len, Count: integer;
+  DotPos: integer;
 begin
-  AfterDot := '';
-  i := Pos('.', TargetStr);
-  if i > 0 then
+  SignStr := '';
+  TempStr := '';
+  
+  {Remote decimals if any, and add again later}
+  DotPos := Pos('.', TargetStr);
+  if DotPos > 0 then
   begin
-    BeforeDot := Copy(TargetStr, 1, i-1);
-    AfterDot := Copy(TargetStr, i+1, Length(TargetStr)-i);
+    IntPart := Copy(TargetStr, 1, DotPos - 1);
+    DecPart := Copy(TargetStr, DotPos, Length(TargetStr) - DotPos + 1);
   end
   else
-    BeforeDot := TargetStr;
-  TempStr := '';
-  while Length(BeforeDot) > 3 do
   begin
-    TempStr := ',' + Copy(BeforeDot, Length(BeforeDot)-2, 3) + TempStr;
-    BeforeDot := Copy(BeforeDot, 1, Length(BeforeDot)-3);
+    IntPart := TargetStr;
+    DecPart := '';
   end;
-  BeforeDot := BeforeDot + TempStr;
-  if AfterDot = '' then
-    Calc_FormatNum := BeforeDot
-  else
-    Calc_FormatNum := BeforeDot + '.' + AfterDot;
+
+  {If first sign is a minus, remove it and add again later}
+  if (Length(IntPart) > 0) and (IntPart[1] = '-') then
+  begin
+    SignStr := IntPart[1];
+    Delete(IntPart, 1, 1);
+  end;
+
+  {Insert commas every three digits in the integer part}
+  Len := Length(IntPart);
+  Count := 0;
+  for i := Length(IntPart) downto 1 do
+  begin
+    TempStr := IntPart[i] + TempStr;
+    Inc(Count);
+    if (Count mod 3 = 0) and (i > 1) then
+      TempStr := ',' + TempStr;
+  end;
+
+  Calc_FormatNum := SignStr + TempStr + DecPart;
 end;
 
 procedure Calc_LogLine(Text: string; var TargetTxt: TextboxType);
@@ -93,16 +107,16 @@ begin
   ObjSetSize(btnAbout.Pos, 446, 2, 92, 22);
   ObjSetSize(btnExit.Pos, 545, 2, 92, 22);
 
-  btnC.Caption := 'C';
-  btnCE.Caption := 'CE';
+  btnC.Caption := HotkeySymbol + 'C';
+  btnCE.Caption := 'C' + HotkeySymbol + 'E';
   btnDivide.Caption := '/';
   btnDot.Caption := '.';
   btnMulti.Caption := '*';
   btnMinus.Caption := '-';
   btnPlus.Caption := '+';
   btnEquals.Caption := '=';
-  btnAbout.Caption := 'About...';
-  btnExit.Caption := 'Exit';
+  btnAbout.Caption := HotkeySymbol + 'About...';
+  btnExit.Caption := 'E' + HotkeySymbol + 'xit';
   txtCalc.MaxLen := 25;
 
   MouseHide;
@@ -130,7 +144,7 @@ begin
   repeat
     Key := GetKey;
 
-    if ObjBtnClick(btnExit) or (Key = KeyAltX) or (Key = KeyEscape) then
+    if ObjBtnClick(btnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
     begin
       MouseHide;
       CloseGraph;
@@ -142,9 +156,13 @@ begin
 
     for btnCount := 0 to 9 do
     begin
-      if ObjBtnClick(btnNumb[btnCount]) then {or (Key = IntToStr(btnCount)) then}
+      Str(btnCount, ch);
+      if ObjBtnClick(btnNumb[btnCount]) or (Key = ch) then
       begin
-        
+        txtCalcText := txtCalcText + ch;
+        MouseHide;
+        ObjDrawTxt(txtCalc, Calc_FormatNum(txtCalcText), False);
+        MouseShow;
       end;
     end;
 
@@ -154,8 +172,6 @@ begin
       MouseHide;
       ObjDrawTxt(txtCalc, '', False);
       MouseShow;
-      SysMsgBox('Calculator', 'Cleared the calculator input.' + NewLine + 'It was hard but I did it.', msgError);
-       {Just debug stuff, remove later}
     end;
 
     if ObjBtnClick(btnCE) or (Key = 'e') then
