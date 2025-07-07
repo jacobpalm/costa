@@ -7,27 +7,27 @@ const
   AppName = 'Text Viewer';
   AppVersion = '2.0';
   AppAuthor = 'Jacob Palm';
-  InitialCap = 100;  { Initial capacity for the line array }
+  InitialCap = 100;  {Initial capacity for the line array}
   MaxLinesShown = 22;
   MaxLineLength = 78;
 
 type
   PLine = ^LineStr;
-  LineStr = string[MaxLineLength];
+  LineStr = String[MaxLineLength];
 
   PLineArray = ^LineArray;
-  LineArray = array[1..1] of PLine;  { flexible array, simulate dynamic sizing }
+  LineArray = Array[1..1] of PLine;  {Flexible array to simulate dynamic sizing}
 
 var
   Lines: PLineArray;
-  btnOpen, btnAbout, btnExit, btnPageUp, btnPageDown: ButtonType;
-  Filename, NewFileName: string;
-  StartLine: Integer;
+  BtnOpen, BtnAbout, BtnExit, BtnPageUp, BtnPageDown: ButtonType;
+  Filename, NewFileName: String;
+  StartLine, PrevStartLine: Integer;
   Capacity: Integer;
   LineCount: Integer;
   FileOpened: Boolean;
   Key: String;
-  DefaultHeapError: Pointer; { We'll be taking care of heap errors ourselves }
+  DefaultHeapError: Pointer; {We'll be taking care of heap errors ourselves}
 
 procedure FreeLines; forward;
 
@@ -42,48 +42,63 @@ begin
     Exit;
   end;
 
-  FreeLines;  { Free any previously allocated lines }
+  FreeLines;  {Free any previously allocated lines}
   Filename := '';
   FileOpened := False;
   MouseHide;
   SetFillStyle(SolidFill, Theme.Textbox);
   Bar(0, 29, 639, 349);
-  MouseShow
+  MouseShow;
   Str(Size, SizeStr);
   MsgResult := SysMsgBox('Out of memory', 'Not enough memory to open this file.', msgError);
-  CloseGraph;
-  Halt(1);  { gracefully exit }
-  CustomHeapError := 1;  { technically unreachable }
+  CustomHeapError := 1;  {Make GetMem return a nil pointer}
 end;
 
-procedure InitLines(InitialSize: Integer);
+function InitLines(InitialSize: Integer): Boolean;
 begin
   Capacity := InitialSize;
   LineCount := 0;
   HeapError := @CustomHeapError;
   GetMem(Lines, Capacity * SizeOf(PLine));
   HeapError := DefaultHeapError;
+  if Lines = nil then
+  begin
+    InitLines := False;
+    Exit;
+  end;
 end;
 
-procedure ResizeLines(var Lines: PLineArray; OldCap, NewCap: Integer);
+function ResizeLines(var Lines: PLineArray; OldCap, NewCap: Integer): Boolean;
 var
   NewLines: PLineArray;
   i: Integer;
 begin
 
-  HeapError := @CustomHeapError;  {Set custom heap error handler} 
+  {Only resize if the lines array has been initialized}
+  if Lines = nil then
+  begin
+    ResizeLines := False;
+    Exit;
+  end;
 
   {Allocate new memory for the resized array}
+  HeapError := @CustomHeapError;
   GetMem(NewLines, NewCap * SizeOf(PLine));
+  HeapError := DefaultHeapError;
+
+  if NewLines = nil then
+  begin
+    ResizeLines := False;
+    Exit;
+  end;
 
   {Copy existing lines to the new array}
-  for i := 1 to OldCap do
+  Move(Lines^[1], NewLines^[1], OldCap * SizeOf(PLine));
+  {for i := 1 to OldCap do
     NewLines^[i] := Lines^[i];
-
+}
   {Free memory of the old array}
   FreeMem(Lines, OldCap * SizeOf(PLine));
-
-  HeapError := DefaultHeapError; {Restore default heap error handler}
 
   {Update the pointer to the new array}
   Lines := NewLines;
@@ -103,16 +118,18 @@ begin
   Capacity := 0;
   LineCount := 0;
   StartLine := 1;
+  PrevStartLine := 1;
 end;
 
-procedure AddLine(S: string);
+procedure AddLine(S: String);
 var
   NewLine: PLine;
 begin
   if LineCount >= Capacity then
   begin
-    { Reallocate space for more lines }
-    ResizeLines(Lines, Capacity, Capacity + 10);
+    {Reallocate space for more lines, exit if it fails}
+    if not ResizeLines(Lines, Capacity, Capacity + 10) then
+      Exit;
     Capacity := Capacity + 10;
   end;
 
@@ -122,7 +139,7 @@ begin
   Lines^[LineCount] := NewLine;
 end;
 
-function LoadFile(TargetFile: string): Boolean;
+function LoadFile(TargetFile: String): Boolean;
 var
   f: Text;
   ReadData, Truncated: String;
@@ -148,10 +165,14 @@ begin
   SysShowLoading;
   
   if FileOpened then
-    FreeLines;  { Free previously loaded lines }
-  
-  InitLines(InitialCap);  { Initialize with default capacity } 
+    FreeLines;  {Free previously loaded lines}
+   
+  {Initialize with default capacity, exit if failed} 
+  if not InitLines(InitialCap) then
+    Exit;  
+
   StartLine := 1;
+  PrevStartLine := 1;
 
   while not Eof(F) do
   begin
@@ -180,11 +201,22 @@ begin
 
       AddLine(Truncated);
     end;
+
+    {Exit if lines array has been freed due to memory error}
+    if LineCount = 0 then
+    begin
+      LoadFile := False;
+      Close(F);
+      Exit;
+    end;
   end;
   Close(F);
 
   AddLine('* end of file *');
-  LoadFile := True;
+  if LineCount > 0 then
+    LoadFile := True
+  else
+    LoadFile := False;
 end;
 
 procedure DrawText;
@@ -214,25 +246,27 @@ begin
   {Store default heap error handler for later restoration}
   DefaultHeapError := HeapError;
 
-  ObjSetSize(btnOpen.Pos, 3, 2, 92, 22);
-  ObjSetSize(btnPageUp.Pos, 102, 2, 92, 22);
-  ObjSetSize(btnPageDown.Pos, 201, 2, 92, 22);
-  ObjSetSize(btnAbout.Pos, 446, 2, 92, 22);
-  ObjSetSize(btnExit.Pos, 545, 2, 92, 22);
+  ObjSetSize(BtnOpen.Pos, 3, 2, 92, 22);
+  ObjSetSize(BtnPageUp.Pos, 102, 2, 92, 22);
+  ObjSetSize(BtnPageDown.Pos, 201, 2, 92, 22);
+  ObjSetSize(BtnAbout.Pos, 446, 2, 92, 22);
+  ObjSetSize(BtnExit.Pos, 545, 2, 92, 22);
 
-  btnOpen.Caption := 'Open...';
-  btnPageUp.Caption := 'Page up';
-  btnPageDown.Caption := 'Page down';
-  btnAbout.Caption := 'About...';
-  btnExit.Caption := 'Exit';
+  BtnOpen.Caption := 'Open...';
+  BtnPageUp.Caption := 'Page up';
+  BtnPageDown.Caption := 'Page down';
+  BtnAbout.Caption := 'About...';
+  BtnExit.Caption := 'Exit';
 
   MouseHide;
   ObjDrawMenu;
   SetFillStyle(SolidFill, Theme.Textbox);
   Bar(0, 29, 639, 349);
-  ObjDrawBtn(btnOpen, False);
-  ObjDrawBtn(btnAbout, False);
-  ObjDrawBtn(btnExit, False);
+  ObjDrawBtn(BtnOpen, False);
+  ObjDrawBtn(BtnPageUp, False);
+  ObjDrawBtn(BtnPageDown, False);
+  ObjDrawBtn(BtnAbout, False);
+  ObjDrawBtn(BtnExit, False);
   MouseShow;
   
   if ParamStr(1) <> '' then
@@ -245,21 +279,13 @@ begin
       Filename := '';
   end;
 
-  if FileOpened then
-  begin
-    MouseHide;
-    ObjDrawBtn(btnPageUp, False);
-    ObjDrawBtn(btnPageDown, False);
-    MouseShow;
-  end;
-
   repeat
     Key := GetKey;
     
-    if ObjBtnClick(btnAbout) or (Key = KeyAltA) then
+    if ObjBtnClick(BtnAbout) or (Key = KeyAltA) then
       SysAboutBox(AppName, AppVersion, AppAuthor, 'DOCUMENT');
 
-    if ObjBtnClick(btnOpen) or (Key = KeyAltO) then
+    if ObjBtnClick(BtnOpen) or (Key = KeyAltO) then
     begin
       Readln(NewFilename);
       if Length(NewFilename) > 0 then
@@ -269,20 +295,20 @@ begin
           Filename := NewFilename;
           FileOpened := True;
           MouseHide;
-          ObjDrawBtn(btnPageUp, False);
-          ObjDrawBtn(btnPageDown, False);
+          ObjDrawBtn(BtnPageUp, False);
+          ObjDrawBtn(BtnPageDown, False);
           MouseShow;
           DrawText;
         end;
       end;
     end;
     
-    if ObjBtnClick(btnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
+    if ObjBtnClick(BtnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
       break;
 
     if FileOpened then
     begin
-      if ObjBtnClick(btnPageUp) or (Key = KeyPageUp) or (Key = KeyUp) then
+      if ObjBtnClick(BtnPageUp) or (Key = KeyPageUp) or (Key = KeyUp) then
       begin
         if StartLine > 1 then
         begin
@@ -290,15 +316,13 @@ begin
             Dec(StartLine) {One line up}
           else
             Dec(StartLine, MaxLinesShown); {One page up}
+
           if StartLine < 1 then
             StartLine := 1;
-          MouseHide;
-          DrawText;
-          MouseShow;
         end;
       end;
 
-      if ObjBtnClick(btnPageDown) or (Key = KeyPageDown) or (Key = KeyDown) then
+      if ObjBtnClick(BtnPageDown) or (Key = KeyPageDown) or (Key = KeyDown) then
       begin
         if StartLine < LineCount then
         begin
@@ -306,12 +330,32 @@ begin
             Inc(StartLine) {One line down}
           else
             Inc(StartLine, MaxLinesShown); {One page down}
-          if StartLine > LineCount then
-            StartLine := LineCount;
-          MouseHide;
-          DrawText;
-          MouseShow;
+          
+          {Don't scroll further than the last line of the file being the last on screen}
+          if StartLine > LineCount - MaxLinesShown + 2 then
+            StartLine := LineCount - MaxLinesShown + 2;
+          
+          if StartLine < 1 then
+            StartLine := 1;
         end;
+      end;
+
+      If Key = KeyHome then
+        StartLine := 1;
+
+      if Key = KeyEnd then
+      begin
+        StartLine := LineCount - MaxLinesShown + 2;
+        If StartLine > LineCount then
+          StartLine := LineCount;
+      end;
+
+      If StartLine <> PrevStartLine then
+      begin
+        MouseHide;
+        DrawText;
+        MouseShow;
+        PrevStartLine := StartLine;
       end;
     end;
     
