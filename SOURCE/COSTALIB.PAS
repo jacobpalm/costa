@@ -8,6 +8,7 @@ uses
 const
   FontHeading  = 1;
   FontNormal   = 2;
+  sizeDefault  = -1;
   sizeRetain   = -1;
   sizeCenter   = -2;
 
@@ -29,10 +30,11 @@ type
     Left, Top, Width, Height: Integer;
   end;
 
-  ButtonType = record
+  ButtonType = object
     Pos: PosType;
-    Caption: string[32];
+    Caption: string;
     Transparent: Boolean;
+    constructor Init(Left, Top, Width, Height: Integer; CaptionS: string);
   end;
 
   CheckBoxType = record
@@ -45,17 +47,19 @@ type
     ImageFile: string[64];
   end;
 
-  WindowType = record
+  WindowType = object
     Pos: PosType;
+    constructor Init(Left, Top, Width, Height: Integer);
   end;
 
   FrameType = record
     Pos: PosType;
   end;
 
-  TextboxType = record
+  TextboxType = object
     Pos: PosType;
     MaxLen: Integer;
+    constructor Init(Left, Top, Width, Height: Integer);
   end;
 
   FileAssociationType = record
@@ -136,6 +140,59 @@ procedure SysSaveSettings;
 procedure SysShowLoading;
 
 implementation
+
+constructor ButtonType.Init(Left, Top, Width, Height: Integer; CaptionS: string);
+begin
+  Pos.Left := Left;
+  Pos.Top := Top;
+  if Width = sizeDefault then
+    Pos.Width := 92
+  else
+    Pos.Width := Width;
+  if Height = sizeDefault then
+    Pos.Height := 22
+  else
+    Pos.Height := Height;
+  Self.Caption := CaptionS;
+  Self.Transparent := False;
+end;
+
+constructor TextboxType.Init(Left, Top, Width, Height: Integer);
+begin
+  Pos.Left := Left;
+  Pos.Top := Top;
+  if Width = sizeDefault then
+    Pos.Width := 120
+  else
+    Pos.Width := Width;
+  if Height = sizeDefault then
+    Pos.Height := 19
+  else
+    Pos.Height := Height;
+  Self.MaxLen := 255;
+end;
+
+constructor WindowType.Init(Left, Top, Width, Height: Integer);
+begin
+  if Width = sizeDefault then
+    Pos.Width := 320
+  else
+    Pos.Width := Width;
+  if Height = sizeDefault then
+    Pos.Height := 175
+  else
+    Pos.Height := Height;
+
+  if Left = sizeCenter then
+    Pos.Left := (640 - Pos.Width) div 2 {640 is horizontal resolution}
+  else
+    Pos.Left := Left;
+
+  if Top = sizeCenter then
+    Pos.Top := (350 - Pos.Height) div 2 {350 is vertical resolution}
+  else
+    Pos.Top := Top;
+end;
 
 function FileExists(const FileName: string): Boolean;
 var
@@ -233,7 +290,7 @@ begin
   if HotkeyPos > 0 then
   begin
     Delete(Text, HotkeyPos, 1);
-    Rectangle(X + HotkeyPos * 8 - 9, Y + 9, X + HotkeyPos * 8 - 1, Y + 10);
+    Rectangle(X + HotkeyPos * 8 - 9, Y + 9, X + HotkeyPos * 8 - 1, Y + 9);
   end;
 
   OutTextXY(X, Y, Text);
@@ -541,7 +598,7 @@ var
 begin
   x1 := TargetTxt.Pos.Left;
   y1 := TargetTxt.Pos.Top;
-  if TargetTxt.Pos.Top = 0 then TargetTxt.Pos.Top := 120;
+  if TargetTxt.Pos.Width = 0 then TargetTxt.Pos.Width := 120;
   if TargetTxt.Pos.Height = 0 then TargetTxt.Pos.Height := 19;
   x2 := x1 + TargetTxt.Pos.Width;
   y2 := y1 + TargetTxt.Pos.Height;
