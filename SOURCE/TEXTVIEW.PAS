@@ -246,17 +246,11 @@ begin
   {Store default heap error handler for later restoration}
   DefaultHeapError := HeapError;
 
-  ObjSetSize(BtnOpen.Pos, 3, 2, 92, 22);
-  ObjSetSize(BtnPageUp.Pos, 102, 2, 92, 22);
-  ObjSetSize(BtnPageDown.Pos, 201, 2, 92, 22);
-  ObjSetSize(BtnAbout.Pos, 446, 2, 92, 22);
-  ObjSetSize(BtnExit.Pos, 545, 2, 92, 22);
-
-  BtnOpen.Caption := HotkeySymbol + 'Open...';
-  BtnPageUp.Caption := 'Page ' + HotkeySymbol + 'up';
-  BtnPageDown.Caption := 'Page ' + HotkeySymbol + 'down';
-  BtnAbout.Caption := HotkeySymbol + 'About...';
-  BtnExit.Caption := 'E' + HotkeySymbol + 'xit';
+  BtnOpen.Init(3, 2, SizeDefault, SizeDefault, HotkeySymbol + 'Open...');
+  BtnPageUp.Init(102, 2, SizeDefault, SizeDefault, 'Page ' + HotkeySymbol + 'up');
+  BtnPageDown.Init(201, 2, SizeDefault, SizeDefault, 'Page ' + HotkeySymbol + 'down');
+  BtnAbout.Init(446, 2, SizeDefault, SizeDefault, HotkeySymbol + 'About...');
+  BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + HotkeySymbol + 'xit');
 
   MouseHide;
   ObjDrawMenu;
@@ -288,7 +282,7 @@ begin
     if ObjBtnClick(BtnOpen) or (Key = KeyAltO) then
     begin
       {DEBUG - replace with file open dialog as soon as it is translated}
-      NewFileName := SysInputbox('Open file', 'Type the name of the file you wish to open below.', 'TEXTVIEW', '');
+      NewFileName := SysInputbox('Open file', 'Type the name of the file you wish to open below.', 'DOCUMENT', '');
       Readln(NewFilename);
       if Length(NewFilename) > 0 then
       begin
