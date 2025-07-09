@@ -189,6 +189,7 @@ var
   RedrawNeeded: Boolean;
   TotalItems, ListStartPos, ListSelection: Integer;
 begin
+  RedrawNeeded := False;
   {Retrieve values to temp variables - so both lists can be handled by same code}
   if TargetList.MaxLen = FileList then
   begin
@@ -212,7 +213,7 @@ begin
     {If selection is below zero, set to last item instead}
     RedrawNeeded := True;
     ListSelection := TotalItems;
-    ListStartPos := TotalItems - MaxVisibleItems;
+    ListStartPos := TotalItems - MaxVisibleItems + 1;
     if ListStartPos < 1 then
       ListStartPos := 1;
   end;
@@ -234,7 +235,7 @@ begin
     ListStartPos := 1;
   end;
 
-  if ListSelection > ListStartPos + MaxVisibleItems then
+  if ListSelection > ListStartPos + MaxVisibleItems - 1 then
   begin
     {If selected item is below visible items, scroll to make it first visible item}
     RedrawNeeded := True;
@@ -568,7 +569,7 @@ begin
             ActiveList := FolderList;
             DrawFileList(txtFileList, False, False);
         end;
-        Key := KeyUp; {Simulate key press for moving selection up}
+        Key := KeyPageUp; {Simulate key press for moving view up}
     end;
 
     if ObjBtnClick(btnFolderNext) then
@@ -578,7 +579,7 @@ begin
             ActiveList := FolderList;
             DrawFileList(txtFileList, False, False);
         end;
-        Key := KeyDown; {Simulate key press for moving selection down}
+        Key := KeyPageDown; {Simulate key press for moving view down}
     end;
 
     if Key = KeyUp then
@@ -595,6 +596,66 @@ begin
             FileMoveSelection(txtFileList, DirectionDown)
         else
             FileMoveSelection(txtFolderList, DirectionDown);
+    end;
+
+    if Key = KeyHome then
+    begin
+        if ActiveList = FileList then
+        begin
+            FileListStartPos := 1;
+            FileListSelection := 1;
+            DrawFileList(txtFileList, True, True);
+        end
+        else
+        begin
+            FolderListStartPos := 1;
+            FolderListSelection := 1;
+            DrawFileList(txtFolderList, True, True);
+        end;
+    end;
+
+    if Key = KeyEnd then
+    begin
+        if ActiveList = FileList then
+        begin
+            FileListStartPos := FileCount - MaxVisibleItems + 1;
+            if FileListStartPos < 1 then
+                FileListStartPos := 1;
+            FileListSelection := FileCount;
+            DrawFileList(txtFileList, True, True);
+        end
+        else
+        begin
+            FolderListStartPos := FolderCount - MaxVisibleItems + 1;
+            if FolderListStartPos < 1 then
+                FolderListStartPos := 1;
+            FolderListSelection := FolderCount;
+            DrawFileList(txtFolderList, True, True);
+        end;
+    end;
+
+    if Key = KeyPageUp then
+    begin
+        if ActiveList = FileList then
+        begin
+            FileMoveSelection(txtFileList, DirectionUp * MaxVisibleItems);
+        end
+        else
+        begin
+            FileMoveSelection(txtFolderList, DirectionUp * MaxVisibleItems);
+        end;
+    end;
+
+    if Key = KeyPageDown then
+    begin
+        if ActiveList = FileList then
+        begin
+            FileMoveSelection(txtFileList, DirectionDown * MaxVisibleItems);
+        end
+        else
+        begin
+            FileMoveSelection(txtFolderList, DirectionDown * MaxVisibleItems);
+        end;
     end;
 
     if Key = KeyAltF then
