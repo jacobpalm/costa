@@ -1,7 +1,7 @@
 program Textview;
 
 uses
-  Costalib, Inputbox, Strings, Graph, Crt;
+  Costalib, Filesel, Strings, Graph, Crt;
 
 const
   AppName = 'Text Viewer';
@@ -185,6 +185,9 @@ begin
       Continue;
     end;
 
+    {Replace TAB with two spaces}
+    ReadData := Replace(ReadData, #9, '  '); 
+
     {Add each line to the array, truncate at MaxLineLength if necessary}
     while Length(ReadData) > 0 do
     begin
@@ -281,9 +284,7 @@ begin
 
     if ObjBtnClick(BtnOpen) or (Key = KeyAltO) then
     begin
-      {DEBUG - replace with file open dialog as soon as it is translated}
-      NewFileName := SysInputbox('Open file', 'Type the name of the file you wish to open below.', 'DOCUMENT', '');
-      Readln(NewFilename);
+      NewFileName := FileSelect('*.txt');
       if Length(NewFilename) > 0 then
       begin
         if LoadFile(NewFilename) then
