@@ -8,21 +8,21 @@ DEFINT A-Z
 '$INCLUDE: 'C:\VBDOS\VBDOS.BI'
 
 TYPE ThemeType
-  Name AS STRING * 25
-  Author AS STRING * 25
-  Desktop AS INTEGER
-  DesktopText AS INTEGER
-  Window AS INTEGER
-  WindowText AS INTEGER
-  Button AS INTEGER
-  Textbox AS INTEGER
-  TextboxText AS INTEGER
-  Light AS INTEGER
-  Shadow AS INTEGER
-  TitleBar AS INTEGER
-  TitleBarText AS INTEGER
-  Select AS INTEGER
-  SelectText AS INTEGER
+	Name AS STRING * 25
+	Author AS STRING * 25
+	Desktop AS INTEGER
+	DesktopText AS INTEGER
+	Window AS INTEGER
+	WindowText AS INTEGER
+	Button AS INTEGER
+	Textbox AS INTEGER
+	TextboxText AS INTEGER
+	Light AS INTEGER
+	Shadow AS INTEGER
+	TitleBar AS INTEGER
+	TitleBarText AS INTEGER
+	Select AS INTEGER
+	SelectText AS INTEGER
 END TYPE
 
 TYPE DeskLinkType
