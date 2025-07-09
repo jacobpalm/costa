@@ -111,7 +111,6 @@ function FileExists(const FileName: string): Boolean;
 function FileGetAssociation(const FileType: string): string;
 function FontGetWidth(TargetText: String; FontID: Integer): Integer;
 function GetKey: string;
-function LowCase(c: Char): Char;
 function LowerCase(s: string): string;
 function LTrim(s: string): string;
 function MouseClicked: TMouseButton;
@@ -310,7 +309,10 @@ var
   i: Integer;
 begin
   for i := 1 to Length(s) do
-    s[i] := LowCase(s[i]);
+  begin
+    if (s[i] >= 'A') and (s[i] <= 'Z') then
+      s[i] := Chr(Ord(s[i]) + 32); (* Convert char to lowercase ASCII *)
+  end;
   LowerCase := s;
 end;
 
@@ -1152,14 +1154,6 @@ begin
 
   {Copy the trimmed substring}
   Trim := Copy(s, startIdx, endIdx - startIdx + 1);
-end;
-
-function LowCase(c: Char): Char;
-begin
-  if (c >= 'A') and (c <= 'Z') then
-    LowCase := Chr(Ord(c) + 32)  (* Convert to lowercase ASCII *)
-  else
-    LowCase := c;  (* Leave it unchanged if it's not uppercase *)
 end;
 
 function LTrim(s: string): string;
