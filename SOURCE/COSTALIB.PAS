@@ -8,19 +8,26 @@ uses
 const
   FontHeading  = 1;
   FontNormal   = 2;
-  sizeDefault  = -1;
-  sizeRetain   = -1;
-  sizeCenter   = -2;
 
-  NewLine: Char = #13;
-  HotkeySymbol: Char = #127;  {This is used to mark hotkeys in object captions}
+  sizeDefault  = -1;
+  sizeRetain   = -2;
+  sizeCenter   = -3;
+
+  DoubleClickDelay = 0.5;
+
+  CharArrowUp:    Char = #24;  {Arrows symbols for fonts}
+  CharArrowDown:  Char = #25;
+  CharArrowRight: Char = #26;
+  CharArrowLeft:  Char = #27;
+  NewLine:        Char = #13;  {Wrap lines in msgbox, inputbox etc.}
+  HotkeySymbol:   Char = #127; {Marks hotkeys in object captions}
 
   {$I KEYCODES.INC}
   {$I APPINFO.INC}
 
 type
   TMouseButton = (mbNone, mbLeft, mbRight, mbBoth);
-  TMsgBoxType = (msgInfo, msgWarn, msgQuest, msgError);
+  TMsgBoxType  = (msgInfo, msgWarn, msgQuest, msgError);
 
   IconDataType = record
     Pixel: array[0..31, 0..31] of Integer;
@@ -63,7 +70,7 @@ type
   end;
 
   FileAssociationType = record
-    FileType: string[8];
+    FileType: string[3];
     Command: string[128];
   end;
 
@@ -111,9 +118,11 @@ function MouseClicked: TMouseButton;
 function MouseInArea(const TargetArea: PosType): Boolean;
 function ObjBtnClick(var TargetBtn: ButtonType): Boolean;
 function ObjTxtClick(const TargetTxt: TextboxType): Boolean;
+function Replace(Input, OldSubStr, NewSubStr: String): String;
 function RTrim(s: string): string;
 function SysMsgBox(const msgTitle, msgText: string; msgType: TMsgBoxType): Boolean;
 Function SysPath: DirStr;
+function Timer: Real;
 function Trim(s: string): string;
 function UpperCase(s: string): string;
 procedure ClearKeyBuffer;
@@ -662,89 +671,108 @@ begin
   x1 := TargetTxt.Pos.Left + 5;
   y1 := TargetTxt.Pos.Top + 5;
   MaxLen := TargetTxt.MaxLen;
-  if MaxLen = 0 then MaxLen := 256;
+  if MaxLen > 255 then MaxLen := 255;
   MaxShow := TargetTxt.Pos.Width - 10;
   OrigTxt := Text;
   TempTxt := Text;
+
+  if FontGetWidth(TempTxt, FontHeading) + 2 < MaxShow then
+  begin
+		LineX1 := x1 + FontGetWidth(Text, FontHeading) + 2;
+		MouseHide;
+    SetColor(Theme.TextboxText);
+		Line(LineX1, y1 - 1, LineX1, y1 + 10);
+		MouseShow;
+  end
+	else
+  begin
+		MouseHide;
+		ObjDrawTxt(TargetTxt, TempTxt, True);
+		MouseShow;
+	end;
+
+  {Clear keybuffer}
   while KeyPressed do Ch := ReadKey;
+
   repeat
-    if FontGetWidth(TempTxt+Key, FontHeading) + 2 < MaxShow then
+    Key := GetKey;
+
+    if (MouseClicked > mbNone) and (not MouseInArea(TargetTxt.Pos)) then
+        Key := KeyEnter; {If mouse is clicked outside the textbox, stop editing}
+    
+    if Length(Key) > 0 then
     begin
-      LineX1 := x1 + FontGetWidth(Text, FontHeading) + 2;
-      MouseHide;
-      Line(LineX1, y1-1, LineX1, y1+10);
-      MouseShow;
-    end
-    else
-    begin
-      MouseHide;
-      ObjDrawTxt(TargetTxt, TempTxt, True);
-      MouseShow;
-    end;
-    Key := '';
-    if KeyPressed then
-    begin
-      Ch := ReadKey;
-      if Ch = KeyBackspace then
-      begin
-        if Length(TempTxt) > 0 then
-        begin
-          MouseHide;
-          if FontGetWidth(TempTxt, FontHeading) + 2 < MaxShow then
+      case Ord(Key[1]) of
+        8: {Backspace}
           begin
-            LineX1 := x1 + FontGetWidth(TempTxt, FontHeading);
-            SetFillStyle(SolidFill, Theme.Textbox);
-            Bar(LineX1+2, y1-2, LineX1-FontGetWidth(Copy(TempTxt, Length(TempTxt), 1), FontHeading), y1+11);
-            Delete(TempTxt, Length(TempTxt), 1);
-            LineX1 := x1 + FontGetWidth(TempTxt, FontHeading) + 2;
-            Line(LineX1, y1-1, LineX1, y1+10);
-          end
-          else
-          begin
-            Delete(TempTxt, Length(TempTxt), 1);
-            ObjDrawTxt(TargetTxt, TempTxt, True);
+            if Length(TempTxt) > 0 then
+            begin
+              MouseHide;
+              if FontGetWidth(TempTxt, FontHeading) + 2 < MaxShow then
+              begin
+                {Erase only the last char}
+                LineX1 := x1 + FontGetWidth(TempTxt, FontHeading);
+                SetFillStyle(SolidFill, Theme.Textbox);
+                Bar(LineX1 + 2, y1 - 2, LineX1 - 8, y1 + 11);
+                TempTxt := Copy(TempTxt, 1, Length(TempTxt) - 1);
+                LineX1 := x1 + FontGetWidth(TempTxt, FontHeading) + 2;
+                SetColor(Theme.TextboxText);
+                Line(LineX1, y1 - 1, LineX1, y1 + 10);
+              end
+              else
+              begin
+                {There's more text that's not shown, so we'll have to redraw the entire textbox}
+                TempTxt := Copy(TempTxt, 1, Length(TempTxt) - 1);
+                ObjDrawTxt(TargetTxt, TempTxt, True);
+              end;
+              MouseShow;
+            end;
           end;
-          MouseShow;
-        end;
-      end
-      else if Ch = KeyEnter then
-      begin
-        Text := TempTxt;
-        LineX1 := x1 + FontGetWidth(Text, FontHeading) + 2;
-        MouseHide;
-        Line(LineX1, y1-1, LineX1, y1+10);
-        MouseShow;
-        Exit;
-      end
-      else if (Ch >= #32) and (Ch <= #126) then
-      begin
-        if Length(TempTxt) < MaxLen then
-        begin
-          MouseHide;
-          if FontGetWidth(TempTxt + Ch, FontHeading) + 2 < MaxShow then
+
+        13: {Enter}
           begin
-            LineX1 := x1 + FontGetWidth(TempTxt, FontHeading) + 2;
-            Line(LineX1, y1-1, LineX1, y1+10);
-            TempTxt := TempTxt + Ch;
-            FontPrint(TempTxt, x1, y1, Theme.TextboxText, FontHeading);
-            LineX1 := x1 + FontGetWidth(TempTxt, FontHeading) + 2;
-            Line(LineX1, y1-1, LineX1, y1+10);
-          end
-          else
-          begin
-            TempTxt := TempTxt + Ch;
-            ObjDrawTxt(TargetTxt, TempTxt, True);
+            Text := TempTxt;
+            LineX1 := x1 + FontGetWidth(Text, FontHeading) + 2;
+            MouseHide;
+            SetColor(Theme.Textbox);
+            Line(LineX1, y1 - 1, LineX1, y1 + 10);
+            MouseShow;
+            Exit;
           end;
-          MouseShow;
-        end;
-      end
-      else if Ch = #27 then
-      begin
-        Text := OrigTxt;
-        MouseHide;
-        ObjDrawTxt(TargetTxt, Text, False);
-        MouseShow;
-        Exit;
+
+        32..126: {Any printable character}
+          begin
+            if Length(TempTxt) <> MaxLen then
+            begin
+              MouseHide;
+              if FontGetWidth(TempTxt + Key, FontHeading) + 2 < MaxShow then
+              begin
+                LineX1 := x1 + FontGetWidth(TempTxt, FontHeading) + 2;
+                SetColor(Theme.Textbox);
+                Line(LineX1, y1 - 1, LineX1, y1 + 10);
+                TempTxt := TempTxt + Key;
+                FontPrint(TempTxt, x1, y1, Theme.TextboxText, FontHeading);
+                LineX1 := x1 + FontGetWidth(TempTxt, FontHeading) + 2;
+                SetColor(Theme.TextboxText);
+                Line(LineX1, y1 - 1, LineX1, y1 + 10);
+              end
+              else
+              begin
+                TempTxt := TempTxt + Key;
+                ObjDrawTxt(TargetTxt, TempTxt, True);
+              end;
+              MouseShow;
+            end;
+          end;
+
+        27: {Escape}
+          begin
+            Text := OrigTxt;
+            MouseHide;
+            ObjDrawTxt(TargetTxt, Text, False);
+            MouseShow;
+            Exit;
+          end;
       end;
     end;
   until False;
@@ -775,6 +803,21 @@ begin
     if MouseInArea(TargetTxt.Pos) then
       ObjTxtClick := True;
   end;
+end;
+
+function Replace(Input, OldSubStr, NewSubStr: String): String;
+var
+  PosStart: Integer;
+begin
+  PosStart := Pos(OldSubStr, Input); {Find the position of the substring}
+  while PosStart > 0 do
+  begin
+    {Replace the substring}
+    Delete(Input, PosStart, Length(OldSubStr)); {Remove the old substring}
+    Insert(NewSubStr, Input, PosStart); {Insert the new substring}
+    PosStart := Pos(OldSubStr, Input); {Find the next occurrence}
+  end;
+  Replace := Input;
 end;
 
 procedure SysAboutBox(const ProgramName, ProgramVersion, ProgramAuthor, IconFile: string);
@@ -1081,6 +1124,16 @@ begin
   Write(f, Setting);
   Close(f);
   {$I+}
+end;
+
+function Timer: Real;
+var
+  Hour, Minute, Second, Hundredth: Word;
+  Year, Month, Day, DayOfWeek: Word;
+begin
+  GetDate(Year, Month, Day, DayOfWeek);
+  GetTime(Hour, Minute, Second, Hundredth);
+  Timer := Day * 86400 + Hour * 3600 + Minute * 60 + Second + Hundredth / 100.0;
 end;
 
 function Trim(s: string): string;
