@@ -140,6 +140,7 @@ procedure ObjDrawTxt(var TargetTxt: TextboxType; const Text: string; IsEditing: 
 procedure ObjDrawWin(var TargetWin: WindowType);
 procedure ObjEditTxt(var TargetTxt: TextboxType; var Text: string);
 procedure ObjSetSize(var TargetArea: PosType; TargetLeft, TargetTop, TargetWidth, TargetHeight: Integer);
+procedure SoundNote(Frequency, Duration: Integer);
 procedure SysAboutBox(const ProgramName, ProgramVersion, ProgramAuthor, IconFile: string);
 procedure SysLoad;
 procedure SysLoadSettings;
@@ -805,6 +806,13 @@ begin
 		if MouseInArea(TargetTxt.Pos) then
 			ObjTxtClick := True;
 	end;
+end;
+
+procedure SoundNote(Frequency, Duration: Integer);
+begin
+  Sound(Frequency);
+  Delay(Duration);
+  NoSound;
 end;
 
 function Replace(Input, OldSubStr, NewSubStr: String): String;
