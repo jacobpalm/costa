@@ -1,4 +1,4 @@
-program Calc;
+program Calculator;
 
 uses
 	CostaLib, Crt, Strings, Graph;
