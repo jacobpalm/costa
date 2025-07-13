@@ -599,21 +599,21 @@ begin
             end;
 		SoundFlag:
             begin
-                SoundNote(800, 300);
-                SoundNote(400, 300);
+                SoundNote(800, 30);
+                SoundNote(400, 30);
             end;
         SoundLoose:
 			for I := 0 to 8 do
             begin
-				SoundNote(37, 300);
-                SoundNote(50, 300);
-                SoundNote(37, 100);
-                SoundNote(65, 200);
+				SoundNote(37, 15);
+                SoundNote(50, 15);
+                SoundNote(37, 5);
+                SoundNote(65, 10);
 			end;
         SoundClear:
-                SoundNote(400, 300);
+                SoundNote(400, 30);
 		SoundIllegalMove:
-                SoundNote(100, 700);
+                SoundNote(100, 70);
 	end;
 
 end;
