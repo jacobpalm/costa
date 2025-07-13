@@ -97,31 +97,18 @@ begin
 	end;
 end;
 
-procedure DrawFileList(var TargetList: TextboxType; HighLightActive, FullRedraw: Boolean);
+procedure DrawFileList(TargetList: integer; HighLightActive, FullRedraw: Boolean);
 var
-	I, Counter, TotalItems, ListStartPos, ListSelection: Integer;
+	I, Counter: Integer;
 	x1, y1, x2, y2, YOffset: Integer;
 	FGColor, BGColor: Integer;
 	ItemText: String;
 begin
-	if TargetList.MaxLen = FileList then
-	begin
-		TotalItems := ListCount[FileList];
-		ListStartPos := ListStartPos[FileList];
-		ListSelection := ListSelection[FileList];
-	end
-	else
-	begin
-		TotalItems := ListCount[FolderList];
-		ListStartPos := ListStartPos[FolderList];
-		ListSelection := ListSelection[FolderList];
-	end;
-
-	x1 := TargetList.Pos.Left + 2;
-	y1 := TargetList.Pos.Top + 3;
-	x2 := TargetList.Pos.Left + TargetList.Pos.Width - 2;
-	y2 := TargetList.Pos.Top + 15;
-	YOffset := ((ListSelection - ListStartPos) * ListItemHeight);
+	x1 := txtList[TargetList].Pos.Left + 2;
+	y1 := txtList[TargetList].Pos.Top + 3;
+	x2 := txtList[TargetList].Pos.Left + txtList[TargetList].Pos.Width - 2;
+	y2 := txtList[TargetList].Pos.Top + 15;
+	YOffset := ((ListSelection[TargetList] - ListStartPos[TargetList]) * ListItemHeight);
 
 	MouseHide;
 	if FullRedraw then
@@ -129,17 +116,17 @@ begin
 	SetFillStyle(SolidFill, Theme.Textbox);
 	Bar(x1, y1, x2, y2 - 1 + ((MaxVisibleItems - 1) * ListItemHeight));
 	Counter := 0;
-	for I := ListStartPos to ListStartPos + MaxVisibleItems - 1 do
+	for I := ListStartPos[TargetList] to ListStartPos[TargetList] + MaxVisibleItems - 1 do
 	begin
-		if I <= TotalItems then
+		if I <= ListCount[TargetList] then
 		begin
-		if TargetList.MaxLen = FileList then
+		if TargetList = FileList then
 			ItemText := SubFiles[I]
 		else
 			ItemText := SubFolders[I];
 
 		{Highlight active selected item}
-		if (I = ListSelection) and (ActiveList = TargetList.MaxLen) then
+		if (I = ListSelection[TargetList]) and (ActiveList = TargetList) then
 		begin
 			{Draw highlighted item}
 			SetFillStyle(SolidFill, Theme.Select);
@@ -159,7 +146,7 @@ begin
 	else
 	begin
 	{Not a full redraw, only draw the selected item}
-	if HighLightActive and (ActiveList = TargetList.MaxLen) then
+	if HighLightActive and (ActiveList = TargetList) then
 	begin
 		FGColor := Theme.SelectText;
 		BGColor := Theme.Select;
@@ -170,10 +157,10 @@ begin
 		BGColor := Theme.Textbox;
 	end;
 
-	if TargetList.MaxLen = FileList then
-		ItemText := SubFiles[ListSelection]
+	if TargetList = FileList then
+		ItemText := SubFiles[ListSelection[FileList]]
 	else
-		ItemText := SubFolders[ListSelection];
+		ItemText := SubFolders[ListSelection[FolderList]];
 	
 	if ItemText <> '' then
 	begin
@@ -185,178 +172,129 @@ begin
 	MouseShow;
 end;
 
-procedure FileMoveSelection(TargetList: TextboxType; Direction: Integer);
+procedure FileMoveSelection(TargetList, Direction: Integer);
 var
 	RedrawNeeded: Boolean;
-	TotalItems, ListStartPos, ListSelection: Integer;
 begin
 	RedrawNeeded := False;
-	{Retrieve values to temp variables - so both lists can be handled by same code}
-	if TargetList.MaxLen = FileList then
-	begin
-	TotalItems := ListCount[FileList];
-	ListStartPos := ListStartPos[FileList];
-	ListSelection := ListSelection[FileList];
-	end
-	else
-	begin
-	TotalItems := ListCount[FolderList];
-	ListStartPos := ListStartPos[FolderList];
-	ListSelection := ListSelection[FolderList];
-	end;
+
+	{Remove current selection}
+	DrawFileList(TargetList, False, False);
 
 	{Move selection - Direction is -1 for up, 1 for down - using constants}
-	ListSelection := ListSelection + Direction;
+	ListSelection[TargetList] := ListSelection[TargetList] + Direction;
 
 	{Validate if lists need to be scrolled in either direction}
-	if ListSelection < 1 then
+	if ListSelection[TargetList] < 1 then
 	begin
-	{If selection is below zero, set to last item instead}
-	RedrawNeeded := True;
-	ListSelection := TotalItems;
-	ListStartPos := TotalItems - MaxVisibleItems + 1;
-	if ListStartPos < 1 then
-		ListStartPos := 1;
+		{If selection is below zero, set to last item instead}
+		RedrawNeeded := True;
+		ListSelection[TargetList] := ListCount[TargetList];
+		ListStartPos[TargetList] := ListCount[TargetList] - MaxVisibleItems + 1;
+		if ListStartPos[TargetList] < 1 then
+			ListStartPos[TargetList] := 1;
 	end;
 
-	if ListSelection < ListStartPos then
+	if ListSelection[TargetList] < ListStartPos[TargetList] then
 	begin
-	{If selection is below visible items, scroll up one page}
-	RedrawNeeded := True;
-	ListStartPos := ListStartPos - MaxVisibleItems;
-	if ListStartPos < 1 then
-		ListStartPos := 1;
+		{If selection is below visible items, scroll up one page}
+		RedrawNeeded := True;
+		ListStartPos[TargetList] := ListStartPos[TargetList] - MaxVisibleItems;
+		if ListStartPos[TargetList] < 1 then
+			ListStartPos[TargetList] := 1;
 	end;
 
-	if ListSelection > TotalItems then
+	if ListSelection[TargetList] > ListCount[TargetList] then
 	begin
-	{If selection is higher than item count, set to first item instead}
-	RedrawNeeded := True;
-	ListSelection := 1;
-	ListStartPos := 1;
+		{If selection is higher than item count, set to first item instead}
+		RedrawNeeded := True;
+		ListSelection[TargetList] := 1;
+		ListStartPos[TargetList] := 1;
 	end;
 
-	if ListSelection > ListStartPos + MaxVisibleItems - 1 then
+	if ListSelection[TargetList] > ListStartPos[TargetList] + MaxVisibleItems - 1 then
 	begin
-	{If selected item is below visible items, scroll to make it first visible item}
-	RedrawNeeded := True;
-	ListStartPos := ListSelection;
+		{If selected item is below visible items, scroll to make it first visible item}
+		RedrawNeeded := True;
+		ListStartPos[TargetList] := ListSelection[TargetList];
 	end;
 
 	if not RedrawNeeded then
 	begin
-	{Entire list won't be redrawn, so remove current selection}
-	DrawFileList(TargetList, False, False);
-	end;
-
-	{Put temporary values back in proper variables}
-	if TargetList.MaxLen = FileList then
-	begin
-	ListStartPos[FileList] := ListStartPos;
-	ListSelection[FileList] := ListSelection;
-	end
-	else
-	begin
-	ListStartPos[FolderList] := ListStartPos;
-	ListSelection[FolderList] := ListSelection;
+		{Entire list won't be redrawn, so remove current selection}
+		DrawFileList(TargetList, False, False);
 	end;
 
 	{Redraw is only needed if list has been scrolled, otherwise only active item will be drawn}
 	if RedrawNeeded then
-	DrawFileList(TargetList, True, True)
+		DrawFileList(TargetList, True, True)
 	else
-	DrawFileList(TargetList, True, False);
+		DrawFileList(TargetList, True, False);
 end;
 
-function FileMouseSelection(var TargetList: TextboxType): Boolean;
+function FileMouseSelection(TargetList: integer): boolean;
 var
 	ClickedX, ClickedY, ClickedItem: Integer;
-	TotalItems, ListStartPos, ListSelection: Integer;
 	DeleteThisVar: String;
 begin
 	MousePoll;
-	ClickedX := MouseX - TargetList.Pos.Left;
-	ClickedY := MouseY - TargetList.Pos.Top;
+	ClickedX := MouseX - txtList[TargetList].Pos.Left;
+	ClickedY := MouseY - txtList[TargetList].Pos.Top;
 	FileMouseSelection := False;
 
-	{Retrieve values to temp variables - so both lists can be handled by same code}
-	if TargetList.MaxLen = FileList then
-	begin
-		TotalItems := ListCount[FileList];
-		ListStartPos := ListStartPos[FileList];
-		ListSelection := ListSelection[FileList];
-	end
-	else
-	begin
-		TotalItems := ListCount[FolderList];
-		ListStartPos := ListStartPos[FolderList];
-		ListSelection := ListSelection[FolderList];
-	end;
-
 	{Validate click inside, not on border}
-	if (ClickedX > 1) and (ClickedX < TargetList.Pos.Width - 2) then
+	if (ClickedX > 1) and (ClickedX < txtList[TargetList].Pos.Width - 2) then
 	begin
-	if (ClickedY > 2) and (ClickedY < TargetList.Pos.Height - 1) then
-	begin
-		{Clicked inside}
+		if (ClickedY > 2) and (ClickedY < txtList[TargetList].Pos.Height - 1) then
+		begin
+			{Clicked inside}
 
-		if ActiveList <> TargetList.MaxLen then
-		begin
-		{Clicked list is not active. Make it so, and remove selection from other list}
-		if ActiveList = FileList then
-		begin
-			ActiveList := FolderList;
-			DrawFileList(txtList[FileList], False, False);
-		end
-		else
-		begin
-			ActiveList := FileList;
-			DrawFileList(txtList[FolderList], False, False);
-		end;
-		end;
-		
-		{There is a 3-pixel border before the first item.
-		 Calculate clicked item}
-		ClickedItem := ((ClickedY - 3) div ListItemHeight) + 1;
-		
-		if ClickedItem > MaxVisibleItems then
-		begin
-		{Clicked inside list area, but in the small gap after the last item.
-		 Draw current item with focus}
-		DrawFileList(TargetList, True, False);
-		while MouseClicked > mbNone do;
-			FileMouseSelection := False;
-			Exit;
-		end;
+			if ActiveList <> TargetList then
+			begin
+				{Clicked list is not active. Remove selection from other list and make this active}
+				DrawFileList(ActiveList, False, False);
+				ActiveList := TargetList;
+			end;
+			
+			{There is a 3-pixel border before the first item.
+			Calculate clicked item}
+			ClickedItem := ((ClickedY - 3) div ListItemHeight) + 1;
+			
+			if ClickedItem > MaxVisibleItems then
+			begin
+				{Clicked inside list area, but in the small gap after the last item.
+				Draw current item with focus}
+				DrawFileList(TargetList, True, False);
+				while MouseClicked > mbNone do;
+				FileMouseSelection := False;
+				Exit;
+			end;
 
-		ClickedItem := ClickedItem + ListStartPos - 1;
-		if ClickedItem <= TotalItems then
-		begin
-		if ClickedItem = ListSelection then
-		begin
-			{Already selected and clicked again, check for double-click}
-			if Timer < ClickedDoubleTimer + DoubleClickDelay then
-				FileMouseSelection := True
+			ClickedItem := ClickedItem + ListStartPos[TargetList] - 1;
+			if ClickedItem <= ListCount[TargetList] then
+			begin
+				if ClickedItem = ListSelection[TargetList] then
+				begin
+					{Already selected and clicked again, check for double-click}
+					if Timer < ClickedDoubleTimer + DoubleClickDelay then
+						FileMouseSelection := True
+					else
+						DrawFileList(TargetList, True, False);
+				end
+				else
+				begin
+					{Clicked item is not the current selection, move selection}
+					DrawFileList(TargetList, False, False);
+					ListSelection[TargetList] := ClickedItem;
+					DrawFileList(TargetList, True, False);
+				end;
+			end
 			else
+			begin
+				{Clicked in list, but below any items. Give focus to current selection}
 				DrawFileList(TargetList, True, False);
-		end
-		else
-		begin
-			{Clicked item is not the current selection, move selection}
-			DrawFileList(TargetList, False, False);
-			if TargetList.MaxLen = FileList then
-				ListSelection[FileList] := ClickedItem
-			else
-				ListSelection[FolderList] := ClickedItem;
-				DrawFileList(TargetList, True, False);
+			end;
 		end;
-		end
-		else
-		begin
-		{Clicked in list, but below any items. Give focus to current selection}
-		DrawFileList(TargetList, True, False);
-		end;
-	end;
 	end;
 
 	ClickedDoubleTimer := Timer;
@@ -380,8 +318,8 @@ begin
 		Drive := DriveLetter;
 		GetChildFiles(Path, Pattern);
 		GetChildFolders(Path);
-		DrawFileList(txtList[FileList], True, True);
-		DrawFileList(txtList[FolderList], False, True);
+		DrawFileList(FileList, True, True);
+		DrawFileList(FolderList, False, True);
 		FileSetDrive := True;
 		Exit;
 	end
@@ -406,8 +344,8 @@ begin
 		ListSelection[FileList] := 1;
 		ListStartPos[FolderList] := 1;
 		ListSelection[FolderList] := 1;
-		DrawFileList(txtList[FileList], False, True);
-		DrawFileList(txtList[FolderList], True, True);
+		DrawFileList(FileList, False, True);
+		DrawFileList(FolderList, True, True);
 	end;
 end;
 
@@ -490,21 +428,21 @@ begin
 
 	GetChildFiles(Path, Pattern);
 	GetChildFolders(Path);
-	DrawFileList(txtList[FileList], True, True);
-	DrawFileList(txtList[FolderList], False, True);
+	DrawFileList(FileList, True, True);
+	DrawFileList(FolderList, False, True);
 
 	repeat
 		Key := GetKey;
 
 		if (MouseClicked > mbNone) and MouseInArea(txtList[FileList].Pos) then
 		begin
-			if FileMouseSelection(txtList[FileList]) then
+			if FileMouseSelection(FileList) then
 				Key := KeyEnter; {Double-clicked file, select it}
 		end;
 
 		if (MouseClicked > mbNone) and MouseInArea(txtList[FolderList].Pos) then
 		begin
-			if FileMouseSelection(txtList[FolderList]) then
+			if FileMouseSelection(FolderList) then
 				Key := KeyEnter; {Double-clicked folder, change to it}
 		end;
 
@@ -549,7 +487,7 @@ begin
 			if not ActiveList = FileList then
 			begin
 				ActiveList := FileList;
-				DrawFileList(txtList[FolderList], False, False);
+				DrawFileList(FolderList, False, False);
 			end;
 			Key := KeyUp; {Simulate key press for moving selection up}
 		end;
@@ -559,7 +497,7 @@ begin
 			if not ActiveList = FileList then
 			begin
 				ActiveList := FileList;
-				DrawFileList(txtList[FolderList], False, False);
+				DrawFileList(FolderList, False, False);
 			end;
 			Key := KeyDown; {Simulate key press for moving selection down}
 		end;
@@ -569,7 +507,7 @@ begin
 			if not ActiveList = FolderList then
 			begin
 				ActiveList := FolderList;
-				DrawFileList(txtList[FileList], False, False);
+				DrawFileList(FileList, False, False);
 			end;
 			Key := KeyPageUp; {Simulate key press for moving view up}
 		end;
@@ -579,121 +517,59 @@ begin
 			if not ActiveList = FolderList then
 			begin
 				ActiveList := FolderList;
-				DrawFileList(txtList[FileList], False, False);
+				DrawFileList(FileList, False, False);
 			end;
 			Key := KeyPageDown; {Simulate key press for moving view down}
 		end;
 
 		if Key = KeyUp then
-		begin
-			if ActiveList = FileList then
-				FileMoveSelection(txtList[FileList], DirectionUp)
-			else
-				FileMoveSelection(txtList[FolderList], DirectionUp);
-		end;
+			FileMoveSelection(ActiveList, DirectionUp);
 
 		if Key = KeyDown then
-		begin
-			if ActiveList = FileList then
-				FileMoveSelection(txtList[FileList], DirectionDown)
-			else
-				FileMoveSelection(txtList[FolderList], DirectionDown);
-		end;
+			FileMoveSelection(ActiveList, DirectionDown);
 
 		if Key = KeyHome then
 		begin
-			if ActiveList = FileList then
-			begin
-				ListStartPos[FileList] := 1;
-				ListSelection[FileList] := 1;
-				DrawFileList(txtList[FileList], True, True);
-			end
-			else
-			begin
-				ListStartPos[FolderList] := 1;
-				ListSelection[FolderList] := 1;
-				DrawFileList(txtList[FolderList], True, True);
-			end;
+			ListStartPos[ActiveList] := 1;
+			ListSelection[ActiveList] := 1;
+			DrawFileList(ActiveList, True, True);
 		end;
 
 		if Key = KeyEnd then
 		begin
-			if ActiveList = FileList then
-			begin
-				ListStartPos[FileList] := ListCount[FileList] - MaxVisibleItems + 1;
-				if ListStartPos[FileList] < 1 then
-					ListStartPos[FileList] := 1;
-				ListSelection[FileList] := ListCount[FileList];
-				DrawFileList(txtList[FileList], True, True);
-			end
-			else
-			begin
-				ListStartPos[FolderList] := ListCount[FolderList] - MaxVisibleItems + 1;
-				if ListStartPos[FolderList] < 1 then
-					ListStartPos[FolderList] := 1;
-				ListSelection[FolderList] := ListCount[FolderList];
-				DrawFileList(txtList[FolderList], True, True);
-			end;
+			ListStartPos[ActiveList] := ListCount[ActiveList] - MaxVisibleItems + 1;
+			if ListStartPos[ActiveList] < 1 then
+				ListStartPos[ActiveList] := 1;
+			ListSelection[ActiveList] := ListCount[ActiveList];
+			DrawFileList(ActiveList, True, True);
 		end;
 
 		if Key = KeyPageUp then
-		begin
-			if ActiveList = FileList then
-			begin
-				FileMoveSelection(txtList[FileList], DirectionUp * MaxVisibleItems);
-			end
-			else
-			begin
-				FileMoveSelection(txtList[FolderList], DirectionUp * MaxVisibleItems);
-			end;
-		end;
+			FileMoveSelection(ActiveList, DirectionUp * MaxVisibleItems);
 
 		if Key = KeyPageDown then
+			FileMoveSelection(ActiveList, DirectionDown * MaxVisibleItems);
+
+
+		if (Key = KeyAltF) and (ActiveList <> FileList) then
 		begin
-			if ActiveList = FileList then
-			begin
-				FileMoveSelection(txtList[FileList], DirectionDown * MaxVisibleItems);
-			end
-			else
-			begin
-				FileMoveSelection(txtList[FolderList], DirectionDown * MaxVisibleItems);
-			end;
+			ActiveList := FileList;
+			DrawFileList(FolderList, False, False);
+			DrawFileList(FileList, True, False);
 		end;
 
-		if Key = KeyAltF then
+		if (Key = KeyAltO) and (ActiveList <> FolderList) then
 		begin
-		if ActiveList <> FileList then
-			begin
-				ActiveList := FileList;
-				DrawFileList(txtList[FolderList], False, False);
-				DrawFileList(txtList[FileList], True, False);
-			end;
+			ActiveList := FolderList;
+			DrawFileList(FileList, False, False);
+			DrawFileList(FolderList, True, False);
 		end;
 
-		if Key = KeyAltO then
+		if (Key = KeyTab) or (Key = KeyShiftTab) then
 		begin
-			if ActiveList <> FolderList then
-			begin
-				ActiveList := FolderList;
-				DrawFileList(txtList[FileList], False, False);
-				DrawFileList(txtList[FolderList], True, False);
-			end;
-		end;
-
-		if Key = KeyTab then
-		begin
-			if ActiveList = FileList then
-			begin
-				ActiveList := FolderList;
-				DrawFileList(txtList[FileList], False, False);
-				DrawFileList(txtList[FolderList], True, False);
-			end
-			else
-			begin
-				ActiveList := FileList;
-				DrawFileList(txtList[FolderList], False, False);
-				DrawFileList(txtList[FileList], True, False);
-			end;
+			DrawFileList(ActiveList, False, False);
+			ActiveList := not ActiveList;
+			DrawFileList(ActiveList, True, False);
 		end;
 
 		if ObjTxtClick(txtPattern) or (Key = KeyAltP) then
@@ -705,7 +581,7 @@ begin
 				GetChildFiles(Path, Pattern);
 				ListStartPos[FileList] := 1;
 				ListSelection[FileList] := 1;
-				DrawFileList(txtList[FileList], True, True);
+				DrawFileList(FileLIst, True, True);
 			end;
 		end;
 
