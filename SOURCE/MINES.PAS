@@ -44,20 +44,20 @@ var
 	KeyVisible: boolean;
 	Key: string;
 
-function MineGetNeighbors(Row, Col: integer): integer;
-function MineSetSize: boolean;
-procedure MineClearNeighbors(Row, Col: integer);
-procedure MineClickCell(Row, Col, MouseButton: TMouseButton);
-procedure MineDrawCell(Row, Col: integer);
-procedure MineDrawField;
-procedure MineHelpFirstMove(Row, Col: integer);
-procedure MineNewGame;
-procedure MinePause;
-procedure MinePlaySound(SoundType: integer);
-procedure MinePrintStatus(MineCountOnly: Boolean; StatusMessage: string);
-procedure MinePrintTime;
-procedure MineReveal;
-procedure MineWin;
+function MineGetNeighbors(Row, Col: integer): integer; forward;
+function MineSetSize: boolean; forward;
+procedure MineClearNeighbors(Row, Col: integer); forward;
+procedure MineClickCell(Row, Col: integer; MouseButton: TMouseButton); forward;
+procedure MineDrawCell(Row, Col: integer); forward;
+procedure MineDrawField; forward;
+procedure MineHelpFirstMove(Row, Col: integer); forward;
+procedure MineNewGame; forward;
+procedure MinePause; forward;
+procedure MinePlaySound(SoundType: integer); forward;
+procedure MinePrintStatus(MineCountOnly: Boolean; StatusMessage: string); forward;
+procedure MinePrintTime; forward;
+procedure MineReveal; forward;
+procedure MineWin; forward;
 
 procedure MineClearNeighbors(Row, Col: integer);
 var
@@ -155,12 +155,14 @@ begin
 	case MouseButton of
 		mbLeft:
         begin
+            {Clicked a flagged cell}
 			if (MineField[Row, Col] and FieldFlagged) <> 0 then
             begin
 				MinePlaySound(SoundIllegalMove);
 				exit;
 			end;
 
+            {Clicked a mined field}
 			if (MineField[Row, Col] and FieldMined) <> 0 then
             begin
 				MouseHide;
@@ -186,36 +188,36 @@ begin
 			MouseHide;
 			MineField[Row, Col] := MineField[Row, Col] or FieldCleared;
 			Inc(CellsCleared);
+            MineDrawCell(Row, Col);
 			if CellsCleared = (FieldHeight * FieldWidth) - MineCount then
             begin
-				MineDrawCell(Row, Col);
 				MineWin;
 				MouseShow;
             end
 			else
             begin
 				MinePlaySound(SoundClear);
-				MouseHide;
-				MineDrawCell(Row, Col);
 				MineClearNeighbors(Row, Col);
 				if CellsCleared = (FieldHeight * FieldWidth) - MineCount then
                     MineWin;
-				MouseShow;
 			end;
+            MouseShow;
         end;
 			
 		mbRight:
         begin
 
-			if (MineField[Row, Col] and FieldFlagged) <> 0 then
+            {If right-clicked a cell, flag it}
+			if (MineField[Row, Col] and FieldFlagged) = 0 then
             begin
 				Inc(CellsFlagged);
-				MineField[Row, Col] := MineField[Row, Col] and not FieldFlagged;
+				MineField[Row, Col] := MineField[Row, Col] or FieldFlagged;
             end
 			else
             begin
+                {If already flagged, unflag}
 				Dec(CellsFlagged);
-				MineField[Row, Col] := MineField[Row, Col] xor FieldFlagged;
+				MineField[Row, Col] := MineField[Row, Col] and not FieldFlagged;
 			end;
 			MouseHide;
 			MineDrawCell(Row, Col);
@@ -241,7 +243,7 @@ begin
 
 	if (MineField[Row, Col] and FieldExploded) <> 0 then
     begin
-		{Kaboom!}
+		{Exploded field. Kaboom!}
         SetFillStyle(SolidFill,  Red);
 		Bar(x1, y1, x2, y2);
 
@@ -265,6 +267,7 @@ begin
 	end
 	else if (MineField[Row, Col] and FieldFlagged) <> 0 then
     begin
+        {Flagged field}
 		{Background}
 		if (MineField[Row, Col] and FieldKBSelected) <> 0 then
         begin
@@ -274,7 +277,7 @@ begin
 		else
         begin
             SetFillStyle(SolidFill, LightGray);
-			Line(x1 + 1, y1 + 1, x2 - 1, y2 - 1);
+			Bar(x1 + 1, y1 + 1, x2 - 1, y2 - 1);
         end;
 
 		{Flag pole}
@@ -291,7 +294,7 @@ begin
 	end
 	else if (MineField[Row, Col] and FieldCleared) <> 0 then
     begin
-		{Field has been cleared, clear the cell}
+		{Cleared field}
         SetFillStyle(SolidFill, LightGray);
 		Bar(x1, y1, x2, y2);
 
@@ -322,22 +325,20 @@ begin
 	end
 	else if (MineField[Row, Col] and FieldKBSelected) <> 0 then
     begin
+        {Uncleared, not flagged, not exploded, but selected with keyboard}
 		{Draw keyboard indicator if selected}
         SetFillStyle(SolidFill, White);
-        Line(x1 + 1, y1 + 1, x2 - 1, y2 - 1);
+        Bar(x1 + 1, y1 + 1, x2 - 1, y2 - 1);
     end
 	else
     begin
-
 		{Not cleared, flagged, exploded or selected - meaning flag must have been
 		 removed.}
 
 		{Clear button face}
         SetFillStyle(SolidFill, LightGray);
 		Bar(x1 + 1, y1 + 1, x2 - 1, y2 - 1);
-
 	end;
-
 
 end;
 
@@ -405,6 +406,7 @@ var
     Neighbors: integer;
     CheckRow, CheckCol: integer;
 begin
+    Neighbors := 0;
 	for CheckRow := Row - 1 to Row + 1 do
     begin
 		for CheckCol := Col - 1 to Col + 1 do
@@ -431,7 +433,8 @@ var
 begin
 	{Called on first click in field. Checks clicked and all adjacent cells, and
 	 moves any mines away from them to prevent loosing right away.}
-
+    MinesMoved := 0;
+    MinePlace := 0;
 	repeat
 		if MinesMoved <> 0 then
         begin
@@ -514,15 +517,14 @@ end;
 procedure MinePause;
 var
     btnResume, btnExit: ButtonType;
+    Row, Col: integer;
     PauseTime: real;
     Key: string;
 begin
 	PauseTime := Timer;
 	
-	ObjSetSize(btnResume.Pos, 3, 2, 92, 22);
-	ObjSetSize(btnExit.Pos, 545, 2, 92, 22);
-	btnResume.Caption := HotkeySymbol + 'Resume';
-	btnExit.Caption := 'E' + HotkeySymbol + 'xit';
+    btnResume.Init(3, 2, 92, 22, HotkeySymbol + 'Resume');
+    btnExit.Init(545, 2, 92, 22, 'E' + HotkeySymbol + 'xit');
 
 	MouseHide;
 	{PCOPY 0, 1} {DEUG - save background}
@@ -551,7 +553,21 @@ begin
 	until false;
 
 	MouseHide;
-	{PCOPY 1, 0}
+    ObjDrawMenu;	
+	ObjDrawBtn(btnNew, False);
+	ObjDrawBtn(btnSize, False);
+	ObjDrawBtn(btnAudio, False);
+	ObjDrawBtn(btnPause, False);
+	ObjDrawBtn(btnAbout, False);
+	ObjDrawBtn(btnExit, False);
+    MineDrawField;
+    for Row := 0 to FieldHeight - 1 do
+    begin
+		for Col := 0 to FieldWidth - 1 do
+        begin
+			MineDrawCell(Row, Col);
+		end;
+	end;
 	MouseShow;
 
 	StartTime := StartTime + (Timer - PauseTime);
@@ -736,26 +752,34 @@ var
     btnSize: array[0..3] of ButtonType;
     btnCancel: ButtonType;
     X, Y, TextOffset: integer;
+    x1, y1, x2, y2: integer;
+    BackgroundSize: Word;
+	BackgroundP: Pointer;
     TempStr: string;
     Key: string;
 begin
-    ObjSetSize(winSetSize.Pos, SizeCenter, SizeCenter, 236, 264);
-
-    ObjSetSize(btnSize[0].Pos, winSetSize.Pos.Left + 13, winSetSize.Pos.Top + 11, 100, 100);
-    ObjSetSize(btnSize[1].Pos, btnSize[0].Pos.Left + 110, winSetSize.Pos.Top + 11, 100, 100);
-    ObjSetSize(btnSize[2].Pos, winSetSize.Pos.Left + 13, btnSize[0].Pos.Top + 110, 100, 100);
-    ObjSetSize(btnSize[3].Pos, btnSize[2].Pos.Left + 110, btnSize[2].Pos.Top, 100, 100);
-    ObjSetSize(btnCancel.Pos, winSetSize.Pos.Left + 13, btnSize[2].Pos.Top + 110, 210, 22);
+    winSetSize.Init(SizeCenter, SizeCenter, 236, 264);
     
+    btnSize[0].Init(winSetSize.Pos.Left + 13, winSetSize.Pos.Top + 11, 100, 100, '');
+    btnSize[1].Init(btnSize[0].Pos.Left + 110, winSetSize.Pos.Top + 11, 100, 100, '');
+    btnSize[2].Init(winSetSize.Pos.Left + 13, btnSize[0].Pos.Top + 110, 100, 100, '');
+    btnSize[3].Init(btnSize[2].Pos.Left + 110, btnSize[2].Pos.Top, 100, 100, '');
+    btnCancel.Init(winSetSize.Pos.Left + 13, btnSize[2].Pos.Top + 110, 210, 22, HotkeySymbol + 'Cancel');
+
     btnSize[0].Transparent := True;
     btnSize[1].Transparent := True;
     btnSize[2].Transparent := True;
     btnSize[3].Transparent := True;
 
-    btnCancel.Caption := HotkeySymbol + 'Cancel';
-
     MouseHide;
-    {PCOPY 0, 1} {DEUG - save background}
+    {Save background to restore when window is closed}
+	x1 := winSetSize.Pos.Left;
+	y1 := winSetSize.Pos.Top;
+	x2 := winSetSize.Pos.Left + winSetSize.Pos.Width;
+	y2 := winSetSize.Pos.Top + winSetSize.Pos.Height;
+	BackgroundSize := ImageSize(x1, y1, x2, y2);
+	GetMem(BackgroundP, BackgroundSize);
+	GetImage(x1, y1, x2, y2, BackgroundP^);
 
     ObjDrawWin(winSetSize);
     ObjDrawBtn(btnSize[0], False);
@@ -807,16 +831,15 @@ begin
     
     MouseShow;
 
+    MineSetSize := true; {Only cancel button will set this to false}
+
     repeat
         Key := GetKey;
 
         if ObjBtnClick(btnCancel) or (Key = KeyEscape) or (Key = 'c') then
         begin
             MineSetSize := False;
-            MouseHide;
-            {PCOPY 1, 0}
-            MouseShow;
-            exit;
+            break;
         end;
 
         if ObjBtnClick(btnSize[0]) or (Key = '9') then
@@ -849,7 +872,10 @@ begin
 
     until false;
 
-    MineSetSize := true;		
+    MouseHide;
+    PutImage(x1, y1, BackgroundP^, NormalPut);
+	FreeMem(BackgroundP, BackgroundSize);
+    MouseShow;		
 end;
 
 procedure MineWin;
@@ -878,18 +904,12 @@ end;
 
 
 begin
-	ObjSetSize(btnNew.Pos, 3, 2, 92, 22);
-	ObjSetSize(btnPause.Pos, 102, 2, 92, 22);
-	ObjSetSize(btnSize.Pos, 201, 2, 92, 22);
-	ObjSetSize(btnAudio.Pos, 300, 2, 92, 22);
-	ObjSetSize(btnAbout.Pos, 446, 2, 92, 22);
-	ObjSetSize(btnExit.Pos, 545, 2, 92, 22);
-	btnNew.Caption := HotkeySymbol + 'New game';
-	btnSize.Caption := 'Si' + HotkeySymbol + 'ze';
-	btnAudio.Caption := HotkeySymbol + 'Sound';
-	btnPause.Caption := HotkeySymbol + 'Pause';
-	btnAbout.Caption := HotkeySymbol + 'About...';
-	btnExit.Caption := 'E' + HotkeySymbol + 'xit';
+    btnNew.Init(3, 2, 92, 22, HotkeySymbol + 'New game');
+    btnPause.Init(102, 2, 92, 22, HotkeySymbol + 'Pause');
+    btnSize.Init(201, 2, 92, 22, 'Si' + HotkeySymbol + 'ze');
+    btnAudio.Init(300, 2, 92, 22, HotkeySymbol + 'Sound');
+    btnAbout.Init(446, 2, 92, 22, HotkeySymbol + 'About...');
+    btnExit.Init(545, 2, 92, 22, 'E' + HotkeySymbol + 'xit');
 	
 	MouseHide;
 	ObjDrawMenu;
@@ -935,7 +955,7 @@ begin
 		end;
 
 		if ObjBtnClick(btnExit) or (Key = 'x') then
-			exit;
+			break;
 
 		if ObjBtnClick(btnAbout) or (Key = 'a') then
 			SysAboutBox(AppName, AppVersion, AppAuthor, AppIcon);
@@ -1048,13 +1068,11 @@ begin
 					MineDrawCell(KeyRow, KeyCol);
 					MouseShow;
 				end;
-
-				MineClickCell(FieldRow, FieldCol, MouseButton);
+                MineClickCell(FieldRow, FieldCol, MouseButton);
 
 				KeyRow := FieldRow;
 				KeyCol := FieldCol;
-
-				{Prevent audio from running wild if mouse/key is held down}
+                {Prevent audio from running wild if mouse/key is held down}
 				repeat
                 until (Length(GetKey) = 0) and (MouseClicked = mbNone);
 
