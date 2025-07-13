@@ -36,6 +36,8 @@ var
 	Drive: String[1];
 	ClickedDoubleTimer: Real;
 
+procedure FileSetActiveList(TargetList: Integer); forward;
+
 procedure GetChildFiles(Path: String; FilePattern: String);
 var
 	FileInfo: SearchRec;
@@ -250,11 +252,7 @@ begin
 			{Clicked inside}
 
 			if ActiveList <> TargetList then
-			begin
-				{Clicked list is not active. Remove selection from other list and make this active}
-				DrawFileList(ActiveList, False, False);
-				ActiveList := TargetList;
-			end;
+				FileSetActiveList(TargetList);
 			
 			{There is a 3-pixel border before the first item.
 			Calculate clicked item}
@@ -299,6 +297,16 @@ begin
 
 	ClickedDoubleTimer := Timer;
 	while MouseClicked > mbNone do;
+end;
+
+procedure FileSetActiveList(TargetList: Integer);
+begin
+	if TargetList = ActiveList then
+		exit; {Already active}
+	
+	DrawFileList(ActiveList, False, False);
+	ActiveList := TargetList;
+	DrawFileList(ActiveList, True, False);
 end;
 
 function FileSetDrive(DriveLetter: Char): Boolean;
@@ -484,41 +492,25 @@ begin
 
 		if ObjBtnClick(btnFilePrev) then
 		begin
-			if not ActiveList = FileList then
-			begin
-				ActiveList := FileList;
-				DrawFileList(FolderList, False, False);
-			end;
+			FileSetActiveList(FileList);
 			Key := KeyUp; {Simulate key press for moving selection up}
 		end;
 
 		if ObjBtnClick(btnFileNext) then
 		begin
-			if not ActiveList = FileList then
-			begin
-				ActiveList := FileList;
-				DrawFileList(FolderList, False, False);
-			end;
+			FileSetActiveList(FileList);
 			Key := KeyDown; {Simulate key press for moving selection down}
 		end;
 
 		if ObjBtnClick(btnFolderPrev) then
 		begin
-			if not ActiveList = FolderList then
-			begin
-				ActiveList := FolderList;
-				DrawFileList(FileList, False, False);
-			end;
+			FileSetActiveList(FolderList);
 			Key := KeyPageUp; {Simulate key press for moving view up}
 		end;
 
 		if ObjBtnClick(btnFolderNext) then
 		begin
-			if not ActiveList = FolderList then
-			begin
-				ActiveList := FolderList;
-				DrawFileList(FileList, False, False);
-			end;
+			FileSetActiveList(FolderList);
 			Key := KeyPageDown; {Simulate key press for moving view down}
 		end;
 
@@ -551,26 +543,14 @@ begin
 			FileMoveSelection(ActiveList, DirectionDown * MaxVisibleItems);
 
 
-		if (Key = KeyAltF) and (ActiveList <> FileList) then
-		begin
-			ActiveList := FileList;
-			DrawFileList(FolderList, False, False);
-			DrawFileList(FileList, True, False);
-		end;
+		if (Key = KeyAltF) then
+			FileSetActiveList(FileList);
 
-		if (Key = KeyAltO) and (ActiveList <> FolderList) then
-		begin
-			ActiveList := FolderList;
-			DrawFileList(FileList, False, False);
-			DrawFileList(FolderList, True, False);
-		end;
+		if (Key = KeyAltO) then
+			FileSetActiveList(FolderList);
 
 		if (Key = KeyTab) or (Key = KeyShiftTab) then
-		begin
-			DrawFileList(ActiveList, False, False);
-			ActiveList := not ActiveList;
-			DrawFileList(ActiveList, True, False);
-		end;
+			FileSetActiveList(not ActiveList);
 
 		if ObjTxtClick(txtPattern) or (Key = KeyAltP) then
 		begin
@@ -581,7 +561,7 @@ begin
 				GetChildFiles(Path, Pattern);
 				ListStartPos[FileList] := 1;
 				ListSelection[FileList] := 1;
-				DrawFileList(FileLIst, True, True);
+				DrawFileList(FileList, True, True);
 			end;
 		end;
 
