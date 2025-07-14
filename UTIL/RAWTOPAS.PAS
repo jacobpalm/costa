@@ -42,7 +42,6 @@ var
 	Size: Word;
 	P, TestP: Pointer;
 	DirInfo: SearchRec;
-	FPath: PathStr;
 	FDir: DirStr;
 	FName: NameStr;
 	FExt: ExtStr;
@@ -131,7 +130,6 @@ var
 	ThemeAuthor: String[25];
 	Theme: ThemeType;
 	DirInfo: SearchRec;
-	FPath: PathStr;
 	FDir: DirStr;
 	FName: NameStr;
 	FExt: ExtStr;
@@ -197,7 +195,6 @@ var
 	i: Integer;
 	PauseValue: Integer;
 	DirInfo: SearchRec;
-	FPath: PathStr;
 	FDir: DirStr;
 	FName: NameStr;
 	FExt: ExtStr;

@@ -29,10 +29,6 @@ type
 	TMouseButton = (mbNone, mbLeft, mbRight, mbBoth);
 	TMsgBoxType  = (msgInfo, msgWarn, msgQuest, msgError);
 
-	IconDataType = record
-		Pixel: array[0..31, 0..31] of Integer;
-	end;
-
 	PosType = record
 		Left, Top, Width, Height: Integer;
 	end;
@@ -574,7 +570,7 @@ begin
 	Line(X+32, Y, X+32, Y+31);
 
 	Size := ImageSize(0, 0, 31, 31); {Coords don't matter, just size}
-	Assign(ImageFile, 'IMAGES\' + TargetImg.ImageFile + '.BIN');
+	Assign(ImageFile, SysPath + 'IMAGES\' + TargetImg.ImageFile + '.BIN');
 	{$I-}
 	Reset(ImageFile, 1);
 	{$I+}
@@ -584,8 +580,10 @@ begin
 		Bar(X, Y, X+31, Y+31);
 		FontPrint('IMG', X+5, Y+6, 15, FontNormal);
 		FontPrint('ERR', X+5, Y+19, 15, FontNormal);
+		Close(ImageFile);
 		Exit;
 	end;
+	{DEBUG - verify getmem and BlockRead}
 	GetMem(ImagePointer, Size);
 	BlockRead(ImageFile, ImagePointer^, Size);
 	Close(ImageFile);
