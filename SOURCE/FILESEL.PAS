@@ -5,7 +5,7 @@ interface
 uses
 	Costalib;
 
-function FileSelect(DefaultPattern: string): string;
+function FileSelect(DefaultPattern, StartPath: string; ImageSelect: boolean): string;
 
 implementation
 
@@ -30,6 +30,9 @@ var
 	ListCount:     array[-1..0] of Integer;
 	SubFolders:    array[1..MaxFolders] of String[12];
 	SubFiles:      array[1..MaxFiles] of String[12];
+
+	PreviewShown:  boolean;
+	imgPreview:    ImageType;
 
 	ActiveList: Integer;
 	Path, Pattern: String;
@@ -174,6 +177,38 @@ begin
 	MouseShow;
 end;
 
+procedure FilePreview;
+var
+	ImageFile: String;
+	FDir: DirStr;
+	FName: NameStr;
+	FExt: ExtStr;
+begin
+	if (Path = SysPath + 'IMAGES') and (ListSelection[FileList] <> 0) then
+	begin
+		FSplit(SubFiles[ListSelection[FileList]], FDir, FName, FExt);
+		if (Length(FName) <> 0) and (FExt = '.BIN') then
+		begin
+			MouseHide;
+			imgPreview.ImageFile := FName;
+			ObjDrawImg(imgPreview);
+			MouseShow;
+			PreviewShown := true;
+			exit;
+		end;
+	end;
+	
+	{Either there is no selection, or the preview should be hidden}
+	if (PreviewShown) or (ListSelection[FileList] <> 0) then
+	begin
+		MouseHide;
+		SetFillStyle(SolidFill, Theme.Window);
+		Bar(imgPreview.Pos.Left - 1, imgPreview.Pos.Top - 1, imgPreview.Pos.Left + 32, imgPreview.Pos.Top + 32);
+		MouseShow;
+		PreviewShown := false;
+	end;
+end;
+
 procedure FileMoveSelection(TargetList, Direction: Integer);
 var
 	RedrawNeeded: Boolean;
@@ -232,6 +267,8 @@ begin
 		DrawFileList(TargetList, True, True)
 	else
 		DrawFileList(TargetList, True, False);
+
+	FilePreview;
 end;
 
 function FileMouseSelection(TargetList: integer): boolean;
@@ -295,6 +332,7 @@ begin
 		end;
 	end;
 
+	FilePreview;
 	ClickedDoubleTimer := Timer;
 	while MouseClicked > mbNone do;
 end;
@@ -320,7 +358,7 @@ begin
 	{$I-}
 	ChDir(DriveLetter + ':\');
 	{$I+}
-	if IOResult = 0then
+	if IOResult = 0 then
 	begin
 		GetDir(0, Path);
 		Drive := DriveLetter;
@@ -329,6 +367,7 @@ begin
 		DrawFileList(FileList, True, True);
 		DrawFileList(FolderList, False, True);
 		FileSetDrive := True;
+		FilePreview;
 		Exit;
 	end
 	else
@@ -341,7 +380,7 @@ end;
 procedure FileSetFolder(FolderName: String);
 begin
 	{$I-}
-	ChDir(SubFolders[ListSelection[FolderList]]);
+	ChDir(FolderName);
 	{$I+}
 	if IOResult = 0 then
 	begin
@@ -355,9 +394,10 @@ begin
 		DrawFileList(FileList, False, True);
 		DrawFileList(FolderList, True, True);
 	end;
+	FilePreview;
 end;
 
-function FileSelect(DefaultPattern: string): string;
+function FileSelect(DefaultPattern, StartPath: string; ImageSelect: boolean): string;
 var
 	winFileSelect: WindowType;
 	txtDrive, txtPattern: TextboxType;
@@ -373,9 +413,9 @@ var
 	Key: string;
 	ClickedX, ClickedY, ClickedItem, RedrawNeeded: Integer;
 begin
-	{Start out with contents of current directory}
-	GetDir(0, OriginalPath);
+	GetDir(0, OriginalPath); {Save to restore later}
 	Path := OriginalPath;
+
 	Drive := Copy(Path, 1, 1);
 	Pattern := DefaultPattern;
 	txtDriveText := Drive;
@@ -406,6 +446,9 @@ begin
 	txtList[FileList].MaxLen := FileList;
 	txtList[FolderList].MaxLen := FolderList;
 
+	{Size is set here, but object is drawn in FilePreview if needed}
+	ObjSetSize(imgPreview.Pos, btnCancel.Pos.Left + 30, btnCancel.Pos.Top + 50, 32, 32);
+
 	MouseHide;
 
 	{Save background to restore when window is closed}
@@ -434,10 +477,16 @@ begin
 	FontPrint('F' + HotkeySymbol + 'olders:', 272, winFileSelect.Pos.Top + 57, Theme.WindowText, FontNormal);
 	MouseShow;
 
-	GetChildFiles(Path, Pattern);
-	GetChildFolders(Path);
-	DrawFileList(FileList, True, True);
-	DrawFileList(FolderList, False, True);
+	{If path provided, use it}
+	if Length(StartPath) > 0 then
+		FileSetFolder(StartPath)
+	else
+	begin
+		GetChildFiles(Path, Pattern);
+		GetChildFolders(Path);
+		DrawFileList(FileList, True, True);
+		DrawFileList(FolderList, False, True);
+	end;
 
 	repeat
 		Key := GetKey;
@@ -562,6 +611,7 @@ begin
 				ListStartPos[FileList] := 1;
 				ListSelection[FileList] := 1;
 				DrawFileList(FileList, True, True);
+				FilePreview;
 			end;
 		end;
 
