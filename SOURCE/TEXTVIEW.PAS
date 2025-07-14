@@ -34,7 +34,6 @@ procedure FreeLines; forward;
 function CustomHeapError(Size: Word): Integer; far;
 var
 	MsgResult: Boolean;
-	SizeStr: String;
 begin
 	if Size = 0 then
 	begin
@@ -49,7 +48,6 @@ begin
 	SetFillStyle(SolidFill, Theme.Textbox);
 	Bar(0, 29, 639, 349);
 	MouseShow;
-	Str(Size, SizeStr);
 	MsgResult := SysMsgBox('Out of memory', 'Not enough memory to open this file.', msgError);
 	CustomHeapError := 1; {Make GetMem return a nil pointer}
 end;
@@ -62,10 +60,9 @@ begin
 	GetMem(Lines, Capacity * SizeOf(PLine));
 	HeapError := DefaultHeapError;
 	if Lines = nil then
-	begin
-		InitLines := False;
-		Exit;
-	end;
+		InitLines := false
+	else
+		InitLines := true;
 end;
 
 function ResizeLines(var Lines: PLineArray; OldCap, NewCap: Integer): Boolean;

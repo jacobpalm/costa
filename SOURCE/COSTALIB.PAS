@@ -899,6 +899,8 @@ begin
 	End;
 	SysLoadSettings;
 	SysLoadTheme('DEFAULT'); {Debugging: Use default theme for now}
+	if Setting.DesktopID < 1 then Setting.DesktopID := 1;
+	if Setting.DesktopID > 5 then Setting.DesktopID := 5;
 
 	Intr($33, regs);
 	MouseSupport := Regs.ax > 0;
@@ -912,8 +914,18 @@ procedure SysLoadSettings;
 var
 	f: file of SettingType;
 begin
+	Setting.DesktopID := 1;
+	Setting.ShowLinkDescriptions := True;
+	Setting.ShowLinkTargetFiles := False;
+	Setting.ConfirmLinkDelete := True;
+	Setting.ConfirmExit := False;
+	Setting.AssignFileTypes := True;
+	Setting.ThemeFile := 'DEFAULT';
+
+
+
 	Exit; {Debugging: Disable settings loading for now}
-	if not FileExists('CONFIG\SETTING.DAT') then
+	if not FileExists('CONFIG\SETTING.BIN') then
 	begin
 		{Use defaults}
 		Setting.DesktopID := 1;
@@ -926,7 +938,7 @@ begin
 		Exit;
 	end;
 
-	Assign(f, 'CONFIG\SETTING.DAT');
+	Assign(f, 'CONFIG\SETTING.BIN');
 	{$I-}
 	Reset(f);
 	{$I+}
