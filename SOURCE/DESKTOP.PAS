@@ -27,18 +27,14 @@ type
 var
     DeskLink: PLinkArray;
     DeskLinkCount: Integer;
+    TabCheck: Integer;
+
+    {Buttons need to be redrawable from DeskDrawDesktop}
     btnAddLink, btnRunCmd, btnAboutCosta, btnExitCosta: ButtonType;
-    btnPrevious, btnNext, btnTab: ButtonType;
-    imgTab: ImageType;
-    i, ClickedX, ClickedY: Integer;
-    ClickedB: TMouseButton;
-    CheckDesktopID, TabCheck: Integer;
-    DidEdit, DoExit, DoDelete: boolean;
-    Key: String;
-    TempLink: TLink;
+    btnPrevious, btnNext: ButtonType;
 
 {Forward declarations}
-    procedure DeskDrawDesktop; forward;
+    procedure DeskDrawDesktop(FullRedraw: boolean); forward;
     procedure DeskExecuteDialog; forward;
     procedure DeskLinkEdit(TargetLink: integer); forward;
     procedure DeskLinkLoad; forward;
@@ -353,12 +349,26 @@ begin
     Dec(DeskLinkCount);
 end;
 
-procedure DeskDrawDesktop;
+procedure DeskDrawDesktop(FullRedraw: boolean);
 var
 	imgDeskLinkIcon: ImageType;
 	i, x, y: integer;
+    DeskStr: string;
 begin
 	MouseHide;
+
+    if FullRedraw then
+    begin
+        ObjDrawMenu;
+        ObjDrawBtn(btnAddLink, false);
+        ObjDrawBtn(btnRunCmd, false);
+        ObjDrawBtn(btnAboutCosta, false);
+        ObjDrawBtn(btnExitCosta, false);
+        ObjDrawBtn(btnPrevious, false);
+        ObjDrawBtn(btnNext, false);
+        Str(Setting.DesktopID, DeskStr);
+        FontPrint(DeskStr + '/5', 310, 8, Theme.WindowText, FontHeading);
+    end;
 
     {Clear background}
     SetFillStyle(SolidFill, Theme.Desktop);
@@ -387,6 +397,22 @@ begin
     end;
 	
 	MouseShow;
+end;
+
+procedure DeskSwitchDesktop(DesktopID: integer);
+var
+    DeskStr: string;
+begin
+    if DesktopID < 1 then
+        DesktopID := 5
+    else if DesktopID > 5 then
+        DesktopID := 1;
+    
+    Setting.DesktopID := DesktopID;
+    DeskLinkLoad;
+    Str(Setting.DesktopID, DeskStr);
+
+    DeskDrawDesktop(true);
 end;
 
 procedure DeskExecuteDialog;
@@ -498,7 +524,7 @@ var
     BackgroundSize: Word;
 	BackgroundP: Pointer;
     Caption, Filename, Path, Parameters: string;
-	DidEdit, RedrawNeeded: boolean;
+	DoDelete: boolean;
 	Key, CroppedText: string;
 begin
     winLinkMenu.Init(sizeCenter, sizeCenter, 413, 165);
@@ -551,19 +577,25 @@ begin
 	repeat; until Length(GetKey) = 0;
 
 	repeat
-
 		Key := GetKey;
 	
 		{Cancel, or Escape key}
 		if ObjBtnClick(btnCancel) or (Key = KeyAltC) or (Key = KeyEscape) then
-			break;
+        begin
+            MouseHide;
+            PutImage(x1, y1, BackgroundP^, NormalPut);
+            MouseShow;
+            FreeMem(BackgroundP, BackgroundSize);
+            break;
+        end;
 	
 		{Open/run, or Enter key}
 		if ObjBtnClick(btnOpen) or (Key = KeyAltO) or (Key = KeyEnter) then
         begin
+            FreeMem(BackgroundP, BackgroundSize);
 			DeskRun(Filename, Parameters, Path, DeskLink^[TargetLink]^.PauseOnExit);
-			RedrawNeeded := true;
-			break;
+			DeskDrawDesktop(true);
+            break;
 		end;
 
 		{Configure}
@@ -574,31 +606,23 @@ begin
             MouseShow;
             FreeMem(BackgroundP, BackgroundSize);
 			DeskLinkEdit(TargetLink);
-			exit;
+			break;
 		end;
 
 		{Move}
 		if ObjBtnClick(btnMove) or (Key = KeyAltM) then
         begin
-			if RedrawNeeded then
-				DeskDrawDesktop
-			else
-            begin
-				MouseHide;
-				PutImage(x1, y1, BackgroundP^, NormalPut);
-                FreeMem(BackgroundP, BackgroundSize);
-				MouseShow;
-			end;
-
-			DeskLinkMove(TargetLink);
-			RedrawNeeded := true;
+            MouseHide;
+            PutImage(x1, y1, BackgroundP^, NormalPut);
+            MouseShow;
+            FreeMem(BackgroundP, BackgroundSize);
+            DeskLinkMove(TargetLink);
 			break;
 		end;
 
 		{Remove}
 		if ObjBtnClick(btnRemove) or (Key = KeyAltR) then
         begin
-			RedrawNeeded := true;
 			if Setting.ConfirmLinkDelete then
 				DoDelete := SysMsgBox('Remove desktop link', 'This will permanently delete this' +
                     NewLine + 'desktop link. Are you sure?', msgQuest)
@@ -608,25 +632,13 @@ begin
 			if DoDelete then
             begin
 				DeskLinkRemove(TargetLink);
-                RedrawNeeded := true;
+                DeskDrawDesktop(false);
+                FreeMem(BackgroundP, BackgroundSize);
                 break;
 			end;
 		end;
 
 	until False;
-
-	if RedrawNeeded then
-    begin
-        FreeMem(BackgroundP, BackgroundSize);
-		DeskDrawDesktop;
-    end
-	else
-    begin
-        MouseHide;
-        PutImage(x1, y1, BackgroundP^, NormalPut);
-        FreeMem(BackgroundP, BackgroundSize);
-        MouseShow;	
-	end;
 			 
 end;
 
@@ -759,38 +771,21 @@ begin
         if Key = '5' then NewDesktop := 5;
 
 		if ObjBtnClick(btnPrevious) then
-            Dec(NewDesktop);
+            NewDesktop := Setting.DesktopID - 1;
 
 		if ObjBtnClick(btnNext) then
-            Inc(NewDesktop);
+            NewDesktop := Setting.DesktopID + 1;
 
 		if not Setting.DesktopID = NewDesktop then
-        begin
-			if NewDesktop < 1 then
-                NewDesktop := 1;
-            if NewDesktop > 5 then
-                NewDesktop := 5;
-            Setting.DesktopID := NewDesktop;
-			DeskLinkLoad;
-			MouseHide;
-            SetFillStyle(SolidFill, Theme.Window);
-			Bar(310, 7, 330, 16);
-            Str(Setting.DesktopID, DeskStr);
-			FontPrint(DeskStr + '/5', 310, 8, Theme.WindowText, FontHeading);
-			DeskDrawDesktop;
-			MouseHide;
-            GetImage(DrawX, DrawY, DrawX + 31, DrawY + 31, BackdropP^);
-            PutImage(DrawX, DrawY, LinkIconP^, NormalPut);
-			MouseShow;
-		end;
+            DeskSwitchDesktop(NewDesktop);
 
 	until (MouseClicked <> mbNone) and (MouseY > 28);
 
-	Setting.DesktopID := NewDesktop;
 	IconToMove.Left := DrawX;
     IconToMove.Top := DrawY;
 	DeskLinkAdd(IconToMove);
     DeskLinkSave;
+    DeskDrawDesktop(true);
 	
 	repeat; until MouseClicked = mbNone;
 end;
@@ -821,7 +816,7 @@ begin
     txtFilename.Init(222, txtCaption.Pos.Top + 44, 196, 19);
     txtParams.Init(222, txtFilename.Pos.Top + 44, 196, 19);
     txtPath.Init(222, txtParams.Pos.Top + 44, 196, 19);
-    ObjSetSize(chkPauseOnExit.Pos, 222, txtPath.Pos.Top + 32, sizeDefault, sizeDefault);
+    ObjSetSize(chkPauseOnExit.Pos, 222, txtPath.Pos.Top + 32, 16, 16);
     btnOK.Init(229, chkPauseOnExit.Pos.Top + 28, 84, 22, HotkeySymbol + 'Save');
     btnCancel.Init(326, btnOK.Pos.Top, 84, 22, HotkeySymbol + 'Cancel');
 
@@ -871,17 +866,26 @@ begin
 
 		if ObjBtnClick(btnOK) or (Key = KeyEnter) or (Key = KeyAltS) then
         begin
-			DeskLink^[TargetLink]^.Caption := RTrim(txtCaptionText);
-			DeskLink^[TargetLink]^.Filename := RTrim(txtFileNameText);
-			DeskLink^[TargetLink]^.Path := RTrim(txtPathText);
-			DeskLink^[TargetLink]^.Parameters := RTrim(txtParamsText);
-			DeskLink^[TargetLink]^.PauseOnExit := chkPauseOnExit.Checked;
-			DeskLink^[TargetLink]^.ImageFile := ImgIcon.ImageFile;
-			
-			DeskLinkSave;
-            DeskDrawDesktop;
-            FreeMem(BackgroundP, BackgroundSize);
-			exit;
+            if Length(txtFileNameText) <> 0 then
+            begin
+                DeskLink^[TargetLink]^.Caption := RTrim(txtCaptionText);
+                DeskLink^[TargetLink]^.Filename := RTrim(txtFileNameText);
+                DeskLink^[TargetLink]^.Path := RTrim(txtPathText);
+                DeskLink^[TargetLink]^.Parameters := RTrim(txtParamsText);
+                DeskLink^[TargetLink]^.PauseOnExit := chkPauseOnExit.Checked;
+                DeskLink^[TargetLink]^.ImageFile := ImgIcon.ImageFile;
+                
+                DeskLinkSave;
+                DeskDrawDesktop(false);
+                FreeMem(BackgroundP, BackgroundSize);
+                exit;
+            end
+            else
+            begin
+                MbVoid := SysMsgBox('Invalid filename',
+                                    'The filename cannot be empty.',
+                                    msgError);
+            end;
 		end;
 
 		if ObjBtnClick(btnCancel) or (Key = KeyEscape) or (Key = KeyAltC) then
@@ -908,7 +912,8 @@ begin
                 else
                     MbVoid := SysMsgBox('Invalid icon file',
                         'The selected file is not a valid icon file.' + NewLine +
-                        'Please select a .BIN file from the IMAGES directory.', msgError);
+                        'Please select a .BIN file from the IMAGES directory.',
+                        msgError);
             end;
 		end;
 
@@ -934,7 +939,7 @@ begin
 			ObjEditTxt(txtPath, txtPathText);
 
 		ObjChkClick(chkPauseOnExit);
-		if Key = 'x' then
+		if Key = KeyAltX then
         begin
 			chkPauseOnExit.Checked := not chkPauseOnExit.Checked;
 			MouseHide;
@@ -951,36 +956,21 @@ begin
 end;
 
 procedure DeskRun(TargetFile, TargetParameters, TargetPath: string; PauseOnExit: boolean);
+const
+    RunDat = 'DATA\RUN.DAT';
 var
-    RunHandle, I: integer;
-    ShowErr: boolean;
+    MbVoid: boolean;
+    f: Text;
+    {FPath: DirStr;
+	FName: NameStr;
+    FExt: ExtStr;}
     FileType, OpenWith: String;
 begin
-	
-	TargetFile := Trim(TargetFile);
 	TargetParameters := Trim(TargetParameters);
+    TargetPath := Trim(TargetPath);
 
-	{Remove trailing \ from path, if any}
-	{if Length(TargetPath) > 1 then
-		if RIGHT$(TargetPath, 1) = '\' then TargetPath = LEFT$(TargetPath, Length(TargetPath) - 1)}
-
-	{Get the file extension for file association check}
-	if Length(TargetFile) > 1 then
-    begin
-		{for I = Length(TargetFile) to 1 STEP -1
-
-			{If backslash is found before a dot, then any dot would be part of
-			 path and should be ignored}
-			{if MID$(TargetFile, I, 1) = '\' then EXIT FOR
-
-			if MID$(TargetFile, I, 1) = '.' then
-				FileType = UpperCase(RIGHT$(TargetFile, Length(TargetFile) - I))
-				EXIT FOR
-			end;
-		end;}
-	end;
-
-	{if Length(FileType) then
+    {DEBUG - add file associations}
+    {if Length(FileType) then
 		OpenWith = FileGetAssociation(FileType)
 		if Length(OpenWith) then
 			if Length(TargetPath) then
@@ -992,46 +982,52 @@ begin
 			if FileType = 'BAT' then TargetParameters = '/c ' + TargetParameters
 			TargetFile = OpenWith
 		end;
-	end;
-
-	if TargetPath = '' then
-		if not FileExists(TargetFile) then ShowErr = true
-	else
-		if not FileExists(TargetPath + '\' + TargetFile) then ShowErr = true
-	end;
-
-	if ShowErr = true then
-		ShowErr = SysMsgBox('File not found',
-            'The program you are trying to run (' + TargetFile + ') does not exist' +
-                NewLine + 'in the specified path.', msgError)
-		exit;
 	end;}
-	
-	{Print the filename, parameters, path and wether to pause on exit to
-	 RUN.DAT, and exit. COSTA.EXE will detect that file and run it, and then
-	 relaunch the desktop}
-	{RunHandle = FREEFILE
 
-	OPEN 'DATA\RUN.DAT' for OUTPUT AS #RunHandle
-	PRINT #RunHandle, TargetFile
-	PRINT #RunHandle, TargetParameters
-	PRINT #RunHandle, TargetPath
-	if PauseOnExit then
-		PRINT #RunHandle, '1'
-	else
-		PRINT #RunHandle, '0'
+	if not FileExists(TargetFile) then
+    begin
+		MbVoid := SysMsgBox('File not found',
+                           'The program you are trying to run was not found:' + NewLine +
+                           TargetFile,
+                           msgError);
+		exit;
 	end;
-	CLOSE #RunHandle
 
-	SysSaveSettings
+    Assign(f, SysPath + RunDat);
+    {$I-}
+    Rewrite(f);
+    {$I+}
+    if IOResult <> 0 then
+    begin
+        Close(f);
+        MbVoid := SysMsgBox('Writing '+ RunDat + ' failed',
+                            'Could not write to data file, can''t continue.' + NewLine +
+                            'Please check that the DATA directory exists and is writable.',
+                            msgError);
+        exit;
+    end;
 
-	repeat; while Length(GetKey) <> 0;
-	END}
+    Writeln(f, TargetFile);
+    Writeln(f, TargetParameters);
+    Writeln(f, TargetPath);
+    Write(f, Char(Ord(PauseOnExit) + Ord('0'))); {Write 0 or 1 for pause on exit}
+    Close(f);
+
+	repeat; until (Length(GetKey) = 0) and (MouseClicked = mbNone); {Clear buffers}
+    CloseGraph;
+    Halt(0); {Exit desktop. COSTA.EXE will read the RUN.DAT file and execute the program}
 
 end;
 
 {Main program}
 var
+    btnTab: ButtonType;
+    imgTab: ImageType;
+    i, ClickedX, ClickedY: Integer;
+    ClickedB: TMouseButton;
+    DidEdit, DoExit, DoDelete: boolean;
+    Key: String;
+    TempLink: TLink;
     DeskStr: string[1];
 begin
     btnAddLink.Init(3, 2, 92, 22, 'Add ' + HotkeySymbol + 'icon');
@@ -1044,21 +1040,8 @@ begin
 	DeskLinkLoad;
 
 	TabCheck := -1;
-	CheckDesktopID := Setting.DesktopID;
-
-	MouseHide;
-	ObjDrawMenu;
-	ObjDrawBtn(btnAddLink, false);
-	ObjDrawBtn(btnRunCmd, false);
-	ObjDrawBtn(btnPrevious, false);
-	ObjDrawBtn(btnNext, false);
-	ObjDrawBtn(btnAboutCosta, false);
-	ObjDrawBtn(btnExitCosta, false);
-	Str(Setting.DesktopID, DeskStr);
-    FontPrint(DeskStr + '/5', 310, 8, Theme.WindowText, FontHeading);
-	MouseShow;
-
-	DeskDrawDesktop;
+	
+	DeskDrawDesktop(true);
 	
 	repeat
         Key := GetKey;
@@ -1066,7 +1049,6 @@ begin
 		MousePoll;
 		if (MouseClicked <> mbNone) and (MouseY > 32) then
         begin
-		
 			{The mouse was clicked. Before checking if a desktop link was clicked,
 			 check to see if any desktop links are present}
 			if DeskLinkCount <> 0 then
@@ -1083,21 +1065,7 @@ begin
                         begin
                             {If we reach this point, the link was clicked}
                             DeskLinkMenu(i);
-                            {After menu has been shown, buttons might be missing from
-                            top bar due to DeskLinkMove(hiding them}
-                            CheckDesktopID := Setting.DesktopID;
-                            MouseHide;
-                            ObjDrawBtn(btnAddLink, false);
-                            ObjDrawBtn(btnRunCmd, false);
-                            ObjDrawBtn(btnPrevious, false);
-                            ObjDrawBtn(btnNext, false);
-                            ObjDrawBtn(btnAboutCosta, false);
-                            ObjDrawBtn(btnExitCosta, false);
-                            MouseShow;
-
-                            {Exit FOR, otherwise overlapping icons will also be clicked}
                             break;
-
                         end;
                     end;
 
@@ -1113,14 +1081,10 @@ begin
             TempLink.Top := 174;
             DeskLinkAdd(TempLink);
             DeskLinkEdit(DeskLinkCount);
-            DeskLinkMove(DeskLinkCount);
-            ObjDrawBtn(btnAddLink, false);
-            ObjDrawBtn(btnRunCmd, false);
-            ObjDrawBtn(btnPrevious, false);
-            ObjDrawBtn(btnNext, false);
-            ObjDrawBtn(btnAboutCosta, false);
-            ObjDrawBtn(btnExitCosta, false);
-            {Debug - handle cases where user cancels the edit dialog}
+            if Length(DeskLink^[DeskLinkCount]^.Filename) = 0 then
+                DeskLinkRemove(DeskLinkCount)
+            else
+                DeskLinkMove(DeskLinkCount);
         end;
 
         if ObjBtnClick(btnRunCmd) or (Key = KeyAltE) then
@@ -1130,38 +1094,17 @@ begin
             SysAboutBox(AppName, AppVersion, AppAuthor, AppIcon);
         
         if ObjBtnClick(btnPrevious) or (Key = KeyLeft) then
-            Dec(Setting.DesktopID);
+            DeskSwitchDesktop(Setting.DesktopID - 1);
 
         if ObjBtnClick(btnNext) or (Key = KeyRight) then
-            Inc(Setting.DesktopID);
-        
-        if Setting.DesktopID < 1 then
-            Setting.DesktopID := 5;
-        if Setting.DesktopID > 5 then
-            Setting.DesktopID := 1;
+            DeskSwitchDesktop(Setting.DesktopID + 1);
 
-        if Key = '1' then Setting.DesktopID := 1;
-        if Key = '2' then Setting.DesktopID := 2;
-        if Key = '3' then Setting.DesktopID := 3;
-        if Key = '4' then Setting.DesktopID := 4;
-        if Key = '5' then Setting.DesktopID := 5;
+        if Key = '1' then DeskSwitchDesktop(1);
+        if Key = '2' then DeskSwitchDesktop(2);
+        if Key = '3' then DeskSwitchDesktop(3);
+        if Key = '4' then DeskSwitchDesktop(4);
+        if Key = '5' then DeskSwitchDesktop(5);
 
-        if CheckDesktopID <> Setting.DesktopID then
-        begin
-            MouseHide;
-            SetFillStyle(SolidFill, Theme.Window);
-            Bar(310, 7, 330, 16);
-            Str(Setting.DesktopID, DeskStr);
-			FontPrint(DeskStr + '/5', 310, 8, Theme.WindowText, FontHeading);
-            MouseShow;
-            DeskLinkLoad;
-            {DEBUG - flickering and buttons missing}
-            DeskDrawDesktop;
-            TabCheck := -1;
-            CheckDesktopID := Setting.DesktopID;
-            MouseShow;
-        end;
-        
         if ObjBtnClick(btnExitCosta) or (Key = KeyAltX) or (Key = KeyAltF4) then
         begin
             if Setting.ConfirmExit then
@@ -1226,15 +1169,6 @@ begin
             if Key = KeyEnter then
             begin
                 DeskLinkMenu(TabCheck);
-                CheckDesktopID := Setting.DesktopID;
-                MouseHide;
-                ObjDrawBtn(btnAddLink, false);
-                ObjDrawBtn(btnRunCmd, false);
-                ObjDrawBtn(btnPrevious, false);
-                ObjDrawBtn(btnNext, false);
-                ObjDrawBtn(btnAboutCosta, false);
-                ObjDrawBtn(btnExitCosta, false);
-                MouseShow;
             end;
             TabCheck := -1;
         end;
