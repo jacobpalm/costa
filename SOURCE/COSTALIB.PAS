@@ -201,16 +201,10 @@ end;
 
 function FileExists(const FileName: string): Boolean;
 var
-	f: file;
-	exists: Boolean;
+	sResults: SearchRec;
 begin
-	Assign(f, FileName);
-	{$I-}
-	Reset(f);
-	{$I+}
-	exists := IOResult = 0;
-	if exists then Close(f);
-	FileExists := exists;
+	FindFirst(FileName, Archive, sresults);
+	FileExists := (DosError = 0);
 end;
 
 function FileGetAssociation(const FileType: string): string;
@@ -555,7 +549,19 @@ var
 	ImagePointer: Pointer;
 	Size: Word;
 	ImageFile: File;
+	IconError: Boolean;
+	Filename: String;
 begin
+	IconError := False;
+	if Length(TargetImg.ImageFile) = 0 then
+		IconError := True;
+
+	Filename := SysPath + 'IMAGES\' + TargetImg.ImageFile + '.BIN';
+	if not FileExists(Filename) then
+		IconError := True;
+
+	Size := ImageSize(0, 0, 31, 31); {Coords don't matter, just size}
+	
 	X := TargetImg.Pos.Left;
 	Y := TargetImg.Pos.Top;
 	TargetImg.Pos.Width := 31;  {Width/height are set here to make sure they match icon size in click detection etc.}
@@ -569,26 +575,36 @@ begin
 	Line(X, Y+32, X+32, Y+32);
 	Line(X+32, Y, X+32, Y+31);
 
-	Size := ImageSize(0, 0, 31, 31); {Coords don't matter, just size}
-	Assign(ImageFile, SysPath + 'IMAGES\' + TargetImg.ImageFile + '.BIN');
-	{$I-}
-	Reset(ImageFile, 1);
-	{$I+}
-	if (IOResult <> 0) or (FileSize(ImageFile) <> Size) then
+	if not IconError then
+	begin
+		Assign(ImageFile, Filename);
+		{$I-}
+		Reset(ImageFile, 1);
+		{$I+}
+		if (IOResult <> 0) or (FileSize(ImageFile) <> Size) then
+		begin
+			Close(ImageFile);
+			IconError := True;
+		end;
+	end;
+	{DEBUG - verify getmem and BlockRead}
+
+	if not IconError then
+	begin
+		GetMem(ImagePointer, Size);
+		BlockRead(ImageFile, ImagePointer^, Size);
+		Close(ImageFile);
+		PutImage(x, y, ImagePointer^, CopyPut);
+		FreeMem(ImagePointer, Size);
+	end;
+
+	if IconError then
 	begin
 		SetFillStyle(SolidFill, Red);
 		Bar(X, Y, X+31, Y+31);
 		FontPrint('IMG', X+5, Y+6, 15, FontNormal);
 		FontPrint('ERR', X+5, Y+19, 15, FontNormal);
-		Close(ImageFile);
-		Exit;
 	end;
-	{DEBUG - verify getmem and BlockRead}
-	GetMem(ImagePointer, Size);
-	BlockRead(ImageFile, ImagePointer^, Size);
-	Close(ImageFile);
-	PutImage(x, y, ImagePointer^, CopyPut);
-	FreeMem(ImagePointer, Size);
 end;
 
 procedure ObjDrawMenu;
