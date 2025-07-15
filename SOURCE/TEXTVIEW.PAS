@@ -278,7 +278,7 @@ begin
 
 		if ObjBtnClick(BtnOpen) or (Key = KeyAltO) then
 		begin
-			NewFileName := FileSelect('*.txt');
+			NewFileName := FileSelect('*.txt', '', False);
 			if Length(NewFilename) > 0 then
 			begin
 				if LoadFile(NewFilename) then

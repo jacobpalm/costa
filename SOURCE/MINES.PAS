@@ -511,7 +511,6 @@ begin
 	KeyCol := FieldWidth div 2;
 	
 	MinePrintStatus(False, '');
-
 end;
 
 procedure MinePause;
@@ -570,7 +569,9 @@ begin
 	end;
 	MouseShow;
 
-	StartTime := StartTime + (Timer - PauseTime);
+	MinePrintStatus(False, '');
+	if StartTime <> 0 then
+		StartTime := StartTime + (Timer - PauseTime);
 	MinePrintTime;
 
 end;
@@ -672,7 +673,7 @@ var
     TempStr: string;
 begin
 	{Only draw time if we are still playing}
-	if GameOver then
+	if GameOver or (StartTime = 0) then
         exit;
 
 	{Only hide mouse if it's near the timer, to avoid cursor flicker on old PCs}
@@ -893,6 +894,7 @@ begin
                 begin
 					MineField[FieldRow, FieldCol] := MineField[FieldRow, FieldCol] xor FieldFlagged;
 					MineDrawCell(FieldRow, FieldCol);
+					Inc(CellsFlagged);
 				end;
 			end;
 		end;
@@ -1038,7 +1040,7 @@ begin
 				MouseShow;
 			end;
 			
-			if (StartTime <> 0) and (TimeCompare < timer) then
+			if (StartTime <> 0) and (TimeCompare < Timer) then
             begin
 				MinePrintTime;
 				TimeCompare := timer + 1;
