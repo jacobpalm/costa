@@ -1,137 +1,153 @@
-program costa_launcher;
+program CostaLauncher;
 
-{ The Costa GUI launcher
-	Runs DESKTOP.EXE and any external programs requested by the desktop.
-	This allows the desktop to exit and memory to be freed while external
-	programs are run.
-	Written using Borland Turbo Pascal 7.01
+{The Costa GUI launcher
+ Runs DESKTOP.EXE and any external programs requested by the desktop.
+ This allows the desktop to exit and memory to be freed while external
+ programs are run.
 }
 
-{ Set stack to minimal size }
+{Set stack to minimal size}
 {$M 1536, 0, 0}
 
 uses
 	DOS;
 
 const
-	costa_exe     = 'COSTA.EXE';
-	desktop_exe   = 'DESKTOP.EXE';
-	run_dat       = 'DATA\RUN.DAT';
-	continuestr   = 'Press Enter to continue...';
+	CostaExe    = 'COSTA.EXE';
+	DesktopExe  = 'DESKTOP.EXE';
+	RunFile     = 'DATA\RUN.DAT';
+	ContinueStr = 'Press Enter to continue...';
+
+type
+	TLink = record
+		Caption: String[20];
+		FileName: PathStr;
+		Path: DirStr;
+		Parameters: ComStr;
+		ImageFile: String[8];
+		PauseOnExit: Boolean;
+		Left, Top: Integer;
+	end;
 
 var
-	current_dir   : DirStr;
-	sresults      : SearchRec;
-	file_name     : TEXT;
-	run_command   : ComStr;
-	run_path      : DirStr;
-	run_params    : ComStr;
-	run_pause     : CHAR;
+	CostaPath: DirStr;
+	RunLink:   TLink;
 
-{ Run an external program - handle errors }
-procedure RunProgram(command, params: ComStr; path: DirStr; pause: Char);
+{Run an external program, handle errors if it fails}
+procedure RunProgram;
+var
+	PauseOnExit: Boolean;
 begin
-
 	{$IFDEF DEBUG}
-		Writeln('Changing path to ', path);
-		Writeln('Running program ', command);
-		Writeln('With parameters ', path);
-		Write(continuestr);
+		Writeln('Changing path to ', RunLink.Path);
+		Writeln('Running program ', RunLink.FileName);
+		Writeln('With parameters ', RunLink.Parameters);
+		Write(ContinueStr);
 		Readln;
 	{$ENDIF}
 
-	if Length(path) > 0 then
-	begin
-		chdir(path);
-	end
+	if Length(RunLink.Path) > 0 then
+		ChDir(RunLink.Path)
 	else
-	begin
-		chdir(current_dir);
-	end;
+		ChDir(CostaPath);
+	PauseOnExit := RunLink.PauseOnExit;
 
 	SwapVectors;
-	Exec(command, params);
+	Exec(RunLink.FileName, RunLink.Parameters);
 	SwapVectors;
 
-	{ Low memory condition }
+	{Low memory condition}
 	if DosError = 8 then
 	begin
 		Writeln('Out of memory.');
-		pause := '1';
-		{ If desktop can't be launched, exit }
-		if command = desktop_exe then
+		PauseOnExit := True;
+		{If desktop can't be launched, exit}
+		if RunLink.FileName = DesktopExe then
 			Halt(1);
 	end;
 
-	{ Wait for keypress before returning? }
-	if pause = '1' then
+	{Wait for keypress before returning?}
+	if PauseOnExit then
 	begin
 		Writeln;
-		Write(continuestr);
+		Write(ContinueStr);
 		Readln;
 	end;
-end; { RunProgram }
+end; {RunProgram}
 
-
+{Main program}
+var
+	SResult: SearchRec;
+	f: file;
 begin
-	{ Low byte of DosVersion contains major DOS version.
+	{Low byte of DosVersion contains major DOS version.
 		This program will actually run on DOS 3.0, but the other
-		included programs won't, so might as well check here }
+		included programs won't, so might as well check here}
 	if Lo(DosVersion) < 4 then
 	begin
 		Writeln('DOS 4+ required.');
 		Halt(1);
 	end;
 
-	{ Retrieve path of self from paramstr, used later on to find relative paths regardless
-		of current path when this program was executed }
-	current_dir := ParamStr(0);
+	{Retrieve path of self from paramstr, used later on to find relative paths regardless
+		of current path when this program was executed}
+	CostaPath := ParamStr(0);
 
-	{ Remove last backslash and name of this executable, leaving only path }
-	{ 13 = max 8.3 filename lenght 12 including the dot, plus a backslash }
-	Delete(current_dir, pos('\' + costa_exe, current_dir), 13);
+	{Remove last backslash and name of this executable, leaving only path}
+	{13 = max 8.3 filename lenght 12 including the dot, plus a backslash}
+	Delete(CostaPath, pos('\' + CostaExe, CostaPath), 13);
 
 	{$IFDEF DEBUG}
-		Writeln('Path to Costa is ', current_dir);
-		Write(continuestr);
+		Writeln('Path to Costa is ', CostaPath);
+		Write(ContinueStr);
 		Readln;
 	{$ENDIF}
 
-	{ Verify that desktop exe exists in same path as this executable }
-	FindFirst(current_dir + '\' + desktop_exe, Archive, sresults);
+	{Verify that desktop exe exists in same path as this executable}
+	FindFirst(CostaPath + '\' + DesktopExe, Archive, SResult);
 	if DosError > 0 then
 	begin
-		Writeln(desktop_exe + ' not found.');
+		Writeln(DesktopExe + ' not found.');
 		Halt(1);
 	end;
 
 	while True do
 	begin
+		{Run the desktop}
+		FillChar(RunLink, SizeOf(RunLink), 0);
+		RunLink.FileName := DesktopExe;
+		RunProgram;
 
-		{ Run the desktop }
-		RunProgram(desktop_exe, current_dir, '', '0');
-		{ Exit code 1 means exit }
+		{Exit code 1 from desktop means exit}
 		if DosExitCode = 1 then
 			halt(0);
 
-		{ If run.dat exists, run it and delete it }
-		FindFirst(current_dir + '\' + run_dat, Archive, sresults);
+		{If RunFile exists, read it, delete it and run the program specified in it}
+		FindFirst(CostaPath + '\' + RunFile, Archive, SResult);
 		if DosError > 0 then
 			Continue;
 
-		{ Open file, read data and delete file }
-		Assign(file_name, current_dir + '\' + run_dat);
-		Reset(file_name);
-		Readln(file_name, run_command);
-		Readln(file_name, run_params);
-		Readln(file_name, run_path);
-		Read(file_name, run_pause);
-		Erase(file_name);
-		Close(file_name);
+		{Open file, read data and delete file}
+		Assign(f, CostaPath + '\' + RunFile);
+		{$I-}
+		Reset(f, 1);
+		{$I+}
 
-		{ Run program - obviously }
-		RunProgram(run_command, run_params, run_path, run_pause)
+		{If there was an error or size doesn't match, continue to next iteration}
+		if (IOResult <> 0) or (FileSize(f) <> SizeOf(RunLink)) then
+		begin
+			{$IFDEF DEBUG}
+				Writeln('Error reading run file: ', RunFile);
+				WriteLine('File size: ', FileSize(f), ' bytes, expected: ', SizeOf(RunLink), ' bytes.');
+			{$ENDIF}
+			Close(f);
+			Continue;
+		end;
+		BlockRead(f, RunLink, SizeOf(RunLink));
+		Erase(f);
+		Close(f);
 
-	end; { main loop }
+		RunProgram;
+	end; {main loop}
 
 end.

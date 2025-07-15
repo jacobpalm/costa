@@ -4,18 +4,20 @@ uses
     Costalib, FileSel, Graph, Crt, Strings, DOS;
 
 const
-    AppName    = 'Desktop';
-    AppVersion = '2.0';
-    AppAuthor  = 'Jacob Palm';
-    AppIcon    = 'LOGO';
+    AppName       = 'Desktop';
+    AppVersion    = '2.0';
+    AppAuthor     = 'Jacob Palm';
+    AppIcon       = 'LOGO';
+
+    CaptionMaxLen = 20; {Maximum length for link captions}
 
 type
     PLink = ^TLink;
     TLink = record
-		Caption: String[25];
-		FileName: String[50];
-		Path: String[50];
-		Parameters: String[50];
+		Caption: String[20];
+		FileName: PathStr;
+		Path: DirStr;
+		Parameters: ComStr;
 		ImageFile: String[8];
 		PauseOnExit: Boolean;
 		Left, Top: Integer;
@@ -43,7 +45,7 @@ var
     procedure DeskLinkSave; forward;
     procedure DeskLinkFree; forward;
     function DeskLinkInit: Boolean; forward;
-    procedure DeskRun(TargetFile, TargetParameters, TargetPath: string; PauseOnExit: boolean); forward;
+    procedure DeskRun(TargetLink: TLink); forward;
 
 function LinkHeapError(Size: Word): Integer; far;
 var
@@ -106,7 +108,7 @@ var
     f: file;
     DeskLinkFile: string;
     ReadLink: TLink;
-	ReadBytes: Integer;
+	ReadBytes: Word;
     NewLink: PLink;
 begin
     DeskLinkFree;
@@ -164,10 +166,6 @@ begin
     begin
         FillChar(ReadLink, SizeOf(ReadLink), 0);
         BlockRead(f, ReadLink, SizeOf(ReadLink), ReadBytes);
-        Writeln('Read link: ', ReadLink.Caption, ' from file: ', DeskLinkFile);
-        Writeln('FileName: ', ReadLink.FileName, ' Path: ', ReadLink.Path, ' Parameters: ', ReadLink.Parameters);
-        WriteLn('ImageFile: ', ReadLink.ImageFile, ' PauseOnExit: ', ReadLink.PauseOnExit);
-        WriteLn('Left: ', ReadLink.Left, ' Top: ', ReadLink.Top);
         if ReadBytes <> SizeOf(ReadLink) then
         begin
             {DEBUG}
@@ -427,10 +425,11 @@ var
     x1, y1, x2, y2: integer;
     BackgroundSize: Word;
 	BackgroundP: Pointer;
+    RunLink: TLink;
 begin
-
     txtProgramText := '';
     txtParametersText := '';
+    FillChar(RunLink, SizeOf(RunLink), 0);
 
     winExecute.Init(sizeCenter, sizeCenter, 342, 196);
     txtProgram.Init(winExecute.Pos.Left + 12, winExecute.Pos.Top + 86, winExecute.Pos.Width - 54, sizeDefault);
@@ -483,7 +482,9 @@ begin
 					path = path + LEFT$(txtProgramText, INSTR(txtProgramText, '\'))
 					txtProgramText = RIGHT$(txtProgramText, Length(txtProgramText) - INSTR(txtProgramText, '\'))
 				LOOP}
-				DeskRun(txtProgramText, txtParametersText, path, true);
+                RunLink.FileName := txtProgramText;
+                RunLink.Parameters := txtParametersText;
+				DeskRun(RunLink);
 			end;
 			break;
 		end;
@@ -593,8 +594,9 @@ begin
 		if ObjBtnClick(btnOpen) or (Key = KeyAltO) or (Key = KeyEnter) then
         begin
             FreeMem(BackgroundP, BackgroundSize);
-			DeskRun(Filename, Parameters, Path, DeskLink^[TargetLink]^.PauseOnExit);
-			DeskDrawDesktop(true);
+			DeskRun(DeskLink^[TargetLink]^);
+            {If we've returned from the run, redraw the desktop since we've freed the memory}
+            DeskDrawDesktop(true);
             break;
 		end;
 
@@ -821,10 +823,10 @@ begin
     btnCancel.Init(326, btnOK.Pos.Top, 84, 22, HotkeySymbol + 'Cancel');
 
     btnIcon.Transparent := true;
-	txtCaption.MaxLen := 25;
-	txtFilename.MaxLen := 50;
-	txtParams.MaxLen := 50;
-	txtPath.MaxLen := 50;
+	txtCaption.MaxLen := CaptionMaxLen;
+	txtFilename.MaxLen := SizeOf(ComStr); {Max length of a filename +}
+	txtParams.MaxLen := SizeOf(ComStr);
+	txtPath.MaxLen := SizeOf(DirStr);;
 	txtFileNameText := DeskLink^[TargetLink]^.Filename;
 	txtParamsText := DeskLink^[TargetLink]^.Parameters;
 	txtPathText := DeskLink^[TargetLink]^.Path;
@@ -955,21 +957,18 @@ begin
     MouseShow;
 end;
 
-procedure DeskRun(TargetFile, TargetParameters, TargetPath: string; PauseOnExit: boolean);
+procedure DeskRun(TargetLink: TLink);
 const
-    RunDat = 'DATA\RUN.DAT';
+    RunDat = 'DATA\RUN.BIN';
 var
     MbVoid: boolean;
-    f: Text;
-    {FPath: DirStr;
+    f: file;
+    FPath: DirStr;
 	FName: NameStr;
-    FExt: ExtStr;}
+    FExt: ExtStr;
     FileType, OpenWith: String;
 begin
-	TargetParameters := Trim(TargetParameters);
-    TargetPath := Trim(TargetPath);
-
-    {DEBUG - add file associations}
+	{DEBUG - add file associations}
     {if Length(FileType) then
 		OpenWith = FileGetAssociation(FileType)
 		if Length(OpenWith) then
@@ -984,38 +983,47 @@ begin
 		end;
 	end;}
 
-	if not FileExists(TargetFile) then
+	if not FileExists(TargetLink.FileName) then
     begin
 		MbVoid := SysMsgBox('File not found',
-                           'The program you are trying to run was not found:' + NewLine +
-                           TargetFile,
-                           msgError);
+            'The program you are trying to run was not found:' + NewLine +
+            TargetLink.FileName,
+            msgError);
 		exit;
 	end;
 
+    FSplit(TargetLink.FileName, FPath, FName, FExt);
+    if (FExt <> '.EXE') and (FExt <> '.COM') then
+    begin
+        MbVoid := SysMsgBox('Invalid file type',
+            'The file you are trying to run is not a program.' + NewLine +
+            'Only .EXE and .COM files can be executed. To open' + NewLine +
+            'other files, use the configuration program to' + NewLine +
+            'associate the file extension with a program.',
+            msgError);
+        exit;
+    end;
+
     Assign(f, SysPath + RunDat);
     {$I-}
-    Rewrite(f);
+    Rewrite(f, 1);
     {$I+}
     if IOResult <> 0 then
     begin
         Close(f);
         MbVoid := SysMsgBox('Writing '+ RunDat + ' failed',
-                            'Could not write to data file, can''t continue.' + NewLine +
-                            'Please check that the DATA directory exists and is writable.',
-                            msgError);
+            'Could not write to data file, can''t continue.' + NewLine +
+            'Please check that the DATA directory exists and is writable.',
+            msgError);
         exit;
     end;
 
-    Writeln(f, TargetFile);
-    Writeln(f, TargetParameters);
-    Writeln(f, TargetPath);
-    Write(f, Char(Ord(PauseOnExit) + Ord('0'))); {Write 0 or 1 for pause on exit}
+    BlockWrite(f, TargetLink, SizeOf(TargetLink));
     Close(f);
 
 	repeat; until (Length(GetKey) = 0) and (MouseClicked = mbNone); {Clear buffers}
     CloseGraph;
-    Halt(0); {Exit desktop. COSTA.EXE will read the RUN.DAT file and execute the program}
+    Halt(0); {Exit desktop. COSTA.EXE will read the file and execute the program}
 
 end;
 
@@ -1175,7 +1183,6 @@ begin
 	
 	until False;
 
-    DeskLinkFree;
     CloseGraph;
-    Halt(1);
+    Halt(1); {Error code 1 makes COSTA.EXE terminate and return to DOS prompt}
 end.
