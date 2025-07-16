@@ -282,21 +282,45 @@ end;
 
 procedure FontPrint(Text: String; X, Y, Col, FontID: Integer);
 var
-	HotkeyPos: Integer;
+	HotkeyPos, NewLinePos: Integer;
+	TextLine: String;
+
+	{Helper procedure - if the text contains a hotkey symbol, remove it
+	 and draw an underline under the next character}
+	procedure HandleHotkey(X, Y: Integer; var LineStr: String);
+	begin
+		HotkeyPos := Pos(HotkeySymbol, LineStr);
+		if HotkeyPos > 0 then
+		begin
+			Delete(LineStr, HotkeyPos, 1);
+			Line(X + HotkeyPos * 8 - 9, Y + 9, X + HotkeyPos * 8 - 1, Y + 9);
+		end;
+	end;
 begin
 	SetTextJustify(LeftText, TopText);
 	SetColor(Col);
 
-	{If the text contains a hotkey symbol, remove it and draw an underline under
-	 the next character}
-	HotkeyPos := Pos(HotkeySymbol, Text);
-	if HotkeyPos > 0 then
+	while length(Text) > 0 do
 	begin
-		Delete(Text, HotkeyPos, 1);
-		Rectangle(X + HotkeyPos * 8 - 9, Y + 9, X + HotkeyPos * 8 - 1, Y + 9);
+		NewLinePos := Pos(NewLine, Text);
+		if NewLinePos > 0 then
+		begin
+			{Extract the line up to newline, print it, and remove it from Text}
+			TextLine := Copy(Text, 1, NewLinePos - 1);
+			HandleHotkey(X, Y, TextLine);
+			OutTextXY(X, Y, TextLine);
+			Delete(Text, 1, NewLinePos);
+		end
+		else
+		begin
+			{Last/only line}
+			HotkeyPos := Pos(HotkeySymbol, Text);
+			HandleHotkey(X, Y, Text);
+			OutTextXY(X, Y, Text);
+			break;
+		end;
+		Y := Y + 12; {Move down one line}
 	end;
-
-	OutTextXY(X, Y, Text);
 end;
 
 function LowerCase(s: string): string;
@@ -1110,9 +1134,7 @@ begin
 		FontPrint(msgLines[i], winMsgBox.Pos.Left+56, winMsgBox.Pos.Top+17+(15*i), Theme.WindowText, 2);
 	MouseShow;
 	repeat
-		Key := '';
-		if KeyPressed then
-			Key := ReadKey;
+		Key := GetKey;
 			
 		if ObjBtnClick(btnFirst) then Key := KeyEnter;
 		if msgType = msgQuest then
@@ -1143,7 +1165,6 @@ begin
 				end;
 			end;
 		end;
-		Key := #0;
 	until False;
 	MouseHide;
 	PutImage(x1, y1, BackgroundP^, NormalPut);
