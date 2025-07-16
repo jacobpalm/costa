@@ -9,67 +9,84 @@ const
 	AppAuthor        = 'Jacob Palm';
 	AppIcon          = 'TICTAC';
 
-	PlayerX          = 10;
-	PlayerO          = not PlayerX;
-
 type
 	TField = record
 		Pos: PosType;
 	end;
 
+	TPlayer = (PlayerNone, PlayerX, PlayerO);
 	TSound = (sndX, sndO, sndIllegal, sndWin, sndLoose, sndDraw, sndNew);
 	TGameMsg = (msgWin, msgDraw, msgAITurn, msgPlayerTurn, msgNewGame);
 
 var
-	PlayerStart, PlayerTurn, TotalTurns: integer;
+	PlayerStart, PlayerTurn: TPlayer;
+	TotalTurns: integer;
 	EnableAI, EnableAudio: boolean;
-	PlayField: array[1..3, 1..3] of integer;
+	PlayField: array[1..3, 1..3] of TPlayer;
 	txtPlayField: array[1..3, 1..3] of TField;
 
 {Forward declarations}
-procedure TicDrawXO(Row, Col, FieldValue: integer); forward;
+procedure TicDrawXO(Row, Col: integer; Player: TPlayer); forward;
 procedure TicPlaySound(SoundType: TSound); forward;
 procedure TicPrintMessage(MessageType: TGameMsg); forward;
 procedure TicPrintStatus; forward;
+function TicCanWin(Player: TPlayer; var Row, Col: integer): boolean; forward;
 function TicCheckWin: boolean; forward;
 
 procedure TicAIMove;
 var
 	Row, Col: integer;
+	FoundMove: boolean;
 begin
 	TicPrintMessage(msgAITurn);
+	FoundMove := false;
 
 	{Simulate some random "thinking" time}
 	Randomize;
-	Delay((Random(550) + 550) div 500);
+	Delay(Random(850) + 550);
 
-	{DEBUG - temporarily cut out}
+	{Check if the computer can win}
+	if TicCanWin(PlayerO, Row, Col) then
+	begin
+		PlayField[Row, Col] := PlayerO;
+		TicDrawXO(Row, Col, PlayerO);
+		FoundMove := true;
+	end
+	{Check if player can win, block if so}
+	else if TicCanWin(PlayerX, Row, Col) then
+	begin
+		PlayField[Row, Col] := PlayerO;
+		TicDrawXO(Row, Col, PlayerO);
+		FoundMove := true;
+	end;
 
-	{If AI can't win, and X doesn't have two in a row, just pick a random
-	 spot}
+	{If AI can't win, and player can't either, just pick a random spot}
+	if not FoundMove then
+	begin
 		repeat
-			Col := Random(3) + 1;
-			Row := Random(3) + 1;
+		Col := Random(3) + 1;
+		Row := Random(3) + 1;
 
-			if PlayField[Row, Col] = 0 then
-			begin
-				PlayField[Row, Col] := PlayerO;
-				TicDrawXO(Row, Col, PlayerO);
-				break;
-			end;
+		if PlayField[Row, Col] = PlayerNone then
+		begin
+			PlayField[Row, Col] := PlayerO;
+			TicDrawXO(Row, Col, PlayerO);
+			break;
+		end;
 		until false;
+	end;
 
-{AIMoveEnd:}
 	TicPlaySound(sndO);
 	Inc(TotalTurns);
 	if TicCheckWin then
 	begin
 		TicPrintMessage(msgWin);
-		TicPlaySound(sndLoose); {Loose because AI wins}
+		TicPlaySound(sndLoose); {Loose, because AI wins}
 		TotalTurns := 9;
 		exit;
 	end;
 	
+	{If board is full with no winner, it's a draw}
 	if TotalTurns = 9 then
 	begin
 		TicPrintMessage(msgDraw);
@@ -77,17 +94,143 @@ begin
 	end
 	else
 	begin
+		{Switch to player, game goes on}
 		PlayerTurn := PlayerX;
 		TicPrintMessage(msgPlayerTurn);
 	end;
 end;
 
 function TicCheckWin: boolean;
+var
+  Row, Col: integer;
+  Sum: integer;
 begin
 	TicCheckWin := false;
 
-	{DEBUG - temporarily cut out}
+	{Check rows}
+	for Row := 1 to 3 do
+	begin
+		if (PlayField[Row, 1] = PlayField[Row, 2]) and
+			(PlayField[Row, 2] = PlayField[Row, 3]) and
+			(PlayField[Row, 1] <> PlayerNone) then
+		begin
+			TicCheckWin := true;
+			exit;
+		end;
+	end;
 
+	{Check columns}
+	for Col := 1 to 3 do
+	begin
+		if (PlayField[1, Col] = PlayField[2, Col]) and
+			(PlayField[2, Col] = PlayField[3, Col]) and
+			(PlayField[1, Col] <> PlayerNone) then
+		begin
+			TicCheckWin := true;
+			exit;
+		end;
+	end;
+
+	{Check diagonal \}
+	if (PlayField[1, 1] = PlayField[2, 2]) and
+		(PlayField[2, 2] = PlayField[3, 3]) and
+		(PlayField[1, 1] <> PlayerNone) then
+	begin
+		TicCheckWin := true;
+		exit;
+	end;
+
+	{Check reverse diagonal /}
+	if (PlayField[1, 3] = PlayField[2, 2]) and
+		(PlayField[2, 2] = PlayField[3, 1]) and
+		(PlayField[1, 3] <> PlayerNone) then
+	begin
+		TicCheckWin := true;
+		exit;
+	end;
+end;
+
+function TicCanWin(Player: TPlayer; var Row, Col: integer): boolean;
+var
+	r, c: integer;
+	Sum: integer;
+begin
+    TicCanWin := false;
+
+    {Check rows}
+    for r := 1 to 3 do
+    begin
+      Sum := 0;
+      Col := 0;
+      for c := 1 to 3 do
+      begin
+        if PlayField[r, c] = Player then
+          Inc(Sum)
+        else if PlayField[r, c] = PlayerNone then
+          Col := c;
+      end;
+      if (Sum = 2) and (Col <> 0) then
+      begin
+        Row := r;
+        TicCanWin := true;
+        exit;
+      end;
+    end;
+
+	{Check columns}
+    for c := 1 to 3 do
+    begin
+      Sum := 0;
+      Row := 0;
+      for r := 1 to 3 do
+      begin
+        if PlayField[r, c] = Player then
+          Inc(Sum)
+        else if PlayField[r, c] = PlayerNone then
+          Row := r;
+      end;
+      if (Sum = 2) and (Row <> 0) then
+      begin
+        Col := c;
+        TicCanWin := true;
+        exit;
+      end;
+    end;
+
+    {Check diagonal - \}
+    Sum := 0;
+    Row := 0;
+    Col := 0;
+    for r := 1 to 3 do
+    begin
+      if PlayField[r, r] = Player then
+        Inc(Sum)
+      else if PlayField[r, r] = PlayerNone then
+      begin
+        Row := r;
+        Col := r;
+      end;
+    end;
+    if (Sum = 2) and (Row <> 0) then
+    begin
+      TicCanWin := true;
+      exit;
+    end;
+
+	{Reverse diagonal}
+	for r := 1 to 3 do
+	begin
+		for c := 3 downto 1 do
+		begin
+			if PlayField[r, c] = Player then
+				Inc(Sum)
+			else if PlayField[r, c] = PlayerNone then
+			begin
+				Row := r;
+				Col := c;
+			end;
+		end;
+	end;
 end;
 
 procedure TicDrawBackground;
@@ -138,7 +281,7 @@ begin
 	MouseShow;
 end;
 
-procedure TicDrawXO(Row, Col, FieldValue: integer);
+procedure TicDrawXO(Row, Col: integer; Player: TPlayer);
 var
 	x, y: integer;
 begin
@@ -147,7 +290,7 @@ begin
 
 	MouseHide;
 	SetColor(Black);
-	if FieldValue = PlayerX then
+	if Player = PlayerX then
 	begin
 		Line(x + 11, y + 12, x + 48, y + 49);
 		Line(x + 11, y + 13, x + 47, y + 49);
@@ -193,11 +336,17 @@ procedure TicNewGame;
 var
 	Row, Col: integer;
 begin
-	FillChar(PlayField, SizeOf(PlayField), 0);
+	for Row := 1 to 3 do
+		for Col := 1 to 3 do
+			PlayField[Row, Col] := PlayerNone;
 	TicDrawBoard;
 
 	TotalTurns := 0;
-	PlayerStart := not PlayerStart;
+	if PlayerStart = PlayerX then
+		PlayerStart := PlayerO
+	else
+		PlayerStart := PlayerX;
+	
 	PlayerTurn := PlayerStart;
 
 	TicPrintMessage(msgNewGame);
@@ -337,17 +486,9 @@ begin
 	FieldClicked := false;
 
 	ObjSetSize(frmTic.Pos, sizeCenter, sizeCenter, 221, 221);
-	
-	{ObjSetSize(txtPlayField[1, 1].Pos, frmTic.Pos.Left + 10, frmTic.Pos.Top + 10, 60, 60);
-	ObjSetSize(txtPlayField[1, 2].Pos, txtPlayField[1, 1].Pos.Left + 70, txtPlayField[1, 1].Pos.Top, 60, 60);
-	ObjSetSize(txtPlayField[1, 3].Pos, txtPlayField[1, 2].Pos.Left + 70, txtPlayField[1, 1].Pos.Top, 60, 60);
-	ObjSetSize(txtPlayField[2, 1].Pos, txtPlayField[1, 1].Pos.Left, txtPlayField[1, 1].Pos.Top + 70, 60, 60);
-	ObjSetSize(txtPlayField[2, 2].Pos, txtPlayField[2, 1].Pos.Left + 70, txtPlayField[2, 1].Pos.Top, 60, 60);
-	ObjSetSize(txtPlayField[2, 3].Pos, txtPlayField[2, 2].Pos.Left + 70, txtPlayField[2, 1].Pos.Top, 60, 60);
-	ObjSetSize(txtPlayField[3, 1].Pos, txtPlayField[2, 1].Pos.Left, txtPlayField[2, 1].Pos.Top + 70, 60, 60);
-	ObjSetSize(txtPlayField[3, 2].Pos, txtPlayField[3, 1].Pos.Left + 70, txtPlayField[3, 1].Pos.Top, 60, 60);
-	ObjSetSize(txtPlayField[3, 3].Pos, txtPlayField[3, 2].Pos.Left + 70, txtPlayField[3, 1].Pos.Top, 60, 60);}
+
 	for Row := 1 to 3 do
+	begin
 		for Col := 1 to 3 do
 		begin
 		if (Row = 1) and (Col = 1) then
@@ -359,6 +500,7 @@ begin
 			ObjSetSize(txtPlayField[Row, Col].Pos, txtPlayField[Row, Col - 1].Pos.Left + 70,
 				txtPlayField[Row, Col - 1].Pos.Top, 60, 60);
 		end;
+	end;
 	
 	btnNew.Init(3, 2, 92, 22, HotkeySymbol + 'New game');
 	btnAIToggle.Init(102, 2, 92, 22, HotkeySymbol + 'Mode');
@@ -420,17 +562,28 @@ begin
 
 		if TotalTurns < 9 then
 		begin
-			{DEBUG - this can be done WAY smarter than this...}
-			
+			for Row := 1 to 3 do
+			begin
+				for Col := 1 to 3 do
+				begin
+					if ObjClick(txtPlayField[Row, Col].Pos) then
+					begin
+						FieldClicked := true;
+						break;
+					end;
+				end;
+				if FieldClicked then
+					break;
+			end;
 
 			if FieldClicked then
 			begin
 				{Prevent audio from running wild if mouse/key is held down}
-				repeat; until (Length(GetKey) = 0) and (MouseClicked = mbNone);
+				repeat until (Length(GetKey) = 0) and (MouseClicked = mbNone);
 
-				if PlayField[Row, Col] = 0 then
+				if PlayField[Row, Col] = PlayerNone then
 				begin
-					{FieldClicked := 0;}
+					FieldClicked := false;
 					PlayField[Row, Col] := PlayerTurn;
 					TicDrawXO(Row, Col, PlayerTurn);
 					if PlayerTurn = PlayerX then
@@ -449,7 +602,10 @@ begin
 					begin
 						if TotalTurns < 9 then
 						begin
-							PlayerTurn := not PlayerTurn;
+							if PlayerTurn = PlayerX then
+								PlayerTurn := PlayerO
+							else
+								PlayerTurn := PlayerX;
 
 							if (EnableAI = true) and (PlayerTurn = PlayerO) then
 								TicAIMove
@@ -466,8 +622,6 @@ begin
 				end
 				else
 					TicPlaySound(sndIllegal);
-
-				FieldClicked := false;
 			end;
 		end;
 
