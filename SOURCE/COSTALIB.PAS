@@ -6,6 +6,10 @@ uses
 	Crt, Dos, Graph, Strings;
 
 const
+	LibName     = 'Costa UI Library';
+	LibVersion  = '2.0';
+	LibYear     = '2025';
+
 	FontHeading = 1;
 	FontNormal  = 2;
 
@@ -23,7 +27,6 @@ const
 	HotkeySymbol:   Char = #127; {Marks hotkeys in object captions}
 
 	{$I KEYCODES.INC}
-	{$I APPINFO.INC}
 
 type
 	TMouseButton = (mbNone, mbLeft, mbRight, mbBoth);
@@ -113,6 +116,7 @@ function MouseClicked: TMouseButton;
 function MouseInArea(const TargetArea: PosType): Boolean;
 function ObjBtnClick(var TargetBtn: ButtonType): Boolean;
 function ObjTxtClick(const TargetTxt: TextboxType): Boolean;
+function ObjClick(const TargetArea: PosType): Boolean;
 function Replace(Input, OldSubStr, NewSubStr: String): String;
 function RTrim(s: string): string;
 function SysMsgBox(const msgTitle, msgText: string; msgType: TMsgBoxType): Boolean;
@@ -434,6 +438,17 @@ begin
 			ObjDrawChk(TargetChk);
 			MouseShow;
 		end;
+	end;
+end;
+
+function ObjClick(const TargetArea: PosType): Boolean;
+begin
+	ObjClick := false;
+	if (MouseClicked = mbLeft) and MouseInArea(TargetArea) then
+	begin
+		repeat until MouseClicked = mbNone;
+		if MouseInArea(TargetArea) then
+			ObjClick := true;
 	end;
 end;
 
@@ -876,8 +891,8 @@ begin
 	ObjDrawImg(imgLogo);
 	FontPrint(ProgramName + ' ' + ProgramVersion, 212, winAboutBox.Pos.Top + 17, 0, 1);
 	FontPrint('By ' + ProgramAuthor, 212, winAboutBox.Pos.Top + 31, 0, 2);
-	FontPrint('Made with the ' + LibraryName + ' version', 168, winAboutBox.Pos.Top + 53, 0, 2);
-	FontPrint(LibraryVersion + ' by Jacob Palm, 2004-' + LibraryYear + '.', 168, winAboutBox.Pos.Top + 67, 0, 2);
+	FontPrint('Made with the ' + LibName + ' version', 168, winAboutBox.Pos.Top + 53, 0, 2);
+	FontPrint(LibVersion + ' by Jacob Palm, 2004-' + LibYear + '.', 168, winAboutBox.Pos.Top + 67, 0, 2);
 	FontPrint('May be freely distributed under the', 168, winAboutBox.Pos.Top + 95, 0, 2);
 	FontPrint('terms of the MIT License. More details', 168, winAboutBox.Pos.Top + 109, 0, 2);
 	FontPrint('can be found in the LICENSE file.', 168, winAboutBox.Pos.Top + 123, 0, 2);
