@@ -215,6 +215,14 @@ var
 begin
 	RedrawNeeded := False;
 
+	{If direction is upwards and selection is already at the top, do nothing}
+	if (Direction < 0) and (ListSelection[TargetList] = 1) then
+		exit;
+
+	{Likewise if direction is downwards and selection is at the bottom, do nothing}
+	if (direction > 0) and (ListSelection[TargetList] = ListCount[TargetList]) then
+		exit;
+
 	{Remove current selection}
 	DrawFileList(TargetList, False, False);
 
@@ -542,13 +550,13 @@ begin
 		if ObjBtnClick(btnFilePrev) then
 		begin
 			FileSetActiveList(FileList);
-			Key := KeyUp; {Simulate key press for moving selection up}
+			Key := KeyPageUp; {Simulate key press for moving selection up}
 		end;
 
 		if ObjBtnClick(btnFileNext) then
 		begin
 			FileSetActiveList(FileList);
-			Key := KeyDown; {Simulate key press for moving selection down}
+			Key := KeyPageDown; {Simulate key press for moving selection down}
 		end;
 
 		if ObjBtnClick(btnFolderPrev) then
@@ -570,27 +578,16 @@ begin
 			FileMoveSelection(ActiveList, DirectionDown);
 
 		if Key = KeyHome then
-		begin
-			ListStartPos[ActiveList] := 1;
-			ListSelection[ActiveList] := 1;
-			DrawFileList(ActiveList, True, True);
-		end;
+			FileMoveSelection(ActiveList, DirectionUp * (ListSelection[ActiveList] - 1));
 
 		if Key = KeyEnd then
-		begin
-			ListStartPos[ActiveList] := ListCount[ActiveList] - MaxVisibleItems + 1;
-			if ListStartPos[ActiveList] < 1 then
-				ListStartPos[ActiveList] := 1;
-			ListSelection[ActiveList] := ListCount[ActiveList];
-			DrawFileList(ActiveList, True, True);
-		end;
+			FileMoveSelection(ActiveList, DirectionDown * (ListCount[ActiveList] - ListSelection[ActiveList]));
 
 		if Key = KeyPageUp then
-			FileMoveSelection(ActiveList, DirectionUp * MaxVisibleItems);
+			FileMoveSelection(ActiveList, DirectionUp * (MaxVisibleItems + ListSelection[ActiveList] - ListStartPos[ActiveList]));
 
 		if Key = KeyPageDown then
-			FileMoveSelection(ActiveList, DirectionDown * MaxVisibleItems);
-
+			FileMoveSelection(ActiveList, DirectionDown * (MaxVisibleItems - ListSelection[ActiveList] + ListStartPos[ActiveList]));
 
 		if (Key = KeyAltF) then
 			FileSetActiveList(FileList);
