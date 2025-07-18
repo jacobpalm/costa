@@ -57,6 +57,9 @@ begin
 		Halt(1);
 	end;
 
+	Size := ImageSize(0, 0, 31, 31);
+	GetMem(P, Size);
+
 	FindFirst('..\DATA\IMAGES\*.RAW', Archive, DirInfo);
 	while DosError = 0 do
 	begin
@@ -66,6 +69,12 @@ begin
 		{$I-}
 		Reset(f);
 		{$I+}
+		if IOResult <> 0 then
+		begin
+			CloseGraph;
+			Writeln('Error reading raw file: ', '..\DATA\IMAGES\' + DirInfo.Name);
+			Halt(1);
+		end;
 
 		for x := 0 to 31 do
 		begin
@@ -78,8 +87,6 @@ begin
 
 		Close(f);
 
-		Size := ImageSize(0, 0, 31, 31);
-		GetMem(P, Size);
 		GetImage(0, 0, 31, 31, P^);
 
 		Assign(outputfile, '..\IMAGES\'+FName+'.BIN');
@@ -114,11 +121,11 @@ begin
 
 			{Display the image to verify it was written correctly}
 			PutImage(100, 100, TestP^, CopyPut);
+			FreeMem(TestP, Size);
 		{ENDIF}
-
 		FindNext(DirInfo);
 	end;
-
+	FreeMem(P, Size);
 	CloseGraph;
 end;
 
