@@ -147,6 +147,7 @@ procedure SysLoadSettings;
 procedure SysLoadTheme(ThemeFile: String);
 procedure SysSaveSettings;
 procedure SysShowLoading;
+function ValidDOSFilename(Filename: string): Boolean;
 
 implementation
 
@@ -267,6 +268,42 @@ begin
 	FileGetAssociation := OpenWith;
 end;
 
+function ValidDOSFilename(Filename: string): Boolean;
+var
+	DotPos, NameLen, ExtLen, i: Integer;
+begin
+	ValidDOSFilename := false;
+
+	if Length(Filename) = 0 then
+		exit;
+
+	DotPos := Pos('.', Filename);
+	if DotPos = 0 then
+	begin
+		{Filename does not include extension}
+		NameLen := Length(Filename);
+		if (NameLen > 8) then
+		exit;
+	end
+	else
+	begin
+		{Filename includes extension}
+		NameLen := DotPos - 1;
+		ExtLen := Length(Filename) - DotPos;
+
+		if (NameLen > 8) or (ExtLen > 3) then
+			exit;
+	end;
+
+	{Check for invalid characters}
+	for i := 1 to Length(Filename) do
+		if not (Filename[i] in ['A'..'Z', 'a'..'z', '0'..'9', '_', '~',
+		                        '!', '@', '#', '$', '%', '^', '&', '(',
+								')', '-', '{', '}', '''', '.']) then
+			exit;
+
+	ValidDOSFilename := true;
+end;
 
 function FontGetWidth(TargetText: String; FontID: Integer): Integer;
 var
@@ -592,9 +629,7 @@ var
 	Filename: String;
 begin
 	IconError := False;
-	if Length(TargetImg.ImageFile) = 0 then
-		IconError := True;
-
+	
 	Filename := SysPath + 'IMAGES\' + TargetImg.ImageFile + '.BIN';
 	if not FileExists(Filename) then
 		IconError := True;
@@ -613,6 +648,14 @@ begin
 	SetColor(Theme.Shadow);
 	Line(X, Y+32, X+32, Y+32);
 	Line(X+32, Y, X+32, Y+31);
+
+	{If no image file, draw an empty box}
+	if Length(TargetImg.ImageFile) = 0 then
+	begin
+		SetFillStyle(SolidFill, White);
+		Bar(X, Y, X + 31, Y + 31);
+		Exit;
+	end;
 
 	if not IconError then
 	begin
