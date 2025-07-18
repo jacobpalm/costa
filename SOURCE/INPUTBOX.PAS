@@ -13,71 +13,51 @@ implementation
 function SysInputBox(msgTitle, msgText, msgIcon, msgDefault: string): string;
 var
 	msgLines: array[1..16] of string;
-	msgLineCount, msgTextWidth, i: Integer;
+	msgLineCount, msgTextWidth, i, P: Integer;
 	winInputBox: WindowType;
 	txtInput: TextboxType;
 	txtInputText: string;
 	btnOK, btnCancel: ButtonType;
 	imgIcon: ImageType;
 	Key: String;
-	printLine: Integer;
-	tmpStr: string;
-	x1, y1, x2, y2: Integer;
+	S: string;
+	x1, y1, x2, y2, WindowWidth: Integer;
 	BackgroundSize: Word;
 	BackgroundP: Pointer;
 begin
-	{Strip trailing carriage return}
-	if (Length(msgText) > 0) and (msgText[Length(msgText)] = NewLine) then
-		Delete(msgText, Length(msgText), 1);
-
+	S := msgText;
+	if (S <> '') and (S[Length(S)] = NewLine) then
+		Delete(S, Length(S), 1);
 	msgLineCount := 0;
 	msgTextWidth := 0;
-
-	{Parse msgText into lines}
-	if Pos(NewLine, msgText) = 0 then
-	begin
-		msgLineCount := 1;
-		msgLines[1] := msgText;
-		msgTextWidth := FontGetWidth(msgText, FontNormal);
-	end
-	else
-	begin
-		while Pos(NewLine, msgText) > 0 do
+	repeat
+		P := Pos(NewLine, S);
+		if P = 0 then
 		begin
 			Inc(msgLineCount);
-			tmpStr := Copy(msgText, 1, Pos(NewLine, msgText) - 1);
-			msgLines[msgLineCount] := tmpStr;
-
-			if FontGetWidth(tmpStr, FontNormal) > msgTextWidth then
-				msgTextWidth := FontGetWidth(tmpStr, FontNormal);
-
-			Delete(msgText, 1, Pos(NewLine, msgText));
+			msgLines[msgLineCount] := S;
+			if FontGetWidth(S, FontNormal) > msgTextWidth then
+				msgTextWidth := FontGetWidth(S, FontNormal);
+			Break;
+		end
+		else
+		begin
+			Inc(msgLineCount);
+			msgLines[msgLineCount] := Copy(S, 1, P-1);
+			if FontGetWidth(msgLines[msgLineCount], FontNormal) > msgTextWidth then
+				msgTextWidth := FontGetWidth(msgLines[msgLineCount], FontNormal);
+			Delete(S, 1, P);
 		end;
-		{Remaining text}
-		Inc(msgLineCount);
-		msgLines[msgLineCount - 1] := msgText;
-		if FontGetWidth(msgText, FontNormal) > msgTextWidth then
-			msgTextWidth := FontGetWidth(msgText, FontNormal);
-	end;
+	until S = '';
 
-
-	winInputBox.Pos.Width := msgTextWidth + 76;
-	if winInputBox.Pos.Width < 194 then
-		winInputBox.Pos.Width := 194;
-	ObjSetSize(winInputBox.Pos, sizeCenter, sizeCenter, sizeRetain, msgLineCount * 15 + 120);
-
-	ObjSetSize(txtInput.Pos,
-		winInputBox.Pos.Left + 12,
-		winInputBox.Pos.Top + 56 + (15 * msgLineCount),
-		winInputBox.Pos.Width - 24,
-		22);
+	WindowWidth := msgTextWidth + 76;
+	if WindowWidth < 194 then
+		WindowWidth := 194;
+	winInputBox.Init(sizeCenter, sizeCenter, WindowWidth, msgLineCount * 15 + 120);
+	txtInput.Init(winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 56 + (15 * msgLineCount), winInputBox.Pos.Width - 24, 22);
+	btnOK.Init(winInputBox.Pos.Left + winInputBox.Pos.Width - 182, txtInput.Pos.Top + 30, 80, 22, HotkeySymbol + 'OK');
+	btnCancel.Init(winInputBox.Pos.Left + winInputBox.Pos.Width - 92, btnOK.Pos.Top, 80, 22, HotkeySymbol + 'Cancel');
 	txtInputText := msgDefault;
-
-	ObjSetSize(btnOK.Pos, winInputBox.Pos.Left + winInputBox.Pos.Width - 182, txtInput.Pos.Top + 30, 80, 22);
-	btnOK.Caption := HotkeySymbol + 'OK';
-
-	ObjSetSize(btnCancel.Pos, winInputBox.Pos.Left + winInputBox.Pos.Width - 92, btnOK.Pos.Top, 80, 22);
-	btnCancel.Caption := HotkeySymbol + 'Cancel';
 
 	if Length(msgIcon) > 0 then
 	begin
@@ -108,13 +88,14 @@ begin
 		FontPrint(msgTitle, winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 15, Theme.WindowText, 1);
 
 	y2 := winInputBox.Pos.Top + 17;
-	for printLine := 1 to msgLineCount do
+	for i := 1 to msgLineCount do
 	begin
-		if (printLine < 2) and (Length(msgIcon) > 0) then
-			FontPrint(msgLines[printLine], winInputBox.Pos.Left + 53, y2 + (15 * printLine), Theme.WindowText, 2)
-		else
-			FontPrint(msgLines[printLine], winInputBox.Pos.Left + 12, y2 + (15 * printLine), Theme.WindowText, 2);
+		if (i < 3) and (Length(msgIcon) > 0) then
+				FontPrint(msgLines[i], winInputBox.Pos.Left + 53, y2 + (15 * i), Theme.WindowText, 2)
+			else
+				FontPrint(msgLines[i], winInputBox.Pos.Left + 12, y2 + (15 * i), Theme.WindowText, 2);
 	end;
+		
 
 	FontPrint('I' + HotkeySymbol + 'nput:', txtInput.Pos.Left, txtInput.Pos.Top - 16, Theme.WindowText, FontHeading);
 
