@@ -189,12 +189,14 @@ begin
 end;
 
 procedure GetCursorPos(var X, Y: Integer);
+var
+	tmpX, tmpY: String;
 begin
 	if MouseInArea(txtDrawArea.Pos) then
 	begin
 		MousePoll;
-		X := (MouseX - (txtDrawArea.Pos.Left + 7)) div PixelSize;
-		Y := (MouseY - (txtDrawArea.Pos.Top + 7)) div PixelSize;
+		X := (MouseX - OffsetX) div PixelSize;
+		Y := (MouseY - OffsetY) div PixelSize;
 		if X < 0 then X := 0;
 		if Y < 0 then Y := 0;
 		if X > 31 then X := 31;
