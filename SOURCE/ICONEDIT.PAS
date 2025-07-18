@@ -1,7 +1,7 @@
 program IconEditor;
 
 uses
-	CostaLib, FileSel, Strings, DOS, Graph;
+	CostaLib, FileSel, InputBox, Strings, DOS, Graph;
 
 const
     AppName    = 'Icon Editor';
@@ -28,13 +28,24 @@ type
 
 var
 	IconData: TIconData;
+	CurrentTool: TTool;
 	DrawColor: Integer;
 	IconFileName: String;
-	KeyboardPosX, KeyboardPosY: Integer;
-	PreviewOffsetX, PreviewOffsetY: Integer;
-	KeyboardPosVisible, IconChanged: Boolean;
-	DrawAreaOffsetX, DrawAreaOffsetY: Integer;
+	IconChanged: Boolean;
+
+	KeyX, KeyY: Integer;
+	OffsetX, OffsetY: Integer;
+	KeyboardPosVisible: boolean;
+
+	{Objects which are modified outside main loop}
+	txtDrawArea: TextboxType;
+	btnPencil, btnFloodFill: ButtonType;
 	txtColor: array[0..15] of TextboxType;
+	imgPreview: ImageType;
+
+{Forward declarations}
+procedure SaveIcon; forward;
+
 
 procedure SetPixel(X, Y, Col: Integer);
 var
@@ -49,15 +60,15 @@ begin
 	{DrawAreaOffSet variables are the coords for the top-left corner of
 	 the drawing area, and each 'pixel' in it is PixelSize times
 	 PixelSize pixels in size}
-	XPos := DrawAreaOffsetX + (X * PixelSize);
-	YPos := DrawAreaOffsetY + (Y * PixelSize);
+	XPos := OffsetX + (X * PixelSize);
+	YPos := OffsetY + (Y * PixelSize);
 
 	IconChanged := true;
 	IconData[X, Y] := Col;
 
 	SetFillStyle(SolidFill, Col);
 	Bar(XPos, YPos, XPos + PixelSize - 2, YPos + PixelSize - 2);
-	PutPixel(PreviewOffsetX + X, PreviewOffsetY + Y, Col);
+	PutPixel(imgPreview.Pos.Left + X, imgPreview.Pos.Top + Y, Col);
 end;
 
 procedure FillArea(X, Y, FillColor: Integer);
@@ -87,7 +98,9 @@ begin
 		repeat until MouseClicked = mbNone;
 		exit;
 	end;
-	
+
+	IconChanged := true;
+	FillChar(Fillmask, SizeOf(FillMask), #0);
 	{Clicked pixel has the color we want to replace}
 	ReplaceColor := IconData[X, Y];
 
@@ -154,65 +167,45 @@ begin
 	MouseShow;
 end;
 
-procedure LoadIcon(IconToLoad: String);
-var
-	ErrMsg: Boolean;
-	XPos, YPos: Integer;
+procedure SetTool(Tool: TTool);
 begin
-
-	{if not File.Exists('DATA\IMAGES\' + IconToLoad + '.BSV') then
-	begin
-		ErrMsg = SysMsgBox('File not found', 'Could not open the specified icon.' + NewLine
-			+ 'Verify the filename and try again.', msgError)
+	if Tool = CurrentTool then
 		exit;
+
+	{Set the current tool to the specified one, and update the button visuals}
+	MouseHide;
+	if Tool = toolPencil then
+	begin
+		ObjDrawBtn(btnPencil, true);
+		ObjDrawBtn(btnFloodFill, false);
+	end
+	else if Tool = toolFloodFill then
+	begin
+		ObjDrawBtn(btnPencil, false);
+		ObjDrawBtn(btnFloodFill, true);
 	end;
-
-
-	if IconToLoad = IconFileName then
-
-		{If nothing has changed and icon is already loaded, just return}
-		{if IconChanged = false then
-			exit;
-		end;
-
-		if SysMsgBox('File already open', 'The icon you selected is already opened.' + NewLine +
-			'Do you want to discard all changes and reload' + NewLine + 'the icon as it was last saved?', msgQuest) = false then
-			exit
-		else
-			IconChanged := false;
-
-	end;
-
-	if IconChanged = true then
-		if SysMsgBox('Icon has been modified', 'This icon contains unsaved changes. Do you' + NewLine
-			+ 'want to save it before you load another?', msgQuest) = true then
-			if SaveIcon = false then
-				{If the user said yes to saving, but didn't, exit here}
-				{exit;}
-
-	{We made it this far - load icon}
-
-	{DEBUG - load icon and plot it at PreviewOffsetX, PreviewOffsetY}
-
-{	IconFileName = IconToLoad
-
-	for XPos = 0 to 31
-		for YPos = 0 to 31
-			SetPixel(XPos, YPos, POINT(PreviewOffsetX + XPos, PreviewOffsetY + YPos));
-		end;
-	end;
+	CurrentTool := Tool;
 	MouseShow;
-	IconChanged = false;
+end;
 
-	exit;
-
-LoadIconError:
-	MouseShow;
-	ErrMsg = SysMsgBox('Invalid image file', 'The icon you selected does not contain a valid icon. The' + NewLine
-		+ 'file might be damaged, or not an icon file at all.', msgError)
-	NewIcon
-	exit;
-	RESUME end;}
+procedure GetCursorPos(var X, Y: Integer);
+begin
+	if MouseInArea(txtDrawArea.Pos) then
+	begin
+		MousePoll;
+		X := (MouseX - (txtDrawArea.Pos.Left + 7)) div PixelSize;
+		Y := (MouseY - (txtDrawArea.Pos.Top + 7)) div PixelSize;
+		if X < 0 then X := 0;
+		if Y < 0 then Y := 0;
+		if X > 31 then X := 31;
+		if Y > 31 then Y := 31;
+	end
+	else
+	begin
+		{Out of bounds}
+		X := -1;
+		Y := -1;
+	end;
 end;
 
 procedure MoveIndicator(Direction: TCursorDir);
@@ -222,49 +215,69 @@ begin
 	if (KeyboardPosVisible) or (Direction = dirHide) then
 	begin
 		{Remove indicator from previous pixel}
-		if (KeyboardPosX > -1) and (KeyboardPosY > -1) then
+		if (KeyX > -1) and (KeyY > -1) then
 		begin
-			XPos := DrawAreaOffsetX + (KeyboardPosX * PixelSize);
-			YPos := DrawAreaOffsetY + (KeyboardPosY * PixelSize);
+			XPos := OffsetX + (KeyX * PixelSize);
+			YPos := OffsetY + (KeyY * PixelSize);
 			MouseHide;
-			SetFillStyle(SolidFill, IconData[KeyboardPosX, KeyboardPosY]);
+			SetFillStyle(SolidFill, IconData[KeyX, KeyY]);
 			Bar(XPos, YPos, XPos + PixelSize - 2, YPos + PixelSize - 2);
 			MouseShow;
 		end;
 	end;
 
 	if Direction = dirHide then
+	begin
+		KeyboardPosVisible := false;
 		exit;
+	end
+	else
+		KeyboardPosVisible := true;
 
 	{No need to handle dirStay, all it does is ensure the indicator is visible}
 	case Direction of
-		dirUp: Dec(KeyboardPosY);
-		dirDown: Inc(KeyboardPosY);
-		dirLeft: Dec(KeyboardPosX);
-		dirRight: Inc(KeyboardPosX);
+		dirUp: Dec(KeyY);
+		dirDown: Inc(KeyY);
+		dirLeft: Dec(KeyX);
+		dirRight: Inc(KeyX);
 	end;
 	
-	if KeyboardPosY < 0 then KeyboardPosY := 0;
-	if KeyboardPosY > 31 then KeyboardPosY := 31;
-	if KeyboardPosX < 0 then KeyboardPosX := 0;
-	if KeyboardPosX > 31 then KeyboardPosX := 31;
+	{Prevent out of bounds}
+	if KeyY < 0 then KeyY := 0;
+	if KeyY > 31 then KeyY := 31;
+	if KeyX < 0 then KeyX := 0;
+	if KeyX > 31 then KeyX := 31;
 
-	XPos := DrawAreaOffsetX + (KeyboardPosX * PixelSize);
-	YPos := DrawAreaOffsetY + (KeyboardPosY * PixelSize);
+	{Draw indicator}
+	XPos := OffsetX + (KeyX * PixelSize);
+	YPos := OffsetY + (KeyY * PixelSize);
 	MouseHide;
 	SetColor(DarkGray);
 	Rectangle(XPos + 1, YPos + 1, XPos + 6, YPos + 6);
 	SetColor(White);
-	Line(XPos + 2, YPos + 2, XPos + 5, YPos + 5);
+	Rectangle(XPos + 2, YPos + 2, XPos + 5, YPos + 5);
 	MouseShow;
 end;
 
 procedure NewIcon;
 var
 	XPos, YPos: Integer;
+	mbResult: Boolean;
 begin
-	IconFileName := '';
-	IconChanged := false;
+
+	if IconChanged = true then
+	begin
+		mbResult := SysMsgBox('Icon has been modified',
+			'This icon contains unsaved changes. Do you' + NewLine +
+			'want to save it before you make a new?', msgQuest);
+		if mbResult = true then
+		begin
+			SaveIcon;
+			{If icon is still changed it wasn't saved, so exit}
+			if IconChanged = true then
+				exit;
+		end;
+	end;
 
 	{Draw all pixels white}
 	MouseHide;
@@ -272,74 +285,186 @@ begin
 		for YPos := 0 to 31 do
 			SetPixel(XPos, YPos, White);
 	MouseShow;
+
+	KeyboardPosVisible := false;
+	KeyX := 16;
+	KeyY := 16;
+	IconFileName := '';
+	IconChanged := false;
 end;
 
-function SaveIcon: boolean;
+procedure SaveIcon;
 var
-	SaveAs: String;
+	Filename: String;
 	f: file;
-	XPos, YPos: Integer;
-	DoSave: Boolean;
+	Size: Word;
+	p: Pointer;
+	x1, y1, x2, y2: Integer;
+	mbResult: Boolean;
 begin
-
-{TopOfSave:}
-
-	{SaveAs = SysInputBox('Save icon file', 'Type a name for the icon file below, without path or' + NewLine +
-		'extension (8 letters max, for example: MYICON).', 'PAINT', IconFileName);
-	if Length(SaveAs) = 0 then
-		exit;
-
-	if Length(SaveAs) > 8 then
+	{If icon hasn't already been saved, prompt for a filename}
+	if Length(IconFileName) = 0 then
 	begin
-		DoSave = SysMsgBox('Invalid file name', 'The filename you specified was too long.' + NewLine +
-			'Do not type a path or extension, only a filename' + NewLine + 'with a maximun lenght of 8 characters.', msgError)
-		exit;
-	end;
+		Filename := UpperCase(SysInputBox('Save icon file', 'Type a name for the icon file below, without path or' + NewLine +
+			'extension (8 letters max, for example: MYICON).', 'PAINT', ''));
 
-	if File.Exists('IMAGES\' + SaveAs + '.BIN') then
-	begin
-		DoSave = SysMsgBox('File already exists', 'The specified icon file already exists. Do you want' + NewLine
-			+ 'to owerwrite it with this icon?', msgQuest)
-		if DoSave = false then
-			SaveIcon := false;
+		{Validate input}
+		if Length(Filename) = 0 then
+			exit;
+		if (Length(Filename) > 8) or (not ValidDOSFilename(FileName + '.BIN')) then
+		begin
+			mbResult := SysMsgBox('Invalid file name', 'The filename you specified was too long or invalid.' + NewLine +
+				'Do not type a path or extension, only a filename' + NewLine
+				+ 'with a maximum length of 8 characters.', msgError);
 			exit;
 		end;
-	end;}
+		Filename := SysPath + 'IMAGES\' + Filename + '.BIN';
+	end
+	else
+		Filename := IconFileName;
 
-	{ON LOCAL ERROR GOTO SaveIconError
-	DIM scrBuffer(260)
-	MouseHide;
-	GET (PreviewOffsetX, PreviewOffsetY, PreviewOffsetX + 31, PreviewOffsetY + 31), scrBuffer
-	MouseShow;
-	DEF SEG = VARSEG(scrBuffer(0))
-	BSAVE 'DATA\IMAGES\' + SaveAs + '.BSV', VARPTR(scrBuffer(0)), UBOUND(scrBuffer) * 2
-	DEF SEG
-	ON LOCAL ERROR GOTO 0}
+	{Check if file already exists}
+	if FileExists(Filename) and (Filename <> IconFileName) then
+	begin
+		mbResult := SysMsgBox('File already exists', 'The specified icon file already exists. Do you want' + NewLine
+			+ 'to overwrite it with this icon?', msgQuest);
+		if mbResult = false then
+			exit;
+	end;
+	
+	{Allocate memory and get the image data}
+	x1 := imgPreview.Pos.Left;
+	y1 := imgPreview.Pos.Top;
+	x2 := imgPreview.Pos.Left + 31;
+	y2 := imgPreview.Pos.Top + 31;
+	Size := ImageSize(x1, y1, x2, y2);
+	GetMem(p, Size);
+	GetImage(x1, y1, x2, y2, p^);
+	
+	{Open the file and output the data}
+	Assign(f, Filename);
+	{$I-}
+	Rewrite(f, 1);
+	{$I+}
+	if IOResult <> 0 then
+	begin
+		mbResult := SysMsgBox('Could not save icon',
+			'The icon could not be saved. Verify that the filename is valid:' + NewLine +
+			Filename, msgError);
+		FreeMem(p, Size);
+		exit;
+	end;
+	BlockWrite(f, p^, Size);
+	Close(f);
+	FreeMem(p, Size);
 
-	{IconFileName = UCASE$(SaveAs)
-
-	SaveIcon = true
-	IconChanged = false
-	exit
-
-SaveIconError:
-	FileHandle = SysMsgBox('Could not save icon', 'An error occured while saving your icon, and it was not saved.' + NewLine +
-		'Make sure the disk is not full or write-protected, and try again.', msgError)
-	SaveIcon = false
-	exit}
+	IconFileName := Filename;
+	IconChanged := false;
 end;
 
+procedure LoadIcon;
 var
-	txtDrawArea: TextboxType;
-	btnPreview, btnPencil, btnFloodFill: ButtonType;
+	IconToLoad: String;
+	FPath: DirStr;
+	FName: NameStr;
+    FExt: ExtStr;
+	mbResult: Boolean;
+	X, Y, PixelCol: Integer;
+begin
+	if IconChanged = true then
+	begin
+		mbResult := SysMsgBox('Icon has been modified', 'This icon contains unsaved changes. Do you' + NewLine
+			+ 'want to save it before you load another?', msgQuest);
+		if mbResult = true then
+		begin
+			SaveIcon;
+			{If icon is still changed it wasn't saved, so exit}
+			if IconChanged = true then
+				exit;
+		end;
+	end;
+
+	IconToLoad := FileSelect('*.BIN', SysPath + 'IMAGES', true);
+	if IconToLoad = '' then
+		exit;
+
+	FSplit(IconToLoad, FPath, FName, FExt);
+	if (FPath <> SysPath + 'IMAGES\') or (FExt <> '.BIN') then
+	begin
+		mbResult := SysMsgBox('Invalid icon file',
+			'The selected file is not a valid icon file.' + NewLine +
+			'Please select a .BIN file from the IMAGES directory.',
+			msgError);
+		exit;
+	end;
+	
+	if (FName = IconFileName) and (IconChanged = true) then
+	begin
+		{If the icon is already loaded, but has been changed, ask if we should reload it}
+		mbResult := SysMsgBox('File already open', 'The icon you selected is already opened.' + NewLine +
+			'Do you want to discard all changes and reload' + NewLine +
+			'the icon as it was last saved?', msgQuest);
+		if mbResult = false then
+			exit;
+	end;
+
+	{We made it this far - load icon}
+
+	{Clear IconData with invalid values - this makes sure color 0 will also be drawn}
+	FillChar(IconData, SizeOf(IconData), 255);
+	IconFileName := FName;
+	imgPreview.ImageFile := Fname;
+	
+	MouseHide;
+	ObjDrawImg(imgPreview);
+	{Get color of each pixel from the preview image and set it in the icon data}
+	for X := 0 to 31 do
+	begin
+		for Y := 0 to 31 do
+		begin
+			PixelCol := GetPixel(imgPreview.Pos.Left + X, imgPreview.Pos.Top + Y);
+			SetPixel(X, Y, PixelCol);
+		end;
+	end;
+	MouseShow;
+
+	KeyX := 16;
+	KeyY := 16;
+	KeyboardPosVisible := false;
+	IconFilename := IconToLoad;
+	IconChanged := false;
+end;
+
+procedure ExitEditor;
+var
+	mbResult: Boolean;
+begin
+	if IconChanged = true then
+	begin
+		mbResult := SysMsgBox('Icon has been modified', 'This icon contains unsaved changes. Do you' + NewLine +
+			'want to save it before you exit?', msgQuest);
+		if mbResult = true then
+		begin
+			SaveIcon;
+			{If icon is still changed it wasn't saved, so exit}
+			if IconChanged = true then
+				exit;
+		end;
+	end;
+
+	CloseGraph;
+	Halt(0);
+end;
+
+{Main program start}
+var
+	btnPreview: ButtonType;
 	btnNew, btnOpen, btnSave: ButtonType;
 	btnExit, btnAbout: ButtonType;
 	Key: string;
-	YPos, XPos, CursorX, CursorY, Void, i: Integer;
+	YPos, XPos, CursorX, CursorY, i: Integer;
 	ColChk: integer;
-	CurrentTool: TTool;
 begin
-
 	txtDrawArea.Init(175, 44, 290, 290);
 	btnNew.Init(2, 2, 92, 22, HotkeySymbol + 'New');
 	btnOpen.Init(101, 2, 92, 22, HotkeySymbol + 'Load');
@@ -348,14 +473,22 @@ begin
 	btnExit.Init(545, 2, 92, 22, 'E' + HotkeySymbol + 'xit');
 
 	XPos := txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 12;
-	btnPencil.Init(XPos, txtDrawArea.Pos.Top + 14, 52, 22, 'P' + HotkeySymbol + 'encil');
-	btnFloodFill.Init(XPos, btnPencil.Pos.Top + 26, 52, 22, HotkeySymbol + 'Fill');
-	btnPreview.Init(XPos, btnFloodFill.Pos.Top + 51, 52, 52, '');
+	btnPencil.Init(XPos, txtDrawArea.Pos.Top + 14, 56, 22, 'P' + HotkeySymbol + 'encil');
+	btnFloodFill.Init(XPos, btnPencil.Pos.Top + 26, 56, 22, HotkeySymbol + 'Fill');
+	btnPreview.Init(XPos, btnFloodFill.Pos.Top + 51, 56, 56, '');
 
-	PreviewOffsetX := btnPreview.Pos.Left + 10;
-	PreviewOffsetY := btnPreview.Pos.Top + 10;
-	DrawAreaOffsetX := txtDrawArea.Pos.Left + 2;
-	DrawAreaOffsetY := txtDrawArea.Pos.Top + 2;
+	{Center preview image in area}
+	XPos := (btnPreview.Pos.Width - 34) div 2;
+	YPos := (btnPreview.Pos.Height - 34) div 2;
+	XPos := btnPreview.Pos.Left + XPos;
+	YPos := btnPreview.Pos.Top + YPos;
+	ObjSetSize(imgPreview.Pos, XPos, YPos, 32, 32);
+	imgPreview.ImageFile := '';
+	
+	{Draw area offset is used to calculate the position of each pixel
+	 in the drawing area, so that it can be drawn in the correct place}
+	OffsetX := txtDrawArea.Pos.Left + 2;
+	OffsetY := txtDrawArea.Pos.Top + 2;
 
 	MouseHide;
 	ObjDrawMenu;
@@ -390,180 +523,109 @@ begin
 		Bar(XPos + 2, YPos + 2, XPos + 18, YPos + 18);
 	end;
 
-	SetFillStyle(SolidFill, White);
+	{Draw preview area}
+	SetFillStyle(SolidFill, Theme.Desktop);
 	Bar(btnPreview.Pos.Left + 2, btnPreview.Pos.Top + 2,
 		btnPreview.Pos.Left + btnPreview.Pos.Width - 2, btnPreview.Pos.Top + btnPreview.Pos.Height - 2);
-	{Line(PreviewOffsetX - 1, PreviewOffsetY - 1, PreviewOffsetX + 32, PreviewOffsetY - 1), Theme.Light
-	Line(PreviewOffsetX - 1, PreviewOffsetY, PreviewOffsetX - 1, PreviewOffsetY + 32), Theme.Light
-	Line(PreviewOffsetX, PreviewOffsetY + 32, PreviewOffsetX + 32, PreviewOffsetY + 32), Theme.Shadow
-	Line(PreviewOffsetX + 32, PreviewOffsetY, PreviewOffsetX + 32, PreviewOffsetY + 31), Theme.Shadow}
+	ObjDrawImg(imgPreview);
 
-	{Draw grid in drawing area}
+	{Draw grid in drawing area - black line with a dotted grey line on top so it's visible on all colors}
 	for YPos := 0 to 31 do
 	begin
 		SetColor(DarkGray);
+		SetLineStyle(SolidLn, 1, NormWidth);
 		Line(txtDrawArea.Pos.Left + 2, txtDrawArea.Pos.Top + 1 + (YPos * PixelSize),
 			txtDrawArea.Pos.Left + txtDrawArea.Pos.Width - 2, txtDrawArea.Pos.Top + 1 + (YPos * PixelSize));
-		{Line(txtDrawArea.Pos.Left + 2, txtDrawArea.Pos.Top + 1 + (YPos * PixelSize),
-			txtDrawArea.Pos.Left + txtDrawArea.Pos.Width - 2, txtDrawArea.Pos.Top + 1 + (YPos * PixelSize)), 0, , &HAAAA}
+		SetColor(Black);
+		SetLineStyle(UserBitLn, $AAAA, 1);
+		Line(txtDrawArea.Pos.Left + 2, txtDrawArea.Pos.Top + 1 + (YPos * PixelSize),
+			txtDrawArea.Pos.Left + txtDrawArea.Pos.Width - 2, txtDrawArea.Pos.Top + 1 + (YPos * PixelSize));
 	end;
 	for XPos := 0 to 31 do
 	begin
 		SetColor(DarkGray);
+		SetLineStyle(SolidLn, 1, NormWidth);
 		Line(txtDrawArea.Pos.Left + 1 + (XPos * PixelSize), txtDrawArea.Pos.Top + 2,
 			txtDrawArea.Pos.Left + 1 + (XPos * PixelSize), txtDrawArea.Pos.Top + txtDrawArea.Pos.Height - 2);
-		{Line(txtDrawArea.Pos.Left + 1 + (XPos * PixelSize), txtDrawArea.Pos.Top + 2,
-			txtDrawArea.Pos.Left + 1 + (XPos * PixelSize), txtDrawArea.Pos.Top + txtDrawArea.Pos.Height - 2), 0, , &HAAAA}
+		SetColor(Black);
+		SetLineStyle(UserBitLn, $AAAA, 1);
+		Line(txtDrawArea.Pos.Left + 1 + (XPos * PixelSize), txtDrawArea.Pos.Top + 2,
+			txtDrawArea.Pos.Left + 1 + (XPos * PixelSize), txtDrawArea.Pos.Top + txtDrawArea.Pos.Height - 2);
 	end;
+	SetLineStyle(SolidLn, 1, NormWidth);
 
 	FontPrint('Preview', btnPreview.Pos.Left, btnPreview.Pos.Top - 15, Theme.WindowText, FontHeading);
 	FontPrint(HotkeySymbol + 'Color', txtColor[0].Pos.Left, txtDrawArea.Pos.Top, Theme.WindowText, FontHeading);
 	FontPrint('Tools', txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 12, txtDrawArea.Pos.Top, Theme.WindowText, FontHeading);
 	MouseShow;
 
+	{Sert array to invalid color values, so that any color including 0 will be drawn on first field click}
+	FillChar(IconData, SizeOf(IconData), 255);
 	SetDrawColor(0);
-	KeyboardPosX := 16;
-	KeyboardPosY := 16;
-
-	if Length(ParamStr(1)) = 0 then
-		NewIcon
-	else
-		LoadIcon(ParamStr(1));
-
+	KeyX := 16;
+	KeyY := 16;
+	
 	{Main loop}
 	repeat
 		Key := GetKey;
 
-		if MouseInArea(txtDrawArea.Pos) then
-		begin
-			MousePoll;
-			CursorX := (MouseX - (txtDrawArea.Pos.Left + 7)) div PixelSize;
-			CursorY := (MouseY - (txtDrawArea.Pos.Top + 7)) div PixelSize;
-			if CursorX < 0 then CursorX := 0;
-			if CursorY < 0 then CursorY := 0;
-			if CursorX > 31 then CursorX := 31;
-			if CursorY > 31 then CursorY := 31;
-		end
-		else
-		begin
-			CursorX := -1;
-			CursorY := -1;
-		end;
+		if ObjBtnClick(btnNew) or (Key = KeyAltN) then
+			NewIcon;
 
-		{if ObjBtnClick(btnNew) or (Key = KeyAltN) then
-		begin
-			if IconChanged = true then
-			begin
-				if SysMsgBox('Icon has been modified', 'This icon contains unsaved changes. Do you' + NewLine
-					 + 'want to save it before you make a new?', msgQuest) = true then
-				begin
-					if SaveIcon then
-						NewIcon
-				end
-				else
-					NewIcon
-				end;
-			end
-			else
-				NewIcon;
-		end;}
+		if ObjBtnClick(btnSave) or (Key = KeyAltS) then
+			SaveIcon;
 
-		{if ObjBtnClick(btnSave) or (Key = KeyAltS) then
-			Void := SaveIcon;}
-
-		{if ObjBtnClick(btnOpen) or (Key = KeyAltL) then
-			}
+		if ObjBtnClick(btnOpen) or (Key = KeyAltL) then
+			LoadIcon;
 
 		if ObjBtnClick(btnAbout) or (Key = KeyAltA) then
 			SysAboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 
 		if ObjBtnClick(btnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
-			break;
-		{begin
-			if IconChanged = true then
-			begin
-				if SysMsgBox('Icon has been modified', 'This icon contains unsaved changes. Do you' + NewLine
-					+ 'want to save it before you exit?', msgQuest) = true then
-					if SaveIcon = true then
-						break;
-				else
-					break;
-			end
-			else
-				break;
-		end;}
+			ExitEditor;
 
-		if ((MouseClicked <> mbNone) and MouseInArea(btnPencil.Pos)) or (Key = KeyAltE) then
-		begin
-			if CurrentTool <> toolPencil then
-			begin
-				MouseHide;
-				ObjDrawBtn(btnPencil, true);
-				ObjDrawBtn(btnFloodFill, false);
-				CurrentTool := toolPencil;
-				MouseShow;
-				repeat until MouseClicked = mbNone;
-			end;
-		end;
+		if ObjClick(btnPencil.Pos) or (Key = KeyAltE) then
+			SetTool(toolPencil);
 
-		if ((MouseClicked <> mbNone) and MouseInArea(btnFloodFill.Pos)) or (Key = KeyAltF) then
-		begin
-			if CurrentTool <> toolFloodFill then
-			begin
-				MouseHide;
-				ObjDrawBtn(btnPencil, false);
-				ObjDrawBtn(btnFloodFill, true);
-				CurrentTool := toolFloodFill;
-				MouseShow;
-				repeat until MouseClicked = mbNone;
-			end;
-		end;
+		if ObjClick(btnFloodFill.Pos) or (Key = KeyAltF) then
+			SetTool(toolFloodFill);
 
 		if Key = KeyAltC then
 			SetDrawColor(DrawColor + 1);
 
 		if Key = KeyUp then
-		begin
-			KeyboardPosVisible:= true;
 			MoveIndicator(dirUp);
-		end;
 
 		if Key = KeyDown then
-		begin
-			KeyboardPosVisible := true;
 			MoveIndicator(dirDown);
-		end;
 
 		if Key = KeyLeft then
-		begin
-			KeyboardPosVisible := true;
 			MoveIndicator(dirLeft);
-		end;
 
 		if Key = KeyRight then
-		begin
-			KeyboardPosVisible := true;
 			MoveIndicator(dirRight);
-		end;
 
 		if (Key = KeyEnter) or (Key = KeySpace) then
 		begin
 			if KeyboardPosVisible then
-				{SELECT CASE CurrentTool
-					CASE toolPencil
-						MouseHide;
-						SetPixel(KeyboardPosX, KeyboardPosY, DrawColor);
-						MouseShow;
-					CASE toolFloodFill
-						MouseHide;
-						FillArea KeyboardPosX, KeyboardPosY, DrawColor
-						{After flood fill, switch back to the pencil tools}
-						{ObjDrawBtn(btnPencil, true
-						ObjDrawBtn(btnFloodFill, false
-						CurrentTool = toolPencil
-						MouseShow;
-				end;}
+			begin
+				case CurrentTool of
+					toolPencil:
+						begin
+							MouseHide;
+							SetPixel(KeyX, KeyY, DrawColor);
+							MouseShow;
+						end;
+					toolFloodFill:
+						begin
+							MouseHide;
+							FillArea(KeyX, KeyY, DrawColor);
+							MouseShow;
+							SetTool(toolPencil);
+						end;
+				end;
 				MoveIndicator(dirStay)
+			end
 			else
 			begin
 				KeyboardPosVisible := true;
@@ -571,67 +633,57 @@ begin
 			end;
 		end;
 
-		for ColChk := 0 to 15 do
-			if (MouseClicked <> mbNone) and (MouseInArea(txtColor[ColChk].Pos)) then
-				if not DrawColor = ColChk then
-					SetDrawColor(ColChk);
+		{Mouse clicked in color selection area}
+		for i := 0 to 15 do
+			if ObjClick(txtColor[i].Pos) then
+					SetDrawColor(i);
 
-
-
-		if (MouseClicked <> mbNone) and (CursorX > -1) and (CursorY > -1) then
+		{Mouse clicked in drawing area}
+		if (MouseClicked <> mbNone) and MouseInArea(txtDrawArea.Pos) then
 		begin
-			{Mouse clicked in drawing area}
-
-			{if not KeyboardPosX = CursorX or not KeyboardPosY = CursorY then
-				MoveIndicator(dirHide
-			end;}
+			{Mouse clicked, so hide keybard indicator}
+			if KeyboardPosVisible then
+				MoveIndicator(dirHide);
 
 			case CurrentTool of
 				toolPencil:
-				begin
-					repeat
-						if IconData[CursorX, CursorY] <> DrawColor then
-						begin
-							MouseHide;
-							SetPixel(CursorX, CursorY, DrawColor);
-							MouseShow;
-						end;
+					begin
+						{Keep drawing until mouse is released}
+						repeat
+							GetCursorPos(CursorX, CursorY);
+							if (CursorX = -1) then
+								continue;
 
-						if MouseInArea(txtDrawArea.Pos) then
-						begin
-							MousePoll;
-							CursorX := (MouseX - (txtDrawArea.Pos.Left + 7)) div PixelSize;
-							CursorY := (MouseY - (txtDrawArea.Pos.Top + 7)) div PixelSize;
-							if CursorX < 0 then CursorX := 0;
-							if CursorY < 0 then CursorY := 0;
-							if CursorX > 31 then CursorX := 31;
-							if CursorY > 31 then CursorY := 31;
-						end
-						else
-						begin
-							CursorX := -1;
-							CursorY := -1;
-						end;
-					until MouseClicked = mbNone;
+							{Plot the current pixel if color is different}
+							if IconData[CursorX, CursorY] <> DrawColor then
+							begin
+								MouseHide;
+								SetPixel(CursorX, CursorY, DrawColor);
+								MouseShow;
+							end;
+						until MouseClicked = mbNone;
+					end;
 
-					{Make sure indicator will appear where mouse was lifted}
-					KeyboardPosX := CursorX;
-					KeyboardPosY := CursorY;
-				end;
 				toolFloodFill:
-				begin
-					MouseHide;
-					FillArea(CursorX, CursorY, DrawColor);
-					{After flood fill, switch back to the pencil tools}
-					ObjDrawBtn(btnPencil, true);
-					ObjDrawBtn(btnFloodFill, false);
-					CurrentTool := toolPencil;
-					MouseShow;
-				end;
+					begin
+						GetCursorPos(CursorX, CursorY);
+						if (CursorX = -1) then
+							continue;
+						MouseHide;
+						FillArea(CursorX, CursorY, DrawColor);
+						MouseShow;
+						{After flood fill, switch back to the pencil tool}
+						SetTool(toolPencil);
+					end;
 			end;
-
+			
+			{Make sure indicator will appear where mouse was lifted}
+			if (CursorX > -1) then
+			begin
+				KeyX := CursorX;
+				KeyY := CursorY;
+			end;
 		end;
 
 	until false;
-	CloseGraph;
 end.
