@@ -29,7 +29,7 @@ type
 var
     DeskLink: PLinkArray;
     DeskLinkCount: Integer;
-    TabCheck: Integer;
+    KeySelection: Integer;
 
     {Buttons need to be redrawable from DeskDrawDesktop}
     btnAddLink, btnRunCmd, btnAboutCosta, btnExitCosta: ButtonType;
@@ -409,6 +409,7 @@ begin
     Setting.DesktopID := DesktopID;
     DeskLinkLoad;
     Str(Setting.DesktopID, DeskStr);
+    KeySelection := 0;
 
     DeskDrawDesktop(true);
 end;
@@ -1047,7 +1048,7 @@ begin
 	
 	DeskLinkLoad;
 
-	TabCheck := -1;
+	KeySelection := 0;
 	
 	DeskDrawDesktop(true);
 	
@@ -1129,56 +1130,63 @@ begin
         begin
             {If there's only one item in the DESKLINK array, and it has no caption
                 then there are no desktop links to cycle}
-            {if not (UBOUND(DeskLink) = 0 and RTrim(DeskLink(0).Caption) = '') then
-                if TabCheck > -1 then
+            if DeskLinkCount <> 0  then
+            begin
+                {If an icon is already selected, then deselect it}
+                if KeySelection <> 0 then
+                begin
+                    {DEBUG - save background instead?}
                     MouseHide;
                     SetFillStyle(SolidFill, Theme.Desktop);
-                    Bar(DeskLink(TabCheck).Left - 3, DeskLink(TabCheck).Top - 3,
-                        DeskLink(TabCheck).Left + 35, DeskLink(TabCheck).Top + 35);
+                    Bar(DeskLink^[KeySelection]^.Left - 3, DeskLink^[KeySelection]^.Top - 3,
+                        DeskLink^[KeySelection]^.Left + 35, DeskLink^[KeySelection]^.Top + 35);
+                    ImgTab.ImageFile := DeskLink^[KeySelection]^.ImageFile;
+                    ImgTab.Pos.Left := DeskLink^[KeySelection]^.Left;
+                    ImgTab.Pos.Top := DeskLink^[KeySelection]^.Top;
                     ObjDrawImg(imgTab);
                     MouseShow;
                 end;
 
-                if Key = KeyTab then
-                    Inc(TabCheck);
+                if (Key = KeyTab) then
+                    Inc(KeySelection)
                 else
-                    Dec(TabCheck);
+                    Dec(KeySelection);
                 
-                if TabCheck > UBOUND(DeskLink) then
-                    TabCheck = 0;
-                if TabCheck < 0 then
-                    TabCheck = UBOUND(DeskLink);
-        
-                if DeskLink(TabCheck).ImageFile = STRING$(8, 0) then
-                    TabCheck = -1
-                else
-                begin
-                    imgTab.ImageFile = DeskLink(TabCheck).ImageFile
-                    imgTab.Pos.Left = DeskLink(TabCheck).Left: imgTab.Pos.Top = DeskLink(TabCheck).Top;
-                    btnTab.Pos.Left = DeskLink(TabCheck).Left - 3: btnTab.Pos.Top = DeskLink(TabCheck).Top - 3;
-                    btnTab.Pos.Width = 37: btnTab.Pos.Height = 37;
-                    MouseHide;
-                    ObjDrawBtn(btnTab, false);
-                    ObjDrawImg(imgTab);
-                    MouseShow;
-                end;
-            end;}
+                {Wrap around if we go below first or above last link}
+                if KeySelection > DeskLinkCount then
+                    KeySelection := 1
+                else if KeySelection < 1 then
+                    KeySelection := DeskLinkCount;
+
+                {Draw the selected link}
+                ImgTab.ImageFile := DeskLink^[KeySelection]^.ImageFile;
+                ImgTab.Pos.Left := DeskLink^[KeySelection]^.Left;
+                ImgTab.Pos.Top := DeskLink^[KeySelection]^.Top;
+                btnTab.Init(imgTab.Pos.Left - 3, imgTab.Pos.Top - 3, 37, 37, '');
+                MouseHide;
+                btnTab.Transparent := true;
+                ObjDrawBtn(btnTab, false);
+                {ObjDrawImg(imgTab);}
+                MouseShow;
+            end;
         end;
 
-        if ((Key = KeyEnter) or (Key = KeySpace)) and (TabCheck > -1) then
+        if (Key = KeyEnter) and (KeySelection <> 0) then
         begin
+            {Remove selection from link}
             MouseHide;
             SetFillStyle(SolidFill, Theme.Desktop);
-            {Bar(DeskLink(TabCheck).Left - 3, DeskLink(TabCheck).Top - 3,
-                DeskLink(TabCheck).Left + 35, DeskLink(TabCheck).Top + 35);}
+            Bar(DeskLink^[KeySelection]^.Left - 3, DeskLink^[KeySelection]^.Top - 3,
+                DeskLink^[KeySelection]^.Left + 35, DeskLink^[KeySelection]^.Top + 35);
+            ImgTab.ImageFile := DeskLink^[KeySelection]^.ImageFile;
+            ImgTab.Pos.Left := DeskLink^[KeySelection]^.Left;
+            ImgTab.Pos.Top := DeskLink^[KeySelection]^.Top;
             ObjDrawImg(imgTab);
             MouseShow;
             
-            if Key = KeyEnter then
-            begin
-                DeskLinkMenu(TabCheck);
-            end;
-            TabCheck := -1;
+            {Show menu for selected link}
+            DeskLinkMenu(KeySelection);
+            KeySelection := 0;
         end;
 	
 	until False;

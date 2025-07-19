@@ -106,7 +106,6 @@ begin
 
 	{Fill the specified pixel}
 	FillPixel(X, Y, ReplaceColor, FillColor);
-	PixelsFilled := true;
 	
 	{Loop through FillMask as long as we find pixels that need to be checked}
 	repeat
