@@ -20,8 +20,8 @@ const
 	FolderList      = -1;
 	ListItemHeight  = 12;
 
-	DirectionUp     = -1;
-	DirectionDown   = 1;
+type
+	TDirection = (Up, Down, First, Last, PageUp, PageDown);
 
 var
 	txtList:       array[-1..0] of TextboxType;
@@ -209,73 +209,78 @@ begin
 	end;
 end;
 
-procedure FileMoveSelection(TargetList, Direction: Integer);
+procedure FileMoveSelection(TargetList: Integer; Direction: TDirection);
 var
-	RedrawNeeded: Boolean;
+	NewSelection, NewStartPos: Integer;
 begin
-	RedrawNeeded := False;
+	NewSelection := ListSelection[TargetList];
+	NewStartPos := ListStartPos[TargetList];
 
-	{If direction is upwards and selection is already at the top, do nothing}
-	if (Direction < 0) and (ListSelection[TargetList] = 1) then
+	case Direction of
+		Up: Dec(NewSelection);
+		Down: Inc(NewSelection);
+		First: NewSelection := 1;
+		Last: NewSelection := ListCount[TargetList];
+		PageUp: Dec(NewSelection, MaxVisibleItems);
+		PageDown: Inc(NewSelection, MaxVisibleItems);
+	end;
+
+	{Check for out of bounds selection}
+	if NewSelection < 1 then
+		NewSelection := 1
+	else if NewSelection > ListCount[TargetList] then
+		NewSelection := ListCount[TargetList];
+	
+	{If selection is the same, no need to do anything}
+	if NewSelection = ListSelection[TargetList] then
 		exit;
 
-	{Likewise if direction is downwards and selection is at the bottom, do nothing}
-	if (direction > 0) and (ListSelection[TargetList] = ListCount[TargetList]) then
-		exit;
-
-	{Remove current selection}
-	DrawFileList(TargetList, False, False);
-
-	{Move selection - Direction is -1 for up, 1 for down - using constants}
-	ListSelection[TargetList] := ListSelection[TargetList] + Direction;
-
-	{Validate if lists need to be scrolled in either direction}
-	if ListSelection[TargetList] < 1 then
-	begin
-		{If selection is below zero, set to last item instead}
-		RedrawNeeded := True;
-		ListSelection[TargetList] := ListCount[TargetList];
-		ListStartPos[TargetList] := ListCount[TargetList] - MaxVisibleItems + 1;
-		if ListStartPos[TargetList] < 1 then
-			ListStartPos[TargetList] := 1;
-	end;
-
-	if ListSelection[TargetList] < ListStartPos[TargetList] then
-	begin
-		{If selection is below visible items, scroll up one page}
-		RedrawNeeded := True;
-		ListStartPos[TargetList] := ListStartPos[TargetList] - MaxVisibleItems;
-		if ListStartPos[TargetList] < 1 then
-			ListStartPos[TargetList] := 1;
-	end;
-
-	if ListSelection[TargetList] > ListCount[TargetList] then
-	begin
-		{If selection is higher than item count, set to first item instead}
-		RedrawNeeded := True;
-		ListSelection[TargetList] := 1;
-		ListStartPos[TargetList] := 1;
-	end;
-
-	if ListSelection[TargetList] > ListStartPos[TargetList] + MaxVisibleItems - 1 then
-	begin
-		{If selected item is below visible items, scroll to make it first visible item}
-		RedrawNeeded := True;
-		ListStartPos[TargetList] := ListSelection[TargetList];
-	end;
-
-	if not RedrawNeeded then
-	begin
-		{Entire list won't be redrawn, so remove current selection}
-		DrawFileList(TargetList, False, False);
-	end;
-
-	{Redraw is only needed if list has been scrolled, otherwise only active item will be drawn}
-	if RedrawNeeded then
-		DrawFileList(TargetList, True, True)
+	{If there aren't enough items to span more than one page, always start displaying from the first item}
+	if ListCount[TargetList] < MaxVisibleItems then
+		NewStartPos := 1
 	else
-		DrawFileList(TargetList, True, False);
+	begin
+		{More than one page, check if the selection is above or below the current visible items}
 
+		{If selection is above visible items, scroll up one page at a time until it is visible}
+		if NewSelection < NewStartPos then
+		begin
+			repeat
+				Dec(NewStartPos, MaxVisibleItems);
+			until NewStartPos <= NewSelection;
+			if NewStartPos < 1 then
+				NewStartPos := 1;
+		end;
+
+		{If selection is below visible items, scroll down one page at a time until it is visible}
+		if NewSelection > NewStartPos + MaxVisibleItems - 1 then
+		begin
+			repeat
+				Inc(NewStartPos, MaxVisibleItems);
+			until (NewStartPos <= NewSelection) and 
+				(NewStartPos + MaxVisibleItems - 1 >= NewSelection);
+			if NewStartPos > ListCount[TargetList] then
+				NewStartPos := ListCount[TargetList];
+		end;
+	end;
+
+	{If list has scrolled, we need a full redraw}
+	if NewStartPos <> ListStartPos[TargetList] then
+	begin
+		ListSelection[TargetList] := NewSelection;
+		ListStartPos[TargetList] := NewStartPos;
+		DrawFileList(TargetList, True, True);
+	end
+	else
+	begin
+		{Remove current selection}
+		DrawFileList(TargetList, False, False);
+		{Draw new selection}
+		ListSelection[TargetList] := NewSelection;
+		DrawFileList(TargetList, True, False);
+	end;
+		
+	{Update image preview in case an image file is now selected}
 	FilePreview;
 end;
 
@@ -572,22 +577,22 @@ begin
 		end;
 
 		if Key = KeyUp then
-			FileMoveSelection(ActiveList, DirectionUp);
+			FileMoveSelection(ActiveList, Up);
 
 		if Key = KeyDown then
-			FileMoveSelection(ActiveList, DirectionDown);
+			FileMoveSelection(ActiveList, Down);
 
 		if Key = KeyHome then
-			FileMoveSelection(ActiveList, DirectionUp * (ListSelection[ActiveList] - 1));
+			FileMoveSelection(ActiveList, First);
 
 		if Key = KeyEnd then
-			FileMoveSelection(ActiveList, DirectionDown * (ListCount[ActiveList] - ListSelection[ActiveList]));
+			FileMoveSelection(ActiveList, Last);
 
 		if Key = KeyPageUp then
-			FileMoveSelection(ActiveList, DirectionUp * (MaxVisibleItems + ListSelection[ActiveList] - ListStartPos[ActiveList]));
+			FileMoveSelection(ActiveList, PageUp);
 
 		if Key = KeyPageDown then
-			FileMoveSelection(ActiveList, DirectionDown * (MaxVisibleItems - ListSelection[ActiveList] + ListStartPos[ActiveList]));
+			FileMoveSelection(ActiveList, PageDown);
 
 		if (Key = KeyAltF) then
 			FileSetActiveList(FileList);
