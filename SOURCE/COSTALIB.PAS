@@ -107,7 +107,6 @@ var
 	Theme: ThemeType;
 
 function FileExists(const FileName: string): Boolean;
-function FileGetAssociation(const FileType: string): string;
 function FontGetWidth(TargetText: String; FontID: Integer): Integer;
 function GetKey: string;
 function LowerCase(s: string): string;
@@ -210,62 +209,6 @@ var
 begin
 	FindFirst(FileName, Archive, sresults);
 	FileExists := (DosError = 0);
-end;
-
-function FileGetAssociation(const FileType: string): string;
-var
-	AssociationFile: string;
-	f: file of FileAssociationType;
-	FA: FileAssociationType;
-	OpenWith: string;
-	UpperFileType: string;
-	FileExistsResult: Boolean;
-begin
-	UpperFileType := UpperCase(FileType);
-	if (UpperFileType = 'EXE') or (UpperFileType = 'COM') then
-	begin
-		FileGetAssociation := '';
-		Exit;
-	end;
-	if UpperFileType = 'BAT' then
-	begin
-		FileGetAssociation := GetEnv('COMSPEC');
-		Exit;
-	end;
-	AssociationFile := 'CONFIG\FILETYPE.DAT';
-	FileExistsResult := FileExists(AssociationFile);
-	if not FileExistsResult then
-	begin
-		FileExistsResult := FileExists('CONFIG\FILETYPE.DEF');
-		if FileExistsResult then
-			AssociationFile := 'CONFIG\FILETYPE.DEF'
-		else
-		begin
-			FileGetAssociation := '';
-			Exit;
-		end;
-	end;
-	Assign(f, AssociationFile);
-	{$I-}
-	Reset(f);
-	{$I+}
-	if IOResult <> 0 then 
-	begin
-		FileGetAssociation := '';
-		Exit;
-	end;
-	OpenWith := '';
-	while not Eof(f) do
-	begin
-		Read(f, FA);
-		if UpperFileType = UpperCase(Trim(FA.FileType)) then
-		begin
-			OpenWith := Trim(FA.Command);
-			Break;
-		end;
-	end;
-	Close(f);
-	FileGetAssociation := OpenWith;
 end;
 
 function ValidDOSFilename(Filename: string): Boolean;

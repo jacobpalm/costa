@@ -15,7 +15,7 @@ uses
 const
 	CostaExe    = 'COSTA.EXE';
 	DesktopExe  = 'DESKTOP.EXE';
-	RunFile     = 'DATA\RUN.DAT';
+	RunFile     = 'CONFIG\RUN.BIN';
 	ContinueStr = 'Press Enter to continue...';
 
 type
@@ -46,10 +46,22 @@ begin
 		Readln;
 	{$ENDIF}
 
+	{Change to the path specified in the link, if any}
+	{$I-}
 	if Length(RunLink.Path) > 0 then
 		ChDir(RunLink.Path)
 	else
 		ChDir(CostaPath);
+	{$I+}
+	if IOResult <> 0 then
+	begin
+		Writeln('Error changing path to ', RunLink.Path);
+		if Length(RunLink.Path) = 0 then
+			Halt; {Can't change to Costa path, so exit to avoid infinite loop}
+		Writeln(ContinueStr);
+		Readln;
+		Exit;
+	end;
 	PauseOnExit := RunLink.PauseOnExit;
 
 	SwapVectors;
@@ -138,7 +150,7 @@ begin
 		begin
 			{$IFDEF DEBUG}
 				Writeln('Error reading run file: ', RunFile);
-				WriteLine('File size: ', FileSize(f), ' bytes, expected: ', SizeOf(RunLink), ' bytes.');
+				Writeln('File size: ', FileSize(f), ' bytes, expected: ', SizeOf(RunLink), ' bytes.');
 			{$ENDIF}
 			Close(f);
 			Continue;

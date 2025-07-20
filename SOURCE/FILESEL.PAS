@@ -287,7 +287,6 @@ end;
 function FileMouseSelection(TargetList: integer): boolean;
 var
 	ClickedX, ClickedY, ClickedItem: Integer;
-	DeleteThisVar: String;
 begin
 	MousePoll;
 	ClickedX := MouseX - txtList[TargetList].Pos.Left;
@@ -547,7 +546,9 @@ begin
 				if not FileSetDrive(txtDriveText[1]) then
 				begin
 					txtDriveText := Drive; {Restore original drive letter}
+					MouseHide;
 					ObjDrawTxt(txtDrive, txtDriveText, False);
+					MouseShow;
 				end;
 			end;
 		end;
