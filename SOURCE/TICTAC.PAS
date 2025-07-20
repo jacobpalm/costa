@@ -218,18 +218,24 @@ begin
     end;
 
 	{Reverse diagonal}
+	Sum := 0;
+	Row := 0;
+	Col := 0;
 	for r := 1 to 3 do
 	begin
-		for c := 3 downto 1 do
+		c := 4 - r; { Calculate the column for the reverse diagonal }
+		if PlayField[r, c] = Player then
+			Inc(Sum)
+		else if PlayField[r, c] = PlayerNone then
 		begin
-			if PlayField[r, c] = Player then
-				Inc(Sum)
-			else if PlayField[r, c] = PlayerNone then
-			begin
-				Row := r;
-				Col := c;
-			end;
+			Row := r;
+			Col := c;
 		end;
+	end;
+	if (Sum = 2) and (Row <> 0) then
+	begin
+		TicCanWin := true;
+		exit;
 	end;
 end;
 
