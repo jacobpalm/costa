@@ -573,7 +573,7 @@ var
 begin
 	IconError := False;
 	
-	Filename := SysPath + 'IMAGES\' + TargetImg.ImageFile + '.BIN';
+	Filename := SysPath + 'ICONS\' + TargetImg.ImageFile + '.BIN';
 	if not FileExists(Filename) then
 		IconError := True;
 

@@ -319,7 +319,7 @@ begin
 				+ 'with a maximum length of 8 characters.', msgError);
 			exit;
 		end;
-		Filename := SysPath + 'IMAGES\' + Filename + '.BIN';
+		Filename := SysPath + 'ICONS\' + Filename + '.BIN';
 	end
 	else
 		Filename := IconFileName;
@@ -385,16 +385,16 @@ begin
 		end;
 	end;
 
-	IconToLoad := FileSelect('*.BIN', SysPath + 'IMAGES', true);
+	IconToLoad := FileSelect('*.BIN', SysPath + 'ICONS', true);
 	if IconToLoad = '' then
 		exit;
 
 	FSplit(IconToLoad, FPath, FName, FExt);
-	if (FPath <> SysPath + 'IMAGES\') or (FExt <> '.BIN') then
+	if (FPath <> SysPath + 'ICONS\') or (FExt <> '.BIN') then
 	begin
 		mbResult := SysMsgBox('Invalid icon file',
 			'The selected file is not a valid icon file.' + NewLine +
-			'Please select a .BIN file from the IMAGES directory.',
+			'Please select a .BIN file from the ICONS directory.',
 			msgError);
 		exit;
 	end;

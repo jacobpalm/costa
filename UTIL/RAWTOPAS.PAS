@@ -89,7 +89,7 @@ begin
 
 		GetImage(0, 0, 31, 31, P^);
 
-		Assign(outputfile, '..\IMAGES\'+FName+'.BIN');
+		Assign(outputfile, '..\ICONS\'+FName+'.BIN');
 		{$I-}
 		Rewrite(outputfile, 1);
 		{$I+}
@@ -104,7 +104,7 @@ begin
 
 		{IFDEF DEBUG}
 			{Test reading the image back}
-			Assign(outputfile, '..\IMAGES\'+FName+'.BIN');
+			Assign(outputfile, '..\ICONS\'+FName+'.BIN');
 			{$I-}
 			Reset(outputfile, 1);
 			{$I+}

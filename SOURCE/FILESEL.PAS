@@ -184,7 +184,7 @@ var
 	FName: NameStr;
 	FExt: ExtStr;
 begin
-	if (Path = SysPath + 'IMAGES') and (ListSelection[FileList] <> 0) then
+	if (Path = SysPath + 'ICONS') and (ListSelection[FileList] <> 0) then
 	begin
 		FSplit(SubFiles[ListSelection[FileList]], FDir, FName, FExt);
 		if (Length(FName) <> 0) and (FExt = '.BIN') then
