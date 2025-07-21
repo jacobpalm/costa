@@ -133,8 +133,9 @@ procedure ThemeConvert;
 var
 	f: Text;
 	OutputFile: File;
-	ThemeName: String[25];
-	ThemeAuthor: String[25];
+	ThemeName: String[20];
+	ThemeAuthor: String[20];
+	TempRead: string;
 	Theme: ThemeType;
 	DirInfo: SearchRec;
 	FDir: DirStr;
@@ -153,10 +154,24 @@ begin
 		{$I+}
 
 		FillChar(ThemeAuthor, SizeOf(ThemeAuthor), 0);
-		FillChar(ThemeName, SizeOf(ThemeAuthor), 0);
+		FillChar(ThemeName, SizeOf(ThemeName), 0);
 		FillChar(Theme, SizeOf(Theme), 0);
-		ReadLn(f, ThemeAuthor);
-		ReadLn(f, ThemeName);
+		TempRead := '';
+		
+		{Author}
+		ReadLn(f, TempRead);
+		if Length(TempRead) > SizeOf(ThemeAuthor) then
+			ThemeAuthor := Copy(TempRead, 1, SizeOf(ThemeAuthor))
+		else
+			ThemeAuthor := TempRead;
+
+		{Name}
+		ReadLn(f, TempRead);
+		if Length(TempRead) > SizeOf(ThemeName) then
+			ThemeName := Copy(TempRead, 1, SizeOf(ThemeName))
+		else
+			ThemeName := TempRead;
+		
 		ReadLn(f, Theme.Desktop);
 		ReadLn(f, Theme.DesktopText);
 		ReadLn(f, Theme.Window);

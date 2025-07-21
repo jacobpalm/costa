@@ -1,6 +1,5 @@
 # Program files
 *.EXE
-COSTA.BAT
 
 # Compiler leftovers
 *.OBJ
@@ -9,13 +8,9 @@ COSTA.BAT
 *.DSK
 *.TPU
 
-# Costa run-time data
-DATA/TEMP/
-
 # Costa profile and configuration data
-DATA/CONFIG/*.DAT
 CONFIG/DESKLNK?.BIN
-!DATA/CONFIG/FILETYPE.DAT
+CONFIG/SETTINGS.BIN
 
 #Intermediate file formats used when converting data
 *.RAW

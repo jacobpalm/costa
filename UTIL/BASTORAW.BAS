@@ -173,6 +173,8 @@ END SUB
 SUB ConvertTheme ()
 	DIM TargetFile$, FoundFile$
 	DIM Theme AS ThemeType
+	DIM ThemeShortName AS STRING * 20
+	DIM ThemeShortAuthor AS STRING * 20
 
 	CLS
 	PRINT "Converting DAT themes to raw string and integer data, please wait."
@@ -188,23 +190,26 @@ SUB ConvertTheme ()
 		GET #1, , Theme
 		CLOSE #1
 
+		ThemeShortName = LTRIM$(RTRIM$(LEFT$(Theme.Name, 20)))
+		ThemeShortAuthor = LTRIM$(RTRIM$(LEFT$(Theme.Author, 20)))
+
 		'Output name/author and integer color values to file
 		OPEN "..\DATA\THEMES\" + TargetFile$ + ".RAW" FOR OUTPUT AS #1
-		PRINT #1, RTRIM$(Theme.Name)
-		PRINT #1, RTRIM$(Theme.Author)
-		PRINT #1, Theme.Desktop
-		PRINT #1, Theme.DesktopText
-		PRINT #1, Theme.Window
-		PRINT #1, Theme.WindowText
-		PRINT #1, Theme.Button
-		PRINT #1, Theme.Textbox
-		PRINT #1, Theme.TextboxText
-		PRINT #1, Theme.Light
-		PRINT #1, Theme.Shadow
-		PRINT #1, Theme.TitleBar
-		PRINT #1, Theme.TitleBarText
-		PRINT #1, Theme.Select
-		PRINT #1, Theme.SelectText
+		PRINT #1, ThemeShortName
+		PRINT #1, ThemeShortAuthor
+		PRINT #1, LTRIM$(RTRIM$(STR$(Theme.Desktop)))
+		PRINT #1, LTRIM$(RTRIM$(STR$(Theme.DesktopText)))
+		PRINT #1, LTRIM$(RTRIM$(STR$(Theme.Window)))
+		PRINT #1, LTRIM$(RTRIM$(STR$(Theme.WindowText)))
+		PRINT #1, LTRIM$(RTRIM$(STR$(Theme.Button)))
+		PRINT #1, LTRIM$(RTRIM$(STR$(Theme.Textbox)))
+		PRINT #1, LTRIM$(RTRIM$(STR$(Theme.TextboxText)))
+		PRINT #1, LTRIM$(RTRIM$(STR$(Theme.Light)))
+		PRINT #1, LTRIM$(RTRIM$(STR$(Theme.Shadow)))
+		PRINT #1, LTRIM$(RTRIM$(STR$(Theme.TitleBar)))
+		PRINT #1, LTRIM$(RTRIM$(STR$(Theme.TitleBarText)))
+		PRINT #1, LTRIM$(RTRIM$(STR$(Theme.Select)))
+		PRINT #1, LTRIM$(RTRIM$(STR$(Theme.SelectText)))
 		CLOSE #1
 
 		PRINT "[OK]"

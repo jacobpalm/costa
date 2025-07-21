@@ -4,10 +4,10 @@ uses
 	CostaLib, FileSel, InputBox, Strings, DOS, Graph;
 
 const
-    AppName    = 'Icon Editor';
-    AppVersion = '2.0';
-    AppAuthor  = 'Jacob Palm';
-    AppIcon    = 'PAINT';
+	AppName    = 'Icon Editor';
+	AppVersion = '2.0';
+	AppAuthor  = 'Jacob Palm';
+	AppIcon    = 'PAINT';
 
 	PixelSize  = 9; {Size of each field in the drawing area}
 
@@ -368,7 +368,7 @@ var
 	IconToLoad: String;
 	FPath: DirStr;
 	FName: NameStr;
-    FExt: ExtStr;
+	FExt: ExtStr;
 	mbResult: Boolean;
 	X, Y, PixelCol: Integer;
 begin
