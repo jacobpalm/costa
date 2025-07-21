@@ -6,16 +6,16 @@ uses
 	Crt, Dos, Graph, Strings;
 
 const
-	LibName     = 'Costa UI Library';
-	LibVersion  = '2.0';
-	LibYear     = '2025';
+	LibName          = 'Costa UI Library';
+	LibVersion       = '2.0';
+	LibYear          = '2025';
 
-	FontHeading = 1;
-	FontNormal  = 2;
+	FontHeading      = 1;
+	FontNormal       = 2;
 
-	sizeDefault = -1;
-	sizeRetain  = -2;
-	sizeCenter  = -3;
+	sizeDefault      = -1;
+	sizeRetain       = -2;
+	sizeCenter       = -3;
 
 	DoubleClickDelay = 0.5;
 
@@ -149,6 +149,10 @@ procedure SysShowLoading;
 function ValidDOSFilename(Filename: string): Boolean;
 
 implementation
+
+const
+	GlobalSettings = 'CONFIG\SETTINGS.BIN';
+
 
 constructor ButtonType.Init(Left, Top, Width, Height: Integer; CaptionS: string);
 begin
@@ -606,11 +610,13 @@ begin
 		{$I-}
 		Reset(ImageFile, 1);
 		{$I+}
-		if (IOResult <> 0) or (FileSize(ImageFile) <> Size) then
-		begin
-			Close(ImageFile);
+		if (IOResult <> 0) then 
+			IconError := True
+		else if (FileSize(ImageFile) <> Size) then
 			IconError := True;
-		end;
+			
+		if IconError then
+			Close(ImageFile);
 	end;
 	{DEBUG - verify getmem and BlockRead}
 
@@ -937,7 +943,7 @@ begin
 		Halt(1);
 	End;
 	SysLoadSettings;
-	SysLoadTheme('DEFAULT'); {Debugging: Use default theme for now}
+	SysLoadTheme(Setting.ThemeFile);
 	if Setting.DesktopID < 1 then Setting.DesktopID := 1;
 	if Setting.DesktopID > 5 then Setting.DesktopID := 5;
 
@@ -951,8 +957,12 @@ end;
 
 procedure SysLoadSettings;
 var
-	f: file of SettingType;
+	f: file;
+	LoadError: Boolean;
 begin
+	LoadError := False;
+	
+	{Set defaults - will be overwritten if settings file loads successfully}
 	Setting.DesktopID := 1;
 	Setting.ShowLinkDescriptions := True;
 	Setting.ShowLinkTargetFiles := False;
@@ -960,75 +970,69 @@ begin
 	Setting.ConfirmExit := False;
 	Setting.AssignFileTypes := True;
 	Setting.ThemeFile := 'DEFAULT';
-
-
-
-	Exit; {Debugging: Disable settings loading for now}
-	if not FileExists('CONFIG\SETTING.BIN') then
-	begin
-		{Use defaults}
-		Setting.DesktopID := 1;
-		Setting.ShowLinkDescriptions := True;
-		Setting.ShowLinkTargetFiles := False;
-		Setting.ConfirmLinkDelete := True;
-		Setting.ConfirmExit := True;
-		Setting.AssignFileTypes := True;
-		Setting.ThemeFile := 'DEFAULT';
-		Exit;
-	end;
-
-	Assign(f, 'CONFIG\SETTING.BIN');
+	
+	if not FileExists(SysPath + GlobalSettings) then
+		exit;
+	
+	Assign(f, SysPath + GlobalSettings);
 	{$I-}
-	Reset(f);
+	Reset(f, 1);
 	{$I+}
 	if IOResult <> 0 then
+		LoadError := True
+	else if FileSize(f) <> SizeOf(SettingType) then
+		LoadError := True;
+
+	if LoadError then
 	begin
-		{Use defaults}
-		Setting.DesktopID := 1;
-		Setting.ShowLinkDescriptions := True;
-		Setting.ShowLinkTargetFiles := False;
-		Setting.ConfirmLinkDelete := True;
-		Setting.ConfirmExit := True;
-		Setting.AssignFileTypes := True;
-		Setting.ThemeFile := 'DEFAULT';
-		Exit;
+		Close(f);
+		exit;
 	end;
-	Read(f, Setting);
+
+	BlockRead(f, Setting, SizeOf(SettingType));
 	Close(f);
-	if (Setting.DesktopID < 1) or (Setting.DesktopID > 5) then
-		Setting.DesktopID := 1;
 end;
 
 procedure SysLoadTheme(ThemeFile: String);
 var
 	f: file;
+	ExpectedSize: LongInt;
 begin
-	if FileExists('THEMES\' + ThemeFile + '.BIN') then
-	begin
-		Assign(f, 'THEMES\' + ThemeFile + '.BIN');
-		{$I-}
-		Reset(f, SizeOf(ThemeType));
-		{$I+}
-		if IOResult = 0 then
-			BlockRead(f, Theme, 1);
-		Close(f);
-		Exit;
-	end;
-
-	{If file didn't exist or colors couldn't be read, use default theme}
-	Theme.Desktop := LightGray;
+	{Default colors - will be overwritten if theme file loads successfully}
+	Theme.Desktop := Cyan;
 	Theme.DesktopText := Black;
 	Theme.Window := LightGray;
 	Theme.Button := LightGray;
 	Theme.Textbox := White;
 	Theme.TextboxText := Black;
 	Theme.WindowText := Black;
-	Theme.TitleBar := Cyan;
-	Theme.TitleBarText := Black;
+	Theme.TitleBar := Blue;
+	Theme.TitleBarText := White;
 	Theme.Light := LightGray;
 	Theme.Shadow := DarkGray;
-	Theme.Select := DarkGray;
+	Theme.Select := Blue;
 	Theme.SelectText := White;
+
+	{The end of the file contains 21 bytes for theme name, and 21	 for theme
+	 author, so the total size should be 40 bytes more than the theme type}
+	ExpectedSize := SizeOf(ThemeType) + 42;
+
+	if not FileExists('THEMES\' + ThemeFile + '.BIN') then
+		exit;
+
+	Assign(f, 'THEMES\' + ThemeFile + '.BIN');
+	{$I-}
+	Reset(f, 1);
+	{$I+}
+	if IOResult <> 0 then
+	begin
+		Close(f);
+		Exit;
+	end;
+
+	if FileSize(f) = ExpectedSize then
+		BlockRead(f, Theme, SizeOf(ThemeType));
+	Close(f);
 end;
 
 function SysMsgBox(const msgTitle, msgText: string; msgType: TMsgBoxType): Boolean;
@@ -1173,15 +1177,24 @@ End;
 
 procedure SysSaveSettings;
 var
-	f: file of SettingType;
+	f: file;
+	mbVoid: Boolean;
 begin
-	Exit; {Debugging: Disable settings saving for now}
-	Assign(f, 'CONFIG\SETTING.DAT');
+	Assign(f, SysPath + GlobalSettings);
 	{$I-}
-	Rewrite(f);
-	Write(f, Setting);
-	Close(f);
+	Rewrite(f, 1);
 	{$I+}
+	if IOResult <> 0 then
+	begin
+		mbVoid := SysMsgBox('Could not save settings',
+			'Could not write to the configuration file' + NewLine + 
+			GlobalSettings + '.' + NewLine +
+			'Verify that the path exists and isn''t read-only.', msgError);
+		Close(f);
+		Exit;
+	end;
+	BlockWrite(f, Setting, SizeOf(SettingType));
+	Close(f);
 end;
 
 function Timer: Real;
