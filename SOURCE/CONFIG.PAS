@@ -68,14 +68,6 @@ begin
         SelectedTheme := 1;
 end;
 
-function TruncateStr(Text: string; Width: integer): string;
-begin
-	if Length(Text) > Width then
-		Text := Copy(Text, 1, Width);
-	
-	TruncateStr := Text;
-end;
-
 procedure ThemePreview;
 var
 	winPreview: WindowType;
@@ -101,8 +93,8 @@ begin
 	if IOResult = 0 then
 	begin
 		BlockRead(f, Theme, SizeOf(ThemeType));
-		BlockRead(f, ThemeAuthor, SizeOf(ThemeAuthor));
 		BlockRead(f, ThemeName, SizeOf(ThemeName));
+		BlockRead(f, ThemeAuthor, SizeOf(ThemeAuthor));
 	end;
 	Close(f);
 
@@ -143,9 +135,9 @@ begin
 	FontPrint('Preview link', imgDeskLink.Pos.Left + 38, imgDeskLink.Pos.Top + 4, Theme.DesktopText, fontHeading);
 	FontPrint('preview.exe', imgDeskLink.Pos.Left + 38, imgDeskLink.Pos.Top + 18, Theme.DesktopText, fontNormal);
 
-	FontPrint(TruncateStr(ThemeName, 20), imgLogo.Pos.Left + 42, imgLogo.Pos.Top + 5,
+	FontPrint(ThemeName, imgLogo.Pos.Left + 42, imgLogo.Pos.Top + 5,
 		Theme.WindowText, fontHeading);
-	FontPrint(TruncateStr(ThemeAuthor, 20), imgLogo.Pos.Left + 42, imgLogo.Pos.Top + 19,
+	FontPrint(ThemeAuthor, imgLogo.Pos.Left + 42, imgLogo.Pos.Top + 19,
 		Theme.WindowText, fontNormal);
 	MouseShow;
 
