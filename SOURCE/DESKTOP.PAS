@@ -1073,6 +1073,7 @@ begin
 
 	BlockWrite(f, TargetLink, SizeOf(TargetLink));
 	Close(f);
+	SysSaveSettings;
 
 	repeat; until (Length(GetKey) = 0) and (MouseClicked = mbNone); {Clear buffers}
 	CloseGraph;
@@ -1185,6 +1186,7 @@ begin
 	
 	until False;
 	
+	SysSaveSettings;
 	FreeMem(TabBackgroundP, TabImgSize);
 	CloseGraph;
 	Halt(1); {Error code 1 makes COSTA.EXE terminate and return to DOS prompt}
