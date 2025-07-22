@@ -1,7 +1,7 @@
 program ThemeEditor;
 
 uses
-	CostaLib, InputBox, Graph, DOS;
+	CostaLib, InputBox, FileSel, Graph, DOS;
 
 const
 	AppName    = 'Theme Editor';
@@ -12,30 +12,26 @@ const
 var
 	ThemeFile: string;
 	ThemeName, ThemeAuthor: string;
-	OriginalTheme: string;
-
-	thmClrDesktop, thmClrDesktopText, thmClrWindow: integer;
-	thmClrButton, thmClrTextbox, thmClrTextboxText: integer;
-	thmClrWindowText, thmClrTitlebar, thmClrTitlebarText: integer;
-	thmClr3DLight, thmClr3DShadow, thmClrSelect, thmClrSelectText: integer;
+	ThemeChanged: Boolean;
+	ThemeData, SysTheme: ThemeType;
 
 	SelectedColor: integer;
 	SelectedObject: integer;
 
 	{Objects used in mulitple procedures}
 	btnColor: array[0..15] of ButtonType;
+	btnObject: ButtonType;
+	txtThemeName, txtThemeAuthor: TextboxType;
 
 {Forward declarations}
-procedure SelectColor(Color: integer); forward;
+procedure SelectColor(Color: integer; DrawPreview: boolean); forward;
 procedure SelectObject; forward;
 procedure LoadTheme; forward;
-procedure SaveTheme; forward;
 procedure UpdatePreview; forward;
+function  SaveTheme(SaveAs: boolean): boolean; forward;
 
-
-procedure SelectColor(Color: integer);
+procedure SelectColor(Color: integer; DrawPreview: boolean);
 var
-	i: integer;
 	x1, y1, x2, y2: Integer;
 begin
 	if Color < 0 then
@@ -63,6 +59,30 @@ begin
 	SetColor(White);
 	Rectangle(x1 + 1, y1 + 1, x2 - 1, y2 - 1);
 	MouseShow;
+
+	{Change the color of the currently selected object}
+	case SelectedObject of
+		1:  ThemeData.Desktop := Color;
+		2:  ThemeData.DesktopText := Color;
+		3:  ThemeData.Window := Color;
+		4:  ThemeData.Titlebar := Color;
+		5:  ThemeData.WindowText := Color;
+		6:  ThemeData.Button := Color;
+		7:  ThemeData.Textbox := Color;
+		8:  ThemeData.TextBoxText := Color;
+		9:  ThemeData.Light := Color;
+		10: ThemeData.Shadow := Color;
+		11: ThemeData.Select := Color;
+		12: ThemeData.SelectText := Color;
+		13: ThemeData.TitlebarText := Color;
+	end;
+	
+	{Mark theme as changed and update preview}
+	if DrawPreview then
+	begin
+		ThemeChanged := True;
+		UpdatePreview;
+	end;
 end;
 
 procedure UpdatePreview;
@@ -80,39 +100,8 @@ begin
 	ObjDrawFrm(frmPreview, 15, Theme.Shadow);
 	MouseShow;
 
-	if Length(ThemeFile) <> 0 then
-	begin
-		SysLoadTheme(ThemeFile);
-		thmClrDesktop := Theme.Desktop;
-		thmClrDesktopText := Theme.DesktopText;
-		thmClrWindow := Theme.Window;
-		thmClrButton := Theme.Button;
-		thmClrTextbox := Theme.Textbox;
-		thmClrTextboxText := Theme.TextboxText;
-		thmClrWindowText := Theme.WindowText;
-		thmClrTitlebar := Theme.TitleBar;
-		thmClrTitlebarText := Theme.TitleBarText;
-		thmClr3DLight := Theme.Light;
-		thmClr3DShadow := Theme.Shadow;
-		thmClrSelect := Theme.Select;
-		thmClrSelectText := Theme.SelectText;
-	end
-	else
-	begin
-		Theme.Desktop := thmClrDesktop;
-		Theme.DesktopText := thmClrDesktopText;
-		Theme.Window := thmClrWindow;
-		Theme.Button := thmClrButton;
-		Theme.Textbox := thmClrTextbox;
-		Theme.TextboxText := thmClrTextboxText;
-		Theme.WindowText := thmClrWindowText;
-		Theme.TitleBar := thmClrTitlebar;
-		Theme.TitleBarText := thmClrTitlebarText;
-		Theme.Light := thmClr3DLight;
-		Theme.Shadow := thmClr3DShadow;
-		Theme.Select := thmClrSelect;
-		Theme.SelectText := thmClrSelectText;
-	end;
+	{Overwrite system theme with current theme}
+	Theme := ThemeData;
 
 	winPreview.Init(frmPreview.Pos.Left + ((frmPreview.Pos.Width - 260) div 2),
 		frmPreview.Pos.Top + 65, 260, 127);
@@ -166,13 +155,14 @@ begin
 	FontPrint('List item', txtListPreview.Pos.Left + 5, txtListPreview.Pos.Top + 5 + 48, Theme.TextboxText, FontHeading);
 	MouseShow;
 
-	SysLoadTheme(Setting.ThemeFile);
+	{Restore system theme}
+	Theme := SysTheme;
 end;
 
 procedure SelectObject;
 var
 	winSelectObject: WindowType;
-	btnObject: array[1..13] of ButtonType;
+	btnObjSelect: array[1..13] of ButtonType;
 	i, ActiveSelection: integer;
 	Key: string;
 	x1, y1, x2, y2: Integer;
@@ -181,21 +171,21 @@ var
 begin
 	winSelectObject.Init(sizeCenter, sizeCenter, 226, 326);
 	for i := 1 to 13 do
-		btnObject[I].Init(winSelectObject.Pos.Left + 13, winSelectObject.Pos.Top + (I * 23) - 8, 200, 22, '');
+		btnObjSelect[I].Init(winSelectObject.Pos.Left + 13, winSelectObject.Pos.Top + (I * 23) - 8, 200, 22, '');
 	
-	btnObject[1].Caption := 'Desktop';
-	btnObject[2].Caption := 'Desktop text';
-	btnObject[3].Caption := 'Window';
-	btnObject[4].Caption := 'Window border';
-	btnObject[5].Caption := 'Window text';
-	btnObject[6].Caption := 'Button';
-	btnObject[7].Caption := 'Textbox';
-	btnObject[8].Caption := 'Textbox text';
-	btnObject[9].Caption := '3D light';
-	btnObject[10].Caption := '3D Shadow';
-	btnObject[11].Caption := 'Selection';
-	btnObject[12].Caption := 'Selection text';
-	btnObject[13].Caption := 'Titlebar text';
+	btnObjSelect[1].Caption := 'Desktop';
+	btnObjSelect[2].Caption := 'Desktop text';
+	btnObjSelect[3].Caption := 'Window';
+	btnObjSelect[4].Caption := 'Window border';
+	btnObjSelect[5].Caption := 'Window text';
+	btnObjSelect[6].Caption := 'Button';
+	btnObjSelect[7].Caption := 'Textbox';
+	btnObjSelect[8].Caption := 'Textbox text';
+	btnObjSelect[9].Caption := '3D light';
+	btnObjSelect[10].Caption := '3D Shadow';
+	btnObjSelect[11].Caption := 'Selection';
+	btnObjSelect[12].Caption := 'Selection text';
+	btnObjSelect[13].Caption := 'Titlebar text';
 
 	MouseHide;
 	x1 := winSelectObject.Pos.Left;
@@ -209,7 +199,7 @@ begin
 	ObjDrawWin(winSelectObject);
 	ActiveSelection := SelectedObject;
 	for i := 1 to 13 do
-		ObjDrawBtn(btnObject[i], (i = ActiveSelection));
+		ObjDrawBtn(btnObjSelect[i], (i = ActiveSelection));
 	MouseShow;
 
 	repeat
@@ -231,7 +221,7 @@ begin
 		begin
 			for i := 1 to 12 do
 			begin
-				if ObjBtnClick(btnObject[i]) then
+				if ObjBtnClick(btnObjSelect[i]) then
 				begin
 					SelectedObject := i;
 					break;
@@ -242,24 +232,24 @@ begin
 		if Key = KeyUp then
 		begin
 			MouseHide;
-			ObjDrawBtn(btnObject[ActiveSelection], False);
+			ObjDrawBtn(btnObjSelect[ActiveSelection], False);
 			if ActiveSelection > 1 then
 				Dec(ActiveSelection)
 			else
 				ActiveSelection := 13;
-			ObjDrawBtn(btnObject[ActiveSelection], True);
+			ObjDrawBtn(btnObjSelect[ActiveSelection], True);
 			MouseShow;
 		end;
 
 		if Key = KeyDown then
 		begin
 			MouseHide;
-			ObjDrawBtn(btnObject[ActiveSelection], False);
+			ObjDrawBtn(btnObjSelect[ActiveSelection], False);
 			if ActiveSelection < 13 then
 				Inc(ActiveSelection)
 			else
 				ActiveSelection := 1;
-			ObjDrawBtn(btnObject[ActiveSelection], True);
+			ObjDrawBtn(btnObjSelect[ActiveSelection], True);
 			MouseShow;
 		end;
 
@@ -267,53 +257,167 @@ begin
 	MouseHide;
 	PutImage(x1, y1, BackgroundP^, NormalPut);
 	FreeMem(BackgroundP, BackgroundSize);
-	MouseShow;	
+	btnObject.Caption := btnObjSelect[SelectedObject].Caption;
+	ObjDrawBtn(btnObject, False);
+	MouseShow;
+
+	{Change the color of the currently selected object}
+	case SelectedObject of
+		1:  SelectColor(ThemeData.Desktop, false);
+		2:  SelectColor(ThemeData.DesktopText, false);
+		3:  SelectColor(ThemeData.Window, false);
+		4:  SelectColor(ThemeData.Titlebar, false);
+		5:  SelectColor(ThemeData.WindowText, false);
+		6:  SelectColor(ThemeData.Button, false);
+		7:  SelectColor(ThemeData.Textbox, false);
+		8:  SelectColor(ThemeData.TextBoxText, false);
+		9:  SelectColor(ThemeData.Light, false);
+		10: SelectColor(ThemeData.Shadow, false);
+		11: SelectColor(ThemeData.Select, false);
+		12: SelectColor(ThemeData.SelectText, false);
+		13: SelectColor(ThemeData.TitlebarText, false);
+	end;
+end;
+
+procedure NewTheme;
+begin
+	{DEBUG - check if theme should be saved first}
+
+	{Start with current theme as basis for editing}
+	ThemeData := Theme;
+	ThemeFile := '';
+	SelectedObject := 1; {Desktop}
+	SelectColor(ThemeData.Desktop, true);
+	ThemeChanged := False;
 end;
 
 procedure LoadTheme;
 var
+	SelectedFile: string;
+	LoadName, LoadAuthor: string[20];
+	FDir: DirStr;
+	FName: NameStr;
+	FExt: ExtStr;
 	f: File;
+	LoadError: boolean;
 begin
-	{Debug - to be implemented}
+	{DEBUG - check if theme should be saved first}
+	SelectedFile := FileSelect('*.BIN', 'THEMES', True);
+	if Length(SelectedFile) = 0 then
+		exit;
+
+	FSplit(SelectedFile, FDir, FName, FExt);
+	if not (FDir = SysPath + 'THEMES\') or not (FExt = '.BIN') then
+	begin
+		SysMsgBox('Invalid theme file',
+			'The selected file is not a valid theme file. Please' + NewLine +
+			'select a .BIN file from the THEMES directory.',
+			msgError);
+		exit;
+	end;
+
+	LoadError := False;
+	Assign(f, SysPath + 'THEMES\' + FName + '.BIN');
+	{$I-}
+	Reset(f, 1);
+	{$I+}
+	if IOResult <> 0 then
+		LoadError := True
+	else if FileSize(f) <> SizeOf(ThemeType) + 42 then
+		LoadError := True;
+	
+	if LoadError then
+	begin
+		Close(f);
+		SysMsgBox('Error opening theme file',
+			'The selected theme file could not be opened.' + NewLine +
+			'Please check the file and try again.',
+			msgError);
+		exit;
+	end;
+
+	BlockRead(f, ThemeData, SizeOf(ThemeType));
+	BlockRead(f, LoadName, SizeOf(LoadName));
+	BlockRead(f, LoadAuthor, SizeOf(LoadAuthor));
+	Close(f);
+
+	ThemeName := Rtrim(LoadName);
+	ThemeAuthor := Rtrim(LoadAuthor);
+	SelectedObject := 1; {Desktop}
+	SelectColor(ThemeData.Desktop, true);
+	ThemeFile := SelectedFile;
+	ObjDrawTxt(txtThemeName, ThemeName, False);
+	ObjDrawTxt(txtThemeAuthor, ThemeAuthor, False);
+	ThemeChanged := False;
 end;
 
-procedure SaveTheme;
+function SaveTheme(SaveAs: boolean): boolean;
 var	
-	ThemeToSave: ThemeType;
+	f: File;
+	Filename: string;
+	SaveName, SaveAuthor: string[20];
+	SaveError: boolean;
 begin
-	{TargetFile = 'DATA\THEMES\' + ThemeFile + '.DAT'
+	SaveTheme := False;
 
-	ThemeToSave.Desktop = thmClrDesktop
-	ThemeToSave.DesktopText = thmClrDesktopText
-	ThemeToSave.Window = thmClrWindow
-	ThemeToSave.Button = thmClrButton
-	ThemeToSave.Textbox = thmClrTextbox
-	ThemeToSave.TextboxText = thmClrTextboxText
-	ThemeToSave.WindowText = thmClrWindowText
-	ThemeToSave.TitleBar = thmClrTitlebar
-	ThemeToSave.TitleBarText = thmClrTitlebarText
-	ThemeToSave.Light = thmClr3DLight
-	ThemeToSave.Shadow = thmClr3DShadow
-	ThemeToSave.Select = thmClrSelect
-	ThemeToSave.SelectText = thmClrSelectText}
-	{ThemeName
-	ThemeAuthor}
-	
-	{ThemeToSaveHandle = FREEFILE
-	OPEN TargetFile for BINARY: #ThemeToSaveHandle
-	PUT #ThemeToSaveHandle, , ThemeToSave
-	CLOSE #ThemeToSaveHandle}
+	if (Length(ThemeFile) = 0) or SaveAs then
+	begin
+		Filename := UpperCase(SysInputBox('Save theme file', 'Type a name for the theme file below, without path or' + NewLine +
+			'extension (8 letters max, for example: MYTHEME).', 'THEME', ''));
 
+		{Validate input}
+		if Length(Filename) = 0 then
+			exit;
+		if (Length(Filename) > 8) or (not ValidDOSFilename(FileName + '.BIN')) then
+		begin
+			SysMsgBox('Invalid file name', 'The filename you specified was too long or invalid.' + NewLine +
+				'Do not type a path or extension, only a filename' + NewLine
+				+ 'with a maximum length of 8 characters.', msgError);
+			exit;
+		end;
+
+		Filename := SysPath + 'THEMES\' + FileName + '.BIN';
+	end
+	else
+		Filename := ThemeFile;
+
+	{Check if file already exists}
+	if FileExists(Filename) and (Filename <> ThemeFile) then
+	begin
+		mbResult := SysMsgBox('File already exists', 'The specified icon file already exists. Do you want' + NewLine
+			+ 'to overwrite it with this icon?', msgQuest);
+		if mbResult = false then
+			exit;
+	end;
+
+	FillChar(SaveName, SizeOf(SaveName), 0);
+	FillChar(SaveAuthor, SizeOf(SaveAuthor), 0);
+	SaveName := ThemeName;
+	SaveAuthor := ThemeAuthor;
+	Assign(f, Filename);
+	{$I-}
+	Rewrite(f, 1);
+	{$I+}
+	if IOResult <> 0 then
+	begin
+		SysMsgBox('Error saving theme file', 'The theme file could not be saved. Verify free disk' + NewLine +
+			'space and that the directory isn''t write-protected.', msgError);
+		exit;
+	end;
+	BlockWrite(f, ThemeData, SizeOf(ThemeType));
+	BlockWrite(f, SaveName, SizeOf(SaveName));
+	BlockWrite(f, SaveAuthor, SizeOf(SaveAuthor));
+	Close(f);
+	ThmeFile := Filename;
+	SaveTheme := True;
 end;
 
 var
-	btnSave, btnSaveAs, btnAbout: ButtonType;
-	btnExit, btnObject: ButtonType;
-	txtThemeName, txtThemeAuthor: TextboxType;
+	btnNew, btnOpen, btnSave, btnSaveAs: ButtonType;
+	btnAbout, btnExit: ButtonType;
 
 	i, YPos, XPos: integer;
-	ThemeChanged: Boolean;
-	TargetFile, OriginalText: string;
+	OriginalText: string[20];
 	Key: string;
 begin
 	MouseHide;
@@ -321,8 +425,10 @@ begin
 	SetFillStyle(SolidFill, Theme.Window);
 	Bar(0, 29, 639, 349);
 
-	btnSave.Init(3, 2, 92, 22, HotkeySymbol + 'Save');
-	btnSaveAs.Init(102, 2, 92, 22, 'Sa' + HotkeySymbol + 've as');
+	btnNew.Init(2, 2, 92, 22, HotkeySymbol + 'New');
+	btnOpen.Init(101, 2, 92, 22, HotkeySymbol + 'Load');
+	btnSave.Init(200, 2, 92, 22, HotkeySymbol + 'Save');
+	btnSaveAs.Init(299, 2, 92, 22, 'Sa' + HotkeySymbol + 've as');
 	btnAbout.Init(446, 2, 92, 22, HotkeySymbol + 'About...');
 	btnExit.Init(545, 2, 92, 22, 'E' + HotkeySymbol + 'xit');
 	txtThemeName.Init(434, 59, 194, 0);
@@ -347,8 +453,10 @@ begin
 	end;
 
 	MouseHide;
-	ObjDrawBtn(btnSaveAs, False);
+	ObjDrawBtn(btnNew, False);
+	ObjDrawBtn(btnOpen, False);
 	ObjDrawBtn(btnSave, False);
+	ObjDrawBtn(btnSaveAs, False);
 	ObjDrawBtn(btnAbout, False);
 	ObjDrawBtn(btnExit, False);
 	ObjDrawTxt(txtThemeName, ThemeName, False);
@@ -362,187 +470,47 @@ begin
 			btnColor[i].Pos.Top + btnColor[i].Pos.Height - 2);
 	end;
 
-	FontPrint('Theme ' + HotkeySymbol + 'name:', txtThemeName.Pos.Left, txtThemeName.Pos.Top - 16,
+	FontPrint('Theme na' + HotkeySymbol + 'me:', txtThemeName.Pos.Left, txtThemeName.Pos.Top - 16,
 		Theme.WindowText, FontHeading);
 	FontPrint('Theme a' + HotkeySymbol + 'uthor:', txtThemeAuthor.Pos.Left, txtThemeAuthor.Pos.Top - 16,
 		Theme.WindowText, FontHeading);
 	FontPrint(HotkeySymbol + 'Object selected:', 434, btnObject.Pos.Top - 16, Theme.WindowText, FontHeading);
 	FontPrint(HotkeySymbol + 'Color for object:', 434, btnColor[0].Pos.Top - 16, Theme.WindowText, FontHeading);
+	{Save system theme}
+	SysTheme := Theme;
 
-	ThemeFile := Setting.ThemeFile;
-	UpdatePreview;
-	SelectedObject := 1;
-	SelectColor(thmClrDesktop);
-	
+	NewTheme;
+
 	repeat
 		Key := GetKey;
 
-		for I := 0 to 15 do
-		begin
+		for i := 0 to 15 do
 			if ObjClick(btnColor[i].Pos) then
-			begin
-				ThemeChanged := True;
-				case SelectedObject of
-					1:  thmClrDesktop := i;
-					2:  thmClrDesktopText := i;
-					3:  thmClrWindow := i;
-					4:  thmClrTitlebar := i;
-					5:  thmClrWindowText := i;
-					6:  thmClrButton := i;
-					7:  thmClrTextbox := i;
-					8:  thmClrTextboxText := i;
-					9:  thmClr3DLight := i;
-					10: thmClr3DShadow := i;
-					11: thmClrSelect := i;
-					12: thmClrSelectText := i;
-					13: thmClrTitlebarText := i;
-				end;
-				SelectColor(i);
-				UpdatePreview;
-			end;
-		end;
+				SelectColor(i, true);
 
 		if Key = KeyAltC then
-		begin
+			SelectColor(SelectedColor + 1, true);
 
-			{case SelectedObject
-				CASE 1
-					thmClrDesktop = thmClrDesktop + 1
-					if thmClrDesktop > 15 then thmClrDesktop = 0
-					SelectColor(thmClrDesktop
-				CASE 2
-					thmClrDesktopText = thmClrDesktopText + 1
-					if thmClrDesktopText > 15 then thmClrDesktopText = 0
-					SelectColor(thmClrDesktopText
-				CASE 3
-					thmClrWindow = thmClrWindow + 1
-					if thmClrWindow > 15 then thmClrWindow = 0
-					SelectColor(thmClrWindow
-				CASE 4
-					thmClrTitlebar = thmClrTitlebar + 1
-					if thmClrTitlebar > 15 then thmClrTitlebar = 0
-					SelectColor(thmClrTitlebar
-				CASE 5
-					thmClrWindowText = thmClrWindowText + 1
-					if thmClrWindowText > 15 then thmClrWindowText = 0
-					SelectColor(thmClrWindowText
-				CASE 6
-					thmClrButton = thmClrButton + 1
-					if thmClrButton > 15 then thmClrButton = 0
-					SelectColor(thmClrButton
-				CASE 7
-					thmClrTextbox = thmClrTextbox + 1
-					if thmClrTextbox > 15 then thmClrTextbox = 0
-					SelectColor(thmClrTextbox
-				CASE 8
-					thmClrTextboxText = thmClrTextboxText + 1
-					if thmClrTextboxText > 15 then thmClrTextboxText = 0
-					SelectColor(thmClrTextboxText
-				CASE 9
-					thmClr3DLight = thmClr3DLight + 1
-					if thmClr3DLight > 15 then thmClr3DLight = 0
-					SelectColor(thmClr3DLight
-				CASE 10
-					thmClr3DShadow = thmClr3DShadow + 1
-					if thmClr3DShadow > 15 then thmClr3DShadow = 0
-					SelectColor(thmClr3DShadow
-				CASE 11
-					thmClrSelect = thmClrSelect + 1
-					if thmClrSelect > 15 then thmClrSelect = 0
-					SelectColor(thmClrSelect
-				CASE 12
-					thmClrSelectText = thmClrSelectText + 1
-					if thmClrSelectText > 15 then thmClrSelectText = 0
-					SelectColor(thmClrSelectText
-				CASE 13
-					thmClrTitlebarText = thmClrTitlebarText + 1
-					if thmClrTitlebarText > 15 then thmClrTitlebarText = 0
-					SelectColor(thmClrTitlebarText
-			end;
-			ThemeChanged = True
-			UpdatePreview}
-		end;
+		if ObjBtnClick(btnNew) or (Key = KeyAltN) then
+			NewTheme;
+
+		if ObjBtnClick(btnOpen) or (Key = KeyAltL) then
+			LoadTheme;
+		
+		if ObjBtnClick(btnSave) or (Key = KeyAltS) then
+			SaveTheme(false);
+
+		if ObjBtnClick(btnSaveAs) or (Key = KeyAltV) then
+			SaveTheme(true);
 
 		if ObjBtnClick(btnObject) or (Key = KeyAltO) then
-		begin
 			SelectObject;
-			case SelectedObject of
-				1:
-					begin
-						btnObject.Caption := 'Desktop';
-						SelectColor(thmClrDesktop);
-					end;
-				2:
-					begin
-						btnObject.Caption := 'Desktop text';
-						SelectColor(thmClrDesktopText);
-					end;
-				3:
-					begin
-						btnObject.Caption := 'Window';
-						SelectColor(thmClrWindow);
-					end;
-				4:
-					begin
-						btnObject.Caption := 'Window border';
-						SelectColor(thmClrTitlebar);
-					end;
-				5:
-					begin
-						btnObject.Caption := 'Window text';
-						SelectColor(thmClrWindowText);
-					end;
-				6:
-					begin
-						btnObject.Caption := 'Button';
-						SelectColor(thmClrButton);
-					end;
-				7:
-					begin
-						btnObject.Caption := 'Textbox';
-						SelectColor(thmClrTextbox);
-					end;
-				8:
-					begin
-						btnObject.Caption := 'Textbox text';
-						SelectColor(thmClrTextboxText);
-					end;
-				9:
-					begin
-						btnObject.Caption := '3D light';
-						SelectColor(thmClr3DLight);
-					end;
-				10:
-					begin
-						btnObject.Caption := '3D Shadow';
-						SelectColor(thmClr3DShadow);
-					end;
-				11:
-					begin
-						btnObject.Caption := 'Selection';
-						SelectColor(thmClrSelect);
-					end;
-				12:
-					begin
-						btnObject.Caption := 'Selection text';
-						SelectColor(thmClrSelectText);
-					end;
-				13:
-					begin
-						btnObject.Caption := 'Titlebar text';
-						SelectColor(thmClrTitlebarText);
-					end;
-			end;
-			MouseHide;
-			ObjDrawBtn(btnObject, False);
-			MouseShow;
-		end;
 
-		{if ObjTxtClick(txtThemeName) or (Key = KeyAltN) then
+		if ObjTxtClick(txtThemeName) or (Key = KeyAltM) then
 		begin
 			OriginalText := ThemeName;
 			ObjEditTxt(txtThemeName, ThemeName);
-			if not ThemeName = OriginalText then
+			if not (ThemeName = OriginalText) then
 				ThemeChanged := True;
 		end;
 
@@ -550,51 +518,12 @@ begin
 		begin
 			OriginalText := ThemeAuthor;
 			ObjEditTxt(txtThemeAuthor, ThemeAuthor);
-			if not ThemeAuthor = OriginalText then
+			if not (ThemeAuthor = OriginalText) then
 				ThemeChanged := True;
-		end;}
+		end;
 
 		if ObjBtnClick(btnAbout) or (Key = KeyAltA) then
 			SysAboutBox(AppName, AppVersion, AppAuthor, AppIcon);
-
-		if ObjBtnClick(btnSaveAs) or (Key = KeyAltV) then
-		begin
-			{TargetFile = SysInputBox('Save theme', 'Type a name for the theme file below, without path or' + NewLine
-				+ 'extension (8 letters max, for example: MYTHEME).', 'THEMES', ThemeFile)
-			if TargetFile = '' then GOTO TopOfLoop
-
-			if LEN(TargetFile) > 8 then
-					I = SysMsgBox('Invalid file name', 'The filename you specified was too long.' + NewLine 
-						'Do not type a path or extension, only a filename' + NewLine +
-						'with a maximun lenght of 8 characters.', msgError)
-					GOTO TopOfLoop
-			end;
-
-			if File.Exists('DATA\THEMES\' + TargetFile + '.DAT') then
-				if not UCASE$(TargetFile) = ThemeFile then
-					DIM DoSave
-					DoSave = SysMsgBox('File already exists', 'The specified theme file already exists. Do you want'
-						+ NewLine + 'to owerwrite it with this theme?', msgQuest)
-					if DoSave = False then GOTO TopOfLoop
-				end;
-
-				'Make sure we start with a clean file
-				KILL 'DATA\THEMES\' + TargetFile + '.DAT'
-			end;
-
-			'Output to file
-			ThemeFile = UCASE$(TargetFile)
-			SaveTheme}
-		end;
-
-		if ObjBtnClick(btnSave) or (Key = KeyAltS) then
-		begin
-			if ThemeChanged then
-			begin
-				SaveTheme;
-				ThemeChanged := False;
-			end;
-		end;
 
 		if ObjBtnClick(btnExit) or (Key = KeyAltX) or (Key = KeyEscape) then
 		begin
@@ -603,7 +532,7 @@ begin
 
 			if SysMsgBox('Theme has been modified', 'This theme contains unsaved changes. Do you' + NewLine
 			+ 'want to save before you exit?', msgQuest) then
-				SaveTheme;
+				SaveTheme(false);
 			
 			break;
 			{Debug - if not saved and user said they wanted to, then cancel}
