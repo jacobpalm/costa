@@ -5,7 +5,6 @@ REM   - Costa source is located in C:\COSTA
 REM   - Turbo Pascal 7.x is located in C:\TP\BIN
 
 REM Turbo Pascal compiler switches used:
-REM -B            = build all units
 REM -$D-          = disable debug
 REM -$E-          = disable 80x87 emulation
 REM -$L-          = disable local debug symbols
@@ -13,6 +12,7 @@ REM -U, -I and -O = specify path to source files
 REM -E            = specify path to produced EXE/TPU
 
 CD C:\COSTA
-FOR %%F IN (SOURCE\*.PAS) DO C:\TP\BIN\TPC -B -$D- -$E- -$L- %%F -USOURCE -ISOURCE -OSOURCE -EC:\COSTA
+DEL *.TPU
+FOR %%F IN (SOURCE\*.PAS) DO C:\TP\BIN\TPC -$D- -$E- -$L- %%F -USOURCE -ISOURCE -OSOURCE -EC:\COSTA
 
 ECHO.

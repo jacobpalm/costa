@@ -136,12 +136,12 @@ begin
 			{Draw highlighted item}
 			SetFillStyle(SolidFill, Theme.Select);
 			Bar(x1, y1 + (Counter * ListItemHeight), x2, y2 - 1 + (Counter * ListItemHeight));
-			FontPrint(ItemText, x1 + 3, y1 + 2 + (Counter * ListItemHeight), Theme.SelectText, FontHeading);
+			FontPrint(ItemText, x1 + 3, y1 + 2 + (Counter * ListItemHeight), Theme.SelectText);
 		end
 		else
 		begin
 			{Draw normal item}
-			FontPrint(ItemText, x1 + 3, y1 + 2 + (Counter * ListItemHeight), Theme.TextboxText, FontHeading);
+			FontPrint(ItemText, x1 + 3, y1 + 2 + (Counter * ListItemHeight), Theme.TextboxText);
 		end;
 
 		Inc(Counter);
@@ -171,7 +171,7 @@ begin
 	begin
 		SetFillStyle(SolidFill, BGColor);
 		Bar(x1, y1 + YOffset, x2, y2 - 1 + YOffset);
-		FontPrint(ItemText, x1 + 3, y1 + 2 + YOffset, FGColor, FontHeading);
+		FontPrint(ItemText, x1 + 3, y1 + 2 + YOffset, FGColor);
 	end;
 	end;
 	MouseShow;
@@ -483,10 +483,10 @@ begin
 	ObjDrawBtn(btnFileNext, False);
 	ObjDrawBtn(btnFolderPrev, False);
 	ObjDrawBtn(btnFolderNext, False);
-	FontPrint(HotkeySymbol + 'Pattern:', 101, winFileSelect.Pos.Top + 14, Theme.WindowText, FontNormal);
-	FontPrint(HotkeySymbol + 'Drive:', 272, winFileSelect.Pos.Top + 14, Theme.WindowText, FontNormal);
-	FontPrint(HotkeySymbol + 'Files:', 101, winFileSelect.Pos.Top + 57, Theme.WindowText, FontNormal);
-	FontPrint('F' + HotkeySymbol + 'olders:', 272, winFileSelect.Pos.Top + 57, Theme.WindowText, FontNormal);
+	FontPrint(HotkeySymbol + 'Pattern:', 101, winFileSelect.Pos.Top + 14, Theme.WindowText);
+	FontPrint(HotkeySymbol + 'Drive:', 272, winFileSelect.Pos.Top + 14, Theme.WindowText);
+	FontPrint(HotkeySymbol + 'Files:', 101, winFileSelect.Pos.Top + 57, Theme.WindowText);
+	FontPrint('F' + HotkeySymbol + 'olders:', 272, winFileSelect.Pos.Top + 57, Theme.WindowText);
 	MouseShow;
 
 	{If path provided, use it}

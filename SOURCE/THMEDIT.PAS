@@ -17,7 +17,7 @@ const
 	MSG_FILE_EXISTS_TITLE      = 'File already exists';
 	MSG_FILE_EXISTS_PROMPT     = 'The specified file already exists. Do you want' + #13 +
 	                             'to overwrite it?';
-	MSG_INVALID_THEME_FILE =     'The selected file is not a valid theme file. Please' + #13 +
+	MSG_INVALID_THEME_FILE     = 'The selected file is not a valid theme file. Please' + #13 +
 	                             'select a .BIN file from the THEMES directory.';
 	MSG_ERROR_OPENING_TITLE    = 'Error opening theme file';
 	MSG_ERROR_OPENING          = 'The selected theme file could not be opened.' + #13 +
@@ -166,10 +166,10 @@ begin
 	ObjDrawTxt(txtListPreview, '', False);
 
 	{Text on desktop and window}
-	FontPrint('This is a preview of your', x1 + 12, y1 + 14, Theme.WindowText, FontHeading);
-	FontPrint('theme in action.', x1 + 12, y1 + 30, Theme.WindowText, FontNormal);
-	FontPrint('Preview link', imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 4, Theme.DesktopText, FontHeading);
-	FontPrint('preview.exe', imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 18, Theme.DesktopText, FontNormal);
+	FontPrint('This is a preview of your', x1 + 12, y1 + 14, Theme.WindowText);
+	FontPrint('theme in action.', x1 + 12, y1 + 30, Theme.WindowText);
+	FontPrint('Preview link', imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 4, Theme.DesktopText);
+	FontPrint('preview.exe', imgPreview.Pos.Left + 38, imgPreview.Pos.Top + 18, Theme.DesktopText);
 
 	{Draw list preview}
 	SetFillStyle(SolidFill, Theme.Select);
@@ -177,11 +177,11 @@ begin
 	y1 := txtListPreview.Pos.Top;
 	x2 := txtListPreview.Pos.Left + txtListPreview.Pos.Width;
 	Bar(x1 + 2, y1 + 15, x2 - 2, y1 + 27);
-	FontPrint('List item', x1 + 5, y1 + 5, Theme.TextboxText, FontHeading);
-	FontPrint('Selected item', x1 + 5, y1 + 5 + 12, Theme.SelectText, FontHeading);
-	FontPrint('List item', x1 + 5, y1 + 5 + 24, Theme.TextboxText, FontHeading);
-	FontPrint('List item', x1 + 5, y1 + 5 + 36, Theme.TextboxText, FontHeading);
-	FontPrint('List item', x1 + 5, y1 + 5 + 48, Theme.TextboxText, FontHeading);
+	FontPrint('List item', x1 + 5, y1 + 5, Theme.TextboxText);
+	FontPrint('Selected item', x1 + 5, y1 + 5 + 12, Theme.SelectText);
+	FontPrint('List item', x1 + 5, y1 + 5 + 24, Theme.TextboxText);
+	FontPrint('List item', x1 + 5, y1 + 5 + 36, Theme.TextboxText);
+	FontPrint('List item', x1 + 5, y1 + 5 + 48, Theme.TextboxText);
 	MouseShow;
 
 	{Restore system theme}
@@ -488,11 +488,11 @@ begin
 	end;
 
 	FontPrint('Theme na' + HotkeySymbol + 'me:', txtThemeName.Pos.Left, txtThemeName.Pos.Top - 16,
-		Theme.WindowText, FontHeading);
+		Theme.WindowText);
 	FontPrint('Theme a' + HotkeySymbol + 'uthor:', txtThemeAuthor.Pos.Left, txtThemeAuthor.Pos.Top - 16,
-		Theme.WindowText, FontHeading);
-	FontPrint(HotkeySymbol + 'Object selected:', 434, btnObject.Pos.Top - 16, Theme.WindowText, FontHeading);
-	FontPrint(HotkeySymbol + 'Color for object:', 434, btnColor[0].Pos.Top - 16, Theme.WindowText, FontHeading);
+		Theme.WindowText);
+	FontPrint(HotkeySymbol + 'Object selected:', 434, btnObject.Pos.Top - 16, Theme.WindowText);
+	FontPrint(HotkeySymbol + 'Color for object:', 434, btnColor[0].Pos.Top - 16, Theme.WindowText);
 	
 	{Save system theme}
 	SysTheme := Theme;

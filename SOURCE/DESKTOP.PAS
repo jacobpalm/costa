@@ -368,7 +368,7 @@ begin
 		ObjDrawBtn(btnPrevious, false);
 		ObjDrawBtn(btnNext, false);
 		Str(Setting.DesktopID, DeskStr);
-		FontPrint(DeskStr + '/5', 310, 10, Theme.WindowText, FontHeading);
+		FontPrint(DeskStr + '/5', 310, 10, Theme.WindowText);
 	end;
 
 	{Clear background}
@@ -391,9 +391,9 @@ begin
 
 		if Setting.ShowLinkDescriptions then
 		begin
-			FontPrint(DeskLink^[i]^.Caption, x + 38, y + 4, Theme.DesktopText, FontNormal);
+			FontPrint(DeskLink^[i]^.Caption, x + 38, y + 4, Theme.DesktopText);
 			if Setting.ShowLinkTargetFiles then
-				FontPrint(DeskLink^[i]^.FileName, x + 38, y + 18, Theme.DesktopText, FontNormal);
+				FontPrint(DeskLink^[i]^.FileName, x + 38, y + 18, Theme.DesktopText);
 		end;
 	end;
 	
@@ -500,9 +500,9 @@ begin
 	ObjDrawBtn(btnBrowse, false);
 	
 	y2 := txtProgram.Pos.Top - 16;
-	FontPrint(HotkeySymbol + 'Program:', txtProgram.Pos.Left, y2, Theme.WindowText, FontHeading);
+	FontPrint(HotkeySymbol + 'Program:', txtProgram.Pos.Left, y2, Theme.WindowText);
 	y2 := txtParameters.Pos.Top - 16;
-	FontPrint('Pa' + HotkeySymbol + 'rameters:', txtParameters.Pos.Left, y2, Theme.WindowText, FontHeading);
+	FontPrint('Pa' + HotkeySymbol + 'rameters:', txtParameters.Pos.Left, y2, Theme.WindowText);
 	MouseShow;
 
 	repeat
@@ -598,13 +598,13 @@ begin
 	ObjDrawBtn(btnCancel, false);
 	ObjDrawImg(imgIcon);
 
-	FontPrint(DeskLink^[TargetLink]^.Caption, x1 + 54, y1 + 17, 0, FontHeading);
-	FontPrint(DeskLink^[TargetLink]^.Filename, x1 + 54, y1 + 31, 0, FontNormal);
-	FontPrint('Path:', x1 + 12, y1 + 59, 0, FontNormal);
-	FontPrint('Parameters:', x1 + 12, y1 + 76, 0, FontNormal);
+	FontPrint(DeskLink^[TargetLink]^.Caption, x1 + 54, y1 + 17, 0);
+	FontPrint(DeskLink^[TargetLink]^.Filename, x1 + 54, y1 + 31, 0);
+	FontPrint('Path:', x1 + 12, y1 + 59, 0);
+	FontPrint('Parameters:', x1 + 12, y1 + 76, 0);
 	
-	FontPrint(Path, x1 + 108, y1 + 59, Theme.WindowText, FontNormal);
-	FontPrint(Parameters, x1 + 108, y1 + 76, Theme.WindowText, FontNormal);
+	FontPrint(Path, x1 + 108, y1 + 59, Theme.WindowText);
+	FontPrint(Parameters, x1 + 108, y1 + 76, Theme.WindowText);
 	MouseShow;
 
 	{Clear buffers, sometimes needed on DOSBox}
@@ -887,11 +887,11 @@ begin
 	ObjDrawChk(chkPauseOnExit);
 	ObjDrawBtn(btnOK, false);
 	ObjDrawBtn(btnCancel, false);
-	FontPrint('C' + HotkeySymbol + 'aption:', 222, txtCaption.Pos.Top - 15, Theme.WindowText, 1);
-	FontPrint(HotkeySymbol + 'Program:', 222, txtFilename.Pos.Top - 15, Theme.WindowText, 1);
-	FontPrint('Pa' + HotkeySymbol + 'th:', 222, txtPath.Pos.Top - 15, Theme.WindowText, 1);
-	FontPrint('Pa' + HotkeySymbol + 'rameters:', 222, txtParams.Pos.Top - 15, Theme.WindowText, 1);
-	FontPrint('Pause after e' + HotkeySymbol + 'xecution', 242, chkPauseOnExit.Pos.Top + 3, Theme.WindowText, 2);
+	FontPrint('C' + HotkeySymbol + 'aption:', 222, txtCaption.Pos.Top - 15, Theme.WindowText);
+	FontPrint(HotkeySymbol + 'Program:', 222, txtFilename.Pos.Top - 15, Theme.WindowText);
+	FontPrint('Pa' + HotkeySymbol + 'th:', 222, txtPath.Pos.Top - 15, Theme.WindowText);
+	FontPrint('Pa' + HotkeySymbol + 'rameters:', 222, txtParams.Pos.Top - 15, Theme.WindowText);
+	FontPrint('Pause after e' + HotkeySymbol + 'xecution', 242, chkPauseOnExit.Pos.Top + 3, Theme.WindowText);
 	SetFillStyle(SolidFill, Theme.Desktop);
 	Bar(btnIcon.Pos.Left + 2, btnIcon.Pos.Top + 2, btnIcon.Pos.Left +
 		btnIcon.Pos.Width - 2, btnIcon.Pos.Top + btnIcon.Pos.Height - 2);

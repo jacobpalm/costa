@@ -132,13 +132,13 @@ begin
 	ObjDrawBtn(btnPreview2, True);
 	ObjDrawTxt(txtPreview, 'Example textbox', False);
 	
-	FontPrint('Preview link', imgDeskLink.Pos.Left + 38, imgDeskLink.Pos.Top + 4, Theme.DesktopText, fontHeading);
-	FontPrint('preview.exe', imgDeskLink.Pos.Left + 38, imgDeskLink.Pos.Top + 18, Theme.DesktopText, fontNormal);
+	FontPrint('Preview link', imgDeskLink.Pos.Left + 38, imgDeskLink.Pos.Top + 4, Theme.DesktopText);
+	FontPrint('preview.exe', imgDeskLink.Pos.Left + 38, imgDeskLink.Pos.Top + 18, Theme.DesktopText);
 
 	FontPrint(ThemeName, imgLogo.Pos.Left + 42, imgLogo.Pos.Top + 5,
-		Theme.WindowText, fontHeading);
+		Theme.WindowText);
 	FontPrint(ThemeAuthor, imgLogo.Pos.Left + 42, imgLogo.Pos.Top + 19,
-		Theme.WindowText, fontNormal);
+		Theme.WindowText);
 	MouseShow;
 
 	SysLoadTheme(Setting.ThemeFile);
@@ -213,21 +213,21 @@ begin
 	ObjDrawImg(imgTheme);
 
 	FontPrint('Show icon ' + HotkeySymbol + 'descriptions', chkSetting[LinkDesc].Pos.Left + 20, chkSetting[LinkDesc].Pos.Top + 3,
-		Theme.WindowText, fontNormal);
+		Theme.WindowText);
 	FontPrint('Show icon ' + HotkeySymbol + 'targets', chkSetting[LinkTarget].Pos.Left + 20, chkSetting[LinkTarget].Pos.Top + 3,
-		Theme.WindowText, fontNormal);
+		Theme.WindowText);
 	FontPrint('Confirm icon ' + HotkeySymbol + 'removal', chkSetting[LinkDelete].Pos.Left + 20,
-		chkSetting[LinkDelete].Pos.Top + 3, Theme.WindowText, fontNormal);
+		chkSetting[LinkDelete].Pos.Top + 3, Theme.WindowText);
 	FontPrint('Confirm before ' + HotkeySymbol + 'exiting Costa', chkSetting[ConfExit].Pos.Left + 20,
-		chkSetting[ConfExit].Pos.Top + 3, Theme.WindowText, fontNormal);
+		chkSetting[ConfExit].Pos.Top + 3, Theme.WindowText);
 
-	FontPrint('Settings', imgSetting.Pos.Left + 42, imgSetting.Pos.Top + 5, Theme.WindowText, fontHeading);
-	FontPrint('Tweak various aspects of Costa.', imgSetting.Pos.Left + 42, imgSetting.Pos.Top + 19, Theme.WindowText, fontNormal);
-	FontPrint('Theme', imgTheme.Pos.Left + 42, imgTheme.Pos.Top + 5, Theme.WindowText, fontHeading);
-	FontPrint('Choose colors for the UI.', imgTheme.Pos.Left + 42, imgTheme.Pos.Top + 19, Theme.WindowText, fontNormal);
+	FontPrint('Settings', imgSetting.Pos.Left + 42, imgSetting.Pos.Top + 5, Theme.WindowText);
+	FontPrint('Tweak various aspects of Costa.', imgSetting.Pos.Left + 42, imgSetting.Pos.Top + 19, Theme.WindowText);
+	FontPrint('Theme', imgTheme.Pos.Left + 42, imgTheme.Pos.Top + 5, Theme.WindowText);
+	FontPrint('Choose colors for the UI.', imgTheme.Pos.Left + 42, imgTheme.Pos.Top + 19, Theme.WindowText);
 
 	if ThemeCount = 0 then
-		FontPrint('No themes found in \THEMES.', 387, 310, Theme.WindowText, FontNormal);
+		FontPrint('No themes found in \THEMES.', 387, 310, Theme.WindowText);
 	MouseShow;
 
 	ThemePreview;

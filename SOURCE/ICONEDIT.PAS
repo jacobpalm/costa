@@ -555,9 +555,9 @@ begin
 	end;
 	SetLineStyle(SolidLn, 1, NormWidth);
 
-	FontPrint('Preview', btnPreview.Pos.Left, btnPreview.Pos.Top - 15, Theme.WindowText, FontHeading);
-	FontPrint(HotkeySymbol + 'Color', txtColor[0].Pos.Left, txtDrawArea.Pos.Top, Theme.WindowText, FontHeading);
-	FontPrint('Tools', txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 12, txtDrawArea.Pos.Top, Theme.WindowText, FontHeading);
+	FontPrint('Preview', btnPreview.Pos.Left, btnPreview.Pos.Top - 15, Theme.WindowText);
+	FontPrint(HotkeySymbol + 'Color', txtColor[0].Pos.Left, txtDrawArea.Pos.Top, Theme.WindowText);
+	FontPrint('Tools', txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 12, txtDrawArea.Pos.Top, Theme.WindowText);
 	MouseShow;
 
 	{Sert array to invalid color values, so that any color including 0 will be drawn on first field click}

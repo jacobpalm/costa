@@ -453,7 +453,7 @@ begin
 	MouseHide;
 	SetFillStyle(SolidFill, Green);
 	Bar(12, 49, 627, 65);
-	FontPrint(Message, (640 - FontGetWidth(Message, fontHeading)) div 2, 53, Black, fontHeading);
+	FontPrint(Message, (640 - FontGetWidth(Message)) div 2, 53, Black);
 	MouseShow;
 end;
 
@@ -477,7 +477,7 @@ begin
 	MouseHide;
 	SetFillStyle(SolidFill, Green);
 	Bar(162, 316, 477, 332);
-	FontPrint(Message, (640 - FontGetWidth(Message, fontHeading)) div 2, 320, Black, fontHeading);
+	FontPrint(Message, (640 - FontGetWidth(Message)) div 2, 320, Black);
 	MouseShow;
 end;
 

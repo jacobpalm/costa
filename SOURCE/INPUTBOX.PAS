@@ -36,16 +36,16 @@ begin
 		begin
 			Inc(msgLineCount);
 			msgLines[msgLineCount] := S;
-			if FontGetWidth(S, FontNormal) > msgTextWidth then
-				msgTextWidth := FontGetWidth(S, FontNormal);
+			if FontGetWidth(S) > msgTextWidth then
+				msgTextWidth := FontGetWidth(S);
 			Break;
 		end
 		else
 		begin
 			Inc(msgLineCount);
 			msgLines[msgLineCount] := Copy(S, 1, P-1);
-			if FontGetWidth(msgLines[msgLineCount], FontNormal) > msgTextWidth then
-				msgTextWidth := FontGetWidth(msgLines[msgLineCount], FontNormal);
+			if FontGetWidth(msgLines[msgLineCount]) > msgTextWidth then
+				msgTextWidth := FontGetWidth(msgLines[msgLineCount]);
 			Delete(S, 1, P);
 		end;
 	until S = '';
@@ -83,21 +83,21 @@ begin
 	ObjDrawTxt(txtInput, txtInputText, False);
 
 	if Length(msgIcon) > 0 then
-		FontPrint(msgTitle, winInputBox.Pos.Left + 53, winInputBox.Pos.Top + 15, Theme.WindowText, 1)
+		FontPrint(msgTitle, winInputBox.Pos.Left + 53, winInputBox.Pos.Top + 15, Theme.WindowText)
 	else
-		FontPrint(msgTitle, winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 15, Theme.WindowText, 1);
+		FontPrint(msgTitle, winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 15, Theme.WindowText);
 
 	y2 := winInputBox.Pos.Top + 17;
 	for i := 1 to msgLineCount do
 	begin
 		if (i < 3) and (Length(msgIcon) > 0) then
-				FontPrint(msgLines[i], winInputBox.Pos.Left + 53, y2 + (15 * i), Theme.WindowText, 2)
+				FontPrint(msgLines[i], winInputBox.Pos.Left + 53, y2 + (15 * i), Theme.WindowText)
 			else
-				FontPrint(msgLines[i], winInputBox.Pos.Left + 12, y2 + (15 * i), Theme.WindowText, 2);
+				FontPrint(msgLines[i], winInputBox.Pos.Left + 12, y2 + (15 * i), Theme.WindowText);
 	end;
 		
 
-	FontPrint('I' + HotkeySymbol + 'nput:', txtInput.Pos.Left, txtInput.Pos.Top - 16, Theme.WindowText, FontHeading);
+	FontPrint('I' + HotkeySymbol + 'nput:', txtInput.Pos.Left, txtInput.Pos.Top - 16, Theme.WindowText);
 
 	if Length(msgIcon) > 0 then
 		ObjDrawImg(imgIcon);

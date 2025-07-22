@@ -66,8 +66,8 @@ begin
 	ObjDrawWin(winSample);
 	ObjDrawBtn(btnAbout, False);
 	ObjDrawBtn(btnExit, False);
-	FontPrint('Sample text, header font', winSample.Pos.Left + 12, winSample.Pos.Top + 70, Theme.WindowText, FontHeading);
-	FontPrint('Sample text, normal font', winSample.Pos.Left + 12, winSample.Pos.Top + 85, Theme.WindowText, FontNormal);
+	FontPrint('Sample text, header font', winSample.Pos.Left + 12, winSample.Pos.Top + 70, Theme.WindowText);
+	FontPrint('Sample text, normal font', winSample.Pos.Left + 12, winSample.Pos.Top + 85, Theme.WindowText);
 	MouseShow;
 
 	ObjDrawImg(imgSample);

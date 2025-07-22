@@ -76,7 +76,7 @@ begin
 		LogLinesWritten := 0;
 		ObjDrawTxt(TargetTxt, '', False);
 	end;
-	FontPrint(Text, 624 - Length(Text) * 8, TopOffset + (LogLinesWritten * 15), Theme.WindowText, FontHeading);
+	FontPrint(Text, 624 - Length(Text) * 8, TopOffset + (LogLinesWritten * 15), Theme.WindowText);
 end;
 
 begin

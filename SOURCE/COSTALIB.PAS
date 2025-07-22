@@ -10,9 +10,6 @@ const
 	LibVersion       = '2.0';
 	LibYear          = '2025';
 
-	FontHeading      = 1;
-	FontNormal       = 2;
-
 	sizeDefault      = -1;
 	sizeRetain       = -2;
 	sizeCenter       = -3;
@@ -107,7 +104,7 @@ var
 	Theme: ThemeType;
 
 function FileExists(const FileName: string): Boolean;
-function FontGetWidth(TargetText: String; FontID: Integer): Integer;
+function FontGetWidth(TargetText: String): Integer;
 function GetKey: string;
 function LowerCase(s: string): string;
 function LTrim(s: string): string;
@@ -124,7 +121,7 @@ function Timer: Real;
 function Trim(s: string): string;
 function UpperCase(s: string): string;
 procedure ClearKeyBuffer;
-procedure FontPrint(Text: string; X, Y, Col, FontID: Integer);
+procedure FontPrint(Text: string; X, Y, Col: Integer);
 procedure MouseHide;
 procedure MousePoll;
 procedure MouseSetPos(XPos, YPos: Integer);
@@ -252,7 +249,7 @@ begin
 	ValidDOSFilename := true;
 end;
 
-function FontGetWidth(TargetText: String; FontID: Integer): Integer;
+function FontGetWidth(TargetText: String): Integer;
 var
 	Width: Integer;
 begin
@@ -264,7 +261,7 @@ begin
 	FontGetWidth := Width;
 end;
 
-procedure FontPrint(Text: String; X, Y, Col, FontID: Integer);
+procedure FontPrint(Text: string; X, Y, Col: Integer);
 var
 	HotkeyPos, NewLinePos: Integer;
 	TextLine: String;
@@ -503,13 +500,13 @@ begin
 	begin
 		x1 := (x2 - x1) div 2 + x1;
 		y1 := (y2 - y1) div 2 + y1 - 3; {3 is the offset to center text vertically}
-		x1 := x1 - FontGetWidth(TargetBtn.Caption, FontHeading) div 2;
+		x1 := x1 - FontGetWidth(TargetBtn.Caption) div 2;
 		if Pressed then
 		begin
 			Inc(x1);
 			Inc(y1);
 		end;
-		FontPrint(TargetBtn.Caption, x1, y1, Color4, FontHeading);
+		FontPrint(TargetBtn.Caption, x1, y1, Color4);
 	end;
 end;
 
@@ -633,8 +630,8 @@ begin
 	begin
 		SetFillStyle(SolidFill, Red);
 		Bar(X, Y, X+31, Y+31);
-		FontPrint('IMG', X+5, Y+6, 15, FontNormal);
-		FontPrint('ERR', X+5, Y+19, 15, FontNormal);
+		FontPrint('IMG', X+5, Y+6, 15);
+		FontPrint('ERR', X+5, Y+19, 15);
 	end;
 end;
 
@@ -669,13 +666,13 @@ begin
 	if S <> '' then
 	begin
 		MaxShow := TargetTxt.Pos.Width - 10;
-		while FontGetWidth(S, FontHeading) >= MaxShow do
+		while FontGetWidth(S) >= MaxShow do
 			Delete(S, 1, 1);
-		FontPrint(S, x1+5, y1+5, Theme.TextboxText, FontHeading);
+		FontPrint(S, x1+5, y1+5, Theme.TextboxText);
 	end;
 	if IsEditing then
 	begin
-		x1 := x1 + 7 + FontGetWidth(S, FontHeading);
+		x1 := x1 + 7 + FontGetWidth(S);
 		Line(x1, y1+4, x1, y1+15);
 	end;
 end;
@@ -724,9 +721,9 @@ begin
 	OrigTxt := Text;
 	TempTxt := Text;
 
-	if FontGetWidth(TempTxt, FontHeading) + 2 < MaxShow then
+	if FontGetWidth(TempTxt) + 2 < MaxShow then
 	begin
-		LineX1 := x1 + FontGetWidth(Text, FontHeading) + 2;
+		LineX1 := x1 + FontGetWidth(Text) + 2;
 		MouseHide;
 		SetColor(Theme.TextboxText);
 		Line(LineX1, y1 - 1, LineX1, y1 + 10);
@@ -756,14 +753,14 @@ begin
 						if Length(TempTxt) > 0 then
 						begin
 							MouseHide;
-							if FontGetWidth(TempTxt, FontHeading) + 2 < MaxShow then
+							if FontGetWidth(TempTxt) + 2 < MaxShow then
 							begin
 								{Erase only the last char}
-								LineX1 := x1 + FontGetWidth(TempTxt, FontHeading);
+								LineX1 := x1 + FontGetWidth(TempTxt);
 								SetFillStyle(SolidFill, Theme.Textbox);
 								Bar(LineX1 + 2, y1 - 2, LineX1 - 8, y1 + 11);
 								TempTxt := Copy(TempTxt, 1, Length(TempTxt) - 1);
-								LineX1 := x1 + FontGetWidth(TempTxt, FontHeading) + 2;
+								LineX1 := x1 + FontGetWidth(TempTxt) + 2;
 								SetColor(Theme.TextboxText);
 								Line(LineX1, y1 - 1, LineX1, y1 + 10);
 							end
@@ -780,7 +777,7 @@ begin
 				13: {Enter}
 					begin
 						Text := TempTxt;
-						LineX1 := x1 + FontGetWidth(Text, FontHeading) + 2;
+						LineX1 := x1 + FontGetWidth(Text) + 2;
 						MouseHide;
 						SetColor(Theme.Textbox);
 						Line(LineX1, y1 - 1, LineX1, y1 + 10);
@@ -793,14 +790,14 @@ begin
 						if Length(TempTxt) <> MaxLen then
 						begin
 							MouseHide;
-							if FontGetWidth(TempTxt + Key, FontHeading) + 2 < MaxShow then
+							if FontGetWidth(TempTxt + Key) + 2 < MaxShow then
 							begin
-								LineX1 := x1 + FontGetWidth(TempTxt, FontHeading) + 2;
+								LineX1 := x1 + FontGetWidth(TempTxt) + 2;
 								SetColor(Theme.Textbox);
 								Line(LineX1, y1 - 1, LineX1, y1 + 10);
 								TempTxt := TempTxt + Key;
-								FontPrint(TempTxt, x1, y1, Theme.TextboxText, FontHeading);
-								LineX1 := x1 + FontGetWidth(TempTxt, FontHeading) + 2;
+								FontPrint(TempTxt, x1, y1, Theme.TextboxText);
+								LineX1 := x1 + FontGetWidth(TempTxt) + 2;
 								SetColor(Theme.TextboxText);
 								Line(LineX1, y1 - 1, LineX1, y1 + 10);
 							end
@@ -905,15 +902,15 @@ begin
 	ObjDrawWin(winAboutBox);
 	ObjDrawBtn(btnClose, False);
 	ObjDrawImg(imgLogo);
-	FontPrint(ProgramName + ' ' + ProgramVersion, 212, winAboutBox.Pos.Top + 17, 0, 1);
-	FontPrint('By ' + ProgramAuthor, 212, winAboutBox.Pos.Top + 31, 0, 2);
-	FontPrint('Made with the ' + LibName + ' version', 168, winAboutBox.Pos.Top + 53, 0, 2);
-	FontPrint(LibVersion + ' by Jacob Palm, 2004-' + LibYear + '.', 168, winAboutBox.Pos.Top + 67, 0, 2);
-	FontPrint('May be freely distributed under the', 168, winAboutBox.Pos.Top + 95, 0, 2);
-	FontPrint('terms of the MIT License. More details', 168, winAboutBox.Pos.Top + 109, 0, 2);
-	FontPrint('can be found in the LICENSE file.', 168, winAboutBox.Pos.Top + 123, 0, 2);
-	FontPrint('More information and news online at:', 168, winAboutBox.Pos.Top + 151, 0, 2);
-	FontPrint('https://costa.jacobpalm.dk', 168, winAboutBox.Pos.Top + 165, 0, 2);
+	FontPrint(ProgramName + ' ' + ProgramVersion, 212, winAboutBox.Pos.Top + 17, Theme.WindowText);
+	FontPrint('By ' + ProgramAuthor, 212, winAboutBox.Pos.Top + 31, Theme.WindowText);
+	FontPrint('Made with the ' + LibName + ' version', 168, winAboutBox.Pos.Top + 53, Theme.WindowText);
+	FontPrint(LibVersion + ' by Jacob Palm, 2004-' + LibYear + '.', 168, winAboutBox.Pos.Top + 67, Theme.WindowText);
+	FontPrint('May be freely distributed under the', 168, winAboutBox.Pos.Top + 95, Theme.WindowText);
+	FontPrint('terms of the MIT License. More details', 168, winAboutBox.Pos.Top + 109, Theme.WindowText);
+	FontPrint('can be found in the LICENSE file.', 168, winAboutBox.Pos.Top + 123, Theme.WindowText);
+	FontPrint('More information and news online at:', 168, winAboutBox.Pos.Top + 151, Theme.WindowText);
+	FontPrint('https://costa.jacobpalm.dk', 168, winAboutBox.Pos.Top + 165, Theme.WindowText);
 	MouseShow;
 	repeat
 		Key := GetKey;
@@ -1060,16 +1057,16 @@ begin
 		begin
 			Inc(msgLineCount);
 			msgLines[msgLineCount] := S;
-			if FontGetWidth(S, FontNormal) > msgTextWidth then
-				msgTextWidth := FontGetWidth(S, FontNormal);
+			if FontGetWidth(S) > msgTextWidth then
+				msgTextWidth := FontGetWidth(S);
 			Break;
 		end
 		else
 		begin
 			Inc(msgLineCount);
 			msgLines[msgLineCount] := Copy(S, 1, P-1);
-			if FontGetWidth(msgLines[msgLineCount], FontNormal) > msgTextWidth then
-				msgTextWidth := FontGetWidth(msgLines[msgLineCount], FontNormal);
+			if FontGetWidth(msgLines[msgLineCount]) > msgTextWidth then
+				msgTextWidth := FontGetWidth(msgLines[msgLineCount]);
 			Delete(S, 1, P);
 		end;
 	until S = '';
@@ -1119,9 +1116,9 @@ begin
 	ObjDrawBtn(btnFirst, False);
 	if msgType = msgQuest then ObjDrawBtn(btnSecond, False);
 	ObjDrawImg(imgIcon);
-	FontPrint(msgTitle, winMsgBox.Pos.Left+56, winMsgBox.Pos.Top+15, Theme.WindowText, 1);
+	FontPrint(msgTitle, winMsgBox.Pos.Left+56, winMsgBox.Pos.Top+15, Theme.WindowText);
 	for i := 1 to msgLineCount do
-		FontPrint(msgLines[i], winMsgBox.Pos.Left+56, winMsgBox.Pos.Top+17+(15*i), Theme.WindowText, 2);
+		FontPrint(msgLines[i], winMsgBox.Pos.Left+56, winMsgBox.Pos.Top+17+(15*i), Theme.WindowText);
 	MouseShow;
 	repeat
 		Key := GetKey;

@@ -233,7 +233,7 @@ begin
 		{No text to display, skip}
 		if (DrawnLines < MaxLinesShown) and (i <= LineCount) then
 			{Dereference the line pointer and print the text}
-			FontPrint(Lines^[i]^, 9, (15 * (i - StartLine + 1)) + 24, Theme.TextboxText, FontNormal);
+			FontPrint(Lines^[i]^, 9, (15 * (i - StartLine + 1)) + 24, Theme.TextboxText);
 
 	end;
 	MouseShow;

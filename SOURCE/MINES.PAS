@@ -316,7 +316,7 @@ begin
 				8: TextColor := 8;
 			end;
 			Str(Neighbors, NeighborStr);
-			FontPrint(NeighborStr, x1 + ((CellSize - FontGetWidth(NeighborStr, fontHeading)) div 2), y1 + 3, TextColor, fontHeading);
+			FontPrint(NeighborStr, x1 + ((CellSize - FontGetWidth(NeighborStr)) div 2), y1 + 3, TextColor);
 		end;
 	end
 	else if (MineField[Row, Col] and FieldKBSelected) <> 0 then
@@ -635,7 +635,7 @@ begin
 		
 		Bar(106, 330, 184, 343);
 		MessageText := FlaggedStr + '/' + CountStr;
-		FontPrint(MessageText, 110, 332, Theme.WindowText, fontHeading);
+		FontPrint(MessageText, 110, 332, Theme.WindowText);
 		MouseShow;
 		exit;
 	end;
@@ -649,14 +649,14 @@ begin
 	else
 		MessageText := 'Flagged mines: ' + FlaggedStr + '/' + CountStr;
 	
-	FontPrint(MessageText, 8, 332, Theme.WindowText, fontHeading);
+	FontPrint(MessageText, 8, 332, Theme.WindowText);
 
 	if EnableAudio then
 		MessageText := 'Sound: On'
 	else
 		MessageText := 'Sound: Off';
 	
-	FontPrint(MessageText, (630 - FontGetWidth(MessageText, fontHeading)), 332, Theme.WindowText, fontHeading);
+	FontPrint(MessageText, (630 - FontGetWidth(MessageText)), 332, Theme.WindowText);
 	
 	MouseShow;
 
@@ -711,7 +711,7 @@ begin
 		Str(Seconds, TempStr);
 		MessageText := MessageText + TempStr;
 
-		FontPrint(MessageText, (640 - FontGetWidth(MessageText, fontHeading)) div 2, 332, Theme.WindowText, fontHeading);
+		FontPrint(MessageText, (640 - FontGetWidth(MessageText)) div 2, 332, Theme.WindowText);
 	end;
 
 	MouseShow;
@@ -786,20 +786,20 @@ begin
 	ObjDrawBtn(btnCancel, False);
 
 	TempStr := '9x' + HotkeySymbol + '9';
-	TextOffset := ((btnSize[0].Pos.Width - FontGetWidth(TempStr, fontHeading)) div 2);
-	FontPrint(TempStr, btnSize[0].Pos.Left + TextOffset, btnSize[0].Pos.Top + 79, Theme.WindowText, fontHeading);
+	TextOffset := ((btnSize[0].Pos.Width - FontGetWidth(TempStr)) div 2);
+	FontPrint(TempStr, btnSize[0].Pos.Left + TextOffset, btnSize[0].Pos.Top + 79, Theme.WindowText);
 	
 	TempStr := '16x1' + HotkeySymbol + '6';
-	TextOffset := ((btnSize[1].Pos.Width - FontGetWidth(TempStr, fontHeading)) div 2);
-	FontPrint(TempStr, btnSize[1].Pos.Left + TextOffset, btnSize[1].Pos.Top + 79, Theme.WindowText, fontHeading);
+	TextOffset := ((btnSize[1].Pos.Width - FontGetWidth(TempStr)) div 2);
+	FontPrint(TempStr, btnSize[1].Pos.Left + TextOffset, btnSize[1].Pos.Top + 79, Theme.WindowText);
 
 	TempStr := HotkeySymbol + '22x18';
-	TextOffset := ((btnSize[2].Pos.Width - FontGetWidth(TempStr, fontHeading)) div 2);
-	FontPrint(TempStr, btnSize[2].Pos.Left + TextOffset, btnSize[2].Pos.Top + 79, Theme.WindowText, fontHeading);
+	TextOffset := ((btnSize[2].Pos.Width - FontGetWidth(TempStr)) div 2);
+	FontPrint(TempStr, btnSize[2].Pos.Left + TextOffset, btnSize[2].Pos.Top + 79, Theme.WindowText);
 
 	TempStr := HotkeySymbol + '39x18';
-	TextOffset := ((btnSize[3].Pos.Width - FontGetWidth(TempStr, fontHeading)) div 2);
-	FontPrint(TempStr, btnSize[3].Pos.Left + TextOffset, btnSize[3].Pos.Top + 79, Theme.WindowText, fontHeading);
+	TextOffset := ((btnSize[3].Pos.Width - FontGetWidth(TempStr)) div 2);
+	FontPrint(TempStr, btnSize[3].Pos.Left + TextOffset, btnSize[3].Pos.Top + 79, Theme.WindowText);
 	
 	SetColor(Theme.WindowText);
 	{9x9}
