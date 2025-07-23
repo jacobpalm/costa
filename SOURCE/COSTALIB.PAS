@@ -36,43 +36,54 @@ type
 	TUIObject = object
 		public
 			Pos: PosType;
+			function IsMouseOver: Boolean;
 		private
-			procedure SetSize(Left, Top, Width, Height, DefaultWidth, DefaultHight: Integer);
+			procedure SetSize(X, Y, W, H, DefaultW, DefaultH: Integer);
 	end;
 
 	TArea = object(TUIObject)
-		constructor Init(Left, Top, Width, Height: Integer);
+		constructor Init(X, Y, W, H: Integer);
 	end;
 
 	ButtonType = object(TUIObject)
 		Caption: string;
 		Transparent: Boolean;
 		State: TButtonState;
-		constructor Init(Left, Top, Width, Height: Integer; CaptionS: string);
+		constructor Init(X, Y, W, H: Integer; CaptionS: string);
 		procedure Draw;
 	end;
 
 	CheckBoxType = object(TUIObject)
 		Checked: Boolean;
-		constructor Init(Left, Top, Width, Height: Integer);
+		constructor Init(X, Y, W, H: Integer);
+		procedure Draw;
 	end;
 
 	FrameType = object(TUIObject)
-		constructor Init(Left, Top, Width, Height: Integer);
+		LightColor, DarkColor: Integer;
+		constructor Init(X, Y, W, H: Integer);
+		procedure Draw;
 	end;
 
 	ImageType = object(TUIObject)
 		ImageFile: string[8];
-		constructor Init(Left, Top: Integer; Image: string);
+		constructor Init(X, Y: Integer; Image: string);
+		procedure Draw;
+	end;
+
+	TMenuBar = object(TUIObject)
+		constructor Init;
+		procedure Draw;
 	end;
 
 	TextboxType = object(TUIObject)
 		MaxLen: Integer;
-		constructor Init(Left, Top, Width, Height: Integer);
+		constructor Init(X, Y, W, H: Integer);
 	end;
 
 	WindowType = object(TUIObject)
-		constructor Init(Left, Top, Width, Height: Integer);
+		constructor Init(X, Y, W, H: Integer);
+		procedure Draw;
 	end;
 
 	SettingType = record
@@ -101,11 +112,12 @@ type
 	end;
 
 var
+	MenuBar: TMenuBar;
+	Setting: SettingType;
+	Theme: ThemeType;
 	MouseVisible: Boolean;
 	MouseSupport: Boolean;
 	MouseX, MouseY: Integer;
-	Setting: SettingType;
-	Theme: ThemeType;
 
 function FileExists(const FileName: string): Boolean;
 function FontGetWidth(TargetText: String): Integer;
@@ -113,10 +125,9 @@ function GetKey: string;
 function LowerCase(s: string): string;
 function LTrim(s: string): string;
 function MouseClicked: TMouseButton;
-function MouseInArea(const TargetArea: PosType): Boolean;
 function ObjBtnClick(var TargetBtn: ButtonType): Boolean;
 function ObjTxtClick(const TargetTxt: TextboxType): Boolean;
-function ObjClick(const TargetArea: PosType): Boolean;
+function ObjClick(const TargetObj: TUIObject): Boolean;
 function Replace(Input, OldSubStr, NewSubStr: String): String;
 function RTrim(s: string): string;
 function SysMsgBox(const msgTitle, msgText: string; msgType: TMsgBoxType): Boolean;
@@ -131,12 +142,7 @@ procedure MousePoll;
 procedure MouseSetPos(XPos, YPos: Integer);
 procedure MouseShow;
 procedure ObjChkClick(var TargetChk: CheckBoxType);
-procedure ObjDrawChk(var TargetChk: CheckBoxType);
-procedure ObjDrawFrm(const TargetFrm: FrameType; LightColor, DarkColor: Integer);
-procedure ObjDrawImg(var TargetImg: ImageType);
-procedure ObjDrawMenu;
 procedure ObjDrawTxt(var TargetTxt: TextboxType; const Text: string; IsEditing: Boolean);
-procedure ObjDrawWin(var TargetWin: WindowType);
 procedure ObjEditTxt(var TargetTxt: TextboxType; var Text: string);
 procedure SoundNote(Frequency, Duration: Integer);
 procedure SysAboutBox(const ProgramName, ProgramVersion, ProgramAuthor, IconFile: string);
@@ -152,44 +158,57 @@ implementation
 const
 	GlobalSettings = 'CONFIG\SETTINGS.BIN';
 
-procedure TUIObject.SetSize(Left, Top, Width, Height, DefaultWidth, DefaultHight: Integer);
+procedure TUIObject.SetSize(X, Y, W, H, DefaultW, DefaultH: Integer);
 begin
-	if Width = sizeDefault then
-		Pos.Width := DefaultWidth
+	if W = sizeDefault then
+		Pos.Width := DefaultW
 	else
-		Pos.Width := Width;
+		Pos.Width := W;
 
-	if Height = sizeDefault then
-		Pos.Height := DefaultHight
+	if H = sizeDefault then
+		Pos.Height := DefaultH
 	else
-		Pos.Height := Height;
+		Pos.Height := H;
 
-	if Left = sizeCenter then
+	if X = sizeCenter then
 		Pos.Left := (GetMaxX - Pos.Width) div 2
 	else
-		Pos.Left := Left;
+		Pos.Left := X;
 
-	if Top = sizeCenter then
+	if Y = sizeCenter then
 		Pos.Top := (GetMaxY - Pos.Height) div 2 
 	else
-		Pos.Top := Top;
+		Pos.Top := Y;
 end;
 
-constructor TArea.Init(Left, Top, Width, Height: Integer);
-const
-	DefaultWidth = 50;
-	DefaultHeight = 50;
+function TUIObject.IsMouseOver: Boolean;
+var
+	x1, y1, x2, y2: Integer;
 begin
-	Self.SetSize(Left, Top, Width, Height, DefaultWidth, DefaultHeight);
+	MousePoll;
+	x1 := Pos.Left;
+	y1 := Pos.Top;
+	x2 := x1 + Pos.Width;
+	y2 := y1 + Pos.Height;
+	IsMouseOver := (MouseX >= x1) and (MouseX <= x2) and (MouseY >= y1) and (MouseY <= y2);
 end;
 
-constructor ButtonType.Init(Left, Top, Width, Height: Integer; CaptionS: string);
+constructor TArea.Init(X, Y, W, H: Integer);
 const
-	DefaultWidth = 92;
-	DefaultHeight = 22;
+	DefaultW = 50;
+	DefaultH = 50;
 begin
-	Self.SetSize(Left, Top, Width, Height, DefaultWidth, DefaultHeight);
+	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
+end;
+
+constructor ButtonType.Init(X, Y, W, H: Integer; CaptionS: string);
+const
+	DefaultW = 92;
+	DefaultH = 22;
+begin
+	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
 	Self.Caption := CaptionS;
+	Self.State := bsUp;
 	Self.Transparent := False;
 end;
 
@@ -244,61 +263,216 @@ begin
 	end;
 end;
 
-constructor CheckBoxType.Init(Left, Top, Width, Height: Integer);
+constructor CheckBoxType.Init(X, Y, W, H: Integer);
 const
-	DefaultWidth = 15;
-	DefaultHeight = 15;
+	DefaultW = 15;
+	DefaultH = 15;
 begin
-	Self.SetSize(Left, Top, Width, Height, DefaultWidth, DefaultHeight);
+	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
 	Self.Checked := False;
 end;
 
-constructor FrameType.Init(Left, Top, Width, Height: Integer);
-const
-	DefaultWidth = 100;
-	DefaultHeight = 100;
+procedure CheckBoxType.Draw;
+var
+	x1, x2, y1, y2, chkColor: Integer;
 begin
-	Self.SetSize(Left, Top, Width, Height, DefaultWidth, DefaultHeight);
+	x1 := Pos.Left;
+	y1 := Pos.Top;
+	x2 := x1 + 15;
+	y2 := y1 + 15;
+	if Pos.Width = 0 then Pos.Width := 14;
+	if Pos.Height = 0 then Pos.Height := 14;
+	SetFillStyle(SolidFill, Theme.Textbox);
+	Bar(x1 + 2, y1 + 2, x2 - 2, y2 - 2);
+	if Theme.Window = 0 then
+		chkColor := 15
+	else
+		chkColor := 0;
+	SetColor(chkColor);
+	Rectangle(x1 + 1, y1 + 1, x2, y2);
+	Line(x2 - 1, y1 + 2, x2 - 1, y2 - 1);
+	Line(x1 + 2, y2 - 1, x2 - 2, y2 - 1);
+	SetColor(Theme.Shadow);
+	Line(x1, y1, x1, y2);
+	Line(x1 + 1, y1, x2, y1);
+	if Checked then
+	begin
+		SetColor(Theme.TextboxText);
+		Line(x1 + 5, y1 + 8, x1 + 7, y1 + 10);
+		Line(x1 + 5, y1 + 9, x1 + 7, y1 + 11);
+		Line(x1 + 8, y1 + 9, x1 + 11, y1 + 6);
+		Line(x1 + 8, y1 + 10, x1 + 11, y1 + 7);
+		SetColor(Theme.Shadow);
+		Line(x1 + 5, y1 + 7, x1 + 7, y1 + 9);
+		Line(x1 + 8, y1 + 8, x1 + 11, y1 + 5);
+		SetColor(Theme.Light);
+		Line(x1 + 5, y1 + 10, x1 + 6, y1 + 11);
+		Line(x1 + 8, y1 + 11, x1 + 11, y1 + 8);
+	end;
 end;
 
-constructor ImageType.Init(Left, Top: Integer; Image: string);
+constructor FrameType.Init(X, Y, W, H: Integer);
 const
-	DefaultWidth = 31;
-	DefaultHeight = 31;
+	DefaultW = 100;
+	DefaultH = 100;
 begin
-	Self.SetSize(Left, Top, sizeDefault, sizeDefault, DefaultWidth, DefaultHeight);
+	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
+	Self.LightColor := 15;
+	Self.DarkColor := Theme.Shadow;
+end;
+
+procedure FrameType.Draw;
+begin
+	SetColor(LightColor);
+	Rectangle(Pos.Left + 1, Pos.Top + 1, Pos.Left + Pos.Width - 1, Pos.Top + Pos.Height);
+	SetColor(DarkColor);
+	Rectangle(Pos.Left, Pos.Top, Pos.Left + Pos.Width - 1, Pos.Top + Pos.Height - 1);
+end;
+
+constructor ImageType.Init(x, y: Integer; Image: string);
+const
+	DefaultW = 31;
+	DefaultH = 31;
+begin
+	Self.SetSize(x, y, sizeDefault, sizeDefault, DefaultW, DefaultH);
 	Self.ImageFile := Image;
 end;
 
-constructor TextboxType.Init(Left, Top, Width, Height: Integer);
-const
-	DefaultWidth = 120;
-	DefaultHeight = 19;
+procedure ImageType.Draw;
+var
+	X, Y: Integer;
+	ImagePointer: Pointer;
+	Size: Word;
+	f: File;
+	IconError: Boolean;
+	Filename: String;
 begin
-	Self.SetSize(Left, Top, Width, Height, DefaultWidth, DefaultHeight);
+	IconError := False;
+	
+	Filename := SysPath + 'ICONS\' + ImageFile + '.BIN';
+	if not FileExists(Filename) then
+		IconError := True;
+
+	Size := ImageSize(0, 0, 31, 31); {Coords don't matter, just size}
+	
+	X := Pos.Left;
+	Y := Pos.Top;
+
+	{Image border}
+	SetColor(Theme.Light);
+	Line(X - 1, Y - 1, X + 32, Y - 1);
+	Line(X - 1, Y, X - 1, Y + 32);
+	SetColor(Theme.Shadow);
+	Line(X, Y + 32, X + 32, Y + 32);
+	Line(X + 32, Y, X + 32, Y + 31);
+
+	{If no image file, draw an empty box}
+	if Length(ImageFile) = 0 then
+	begin
+		SetFillStyle(SolidFill, White);
+		Bar(X, Y, X + 31, Y + 31);
+		Exit;
+	end;
+
+	if not IconError then
+	begin
+		Assign(f, Filename);
+		{$I-}
+		Reset(f, 1);
+		{$I+}
+		if (IOResult <> 0) then 
+			IconError := True
+		else if (FileSize(f) <> Size) then
+			IconError := True;
+			
+		if IconError then
+			Close(f);
+	end;
+	{DEBUG - verify getmem and BlockRead}
+
+	if not IconError then
+	begin
+		GetMem(ImagePointer, Size);
+		BlockRead(f, ImagePointer^, Size);
+		Close(f);
+		PutImage(x, y, ImagePointer^, CopyPut);
+		FreeMem(ImagePointer, Size);
+	end;
+
+	if IconError then
+	begin
+		SetFillStyle(SolidFill, Red);
+		Bar(X, Y, X + 31, Y + 31);
+		FontPrint('IMG', X + 5, Y + 6, White);
+		FontPrint('ERR', X + 5, Y + 19, White);
+	end;
+end;
+
+constructor TMenuBar.Init;
+begin
+	Pos.Left := 0;
+	Pos.Top := 0;
+	Pos.Width := GetMaxX;
+	Pos.Height := 28;
+end;
+
+procedure TMenuBar.Draw;
+begin
+	SetFillStyle(SolidFill, Theme.Window);
+	Bar(Pos.Left, Pos.Top, Pos.Left + Pos.Width, Pos.Height - 2);
+
+	SetColor(Theme.Shadow);
+	Line(Pos.Top, Pos.Top + Pos.Height - 1, Pos.Left + Pos.Width, Pos.Top + Pos.Height - 1);
+
+	SetColor(Black);
+	Line(Pos.Top, Pos.Top + Pos.Height, Pos.Left + Pos.Width, Pos.Top + Pos.Height);
+end;
+
+constructor TextboxType.Init(X, Y, W, H: Integer);
+const
+	DefaultW = 120;
+	DefaultH = 19;
+begin
+	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
 	Self.MaxLen := 255;
 end;
 
-constructor WindowType.Init(Left, Top, Width, Height: Integer);
+constructor WindowType.Init(X, Y, W, H: Integer);
+const
+	DefaultW = 320;
+	DefaultH = 175;
 begin
-	if Width = sizeDefault then
-		Pos.Width := 320
-	else
-		Pos.Width := Width;
-	if Height = sizeDefault then
-		Pos.Height := 175
-	else
-		Pos.Height := Height;
+	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
+end;
 
-	if Left = sizeCenter then
-		Pos.Left := (GetMaxX - Pos.Width) div 2
-	else
-		Pos.Left := Left;
-
-	if Top = sizeCenter then
-		Pos.Top := (GetMaxY - Pos.Height) div 2 
-	else
-		Pos.Top := Top;
+procedure WindowType.Draw;
+var
+	x1, x2, y1, y2: Integer;
+begin
+	x1 := Pos.Left;
+	y1 := Pos.Top;
+	x2 := x1 + Pos.Width;
+	y2 := y1 + Pos.Height;
+	SetFillStyle(SolidFill, Theme.TitleBar);
+	Bar(x1 + 2, y1 + 2, x2 - 2, y2 - 1);
+	SetFillStyle(SolidFill, Theme.Window);
+	Bar(x1 + 7, y1 + 7, x2 - 7, y2 - 7);
+	SetColor(15);
+	Line(x1, y1, x2 - 1, y1);
+	Line(x1, y1 + 1, x1, y2 - 1);
+	SetColor(0);
+	Line(x2, y1, x2, y2);
+	Line(x1, y2, x2 - 1, y2);
+	SetColor(Theme.Shadow);
+	Line(x2 - 1, y1 + 1, x2 - 1, y2 - 1);
+	Line(x1 + 1, y2 - 1, x2 - 2, y2 - 1);
+	SetColor(Theme.Light);
+	Line(x1 + 1, y1 + 1, x2 - 2, y1 + 1);
+	Line(x1 + 1, y1 + 2, x1 + 1, y2 - 2);
+	SetColor(Theme.Shadow);
+	Rectangle(x1 + 5, y1 + 5, x2 - 5, y2 - 5);
+	SetColor(Theme.Light);
+	Rectangle(x1 + 6, y1 + 6, x2 - 6, y2 - 6);
 end;
 
 function FileExists(const FileName: string): Boolean;
@@ -437,21 +611,6 @@ Begin
 	MouseVisible := False;
 End;
 
-function MouseInArea(const TargetArea: PosType): Boolean;
-var
-	regs: registers;
-begin
-	if not MouseSupport then
-	begin
-		MouseInArea := False;
-		Exit;
-	end;
-	regs.ax := 3;
-	Intr($33, regs);
-	MouseInArea := (regs.cx >= TargetArea.Left) and (regs.cx <= TargetArea.Left+TargetArea.Width) and
-		(regs.dx >= TargetArea.Top) and (regs.dx <= TargetArea.Top+TargetArea.Height);
-end;
-
 procedure MousePoll;
 var
 	regs: registers;
@@ -487,14 +646,14 @@ End;
 function ObjBtnClick(var TargetBtn: ButtonType): Boolean;
 begin
 	ObjBtnClick := False;
-	if (MouseClicked = mbLeft) and MouseInArea(TargetBtn.Pos) then
+	if (MouseClicked = mbLeft) and TargetBtn.IsMouseOver then
 	begin
 		MouseHide;
 		TargetBtn.State := bsDown;
 		TargetBtn.Draw;
 		MouseShow;
 		repeat
-			if MouseInArea(TargetBtn.Pos) then
+			if TargetBtn.IsMouseOver then
 			begin
 				if TargetBtn.State = bsUp then
 				begin
@@ -522,168 +681,35 @@ begin
 			TargetBtn.Draw;
 			MouseShow;
 		end;
-		if MouseInArea(TargetBtn.Pos) then
+		if TargetBtn.IsMouseOver then
 			ObjBtnClick := True;
 	end;
 end;
 
 procedure ObjChkClick(var TargetChk: CheckBoxType);
 begin
-	if (MouseClicked = mbLeft) and MouseInArea(TargetChk.Pos) then
+	if (MouseClicked = mbLeft) and TargetChk.IsMouseOver then
 	begin
 		repeat until MouseClicked = mbNone;
-		if MouseInArea(TargetChk.Pos) then
+		if TargetChk.IsMouseOver then
 		begin
 			TargetChk.Checked := not TargetChk.Checked;
 			MouseHide;
-			ObjDrawChk(TargetChk);
+			TargetChk.Draw;
 			MouseShow;
 		end;
 	end;
 end;
 
-function ObjClick(const TargetArea: PosType): Boolean;
+function ObjClick(const TargetObj: TUIObject): Boolean;
 begin
 	ObjClick := false;
-	if (MouseClicked = mbLeft) and MouseInArea(TargetArea) then
+	if (MouseClicked = mbLeft) and Targetobj.IsMouseOver then
 	begin
 		repeat until MouseClicked = mbNone;
-		if MouseInArea(TargetArea) then
+		if TargetObj.IsMouseOver then
 			ObjClick := true;
 	end;
-end;
-
-procedure ObjDrawChk(var TargetChk: CheckBoxType);
-var
-	x1, x2, y1, y2, chkColor: Integer;
-begin
-	x1 := TargetChk.Pos.Left;
-	y1 := TargetChk.Pos.Top;
-	x2 := x1 + 15;
-	y2 := y1 + 15;
-	if TargetChk.Pos.Width = 0 then TargetChk.Pos.Width := 14;
-	if TargetChk.Pos.Height = 0 then TargetChk.Pos.Height := 14;
-	SetFillStyle(SolidFill, Theme.Textbox);
-	Bar(x1+2, y1+2, x2-2, y2-2);
-	if Theme.Window = 0 then
-		chkColor := 15
-	else
-		chkColor := 0;
-	SetColor(chkColor);
-	Rectangle(x1+1, y1+1, x2, y2);
-	Line(x2-1, y1+2, x2-1, y2-1);
-	Line(x1+2, y2-1, x2-2, y2-1);
-	SetColor(Theme.Shadow);
-	Line(x1, y1, x1, y2);
-	Line(x1+1, y1, x2, y1);
-	if TargetChk.Checked then
-	begin
-		SetColor(Theme.TextboxText);
-		Line(x1+5, y1+8, x1+7, y1+10);
-		Line(x1+5, y1+9, x1+7, y1+11);
-		Line(x1+8, y1+9, x1+11, y1+6);
-		Line(x1+8, y1+10, x1+11, y1+7);
-		SetColor(Theme.Shadow);
-		Line(x1+5, y1+7, x1+7, y1+9);
-		Line(x1+8, y1+8, x1+11, y1+5);
-		SetColor(Theme.Light);
-		Line(x1+5, y1+10, x1+6, y1+11);
-		Line(x1+8, y1+11, x1+11, y1+8);
-	end;
-end;
-
-procedure ObjDrawFrm(const TargetFrm: FrameType; LightColor, DarkColor: Integer);
-var
-	x1, x2, y1, y2: Integer;
-begin
-	x1 := TargetFrm.Pos.Left;
-	y1 := TargetFrm.Pos.Top;
-	x2 := x1 + TargetFrm.Pos.Width;
-	y2 := y1 + TargetFrm.Pos.Height;
-	SetColor(LightColor);
-	Rectangle(x1+1, y1+1, x2, y2);
-	SetColor(DarkColor);
-	Rectangle(x1, y1, x2-1, y2-1);
-end;
-
-procedure ObjDrawImg(var TargetImg: ImageType);
-var
-	X, Y: Integer;
-	ImagePointer: Pointer;
-	Size: Word;
-	ImageFile: File;
-	IconError: Boolean;
-	Filename: String;
-begin
-	IconError := False;
-	
-	Filename := SysPath + 'ICONS\' + TargetImg.ImageFile + '.BIN';
-	if not FileExists(Filename) then
-		IconError := True;
-
-	Size := ImageSize(0, 0, 31, 31); {Coords don't matter, just size}
-	
-	X := TargetImg.Pos.Left;
-	Y := TargetImg.Pos.Top;
-
-	{Image border}
-	SetColor(Theme.Light);
-	Line(X-1, Y-1, X+32, Y-1);
-	Line(X-1, Y, X-1, Y+32);
-	SetColor(Theme.Shadow);
-	Line(X, Y+32, X+32, Y+32);
-	Line(X+32, Y, X+32, Y+31);
-
-	{If no image file, draw an empty box}
-	if Length(TargetImg.ImageFile) = 0 then
-	begin
-		SetFillStyle(SolidFill, White);
-		Bar(X, Y, X + 31, Y + 31);
-		Exit;
-	end;
-
-	if not IconError then
-	begin
-		Assign(ImageFile, Filename);
-		{$I-}
-		Reset(ImageFile, 1);
-		{$I+}
-		if (IOResult <> 0) then 
-			IconError := True
-		else if (FileSize(ImageFile) <> Size) then
-			IconError := True;
-			
-		if IconError then
-			Close(ImageFile);
-	end;
-	{DEBUG - verify getmem and BlockRead}
-
-	if not IconError then
-	begin
-		GetMem(ImagePointer, Size);
-		BlockRead(ImageFile, ImagePointer^, Size);
-		Close(ImageFile);
-		PutImage(x, y, ImagePointer^, CopyPut);
-		FreeMem(ImagePointer, Size);
-	end;
-
-	if IconError then
-	begin
-		SetFillStyle(SolidFill, Red);
-		Bar(X, Y, X+31, Y+31);
-		FontPrint('IMG', X+5, Y+6, 15);
-		FontPrint('ERR', X+5, Y+19, 15);
-	end;
-end;
-
-procedure ObjDrawMenu;
-begin
-	SetFillStyle(SolidFill, Theme.Window);
-	Bar(0, 0, 639, 26);
-	SetColor(Theme.Shadow);
-	Line(0, 27, 639, 27);
-	SetColor(0);
-	Line(0, 28, 639, 28);
 end;
 
 procedure ObjDrawTxt(var TargetTxt: TextboxType; const Text: string; IsEditing: Boolean);
@@ -716,36 +742,6 @@ begin
 		x1 := x1 + 7 + FontGetWidth(S);
 		Line(x1, y1+4, x1, y1+15);
 	end;
-end;
-
-procedure ObjDrawWin(var TargetWin: WindowType);
-var
-	x1, x2, y1, y2: Integer;
-begin
-	x1 := TargetWin.Pos.Left;
-	y1 := TargetWin.Pos.Top;
-	x2 := x1 + TargetWin.Pos.Width;
-	y2 := y1 + TargetWin.Pos.Height;
-	SetFillStyle(SolidFill, Theme.TitleBar);
-	Bar(x1+2, y1+2, x2-2, y2-1);
-	SetFillStyle(SolidFill, Theme.Window);
-	Bar(x1+7, y1+7, x2-7, y2-7);
-	SetColor(15);
-	Line(x1, y1, x2-1, y1);
-	Line(x1, y1+1, x1, y2-1);
-	SetColor(0);
-	Line(x2, y1, x2, y2);
-	Line(x1, y2, x2-1, y2);
-	SetColor(Theme.Shadow);
-	Line(x2-1, y1+1, x2-1, y2-1);
-	Line(x1+1, y2-1, x2-2, y2-1);
-	SetColor(Theme.Light);
-	Line(x1+1, y1+1, x2-2, y1+1);
-	Line(x1+1, y1+2, x1+1, y2-2);
-	SetColor(Theme.Shadow);
-	Rectangle(x1+5, y1+5, x2-5, y2-5);
-	SetColor(Theme.Light);
-	Rectangle(x1+6, y1+6, x2-6, y2-6);
 end;
 
 procedure ObjEditTxt(var TargetTxt: TextboxType; var Text: string);
@@ -783,7 +779,7 @@ begin
 	repeat
 		Key := GetKey;
 
-		if (MouseClicked > mbNone) and (not MouseInArea(TargetTxt.Pos)) then
+		if (MouseClicked > mbNone) and not TargetTxt.IsMouseOver then
 			Key := KeyEnter; {If mouse is clicked outside the textbox, stop editing}
 		
 		if Length(Key) > 0 then
@@ -867,10 +863,10 @@ end;
 function ObjTxtClick(const TargetTxt: TextboxType): Boolean;
 begin
 	ObjTxtClick := False;
-	if (MouseClicked = mbLeft) and MouseInArea(TargetTxt.Pos) then
+	if (MouseClicked = mbLeft) and TargetTxt.IsMouseOver then
 	begin
 		repeat until MouseClicked = mbNone;
-		if MouseInArea(TargetTxt.Pos) then
+		if TargetTxt.IsMouseOver then
 			ObjTxtClick := True;
 	end;
 end;
@@ -921,9 +917,9 @@ begin
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(x1, y1, x2, y2, BackgroundP^);
 
-	ObjDrawWin(winAboutBox);
+	winAboutBox.Draw;
 	btnClose.Draw;
-	ObjDrawImg(imgLogo);
+	imgLogo.Draw;
 	FontPrint(ProgramName + ' ' + ProgramVersion, 212, winAboutBox.Pos.Top + 17, Theme.WindowText);
 	FontPrint('By ' + ProgramAuthor, 212, winAboutBox.Pos.Top + 31, Theme.WindowText);
 	FontPrint('Made with the ' + LibName + ' version', 168, winAboutBox.Pos.Top + 53, Theme.WindowText);
@@ -965,6 +961,7 @@ begin
 	SysLoadTheme(Setting.ThemeFile);
 	if Setting.DesktopID < 1 then Setting.DesktopID := 1;
 	if Setting.DesktopID > 5 then Setting.DesktopID := 5;
+	MenuBar.Init;
 
 	Intr($33, regs);
 	MouseSupport := Regs.ax > 0;
@@ -1127,11 +1124,11 @@ begin
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(x1, y1, x2, y2, BackgroundP^);
 
-	ObjDrawWin(winMsgBox);
+	winMsgBox.Draw;
 	btnFirst.Draw;
 	if msgType = msgQuest then
 		btnSecond.Draw;
-	ObjDrawImg(imgIcon);
+	imgIcon.Draw;
 	FontPrint(msgTitle, winMsgBox.Pos.Left+56, winMsgBox.Pos.Top+15, Theme.WindowText);
 	for i := 1 to msgLineCount do
 		FontPrint(msgLines[i], winMsgBox.Pos.Left+56, winMsgBox.Pos.Top+17+(15*i), Theme.WindowText);

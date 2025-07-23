@@ -54,21 +54,21 @@ begin
 
 	{Top menu - default for all Costa apps, holds buttons like about,
 	 exit etc.}
-	ObjDrawMenu; 
+	MenuBar.Draw; 
 
 	{App background - not drawn automatically, as some apps may wish to use
 	 a custom background.}
 	SetFillStyle(SolidFill, Theme.Window);
 	Bar(0, 29, 639, 349);
 	
-	ObjDrawWin(winSample);
+	winSample.Draw;
 	btnAbout.Draw;
 	btnExit.Draw;
 	FontPrint('Sample text, header font', winSample.Pos.Left + 12, winSample.Pos.Top + 70, Theme.WindowText);
 	FontPrint('Sample text, normal font', winSample.Pos.Left + 12, winSample.Pos.Top + 85, Theme.WindowText);
 	MouseShow;
 
-	ObjDrawImg(imgSample);
+	imgSample.Draw;
 
 	repeat
 		{Fetch any pressed key}

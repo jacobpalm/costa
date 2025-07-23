@@ -122,9 +122,9 @@ begin
 		Exit;
 	end;
 
-	ObjDrawWin(winPreview);
-	ObjDrawImg(imgLogo);
-	ObjDrawImg(imgDeskLink);
+	winPreview.Draw;;
+	imgLogo.Draw;
+	imgDeskLink.Draw;
 	btnPreview1.Draw;
 	btnPreview2.Draw;
 	ObjDrawTxt(txtPreview, 'Example textbox', False);
@@ -177,7 +177,7 @@ begin
 	chkSetting[ConfExit].Checked := Setting.ConfirmExit;
 	
 	MouseHide;
-	ObjDrawMenu;
+	MenuBar.Draw;
 	SetFillStyle(SolidFill, Theme.Window);
 	Bar(0, 29, 639, 349);
 	
@@ -190,16 +190,16 @@ begin
 		btnNext.Draw;
 	end;
 
-	ObjDrawFrm(frmSettings, 15, Theme.Shadow);
-	ObjDrawFrm(frmTheme, 15, Theme.Shadow);
-	ObjDrawFrm(frmThemePreview, 15, Theme.Shadow);
+	frmSettings.Draw;
+	frmTheme.Draw;
+	frmThemePreview.Draw;
 
-	ObjDrawChk(chkSetting[LinkDesc]);
-	ObjDrawChk(chkSetting[LinkTarget]);
-	ObjDrawChk(chkSetting[LinkDelete]);
-	ObjDrawChk(chkSetting[ConfExit]);
-	ObjDrawImg(imgSetting);
-	ObjDrawImg(imgTheme);
+	chkSetting[LinkDesc].Draw;
+	chkSetting[LinkTarget].Draw;
+	chkSetting[LinkDelete].Draw;
+	chkSetting[ConfExit].Draw;
+	imgSetting.Draw;
+	imgTheme.Draw;
 
 	FontPrint('Show icon ' + HotkeySymbol + 'descriptions', chkSetting[LinkDesc].Pos.Left + 20, chkSetting[LinkDesc].Pos.Top + 3,
 		Theme.WindowText);
@@ -248,28 +248,28 @@ begin
 		begin
 			chkSetting[LinkDesc].Checked := not chkSetting[LinkDesc].Checked;
 			MouseHide;
-			ObjDrawChk(chkSetting[LinkDesc]);
+			chkSetting[LinkDesc].Draw;
 			MouseShow;
 		end;
 		if Key = KeyAltT then
 		begin
 			chkSetting[LinkTarget].Checked:= not chkSetting[LinkTarget].Checked;
 			MouseHide;
-			ObjDrawChk(chkSetting[LinkTarget]);
+			chkSetting[LinkTarget].Draw;
 			MouseShow;
 		end;
 		if Key = KeyAltR then
 		begin
 			chkSetting[LinkDelete].Checked := not chkSetting[LinkDelete].Checked;
 			MouseHide;
-			ObjDrawChk(chkSetting[LinkDelete]);
+			chkSetting[LinkDelete].Draw;
 			MouseShow;
 		end;
 		if Key = KeyAltE then
 		begin
 			chkSetting[ConfExit].Checked := not chkSetting[ConfExit].Checked;
 			MouseHide;
-			ObjDrawChk(chkSetting[ConfExit]);
+			chkSetting[ConfExit].Draw;
 			MouseShow;
 		end;
 

@@ -489,6 +489,8 @@ begin
 
 	frmTic.Init(sizeCenter, sizeCenter, 221, 221);
 	Inc(frmTic.Pos.Top, 16); {To accomodate menu bar}
+	frmTic.LightColor := LightGreen;
+	frmTic.DarkColor := Theme.Shadow;
 
 	for Row := 1 to 3 do
 	begin
@@ -512,13 +514,13 @@ begin
 	btnExit.Init(545, 2, sizeDefault, sizeDefault, 'E' + HotkeySymbol + 'xit');
 	
 	MouseHide;
-	ObjDrawMenu;
+	MenuBar.Draw;
 	TicDrawBackground;
 
 	SetFillStyle(SolidFill, Green);
 	Bar(frmTic.Pos.Left + 2, frmTic.Pos.Top + 2, frmTic.Pos.Left + frmTic.Pos.Width - 2,
 		frmTic.Pos.Top + frmTic.Pos.Height - 2);
-	ObjDrawFrm(frmTic, 10, 8);
+	frmTic.Draw;
 	btnNew.Draw;
 	btnAIToggle.Draw;
 	btnAudio.Draw;
@@ -569,7 +571,7 @@ begin
 			begin
 				for Col := 1 to 3 do
 				begin
-					if ObjClick(txtPlayField[Row, Col].Pos) then
+					if ObjClick(txtPlayField[Row, Col]) then
 					begin
 						FieldClicked := true;
 						break;

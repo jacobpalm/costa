@@ -112,10 +112,10 @@ begin
 	txtCalc.MaxLen := 25;
 
 	MouseHide;
-	ObjDrawMenu;
+	MenuBar.Draw;
 	SetColor(Theme.Window); Bar(0, 29, 639, 349);
 
-	ObjDrawFrm(frmCalc, 15, Theme.Shadow);
+	frmCalc.Draw;
 	ObjDrawTxt(txtCalc, '', False);
 	for i := 0 to 9 do
 		btnNumb[i].Draw;

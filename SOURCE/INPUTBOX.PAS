@@ -75,7 +75,7 @@ begin
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(x1, y1, x2, y2, BackgroundP^);
 
-	ObjDrawWin(winInputBox);
+	winInputBox.Draw;
 	btnOK.Draw;
 	btnCancel.Draw;
 	ObjDrawTxt(txtInput, txtInputText, False);
@@ -98,7 +98,7 @@ begin
 	FontPrint('I' + HotkeySymbol + 'nput:', txtInput.Pos.Left, txtInput.Pos.Top - 16, Theme.WindowText);
 
 	if Length(msgIcon) > 0 then
-		ObjDrawImg(imgIcon);
+		imgIcon.Draw;
 
 	MouseShow;
 

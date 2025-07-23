@@ -191,7 +191,7 @@ begin
 		begin
 			MouseHide;
 			imgPreview.ImageFile := FName;
-			ObjDrawImg(imgPreview);
+			imgPreview.Draw;
 			MouseShow;
 			PreviewShown := true;
 			exit;
@@ -472,7 +472,7 @@ begin
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(x1, y1, x2, y2, BackgroundP^);
 
-	ObjDrawWin(winFileSelect);
+	winFileSelect.Draw;
 	ObjDrawTxt(txtPattern, txtPatternText, False);
 	ObjDrawTxt(txtDrive, txtDriveText, False);
 	ObjDrawTxt(txtList[FileList], '', False);
@@ -503,13 +503,13 @@ begin
 	repeat
 		Key := GetKey;
 
-		if (MouseClicked > mbNone) and MouseInArea(txtList[FileList].Pos) then
+		if (MouseClicked > mbNone) and txtList[FileList].IsMouseOver then
 		begin
 			if FileMouseSelection(FileList) then
 				Key := KeyEnter; {Double-clicked file, select it}
 		end;
 
-		if (MouseClicked > mbNone) and MouseInArea(txtList[FolderList].Pos) then
+		if (MouseClicked > mbNone) and txtList[FolderList].IsMouseOver then
 		begin
 			if FileMouseSelection(FolderList) then
 				Key := KeyEnter; {Double-clicked folder, change to it}

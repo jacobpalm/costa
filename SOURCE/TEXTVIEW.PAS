@@ -250,7 +250,7 @@ begin
 	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + HotkeySymbol + 'xit');
 
 	MouseHide;
-	ObjDrawMenu;
+	MenuBar.Draw;
 	SetFillStyle(SolidFill, Theme.Textbox);
 	Bar(0, 29, 639, 349);
 	BtnOpen.Draw;

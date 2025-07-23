@@ -360,7 +360,7 @@ begin
 
 	if FullRedraw then
 	begin
-		ObjDrawMenu;
+		MenuBar.Draw;
 		btnAddLink.Draw;
 		btnRunCmd.Draw;
 		btnAboutCosta.Draw;
@@ -386,7 +386,7 @@ begin
 		x := DeskLink^[i]^.Left;
 		y := DeskLink^[i]^.Top;
 		imgDeskLinkIcon.Init(x, y, DeskLink^[i]^.ImageFile);
-		ObjDrawImg(imgDeskLinkIcon);
+		imgDeskLinkIcon.Draw;
 
 		if Setting.ShowLinkDescriptions then
 		begin
@@ -491,7 +491,7 @@ begin
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(x1, y1, x2, y2, BackgroundP^);
 
-	ObjDrawWin(winRun);
+	winRun.Draw;
 	btnOK.Draw;
 	btnCancel.Draw;
 	btnBrowse.Draw;
@@ -588,13 +588,13 @@ begin
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(x1, y1, x2, y2, BackgroundP^);
 	
-	ObjDrawWin(winLinkMenu);
+	winLinkMenu.Draw;
 	btnOpen.Draw;
 	btnEdit.Draw;
 	btnMove.Draw;
 	btnRemove.Draw;
 	btnCancel.Draw;
-	ObjDrawImg(imgIcon);
+	imgIcon.Draw;
 
 	FontPrint(DeskLink^[TargetLink]^.Caption, x1 + 54, y1 + 17, 0);
 	FontPrint(DeskLink^[TargetLink]^.Filename, x1 + 54, y1 + 31, 0);
@@ -876,13 +876,13 @@ begin
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(x1, y1, x2, y2, BackgroundP^);
 
-	ObjDrawWin(winEdit);
+	winEdit.Draw;
 	ObjDrawTxt(txtCaption, txtCaptionText, false);
 	btnIcon.Draw;
 	ObjDrawTxt(txtFilename, txtFileNameText, false);
 	ObjDrawTxt(txtParams, txtParamsText, false);
 	ObjDrawTxt(txtPath, txtPathText, false);
-	ObjDrawChk(chkPauseOnExit);
+	chkPauseOnExit.Draw;
 	btnOK.Draw;
 	btnCancel.Draw;
 	FontPrint('C' + HotkeySymbol + 'aption:', 222, txtCaption.Pos.Top - 15, Theme.WindowText);
@@ -893,7 +893,7 @@ begin
 	SetFillStyle(SolidFill, Theme.Desktop);
 	Bar(btnIcon.Pos.Left + 2, btnIcon.Pos.Top + 2, btnIcon.Pos.Left +
 		btnIcon.Pos.Width - 2, btnIcon.Pos.Top + btnIcon.Pos.Height - 2);
-	ObjDrawImg(imgIcon);
+	imgIcon.Draw;
 	MouseShow;
 
 	repeat
@@ -949,7 +949,7 @@ begin
 						btnIcon.Pos.Left + btnIcon.Pos.Width - 2,
 						btnIcon.Pos.Top + btnIcon.Pos.Height - 2);
 					imgIcon.ImageFile := FName;
-					ObjDrawImg(imgIcon);
+					imgIcon.Draw;
 					MouseShow;
 				end
 				else
@@ -989,7 +989,7 @@ begin
 		begin
 			chkPauseOnExit.Checked := not chkPauseOnExit.Checked;
 			MouseHide;
-			ObjDrawChk(chkPauseOnExit);
+			chkPauseOnExit.Draw;
 			MouseShow;
 		end;
 			

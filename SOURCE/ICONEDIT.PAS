@@ -193,7 +193,7 @@ procedure GetCursorPos(var X, Y: Integer);
 var
 	tmpX, tmpY: String;
 begin
-	if MouseInArea(txtDrawArea.Pos) then
+	if txtDrawArea.IsMouseOver then
 	begin
 		MousePoll;
 		X := (MouseX - OffsetX) div PixelSize;
@@ -419,7 +419,7 @@ begin
 	imgPreview.ImageFile := Fname;
 	
 	MouseHide;
-	ObjDrawImg(imgPreview);
+	imgPreview.Draw;
 	{Get color of each pixel from the preview image and set it in the icon data}
 	for X := 0 to 31 do
 	begin
@@ -494,7 +494,7 @@ begin
 	OffsetY := txtDrawArea.Pos.Top + 2;
 
 	MouseHide;
-	ObjDrawMenu;
+	MenuBar.Draw;
 	SetFillStyle(SolidFill, Theme.Window);
 	Bar(0, 29, 639, 349);
 	ObjDrawTxt(txtDrawArea, '', false);
@@ -504,7 +504,6 @@ begin
 	btnNew.Draw;
 	btnOpen.Draw;
 	btnSave.Draw;
-	btnSaveAs.Draw;
 	btnAbout.Draw;
 	btnExit.Draw;
 
@@ -531,7 +530,7 @@ begin
 	SetFillStyle(SolidFill, Theme.Desktop);
 	Bar(btnPreview.Pos.Left + 2, btnPreview.Pos.Top + 2,
 		btnPreview.Pos.Left + btnPreview.Pos.Width - 2, btnPreview.Pos.Top + btnPreview.Pos.Height - 2);
-	ObjDrawImg(imgPreview);
+	imgPreview.Draw;
 
 	{Draw grid in drawing area - black line with a dotted grey line on top so it's visible on all colors}
 	for YPos := 0 to 31 do
@@ -588,10 +587,10 @@ begin
 		if ObjBtnClick(btnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
 			ExitEditor;
 
-		if ObjClick(btnPencil.Pos) or (Key = KeyAltE) then
+		if ObjClick(btnPencil) or (Key = KeyAltE) then
 			SetTool(toolPencil);
 
-		if ObjClick(btnFloodFill.Pos) or (Key = KeyAltF) then
+		if ObjClick(btnFloodFill) or (Key = KeyAltF) then
 			SetTool(toolFloodFill);
 
 		if Key = KeyAltC then
@@ -639,11 +638,11 @@ begin
 
 		{Mouse clicked in color selection area}
 		for i := 0 to 15 do
-			if ObjClick(txtColor[i].Pos) then
+			if ObjClick(txtColor[i]) then
 					SetDrawColor(i);
 
 		{Mouse clicked in drawing area}
-		if (MouseClicked <> mbNone) and MouseInArea(txtDrawArea.Pos) then
+		if (MouseClicked <> mbNone) and txtDrawArea.IsMouseOver then
 		begin
 			{Mouse clicked, so hide keybard indicator}
 			if KeyboardPosVisible then

@@ -140,7 +140,7 @@ begin
 	imgPreview.ImageFile := 'LOGO';
 
 	MouseHide;
-	ObjDrawFrm(frmPreview, 15, Theme.Shadow);
+	frmPreview.Draw;
 	SetFillStyle(SolidFill, Theme.Desktop);
 	Bar(frmPreview.Pos.Left + 2, y1 + 2, x2 - 2, y2 - 2);
 	SetFillStyle(SolidFill, Theme.Window);
@@ -157,12 +157,12 @@ begin
 	btnPreview1.Init(x1 + 14, y1 + 93, 111, sizeDefault, 'Button up');
 	btnPreview2.Init(x1 + 133, y1 + 93, 111, sizeDefault, 'Button down');
 
-	ObjDrawWin(winPreview);
+	winPreview.Draw;
 	ObjDrawTxt(txtPreview, txtPreviewText, True);
 	btnPreview1.Draw;
 	btnPreview2.Draw;
 	btnPreview3.Draw;
-	ObjDrawImg(imgPreview);
+	imgPreview.Draw;
 	ObjDrawTxt(txtListPreview, '', False);
 
 	{Text on desktop and window}
@@ -215,7 +215,7 @@ begin
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(x1, y1, x2, y2, BackgroundP^);
 	
-	ObjDrawWin(winSelectObject);
+	winSelectObject.Draw;
 	ActiveSelection := SelectedObject;
 	for i := 0 to High(btnObjSelect) do
 	begin
@@ -446,7 +446,7 @@ var
 	DoSave: boolean;
 begin
 	MouseHide;
-	ObjDrawMenu;
+	MenuBar.Draw;
 	SetFillStyle(SolidFill, Theme.Window);
 	Bar(0, 29, 639, 349);
 
@@ -511,7 +511,7 @@ begin
 		Key := GetKey;
 
 		for i := 0 to 15 do
-			if ObjClick(btnColor[i].Pos) then
+			if ObjClick(btnColor[i]) then
 				SelectColor(i, true);
 
 		if Key = KeyAltC then

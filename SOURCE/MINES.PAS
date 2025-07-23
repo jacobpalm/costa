@@ -525,7 +525,7 @@ begin
 	{PCOPY 0, 1} {DEUG - save background}
 	SetFillStyle(SolidFill, Theme.Window);
 	Bar(0, 29, 639, 329);
-	ObjDrawMenu;
+	MenuBar.Draw;
 	btnResume.Draw;
 	btnExit.Draw;
 	MouseShow;
@@ -548,7 +548,7 @@ begin
 	until false;
 
 	MouseHide;
-	ObjDrawMenu;
+	MenuBar.Draw;
 	btnNew.Draw;
 	btnSize.Draw;
 	btnAudio.Draw;
@@ -778,7 +778,7 @@ begin
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(x1, y1, x2, y2, BackgroundP^);
 
-	ObjDrawWin(winSetSize);
+	winSetSize.Draw;
 	btnSize[0].Draw;
 	btnSize[1].Draw;
 	btnSize[2].Draw;
@@ -910,7 +910,7 @@ begin
 	btnExit.Init(545, 2, sizeDefault, sizeDefault, 'E' + HotkeySymbol + 'xit');
 	
 	MouseHide;
-	ObjDrawMenu;
+	MenuBar.Draw;
 	btnNew.Draw;
 	btnSize.Draw;
 	btnAudio.Draw;
@@ -1041,7 +1041,7 @@ begin
 				TimeCompare := timer + 1;
 			end;
 		
-			if (MouseClicked <> mbNone) and MouseInArea(areaField.Pos) then
+			if (MouseClicked <> mbNone) and areaField.IsMouseOver then
 			begin
 				MouseButton := MouseClicked;
 				MousePoll;
