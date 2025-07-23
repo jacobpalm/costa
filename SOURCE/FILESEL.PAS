@@ -14,10 +14,10 @@ uses
 
 const
 	MaxFiles        = 150; {Maximum number of files}
-	MaxFolders      = 100; {Maximum number of folders}
+	MaxDirs         = 100; {Maximum number of directories}
 	MaxVisibleItems = 15;
 	FileList        = 0;
-	FolderList      = -1;
+	DirList         = -1;
 	ListItemHeight  = 12;
 
 type
@@ -28,7 +28,7 @@ var
 	ListStartPos:  array[-1..0] of Integer;
 	ListSelection: array[-1..0] of Integer;
 	ListCount:     array[-1..0] of Integer;
-	SubFolders:    array[1..MaxFolders] of String[12];
+	SubDirs:       array[1..MaxDirs] of String[12];
 	SubFiles:      array[1..MaxFiles] of String[12];
 
 	PreviewShown:  boolean;
@@ -67,38 +67,38 @@ begin
 	end;
 end;
 
-procedure GetChildFolders(Path: String);
+procedure GetChildDirs(Path: String);
 var
-	FolderInfo: SearchRec;
+	DirInfo: SearchRec;
 begin
-	{Clear previous folder list}
-	ListCount[FolderList] := 0;
-	FillChar(SubFolders, SizeOf(SubFolders), #0);
+	{Clear previous directory list}
+	ListCount[DirList] := 0;
+	FillChar(SubDirs, SizeOf(SubDirs), #0);
 
 	{Add '..' for parent directory if not at root}
 	if Length(Path) > 3 then
 	begin
-	Inc(ListCount[FolderList]);
-	SubFolders[ListCount[FolderList]] := '..';
+	Inc(ListCount[DirList]);
+	SubDirs[ListCount[DirList]] := '..';
 	end;
 
-	FindFirst(Path + '\*.*', Directory, FolderInfo);
+	FindFirst(Path + '\*.*', Directory, DirInfo);
 	while DosError = 0 do
 	begin
-	if (FolderInfo.Attr and Directory) <> 0 then
+	if (DirInfo.Attr and Directory) <> 0 then
 	begin
-		if (FolderInfo.Name <> '.') and (FolderInfo.Name <> '..') then
+		if (DirInfo.Name <> '.') and (DirInfo.Name <> '..') then
 		begin
-		if ListCount[FolderList] < MaxFolders then
+		if ListCount[DirList] < MaxDirs then
 		begin
-			Inc(ListCount[FolderList]);
-			SubFolders[ListCount[FolderList]] := FolderInfo.Name
+			Inc(ListCount[DirList]);
+			SubDirs[ListCount[DirList]] := DirInfo.Name
 		end
 		else
-			Break; {Stop if maximum folder count is exceeded}
+			Break; {Stop if maximum directory count is exceeded}
 		end;
 	end;
-	FindNext(FolderInfo);
+	FindNext(DirInfo);
 	end;
 end;
 
@@ -128,7 +128,7 @@ begin
 		if TargetList = FileList then
 			ItemText := SubFiles[I]
 		else
-			ItemText := SubFolders[I];
+			ItemText := SubDirs[I];
 
 		{Highlight active selected item}
 		if (I = ListSelection[TargetList]) and (ActiveList = TargetList) then
@@ -165,7 +165,7 @@ begin
 	if TargetList = FileList then
 		ItemText := SubFiles[ListSelection[FileList]]
 	else
-		ItemText := SubFolders[ListSelection[FolderList]];
+		ItemText := SubDirs[ListSelection[DirList]];
 	
 	if ItemText <> '' then
 	begin
@@ -375,9 +375,9 @@ begin
 		GetDir(0, Path);
 		Drive := DriveLetter;
 		GetChildFiles(Path, Pattern);
-		GetChildFolders(Path);
+		GetChildDirs(Path);
 		DrawFileList(FileList, True, True);
-		DrawFileList(FolderList, False, True);
+		DrawFileList(DirList, False, True);
 		FileSetDrive := True;
 		FilePreview;
 		Exit;
@@ -389,22 +389,22 @@ begin
 	FileSetDrive := False;
 end;
 
-procedure FileSetFolder(FolderName: String);
+procedure FileSetDir(DirName: String);
 begin
 	{$I-}
-	ChDir(FolderName);
+	ChDir(DirName);
 	{$I+}
 	if IOResult = 0 then
 	begin
 		GetDir(0, Path);
 		GetChildFiles(Path, Pattern);
-		GetChildFolders(Path);
+		GetChildDirs(Path);
 		ListStartPos[FileList] := 1;
 		ListSelection[FileList] := 1;
-		ListStartPos[FolderList] := 1;
-		ListSelection[FolderList] := 1;
+		ListStartPos[DirList] := 1;
+		ListSelection[DirList] := 1;
 		DrawFileList(FileList, False, True);
-		DrawFileList(FolderList, True, True);
+		DrawFileList(DirList, True, True);
 	end;
 	FilePreview;
 end;
@@ -415,7 +415,7 @@ var
 	txtDrive, txtPattern: TTextbox;
 	btnSelect, btnCancel: TButton;
 	btnFilePrev, btnFileNext: TButton;
-	btnFolderPrev, btnFolderNext: TButton;
+	btnDirPrev, btnDirNext: TButton;
 	OriginalPath: string;
 	Counter, I: Integer;
 	x1, y1, x2, y2: Integer;
@@ -424,6 +424,23 @@ var
 	Key: string;
 	ClickedX, ClickedY, ClickedItem, RedrawNeeded: Integer;
 begin
+	winFileSelect.Init(sizeCenter, sizeCenter, 468, 270);
+	txtPattern.Init(101, winFileSelect.Top + 28, 150, sizeDefault);
+	txtDrive.Init(272, winFileSelect.Top + 28, 150, sizeDefault);
+	txtPattern.Init(101, winFileSelect.Top + 28, 150, sizeDefault);
+	txtDrive.Init(272, winFileSelect.Top + 28, 150, sizeDefault);
+	txtList[FileList].Init(101, winFileSelect.Top + 71, 150, 185);
+	txtList[DirList].Init(272, winFileSelect.Top + 71, 150, 185);
+	btnSelect.Init(448, winFileSelect.Top + 28, sizeDefault, sizeDefault, HotkeySymbol + 'Select');
+	btnCancel.Init(448, winFileSelect.Top + 58, sizeDefault, sizeDefault, HotkeySymbol + 'Cancel');
+	btnFilePrev.Init(253, txtList[FileList].Top, 14, 91, #24);
+	btnFileNext.Init(253, txtList[FileList].Top + 94, 14, 91, #25);
+	btnDirPrev.Init(424, txtList[DirList].Top, 14, 91, #24);
+	btnDirNext.Init(424, txtList[DirList].Top + 94, 14, 91, #25);
+	txtDrive.MaxLen := 1;
+	txtPattern.MaxLen := 12; {8.3 including the dot}
+	imgPreview.Init(btnCancel.Left + 30, btnCancel.Top + 50, '');
+	
 	GetDir(0, OriginalPath); {Save to restore later}
 	Path := OriginalPath;
 
@@ -431,35 +448,12 @@ begin
 	Pattern := DefaultPattern;
 	txtDrive.Text := Drive;
 	txtPattern.Text := DefaultPattern;
-	ListStartPos[FolderList] := 1;
+	ListStartPos[DirList] := 1;
 	ListStartPos[FileList] := 1;
 	ListSelection[FileList] := 1;
-	ListSelection[FolderList] := 1;
+	ListSelection[DirList] := 1;
 	ActiveList := FileList;
 
-	winFileSelect.Init(sizeCenter, sizeCenter, 468, 270);
-	txtPattern.Init(101, winFileSelect.Top + 28, 150, sizeDefault);
-	txtDrive.Init(272, winFileSelect.Top + 28, 150, sizeDefault);
-	txtPattern.Init(101, winFileSelect.Top + 28, 150, sizeDefault);
-	txtDrive.Init(272, winFileSelect.Top + 28, 150, sizeDefault);
-	txtList[FileList].Init(101, winFileSelect.Top + 71, 150, 185);
-	txtList[FolderList].Init(272, winFileSelect.Top + 71, 150, 185);
-	btnSelect.Init(448, winFileSelect.Top + 28, sizeDefault, sizeDefault, HotkeySymbol + 'Select');
-	btnCancel.Init(448, winFileSelect.Top + 58, sizeDefault, sizeDefault, HotkeySymbol + 'Cancel');
-	btnFilePrev.Init(253, txtList[FileList].Top, 14, 91, #24);
-	btnFileNext.Init(253, txtList[FileList].Top + 94, 14, 91, #25);
-	btnFolderPrev.Init(424, txtList[FolderList].Top, 14, 91, #24);
-	btnFolderNext.Init(424, txtList[FolderList].Top + 94, 14, 91, #25);
-	txtDrive.MaxLen := 1;
-	txtPattern.MaxLen := 12; {8.3 including the dot}
-
-	{These are used in File.DrawList to differentiate lists... It's a dirty hack, but works}
-	txtList[FileList].MaxLen := FileList;
-	txtList[FolderList].MaxLen := FolderList;
-
-	{Size is set here, but object is drawn in FilePreview if needed}
-	imgPreview.Init(btnCancel.Left + 30, btnCancel.Top + 50, '');
-	
 	MouseHide;
 
 	{Save background to restore when window is closed}
@@ -475,13 +469,13 @@ begin
 	txtPattern.Draw;
 	txtDrive.Draw;
 	txtList[FileList].Draw;
-	txtList[FolderList].Draw;
+	txtList[DirList].Draw;
 	btnSelect.Draw;
 	btnCancel.Draw;
 	btnFilePrev.Draw;
 	btnFileNext.Draw;
-	btnFolderPrev.Draw;
-	btnFolderNext.Draw;
+	btnDirPrev.Draw;
+	btnDirNext.Draw;
 	Print(HotkeySymbol + 'Pattern:', 101, winFileSelect.Top + 14, Theme.WindowText);
 	Print(HotkeySymbol + 'Drive:', 272, winFileSelect.Top + 14, Theme.WindowText);
 	Print(HotkeySymbol + 'Files:', 101, winFileSelect.Top + 57, Theme.WindowText);
@@ -490,13 +484,13 @@ begin
 
 	{If path provided, use it}
 	if Length(StartPath) > 0 then
-		FileSetFolder(StartPath)
+		FileSetDir(StartPath)
 	else
 	begin
 		GetChildFiles(Path, Pattern);
-		GetChildFolders(Path);
+		GetChildDirs(Path);
 		DrawFileList(FileList, True, True);
-		DrawFileList(FolderList, False, True);
+		DrawFileList(DirList, False, True);
 	end;
 
 	repeat
@@ -508,10 +502,10 @@ begin
 				Key := KeyEnter; {Double-clicked file, select it}
 		end;
 
-		if (MouseClicked > mbNone) and txtList[FolderList].IsMouseOver then
+		if (MouseClicked > mbNone) and txtList[DirList].IsMouseOver then
 		begin
-			if FileMouseSelection(FolderList) then
-				Key := KeyEnter; {Double-clicked folder, change to it}
+			if FileMouseSelection(DirList) then
+				Key := KeyEnter; {Double-clicked directory, change to it}
 		end;
 
 		if ObjBtnClick(btnSelect) or (Key = KeyAltS) or (Key = KeyEnter) then
@@ -525,9 +519,9 @@ begin
 				Break;
 			end;
 			
-			if (ActiveList = FolderList) and (SubFolders[ListSelection[FolderList]] <> '') then
+			if (ActiveList = DirList) and (SubDirs[ListSelection[DirList]] <> '') then
 			begin
-				FileSetFolder(SubFolders[ListSelection[FolderList]]);
+				FileSetDir(SubDirs[ListSelection[DirList]]);
 			end;
 		end;
 
@@ -564,15 +558,15 @@ begin
 			Key := KeyPageDown; {Simulate key press for moving selection down}
 		end;
 
-		if ObjBtnClick(btnFolderPrev) then
+		if ObjBtnClick(btnDirPrev) then
 		begin
-			FileSetActiveList(FolderList);
+			FileSetActiveList(DirList);
 			Key := KeyPageUp; {Simulate key press for moving view up}
 		end;
 
-		if ObjBtnClick(btnFolderNext) then
+		if ObjBtnClick(btnDirNext) then
 		begin
-			FileSetActiveList(FolderList);
+			FileSetActiveList(DirList);
 			Key := KeyPageDown; {Simulate key press for moving view down}
 		end;
 
@@ -598,7 +592,7 @@ begin
 			FileSetActiveList(FileList);
 
 		if (Key = KeyAltO) then
-			FileSetActiveList(FolderList);
+			FileSetActiveList(DirList);
 
 		if (Key = KeyTab) or (Key = KeyShiftTab) then
 			FileSetActiveList(not ActiveList);
