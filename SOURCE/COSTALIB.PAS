@@ -11,8 +11,7 @@ const
 	LibYear          = '2025';
 
 	sizeDefault      = -1;
-	sizeRetain       = -2;
-	sizeCenter       = -3;
+	sizeCenter       = -2;
 
 	DoubleClickDelay = 0.5;
 
@@ -27,47 +26,53 @@ const
 
 type
 	TMouseButton = (mbNone, mbLeft, mbRight, mbBoth);
+	TButtonState = (bsUp, bsDown);
 	TMsgBoxType  = (msgInfo, msgWarn, msgQuest, msgError);
 
 	PosType = record
 		Left, Top, Width, Height: Integer;
 	end;
 
-	ButtonType = object
-		Pos: PosType;
-		Caption: string;
-		Transparent: Boolean;
-		constructor Init(Left, Top, Width, Height: Integer; CaptionS: string);
+	TUIObject = object
+		public
+			Pos: PosType;
+		private
+			procedure SetSize(Left, Top, Width, Height, DefaultWidth, DefaultHight: Integer);
 	end;
 
-	CheckBoxType = record
-		Pos: PosType;
-		Checked: Boolean;
-	end;
-
-	ImageType = record
-		Pos: PosType;
-		ImageFile: string[64];
-	end;
-
-	WindowType = object
-		Pos: PosType;
+	TArea = object(TUIObject)
 		constructor Init(Left, Top, Width, Height: Integer);
 	end;
 
-	FrameType = record
-		Pos: PosType;
+	ButtonType = object(TUIObject)
+		Caption: string;
+		Transparent: Boolean;
+		State: TButtonState;
+		constructor Init(Left, Top, Width, Height: Integer; CaptionS: string);
+		procedure Draw;
 	end;
 
-	TextboxType = object
-		Pos: PosType;
+	CheckBoxType = object(TUIObject)
+		Checked: Boolean;
+		constructor Init(Left, Top, Width, Height: Integer);
+	end;
+
+	FrameType = object(TUIObject)
+		constructor Init(Left, Top, Width, Height: Integer);
+	end;
+
+	ImageType = object(TUIObject)
+		ImageFile: string[8];
+		constructor Init(Left, Top: Integer; Image: string);
+	end;
+
+	TextboxType = object(TUIObject)
 		MaxLen: Integer;
 		constructor Init(Left, Top, Width, Height: Integer);
 	end;
 
-	FileAssociationType = record
-		FileType: string[3];
-		Command: string[128];
+	WindowType = object(TUIObject)
+		constructor Init(Left, Top, Width, Height: Integer);
 	end;
 
 	SettingType = record
@@ -76,7 +81,6 @@ type
 		ShowLinkTargetFiles: Boolean;
 		ConfirmLinkDelete: Boolean;
 		ConfirmExit: Boolean;
-		AssignFileTypes: Boolean;
 		ThemeFile: string[8];
 	end;
 
@@ -127,7 +131,6 @@ procedure MousePoll;
 procedure MouseSetPos(XPos, YPos: Integer);
 procedure MouseShow;
 procedure ObjChkClick(var TargetChk: CheckBoxType);
-procedure ObjDrawBtn(var TargetBtn: ButtonType; Pressed: Boolean);
 procedure ObjDrawChk(var TargetChk: CheckBoxType);
 procedure ObjDrawFrm(const TargetFrm: FrameType; LightColor, DarkColor: Integer);
 procedure ObjDrawImg(var TargetImg: ImageType);
@@ -135,7 +138,6 @@ procedure ObjDrawMenu;
 procedure ObjDrawTxt(var TargetTxt: TextboxType; const Text: string; IsEditing: Boolean);
 procedure ObjDrawWin(var TargetWin: WindowType);
 procedure ObjEditTxt(var TargetTxt: TextboxType; var Text: string);
-procedure ObjSetSize(var TargetArea: PosType; TargetLeft, TargetTop, TargetWidth, TargetHeight: Integer);
 procedure SoundNote(Frequency, Duration: Integer);
 procedure SysAboutBox(const ProgramName, ProgramVersion, ProgramAuthor, IconFile: string);
 procedure SysLoad;
@@ -150,35 +152,130 @@ implementation
 const
 	GlobalSettings = 'CONFIG\SETTINGS.BIN';
 
-
-constructor ButtonType.Init(Left, Top, Width, Height: Integer; CaptionS: string);
+procedure TUIObject.SetSize(Left, Top, Width, Height, DefaultWidth, DefaultHight: Integer);
 begin
-	Pos.Left := Left;
-	Pos.Top := Top;
 	if Width = sizeDefault then
-		Pos.Width := 92
+		Pos.Width := DefaultWidth
 	else
 		Pos.Width := Width;
+
 	if Height = sizeDefault then
-		Pos.Height := 22
+		Pos.Height := DefaultHight
 	else
 		Pos.Height := Height;
+
+	if Left = sizeCenter then
+		Pos.Left := (GetMaxX - Pos.Width) div 2
+	else
+		Pos.Left := Left;
+
+	if Top = sizeCenter then
+		Pos.Top := (GetMaxY - Pos.Height) div 2 
+	else
+		Pos.Top := Top;
+end;
+
+constructor TArea.Init(Left, Top, Width, Height: Integer);
+const
+	DefaultWidth = 50;
+	DefaultHeight = 50;
+begin
+	Self.SetSize(Left, Top, Width, Height, DefaultWidth, DefaultHeight);
+end;
+
+constructor ButtonType.Init(Left, Top, Width, Height: Integer; CaptionS: string);
+const
+	DefaultWidth = 92;
+	DefaultHeight = 22;
+begin
+	Self.SetSize(Left, Top, Width, Height, DefaultWidth, DefaultHeight);
 	Self.Caption := CaptionS;
 	Self.Transparent := False;
 end;
 
-constructor TextboxType.Init(Left, Top, Width, Height: Integer);
+procedure ButtonType.Draw;
+var
+	x1, x2, y1, y2: Integer;
+	Color1, Color2, Color3, Color4: Integer;
 begin
-	Pos.Left := Left;
-	Pos.Top := Top;
-	if Width = sizeDefault then
-		Pos.Width := 120
+	x1 := Pos.Left;
+	y1 := Pos.Top;
+	x2 := x1 + Pos.Width;
+	y2 := y1 + Pos.Height;
+	if State = bsUp then
+	begin
+		Color1 := White;
+		Color2 := Theme.Button;
+		Color3 := Theme.Shadow;
+		Color4 := Theme.WindowText;
+	end
 	else
-		Pos.Width := Width;
-	if Height = sizeDefault then
-		Pos.Height := 19
+	begin
+		Color1 := Black;
+		Color2 := Theme.Shadow;
+		Color3 := Theme.Light;
+		Color4 := White;
+	end;
+	SetColor(Color2);
+	if not Transparent then
+	begin
+		SetFillStyle(SolidFill, Color2);
+		Bar(x1, y1, x2-1, y2-1)
+	end
 	else
-		Pos.Height := Height;
+		Rectangle(x1, y1, x2-1, y2-1);
+	SetColor(Color1);
+	Line(x1+1, y1+1, x2-2, y1+1);
+	Line(x1+1, y1+2, x1+1, y2-2);
+	SetColor(Color3);
+	Line(x1, y2, x2, y2);
+	Line(x2, y1, x2, y2-1);
+	if Caption <> '' then
+	begin
+		x1 := (x2 - x1) div 2 + x1;
+		y1 := (y2 - y1) div 2 + y1 - 3; {3 is the offset to center text vertically}
+		x1 := x1 - FontGetWidth(Caption) div 2;
+		if State = bsDown then
+		begin
+			Inc(x1);
+			Inc(y1);
+		end;
+		FontPrint(Caption, x1, y1, Color4);
+	end;
+end;
+
+constructor CheckBoxType.Init(Left, Top, Width, Height: Integer);
+const
+	DefaultWidth = 15;
+	DefaultHeight = 15;
+begin
+	Self.SetSize(Left, Top, Width, Height, DefaultWidth, DefaultHeight);
+	Self.Checked := False;
+end;
+
+constructor FrameType.Init(Left, Top, Width, Height: Integer);
+const
+	DefaultWidth = 100;
+	DefaultHeight = 100;
+begin
+	Self.SetSize(Left, Top, Width, Height, DefaultWidth, DefaultHeight);
+end;
+
+constructor ImageType.Init(Left, Top: Integer; Image: string);
+const
+	DefaultWidth = 31;
+	DefaultHeight = 31;
+begin
+	Self.SetSize(Left, Top, sizeDefault, sizeDefault, DefaultWidth, DefaultHeight);
+	Self.ImageFile := Image;
+end;
+
+constructor TextboxType.Init(Left, Top, Width, Height: Integer);
+const
+	DefaultWidth = 120;
+	DefaultHeight = 19;
+begin
+	Self.SetSize(Left, Top, Width, Height, DefaultWidth, DefaultHeight);
 	Self.MaxLen := 255;
 end;
 
@@ -194,12 +291,12 @@ begin
 		Pos.Height := Height;
 
 	if Left = sizeCenter then
-		Pos.Left := (640 - Pos.Width) div 2 {640 is horizontal resolution}
+		Pos.Left := (GetMaxX - Pos.Width) div 2
 	else
 		Pos.Left := Left;
 
 	if Top = sizeCenter then
-		Pos.Top := (350 - Pos.Height) div 2 {350 is vertical resolution}
+		Pos.Top := (GetMaxY - Pos.Height) div 2 
 	else
 		Pos.Top := Top;
 end;
@@ -388,42 +485,41 @@ Begin
 End;
 
 function ObjBtnClick(var TargetBtn: ButtonType): Boolean;
-var
-	IsUp: Integer;
 begin
 	ObjBtnClick := False;
-	IsUp := 0;
 	if (MouseClicked = mbLeft) and MouseInArea(TargetBtn.Pos) then
 	begin
 		MouseHide;
-		ObjDrawBtn(TargetBtn, True);
+		TargetBtn.State := bsDown;
+		TargetBtn.Draw;
 		MouseShow;
 		repeat
 			if MouseInArea(TargetBtn.Pos) then
 			begin
-				if IsUp = 1 then
+				if TargetBtn.State = bsUp then
 				begin
-					IsUp := 0;
+					TargetBtn.State := bsDown;
 					MouseHide;
-					ObjDrawBtn(TargetBtn, True);
+					TargetBtn.Draw;
 					MouseShow;
 				end;
 			end
 			else
 			begin
-				if IsUp = 0 then
+				if TargetBtn.State = bsDown then
 				begin
-					IsUp := 1;
+					TargetBtn.State := bsUp;
 					MouseHide;
-					ObjDrawBtn(TargetBtn, False);
+					TargetBtn.Draw;
 					MouseShow;
 				end;
 			end;
 		until MouseClicked = mbNone;
-		if IsUp = 0 then
+		if TargetBtn.State = bsDown then
 		begin
+			TargetBtn.State := bsUp;
 			MouseHide;
-			ObjDrawBtn(TargetBtn, False);
+			TargetBtn.Draw;
 			MouseShow;
 		end;
 		if MouseInArea(TargetBtn.Pos) then
@@ -454,59 +550,6 @@ begin
 		repeat until MouseClicked = mbNone;
 		if MouseInArea(TargetArea) then
 			ObjClick := true;
-	end;
-end;
-
-procedure ObjDrawBtn(var TargetBtn: ButtonType; Pressed: Boolean);
-var
-	x1, x2, y1, y2: Integer;
-	Color1, Color2, Color3, Color4: Integer;
-begin
-	x1 := TargetBtn.Pos.Left;
-	y1 := TargetBtn.Pos.Top;
-	if TargetBtn.Pos.Width = 0 then TargetBtn.Pos.Width := 92;
-	if TargetBtn.Pos.Height = 0 then TargetBtn.Pos.Height := 22;
-	x2 := x1 + TargetBtn.Pos.Width;
-	y2 := y1 + TargetBtn.Pos.Height;
-	if not Pressed then
-	begin
-		Color1 := White;
-		Color2 := Theme.Button;
-		Color3 := Theme.Shadow;
-		Color4 := Theme.WindowText;
-	end
-	else
-	begin
-		Color1 := Black;
-		Color2 := Theme.Shadow;
-		Color3 := Theme.Light;
-		Color4 := White;
-	end;
-	SetColor(Color2);
-	if not TargetBtn.Transparent then
-	begin
-		SetFillStyle(SolidFill, Color2);
-		Bar(x1, y1, x2-1, y2-1)
-	end
-	else
-		Rectangle(x1, y1, x2-1, y2-1);
-	SetColor(Color1);
-	Line(x1+1, y1+1, x2-2, y1+1);
-	Line(x1+1, y1+2, x1+1, y2-2);
-	SetColor(Color3);
-	Line(x1, y2, x2, y2);
-	Line(x2, y1, x2, y2-1);
-	if RTrim(TargetBtn.Caption) <> '' then
-	begin
-		x1 := (x2 - x1) div 2 + x1;
-		y1 := (y2 - y1) div 2 + y1 - 3; {3 is the offset to center text vertically}
-		x1 := x1 - FontGetWidth(TargetBtn.Caption) div 2;
-		if Pressed then
-		begin
-			Inc(x1);
-			Inc(y1);
-		end;
-		FontPrint(TargetBtn.Caption, x1, y1, Color4);
 	end;
 end;
 
@@ -582,8 +625,6 @@ begin
 	
 	X := TargetImg.Pos.Left;
 	Y := TargetImg.Pos.Top;
-	TargetImg.Pos.Width := 31;  {Width/height are set here to make sure they match icon size in click detection etc.}
-	TargetImg.Pos.Height := 31;
 
 	{Image border}
 	SetColor(Theme.Light);
@@ -823,22 +864,6 @@ begin
 	until False;
 end;
 
-procedure ObjSetSize(var TargetArea: PosType; TargetLeft, TargetTop, TargetWidth, TargetHeight: Integer);
-begin
-	if TargetWidth <> sizeRetain then TargetArea.Width := TargetWidth;
-	if TargetHeight <> sizeRetain then TargetArea.Height := TargetHeight;
-	if TargetLeft <> sizeRetain then
-		if TargetLeft = sizeCenter then
-			TargetArea.Left := (640 - TargetArea.Width) div 2
-		else
-			TargetArea.Left := TargetLeft;
-	if TargetTop <> sizeRetain then
-		if TargetTop = sizeCenter then
-			TargetArea.Top := (322 - TargetArea.Height) div 2 + 28
-		else
-			TargetArea.Top := TargetTop;
-end;
-
 function ObjTxtClick(const TargetTxt: TextboxType): Boolean;
 begin
 	ObjTxtClick := False;
@@ -882,12 +907,9 @@ var
 	BackgroundP: Pointer;
 	Key: String;
 begin
-	ObjSetSize(winAboutBox.Pos, sizeCenter, sizeCenter, 329, 216);
-	ObjSetSize(imgLogo.Pos, 168, winAboutBox.Pos.Top + 11, sizeRetain, sizeRetain);
-	ObjSetSize(btnClose.Pos, 274, winAboutBox.Pos.Top + winAboutBox.Pos.Height-34, 92, 22);
-	btnClose.Caption := HotkeySymbol + 'Close';
-	btnClose.Transparent := False;
-	imgLogo.ImageFile := IconFile;
+	winAboutBox.Init(sizeCenter, sizeCenter, 329, 216);
+	imgLogo.Init(168, winAboutBox.Pos.Top + 11, IconFile);
+	btnClose.Init(274, winAboutBox.Pos.Top + winAboutBox.Pos.Height - 34, sizeDefault, sizeDefault, HotkeySymbol + 'Close');
 	MouseHide;
 
 	{Save background to restore when window is closed}
@@ -900,7 +922,7 @@ begin
 	GetImage(x1, y1, x2, y2, BackgroundP^);
 
 	ObjDrawWin(winAboutBox);
-	ObjDrawBtn(btnClose, False);
+	btnClose.Draw;
 	ObjDrawImg(imgLogo);
 	FontPrint(ProgramName + ' ' + ProgramVersion, 212, winAboutBox.Pos.Top + 17, Theme.WindowText);
 	FontPrint('By ' + ProgramAuthor, 212, winAboutBox.Pos.Top + 31, Theme.WindowText);
@@ -965,7 +987,6 @@ begin
 	Setting.ShowLinkTargetFiles := False;
 	Setting.ConfirmLinkDelete := True;
 	Setting.ConfirmExit := False;
-	Setting.AssignFileTypes := True;
 	Setting.ThemeFile := 'DEFAULT';
 	
 	if not FileExists(SysPath + GlobalSettings) then
@@ -1079,27 +1100,21 @@ begin
 	begin
 		if winMsgBox.Pos.Width < 102 then winMsgBox.Pos.Width := 102;
 	end;
-	ObjSetSize(winMsgBox.Pos, sizeCenter, sizeCenter, sizeRetain, msgLineCount*15+78);
-	ObjSetSize(imgIcon.Pos, winMsgBox.Pos.Left+13, winMsgBox.Pos.Top+15, sizeRetain, sizeRetain);
+	winMsgBox.Init(sizeCenter, sizeCenter, winMsgBox.Pos.Width, msgLineCount * 15 + 78);
+	imgIcon.Init(winMsgBox.Pos.Left + 13, winMsgBox.Pos.Top + 15, '');
 	case msgType of
 		msgInfo: imgIcon.ImageFile := 'MSGINFO';
 		msgWarn: imgIcon.ImageFile := 'MSGWARN';
 		msgQuest: imgIcon.ImageFile := 'MSGQUEST';
 		msgError: imgIcon.ImageFile := 'MSGERROR';
 	end;
-	ObjSetSize(btnFirst.Pos, sizeRetain, winMsgBox.Pos.Top+42+(15*msgLineCount), 80, 22);
+	btnFirst.Init(sizeCenter, winMsgBox.Pos.Top + 42 + (15 * msgLineCount), 80, sizeDefault, HotKeySymbol + 'OK');
 	if msgType = msgQuest then
 	begin
 		btnFirst.Caption := HotkeySymbol + 'Yes';
 		btnFirst.Pos.Left := 320 - 86;
-	end
-	else
-	begin
-		btnFirst.Caption := HotkeySymbol + 'OK';
-		btnFirst.Pos.Left := (640 - btnFirst.Pos.Width) div 2;
 	end;
-	ObjSetSize(btnSecond.Pos, 326, btnFirst.Pos.Top, 80, 22);
-	btnSecond.Caption := HotkeySymbol + 'No';
+	btnSecond.Init(326, btnFirst.Pos.Top, 80, sizeDefault, HotkeySymbol + 'No');
 
 	MouseHide;
 
@@ -1113,8 +1128,9 @@ begin
 	GetImage(x1, y1, x2, y2, BackgroundP^);
 
 	ObjDrawWin(winMsgBox);
-	ObjDrawBtn(btnFirst, False);
-	if msgType = msgQuest then ObjDrawBtn(btnSecond, False);
+	btnFirst.Draw;
+	if msgType = msgQuest then
+		btnSecond.Draw;
 	ObjDrawImg(imgIcon);
 	FontPrint(msgTitle, winMsgBox.Pos.Left+56, winMsgBox.Pos.Top+15, Theme.WindowText);
 	for i := 1 to msgLineCount do
@@ -1285,11 +1301,9 @@ procedure SysShowLoading;
 var
 	btnLoading: ButtonType;
 begin
-	ObjSetSize(btnLoading.Pos, sizeCenter, sizeCenter, 110, 34);
-	btnLoading.Caption := 'Loading...';
-	btnLoading.Transparent := False;
+	btnLoading.Init(sizeCenter, sizeCenter, 110, 34, 'Loading...');
 	MouseHide;
-	ObjDrawBtn(btnLoading, False);
+	btnLoading.Draw;
 	MouseShow;
 end;
 

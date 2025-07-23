@@ -253,11 +253,11 @@ begin
 	ObjDrawMenu;
 	SetFillStyle(SolidFill, Theme.Textbox);
 	Bar(0, 29, 639, 349);
-	ObjDrawBtn(BtnOpen, False);
-	ObjDrawBtn(BtnPageUp, False);
-	ObjDrawBtn(BtnPageDown, False);
-	ObjDrawBtn(BtnAbout, False);
-	ObjDrawBtn(BtnExit, False);
+	BtnOpen.Draw;
+	BtnPageUp.Draw;
+	BtnPageDown.Draw;
+	BtnAbout.Draw;
+	BtnExit.Draw;
 	MouseShow;
 	
 	if ParamStr(1) <> '' then
@@ -286,8 +286,8 @@ begin
 					Filename := NewFilename;
 					FileOpened := True;
 					MouseHide;
-					ObjDrawBtn(BtnPageUp, False);
-					ObjDrawBtn(BtnPageDown, False);
+					BtnPageUp.Draw;
+					BtnPageDown.Draw;
 					MouseShow;
 					DrawText;
 				end;

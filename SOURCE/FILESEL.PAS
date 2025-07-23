@@ -459,8 +459,8 @@ begin
 	txtList[FolderList].MaxLen := FolderList;
 
 	{Size is set here, but object is drawn in FilePreview if needed}
-	ObjSetSize(imgPreview.Pos, btnCancel.Pos.Left + 30, btnCancel.Pos.Top + 50, 32, 32);
-
+	imgPreview.Init(btnCancel.Pos.Left + 30, btnCancel.Pos.Top + 50, '');
+	
 	MouseHide;
 
 	{Save background to restore when window is closed}
@@ -477,12 +477,12 @@ begin
 	ObjDrawTxt(txtDrive, txtDriveText, False);
 	ObjDrawTxt(txtList[FileList], '', False);
 	ObjDrawTxt(txtList[FolderList], '', False);
-	ObjDrawBtn(btnSelect, False);
-	ObjDrawBtn(btnCancel, False);
-	ObjDrawBtn(btnFilePrev, False);
-	ObjDrawBtn(btnFileNext, False);
-	ObjDrawBtn(btnFolderPrev, False);
-	ObjDrawBtn(btnFolderNext, False);
+	btnSelect.Draw;
+	btnCancel.Draw;
+	btnFilePrev.Draw;
+	btnFileNext.Draw;
+	btnFolderPrev.Draw;
+	btnFolderNext.Draw;
 	FontPrint(HotkeySymbol + 'Pattern:', 101, winFileSelect.Pos.Top + 14, Theme.WindowText);
 	FontPrint(HotkeySymbol + 'Drive:', 272, winFileSelect.Pos.Top + 14, Theme.WindowText);
 	FontPrint(HotkeySymbol + 'Files:', 101, winFileSelect.Pos.Top + 57, Theme.WindowText);

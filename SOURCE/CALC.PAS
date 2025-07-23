@@ -13,8 +13,9 @@ var
 	frmCalc: FrameType;
 	txtCalc, txtResults: TextboxType;
 	btnNumb: array[0..9] of ButtonType;
-	btnC, btnCE, btnDivide, btnMulti, btnMinus, btnPlus, btnEquals, btnDot, btnExit, btnAbout: ButtonType;
-	btnCount: Integer;
+	btnC, btnCE, btnDivide, btnMulti, btnMinus, btnPlus: ButtonType;
+	btnEquals, btnDot, btnExit, btnAbout: ButtonType;
+	i: Integer;
 	MathFunc: string[1];
 	TotalSum, Op1: Integer;
 	NumOps: Integer;
@@ -31,7 +32,7 @@ begin
 	SignStr := '';
 	TempStr := '';
 	
-	{Remote decimals if any, and add again later}
+	{Remove decimals if any, and add again later}
 	DotPos := Pos('.', TargetStr);
 	if DotPos > 0 then
 	begin
@@ -81,42 +82,33 @@ end;
 
 begin
 	LogLinesWritten := 0;
-	ObjSetSize(frmCalc.Pos, 12, 42, 218, 208);
-	ObjSetSize(txtCalc.Pos, 25, frmCalc.Pos.Top + 12, 191, 22);
-	ObjSetSize(btnNumb[0].Pos, 26, frmCalc.Pos.Top + 172, 90, 22);
-	ObjSetSize(btnNumb[1].Pos, 26, frmCalc.Pos.Top + 139, 40, 22);
-	ObjSetSize(btnNumb[2].Pos, 76, frmCalc.Pos.Top + 139, 40, 22);
-	ObjSetSize(btnNumb[3].Pos, 126, frmCalc.Pos.Top + 139, 40, 22);
-	ObjSetSize(btnNumb[4].Pos, 26, frmCalc.Pos.Top + 106, 40, 22);
-	ObjSetSize(btnNumb[5].Pos, 76, frmCalc.Pos.Top + 106, 40, 22);
-	ObjSetSize(btnNumb[6].Pos, 126, frmCalc.Pos.Top + 106, 40, 22);
-	ObjSetSize(btnNumb[7].Pos, 26, frmCalc.Pos.Top + 73, 40, 22);
-	ObjSetSize(btnNumb[8].Pos, 76, frmCalc.Pos.Top + 73, 40, 22);
-	ObjSetSize(btnNumb[9].Pos, 126, frmCalc.Pos.Top + 73, 40, 22);
-	ObjSetSize(btnC.Pos, 26, frmCalc.Pos.Top + 40, 40, 22);
-	ObjSetSize(btnCE.Pos, 76, frmCalc.Pos.Top + 40, 40, 22);
-	ObjSetSize(btnDivide.Pos, 126, frmCalc.Pos.Top + 40, 40, 22);
-	ObjSetSize(btnDot.Pos, 126, frmCalc.Pos.Top + 172, 40, 22);
-	ObjSetSize(btnMulti.Pos, 176, frmCalc.Pos.Top + 40, 40, 22);
-	ObjSetSize(btnMinus.Pos, 176, frmCalc.Pos.Top + 73, 40, 22);
-	ObjSetSize(btnPlus.Pos, 176, frmCalc.Pos.Top + 106, 40, 22);
-	ObjSetSize(btnEquals.Pos, 176, frmCalc.Pos.Top + 139, 40, 55);
+	
+	frmCalc.Init(12, 42, 218, 208);
+	txtCalc.Init(25, frmCalc.Pos.Top + 12, 191, sizeDefault);
+	btnNumb[0].Init(26, frmCalc.Pos.Top + 172, 90, sizeDefault, '0');
+	btnNumb[1].Init(26, frmCalc.Pos.Top + 139, 40, sizeDefault, '1');
+	btnNumb[2].Init(76, frmCalc.Pos.Top + 139, 40, sizeDefault, '2');
+	btnNumb[3].Init(126, frmCalc.Pos.Top + 139, 40, sizeDefault, '3');
+	btnNumb[4].Init(26, frmCalc.Pos.Top + 106, 40, sizeDefault, '4');
+	btnNumb[5].Init(76, frmCalc.Pos.Top + 106, 40, sizeDefault, '5');
+	btnNumb[6].Init(126, frmCalc.Pos.Top + 106, 40, sizeDefault, '6');
+	btnNumb[7].Init(26, frmCalc.Pos.Top + 73, 40, sizeDefault, '7');
+	btnNumb[8].Init(76, frmCalc.Pos.Top + 73, 40, sizeDefault, '8');
+	btnNumb[9].Init(126, frmCalc.Pos.Top + 73, 40, sizeDefault, '9');
+	btnC.Init(26, frmCalc.Pos.Top + 40, 40, sizeDefault, HotkeySymbol + 'C');
+	btnCE.Init(76, frmCalc.Pos.Top + 40, 40, sizeDefault, 'C' + HotkeySymbol + 'E');
+	btnDivide.Init(126, frmCalc.Pos.Top + 40, 40, sizeDefault, '/');
+	btnDot.Init(126, frmCalc.Pos.Top + 172, 40, sizeDefault, '.');
+	btnMulti.Init(176, frmCalc.Pos.Top + 40, 40, sizeDefault, '*');
+	btnMinus.Init(176, frmCalc.Pos.Top + 73, 40, sizeDefault, '-');
+	btnPlus.Init(176, frmCalc.Pos.Top + 106, 40, sizeDefault, '+');
+	btnEquals.Init(176, frmCalc.Pos.Top + 139, 40, 55, '=');
 
-	ObjSetSize(txtResults.Pos, frmCalc.Pos.Left + frmCalc.Pos.Width + 12, frmCalc.Pos.Top, 385, 295);
+	txtResults.Init(frmCalc.Pos.Left + frmCalc.Pos.Width + 12, frmCalc.Pos.Top, 385, 295);
 
-	ObjSetSize(btnAbout.Pos, 446, 2, 92, 22);
-	ObjSetSize(btnExit.Pos, 545, 2, 92, 22);
+	btnAbout.Init(446, 2, sizeDefault, sizeDefault, HotkeySymbol + 'About...');
+	btnExit.Init(545, 2, sizeDefault, sizeDefault, 'E' + HotkeySymbol + 'xit');
 
-	btnC.Caption := HotkeySymbol + 'C';
-	btnCE.Caption := 'C' + HotkeySymbol + 'E';
-	btnDivide.Caption := '/';
-	btnDot.Caption := '.';
-	btnMulti.Caption := '*';
-	btnMinus.Caption := '-';
-	btnPlus.Caption := '+';
-	btnEquals.Caption := '=';
-	btnAbout.Caption := HotkeySymbol + 'About...';
-	btnExit.Caption := 'E' + HotkeySymbol + 'xit';
 	txtCalc.MaxLen := 25;
 
 	MouseHide;
@@ -125,15 +117,12 @@ begin
 
 	ObjDrawFrm(frmCalc, 15, Theme.Shadow);
 	ObjDrawTxt(txtCalc, '', False);
-	for btnCount := 0 to 9 do
-	begin
-		Str(btnCount, btnNumb[btnCount].Caption);
-		ObjDrawBtn(btnNumb[btnCount], False);
-	end;
-	ObjDrawBtn(btnC, False); ObjDrawBtn(btnCE, False); ObjDrawBtn(btnDivide, False);
-	ObjDrawBtn(btnMulti, False); ObjDrawBtn(btnMinus, False); ObjDrawBtn(btnPlus, False);
-	ObjDrawBtn(btnEquals, False); ObjDrawBtn(btnDot, False); ObjDrawBtn(btnExit, False);
-	ObjDrawBtn(btnAbout, False);
+	for i := 0 to 9 do
+		btnNumb[i].Draw;
+	btnC.Draw; btnCE.Draw; btnDivide.Draw;
+	btnMulti.Draw; btnMinus.Draw; btnPlus.Draw;
+	btnEquals.Draw; btnDot.Draw; btnExit.Draw;
+	btnAbout.Draw;
 
 	ObjDrawTxt(txtResults, '', False);
 	MouseShow;
@@ -154,10 +143,10 @@ begin
 		if ObjBtnClick(btnAbout) or (Key = KeyAltA) then
 			SysAboutBox(AppName, AppVersion, AppAuthor, 'CALC');
 
-		for btnCount := 0 to 9 do
+		for i := 0 to 9 do
 		begin
-			Str(btnCount, ch);
-			if ObjBtnClick(btnNumb[btnCount]) or (Key = ch) then
+			Str(i, ch);
+			if ObjBtnClick(btnNumb[i]) or (Key = ch) then
 			begin
 				txtCalcText := txtCalcText + ch;
 				MouseHide;

@@ -128,15 +128,15 @@ begin
 	{Overwrite system theme with current theme}
 	Theme := ThemeData;
 
-	ObjSetSize(frmPreview.Pos, 12, 42, 410, 293);
+	frmPreview.Init(12, 42, 410, 293);
 	x1 := frmPreview.Pos.Left;
 	y1 := frmPreview.Pos.Top;
 	x2 := frmPreview.Pos.Left + frmPreview.Pos.Width;
 	y2 := frmPreview.Pos.Top + frmPreview.Pos.Height;
-	btnPreview3.Init(x2 - 96, y1 + 3, 92, 22, 'Button');
+	btnPreview3.Init(x2 - 96, y1 + 3, sizeDefault, sizeDefault, 'Button');
 	txtListPreview.Init(x2 - 182, y2 - 82, 166, 66);
 	txtPreviewText := 'Textbox contents';
-	ObjSetSize(imgPreview.Pos, frmPreview.Pos.Left + 16, y2 - 48, sizeRetain, sizeRetain);
+	imgPreview.Init(frmPreview.Pos.Left + 16, y2 - 48, 'LOGO');
 	imgPreview.ImageFile := 'LOGO';
 
 	MouseHide;
@@ -154,14 +154,14 @@ begin
 	x1 := winPreview.Pos.Left;
 	y1 := winPreview.Pos.Top;
 	txtPreview.Init(x1 + 12, y1 + 56, 236, 19);
-	btnPreview1.Init(x1 + 14, y1 + 93, 111, 22, 'Button up');
-	btnPreview2.Init(x1 + 133, y1 + 93, 111, 22, 'Button down');
+	btnPreview1.Init(x1 + 14, y1 + 93, 111, sizeDefault, 'Button up');
+	btnPreview2.Init(x1 + 133, y1 + 93, 111, sizeDefault, 'Button down');
 
 	ObjDrawWin(winPreview);
 	ObjDrawTxt(txtPreview, txtPreviewText, True);
-	ObjDrawBtn(btnPreview1, False);
-	ObjDrawBtn(btnPreview2, True);
-	ObjDrawBtn(btnPreview3, False);
+	btnPreview1.Draw;
+	btnPreview2.Draw;
+	btnPreview3.Draw;
 	ObjDrawImg(imgPreview);
 	ObjDrawTxt(txtListPreview, '', False);
 
@@ -218,7 +218,13 @@ begin
 	ObjDrawWin(winSelectObject);
 	ActiveSelection := SelectedObject;
 	for i := 0 to High(btnObjSelect) do
-		ObjDrawBtn(btnObjSelect[i], (i = Ord(ActiveSelection)));
+	begin
+		if i = Ord(ActiveSelection) then
+			btnObjSelect[i].State := bsDown
+		else
+			btnObjSelect[i].State := bsUp;
+		btnObjSelect[i].Draw;
+	end;
 	MouseShow;
 
 	repeat
@@ -244,7 +250,8 @@ begin
 		if (Key = KeyUp) or (Key = KeyDown) then
 		begin
 			MouseHide;
-			ObjDrawBtn(btnObjSelect[Ord(ActiveSelection)], False);
+			btnObjSelect[Ord(ActiveSelection)].State := bsUp;
+			btnObjSelect[Ord(ActiveSelection)].Draw;
 			if Key = KeyUp then
 				NextSelection := Ord(ActiveSelection) - 1
 			else
@@ -255,7 +262,8 @@ begin
 			else if NextSelection > High(btnObjSelect) then
 				NextSelection := 0;
 				ActiveSelection := TThemeObject(NextSelection);
-			ObjDrawBtn(btnObjSelect[Ord(ActiveSelection)], True);
+			btnObjSelect[Ord(ActiveSelection)].State := bsDown;
+			btnObjSelect[Ord(ActiveSelection)].Draw;
 			MouseShow;
 		end;
 
@@ -264,7 +272,7 @@ begin
 	PutImage(x1, y1, BackgroundP^, NormalPut);
 	FreeMem(BackgroundP, BackgroundSize);
 	btnObject.Caption := ObjectCaptions[Ord(SelectedObject)];
-	ObjDrawBtn(btnObject, False);
+	btnObject.Draw;
 	MouseShow;
 
 	{Change the color of the currently selected object}
@@ -442,12 +450,12 @@ begin
 	SetFillStyle(SolidFill, Theme.Window);
 	Bar(0, 29, 639, 349);
 
-	btnNew.Init(2, 2, 92, 22, HotkeySymbol + 'New');
-	btnOpen.Init(101, 2, 92, 22, HotkeySymbol + 'Load');
-	btnSave.Init(200, 2, 92, 22, HotkeySymbol + 'Save');
-	btnSaveAs.Init(299, 2, 92, 22, 'Sa' + HotkeySymbol + 've as');
-	btnAbout.Init(446, 2, 92, 22, HotkeySymbol + 'About...');
-	btnExit.Init(545, 2, 92, 22, 'E' + HotkeySymbol + 'xit');
+	btnNew.Init(2, 2, sizeDefault, sizeDefault, HotkeySymbol + 'New');
+	btnOpen.Init(101, 2, sizeDefault, sizeDefault, HotkeySymbol + 'Load');
+	btnSave.Init(200, 2, sizeDefault, sizeDefault, HotkeySymbol + 'Save');
+	btnSaveAs.Init(299, 2, sizeDefault, sizeDefault, 'Sa' + HotkeySymbol + 've as');
+	btnAbout.Init(446, 2, sizeDefault, sizeDefault, HotkeySymbol + 'About...');
+	btnExit.Init(545, 2, sizeDefault, sizeDefault, 'E' + HotkeySymbol + 'xit');
 	txtThemeName.Init(434, 59, 194, 0);
 	txtThemeAuthor.Init(434, txtThemeName.Pos.Top + 48, 194, 0);
 	btnObject.Init(434, txtThemeAuthor.Pos.Top + 48, 194, 0, 'Desktop');
@@ -464,24 +472,25 @@ begin
 			YPos := 25;
 			XPos := 0;
 		end;
-		ObjSetSize(btnColor[i].Pos, txtThemeAuthor.Pos.Left + XPos, txtThemeAuthor.Pos.Top + 98 + YPos, 19, 19);
+		btnColor[i].Init(txtThemeAuthor.Pos.Left + XPos, txtThemeAuthor.Pos.Top + 98 + YPos, 19, 19, '');
 		btnColor[i].Transparent := True;
 		Inc(XPos, 25);
 	end;
 
 	MouseHide;
-	ObjDrawBtn(btnNew, False);
-	ObjDrawBtn(btnOpen, False);
-	ObjDrawBtn(btnSave, False);
-	ObjDrawBtn(btnSaveAs, False);
-	ObjDrawBtn(btnAbout, False);
-	ObjDrawBtn(btnExit, False);
+	btnNew.Draw;
+	btnOpen.Draw;
+	btnSave.Draw;
+	btnSaveAs.Draw;
+	btnAbout.Draw;
+	btnExit.Draw;
 	ObjDrawTxt(txtThemeName, ThemeName, False);
 	ObjDrawTxt(txtThemeAuthor, ThemeAuthor, False);
-	ObjDrawBtn(btnObject, False);
+	btnObject.Draw;
 	for i := 0 to 15 do
 	begin
-		ObjDrawBtn(btnColor[i], True);
+		btnColor[i].State := bsDown;
+		btnColor[i].Draw;
 		SetFillStyle(SolidFill, i);
 		Bar(btnColor[i].Pos.Left + 2, btnColor[i].Pos.Top + 2, btnColor[i].Pos.Left + btnColor[i].Pos.Width - 2,
 			btnColor[i].Pos.Top + btnColor[i].Pos.Height - 2);

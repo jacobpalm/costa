@@ -10,10 +10,6 @@ const
 	AppIcon          = 'TICTAC';
 
 type
-	TField = record
-		Pos: PosType;
-	end;
-
 	TPlayer = (PlayerNone, PlayerX, PlayerO);
 	TSound = (sndX, sndO, sndIllegal, sndWin, sndLoose, sndDraw, sndNew);
 	TGameMsg = (msgWin, msgDraw, msgAITurn, msgPlayerTurn, msgNewGame);
@@ -23,7 +19,7 @@ var
 	TotalTurns: integer;
 	EnableAI, EnableAudio: boolean;
 	PlayField: array[1..3, 1..3] of TPlayer;
-	txtPlayField: array[1..3, 1..3] of TField;
+	txtPlayField: array[1..3, 1..3] of TextboxType;
 
 {Forward declarations}
 procedure TicDrawXO(Row, Col: integer; Player: TPlayer); forward;
@@ -491,28 +487,29 @@ var
 begin
 	FieldClicked := false;
 
-	ObjSetSize(frmTic.Pos, sizeCenter, sizeCenter, 221, 221);
+	frmTic.Init(sizeCenter, sizeCenter, 221, 221);
+	Inc(frmTic.Pos.Top, 16); {To accomodate menu bar}
 
 	for Row := 1 to 3 do
 	begin
 		for Col := 1 to 3 do
 		begin
 		if (Row = 1) and (Col = 1) then
-			ObjSetSize(txtPlayField[Row, Col].Pos, frmTic.Pos.Left + 10, frmTic.Pos.Top + 10, 60, 60)
+			txtPlayField[Row, Col].Init(frmTic.Pos.Left + 10, frmTic.Pos.Top + 10, 60, 60)
 		else if Col = 1 then
-			ObjSetSize(txtPlayField[Row, Col].Pos, txtPlayField[Row - 1, Col].Pos.Left,
+			txtPlayField[Row, Col].Init(txtPlayField[Row - 1, Col].Pos.Left,
 				txtPlayField[Row - 1, Col].Pos.Top + 70, 60, 60)
 		else
-			ObjSetSize(txtPlayField[Row, Col].Pos, txtPlayField[Row, Col - 1].Pos.Left + 70,
+			txtPlayField[Row, Col].Init(txtPlayField[Row, Col - 1].Pos.Left + 70,
 				txtPlayField[Row, Col - 1].Pos.Top, 60, 60);
 		end;
 	end;
 	
-	btnNew.Init(3, 2, 92, 22, HotkeySymbol + 'New game');
-	btnAIToggle.Init(102, 2, 92, 22, HotkeySymbol + 'Mode');
-	btnAudio.Init(201, 2, 92, 22, HotkeySymbol + 'Sound');
-	btnAbout.Init(446, 2, 92, 22, HotkeySymbol + 'About...');
-	btnExit.Init(545, 2, 92, 22, 'E' + HotkeySymbol + 'xit');
+	btnNew.Init(3, 2, sizeDefault, sizeDefault, HotkeySymbol + 'New game');
+	btnAIToggle.Init(102, 2, sizeDefault, sizeDefault, HotkeySymbol + 'Mode');
+	btnAudio.Init(201, 2, sizeDefault, sizeDefault, HotkeySymbol + 'Sound');
+	btnAbout.Init(446, 2, sizeDefault, sizeDefault, HotkeySymbol + 'About...');
+	btnExit.Init(545, 2, sizeDefault, sizeDefault, 'E' + HotkeySymbol + 'xit');
 	
 	MouseHide;
 	ObjDrawMenu;
@@ -522,11 +519,11 @@ begin
 	Bar(frmTic.Pos.Left + 2, frmTic.Pos.Top + 2, frmTic.Pos.Left + frmTic.Pos.Width - 2,
 		frmTic.Pos.Top + frmTic.Pos.Height - 2);
 	ObjDrawFrm(frmTic, 10, 8);
-	ObjDrawBtn(btnNew, false);
-	ObjDrawBtn(btnAIToggle, false);
-	ObjDrawBtn(btnAudio, false);
-	ObjDrawBtn(btnAbout, false);
-	ObjDrawBtn(btnExit, false);
+	btnNew.Draw;
+	btnAIToggle.Draw;
+	btnAudio.Draw;
+	btnAbout.Draw;
+	btnExit.Draw;
 	MouseShow;
 
 	PlayerTurn := PlayerX;

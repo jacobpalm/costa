@@ -361,12 +361,12 @@ begin
 	if FullRedraw then
 	begin
 		ObjDrawMenu;
-		ObjDrawBtn(btnAddLink, false);
-		ObjDrawBtn(btnRunCmd, false);
-		ObjDrawBtn(btnAboutCosta, false);
-		ObjDrawBtn(btnExitCosta, false);
-		ObjDrawBtn(btnPrevious, false);
-		ObjDrawBtn(btnNext, false);
+		btnAddLink.Draw;
+		btnRunCmd.Draw;
+		btnAboutCosta.Draw;
+		btnExitCosta.Draw;
+		btnPrevious.Draw;
+		btnNext.Draw;
 		Str(Setting.DesktopID, DeskStr);
 		FontPrint(DeskStr + '/5', 310, 10, Theme.WindowText);
 	end;
@@ -385,8 +385,7 @@ begin
 	begin
 		x := DeskLink^[i]^.Left;
 		y := DeskLink^[i]^.Top;
-		ObjSetSize(imgDeskLinkIcon.Pos, x, y, sizeDefault, sizeDefault);
-		imgDeskLinkIcon.ImageFile := DeskLink^[i]^.ImageFile;
+		imgDeskLinkIcon.Init(x, y, DeskLink^[i]^.ImageFile);
 		ObjDrawImg(imgDeskLinkIcon);
 
 		if Setting.ShowLinkDescriptions then
@@ -455,7 +454,7 @@ begin
 	{Draw the tab button around the selected link}
 	btnTab.Pos.Left := DeskLink^[KeySelection]^.Left - 3;
 	btnTab.Pos.Top := DeskLink^[KeySelection]^.Top - 3;
-	ObjDrawBtn(btnTab, false);
+	btnTab.Draw;
 	MouseShow;
 end;
 
@@ -480,8 +479,8 @@ begin
 	txtProgram.Init(winRun.Pos.Left + 12, winRun.Pos.Top + 27, winRun.Pos.Width - 68, sizeDefault);
 	txtParameters.Init(txtProgram.Pos.Left, txtProgram.Pos.Top + 46, winRun.Pos.Width - 26, sizeDefault);
 	btnBrowse.Init(txtProgram.Pos.Left + txtProgram.Pos.Width + 9, txtProgram.Pos.Top, 33, 19, '...');
-	btnOK.Init(winRun.Pos.Left + winRun.Pos.Width - 184, txtParameters.Pos.Top + 30, 80, 22, HotkeySymbol + 'OK');
-	btnCancel.Init(winRun.Pos.Left + winRun.Pos.Width - 94, btnOK.Pos.Top, 80, 22, HotkeySymbol + 'Cancel');
+	btnOK.Init(winRun.Pos.Left + winRun.Pos.Width - 184, txtParameters.Pos.Top + 30, 80, sizeDefault, HotkeySymbol + 'OK');
+	btnCancel.Init(winRun.Pos.Left + winRun.Pos.Width - 94, btnOK.Pos.Top, 80, sizeDefault, HotkeySymbol + 'Cancel');
 		
 	MouseHide;
 	x1 := winRun.Pos.Left;
@@ -493,11 +492,11 @@ begin
 	GetImage(x1, y1, x2, y2, BackgroundP^);
 
 	ObjDrawWin(winRun);
-	ObjDrawBtn(btnOK, false);
-	ObjDrawBtn(btnCancel, false);
+	btnOK.Draw;
+	btnCancel.Draw;
+	btnBrowse.Draw;
 	ObjDrawTxt(txtProgram, txtProgramText, false);
 	ObjDrawTxt(txtParameters, txtParametersText, false);
-	ObjDrawBtn(btnBrowse, false);
 	
 	y2 := txtProgram.Pos.Top - 16;
 	FontPrint(HotkeySymbol + 'Program:', txtProgram.Pos.Left, y2, Theme.WindowText);
@@ -558,14 +557,13 @@ var
 	Key, CroppedText: string;
 begin
 	winLinkMenu.Init(sizeCenter, sizeCenter, 413, 165);
-	btnOpen.Init(winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + winLinkMenu.Pos.Height - 64, 389, 22, HotkeySymbol + 'Open');
-	btnEdit.Init(btnOpen.Pos.Left, btnOpen.Pos.Top + 30, 92, 22, HotkeySymbol + 'Edit...');
-	btnMove.Init(btnEdit.Pos.Left + 99, btnEdit.Pos.Top, 92, 22, HotkeySymbol + 'Move');
-	btnRemove.Init(btnMove.Pos.Left + 99, btnEdit.Pos.Top, 92, 22, HotkeySymbol + 'Remove');
-	btnCancel.Init(btnRemove.Pos.Left + 99, btnEdit.Pos.Top, 92, 22, HotkeySymbol + 'Cancel');
-	
-	ObjSetSize(imgIcon.Pos, winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 11, sizeRetain, sizeRetain);
-	imgIcon.ImageFile := DeskLink^[TargetLink]^.ImageFile;
+	btnOpen.Init(winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + winLinkMenu.Pos.Height - 64, 389,
+		sizeDefault, HotkeySymbol + 'Open');
+	btnEdit.Init(btnOpen.Pos.Left, btnOpen.Pos.Top + 30, sizeDefault, sizeDefault, HotkeySymbol + 'Edit...');
+	btnMove.Init(btnEdit.Pos.Left + 99, btnEdit.Pos.Top, sizeDefault, sizeDefault, HotkeySymbol + 'Move');
+	btnRemove.Init(btnMove.Pos.Left + 99, btnEdit.Pos.Top, sizeDefault, sizeDefault, HotkeySymbol + 'Remove');
+	btnCancel.Init(btnRemove.Pos.Left + 99, btnEdit.Pos.Top, sizeDefault, sizeDefault, HotkeySymbol + 'Cancel');
+	imgIcon.Init(winLinkMenu.Pos.Left + 12, winLinkMenu.Pos.Top + 11, DeskLink^[TargetLink]^.ImageFile);
 
 	Caption := DeskLink^[TargetLink]^.Caption;
 	Filename := DeskLink^[TargetLink]^.Filename;
@@ -591,11 +589,11 @@ begin
 	GetImage(x1, y1, x2, y2, BackgroundP^);
 	
 	ObjDrawWin(winLinkMenu);
-	ObjDrawBtn(btnOpen, false);
-	ObjDrawBtn(btnEdit, false);
-	ObjDrawBtn(btnMove, false);
-	ObjDrawBtn(btnRemove, false);
-	ObjDrawBtn(btnCancel, false);
+	btnOpen.Draw;
+	btnEdit.Draw;
+	btnMove.Draw;
+	btnRemove.Draw;
+	btnCancel.Draw;
 	ObjDrawImg(imgIcon);
 
 	FontPrint(DeskLink^[TargetLink]^.Caption, x1 + 54, y1 + 17, 0);
@@ -705,8 +703,8 @@ begin
 	LastGridX := 0;
 	LastGridY := 0;
 
-	btnPrevious.Init(255, 2, 42, 22, '<');
-	btnNext.Init(343, 2, 42, 22, '>');
+	btnPrevious.Init(255, 2, 42, sizeDefault, '<');
+	btnNext.Init(343, 2, 42, sizeDefault, '>');
 
 	MouseHide;
 	IconSize := ImageSize(0, 0, 31, 31);
@@ -848,14 +846,15 @@ begin
 	winEdit.Init(210, 35, 220, 312);
 
 	btnIcon.Init(296, winEdit.Pos.Top + 12, 48, 48, '');
-	ObjSetSize(imgIcon.Pos, 305, btnIcon.Pos.Top + 9, 32, 32);
+	imgIcon.Init(305, btnIcon.Pos.Top + 9, DeskLink^[TargetLink]^.ImageFile);
+	
 	txtCaption.Init(222, btnIcon.Pos.Top + 73, 196, 19);
 	txtFilename.Init(222, txtCaption.Pos.Top + 44, 196, 19);
 	txtPath.Init(222, txtFilename.Pos.Top + 44, 196, 19);
 	txtParams.Init(222, txtPath.Pos.Top + 44, 196, 19);
-	ObjSetSize(chkPauseOnExit.Pos, 222, txtParams.Pos.Top + 32, 16, 16);
-	btnOK.Init(229, chkPauseOnExit.Pos.Top + 28, 84, 22, HotkeySymbol + 'Save');
-	btnCancel.Init(326, btnOK.Pos.Top, 84, 22, HotkeySymbol + 'Cancel');
+	chkPauseOnExit.Init(222, txtParams.Pos.Top + 32, sizeDefault, sizeDefault);
+	btnOK.Init(229, chkPauseOnExit.Pos.Top + 28, 84, sizeDefault, HotkeySymbol + 'Save');
+	btnCancel.Init(326, btnOK.Pos.Top, 84, sizeDefault, HotkeySymbol + 'Cancel');
 
 	btnIcon.Transparent := true;
 	txtCaption.MaxLen := CaptionMaxLen;
@@ -866,7 +865,6 @@ begin
 	txtParamsText := DeskLink^[TargetLink]^.Parameters;
 	txtPathText := DeskLink^[TargetLink]^.Path;
 	txtCaptionText := DeskLink^[TargetLink]^.Caption;
-	imgIcon.ImageFile := DeskLink^[TargetLink]^.ImageFile;
 	chkPauseOnExit.Checked := DeskLink^[TargetLink]^.PauseOnExit;
 
 	MouseHide;
@@ -880,13 +878,13 @@ begin
 
 	ObjDrawWin(winEdit);
 	ObjDrawTxt(txtCaption, txtCaptionText, false);
-	ObjDrawBtn(btnIcon, False);
+	btnIcon.Draw;
 	ObjDrawTxt(txtFilename, txtFileNameText, false);
 	ObjDrawTxt(txtParams, txtParamsText, false);
 	ObjDrawTxt(txtPath, txtPathText, false);
 	ObjDrawChk(chkPauseOnExit);
-	ObjDrawBtn(btnOK, false);
-	ObjDrawBtn(btnCancel, false);
+	btnOK.Draw;
+	btnCancel.Draw;
 	FontPrint('C' + HotkeySymbol + 'aption:', 222, txtCaption.Pos.Top - 15, Theme.WindowText);
 	FontPrint(HotkeySymbol + 'Program:', 222, txtFilename.Pos.Top - 15, Theme.WindowText);
 	FontPrint('Pa' + HotkeySymbol + 'th:', 222, txtPath.Pos.Top - 15, Theme.WindowText);
@@ -1086,12 +1084,12 @@ var
 	Key: String;
 	TempLink: TLink;
 begin
-	btnAddLink.Init(3, 2, 92, 22, 'A' + HotkeySymbol + 'dd...');
-	btnRunCmd.Init(102, 2, 92, 22, HotkeySymbol + 'Run...');
-	btnPrevious.Init(255, 2, 42, 22, HotkeySymbol + '<');
-	btnNext.Init(343, 2, 42, 22, HotkeySymbol + '>');
-	btnAboutCosta.Init(446, 2, 92, 22, HotkeySymbol + 'About...');
-	btnExitCosta.Init(545, 2, 92, 22, 'E' + HotkeySymbol + 'xit');
+	btnAddLink.Init(3, 2, sizeDefault, sizeDefault, 'A' + HotkeySymbol + 'dd...');
+	btnRunCmd.Init(102, 2, sizeDefault, sizeDefault, HotkeySymbol + 'Run...');
+	btnPrevious.Init(255, 2, 42, sizeDefault, HotkeySymbol + '<');
+	btnNext.Init(343, 2, 42, sizeDefault, HotkeySymbol + '>');
+	btnAboutCosta.Init(446, 2, sizeDefault, sizeDefault, HotkeySymbol + 'About...');
+	btnExitCosta.Init(545, 2, sizeDefault, sizeDefault, 'E' + HotkeySymbol + 'xit');
 	btnTab.Init(0, 0, 37, 37, '');
 	btnTab.Transparent := true;
 	

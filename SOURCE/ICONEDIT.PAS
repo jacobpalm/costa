@@ -172,17 +172,19 @@ begin
 		exit;
 
 	{Set the current tool to the specified one, and update the button visuals}
-	MouseHide;
 	if Tool = toolPencil then
 	begin
-		ObjDrawBtn(btnPencil, true);
-		ObjDrawBtn(btnFloodFill, false);
+		btnPencil.State := bsDown;
+		btnFloodFill.State := bsUp;
 	end
 	else if Tool = toolFloodFill then
 	begin
-		ObjDrawBtn(btnPencil, false);
-		ObjDrawBtn(btnFloodFill, true);
+		btnPencil.State := bsUp;
+		btnFloodFill.State := bsDown;
 	end;
+	MouseHide;
+	btnPencil.Draw;
+	btnFloodFill.Draw;
 	CurrentTool := Tool;
 	MouseShow;
 end;
@@ -467,15 +469,16 @@ var
 	ColChk: integer;
 begin
 	txtDrawArea.Init(175, 44, 290, 290);
-	btnNew.Init(2, 2, 92, 22, HotkeySymbol + 'New');
-	btnOpen.Init(101, 2, 92, 22, HotkeySymbol + 'Load');
-	btnSave.Init(200, 2, 92, 22, HotkeySymbol + 'Save');
-	btnAbout.Init(446, 2, 92, 22, HotkeySymbol + 'About...');
-	btnExit.Init(545, 2, 92, 22, 'E' + HotkeySymbol + 'xit');
+	btnNew.Init(2, 2, sizeDefault, sizeDefault, HotkeySymbol + 'New');
+	btnOpen.Init(101, 2, sizeDefault, sizeDefault, HotkeySymbol + 'Load');
+	btnSave.Init(200, 2, sizeDefault, sizeDefault, HotkeySymbol + 'Save');
+	btnAbout.Init(446, 2, sizeDefault, sizeDefault, HotkeySymbol + 'About...');
+	btnExit.Init(545, 2, sizeDefault, sizeDefault, 'E' + HotkeySymbol + 'xit');
 
 	XPos := txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 12;
-	btnPencil.Init(XPos, txtDrawArea.Pos.Top + 14, 56, 22, 'P' + HotkeySymbol + 'encil');
-	btnFloodFill.Init(XPos, btnPencil.Pos.Top + 26, 56, 22, HotkeySymbol + 'Fill');
+	btnPencil.Init(XPos, txtDrawArea.Pos.Top + 14, 56, sizeDefault, 'P' + HotkeySymbol + 'encil');
+	btnPencil.State := bsDown;
+	btnFloodFill.Init(XPos, btnPencil.Pos.Top + 26, 56, sizeDefault, HotkeySymbol + 'Fill');
 	btnPreview.Init(XPos, btnFloodFill.Pos.Top + 51, 56, 56, '');
 
 	{Center preview image in area}
@@ -483,8 +486,7 @@ begin
 	YPos := (btnPreview.Pos.Height - 34) div 2;
 	XPos := btnPreview.Pos.Left + XPos;
 	YPos := btnPreview.Pos.Top + YPos;
-	ObjSetSize(imgPreview.Pos, XPos, YPos, 32, 32);
-	imgPreview.ImageFile := '';
+	imgPreview.Init(XPos, YPos, '');
 	
 	{Draw area offset is used to calculate the position of each pixel
 	 in the drawing area, so that it can be drawn in the correct place}
@@ -496,14 +498,15 @@ begin
 	SetFillStyle(SolidFill, Theme.Window);
 	Bar(0, 29, 639, 349);
 	ObjDrawTxt(txtDrawArea, '', false);
-	ObjDrawBtn(btnPencil, true);
-	ObjDrawBtn(btnFloodFill, false);
-	ObjDrawBtn(btnPreview, true);
-	ObjDrawBtn(btnNew, false);
-	ObjDrawBtn(btnOpen, false);
-	ObjDrawBtn(btnSave, false);
-	ObjDrawBtn(btnAbout, false);
-	ObjDrawBtn(btnExit, false);
+	btnPencil.Draw;
+	btnFloodFill.Draw;
+	btnPreview.Draw;
+	btnNew.Draw;
+	btnOpen.Draw;
+	btnSave.Draw;
+	btnSaveAs.Draw;
+	btnAbout.Draw;
+	btnExit.Draw;
 
 	{Init and draw each color selection box}
 	for i := 0 to 15 do

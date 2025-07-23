@@ -27,7 +27,7 @@ var
 	GameOver: boolean;
 	MineCount: integer;
 	FieldWidth, FieldHeight: integer;
-	posField: PosType;
+	areaField: TArea;
 	StartTime, TimeCompare: real;
 	CellsCleared, CellsFlagged: integer;
 	DebugMode: boolean;
@@ -232,8 +232,8 @@ var
 	NeighborStr: string;
 begin
 	
-	x1 := posField.Left + 1 + Col * CellSize;
-	y1 := posField.Top + 1 + Row * CellSize;
+	x1 := areaField.Pos.Left + 1 + Col * CellSize;
+	y1 := areaField.Pos.Top + 1 + Row * CellSize;
 	x2 := x1 + CellSize - 2;
 	y2 := y1 + CellSize - 2;
 
@@ -343,13 +343,13 @@ var
 	FieldRow, FieldCol: integer;
 	x1, y1, x2, y2: integer;
 begin
-	ObjSetSize(posField, SizeCenter, SizeRetain, FieldWidth * CellSize, FieldHeight * CellSize);
-	posField.Top := 180 - (posField.Height div 2);
+	areaField.Init(SizeCenter, 0, FieldWidth * CellSize, FieldHeight * CellSize);
+	areaField.Pos.Top := 180 - (areaField.Pos.Height div 2);
 
-	x1 := posField.Left;
-	y1 := posField.Top;
-	x2 := posField.Left + posField.Width;
-	y2 := posField.Top + posField.Height;
+	x1 := areaField.Pos.Left;
+	y1 := areaField.Pos.Top;
+	x2 := areaField.Pos.Left + areaField.Pos.Width;
+	y2 := areaField.Pos.Top + areaField.Pos.Height;
 
 	MouseHide;
 	SetFillStyle(SolidFill, Theme.Window);
@@ -518,16 +518,16 @@ var
 begin
 	PauseTime := Timer;
 	
-	btnResume.Init(3, 2, 92, 22, HotkeySymbol + 'Resume');
-	btnExit.Init(545, 2, 92, 22, 'E' + HotkeySymbol + 'xit');
+	btnResume.Init(3, 2, sizeDefault, sizeDefault, HotkeySymbol + 'Resume');
+	btnExit.Init(545, 2, sizeDefault, sizeDefault, 'E' + HotkeySymbol + 'xit');
 
 	MouseHide;
 	{PCOPY 0, 1} {DEUG - save background}
 	SetFillStyle(SolidFill, Theme.Window);
 	Bar(0, 29, 639, 329);
 	ObjDrawMenu;
-	ObjDrawBtn(btnResume, False);
-	ObjDrawBtn(btnExit, False);
+	btnResume.Draw;
+	btnExit.Draw;
 	MouseShow;
 
 	repeat
@@ -548,13 +548,13 @@ begin
 	until false;
 
 	MouseHide;
-	ObjDrawMenu;	
-	ObjDrawBtn(btnNew, False);
-	ObjDrawBtn(btnSize, False);
-	ObjDrawBtn(btnAudio, False);
-	ObjDrawBtn(btnPause, False);
-	ObjDrawBtn(btnAbout, False);
-	ObjDrawBtn(btnExit, False);
+	ObjDrawMenu;
+	btnNew.Draw;
+	btnSize.Draw;
+	btnAudio.Draw;
+	btnPause.Draw;
+	btnAbout.Draw;
+	btnExit.Draw;
 	MineDrawField;
 	for Row := 0 to FieldHeight - 1 do
 	begin
@@ -731,8 +731,8 @@ begin
 		begin
 			if (MineField[Row, Col] and FieldMined) <> 0 then
 			begin
-				x1 := posField.Left + 1 + Col * CellSize;
-				y1 := posField.Top + 1 + Row * CellSize;
+				x1 := areaField.Pos.Left + 1 + Col * CellSize;
+				y1 := areaField.Pos.Top + 1 + Row * CellSize;
 				x2 := x1 + CellSize - 2;
 				y2 := y1 + CellSize - 2;
 				Rectangle(x1, y1, x2, y2);
@@ -761,7 +761,7 @@ begin
 	btnSize[1].Init(btnSize[0].Pos.Left + 110, winSetSize.Pos.Top + 11, 100, 100, '');
 	btnSize[2].Init(winSetSize.Pos.Left + 13, btnSize[0].Pos.Top + 110, 100, 100, '');
 	btnSize[3].Init(btnSize[2].Pos.Left + 110, btnSize[2].Pos.Top, 100, 100, '');
-	btnCancel.Init(winSetSize.Pos.Left + 13, btnSize[2].Pos.Top + 110, 210, 22, HotkeySymbol + 'Cancel');
+	btnCancel.Init(winSetSize.Pos.Left + 13, btnSize[2].Pos.Top + 110, 210, sizeDefault, HotkeySymbol + 'Cancel');
 
 	btnSize[0].Transparent := True;
 	btnSize[1].Transparent := True;
@@ -779,11 +779,11 @@ begin
 	GetImage(x1, y1, x2, y2, BackgroundP^);
 
 	ObjDrawWin(winSetSize);
-	ObjDrawBtn(btnSize[0], False);
-	ObjDrawBtn(btnSize[1], False);
-	ObjDrawBtn(btnSize[2], False);
-	ObjDrawBtn(btnSize[3], False);
-	ObjDrawBtn(btnCancel, False);
+	btnSize[0].Draw;
+	btnSize[1].Draw;
+	btnSize[2].Draw;
+	btnSize[3].Draw;
+	btnCancel.Draw;
 
 	TempStr := '9x' + HotkeySymbol + '9';
 	TextOffset := ((btnSize[0].Pos.Width - FontGetWidth(TempStr)) div 2);
@@ -902,22 +902,21 @@ end;
 
 
 begin
-	btnNew.Init(3, 2, 92, 22, HotkeySymbol + 'New game');
-	btnPause.Init(102, 2, 92, 22, HotkeySymbol + 'Pause');
-	btnSize.Init(201, 2, 92, 22, 'Si' + HotkeySymbol + 'ze');
-	btnAudio.Init(300, 2, 92, 22, HotkeySymbol + 'Sound');
-	btnAbout.Init(446, 2, 92, 22, HotkeySymbol + 'About...');
-	btnExit.Init(545, 2, 92, 22, 'E' + HotkeySymbol + 'xit');
+	btnNew.Init(3, 2, sizeDefault, sizeDefault, HotkeySymbol + 'New game');
+	btnPause.Init(102, 2, sizeDefault, sizeDefault, HotkeySymbol + 'Pause');
+	btnSize.Init(201, 2, sizeDefault, sizeDefault, 'Si' + HotkeySymbol + 'ze');
+	btnAudio.Init(300, 2, sizeDefault, sizeDefault, HotkeySymbol + 'Sound');
+	btnAbout.Init(446, 2, sizeDefault, sizeDefault, HotkeySymbol + 'About...');
+	btnExit.Init(545, 2, sizeDefault, sizeDefault, 'E' + HotkeySymbol + 'xit');
 	
 	MouseHide;
 	ObjDrawMenu;
-	
-	ObjDrawBtn(btnNew, False);
-	ObjDrawBtn(btnSize, False);
-	ObjDrawBtn(btnAudio, False);
-	ObjDrawBtn(btnPause, False);
-	ObjDrawBtn(btnAbout, False);
-	ObjDrawBtn(btnExit, False);
+	btnNew.Draw;
+	btnSize.Draw;
+	btnAudio.Draw;
+	btnPause.Draw;
+	btnAbout.Draw;
+	btnExit.Draw;
 	MouseShow;
 
 	{Default settings}
@@ -1042,14 +1041,14 @@ begin
 				TimeCompare := timer + 1;
 			end;
 		
-			if (MouseClicked <> mbNone) and MouseInArea(posField) then
+			if (MouseClicked <> mbNone) and MouseInArea(areaField.Pos) then
 			begin
 				MouseButton := MouseClicked;
 				MousePoll;
 			
 				{Calculate which cell was clicked}
-				FieldCol := (MouseX - posField.Left) div CellSize;
-				FieldRow := (MouseY - posField.Top) div CellSize;
+				FieldCol := (MouseX - areaField.Pos.Left) div CellSize;
+				FieldRow := (MouseY - areaField.Pos.Top) div CellSize;
 
 				{Play field is one pixel too wide for calculation above, dirty fix
 				 for this to prevent out of bounds clicks}

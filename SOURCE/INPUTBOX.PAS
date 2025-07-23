@@ -55,15 +55,13 @@ begin
 		WindowWidth := 194;
 	winInputBox.Init(sizeCenter, sizeCenter, WindowWidth, msgLineCount * 15 + 120);
 	txtInput.Init(winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 56 + (15 * msgLineCount), winInputBox.Pos.Width - 24, 22);
-	btnOK.Init(winInputBox.Pos.Left + winInputBox.Pos.Width - 182, txtInput.Pos.Top + 30, 80, 22, HotkeySymbol + 'OK');
-	btnCancel.Init(winInputBox.Pos.Left + winInputBox.Pos.Width - 92, btnOK.Pos.Top, 80, 22, HotkeySymbol + 'Cancel');
+	btnOK.Init(winInputBox.Pos.Left + winInputBox.Pos.Width - 182, txtInput.Pos.Top + 30, 80, sizeDefault, HotkeySymbol + 'OK');
+	btnCancel.Init(winInputBox.Pos.Left + winInputBox.Pos.Width - 92, btnOK.Pos.Top, 80, sizeDefault, HotkeySymbol + 'Cancel');
 	txtInputText := msgDefault;
 
 	if Length(msgIcon) > 0 then
 	begin
-		imgIcon.Pos.Left := winInputBox.Pos.Left + 12;
-		imgIcon.Pos.Top := winInputBox.Pos.Top + 15;
-		imgIcon.ImageFile := msgIcon;
+		imgIcon.Init(winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 15, msgIcon);
 		if msgLineCount > 1 then
 			Inc(imgIcon.Pos.Top, 5);
 	end;
@@ -78,8 +76,8 @@ begin
 	GetImage(x1, y1, x2, y2, BackgroundP^);
 
 	ObjDrawWin(winInputBox);
-	ObjDrawBtn(btnOK, False);
-	ObjDrawBtn(btnCancel, False);
+	btnOK.Draw;
+	btnCancel.Draw;
 	ObjDrawTxt(txtInput, txtInputText, False);
 
 	if Length(msgIcon) > 0 then

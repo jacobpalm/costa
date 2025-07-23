@@ -102,15 +102,12 @@ begin
 	ViewHeight := frmThemePreview.Pos.Height - 4;
 
 	winPreview.Init(frmThemePreview.Pos.Left + 14, frmThemePreview.Pos.Top + 12, ViewWidth - 28, 123);
-	ObjSetSize(imgLogo.Pos, winPreview.Pos.Left + 12, winPreview.Pos.Top + 12, sizeDefault, sizeDefault);
-	ObjSetSize(imgDeskLink.Pos, winPreview.Pos.Left, frmThemePreview.Pos.Top + frmThemePreview.Pos.Height - 42,
-		sizeDefault, sizeDefault);
+	imgLogo.Init(winPreview.Pos.Left + 12, winPreview.Pos.Top + 12, 'LOGO');
+	imgDeskLink.Init(winPreview.Pos.Left, frmThemePreview.Pos.Top + frmThemePreview.Pos.Height - 42, 'PAINT');
 	txtPreview.Init(imgLogo.Pos.Left, imgLogo.Pos.Top + 45, winPreview.Pos.Width - 23, sizeDefault);
 	btnPreview1.Init(winPreview.Pos.Left + 12, winPreview.Pos.Top + winPreview.Pos.Height - 34, 86, 22, 'Button');
 	btnPreview2.Init(winPreview.Pos.Left + winPreview.Pos.Width - 12 - btnPreview1.Pos.Width,
 		btnPreview1.Pos.Top, btnPreview1.Pos.Width, 22, 'Button');
-	imgLogo.ImageFile := 'LOGO';
-	imgDeskLink.ImageFile := 'PAINT';
 
 	MouseHide;
 	SetFillStyle(SolidFill, Theme.Desktop);
@@ -128,17 +125,15 @@ begin
 	ObjDrawWin(winPreview);
 	ObjDrawImg(imgLogo);
 	ObjDrawImg(imgDeskLink);
-	ObjDrawBtn(btnPreview1, False);
-	ObjDrawBtn(btnPreview2, True);
+	btnPreview1.Draw;
+	btnPreview2.Draw;
 	ObjDrawTxt(txtPreview, 'Example textbox', False);
 	
 	FontPrint('Preview link', imgDeskLink.Pos.Left + 38, imgDeskLink.Pos.Top + 4, Theme.DesktopText);
 	FontPrint('preview.exe', imgDeskLink.Pos.Left + 38, imgDeskLink.Pos.Top + 18, Theme.DesktopText);
 
-	FontPrint(ThemeName, imgLogo.Pos.Left + 42, imgLogo.Pos.Top + 5,
-		Theme.WindowText);
-	FontPrint(ThemeAuthor, imgLogo.Pos.Left + 42, imgLogo.Pos.Top + 19,
-		Theme.WindowText);
+	FontPrint(ThemeName, imgLogo.Pos.Left + 42, imgLogo.Pos.Top + 5, Theme.WindowText);
+	FontPrint(ThemeAuthor, imgLogo.Pos.Left + 42, imgLogo.Pos.Top + 19, Theme.WindowText);
 	MouseShow;
 
 	SysLoadTheme(Setting.ThemeFile);
@@ -157,30 +152,24 @@ begin
 
 	LoadThemeList;
 
-	btnExit.Init(545, 2, 92, 22, 'E' + HotkeySymbol + 'xit');
-	btnAbout.Init(446, 2, 92, 22, HotkeySymbol + 'About...');
+	btnExit.Init(545, 2, sizeDefault, sizeDefault, 'E' + HotkeySymbol + 'xit');
+	btnAbout.Init(446, 2, sizeDefault, sizeDefault, HotkeySymbol + 'About...');
 	
-	ObjSetSize(frmSettings.Pos, 14, 43, 310, 293);
-	ObjSetSize(frmTheme.Pos, 338, 43, 288, 293);
-	ObjSetSize(imgSetting.Pos, frmSettings.Pos.Left + 14, frmSettings.Pos.Top + 14, sizeRetain, sizeRetain);
-	ObjSetSize(imgTheme.Pos, frmTheme.Pos.Left + 14, frmTheme.Pos.Top + 14, sizeRetain, sizeRetain);
+	frmSettings.Init(14, 43, 310, 293);
+	frmTheme.Init(338, 43, 288, 293);
+	imgSetting.Init(frmSettings.Pos.Left + 14, frmSettings.Pos.Top + 14, 'CONFIG');
+	
+	chkSetting[LinkDesc].Init(frmSettings.Pos.Left + 14, frmSettings.Pos.Top + 56, sizeDefault, sizeDefault);
+	chkSetting[LinkTarget].Init(chkSetting[LinkDesc].Pos.Left, chkSetting[LinkDesc].Pos.Top + 22, sizeDefault, sizeDefault);
+	chkSetting[LinkDelete].Init(chkSetting[LinkDesc].Pos.Left, chkSetting[LinkTarget].Pos.Top + 22, sizeDefault, sizeDefault);
+	chkSetting[ConfExit].Init(chkSetting[LinkDesc].Pos.Left, chkSetting[LinkDelete].Pos.Top + 22, sizeDefault, sizeDefault);
 
-	ObjSetSize(chkSetting[LinkDesc].Pos, frmSettings.Pos.Left + 14, frmSettings.Pos.Top + 14 + 32 + 10, sizeRetain, sizeRetain);
-	ObjSetSize(chkSetting[LinkTarget].Pos, chkSetting[LinkDesc].Pos.Left, chkSetting[LinkDesc].Pos.Top + 22,
-		sizeRetain, sizeRetain);
-	ObjSetSize(chkSetting[LinkDelete].Pos, chkSetting[LinkDesc].Pos.Left, chkSetting[LinkTarget].Pos.Top + 22,
-		sizeRetain, sizeRetain);
-	ObjSetSize(chkSetting[ConfExit].Pos, chkSetting[LinkDesc].Pos.Left, chkSetting[LinkDelete].Pos.Top + 22,
-		sizeRetain, sizeRetain);
-
-	ObjSetSize(frmThemePreview.Pos, frmTheme.Pos.Left + 14, frmTheme.Pos.Top + 55, frmTheme.Pos.Width - 28, 192);
+	frmThemePreview.Init(frmTheme.Pos.Left + 14, frmTheme.Pos.Top + 55, frmTheme.Pos.Width - 28, 192);
+	imgTheme.Init(frmTheme.Pos.Left + 14, frmTheme.Pos.Top + 14, 'THEMES');
 	btnPrevious.Init(frmTheme.Pos.Left + 14, frmTheme.Pos.Top + frmTheme.Pos.Height - 34,
-		92, 22, '< ' + HotkeySymbol + 'Previous');
+		sizeDefault, sizeDefault, '< ' + HotkeySymbol + 'Previous');
 	btnNext.Init(frmTheme.Pos.Left + frmTheme.Pos.Width - 92 - 14, btnPrevious.Pos.Top,
-		92, 22, HotkeySymbol + 'Next >');
-
-	imgSetting.ImageFile := 'CONFIG';
-	imgTheme.ImageFile := 'THEMES';
+		sizeDefault, sizeDefault, HotkeySymbol + 'Next >');
 
 	chkSetting[LinkDesc].Checked := Setting.ShowLinkDescriptions;
 	chkSetting[LinkTarget].Checked := Setting.ShowLinkTargetFiles;
@@ -192,13 +181,13 @@ begin
 	SetFillStyle(SolidFill, Theme.Window);
 	Bar(0, 29, 639, 349);
 	
-	ObjDrawBtn(btnExit, False);
-	ObjDrawBtn(btnAbout, False);
+	btnExit.Draw;
+	btnAbout.Draw;
 
 	if ThemeCount <> 0 then
 	begin
-		ObjDrawBtn(btnPrevious, False);
-		ObjDrawBtn(btnNext, False);
+		btnPrevious.Draw;
+		btnNext.Draw;
 	end;
 
 	ObjDrawFrm(frmSettings, 15, Theme.Shadow);
