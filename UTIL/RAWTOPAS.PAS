@@ -4,7 +4,7 @@ uses
 	Graph, Crt, Dos;
 
 type
-	ThemeType = record
+	TTheme = record
 		Desktop,
 		DesktopText,
 		Window,
@@ -136,7 +136,7 @@ var
 	ThemeName: String[20];
 	ThemeAuthor: String[20];
 	TempRead: string;
-	Theme: ThemeType;
+	Theme: TTheme;
 	DirInfo: SearchRec;
 	FDir: DirStr;
 	FName: NameStr;
@@ -197,7 +197,7 @@ begin
 			Writeln('Error creating output file.');
 			Halt(1);
 		end;
-		BlockWrite(OutputFile, Theme, SizeOf(ThemeType));
+		BlockWrite(OutputFile, Theme, SizeOf(TTheme));
 		BlockWrite(OutputFile, ThemeAuthor, SizeOf(ThemeAuthor));
 		BlockWrite(OutputFile, ThemeName, SizeOf(ThemeName));
 		Close(OutputFile);

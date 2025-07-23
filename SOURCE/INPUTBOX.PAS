@@ -14,11 +14,10 @@ function SysInputBox(msgTitle, msgText, msgIcon, msgDefault: string): string;
 var
 	msgLines: array[1..16] of string;
 	msgLineCount, msgTextWidth, i, P: Integer;
-	winInputBox: WindowType;
-	txtInput: TextboxType;
-	txtInputText: string;
-	btnOK, btnCancel: ButtonType;
-	imgIcon: ImageType;
+	winInputBox: TWindow;
+	txtInput: TTextbox;
+	btnOK, btnCancel: TButton;
+	imgIcon: TIcon;
 	Key: String;
 	S: string;
 	x1, y1, x2, y2, WindowWidth: Integer;
@@ -54,23 +53,23 @@ begin
 	if WindowWidth < 194 then
 		WindowWidth := 194;
 	winInputBox.Init(sizeCenter, sizeCenter, WindowWidth, msgLineCount * 15 + 120);
-	txtInput.Init(winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 56 + (15 * msgLineCount), winInputBox.Pos.Width - 24, 22);
-	btnOK.Init(winInputBox.Pos.Left + winInputBox.Pos.Width - 182, txtInput.Pos.Top + 30, 80, sizeDefault, HotkeySymbol + 'OK');
-	btnCancel.Init(winInputBox.Pos.Left + winInputBox.Pos.Width - 92, btnOK.Pos.Top, 80, sizeDefault, HotkeySymbol + 'Cancel');
-	txtInputText := msgDefault;
+	txtInput.Init(winInputBox.Left + 12, winInputBox.Top + 56 + (15 * msgLineCount), winInputBox.Width - 24, 22);
+	btnOK.Init(winInputBox.Left + winInputBox.Width - 182, txtInput.Top + 30, 80, sizeDefault, HotkeySymbol + 'OK');
+	btnCancel.Init(winInputBox.Left + winInputBox.Width - 92, btnOK.Top, 80, sizeDefault, HotkeySymbol + 'Cancel');
+	txtInput.Text := msgDefault;
 
 	if Length(msgIcon) > 0 then
 	begin
-		imgIcon.Init(winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 15, msgIcon);
+		imgIcon.Init(winInputBox.Left + 12, winInputBox.Top + 15, msgIcon);
 		if msgLineCount > 1 then
-			Inc(imgIcon.Pos.Top, 5);
+			Inc(imgIcon.Top, 5);
 	end;
 
 	MouseHide;
-	x1 := winInputBox.Pos.Left;
-	y1 := winInputBox.Pos.Top;
-	x2 := winInputBox.Pos.Left + winInputBox.Pos.Width;
-	y2 := winInputBox.Pos.Top + winInputBox.Pos.Height;
+	x1 := winInputBox.Left;
+	y1 := winInputBox.Top;
+	x2 := winInputBox.Left + winInputBox.Width;
+	y2 := winInputBox.Top + winInputBox.Height;
 	BackgroundSize := ImageSize(x1, y1, x2, y2);
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(x1, y1, x2, y2, BackgroundP^);
@@ -78,24 +77,24 @@ begin
 	winInputBox.Draw;
 	btnOK.Draw;
 	btnCancel.Draw;
-	ObjDrawTxt(txtInput, txtInputText, False);
+	txtInput.Draw;
 
 	if Length(msgIcon) > 0 then
-		FontPrint(msgTitle, winInputBox.Pos.Left + 53, winInputBox.Pos.Top + 15, Theme.WindowText)
+		Print(msgTitle, winInputBox.Left + 53, winInputBox.Top + 15, Theme.WindowText)
 	else
-		FontPrint(msgTitle, winInputBox.Pos.Left + 12, winInputBox.Pos.Top + 15, Theme.WindowText);
+		Print(msgTitle, winInputBox.Left + 12, winInputBox.Top + 15, Theme.WindowText);
 
-	y2 := winInputBox.Pos.Top + 17;
+	y2 := winInputBox.Top + 17;
 	for i := 1 to msgLineCount do
 	begin
 		if (i < 3) and (Length(msgIcon) > 0) then
-				FontPrint(msgLines[i], winInputBox.Pos.Left + 53, y2 + (15 * i), Theme.WindowText)
+				Print(msgLines[i], winInputBox.Left + 53, y2 + (15 * i), Theme.WindowText)
 			else
-				FontPrint(msgLines[i], winInputBox.Pos.Left + 12, y2 + (15 * i), Theme.WindowText);
+				Print(msgLines[i], winInputBox.Left + 12, y2 + (15 * i), Theme.WindowText);
 	end;
 		
 
-	FontPrint('I' + HotkeySymbol + 'nput:', txtInput.Pos.Left, txtInput.Pos.Top - 16, Theme.WindowText);
+	Print('I' + HotkeySymbol + 'nput:', txtInput.Left, txtInput.Top - 16, Theme.WindowText);
 
 	if Length(msgIcon) > 0 then
 		imgIcon.Draw;
@@ -107,7 +106,7 @@ begin
 
 		if ObjBtnClick(btnOK) or (Key = KeyAltO) or (Key = KeyEnter) then
 		begin
-			SysInputBox := txtInputText;
+			SysInputBox := txtInput.Text;
 			Break;
 		end;
 
@@ -118,11 +117,11 @@ begin
 		end;
 
 		if ObjTxtClick(txtInput) or (Key = KeyAltN) then
-			ObjEditTxt(txtInput, txtInputText);
+			ObjEditTxt(txtInput, txtInput.Text);
 
 	until False;
 
-	ClearKeyBuffer;
+	ClearInputBuffer;
 	MouseHide;
 	PutImage(x1, y1, BackgroundP^, NormalPut);
 	FreeMem(BackgroundP, BackgroundSize);

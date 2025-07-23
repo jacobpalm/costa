@@ -20,7 +20,7 @@ type
 
 var
 	Lines: PLineArray;
-	BtnOpen, BtnAbout, BtnExit, BtnPageUp, BtnPageDown: ButtonType;
+	BtnOpen, BtnAbout, BtnExit, BtnPageUp, BtnPageDown: TButton;
 	Filename, NewFileName: String;
 	StartLine, PrevStartLine: Integer;
 	Capacity: Integer;
@@ -32,8 +32,6 @@ var
 procedure FreeLines; forward;
 
 function CustomHeapError(Size: Word): Integer; far;
-var
-	MsgResult: Boolean;
 begin
 	if Size = 0 then
 	begin
@@ -48,7 +46,7 @@ begin
 	SetFillStyle(SolidFill, Theme.Textbox);
 	Bar(0, 29, 639, 349);
 	MouseShow;
-	MsgResult := SysMsgBox('Out of memory', 'Not enough memory to open this file.', msgError);
+	MsgBox('Out of memory', 'Not enough memory to open this file.', msgError);
 	CustomHeapError := 1; {Make GetMem return a nil pointer}
 end;
 
@@ -140,7 +138,7 @@ var
 begin
 	if not FileExists(TargetFile) then
 	begin
-		SysMsgBox('File not found', 'Error while trying to find the file:' + NewLine + TargetFile, msgError);
+		MsgBox('File not found', 'Error while trying to find the file:' + NewLine + TargetFile, msgError);
 		LoadFile := False;
 		Exit;
 	end;
@@ -151,7 +149,7 @@ begin
 	{$I+}
 	if IOResult <> 0 then
 	begin
-		SysMsgBox('File error', 'Error while opening the file: ' + NewLine + TargetFile, msgError);
+		MsgBox('File error', 'Error while opening the file: ' + NewLine + TargetFile, msgError);
 		LoadFile := False;
 		Exit;
 	end;
@@ -233,7 +231,7 @@ begin
 		{No text to display, skip}
 		if (DrawnLines < MaxLinesShown) and (i <= LineCount) then
 			{Dereference the line pointer and print the text}
-			FontPrint(Lines^[i]^, 9, (15 * (i - StartLine + 1)) + 24, Theme.TextboxText);
+			Print(Lines^[i]^, 9, (15 * (i - StartLine + 1)) + 24, Theme.TextboxText);
 
 	end;
 	MouseShow;
@@ -274,7 +272,7 @@ begin
 		Key := GetKey;
 		
 		if ObjBtnClick(BtnAbout) or (Key = KeyAltA) then
-			SysAboutBox(AppName, AppVersion, AppAuthor, 'DOCUMENT');
+			AboutBox(AppName, AppVersion, AppAuthor, 'DOCUMENT');
 
 		if ObjBtnClick(BtnOpen) or (Key = KeyAltO) then
 		begin

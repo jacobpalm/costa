@@ -23,9 +23,9 @@ const
 
 var
 	{Objects are just variables you can declare like any other}
-	winSample: WindowType;
-	btnAbout, btnExit: ButtonType;
-	imgSample: ImageType;
+	winSample: TWindow;
+	btnAbout, btnExit: TButton;
+	imgSample: TIcon;
 
 	{We'll use this to hold user key input, so we can check what to do with it}
 	Key: String;
@@ -38,7 +38,7 @@ begin
 	btnExit.Init(545, 2, sizeDefault, sizeDefault, 'E' + HotkeySymbol + 'xit');
 	{The HotkeySymbol character determines which letter on the button is
 	 underlined.
-	 This is actually handled by the FontPrint procedure, and can be used
+	 This is actually handled by the Print procedure, and can be used
 	 anywhere text is printed.}
 
 	{About button}
@@ -47,7 +47,7 @@ begin
 	{Create an icon. Only the filename, without extension or path, is set.
 	 This is because icons are always in the same directory. An icon does
 	 not use the width or height property, they are always 32x32 pixels.}
-	imgSample.Init(winSample.Pos.Top + 34, winSample.Pos.Left + 200, 'SAMPLE');
+	imgSample.Init(winSample.Top + 34, winSample.Left + 200, 'SAMPLE');
 	
 	{Remember to hide/show the mouse when drawing!}
 	MouseHide;
@@ -64,8 +64,8 @@ begin
 	winSample.Draw;
 	btnAbout.Draw;
 	btnExit.Draw;
-	FontPrint('Sample text, header font', winSample.Pos.Left + 12, winSample.Pos.Top + 70, Theme.WindowText);
-	FontPrint('Sample text, normal font', winSample.Pos.Left + 12, winSample.Pos.Top + 85, Theme.WindowText);
+	Print('Sample text, header font', winSample.Left + 12, winSample.Top + 70, Theme.WindowText);
+	Print('Sample text, normal font', winSample.Left + 12, winSample.Top + 85, Theme.WindowText);
 	MouseShow;
 
 	imgSample.Draw;
@@ -82,7 +82,7 @@ begin
 			{Show a messagebox, asking to confirm that the user wants to exit.
 			 msgQuest is a constant from the Costa library, used to indicate the
 			 type of messagebox we want to show (question, error etc.).}
-			if SysMsgBox('Exit sample application', ExitText, msgQuest) then
+			if MsgBox('Exit sample application', ExitText, msgQuest) then
 			begin
 				CloseGraph;
 				Halt;
@@ -92,7 +92,7 @@ begin
 		{Use the built-in function for showing an about box - this ensures
 		 consistency between all applications}
 		if ObjBtnClick(btnAbout) or (Key = KeyAltA) then
-		  SysAboutBox(AppName, AppVersion, AppAuthor, AppIcon);
+		  AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 		
 	until False;
 

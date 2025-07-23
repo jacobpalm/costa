@@ -10,16 +10,16 @@ const
 
 var
 	LogLinesWritten: Integer;
-	frmCalc: FrameType;
-	txtCalc, txtResults: TextboxType;
-	btnNumb: array[0..9] of ButtonType;
-	btnC, btnCE, btnDivide, btnMulti, btnMinus, btnPlus: ButtonType;
-	btnEquals, btnDot, btnExit, btnAbout: ButtonType;
+	frmCalc: TFrame;
+	txtCalc, txtResults: TTextbox;
+	btnNumb: array[0..9] of TButton;
+	btnC, btnCE, btnDivide, btnMulti, btnMinus, btnPlus: TButton;
+	btnEquals, btnDot, btnExit, btnAbout: TButton;
 	i: Integer;
 	MathFunc: string[1];
 	TotalSum, Op1: Integer;
 	NumOps: Integer;
-	Key, txtCalcText, LastClick: string;
+	Key, LastClick: string;
 	ch: string[1];
 	CalcErr: Boolean;
 
@@ -66,7 +66,7 @@ begin
 	Calc_FormatNum := SignStr + TempStr + DecPart;
 end;
 
-procedure Calc_LogLine(Text: string; var TargetTxt: TextboxType);
+procedure Calc_LogLine(Text: string; var TargetTxt: TTextbox);
 const
 	MaxLogLines = 18;
 	TopOffset = 52;
@@ -75,36 +75,36 @@ begin
 	if LogLinesWritten > MaxLogLines then
 	begin
 		LogLinesWritten := 0;
-		ObjDrawTxt(TargetTxt, '', False);
+		TargetTxt.Draw;
 	end;
-	FontPrint(Text, 624 - Length(Text) * 8, TopOffset + (LogLinesWritten * 15), Theme.WindowText);
+	Print(Text, 624 - Length(Text) * 8, TopOffset + (LogLinesWritten * 15), Theme.WindowText);
 end;
 
 begin
 	LogLinesWritten := 0;
 	
 	frmCalc.Init(12, 42, 218, 208);
-	txtCalc.Init(25, frmCalc.Pos.Top + 12, 191, sizeDefault);
-	btnNumb[0].Init(26, frmCalc.Pos.Top + 172, 90, sizeDefault, '0');
-	btnNumb[1].Init(26, frmCalc.Pos.Top + 139, 40, sizeDefault, '1');
-	btnNumb[2].Init(76, frmCalc.Pos.Top + 139, 40, sizeDefault, '2');
-	btnNumb[3].Init(126, frmCalc.Pos.Top + 139, 40, sizeDefault, '3');
-	btnNumb[4].Init(26, frmCalc.Pos.Top + 106, 40, sizeDefault, '4');
-	btnNumb[5].Init(76, frmCalc.Pos.Top + 106, 40, sizeDefault, '5');
-	btnNumb[6].Init(126, frmCalc.Pos.Top + 106, 40, sizeDefault, '6');
-	btnNumb[7].Init(26, frmCalc.Pos.Top + 73, 40, sizeDefault, '7');
-	btnNumb[8].Init(76, frmCalc.Pos.Top + 73, 40, sizeDefault, '8');
-	btnNumb[9].Init(126, frmCalc.Pos.Top + 73, 40, sizeDefault, '9');
-	btnC.Init(26, frmCalc.Pos.Top + 40, 40, sizeDefault, HotkeySymbol + 'C');
-	btnCE.Init(76, frmCalc.Pos.Top + 40, 40, sizeDefault, 'C' + HotkeySymbol + 'E');
-	btnDivide.Init(126, frmCalc.Pos.Top + 40, 40, sizeDefault, '/');
-	btnDot.Init(126, frmCalc.Pos.Top + 172, 40, sizeDefault, '.');
-	btnMulti.Init(176, frmCalc.Pos.Top + 40, 40, sizeDefault, '*');
-	btnMinus.Init(176, frmCalc.Pos.Top + 73, 40, sizeDefault, '-');
-	btnPlus.Init(176, frmCalc.Pos.Top + 106, 40, sizeDefault, '+');
-	btnEquals.Init(176, frmCalc.Pos.Top + 139, 40, 55, '=');
+	txtCalc.Init(25, frmCalc.Top + 12, 191, sizeDefault);
+	btnNumb[0].Init(26, frmCalc.Top + 172, 90, sizeDefault, '0');
+	btnNumb[1].Init(26, frmCalc.Top + 139, 40, sizeDefault, '1');
+	btnNumb[2].Init(76, frmCalc.Top + 139, 40, sizeDefault, '2');
+	btnNumb[3].Init(126, frmCalc.Top + 139, 40, sizeDefault, '3');
+	btnNumb[4].Init(26, frmCalc.Top + 106, 40, sizeDefault, '4');
+	btnNumb[5].Init(76, frmCalc.Top + 106, 40, sizeDefault, '5');
+	btnNumb[6].Init(126, frmCalc.Top + 106, 40, sizeDefault, '6');
+	btnNumb[7].Init(26, frmCalc.Top + 73, 40, sizeDefault, '7');
+	btnNumb[8].Init(76, frmCalc.Top + 73, 40, sizeDefault, '8');
+	btnNumb[9].Init(126, frmCalc.Top + 73, 40, sizeDefault, '9');
+	btnC.Init(26, frmCalc.Top + 40, 40, sizeDefault, HotkeySymbol + 'C');
+	btnCE.Init(76, frmCalc.Top + 40, 40, sizeDefault, 'C' + HotkeySymbol + 'E');
+	btnDivide.Init(126, frmCalc.Top + 40, 40, sizeDefault, '/');
+	btnDot.Init(126, frmCalc.Top + 172, 40, sizeDefault, '.');
+	btnMulti.Init(176, frmCalc.Top + 40, 40, sizeDefault, '*');
+	btnMinus.Init(176, frmCalc.Top + 73, 40, sizeDefault, '-');
+	btnPlus.Init(176, frmCalc.Top + 106, 40, sizeDefault, '+');
+	btnEquals.Init(176, frmCalc.Top + 139, 40, 55, '=');
 
-	txtResults.Init(frmCalc.Pos.Left + frmCalc.Pos.Width + 12, frmCalc.Pos.Top, 385, 295);
+	txtResults.Init(frmCalc.Left + frmCalc.Width + 12, frmCalc.Top, 385, 295);
 
 	btnAbout.Init(446, 2, sizeDefault, sizeDefault, HotkeySymbol + 'About...');
 	btnExit.Init(545, 2, sizeDefault, sizeDefault, 'E' + HotkeySymbol + 'xit');
@@ -116,7 +116,7 @@ begin
 	SetColor(Theme.Window); Bar(0, 29, 639, 349);
 
 	frmCalc.Draw;
-	ObjDrawTxt(txtCalc, '', False);
+	txtCalc.Draw;
 	for i := 0 to 9 do
 		btnNumb[i].Draw;
 	btnC.Draw; btnCE.Draw; btnDivide.Draw;
@@ -124,7 +124,7 @@ begin
 	btnEquals.Draw; btnDot.Draw; btnExit.Draw;
 	btnAbout.Draw;
 
-	ObjDrawTxt(txtResults, '', False);
+	txtResults.Draw;
 	MouseShow;
 
 	LogLinesWritten := -1;
@@ -141,33 +141,33 @@ begin
 		end;
 
 		if ObjBtnClick(btnAbout) or (Key = KeyAltA) then
-			SysAboutBox(AppName, AppVersion, AppAuthor, 'CALC');
+			AboutBox(AppName, AppVersion, AppAuthor, 'CALC');
 
 		for i := 0 to 9 do
 		begin
 			Str(i, ch);
 			if ObjBtnClick(btnNumb[i]) or (Key = ch) then
 			begin
-				txtCalcText := txtCalcText + ch;
+				txtCalc.Text := txtCalc.Text + ch;
 				MouseHide;
-				ObjDrawTxt(txtCalc, Calc_FormatNum(txtCalcText), False);
+				txtCalc.Draw;
 				MouseShow;
 			end;
 		end;
 
 		if ObjBtnClick(btnC) or (Key = 'c') then
 		begin
-			txtCalcText := '';
+			txtCalc.Text := '';
 			MouseHide;
-			ObjDrawTxt(txtCalc, '', False);
+			txtCalc.Draw;
 			MouseShow;
 		end;
 
 		if ObjBtnClick(btnCE) or (Key = 'e') then
 		begin
-			txtCalcText := '';
+			txtCalc.Text := '';
 			MouseHide;
-			ObjDrawTxt(txtCalc, '', False);
+			txtCalc.Draw;
 			Calc_LogLine('', txtResults);
 			MouseShow;
 			MathFunc := '';
@@ -178,7 +178,7 @@ begin
 
 		if ObjBtnClick(btnDot) or ((Key = '.') or (Key = ',')) then
 		begin
-			if (Length(txtCalcText) < 22) and (Pos('.', txtCalcText) = 0) then
+			if (Length(txtCalc.Text) < 22) and (Pos('.', txtCalc.Text) = 0) then
 			begin
 				if LastClick = 'EQUAL' then
 				begin
@@ -186,10 +186,11 @@ begin
 					Op1 := 0;
 				end;
 				LastClick := 'NUMB';
-				if txtCalcText = '' then txtCalcText := '0';
-				txtCalcText := txtCalcText + '.';
+				if txtCalc.Text = '' then txtCalc.Text := '0';
+				txtCalc.Text := txtCalc.Text + '.';
 				MouseHide;
-				ObjDrawTxt(txtCalc, Calc_FormatNum(txtCalcText), False);
+				txtCalc.Text := Calc_FormatNum(txtCalc.Text);
+				txtCalc.Draw;
 				MouseShow;
 			end;
 		end;

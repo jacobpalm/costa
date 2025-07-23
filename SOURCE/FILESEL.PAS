@@ -24,7 +24,7 @@ type
 	TDirection = (Up, Down, First, Last, PageUp, PageDown);
 
 var
-	txtList:       array[-1..0] of TextboxType;
+	txtList:       array[-1..0] of TTextbox;
 	ListStartPos:  array[-1..0] of Integer;
 	ListSelection: array[-1..0] of Integer;
 	ListCount:     array[-1..0] of Integer;
@@ -32,7 +32,7 @@ var
 	SubFiles:      array[1..MaxFiles] of String[12];
 
 	PreviewShown:  boolean;
-	imgPreview:    ImageType;
+	imgPreview:    TIcon;
 
 	ActiveList: Integer;
 	Path, Pattern: String;
@@ -109,10 +109,10 @@ var
 	FGColor, BGColor: Integer;
 	ItemText: String;
 begin
-	x1 := txtList[TargetList].Pos.Left + 2;
-	y1 := txtList[TargetList].Pos.Top + 3;
-	x2 := txtList[TargetList].Pos.Left + txtList[TargetList].Pos.Width - 2;
-	y2 := txtList[TargetList].Pos.Top + 15;
+	x1 := txtList[TargetList].Left + 2;
+	y1 := txtList[TargetList].Top + 3;
+	x2 := txtList[TargetList].Left + txtList[TargetList].Width - 2;
+	y2 := txtList[TargetList].Top + 15;
 	YOffset := ((ListSelection[TargetList] - ListStartPos[TargetList]) * ListItemHeight);
 
 	MouseHide;
@@ -136,12 +136,12 @@ begin
 			{Draw highlighted item}
 			SetFillStyle(SolidFill, Theme.Select);
 			Bar(x1, y1 + (Counter * ListItemHeight), x2, y2 - 1 + (Counter * ListItemHeight));
-			FontPrint(ItemText, x1 + 3, y1 + 2 + (Counter * ListItemHeight), Theme.SelectText);
+			Print(ItemText, x1 + 3, y1 + 2 + (Counter * ListItemHeight), Theme.SelectText);
 		end
 		else
 		begin
 			{Draw normal item}
-			FontPrint(ItemText, x1 + 3, y1 + 2 + (Counter * ListItemHeight), Theme.TextboxText);
+			Print(ItemText, x1 + 3, y1 + 2 + (Counter * ListItemHeight), Theme.TextboxText);
 		end;
 
 		Inc(Counter);
@@ -171,7 +171,7 @@ begin
 	begin
 		SetFillStyle(SolidFill, BGColor);
 		Bar(x1, y1 + YOffset, x2, y2 - 1 + YOffset);
-		FontPrint(ItemText, x1 + 3, y1 + 2 + YOffset, FGColor);
+		Print(ItemText, x1 + 3, y1 + 2 + YOffset, FGColor);
 	end;
 	end;
 	MouseShow;
@@ -184,7 +184,7 @@ var
 	FName: NameStr;
 	FExt: ExtStr;
 begin
-	if (Path = SysPath + 'ICONS') and (ListSelection[FileList] <> 0) then
+	if (Path = ProgramPath + 'ICONS') and (ListSelection[FileList] <> 0) then
 	begin
 		FSplit(SubFiles[ListSelection[FileList]], FDir, FName, FExt);
 		if (Length(FName) <> 0) and (FExt = '.BIN') then
@@ -203,7 +203,7 @@ begin
 	begin
 		MouseHide;
 		SetFillStyle(SolidFill, Theme.Window);
-		Bar(imgPreview.Pos.Left - 1, imgPreview.Pos.Top - 1, imgPreview.Pos.Left + 32, imgPreview.Pos.Top + 32);
+		Bar(imgPreview.Left - 1, imgPreview.Top - 1, imgPreview.Left + 32, imgPreview.Top + 32);
 		MouseShow;
 		PreviewShown := false;
 	end;
@@ -289,14 +289,14 @@ var
 	ClickedX, ClickedY, ClickedItem: Integer;
 begin
 	MousePoll;
-	ClickedX := MouseX - txtList[TargetList].Pos.Left;
-	ClickedY := MouseY - txtList[TargetList].Pos.Top;
+	ClickedX := MouseX - txtList[TargetList].Left;
+	ClickedY := MouseY - txtList[TargetList].Top;
 	FileMouseSelection := False;
 
 	{Validate click inside, not on border}
-	if (ClickedX > 1) and (ClickedX < txtList[TargetList].Pos.Width - 2) then
+	if (ClickedX > 1) and (ClickedX < txtList[TargetList].Width - 2) then
 	begin
-		if (ClickedY > 2) and (ClickedY < txtList[TargetList].Pos.Height - 1) then
+		if (ClickedY > 2) and (ClickedY < txtList[TargetList].Height - 1) then
 		begin
 			{Clicked inside}
 
@@ -411,12 +411,11 @@ end;
 
 function FileSelect(DefaultPattern, StartPath: string; ImageSelect: boolean): string;
 var
-	winFileSelect: WindowType;
-	txtDrive, txtPattern: TextboxType;
-	btnSelect, btnCancel: ButtonType;
-	btnFilePrev, btnFileNext: ButtonType;
-	btnFolderPrev, btnFolderNext: ButtonType;
-	txtPatternText, txtDriveText: string;
+	winFileSelect: TWindow;
+	txtDrive, txtPattern: TTextbox;
+	btnSelect, btnCancel: TButton;
+	btnFilePrev, btnFileNext: TButton;
+	btnFolderPrev, btnFolderNext: TButton;
 	OriginalPath: string;
 	Counter, I: Integer;
 	x1, y1, x2, y2: Integer;
@@ -430,8 +429,8 @@ begin
 
 	Drive := Copy(Path, 1, 1);
 	Pattern := DefaultPattern;
-	txtDriveText := Drive;
-	txtPatternText := DefaultPattern;
+	txtDrive.Text := Drive;
+	txtPattern.Text := DefaultPattern;
 	ListStartPos[FolderList] := 1;
 	ListStartPos[FileList] := 1;
 	ListSelection[FileList] := 1;
@@ -439,18 +438,18 @@ begin
 	ActiveList := FileList;
 
 	winFileSelect.Init(sizeCenter, sizeCenter, 468, 270);
-	txtPattern.Init(101, winFileSelect.Pos.Top + 28, 150, sizeDefault);
-	txtDrive.Init(272, winFileSelect.Pos.Top + 28, 150, sizeDefault);
-	txtPattern.Init(101, winFileSelect.Pos.Top + 28, 150, sizeDefault);
-	txtDrive.Init(272, winFileSelect.Pos.Top + 28, 150, sizeDefault);
-	txtList[FileList].Init(101, winFileSelect.Pos.Top + 71, 150, 185);
-	txtList[FolderList].Init(272, winFileSelect.Pos.Top + 71, 150, 185);
-	btnSelect.Init(448, winFileSelect.Pos.Top + 28, sizeDefault, sizeDefault, HotkeySymbol + 'Select');
-	btnCancel.Init(448, winFileSelect.Pos.Top + 58, sizeDefault, sizeDefault, HotkeySymbol + 'Cancel');
-	btnFilePrev.Init(253, txtList[FileList].Pos.Top, 14, 91, #24);
-	btnFileNext.Init(253, txtList[FileList].Pos.Top + 94, 14, 91, #25);
-	btnFolderPrev.Init(424, txtList[FolderList].Pos.Top, 14, 91, #24);
-	btnFolderNext.Init(424, txtList[FolderList].Pos.Top + 94, 14, 91, #25);
+	txtPattern.Init(101, winFileSelect.Top + 28, 150, sizeDefault);
+	txtDrive.Init(272, winFileSelect.Top + 28, 150, sizeDefault);
+	txtPattern.Init(101, winFileSelect.Top + 28, 150, sizeDefault);
+	txtDrive.Init(272, winFileSelect.Top + 28, 150, sizeDefault);
+	txtList[FileList].Init(101, winFileSelect.Top + 71, 150, 185);
+	txtList[FolderList].Init(272, winFileSelect.Top + 71, 150, 185);
+	btnSelect.Init(448, winFileSelect.Top + 28, sizeDefault, sizeDefault, HotkeySymbol + 'Select');
+	btnCancel.Init(448, winFileSelect.Top + 58, sizeDefault, sizeDefault, HotkeySymbol + 'Cancel');
+	btnFilePrev.Init(253, txtList[FileList].Top, 14, 91, #24);
+	btnFileNext.Init(253, txtList[FileList].Top + 94, 14, 91, #25);
+	btnFolderPrev.Init(424, txtList[FolderList].Top, 14, 91, #24);
+	btnFolderNext.Init(424, txtList[FolderList].Top + 94, 14, 91, #25);
 	txtDrive.MaxLen := 1;
 	txtPattern.MaxLen := 12; {8.3 including the dot}
 
@@ -459,34 +458,34 @@ begin
 	txtList[FolderList].MaxLen := FolderList;
 
 	{Size is set here, but object is drawn in FilePreview if needed}
-	imgPreview.Init(btnCancel.Pos.Left + 30, btnCancel.Pos.Top + 50, '');
+	imgPreview.Init(btnCancel.Left + 30, btnCancel.Top + 50, '');
 	
 	MouseHide;
 
 	{Save background to restore when window is closed}
-	x1 := winFileSelect.Pos.Left;
-	y1 := winFileSelect.Pos.Top;
-	x2 := winFileSelect.Pos.Left + winFileSelect.Pos.Width;
-	y2 := winFileSelect.Pos.Top + winFileSelect.Pos.Height;
+	x1 := winFileSelect.Left;
+	y1 := winFileSelect.Top;
+	x2 := winFileSelect.Left + winFileSelect.Width;
+	y2 := winFileSelect.Top + winFileSelect.Height;
 	BackgroundSize := ImageSize(x1, y1, x2, y2);
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(x1, y1, x2, y2, BackgroundP^);
 
 	winFileSelect.Draw;
-	ObjDrawTxt(txtPattern, txtPatternText, False);
-	ObjDrawTxt(txtDrive, txtDriveText, False);
-	ObjDrawTxt(txtList[FileList], '', False);
-	ObjDrawTxt(txtList[FolderList], '', False);
+	txtPattern.Draw;
+	txtDrive.Draw;
+	txtList[FileList].Draw;
+	txtList[FolderList].Draw;
 	btnSelect.Draw;
 	btnCancel.Draw;
 	btnFilePrev.Draw;
 	btnFileNext.Draw;
 	btnFolderPrev.Draw;
 	btnFolderNext.Draw;
-	FontPrint(HotkeySymbol + 'Pattern:', 101, winFileSelect.Pos.Top + 14, Theme.WindowText);
-	FontPrint(HotkeySymbol + 'Drive:', 272, winFileSelect.Pos.Top + 14, Theme.WindowText);
-	FontPrint(HotkeySymbol + 'Files:', 101, winFileSelect.Pos.Top + 57, Theme.WindowText);
-	FontPrint('F' + HotkeySymbol + 'olders:', 272, winFileSelect.Pos.Top + 57, Theme.WindowText);
+	Print(HotkeySymbol + 'Pattern:', 101, winFileSelect.Top + 14, Theme.WindowText);
+	Print(HotkeySymbol + 'Drive:', 272, winFileSelect.Top + 14, Theme.WindowText);
+	Print(HotkeySymbol + 'Files:', 101, winFileSelect.Top + 57, Theme.WindowText);
+	Print('F' + HotkeySymbol + 'olders:', 272, winFileSelect.Top + 57, Theme.WindowText);
 	MouseShow;
 
 	{If path provided, use it}
@@ -540,14 +539,14 @@ begin
 
 		if ObjTxtClick(txtDrive) or (Key = KeyAltD) then
 		begin
-			ObjEditTxt(txtDrive, txtDriveText);
-			if txtDriveText <> Drive Then
+			ObjEditTxt(txtDrive, txtDrive.Text);
+			if txtDrive.Text <> Drive Then
 			begin
-				if not FileSetDrive(txtDriveText[1]) then
+				if not FileSetDrive(txtDrive.Text[1]) then
 				begin
-					txtDriveText := Drive; {Restore original drive letter}
+					txtDrive.Text := Drive; {Restore original drive letter}
 					MouseHide;
-					ObjDrawTxt(txtDrive, txtDriveText, False);
+					txtDrive.Draw;
 					MouseShow;
 				end;
 			end;
@@ -606,10 +605,10 @@ begin
 
 		if ObjTxtClick(txtPattern) or (Key = KeyAltP) then
 		begin
-			ObjEditTxt(txtPattern, txtPatternText);
-			if txtPatternText <> Pattern then
+			ObjEditTxt(txtPattern, txtPattern.Text);
+			if txtPattern.Text <> Pattern then
 			begin
-				Pattern := txtPatternText;
+				Pattern := txtPattern.Text;
 				GetChildFiles(Path, Pattern);
 				ListStartPos[FileList] := 1;
 				ListSelection[FileList] := 1;

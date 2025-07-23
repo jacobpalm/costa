@@ -38,10 +38,10 @@ var
 	KeyboardPosVisible: boolean;
 
 	{Objects which are modified outside main loop}
-	txtDrawArea: TextboxType;
-	btnPencil, btnFloodFill: ButtonType;
-	txtColor: array[0..15] of TextboxType;
-	imgPreview: ImageType;
+	txtDrawArea: TTextbox;
+	btnPencil, btnFloodFill: TButton;
+	txtColor: array[0..15] of TTextbox;
+	imgPreview: TIcon;
 
 {Forward declarations}
 procedure SaveIcon; forward;
@@ -68,7 +68,7 @@ begin
 
 	SetFillStyle(SolidFill, Col);
 	Bar(XPos, YPos, XPos + PixelSize - 2, YPos + PixelSize - 2);
-	PutPixel(imgPreview.Pos.Left + X, imgPreview.Pos.Top + Y, Col);
+	PutPixel(imgPreview.Left + X, imgPreview.Top + Y, Col);
 end;
 
 procedure FillArea(X, Y, FillColor: Integer);
@@ -146,19 +146,19 @@ begin
 	
 	{Remove selection marker from previous color}
 	MouseHide;
-	x1 := txtColor[DrawColor].Pos.Left + 4;
-	y1 := txtColor[DrawColor].Pos.Top + 4;
-	x2 := txtColor[DrawColor].Pos.Left + txtColor[DrawColor].Pos.Width - 4;
-	y2 := txtColor[DrawColor].Pos.Top + txtColor[DrawColor].Pos.Height - 4;
+	x1 := txtColor[DrawColor].Left + 4;
+	y1 := txtColor[DrawColor].Top + 4;
+	x2 := txtColor[DrawColor].Left + txtColor[DrawColor].Width - 4;
+	y2 := txtColor[DrawColor].Top + txtColor[DrawColor].Height - 4;
 	SetFillStyle(SolidFill, DrawColor);
 	Bar(x1, y1, x2, y2);
 
 	{Change color and draw new selection marker}
 	DrawColor := Col;
-	x1 := txtColor[DrawColor].Pos.Left + 4;
-	y1 := txtColor[DrawColor].Pos.Top + 4;
-	x2 := txtColor[DrawColor].Pos.Left + txtColor[DrawColor].Pos.Width - 4;
-	y2 := txtColor[DrawColor].Pos.Top + txtColor[DrawColor].Pos.Height - 4;
+	x1 := txtColor[DrawColor].Left + 4;
+	y1 := txtColor[DrawColor].Top + 4;
+	x2 := txtColor[DrawColor].Left + txtColor[DrawColor].Width - 4;
+	y2 := txtColor[DrawColor].Top + txtColor[DrawColor].Height - 4;
 	SetColor(DarkGray);
 	Rectangle(x1, y1, x2, y2);
 	SetColor(White);
@@ -270,7 +270,7 @@ begin
 
 	if IconChanged = true then
 	begin
-		mbResult := SysMsgBox('Icon has been modified',
+		mbResult := MsgBox('Icon has been modified',
 			'This icon contains unsaved changes. Do you' + NewLine +
 			'want to save it before you make a new?', msgQuest);
 		if mbResult = true then
@@ -316,12 +316,12 @@ begin
 			exit;
 		if (Length(Filename) > 8) or (not ValidDOSFilename(FileName + '.BIN')) then
 		begin
-			mbResult := SysMsgBox('Invalid file name', 'The filename you specified was too long or invalid.' + NewLine +
+			MsgBox('Invalid file name', 'The filename you specified was too long or invalid.' + NewLine +
 				'Do not type a path or extension, only a filename' + NewLine
 				+ 'with a maximum length of 8 characters.', msgError);
 			exit;
 		end;
-		Filename := SysPath + 'ICONS\' + Filename + '.BIN';
+		Filename := ProgramPath + 'ICONS\' + Filename + '.BIN';
 	end
 	else
 		Filename := IconFileName;
@@ -329,17 +329,17 @@ begin
 	{Check if file already exists}
 	if FileExists(Filename) and (Filename <> IconFileName) then
 	begin
-		mbResult := SysMsgBox('File already exists', 'The specified icon file already exists. Do you want' + NewLine
+		mbResult := MsgBox('File already exists', 'The specified icon file already exists. Do you want' + NewLine
 			+ 'to overwrite it with this icon?', msgQuest);
 		if mbResult = false then
 			exit;
 	end;
 	
 	{Allocate memory and get the image data}
-	x1 := imgPreview.Pos.Left;
-	y1 := imgPreview.Pos.Top;
-	x2 := imgPreview.Pos.Left + 31;
-	y2 := imgPreview.Pos.Top + 31;
+	x1 := imgPreview.Left;
+	y1 := imgPreview.Top;
+	x2 := imgPreview.Left + 31;
+	y2 := imgPreview.Top + 31;
 	Size := ImageSize(x1, y1, x2, y2);
 	GetMem(p, Size);
 	GetImage(x1, y1, x2, y2, p^);
@@ -351,7 +351,7 @@ begin
 	{$I+}
 	if IOResult <> 0 then
 	begin
-		mbResult := SysMsgBox('Could not save icon',
+		MsgBox('Could not save icon',
 			'The icon could not be saved. Verify that the filename is valid:' + NewLine +
 			Filename, msgError);
 		FreeMem(p, Size);
@@ -376,7 +376,7 @@ var
 begin
 	if IconChanged = true then
 	begin
-		mbResult := SysMsgBox('Icon has been modified', 'This icon contains unsaved changes. Do you' + NewLine
+		mbResult := MsgBox('Icon has been modified', 'This icon contains unsaved changes. Do you' + NewLine
 			+ 'want to save it before you load another?', msgQuest);
 		if mbResult = true then
 		begin
@@ -387,14 +387,14 @@ begin
 		end;
 	end;
 
-	IconToLoad := FileSelect('*.BIN', SysPath + 'ICONS', true);
+	IconToLoad := FileSelect('*.BIN', ProgramPath + 'ICONS', true);
 	if IconToLoad = '' then
 		exit;
 
 	FSplit(IconToLoad, FPath, FName, FExt);
-	if (FPath <> SysPath + 'ICONS\') or (FExt <> '.BIN') then
+	if (FPath <> ProgramPath + 'ICONS\') or (FExt <> '.BIN') then
 	begin
-		mbResult := SysMsgBox('Invalid icon file',
+		MsgBox('Invalid icon file',
 			'The selected file is not a valid icon file.' + NewLine +
 			'Please select a .BIN file from the ICONS directory.',
 			msgError);
@@ -404,7 +404,7 @@ begin
 	if (FName = IconFileName) and (IconChanged = true) then
 	begin
 		{If the icon is already loaded, but has been changed, ask if we should reload it}
-		mbResult := SysMsgBox('File already open', 'The icon you selected is already opened.' + NewLine +
+		mbResult := MsgBox('File already open', 'The icon you selected is already opened.' + NewLine +
 			'Do you want to discard all changes and reload' + NewLine +
 			'the icon as it was last saved?', msgQuest);
 		if mbResult = false then
@@ -425,7 +425,7 @@ begin
 	begin
 		for Y := 0 to 31 do
 		begin
-			PixelCol := GetPixel(imgPreview.Pos.Left + X, imgPreview.Pos.Top + Y);
+			PixelCol := GetPixel(imgPreview.Left + X, imgPreview.Top + Y);
 			SetPixel(X, Y, PixelCol);
 		end;
 	end;
@@ -444,7 +444,7 @@ var
 begin
 	if IconChanged = true then
 	begin
-		mbResult := SysMsgBox('Icon has been modified', 'This icon contains unsaved changes. Do you' + NewLine +
+		mbResult := MsgBox('Icon has been modified', 'This icon contains unsaved changes. Do you' + NewLine +
 			'want to save it before you exit?', msgQuest);
 		if mbResult = true then
 		begin
@@ -461,9 +461,9 @@ end;
 
 {Main program start}
 var
-	btnPreview: ButtonType;
-	btnNew, btnOpen, btnSave: ButtonType;
-	btnExit, btnAbout: ButtonType;
+	btnPreview: TButton;
+	btnNew, btnOpen, btnSave: TButton;
+	btnExit, btnAbout: TButton;
 	Key: string;
 	YPos, XPos, CursorX, CursorY, i: Integer;
 	ColChk: integer;
@@ -475,29 +475,29 @@ begin
 	btnAbout.Init(446, 2, sizeDefault, sizeDefault, HotkeySymbol + 'About...');
 	btnExit.Init(545, 2, sizeDefault, sizeDefault, 'E' + HotkeySymbol + 'xit');
 
-	XPos := txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 12;
-	btnPencil.Init(XPos, txtDrawArea.Pos.Top + 14, 56, sizeDefault, 'P' + HotkeySymbol + 'encil');
+	XPos := txtDrawArea.Left + txtDrawArea.Width + 12;
+	btnPencil.Init(XPos, txtDrawArea.Top + 14, 56, sizeDefault, 'P' + HotkeySymbol + 'encil');
 	btnPencil.State := bsDown;
-	btnFloodFill.Init(XPos, btnPencil.Pos.Top + 26, 56, sizeDefault, HotkeySymbol + 'Fill');
-	btnPreview.Init(XPos, btnFloodFill.Pos.Top + 51, 56, 56, '');
+	btnFloodFill.Init(XPos, btnPencil.Top + 26, 56, sizeDefault, HotkeySymbol + 'Fill');
+	btnPreview.Init(XPos, btnFloodFill.Top + 51, 56, 56, '');
 
 	{Center preview image in area}
-	XPos := (btnPreview.Pos.Width - 34) div 2;
-	YPos := (btnPreview.Pos.Height - 34) div 2;
-	XPos := btnPreview.Pos.Left + XPos;
-	YPos := btnPreview.Pos.Top + YPos;
+	XPos := (btnPreview.Width - 34) div 2;
+	YPos := (btnPreview.Height - 34) div 2;
+	XPos := btnPreview.Left + XPos;
+	YPos := btnPreview.Top + YPos;
 	imgPreview.Init(XPos, YPos, '');
 	
 	{Draw area offset is used to calculate the position of each pixel
 	 in the drawing area, so that it can be drawn in the correct place}
-	OffsetX := txtDrawArea.Pos.Left + 2;
-	OffsetY := txtDrawArea.Pos.Top + 2;
+	OffsetX := txtDrawArea.Left + 2;
+	OffsetY := txtDrawArea.Top + 2;
 
 	MouseHide;
 	MenuBar.Draw;
 	SetFillStyle(SolidFill, Theme.Window);
 	Bar(0, 29, 639, 349);
-	ObjDrawTxt(txtDrawArea, '', false);
+	txtDrawArea.Draw;
 	btnPencil.Draw;
 	btnFloodFill.Draw;
 	btnPreview.Draw;
@@ -512,24 +512,24 @@ begin
 	begin
 		if i < 8 then
 		begin
-			XPos := txtDrawArea.Pos.Left - 51;
-			YPos := txtDrawArea.Pos.Top + (i * 21) + 14;
+			XPos := txtDrawArea.Left - 51;
+			YPos := txtDrawArea.Top + (i * 21) + 14;
 		end
 		else
 		begin
-			XPos := txtDrawArea.Pos.Left - 30;
-			YPos := txtDrawArea.Pos.Top + ((i - 8) * 21) + 14;
+			XPos := txtDrawArea.Left - 30;
+			YPos := txtDrawArea.Top + ((i - 8) * 21) + 14;
 		end;
 		txtColor[i].Init(XPos, YPos, 20, 20);
-		ObjDrawTxt(txtColor[i], '', false);
+		txtColor[i].Draw;
 		SetFillStyle(SolidFill, i);
 		Bar(XPos + 2, YPos + 2, XPos + 18, YPos + 18);
 	end;
 
 	{Draw preview area}
 	SetFillStyle(SolidFill, Theme.Desktop);
-	Bar(btnPreview.Pos.Left + 2, btnPreview.Pos.Top + 2,
-		btnPreview.Pos.Left + btnPreview.Pos.Width - 2, btnPreview.Pos.Top + btnPreview.Pos.Height - 2);
+	Bar(btnPreview.Left + 2, btnPreview.Top + 2,
+		btnPreview.Left + btnPreview.Width - 2, btnPreview.Top + btnPreview.Height - 2);
 	imgPreview.Draw;
 
 	{Draw grid in drawing area - black line with a dotted grey line on top so it's visible on all colors}
@@ -537,29 +537,29 @@ begin
 	begin
 		SetColor(DarkGray);
 		SetLineStyle(SolidLn, 1, NormWidth);
-		Line(txtDrawArea.Pos.Left + 2, txtDrawArea.Pos.Top + 1 + (YPos * PixelSize),
-			txtDrawArea.Pos.Left + txtDrawArea.Pos.Width - 2, txtDrawArea.Pos.Top + 1 + (YPos * PixelSize));
+		Line(txtDrawArea.Left + 2, txtDrawArea.Top + 1 + (YPos * PixelSize),
+			txtDrawArea.Left + txtDrawArea.Width - 2, txtDrawArea.Top + 1 + (YPos * PixelSize));
 		SetColor(Black);
 		SetLineStyle(UserBitLn, $AAAA, 1);
-		Line(txtDrawArea.Pos.Left + 2, txtDrawArea.Pos.Top + 1 + (YPos * PixelSize),
-			txtDrawArea.Pos.Left + txtDrawArea.Pos.Width - 2, txtDrawArea.Pos.Top + 1 + (YPos * PixelSize));
+		Line(txtDrawArea.Left + 2, txtDrawArea.Top + 1 + (YPos * PixelSize),
+			txtDrawArea.Left + txtDrawArea.Width - 2, txtDrawArea.Top + 1 + (YPos * PixelSize));
 	end;
 	for XPos := 0 to 31 do
 	begin
 		SetColor(DarkGray);
 		SetLineStyle(SolidLn, 1, NormWidth);
-		Line(txtDrawArea.Pos.Left + 1 + (XPos * PixelSize), txtDrawArea.Pos.Top + 2,
-			txtDrawArea.Pos.Left + 1 + (XPos * PixelSize), txtDrawArea.Pos.Top + txtDrawArea.Pos.Height - 2);
+		Line(txtDrawArea.Left + 1 + (XPos * PixelSize), txtDrawArea.Top + 2,
+			txtDrawArea.Left + 1 + (XPos * PixelSize), txtDrawArea.Top + txtDrawArea.Height - 2);
 		SetColor(Black);
 		SetLineStyle(UserBitLn, $AAAA, 1);
-		Line(txtDrawArea.Pos.Left + 1 + (XPos * PixelSize), txtDrawArea.Pos.Top + 2,
-			txtDrawArea.Pos.Left + 1 + (XPos * PixelSize), txtDrawArea.Pos.Top + txtDrawArea.Pos.Height - 2);
+		Line(txtDrawArea.Left + 1 + (XPos * PixelSize), txtDrawArea.Top + 2,
+			txtDrawArea.Left + 1 + (XPos * PixelSize), txtDrawArea.Top + txtDrawArea.Height - 2);
 	end;
 	SetLineStyle(SolidLn, 1, NormWidth);
 
-	FontPrint('Preview', btnPreview.Pos.Left, btnPreview.Pos.Top - 15, Theme.WindowText);
-	FontPrint(HotkeySymbol + 'Color', txtColor[0].Pos.Left, txtDrawArea.Pos.Top, Theme.WindowText);
-	FontPrint('Tools', txtDrawArea.Pos.Left + txtDrawArea.Pos.Width + 12, txtDrawArea.Pos.Top, Theme.WindowText);
+	Print('Preview', btnPreview.Left, btnPreview.Top - 15, Theme.WindowText);
+	Print(HotkeySymbol + 'Color', txtColor[0].Left, txtDrawArea.Top, Theme.WindowText);
+	Print('Tools', txtDrawArea.Left + txtDrawArea.Width + 12, txtDrawArea.Top, Theme.WindowText);
 	MouseShow;
 
 	{Sert array to invalid color values, so that any color including 0 will be drawn on first field click}
@@ -582,7 +582,7 @@ begin
 			LoadIcon;
 
 		if ObjBtnClick(btnAbout) or (Key = KeyAltA) then
-			SysAboutBox(AppName, AppVersion, AppAuthor, AppIcon);
+			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 
 		if ObjBtnClick(btnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
 			ExitEditor;
