@@ -23,31 +23,31 @@ const
 
 var
 	{Objects are just variables you can declare like any other}
-	winSample: TWindow;
-	btnAbout, btnExit: TButton;
-	imgSample: TIcon;
+	WinSample: TWindow;
+	BtnAbout, BtnExit: TButton;
+	ImgSample: TIcon;
 
 	{We'll use this to hold user key input, so we can check what to do with it}
 	Key: String;
 
 begin
 	{Set window size - center on screen via sizeCenter}
-	winSample.Init(sizeCenter, sizeCenter, 244, 200);
+	WinSample.Init(sizeCenter, sizeCenter, 244, 200);
 
 	{Set Exit button position and size - left, top, width, height}
-	btnExit.Init(545, 2, sizeDefault, sizeDefault, 'E' + HotkeySymbol + 'xit');
+	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + HotkeySymbol + 'xit');
 	{The HotkeySymbol character determines which letter on the button is
 	 underlined.
 	 This is actually handled by the Print procedure, and can be used
 	 anywhere text is printed.}
 
 	{About button}
-	btnAbout.Init(446, 2, sizeDefault, sizeDefault, HotkeySymbol + 'About');
+	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, HotkeySymbol + 'About');
 				
 	{Create an icon. Only the filename, without extension or path, is set.
 	 This is because icons are always in the same directory. An icon does
 	 not use the width or height property, they are always 32x32 pixels.}
-	imgSample.Init(winSample.Top + 34, winSample.Left + 200, 'SAMPLE');
+	ImgSample.Init(WinSample.Top + 34, WinSample.Left + 200, 'SAMPLE');
 	
 	{Remember to hide/show the mouse when drawing!}
 	MouseHide;
@@ -58,17 +58,17 @@ begin
 
 	{App background - not drawn automatically, as some apps may wish to use
 	 a custom background.}
-	SetFillStyle(SolidFill, Theme.Window);
+	SetFillStyle(SolidFill, Thm.Win);
 	Bar(0, 29, 639, 349);
 	
-	winSample.Draw;
-	btnAbout.Draw;
-	btnExit.Draw;
-	Print('Sample text, header font', winSample.Left + 12, winSample.Top + 70, Theme.WindowText);
-	Print('Sample text, normal font', winSample.Left + 12, winSample.Top + 85, Theme.WindowText);
+	WinSample.Draw;
+	BtnAbout.Draw;
+	BtnExit.Draw;
+	Print('Sample text, header font', WinSample.Left + 12, WinSample.Top + 70, Thm.WinText);
+	Print('Sample text, normal font', WinSample.Left + 12, WinSample.Top + 85, Thm.WinText);
 	MouseShow;
 
-	imgSample.Draw;
+	ImgSample.Draw;
 
 	repeat
 		{Fetch any pressed key}
@@ -77,12 +77,12 @@ begin
 		{ObjBtnClick will return True or False, and can be used to check
 		 if a button is clicked. It will also take care of drawing the
 		 button in pressed or unpressed state.}
-		if ObjBtnClick(btnExit) or (Key = KeyAltX) then
+		if ObjBtnClick(BtnExit) or (Key = KeyAltX) then
 		begin
 			{Show a messagebox, asking to confirm that the user wants to exit.
-			 msgQuest is a constant from the Costa library, used to indicate the
+			  is a constant from the Costa library, used to indicate the
 			 type of messagebox we want to show (question, error etc.).}
-			if MsgBox('Exit sample application', ExitText, msgQuest) then
+			if MsgBox('Exit sample application', ExitText, MsgQuest) then
 			begin
 				CloseGraph;
 				Halt;
@@ -91,7 +91,7 @@ begin
 
 		{Use the built-in function for showing an about box - this ensures
 		 consistency between all applications}
-		if ObjBtnClick(btnAbout) or (Key = KeyAltA) then
+		if ObjBtnClick(BtnAbout) or (Key = KeyAltA) then
 		  AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 		
 	until False;

@@ -43,10 +43,10 @@ begin
 	Filename := '';
 	FileOpened := False;
 	MouseHide;
-	SetFillStyle(SolidFill, Theme.Textbox);
+	SetFillStyle(SolidFill, Thm.Txt);
 	Bar(0, 29, 639, 349);
 	MouseShow;
-	MsgBox('Out of memory', 'Not enough memory to open this file.', msgError);
+	MsgBox('Out of memory', 'Not enough memory to open this file.', MsgError);
 	CustomHeapError := 1; {Make GetMem return a nil pointer}
 end;
 
@@ -138,7 +138,7 @@ var
 begin
 	if not FileExists(TargetFile) then
 	begin
-		MsgBox('File not found', 'Error while trying to find the file:' + NewLine + TargetFile, msgError);
+		MsgBox('File not found', 'Error while trying to find the file:' + NewLine + TargetFile, MsgError);
 		LoadFile := False;
 		Exit;
 	end;
@@ -149,12 +149,12 @@ begin
 	{$I+}
 	if IOResult <> 0 then
 	begin
-		MsgBox('File error', 'Error while opening the file: ' + NewLine + TargetFile, msgError);
+		MsgBox('File error', 'Error while opening the file: ' + NewLine + TargetFile, MsgError);
 		LoadFile := False;
 		Exit;
 	end;
 
-	SysShowLoading;
+	ShowLoading;
 	
 	if FileOpened then
 		FreeLines; {Free previously loaded lines}
@@ -219,7 +219,7 @@ var
 	i, DrawnLines: Integer;
 begin
 	MouseHide;
-	SetFillStyle(SolidFill, Theme.Textbox);
+	SetFillStyle(SolidFill, Thm.Txt);
 	DrawnLines := 0;
 	for i := StartLine to StartLine + MaxLinesShown do
 	begin
@@ -231,7 +231,7 @@ begin
 		{No text to display, skip}
 		if (DrawnLines < MaxLinesShown) and (i <= LineCount) then
 			{Dereference the line pointer and print the text}
-			Print(Lines^[i]^, 9, (15 * (i - StartLine + 1)) + 24, Theme.TextboxText);
+			Print(Lines^[i]^, 9, (15 * (i - StartLine + 1)) + 24, Thm.TxtText);
 
 	end;
 	MouseShow;
@@ -249,7 +249,7 @@ begin
 
 	MouseHide;
 	MenuBar.Draw;
-	SetFillStyle(SolidFill, Theme.Textbox);
+	SetFillStyle(SolidFill, Thm.Txt);
 	Bar(0, 29, 639, 349);
 	BtnOpen.Draw;
 	BtnPageUp.Draw;
@@ -276,7 +276,7 @@ begin
 
 		if ObjBtnClick(BtnOpen) or (Key = KeyAltO) then
 		begin
-			NewFileName := FileSelect('*.txt', '', False);
+			NewFileName := FileSelect('*.Txt', '', False);
 			if Length(NewFilename) > 0 then
 			begin
 				if LoadFile(NewFilename) then

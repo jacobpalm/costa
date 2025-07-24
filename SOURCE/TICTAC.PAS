@@ -19,7 +19,7 @@ var
 	TotalTurns: integer;
 	EnableAI, EnableAudio: boolean;
 	PlayField: array[1..3, 1..3] of TPlayer;
-	txtPlayField: array[1..3, 1..3] of TTextbox;
+	TxtPlayField: array[1..3, 1..3] of TTextbox;
 
 {Forward declarations}
 procedure TicDrawXO(Row, Col: integer; Player: TPlayer); forward;
@@ -268,10 +268,10 @@ begin
 	begin
 		for Col := 1 to 3 do
 		begin
-			x1 := txtPlayField[Row, Col].Left;
-			y1 := txtPlayField[Row, Col].Top;
-			x2 := txtPlayField[Row, Col].Left + txtPlayField[Row, Col].Width;
-			y2 := txtPlayField[Row, Col].Top + txtPlayField[Row, Col].Height;
+			x1 := TxtPlayField[Row, Col].Left;
+			y1 := TxtPlayField[Row, Col].Top;
+			x2 := TxtPlayField[Row, Col].Left + TxtPlayField[Row, Col].Width;
+			y2 := TxtPlayField[Row, Col].Top + TxtPlayField[Row, Col].Height;
 			SetFillStyle(SolidFill, White);
 			Bar(x1 + 2, y1 + 2, x2 - 2, y2 - 2);
 			SetColor(LightGreen);
@@ -287,8 +287,8 @@ procedure TicDrawXO(Row, Col: integer; Player: TPlayer);
 var
 	x, y: integer;
 begin
-	x := txtPlayField[Row, Col].Left;
-	y := txtPlayField[Row, Col].Top;
+	x := TxtPlayField[Row, Col].Left;
+	y := TxtPlayField[Row, Col].Top;
 
 	MouseHide;
 	SetColor(Black);
@@ -449,7 +449,7 @@ begin
 	MouseHide;
 	SetFillStyle(SolidFill, Green);
 	Bar(12, 49, 627, 65);
-	Print(Message, (640 - FontGetWidth(Message)) div 2, 53, Black);
+	Print(Message, (640 - PrintW(Message)) div 2, 53, Black);
 	MouseShow;
 end;
 
@@ -473,59 +473,59 @@ begin
 	MouseHide;
 	SetFillStyle(SolidFill, Green);
 	Bar(162, 316, 477, 332);
-	Print(Message, (640 - FontGetWidth(Message)) div 2, 320, Black);
+	Print(Message, (640 - PrintW(Message)) div 2, 320, Black);
 	MouseShow;
 end;
 
 
 var
 	FieldClicked: boolean;
-	frmTic: TFrame;
-	btnNew, btnAIToggle, btnAudio, btnAbout, btnExit: TButton;
+	FrmTic: TFrame;
+	BtnNew, BtnAIToggle, BtnAudio, BtnAbout, BtnExit: TButton;
 	Row, Col: integer;
 	Key: string;
 begin
 	FieldClicked := false;
 
-	frmTic.Init(sizeCenter, sizeCenter, 221, 221);
-	Inc(frmTic.Top, 16); {To accomodate menu bar}
-	frmTic.LightColor := LightGreen;
-	frmTic.DarkColor := Theme.Shadow;
+	FrmTic.Init(sizeCenter, sizeCenter, 221, 221);
+	Inc(FrmTic.Top, 16); {To accomodate menu bar}
+	FrmTic.LightColor := LightGreen;
+	FrmTic.DarkColor := Thm.Shadow;
 
 	for Row := 1 to 3 do
 	begin
 		for Col := 1 to 3 do
 		begin
 		if (Row = 1) and (Col = 1) then
-			txtPlayField[Row, Col].Init(frmTic.Left + 10, frmTic.Top + 10, 60, 60)
+			TxtPlayField[Row, Col].Init(FrmTic.Left + 10, FrmTic.Top + 10, 60, 60)
 		else if Col = 1 then
-			txtPlayField[Row, Col].Init(txtPlayField[Row - 1, Col].Left,
-				txtPlayField[Row - 1, Col].Top + 70, 60, 60)
+			TxtPlayField[Row, Col].Init(TxtPlayField[Row - 1, Col].Left,
+				TxtPlayField[Row - 1, Col].Top + 70, 60, 60)
 		else
-			txtPlayField[Row, Col].Init(txtPlayField[Row, Col - 1].Left + 70,
-				txtPlayField[Row, Col - 1].Top, 60, 60);
+			TxtPlayField[Row, Col].Init(TxtPlayField[Row, Col - 1].Left + 70,
+				TxtPlayField[Row, Col - 1].Top, 60, 60);
 		end;
 	end;
 	
-	btnNew.Init(3, 2, sizeDefault, sizeDefault, HotkeySymbol + 'New game');
-	btnAIToggle.Init(102, 2, sizeDefault, sizeDefault, HotkeySymbol + 'Mode');
-	btnAudio.Init(201, 2, sizeDefault, sizeDefault, HotkeySymbol + 'Sound');
-	btnAbout.Init(446, 2, sizeDefault, sizeDefault, HotkeySymbol + 'About...');
-	btnExit.Init(545, 2, sizeDefault, sizeDefault, 'E' + HotkeySymbol + 'xit');
+	BtnNew.Init(3, 2, SizeDefault, SizeDefault, HotkeySymbol + 'New game');
+	BtnAIToggle.Init(102, 2, SizeDefault, SizeDefault, HotkeySymbol + 'Mode');
+	BtnAudio.Init(201, 2, SizeDefault, SizeDefault, HotkeySymbol + 'Sound');
+	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, HotkeySymbol + 'About...');
+	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + HotkeySymbol + 'xit');
 	
 	MouseHide;
 	MenuBar.Draw;
 	TicDrawBackground;
 
 	SetFillStyle(SolidFill, Green);
-	Bar(frmTic.Left + 2, frmTic.Top + 2, frmTic.Left + frmTic.Width - 2,
-		frmTic.Top + frmTic.Height - 2);
-	frmTic.Draw;
-	btnNew.Draw;
-	btnAIToggle.Draw;
-	btnAudio.Draw;
-	btnAbout.Draw;
-	btnExit.Draw;
+	Bar(FrmTic.Left + 2, FrmTic.Top + 2, FrmTic.Left + FrmTic.Width - 2,
+		FrmTic.Top + FrmTic.Height - 2);
+	FrmTic.Draw;
+	BtnNew.Draw;
+	BtnAIToggle.Draw;
+	BtnAudio.Draw;
+	BtnAbout.Draw;
+	BtnExit.Draw;
 	MouseShow;
 
 	PlayerTurn := PlayerX;
@@ -538,20 +538,20 @@ begin
 	repeat
 		Key := GetKey;
 		
-		if ObjBtnClick(btnNew) or (Key = KeyAltN) then
+		if ObjBtnClick(BtnNew) or (Key = KeyAltN) then
 		begin
 			TicNewGame;
 			if EnableAI and (PlayerTurn = PlayerO) then
 				TicAIMove;
 		end;
 
-		if ObjBtnClick(btnAbout) or (Key = KeyAltA) then
+		if ObjBtnClick(BtnAbout) or (Key = KeyAltA) then
 			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 
-		if ObjBtnClick(btnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
+		if ObjBtnClick(BtnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
 			break;
 
-		if ObjBtnClick(btnAIToggle) or (Key = KeyAltM) then
+		if ObjBtnClick(BtnAIToggle) or (Key = KeyAltM) then
 		begin
 			EnableAI := not EnableAI;
 			TicNewGame;
@@ -559,7 +559,7 @@ begin
 				TicAIMove;
 		end;
 
-		if ObjBtnClick(btnAudio) or (Key = KeyAltS) then
+		if ObjBtnClick(BtnAudio) or (Key = KeyAltS) then
 		begin
 			EnableAudio := not EnableAudio;
 			TicPrintStatus;
@@ -571,7 +571,7 @@ begin
 			begin
 				for Col := 1 to 3 do
 				begin
-					if ObjClick(txtPlayField[Row, Col]) then
+					if ObjClick(TxtPlayField[Row, Col]) then
 					begin
 						FieldClicked := true;
 						break;

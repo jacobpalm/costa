@@ -37,9 +37,9 @@ const
 
 
 type
-	TThemeObject = (Desktop, DesktopText, Window, Titlebar, TitlebarText,
-	                WindowText, Button, Textbox, TextBoxText, Light, Shadow,
-					Select, SelectText);
+	TThemeObject = (Desk, DeskText, Win, Title, TitleText,
+	                WinText, Btn, Txt, TxtText, Light, Shadow,
+					Sel, SelText);
 
 var
 	ThemeFile: string;
@@ -50,9 +50,9 @@ var
 	SelectedObject: TThemeObject;
 
 	{Objects used in mulitple procedures}
-	btnColor: array[0..15] of TButton;
-	btnObject: TButton;
-	txtThemeName, txtThemeAuthor: TTextbox;
+	BtnColor: array[0..15] of TButton;
+	BtnObject: TButton;
+	TxtThemeName, TxtThemeAuthor: TTextbox;
 
 {Forward declarations}
 procedure UpdatePreview; forward;
@@ -70,19 +70,19 @@ begin
 	
 	MouseHide;
 	{Erase previous selection}
-	x1 := btnColor[SelectedColor].Left + 4;
-	y1 := btnColor[SelectedColor].Top + 4;
-	x2 := btnColor[SelectedColor].Left + btnColor[SelectedColor].Width - 4;
-	y2 := btnColor[SelectedColor].Top + btnColor[SelectedColor].Height - 4;
+	x1 := BtnColor[SelectedColor].Left + 4;
+	y1 := BtnColor[SelectedColor].Top + 4;
+	x2 := BtnColor[SelectedColor].Left + BtnColor[SelectedColor].Width - 4;
+	y2 := BtnColor[SelectedColor].Top + BtnColor[SelectedColor].Height - 4;
 	SetFillStyle(SolidFill, SelectedColor);
 	Bar(x1, y1, x2, y2);
 
 	{Change color and draw new selection}
 	SelectedColor := Color;
-	x1 := btnColor[SelectedColor].Left + 4;
-	y1 := btnColor[SelectedColor].Top + 4;
-	x2 := btnColor[SelectedColor].Left + btnColor[SelectedColor].Width - 4;
-	y2 := btnColor[SelectedColor].Top + btnColor[SelectedColor].Height - 4;
+	x1 := BtnColor[SelectedColor].Left + 4;
+	y1 := BtnColor[SelectedColor].Top + 4;
+	x2 := BtnColor[SelectedColor].Left + BtnColor[SelectedColor].Width - 4;
+	y2 := BtnColor[SelectedColor].Top + BtnColor[SelectedColor].Height - 4;
 	SetColor(DarkGray);
 	Rectangle(x1, y1, x2, y2);
 	SetColor(White);
@@ -91,19 +91,19 @@ begin
 
 	{Change the color of the currently selected object}
 	case SelectedObject of
-		Desktop:      ThemeData.Desktop := Color;
-		DesktopText:  ThemeData.DesktopText := Color;
-		Window:       ThemeData.Window := Color;
-		Titlebar:     ThemeData.Titlebar := Color;
-		Titlebartext: ThemeData.TitlebarText := Color;
-		WindowText:   ThemeData.WindowText := Color;
-		Button:       ThemeData.Button := Color;
-		Textbox:      ThemeData.Textbox := Color;
-		TextboxText:  ThemeData.TextBoxText := Color;
-		Light:        ThemeData.Light := Color;
-		Shadow:       ThemeData.Shadow := Color;
-		Select:       ThemeData.Select := Color;
-		SelectText:   ThemeData.SelectText := Color;
+		Desk:      ThemeData.Desk := Color;
+		DeskText:  ThemeData.DeskText := Color;
+		Win:       ThemeData.Win := Color;
+		Title:     ThemeData.Title := Color;
+		Titletext: ThemeData.TitleText := Color;
+		WinText:   ThemeData.WinText := Color;
+		Btn:       ThemeData.Btn := Color;
+		Txt:       ThemeData.Txt := Color;
+		TxtText:   ThemeData.TxtText := Color;
+		Light:     ThemeData.Light := Color;
+		Shadow:    ThemeData.Shadow := Color;
+		Sel:       ThemeData.Sel := Color;
+		SelText:   ThemeData.SelText := Color;
 	end;
 	
 	{Mark theme as changed and update preview}
@@ -116,83 +116,85 @@ end;
 
 procedure UpdatePreview;
 var
-	frmPreview: TFrame;
-	winPreview: TWindow;
-	txtPreview: TTextbox;
-	txtPreviewText: string;
-	btnPreview1, btnPreview2, btnPreview3: TButton;
-	imgPreview: TIcon;
-	txtListPreview: TTextbox;
+	FrmPreview: TFrame;
+	WinPreview: TWindow;
+	TxtPreview: TTextbox;
+	TxtPreviewText: string;
+	BtnPreview1, BtnPreview2, BtnPreview3: TButton;
+	ImgPreview, ImgLogo: TIcon;
+	TxtListPreview: TTextbox;
 	x1, y1, x2, y2: Integer;
 begin
 	{Overwrite system theme with current theme}
-	Theme := ThemeData;
+	Thm := ThemeData;
 
-	frmPreview.Init(12, 42, 410, 293);
-	x1 := frmPreview.Left;
-	y1 := frmPreview.Top;
-	x2 := frmPreview.Left + frmPreview.Width;
-	y2 := frmPreview.Top + frmPreview.Height;
-	btnPreview3.Init(x2 - 96, y1 + 3, sizeDefault, sizeDefault, 'Button');
-	txtListPreview.Init(x2 - 182, y2 - 82, 166, 66);
-	txtPreviewText := 'Textbox contents';
-	imgPreview.Init(frmPreview.Left + 16, y2 - 48, 'LOGO');
-	imgPreview.ImageFile := 'LOGO';
+	FrmPreview.Init(12, 42, 410, 293);
+	x1 := FrmPreview.Left;
+	y1 := FrmPreview.Top;
+	x2 := FrmPreview.Left + FrmPreview.Width;
+	y2 := FrmPreview.Top + FrmPreview.Height;
+	BtnPreview3.Init(x2 - 96, y1 + 3, SizeDefault, SizeDefault, 'Button');
+	TxtListPreview.Init(x2 - 182, y2 - 82, 166, 66);
+	TxtPreviewText := 'Textbox contents';
+	ImgPreview.Init(FrmPreview.Left + 16, y2 - 48, 'PAINT');
 
 	MouseHide;
-	frmPreview.Draw;
-	SetFillStyle(SolidFill, Theme.Desktop);
-	Bar(frmPreview.Left + 2, y1 + 2, x2 - 2, y2 - 2);
-	SetFillStyle(SolidFill, Theme.Window);
-	Bar(frmPreview.Left + 2, y1 + 2, x2 - 2, y1 + 27);
-	SetColor(Theme.Shadow);
-	Line(frmPreview.Left + 2, y1 + 28, x2 - 2, y1 + 28);
+	FrmPreview.Draw;
+	SetFillStyle(SolidFill, Thm.Desk);
+	Bar(FrmPreview.Left + 2, y1 + 2, x2 - 2, y2 - 2);
+	SetFillStyle(SolidFill, Thm.Win);
+	Bar(FrmPreview.Left + 2, y1 + 2, x2 - 2, y1 + 27);
+	SetColor(Thm.Shadow);
+	Line(FrmPreview.Left + 2, y1 + 28, x2 - 2, y1 + 28);
 	SetColor(Black);
-	Line(frmPreview.Left + 2, y1 + 29, x2 - 2, y1 + 29);
+	Line(FrmPreview.Left + 2, y1 + 29, x2 - 2, y1 + 29);
 
-	winPreview.Init(x1 + ((frmPreview.Width - 260) div 2), y1 + 65, 260, 127);
-	x1 := winPreview.Left;
-	y1 := winPreview.Top;
-	txtPreview.Init(x1 + 12, y1 + 56, 236, 19);
-	btnPreview1.Init(x1 + 14, y1 + 93, 111, sizeDefault, 'Button up');
-	btnPreview2.Init(x1 + 133, y1 + 93, 111, sizeDefault, 'Button down');
-	btnPreview2.State := bsDown;
+	WinPreview.Init(x1 + ((FrmPreview.Width - 260) div 2), y1 + 65, 260, 127);
+	x1 := WinPreview.Left;
+	y1 := WinPreview.Top;
+	ImgLogo.Init(x1 + 12, y1 + 12, 'LOGO');
+	TxtPreview.Init(x1 + 12, y1 + 56, 236, SizeDefault);
+	TxtPreview.Text := 'Textbox';
+	BtnPreview1.Init(x1 + 14, y1 + 93, 111, SizeDefault, 'Button up');
+	BtnPreview2.Init(x1 + 133, y1 + 93, 111, SizeDefault, 'Button down');
+	BtnPreview2.State := BsDown;
 
-	winPreview.Draw;
-	txtPreview.Draw;
-	btnPreview1.Draw;
-	btnPreview2.Draw;
-	btnPreview3.Draw;
-	imgPreview.Draw;
-	txtListPreview.Draw;
-
-	{Text on desktop and window}
-	Print('This is a preview of your', x1 + 12, y1 + 14, Theme.WindowText);
-	Print('theme in action.', x1 + 12, y1 + 30, Theme.WindowText);
-	Print('Preview link', imgPreview.Left + 38, imgPreview.Top + 4, Theme.DesktopText);
-	Print('preview.exe', imgPreview.Left + 38, imgPreview.Top + 18, Theme.DesktopText);
+	WinPreview.Draw;
+	TxtPreview.Draw;
+	BtnPreview1.Draw;
+	BtnPreview2.Draw;
+	BtnPreview3.Draw;
+	TxtListPreview.Draw;
+	ImgLogo.Draw;
+	ImgPreview.Draw;
+	
+	{Text on Desk and window}
+	Print('This is a preview of', ImgLogo.Left + 42, ImgLogo.Top + 5, Thm.WinText);
+	Print('your theme.', ImgLogo.Left + 42, ImgLogo.Top + 19, Thm.WinText);
+	Print('Preview link', ImgPreview.Left + 38, ImgPreview.Top + 4, Thm.DeskText);
+	Print('preview.exe', ImgPreview.Left + 38, ImgPreview.Top + 18, Thm.DeskText);
 
 	{Draw list preview}
-	SetFillStyle(SolidFill, Theme.Select);
-	x1 := txtListPreview.Left;
-	y1 := txtListPreview.Top;
-	x2 := txtListPreview.Left + txtListPreview.Width;
+	SetFillStyle(SolidFill, Thm.Sel);
+	x1 := TxtListPreview.Left;
+	y1 := TxtListPreview.Top;
+	x2 := TxtListPreview.Left + TxtListPreview.Width;
 	Bar(x1 + 2, y1 + 15, x2 - 2, y1 + 27);
-	Print('List item', x1 + 5, y1 + 5, Theme.TextboxText);
-	Print('Selected item', x1 + 5, y1 + 5 + 12, Theme.SelectText);
-	Print('List item', x1 + 5, y1 + 5 + 24, Theme.TextboxText);
-	Print('List item', x1 + 5, y1 + 5 + 36, Theme.TextboxText);
-	Print('List item', x1 + 5, y1 + 5 + 48, Theme.TextboxText);
+	Print('List item', x1 + 5, y1 + 5, Thm.TxtText);
+	Print('Selected item', x1 + 5, y1 + 5 + 12, Thm.SelText);
+	Print('List item', x1 + 5, y1 + 5 + 24, Thm.TxtText);
+	Print('List item', x1 + 5, y1 + 5 + 36, Thm.TxtText);
+	Print('List item', x1 + 5, y1 + 5 + 48, Thm.TxtText);
 	MouseShow;
 
 	{Restore system theme}
-	Theme := SysTheme;
+	Thm := SysTheme;
 end;
 
 procedure SelectObject;
 var
-	winSelectObject: TWindow;
-	btnObjSelect: array[0..12] of TButton;
+	WinSelectObject: TWindow;
+	BtnObjSelect: array[0..12] of TButton;
 	i: integer;
 	ActiveSelection: TThemeObject;
 	NextSelection: integer;
@@ -203,28 +205,28 @@ var
 	ExitLoop: boolean;
 begin
 	ExitLoop := False;
-	winSelectObject.Init(sizeCenter, sizeCenter, 226, 326);
-	for i := 0 to High(btnObjSelect) do
-		btnObjSelect[I].Init(winSelectObject.Left + 13, winSelectObject.Top + (I * 23) + 15, 200, 22, ObjectCaptions[i]);
+	WinSelectObject.Init(sizeCenter, sizeCenter, 226, 326);
+	for i := 0 to High(BtnObjSelect) do
+		BtnObjSelect[I].Init(WinSelectObject.Left + 13, WinSelectObject.Top + (I * 23) + 15, 200, SizeDefault, ObjectCaptions[i]);
 
 	MouseHide;
-	x1 := winSelectObject.Left;
-	y1 := winSelectObject.Top;
-	x2 := winSelectObject.Left + winSelectObject.Width;
-	y2 := winSelectObject.Top + winSelectObject.Height;
+	x1 := WinSelectObject.Left;
+	y1 := WinSelectObject.Top;
+	x2 := WinSelectObject.Left + WinSelectObject.Width;
+	y2 := WinSelectObject.Top + WinSelectObject.Height;
 	BackgroundSize := ImageSize(x1, y1, x2, y2);
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(x1, y1, x2, y2, BackgroundP^);
 	
-	winSelectObject.Draw;
+	WinSelectObject.Draw;
 	ActiveSelection := SelectedObject;
-	for i := 0 to High(btnObjSelect) do
+	for i := 0 to High(BtnObjSelect) do
 	begin
 		if i = Ord(ActiveSelection) then
-			btnObjSelect[i].State := bsDown
+			BtnObjSelect[i].State := BsDown
 		else
-			btnObjSelect[i].State := bsUp;
-		btnObjSelect[i].Draw;
+			BtnObjSelect[i].State := BsUp;
+		BtnObjSelect[i].Draw;
 	end;
 	MouseShow;
 
@@ -240,8 +242,8 @@ begin
 		if Key = KeyEscape then
 			break;
 
-		for i := 0 to High(btnObjSelect) do
-			if ObjBtnClick(btnObjSelect[i]) then
+		for i := 0 to High(BtnObjSelect) do
+			if ObjBtnClick(BtnObjSelect[i]) then
 			begin
 				SelectedObject := TThemeObject(i);
 				ExitLoop := True;
@@ -251,20 +253,20 @@ begin
 		if (Key = KeyUp) or (Key = KeyDown) then
 		begin
 			MouseHide;
-			btnObjSelect[Ord(ActiveSelection)].State := bsUp;
-			btnObjSelect[Ord(ActiveSelection)].Draw;
+			BtnObjSelect[Ord(ActiveSelection)].State := BsUp;
+			BtnObjSelect[Ord(ActiveSelection)].Draw;
 			if Key = KeyUp then
 				NextSelection := Ord(ActiveSelection) - 1
 			else
 				NextSelection := Ord(ActiveSelection) + 1;
 			
 			if NextSelection < 0 then
-				NextSelection := High(btnObjSelect)
-			else if NextSelection > High(btnObjSelect) then
+				NextSelection := High(BtnObjSelect)
+			else if NextSelection > High(BtnObjSelect) then
 				NextSelection := 0;
 				ActiveSelection := TThemeObject(NextSelection);
-			btnObjSelect[Ord(ActiveSelection)].State := bsDown;
-			btnObjSelect[Ord(ActiveSelection)].Draw;
+			BtnObjSelect[Ord(ActiveSelection)].State := BsDown;
+			BtnObjSelect[Ord(ActiveSelection)].Draw;
 			MouseShow;
 		end;
 
@@ -272,25 +274,25 @@ begin
 	MouseHide;
 	PutImage(x1, y1, BackgroundP^, NormalPut);
 	FreeMem(BackgroundP, BackgroundSize);
-	btnObject.Caption := ObjectCaptions[Ord(SelectedObject)];
-	btnObject.Draw;
+	BtnObject.Caption := ObjectCaptions[Ord(SelectedObject)];
+	BtnObject.Draw;
 	MouseShow;
 
 	{Change the color of the currently selected object}
 	case SelectedObject of
-		Desktop:      SelectColor(ThemeData.Desktop, false);
-		DesktopText:  SelectColor(ThemeData.DesktopText, false);
-		Window:       SelectColor(ThemeData.Window, false);
-		Titlebar:     SelectColor(ThemeData.Titlebar, false);
-		TitlebarText: SelectColor(ThemeData.TitlebarText, false);
-		WindowText:   SelectColor(ThemeData.WindowText, false);
-		Button:       SelectColor(ThemeData.Button, false);
-		Textbox:      SelectColor(ThemeData.Textbox, false);
-		TextboxText:  SelectColor(ThemeData.TextBoxText, false);
-		Light:        SelectColor(ThemeData.Light, false);
-		Shadow:       SelectColor(ThemeData.Shadow, false);
-		Select:       SelectColor(ThemeData.Select, false);
-		SelectText:   SelectColor(ThemeData.SelectText, false);
+		Desk:      SelectColor(ThemeData.Desk, false);
+		DeskText:  SelectColor(ThemeData.DeskText, false);
+		Win:       SelectColor(ThemeData.Win, false);
+		Title:     SelectColor(ThemeData.Title, false);
+		TitleText: SelectColor(ThemeData.TitleText, false);
+		WinText:   SelectColor(ThemeData.WinText, false);
+		Btn:       SelectColor(ThemeData.Btn, false);
+		Txt:       SelectColor(ThemeData.Txt, false);
+		TxtText:   SelectColor(ThemeData.TxtText, false);
+		Light:     SelectColor(ThemeData.Light, false);
+		Shadow:    SelectColor(ThemeData.Shadow, false);
+		Sel:       SelectColor(ThemeData.Sel, false);
+		SelText:   SelectColor(ThemeData.SelText, false);
 	end;
 end;
 
@@ -300,20 +302,20 @@ var
 begin
 	if ThemeChanged then
 	begin
-		DoSave := MsgBox(MSG_UNSAVED_CHANGES_TITLE, MSG_UNSAVED_CHANGES_PROMPT, msgQuest);
+		DoSave := MsgBox(MSG_UNSAVED_CHANGES_TITLE, MSG_UNSAVED_CHANGES_PROMPT, MsgQuest);
 		if DoSave then
 			if not SaveTheme(false) then
 				exit; {Theme was not saved, exit}
 	end;
 
 	{Start with current theme as basis for editing}
-	ThemeData := Theme;
+	ThemeData := Thm;
 	ThemeFile := '';
-	txtThemeName.Text := 'New Theme';
-	txtThemeAuthor.Text := '';
-	txtThemeName.Draw;
-	txtThemeAuthor.Draw;
-	SelectColor(ThemeData.Desktop, true);
+	TxtThemeName.Text := 'New Theme';
+	TxtThemeAuthor.Text := '';
+	TxtThemeName.Draw;
+	TxtThemeAuthor.Draw;
+	SelectColor(ThemeData.Desk, true);
 	ThemeChanged := False;
 end;
 
@@ -330,7 +332,7 @@ var
 begin
 	if ThemeChanged then
 	begin
-		DoSave := MsgBox(MSG_UNSAVED_CHANGES_TITLE, MSG_UNSAVED_CHANGES_PROMPT, msgQuest);
+		DoSave := MsgBox(MSG_UNSAVED_CHANGES_TITLE, MSG_UNSAVED_CHANGES_PROMPT, MsgQuest);
 		if DoSave then
 			if not SaveTheme(false) then
 				exit; {Theme was not saved, exit}
@@ -343,7 +345,7 @@ begin
 	FSplit(SelectedFile, FDir, FName, FExt);
 	if not (FDir = ProgramPath + 'THEMES\') or not (FExt = '.BIN') then
 	begin
-		MsgBox(MSG_ERROR_OPENING_TITLE, MSG_INVALID_THEME_FILE, msgError);
+		MsgBox(MSG_ERROR_OPENING_TITLE, MSG_INVALID_THEME_FILE, MsgError);
 		exit;
 	end;
 
@@ -360,7 +362,7 @@ begin
 	if LoadError then
 	begin
 		Close(f);
-		MsgBox(MSG_ERROR_OPENING_TITLE, MSG_ERROR_OPENING, msgError);
+		MsgBox(MSG_ERROR_OPENING_TITLE, MSG_ERROR_OPENING, MsgError);
 		exit;
 	end;
 
@@ -369,12 +371,12 @@ begin
 	BlockRead(f, LoadAuthor, SizeOf(LoadAuthor));
 	Close(f);
 
-	txtThemeName.Text := Rtrim(LoadName);
-	txtThemeAuthor.Text := Rtrim(LoadAuthor);
-	SelectColor(ThemeData.Desktop, true);
+	TxtThemeName.Text := Rtrim(LoadName);
+	TxtThemeAuthor.Text := Rtrim(LoadAuthor);
+	SelectColor(ThemeData.Desk, true);
 	ThemeFile := SelectedFile;
-	txtThemeName.Draw;
-	txtThemeAuthor.Draw;
+	TxtThemeName.Draw;
+	TxtThemeAuthor.Draw;
 	ThemeChanged := False;
 end;
 
@@ -398,7 +400,7 @@ begin
 
 		if not ValidDOSFilename(FileName + '.BIN') then
 		begin
-			MsgBox(MSG_ERROR_SAVING_TITLE, MSG_INVALID_FILENAME, msgError);
+			MsgBox(MSG_ERROR_SAVING_TITLE, MSG_INVALID_FILENAME, MsgError);
 			exit;
 		end;
 
@@ -410,22 +412,22 @@ begin
 	{Check if file already exists}
 	if FileExists(Filename) and (Filename <> ThemeFile) then
 	begin
-		mbResult := MsgBox(MSG_FILE_EXISTS_TITLE, MSG_FILE_EXISTS_PROMPT, msgQuest);
+		mbResult := MsgBox(MSG_FILE_EXISTS_TITLE, MSG_FILE_EXISTS_PROMPT, MsgQuest);
 		if mbResult = false then
 			exit;
 	end;
 
 	FillChar(SaveName, SizeOf(SaveName), 0);
 	FillChar(SaveAuthor, SizeOf(SaveAuthor), 0);
-	SaveName := txtThemeName.Text;
-	SaveAuthor := txtThemeAuthor.Text;
+	SaveName := TxtThemeName.Text;
+	SaveAuthor := TxtThemeAuthor.Text;
 	Assign(f, Filename);
 	{$I-}
 	Rewrite(f, 1);
 	{$I+}
 	if IOResult <> 0 then
 	begin
-		MsgBox(MSG_ERROR_SAVING_TITLE, MSG_ERROR_SAVING, msgError);
+		MsgBox(MSG_ERROR_SAVING_TITLE, MSG_ERROR_SAVING, MsgError);
 		exit;
 	end;
 	BlockWrite(f, ThemeData, SizeOf(TTheme));
@@ -448,8 +450,8 @@ begin
 end;
 
 var
-	btnNew, btnOpen, btnSave, btnSaveAs: TButton;
-	btnAbout, btnExit: TButton;
+	BtnNew, BtnOpen, BtnSave, BtnSaveAs: TButton;
+	BtnAbout, BtnExit: TButton;
 
 	i, YPos, XPos: integer;
 	OriginalText: string[20];
@@ -458,21 +460,21 @@ var
 begin
 	MouseHide;
 	MenuBar.Draw;
-	SetFillStyle(SolidFill, Theme.Window);
+	SetFillStyle(SolidFill, Thm.Win);
 	Bar(0, 29, 639, 349);
 
-	btnNew.Init(2, 2, sizeDefault, sizeDefault, HotkeySymbol + 'New');
-	btnOpen.Init(101, 2, sizeDefault, sizeDefault, HotkeySymbol + 'Load');
-	btnSave.Init(200, 2, sizeDefault, sizeDefault, HotkeySymbol + 'Save');
-	btnSaveAs.Init(299, 2, sizeDefault, sizeDefault, 'Sa' + HotkeySymbol + 've as');
-	btnAbout.Init(446, 2, sizeDefault, sizeDefault, HotkeySymbol + 'About...');
-	btnExit.Init(545, 2, sizeDefault, sizeDefault, 'E' + HotkeySymbol + 'xit');
-	txtThemeName.Init(434, 59, 194, sizeDefault);
-	txtThemeAuthor.Init(434, txtThemeName.Top + 48, 194, sizeDefault);
-	btnObject.Init(434, txtThemeAuthor.Top + 48, 194, sizeDefault, 'Desktop');
+	BtnNew.Init(2, 2, SizeDefault, SizeDefault, HotkeySymbol + 'New');
+	BtnOpen.Init(101, 2, SizeDefault, SizeDefault, HotkeySymbol + 'Load');
+	BtnSave.Init(200, 2, SizeDefault, SizeDefault, HotkeySymbol + 'Save');
+	BtnSaveAs.Init(299, 2, SizeDefault, SizeDefault, 'Sa' + HotkeySymbol + 've as');
+	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, HotkeySymbol + 'About...');
+	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + HotkeySymbol + 'xit');
+	TxtThemeName.Init(434, 59, 194, SizeDefault);
+	TxtThemeAuthor.Init(434, TxtThemeName.Top + 48, 194, SizeDefault);
+	BtnObject.Init(434, TxtThemeAuthor.Top + 48, 194, SizeDefault, 'Desk');
 
-	txtThemeName.MaxLen := 20;
-	txtThemeAuthor.MaxLen := 20;
+	TxtThemeName.MaxLen := 20;
+	TxtThemeAuthor.MaxLen := 20;
 
 	YPos := 0;
 	XPos := 0;
@@ -483,93 +485,93 @@ begin
 			YPos := 25;
 			XPos := 0;
 		end;
-		btnColor[i].Init(txtThemeAuthor.Left + XPos, txtThemeAuthor.Top + 98 + YPos, 19, 19, '');
-		btnColor[i].Transparent := True;
+		BtnColor[i].Init(TxtThemeAuthor.Left + XPos, TxtThemeAuthor.Top + 98 + YPos, 19, 19, '');
+		BtnColor[i].Transparent := True;
 		Inc(XPos, 25);
 	end;
 
 	MouseHide;
-	btnNew.Draw;
-	btnOpen.Draw;
-	btnSave.Draw;
-	btnSaveAs.Draw;
-	btnAbout.Draw;
-	btnExit.Draw;
-	txtThemeName.Draw;
-	txtThemeAuthor.Draw;
-	btnObject.Draw;
+	BtnNew.Draw;
+	BtnOpen.Draw;
+	BtnSave.Draw;
+	BtnSaveAs.Draw;
+	BtnAbout.Draw;
+	BtnExit.Draw;
+	TxtThemeName.Draw;
+	TxtThemeAuthor.Draw;
+	BtnObject.Draw;
 	for i := 0 to 15 do
 	begin
-		btnColor[i].State := bsDown;
-		btnColor[i].Draw;
+		BtnColor[i].State := BsDown;
+		BtnColor[i].Draw;
 		SetFillStyle(SolidFill, i);
-		Bar(btnColor[i].Left + 2, btnColor[i].Top + 2, btnColor[i].Left + btnColor[i].Width - 2,
-			btnColor[i].Top + btnColor[i].Height - 2);
+		Bar(BtnColor[i].Left + 2, BtnColor[i].Top + 2, BtnColor[i].Left + BtnColor[i].Width - 2,
+			BtnColor[i].Top + BtnColor[i].Height - 2);
 	end;
 
-	Print('Theme na' + HotkeySymbol + 'me:', txtThemeName.Left, txtThemeName.Top - 16,
-		Theme.WindowText);
-	Print('Theme a' + HotkeySymbol + 'uthor:', txtThemeAuthor.Left, txtThemeAuthor.Top - 16,
-		Theme.WindowText);
-	Print(HotkeySymbol + 'Object selected:', 434, btnObject.Top - 16, Theme.WindowText);
-	Print(HotkeySymbol + 'Color for object:', 434, btnColor[0].Top - 16, Theme.WindowText);
+	Print('Theme na' + HotkeySymbol + 'me:', TxtThemeName.Left, TxtThemeName.Top - 16,
+		Thm.WinText);
+	Print('Theme a' + HotkeySymbol + 'uthor:', TxtThemeAuthor.Left, TxtThemeAuthor.Top - 16,
+		Thm.WinText);
+	Print(HotkeySymbol + 'Object selected:', 434, BtnObject.Top - 16, Thm.WinText);
+	Print(HotkeySymbol + 'Color for object:', 434, BtnColor[0].Top - 16, Thm.WinText);
 	
 	{Save system theme}
-	SysTheme := Theme;
+	SysTheme := Thm;
 	NewTheme;
 
 	repeat
 		Key := GetKey;
 
 		for i := 0 to 15 do
-			if ObjClick(btnColor[i]) then
+			if ObjClick(BtnColor[i]) then
 				SelectColor(i, true);
 
 		if Key = KeyAltC then
 			SelectColor(SelectedColor + 1, true);
 
-		if ObjBtnClick(btnNew) or (Key = KeyAltN) then
+		if ObjBtnClick(BtnNew) or (Key = KeyAltN) then
 			NewTheme;
 
-		if ObjBtnClick(btnOpen) or (Key = KeyAltL) then
+		if ObjBtnClick(BtnOpen) or (Key = KeyAltL) then
 			LoadTheme;
 		
-		if ObjBtnClick(btnSave) or (Key = KeyAltS) then
+		if ObjBtnClick(BtnSave) or (Key = KeyAltS) then
 			SaveTheme(false);
 
-		if ObjBtnClick(btnSaveAs) or (Key = KeyAltV) then
+		if ObjBtnClick(BtnSaveAs) or (Key = KeyAltV) then
 			SaveTheme(true);
 
-		if ObjBtnClick(btnObject) or (Key = KeyAltO) then
+		if ObjBtnClick(BtnObject) or (Key = KeyAltO) then
 			SelectObject;
 
-		if ObjTxtClick(txtThemeName) or (Key = KeyAltM) then
+		if ObjTxtClick(TxtThemeName) or (Key = KeyAltM) then
 		begin
-			OriginalText := txtThemeName.Text;
-			ObjEditTxt(txtThemeName, txtThemeName.Text);
-			if not (txtThemeName.Text = OriginalText) then
+			OriginalText := TxtThemeName.Text;
+			ObjEditTxt(TxtThemeName, TxtThemeName.Text);
+			if not (TxtThemeName.Text = OriginalText) then
 				ThemeChanged := True;
 		end;
 
-		if ObjTxtClick(txtThemeAuthor) or (Key = KeyAltU) then
+		if ObjTxtClick(TxtThemeAuthor) or (Key = KeyAltU) then
 		begin
-			OriginalText := txtThemeAuthor.Text;
-			ObjEditTxt(txtThemeAuthor, txtThemeAuthor.Text);
-			if not (txtThemeAuthor.Text = OriginalText) then
+			OriginalText := TxtThemeAuthor.Text;
+			ObjEditTxt(TxtThemeAuthor, TxtThemeAuthor.Text);
+			if not (TxtThemeAuthor.Text = OriginalText) then
 				ThemeChanged := True;
 		end;
 
-		if ObjBtnClick(btnAbout) or (Key = KeyAltA) then
+		if ObjBtnClick(BtnAbout) or (Key = KeyAltA) then
 			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 
-		if ObjBtnClick(btnExit) or (Key = KeyAltX) or (Key = KeyEscape) then
+		if ObjBtnClick(BtnExit) or (Key = KeyAltX) or (Key = KeyEscape) then
 		begin
 			{No changes, just exit}
 			if ThemeChanged = False then
 				break;
 
 			{Otherwise, ask to save}
-			DoSave := MsgBox(MSG_UNSAVED_CHANGES_TITLE, MSG_UNSAVED_CHANGES_PROMPT, msgQuest);
+			DoSave := MsgBox(MSG_UNSAVED_CHANGES_TITLE, MSG_UNSAVED_CHANGES_PROMPT, MsgQuest);
 			if not DoSave then
 				break;
 			

@@ -27,14 +27,14 @@ var
 	GameOver: boolean;
 	MineCount: integer;
 	FieldWidth, FieldHeight: integer;
-	areaField: TArea;
+	AreaField: TArea;
 	StartTime, TimeCompare: real;
 	CellsCleared, CellsFlagged: integer;
 	DebugMode: boolean;
 	KeyRow, KeyCol: integer;
 	MineField: array[0..17, 0..38] of integer;
 
-	btnNew, btnSize, btnAudio, btnPause, btnAbout, btnExit: TButton;
+	BtnNew, BtnSize, BtnAudio, BtnPause, BtnAbout, BtnExit: TButton;
 	FieldRow, FieldCol: integer;
 	MouseButton: TMouseButton;
 	KeyVisible: boolean;
@@ -149,7 +149,7 @@ begin
 	end;
 
 	case MouseButton of
-		mbLeft:
+		MbLeft:
 		begin
 			{Clicked a flagged cell}
 			if (MineField[Row, Col] and FieldFlagged) <> 0 then
@@ -200,7 +200,7 @@ begin
 			MouseShow;
 		end;
 			
-		mbRight:
+		MbRight:
 		begin
 
 			{If right-clicked a cell, flag it}
@@ -232,8 +232,8 @@ var
 	NeighborStr: string;
 begin
 	
-	x1 := areaField.Left + 1 + Col * CellSize;
-	y1 := areaField.Top + 1 + Row * CellSize;
+	x1 := AreaField.Left + 1 + Col * CellSize;
+	y1 := AreaField.Top + 1 + Row * CellSize;
 	x2 := x1 + CellSize - 2;
 	y2 := y1 + CellSize - 2;
 
@@ -316,7 +316,7 @@ begin
 				8: TextColor := 8;
 			end;
 			Str(Neighbors, NeighborStr);
-			Print(NeighborStr, x1 + ((CellSize - FontGetWidth(NeighborStr)) div 2), y1 + 3, TextColor);
+			Print(NeighborStr, x1 + ((CellSize - PrintW(NeighborStr)) div 2), y1 + 3, TextColor);
 		end;
 	end
 	else if (MineField[Row, Col] and FieldKBSelected) <> 0 then
@@ -343,16 +343,16 @@ var
 	FieldRow, FieldCol: integer;
 	x1, y1, x2, y2: integer;
 begin
-	areaField.Init(SizeCenter, 0, FieldWidth * CellSize, FieldHeight * CellSize);
-	areaField.Top := 180 - (areaField.Height div 2);
+	AreaField.Init(SizeCenter, 0, FieldWidth * CellSize, FieldHeight * CellSize);
+	AreaField.Top := 180 - (AreaField.Height div 2);
 
-	x1 := areaField.Left;
-	y1 := areaField.Top;
-	x2 := areaField.Left + areaField.Width;
-	y2 := areaField.Top + areaField.Height;
+	x1 := AreaField.Left;
+	y1 := AreaField.Top;
+	x2 := AreaField.Left + AreaField.Width;
+	y2 := AreaField.Top + AreaField.Height;
 
 	MouseHide;
-	SetFillStyle(SolidFill, Theme.Window);
+	SetFillStyle(SolidFill, Thm.Win);
 	Bar(0, 29, 639, 349);
 
 	{Button color}
@@ -511,23 +511,23 @@ end;
 
 procedure MinePause;
 var
-	btnResume, btnExit: TButton;
+	BtnResume, BtnExit: TButton;
 	Row, Col: integer;
 	PauseTime: real;
 	Key: string;
 begin
 	PauseTime := Timer;
 	
-	btnResume.Init(3, 2, sizeDefault, sizeDefault, HotkeySymbol + 'Resume');
-	btnExit.Init(545, 2, sizeDefault, sizeDefault, 'E' + HotkeySymbol + 'xit');
+	BtnResume.Init(3, 2, SizeDefault, SizeDefault, HotkeySymbol + 'Resume');
+	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + HotkeySymbol + 'xit');
 
 	MouseHide;
 	{PCOPY 0, 1} {DEUG - save background}
-	SetFillStyle(SolidFill, Theme.Window);
+	SetFillStyle(SolidFill, Thm.Win);
 	Bar(0, 29, 639, 329);
 	MenuBar.Draw;
-	btnResume.Draw;
-	btnExit.Draw;
+	BtnResume.Draw;
+	BtnExit.Draw;
 	MouseShow;
 
 	repeat
@@ -536,10 +536,10 @@ begin
 		if (Key = KeySpace) or (Key = KeyEnter) or (Key = KeyEscape) then
 			break;
 
-		if ObjBtnClick(btnResume) or (Key = 'r') then
+		if ObjBtnClick(BtnResume) or (Key = 'r') then
 			break;
 
-		if ObjBtnClick(btnExit) then
+		if ObjBtnClick(BtnExit) then
 		begin
 			CloseGraph;
 			Halt(0);
@@ -549,12 +549,12 @@ begin
 
 	MouseHide;
 	MenuBar.Draw;
-	btnNew.Draw;
-	btnSize.Draw;
-	btnAudio.Draw;
-	btnPause.Draw;
-	btnAbout.Draw;
-	btnExit.Draw;
+	BtnNew.Draw;
+	BtnSize.Draw;
+	BtnAudio.Draw;
+	BtnPause.Draw;
+	BtnAbout.Draw;
+	BtnExit.Draw;
 	MineDrawField;
 	for Row := 0 to FieldHeight - 1 do
 	begin
@@ -623,7 +623,7 @@ begin
 	
 	Str(CellsFlagged, FlaggedStr);
 	Str(MineCount, CountStr);
-	SetFillStyle(SolidFill, Theme.Window);
+	SetFillStyle(SolidFill, Thm.Win);
 
 	{Only hide mouse if it's near the timer, to avoid cursor flicker on old PCs}
 	MousePoll;
@@ -635,7 +635,7 @@ begin
 		
 		Bar(106, 330, 184, 343);
 		MessageText := FlaggedStr + '/' + CountStr;
-		Print(MessageText, 110, 332, Theme.WindowText);
+		Print(MessageText, 110, 332, Thm.WinText);
 		MouseShow;
 		exit;
 	end;
@@ -649,14 +649,14 @@ begin
 	else
 		MessageText := 'Flagged mines: ' + FlaggedStr + '/' + CountStr;
 	
-	Print(MessageText, 8, 332, Theme.WindowText);
+	Print(MessageText, 8, 332, Thm.WinText);
 
 	if EnableAudio then
 		MessageText := 'Sound: On'
 	else
 		MessageText := 'Sound: Off';
 	
-	Print(MessageText, (630 - FontGetWidth(MessageText)), 332, Theme.WindowText);
+	Print(MessageText, (630 - PrintW(MessageText)), 332, Thm.WinText);
 	
 	MouseShow;
 
@@ -678,7 +678,7 @@ begin
 		MouseHide;
 
 	{Clear timer only}
-	SetFillStyle(SolidFill, Theme.Window);
+	SetFillStyle(SolidFill, Thm.Win);
 	Bar(278, 330, 360, 343);
 
 	{DEBUG}
@@ -711,7 +711,7 @@ begin
 		Str(Seconds, TempStr);
 		MessageText := MessageText + TempStr;
 
-		Print(MessageText, (640 - FontGetWidth(MessageText)) div 2, 332, Theme.WindowText);
+		Print(MessageText, (640 - PrintW(MessageText)) div 2, 332, Thm.WinText);
 	end;
 
 	MouseShow;
@@ -731,8 +731,8 @@ begin
 		begin
 			if (MineField[Row, Col] and FieldMined) <> 0 then
 			begin
-				x1 := areaField.Left + 1 + Col * CellSize;
-				y1 := areaField.Top + 1 + Row * CellSize;
+				x1 := AreaField.Left + 1 + Col * CellSize;
+				y1 := AreaField.Top + 1 + Row * CellSize;
 				x2 := x1 + CellSize - 2;
 				y2 := y1 + CellSize - 2;
 				Rectangle(x1, y1, x2, y2);
@@ -745,9 +745,9 @@ end;
 
 function MineSetSize: boolean;
 var
-	winSetSize: TWindow;
-	btnSize: array[0..3] of TButton;
-	btnCancel: TButton;
+	WinSetSize: TWindow;
+	BtnSize: array[0..3] of TButton;
+	BtnCancel: TButton;
 	X, Y, TextOffset: integer;
 	x1, y1, x2, y2: integer;
 	BackgroundSize: Word;
@@ -755,53 +755,53 @@ var
 	TempStr: string;
 	Key: string;
 begin
-	winSetSize.Init(SizeCenter, SizeCenter, 236, 264);
+	WinSetSize.Init(SizeCenter, SizeCenter, 236, 264);
 	
-	btnSize[0].Init(winSetSize.Left + 13, winSetSize.Top + 11, 100, 100, '');
-	btnSize[1].Init(btnSize[0].Left + 110, winSetSize.Top + 11, 100, 100, '');
-	btnSize[2].Init(winSetSize.Left + 13, btnSize[0].Top + 110, 100, 100, '');
-	btnSize[3].Init(btnSize[2].Left + 110, btnSize[2].Top, 100, 100, '');
-	btnCancel.Init(winSetSize.Left + 13, btnSize[2].Top + 110, 210, sizeDefault, HotkeySymbol + 'Cancel');
+	BtnSize[0].Init(WinSetSize.Left + 13, WinSetSize.Top + 11, 100, 100, '');
+	BtnSize[1].Init(BtnSize[0].Left + 110, WinSetSize.Top + 11, 100, 100, '');
+	BtnSize[2].Init(WinSetSize.Left + 13, BtnSize[0].Top + 110, 100, 100, '');
+	BtnSize[3].Init(BtnSize[2].Left + 110, BtnSize[2].Top, 100, 100, '');
+	BtnCancel.Init(WinSetSize.Left + 13, BtnSize[2].Top + 110, 210, SizeDefault, HotkeySymbol + 'Cancel');
 
-	btnSize[0].Transparent := True;
-	btnSize[1].Transparent := True;
-	btnSize[2].Transparent := True;
-	btnSize[3].Transparent := True;
+	BtnSize[0].Transparent := True;
+	BtnSize[1].Transparent := True;
+	BtnSize[2].Transparent := True;
+	BtnSize[3].Transparent := True;
 
 	MouseHide;
 	{Save background to restore when window is closed}
-	x1 := winSetSize.Left;
-	y1 := winSetSize.Top;
-	x2 := winSetSize.Left + winSetSize.Width;
-	y2 := winSetSize.Top + winSetSize.Height;
+	x1 := WinSetSize.Left;
+	y1 := WinSetSize.Top;
+	x2 := WinSetSize.Left + WinSetSize.Width;
+	y2 := WinSetSize.Top + WinSetSize.Height;
 	BackgroundSize := ImageSize(x1, y1, x2, y2);
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(x1, y1, x2, y2, BackgroundP^);
 
-	winSetSize.Draw;
-	btnSize[0].Draw;
-	btnSize[1].Draw;
-	btnSize[2].Draw;
-	btnSize[3].Draw;
-	btnCancel.Draw;
+	WinSetSize.Draw;
+	BtnSize[0].Draw;
+	BtnSize[1].Draw;
+	BtnSize[2].Draw;
+	BtnSize[3].Draw;
+	BtnCancel.Draw;
 
 	TempStr := '9x' + HotkeySymbol + '9';
-	TextOffset := ((btnSize[0].Width - FontGetWidth(TempStr)) div 2);
-	Print(TempStr, btnSize[0].Left + TextOffset, btnSize[0].Top + 79, Theme.WindowText);
+	TextOffset := ((BtnSize[0].Width - PrintW(TempStr)) div 2);
+	Print(TempStr, BtnSize[0].Left + TextOffset, BtnSize[0].Top + 79, Thm.WinText);
 	
 	TempStr := '16x1' + HotkeySymbol + '6';
-	TextOffset := ((btnSize[1].Width - FontGetWidth(TempStr)) div 2);
-	Print(TempStr, btnSize[1].Left + TextOffset, btnSize[1].Top + 79, Theme.WindowText);
+	TextOffset := ((BtnSize[1].Width - PrintW(TempStr)) div 2);
+	Print(TempStr, BtnSize[1].Left + TextOffset, BtnSize[1].Top + 79, Thm.WinText);
 
 	TempStr := HotkeySymbol + '22x18';
-	TextOffset := ((btnSize[2].Width - FontGetWidth(TempStr)) div 2);
-	Print(TempStr, btnSize[2].Left + TextOffset, btnSize[2].Top + 79, Theme.WindowText);
+	TextOffset := ((BtnSize[2].Width - PrintW(TempStr)) div 2);
+	Print(TempStr, BtnSize[2].Left + TextOffset, BtnSize[2].Top + 79, Thm.WinText);
 
 	TempStr := HotkeySymbol + '39x18';
-	TextOffset := ((btnSize[3].Width - FontGetWidth(TempStr)) div 2);
-	Print(TempStr, btnSize[3].Left + TextOffset, btnSize[3].Top + 79, Theme.WindowText);
+	TextOffset := ((BtnSize[3].Width - PrintW(TempStr)) div 2);
+	Print(TempStr, BtnSize[3].Left + TextOffset, BtnSize[3].Top + 79, Thm.WinText);
 	
-	SetColor(Theme.WindowText);
+	SetColor(Thm.WinText);
 	{9x9}
 	for X := 0 to 3 do
 		Line(252 + X * 9, 94, 252 + X * 9, 121);
@@ -833,34 +833,34 @@ begin
 	repeat
 		Key := GetKey;
 
-		if ObjBtnClick(btnCancel) or (Key = KeyEscape) or (Key = 'c') then
+		if ObjBtnClick(BtnCancel) or (Key = KeyEscape) or (Key = 'c') then
 		begin
 			MineSetSize := False;
 			break;
 		end;
 
-		if ObjBtnClick(btnSize[0]) or (Key = '9') then
+		if ObjBtnClick(BtnSize[0]) or (Key = '9') then
 		begin
 			FieldHeight := 9;
 			FieldWidth := 9;
 			break;
 		end;
 
-		if ObjBtnClick(btnSize[1]) or (Key = '6') then
+		if ObjBtnClick(BtnSize[1]) or (Key = '6') then
 		begin
 			FieldHeight := 16;
 			FieldWidth := 16;
 			break;
 		end;
 
-		if ObjBtnClick(btnSize[2]) or (Key = '2') then
+		if ObjBtnClick(BtnSize[2]) or (Key = '2') then
 		begin
 			FieldHeight := 18;
 			FieldWidth := 22;
 			break;
 		end;
 
-		if ObjBtnClick(btnSize[3]) or (Key = '3') then
+		if ObjBtnClick(BtnSize[3]) or (Key = '3') then
 		begin
 			FieldHeight := 18;
 			FieldWidth := 39;
@@ -902,21 +902,21 @@ end;
 
 
 begin
-	btnNew.Init(3, 2, sizeDefault, sizeDefault, HotkeySymbol + 'New game');
-	btnPause.Init(102, 2, sizeDefault, sizeDefault, HotkeySymbol + 'Pause');
-	btnSize.Init(201, 2, sizeDefault, sizeDefault, 'Si' + HotkeySymbol + 'ze');
-	btnAudio.Init(300, 2, sizeDefault, sizeDefault, HotkeySymbol + 'Sound');
-	btnAbout.Init(446, 2, sizeDefault, sizeDefault, HotkeySymbol + 'About...');
-	btnExit.Init(545, 2, sizeDefault, sizeDefault, 'E' + HotkeySymbol + 'xit');
+	BtnNew.Init(3, 2, SizeDefault, SizeDefault, HotkeySymbol + 'New game');
+	BtnPause.Init(102, 2, SizeDefault, SizeDefault, HotkeySymbol + 'Pause');
+	BtnSize.Init(201, 2, SizeDefault, SizeDefault, 'Si' + HotkeySymbol + 'ze');
+	BtnAudio.Init(300, 2, SizeDefault, SizeDefault, HotkeySymbol + 'Sound');
+	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, HotkeySymbol + 'About...');
+	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + HotkeySymbol + 'xit');
 	
 	MouseHide;
 	MenuBar.Draw;
-	btnNew.Draw;
-	btnSize.Draw;
-	btnAudio.Draw;
-	btnPause.Draw;
-	btnAbout.Draw;
-	btnExit.Draw;
+	BtnNew.Draw;
+	BtnSize.Draw;
+	BtnAudio.Draw;
+	BtnPause.Draw;
+	BtnAbout.Draw;
+	BtnExit.Draw;
 	MouseShow;
 
 	{Default settings}
@@ -930,31 +930,31 @@ begin
 	repeat
 		Key := GetKey;
 		
-		if ObjBtnClick(btnNew) or (Key = 'n') then
+		if ObjBtnClick(BtnNew) or (Key = 'n') then
 		begin
 			MineNewGame;
 			KeyVisible := False;
 		end;
 
-		if ObjBtnClick(btnAudio) or (Key = 's') then
+		if ObjBtnClick(BtnAudio) or (Key = 's') then
 		begin
 			EnableAudio := not EnableAudio;
 			MinePrintStatus(False, '');
 		end;
 
-		if ObjBtnClick(btnPause) or (Key = 'p') then
+		if ObjBtnClick(BtnPause) or (Key = 'p') then
 			MinePause;
 
-		if ObjBtnClick(btnSize) or (Key = 'z') then
+		if ObjBtnClick(BtnSize) or (Key = 'z') then
 		begin
 			if MineSetSize then
 				MineNewGame;
 		end;
 
-		if ObjBtnClick(btnExit) or (Key = 'x') then
+		if ObjBtnClick(BtnExit) or (Key = 'x') then
 			break;
 
-		if ObjBtnClick(btnAbout) or (Key = 'a') then
+		if ObjBtnClick(BtnAbout) or (Key = 'a') then
 			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 
 		if not GameOver then
@@ -977,10 +977,10 @@ begin
 			end;
 
 			if (Key = KeyEnter) and KeyVisible then
-				MineClickCell(KeyRow, KeyCol, mbLeft);
+				MineClickCell(KeyRow, KeyCol, MbLeft);
 
 			if (Key = KeySpace) and KeyVisible then
-				MineClickCell(KeyRow, KeyCol, mbRight);
+				MineClickCell(KeyRow, KeyCol, MbRight);
 					
 			{Up}
 			if (Key = KeyUp) and (KeyRow > 0) then
@@ -1040,14 +1040,14 @@ begin
 				TimeCompare := timer + 1;
 			end;
 		
-			if (MouseClicked <> mbNone) and areaField.IsMouseOver then
+			if (MouseClicked <> MbNone) and AreaField.IsMouseOver then
 			begin
 				MouseButton := MouseClicked;
 				MousePoll;
 			
 				{Calculate which cell was clicked}
-				FieldCol := (MouseX - areaField.Left) div CellSize;
-				FieldRow := (MouseY - areaField.Top) div CellSize;
+				FieldCol := (MouseX - AreaField.Left) div CellSize;
+				FieldRow := (MouseY - AreaField.Top) div CellSize;
 
 				{Play field is one pixel too wide for calculation above, dirty fix
 				 for this to prevent out of bounds clicks}

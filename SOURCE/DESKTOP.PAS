@@ -36,9 +36,9 @@ var
 	TabBackgroundP: Pointer;
 
 	{Buttons need to be redrawable from DeskDrawDesktop}
-	btnAddLink, btnRunCmd, btnAboutCosta, btnExitCosta: TButton;
-	btnPrevious, btnNext: TButton;
-	btnTab: TButton;
+	BtnAddLink, BtnRunCmd, BtnAboutCosta, BtnExitCosta: TButton;
+	BtnPrevious, BtnNext: TButton;
+	BtnTab: TButton;
 
 {Forward declarations}
 	procedure DeskDrawDesktop(FullRedraw: boolean); forward;
@@ -62,7 +62,7 @@ begin
 	end;
 
 	DeskLinkFree; {Free any previously allocated lines}
-	MsgBox('Out of memory', 'Not enough memory to load desktop links.', msgError);
+	MsgBox('Out of memory', 'Not enough memory to load desktop links.', MsgError);
 	LinkHeapError := 1; {Make GetMem return a nil pointer}
 end;
 
@@ -117,14 +117,14 @@ begin
 	{Make sure DeskLink is freed before loading new links}
 	DeskLinkFree;
 
-	Str(Setting.DesktopID, DeskLinkFile);
+	Str(Setting.DeskID, DeskLinkFile);
 	DeskLinkFile := 'CONFIG\DESKLNK' + DeskLinkFile + '.BIN';
 	
 	{If file doesn't exist, try to load default desktop links. If
 	 that file doesn't exist either, exit and show empty desktop}
 	if not FileExists(DeskLinkFile) then
 	begin
-		if FileExists('CONFIG\DESKDEF.BIN') and (Setting.DesktopID = 1) then
+		if FileExists('CONFIG\DESKDEF.BIN') and (Setting.DeskID = 1) then
 			DeskLinkFile := 'CONFIG\DESKDEF.BIN'
 		else
 			exit;
@@ -138,7 +138,7 @@ begin
 	begin
 		MsgBox('Error loading desktop links', 'Could not open file for reading. The' + NewLine + 
 			'file may corrupt or inaccesible:' + newLine +
-			DeskLinkFile, msgError);
+			DeskLinkFile, MsgError);
 		Close(f);
 		Exit;
 	end;
@@ -158,7 +158,7 @@ begin
 	if not DeskLinkInit then
 	begin
 		MsgBox('Error loading desktop links',
-			'Ran out of memory while loading desktop links.', msgError);
+			'Ran out of memory while loading desktop links.', MsgError);
 		Close(f);
 		Exit;
 	end;
@@ -173,7 +173,7 @@ begin
 			MsgBox('Error loading desktop links',
 				'File size mismatch. This indicates that the desktop file' + NewLine + 
 				'is corrupt:' + NewLine +
-				DeskLinkFile, msgError);
+				DeskLinkFile, MsgError);
 			Close(f);
 			DeskLinkFree;
 			if NewLink <> nil then
@@ -221,7 +221,7 @@ begin
 	end;
 
 	{Save}
-	Str(Setting.DesktopID, DeskLinkFile);
+	Str(Setting.DeskID, DeskLinkFile);
 	DeskLinkFile := 'CONFIG\DESKLNK' + DeskLinkFile + '.BIN';
 	Assign(f, DeskLinkFile);
 	{$I-}
@@ -231,7 +231,7 @@ begin
 	begin
 		MsgBox('Error saving desktop links', 'Could not open file for writing. The' + NewLine + 
 			'file read-only or inaccesible:' + newLine +
-			DeskLinkFile, msgError);
+			DeskLinkFile, MsgError);
 		Close(f);
 		Exit;
 	end;
@@ -349,7 +349,7 @@ end;
 
 procedure DeskDrawDesktop(FullRedraw: boolean);
 var
-	imgDeskLinkIcon: TIcon;
+	ImgDeskLinkIcon: TIcon;
 	i, x, y: integer;
 	DeskStr: string;
 begin
@@ -358,18 +358,18 @@ begin
 	if FullRedraw then
 	begin
 		MenuBar.Draw;
-		btnAddLink.Draw;
-		btnRunCmd.Draw;
-		btnAboutCosta.Draw;
-		btnExitCosta.Draw;
-		btnPrevious.Draw;
-		btnNext.Draw;
-		Str(Setting.DesktopID, DeskStr);
-		Print(DeskStr + '/5', 310, 10, Theme.WindowText);
+		BtnAddLink.Draw;
+		BtnRunCmd.Draw;
+		BtnAboutCosta.Draw;
+		BtnExitCosta.Draw;
+		BtnPrevious.Draw;
+		BtnNext.Draw;
+		Str(Setting.DeskID, DeskStr);
+		Print(DeskStr + '/5', 310, 10, Thm.WinText);
 	end;
 
 	{Clear background}
-	SetFillStyle(SolidFill, Theme.Desktop);
+	SetFillStyle(SolidFill, Thm.Desk);
 	Bar(0, 29, 639, 349);
 	
 	if DeskLinkCount = 0 then
@@ -382,28 +382,28 @@ begin
 	begin
 		x := DeskLink^[i]^.Left;
 		y := DeskLink^[i]^.Top;
-		imgDeskLinkIcon.Init(x, y, DeskLink^[i]^.ImageFile);
-		imgDeskLinkIcon.Draw;
+		ImgDeskLinkIcon.Init(x, y, DeskLink^[i]^.ImageFile);
+		ImgDeskLinkIcon.Draw;
 
 		if Setting.ShowLinkDescriptions then
 		begin
-			Print(DeskLink^[i]^.Caption, x + 38, y + 4, Theme.DesktopText);
+			Print(DeskLink^[i]^.Caption, x + 38, y + 4, Thm.DeskText);
 			if Setting.ShowLinkTargetFiles then
-				Print(DeskLink^[i]^.FileName, x + 38, y + 18, Theme.DesktopText);
+				Print(DeskLink^[i]^.FileName, x + 38, y + 18, Thm.DeskText);
 		end;
 	end;
 	
 	MouseShow;
 end;
 
-procedure DeskSwitchDesktop(DesktopID: integer);
+procedure DeskSwitchDesktop(DeskID: integer);
 begin
-	if DesktopID < 1 then
-		DesktopID := 5
-	else if DesktopID > 5 then
-		DesktopID := 1;
+	if DeskID < 1 then
+		DeskID := 5
+	else if DeskID > 5 then
+		DeskID := 1;
 
-	Setting.DesktopID := DesktopID;
+	Setting.DeskID := DeskID;
 	DeskLinkLoad;
 	KeySelection := 0;
 
@@ -449,17 +449,17 @@ begin
 	GetImage(DeskLink^[KeySelection]^.Left - 3, DeskLink^[KeySelection]^.Top - 3,
 		DeskLink^[KeySelection]^.Left + 34, DeskLink^[KeySelection]^.Top + 34, TabBackgroundP^);
 	{Draw the tab button around the selected link}
-	btnTab.Left := DeskLink^[KeySelection]^.Left - 3;
-	btnTab.Top := DeskLink^[KeySelection]^.Top - 3;
-	btnTab.Draw;
+	BtnTab.Left := DeskLink^[KeySelection]^.Left - 3;
+	BtnTab.Top := DeskLink^[KeySelection]^.Top - 3;
+	BtnTab.Draw;
 	MouseShow;
 end;
 
 procedure DeskRunDialog;
 var
-	winRun: TWindow;
-	txtProgram, txtParameters: TTextbox;
-	btnOK, btnCancel, btnBrowse: TButton;
+	WinRun: TWindow;
+	TxtProgram, TxtParameters: TTextbox;
+	BtnOK, BtnCancel, BtnBrowse: TButton;
 	Key: string;
 	SelectedFile: string;
 	x1, y1, x2, y2: integer;
@@ -467,70 +467,70 @@ var
 	BackgroundP: Pointer;
 	RunLink: TLink;
 begin
-	txtProgram.Text := '';
-	txtParameters.Text := '';
+	TxtProgram.Text := '';
+	TxtParameters.Text := '';
 	FillChar(RunLink, SizeOf(RunLink), 0);
 
-	winRun.Init(sizeCenter, sizeCenter, 382, 137);
-	txtProgram.Init(winRun.Left + 12, winRun.Top + 27, winRun.Width - 68, sizeDefault);
-	txtParameters.Init(txtProgram.Left, txtProgram.Top + 46, winRun.Width - 26, sizeDefault);
-	btnBrowse.Init(txtProgram.Left + txtProgram.Width + 9, txtProgram.Top, 33, 19, '...');
-	btnOK.Init(winRun.Left + winRun.Width - 184, txtParameters.Top + 30, 80, sizeDefault, HotkeySymbol + 'OK');
-	btnCancel.Init(winRun.Left + winRun.Width - 94, btnOK.Top, 80, sizeDefault, HotkeySymbol + 'Cancel');
+	WinRun.Init(sizeCenter, sizeCenter, 382, 137);
+	TxtProgram.Init(WinRun.Left + 12, WinRun.Top + 27, WinRun.Width - 68, SizeDefault);
+	TxtParameters.Init(TxtProgram.Left, TxtProgram.Top + 46, WinRun.Width - 26, SizeDefault);
+	BtnBrowse.Init(TxtProgram.Left + TxtProgram.Width + 9, TxtProgram.Top, 33, SizeDefault, '...');
+	BtnOK.Init(WinRun.Left + WinRun.Width - 184, TxtParameters.Top + 30, 80, SizeDefault, HotkeySymbol + 'OK');
+	BtnCancel.Init(WinRun.Left + WinRun.Width - 94, BtnOK.Top, 80, SizeDefault, HotkeySymbol + 'Cancel');
 		
 	MouseHide;
-	x1 := winRun.Left;
-	y1 := winRun.Top;
-	x2 := winRun.Left + winRun.Width;
-	y2 := winRun.Top + winRun.Height;
+	x1 := WinRun.Left;
+	y1 := WinRun.Top;
+	x2 := WinRun.Left + WinRun.Width;
+	y2 := WinRun.Top + WinRun.Height;
 	BackgroundSize := ImageSize(x1, y1, x2, y2);
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(x1, y1, x2, y2, BackgroundP^);
 
-	winRun.Draw;
-	btnOK.Draw;
-	btnCancel.Draw;
-	btnBrowse.Draw;
-	txtProgram.Draw;
-	txtParameters.Draw;
+	WinRun.Draw;
+	BtnOK.Draw;
+	BtnCancel.Draw;
+	BtnBrowse.Draw;
+	TxtProgram.Draw;
+	TxtParameters.Draw;
 	
-	y2 := txtProgram.Top - 16;
-	Print(HotkeySymbol + 'Program:', txtProgram.Left, y2, Theme.WindowText);
-	y2 := txtParameters.Top - 16;
-	Print('Pa' + HotkeySymbol + 'rameters:', txtParameters.Left, y2, Theme.WindowText);
+	y2 := TxtProgram.Top - 16;
+	Print(HotkeySymbol + 'Program:', TxtProgram.Left, y2, Thm.WinText);
+	y2 := TxtParameters.Top - 16;
+	Print('Pa' + HotkeySymbol + 'rameters:', TxtParameters.Left, y2, Thm.WinText);
 	MouseShow;
 
 	repeat
 		Key := GetKey;
 
-		if ObjBtnClick(btnOK) or (Key = KeyAltO) or (Key = KeyEnter) then
+		if ObjBtnClick(BtnOK) or (Key = KeyAltO) or (Key = KeyEnter) then
 		begin
-			if Length(txtProgram.Text) > 0 then
+			if Length(TxtProgram.Text) > 0 then
 			begin
-				RunLink.FileName := txtProgram.Text;
-				RunLink.Parameters := txtParameters.Text;
+				RunLink.FileName := TxtProgram.Text;
+				RunLink.Parameters := TxtParameters.Text;
 				DeskRun(RunLink);
 			end;
 			break;
 		end;
 
-		if ObjBtnClick(btnCancel) or (Key = KeyAltC) or (Key = KeyEscape) then
+		if ObjBtnClick(BtnCancel) or (Key = KeyAltC) or (Key = KeyEscape) then
 			break;
 
-		if ObjBtnClick(btnBrowse) or ObjTxtClick(txtProgram) or (Key = '.') or (Key = KeyAltP) then
+		if ObjBtnClick(BtnBrowse) or ObjTxtClick(TxtProgram) or (Key = '.') or (Key = KeyAltP) then
 		begin
 			SelectedFile := FileSelect('*.exe', '', false);
 			if Length(SelectedFile) > 0 then
 			begin
-				txtProgram.Text := SelectedFile;
+				TxtProgram.Text := SelectedFile;
 				MouseHide;
-				txtProgram.Draw;
+				TxtProgram.Draw;
 				MouseShow;
 			end;
 		end;
 
-		if ObjTxtClick(txtParameters) or (Key = KeyAltR) then
-			ObjEditTxt(txtParameters, txtParameters.Text);
+		if ObjTxtClick(TxtParameters) or (Key = KeyAltR) then
+			ObjEditTxt(TxtParameters, TxtParameters.Text);
 	until false;
 
 	{Restore background}
@@ -542,9 +542,9 @@ end;
 
 procedure DeskLinkMenu(TargetLink: integer);
 var
-	winLinkMenu: TWindow;
-	btnOpen, btnEdit, btnMove, btnRemove, btnCancel: TButton;
-	imgIcon: TIcon;
+	WinLinkMenu: TWindow;
+	BtnOpen, BtnEdit, BtnMove, BtnRemove, BtnCancel: TButton;
+	ImgIcon: TIcon;
 	x1, y1, x2, y2: integer;
 	BackgroundSize: Word;
 	BackgroundP: Pointer;
@@ -552,14 +552,14 @@ var
 	DoDelete: boolean;
 	Key, CroppedText: string;
 begin
-	winLinkMenu.Init(sizeCenter, sizeCenter, 413, 165);
-	btnOpen.Init(winLinkMenu.Left + 12, winLinkMenu.Top + winLinkMenu.Height - 64, 389,
-		sizeDefault, HotkeySymbol + 'Open');
-	btnEdit.Init(btnOpen.Left, btnOpen.Top + 30, sizeDefault, sizeDefault, HotkeySymbol + 'Edit...');
-	btnMove.Init(btnEdit.Left + 99, btnEdit.Top, sizeDefault, sizeDefault, HotkeySymbol + 'Move');
-	btnRemove.Init(btnMove.Left + 99, btnEdit.Top, sizeDefault, sizeDefault, HotkeySymbol + 'Remove');
-	btnCancel.Init(btnRemove.Left + 99, btnEdit.Top, sizeDefault, sizeDefault, HotkeySymbol + 'Cancel');
-	imgIcon.Init(winLinkMenu.Left + 12, winLinkMenu.Top + 11, DeskLink^[TargetLink]^.ImageFile);
+	WinLinkMenu.Init(sizeCenter, sizeCenter, 413, 165);
+	BtnOpen.Init(WinLinkMenu.Left + 12, WinLinkMenu.Top + WinLinkMenu.Height - 64, 389,
+		SizeDefault, HotkeySymbol + 'Open');
+	BtnEdit.Init(BtnOpen.Left, BtnOpen.Top + 30, SizeDefault, SizeDefault, HotkeySymbol + 'Edit...');
+	BtnMove.Init(BtnEdit.Left + 99, BtnEdit.Top, SizeDefault, SizeDefault, HotkeySymbol + 'Move');
+	BtnRemove.Init(BtnMove.Left + 99, BtnEdit.Top, SizeDefault, SizeDefault, HotkeySymbol + 'Remove');
+	BtnCancel.Init(BtnRemove.Left + 99, BtnEdit.Top, SizeDefault, SizeDefault, HotkeySymbol + 'Cancel');
+	ImgIcon.Init(WinLinkMenu.Left + 12, WinLinkMenu.Top + 11, DeskLink^[TargetLink]^.ImageFile);
 
 	Caption := DeskLink^[TargetLink]^.Caption;
 	Filename := DeskLink^[TargetLink]^.Filename;
@@ -576,29 +576,29 @@ begin
 		Parameters := Copy(Parameters, 1, 33) + '...';
 
 	MouseHide;
-	x1 := winLinkMenu.Left;
-	y1 := winLinkMenu.Top;
-	x2 := winLinkMenu.Left + winLinkMenu.Width;
-	y2 := winLinkMenu.Top + winLinkMenu.Height;
+	x1 := WinLinkMenu.Left;
+	y1 := WinLinkMenu.Top;
+	x2 := WinLinkMenu.Left + WinLinkMenu.Width;
+	y2 := WinLinkMenu.Top + WinLinkMenu.Height;
 	BackgroundSize := ImageSize(x1, y1, x2, y2);
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(x1, y1, x2, y2, BackgroundP^);
 	
-	winLinkMenu.Draw;
-	btnOpen.Draw;
-	btnEdit.Draw;
-	btnMove.Draw;
-	btnRemove.Draw;
-	btnCancel.Draw;
-	imgIcon.Draw;
+	WinLinkMenu.Draw;
+	BtnOpen.Draw;
+	BtnEdit.Draw;
+	BtnMove.Draw;
+	BtnRemove.Draw;
+	BtnCancel.Draw;
+	ImgIcon.Draw;
 
 	Print(DeskLink^[TargetLink]^.Caption, x1 + 54, y1 + 17, 0);
 	Print(DeskLink^[TargetLink]^.Filename, x1 + 54, y1 + 31, 0);
 	Print('Path:', x1 + 12, y1 + 59, 0);
 	Print('Parameters:', x1 + 12, y1 + 76, 0);
 	
-	Print(Path, x1 + 108, y1 + 59, Theme.WindowText);
-	Print(Parameters, x1 + 108, y1 + 76, Theme.WindowText);
+	Print(Path, x1 + 108, y1 + 59, Thm.WinText);
+	Print(Parameters, x1 + 108, y1 + 76, Thm.WinText);
 	MouseShow;
 
 	{Clear buffers, sometimes needed on DOSBox}
@@ -608,7 +608,7 @@ begin
 		Key := GetKey;
 	
 		{Cancel, or Escape key}
-		if ObjBtnClick(btnCancel) or (Key = KeyAltC) or (Key = KeyEscape) then
+		if ObjBtnClick(BtnCancel) or (Key = KeyAltC) or (Key = KeyEscape) then
 		begin
 			MouseHide;
 			PutImage(x1, y1, BackgroundP^, NormalPut);
@@ -618,7 +618,7 @@ begin
 		end;
 	
 		{Open/run, or Enter key}
-		if ObjBtnClick(btnOpen) or (Key = KeyAltO) or (Key = KeyEnter) then
+		if ObjBtnClick(BtnOpen) or (Key = KeyAltO) or (Key = KeyEnter) then
 		begin
 			FreeMem(BackgroundP, BackgroundSize);
 			DeskRun(DeskLink^[TargetLink]^);
@@ -628,7 +628,7 @@ begin
 		end;
 
 		{Configure}
-		if ObjBtnClick(btnEdit) or (Key = KeyAltE) then
+		if ObjBtnClick(BtnEdit) or (Key = KeyAltE) then
 		begin
 			MouseHide;
 			PutImage(x1, y1, BackgroundP^, NormalPut);
@@ -639,7 +639,7 @@ begin
 		end;
 
 		{Move}
-		if ObjBtnClick(btnMove) or (Key = KeyAltM) then
+		if ObjBtnClick(BtnMove) or (Key = KeyAltM) then
 		begin
 			MouseHide;
 			PutImage(x1, y1, BackgroundP^, NormalPut);
@@ -650,11 +650,11 @@ begin
 		end;
 
 		{Remove}
-		if ObjBtnClick(btnRemove) or (Key = KeyAltR) then
+		if ObjBtnClick(BtnRemove) or (Key = KeyAltR) then
 		begin
 			if Setting.ConfirmLinkDelete then
 				DoDelete := MsgBox('Remove desktop link', 'This will permanently delete this' +
-					NewLine + 'desktop link. Are you sure?', msgQuest)
+					NewLine + 'desktop link. Are you sure?', MsgQuest)
 			else
 				DoDelete := true;
 
@@ -675,7 +675,7 @@ procedure DeskLinkMove(TargetLink: integer);
 const
 	GridSize   = 4; {Size of grid in pixels, used for aligning icons}
 var
-	btnPrevious, btnNext: TButton;
+	BtnPrevious, BtnNext: TButton;
 	IconSize: Word;
 	LinkIconP, BackdropP: Pointer;
 	DrawX, DrawY: integer;
@@ -684,8 +684,8 @@ var
 	IconToMove: TLink;
 	Key: String;
 begin
-	OriginalDesktop := Setting.DesktopID;
-	SwitchedDesktop := Setting.DesktopID;
+	OriginalDesktop := Setting.DeskID;
+	SwitchedDesktop := Setting.DeskID;
 	
 	{Delete current icon - it will be recreated after move to same or other
 	 desktop}
@@ -698,8 +698,8 @@ begin
 	LastGridX := 0;
 	LastGridY := 0;
 
-	btnPrevious.Init(255, 2, 42, sizeDefault, '<');
-	btnNext.Init(343, 2, 42, sizeDefault, '>');
+	BtnPrevious.Init(255, 2, 42, SizeDefault, CharArrowLeft);
+	BtnNext.Init(343, 2, 42, SizeDefault, CharArrowRight);
 
 	MouseHide;
 	IconSize := ImageSize(0, 0, 31, 31);
@@ -793,23 +793,23 @@ begin
 		if Key = '4' then DeskSwitchDesktop(4);
 		if Key = '5' then DeskSwitchDesktop(5);
 
-		if ObjBtnClick(btnPrevious) or (Key = KeyPageUp) then
-			DeskSwitchDesktop(Setting.DesktopID - 1);
+		if ObjBtnClick(BtnPrevious) or (Key = KeyPageUp) then
+			DeskSwitchDesktop(Setting.DeskID - 1);
 
-		if ObjBtnClick(btnNext) or (Key = KeyPageDown) then
-			DeskSwitchDesktop(Setting.DesktopID + 1);
+		if ObjBtnClick(BtnNext) or (Key = KeyPageDown) then
+			DeskSwitchDesktop(Setting.DeskID + 1);
 
 		{Redraw icon at current position if desktop has been switched}
-		if Setting.DesktopID <> SwitchedDesktop then
+		if Setting.DeskID <> SwitchedDesktop then
 		begin
 			MouseHide;
 			GetImage(DrawX, DrawY, DrawX + 31, DrawY + 31, BackdropP^);
 			PutImage(DrawX, DrawY, LinkIconP^, NormalPut);
 			MouseShow;
-			SwitchedDesktop := Setting.DesktopID;
+			SwitchedDesktop := Setting.DeskID;
 		end;
 
-	until (MouseClicked <> mbNone) and (MouseY > 28);
+	until (MouseClicked <> MbNone) and (MouseY > 28);
 
 	IconToMove.Left := DrawX;
 	IconToMove.Top := DrawY;
@@ -822,11 +822,11 @@ end;
 
 procedure DeskLinkEdit(TargetLink: integer);
 var
-	winEdit: TWindow;
-	txtCaption, txtFilename, txtParams, txtPath: TTextbox;
-	btnOK, btnCancel, btnIcon: TButton;
-	imgIcon: TIcon;
-	chkPauseOnExit: TCheckbox;
+	WinEdit: TWindow;
+	TxtCaption, TxtFilename, TxtParams, TxtPath: TTextbox;
+	BtnOK, BtnCancel, BtnIcon: TButton;
+	ImgIcon: TIcon;
+	ChkPauseOnExit: TCheckbox;
 	Key: string;
 	MbVoid: Boolean;
 	SelectedFile: string;
@@ -837,78 +837,78 @@ var
 	FName: NameStr;
 	FExt: ExtStr;
 begin
-	winEdit.Init(210, 35, 220, 312);
+	WinEdit.Init(210, 35, 220, 312);
 
-	btnIcon.Init(296, winEdit.Top + 12, 48, 48, '');
-	imgIcon.Init(305, btnIcon.Top + 9, DeskLink^[TargetLink]^.ImageFile);
+	BtnIcon.Init(296, WinEdit.Top + 12, 48, 48, '');
+	ImgIcon.Init(305, BtnIcon.Top + 9, DeskLink^[TargetLink]^.ImageFile);
 	
-	txtCaption.Init(222, btnIcon.Top + 73, 196, 19);
-	txtFilename.Init(222, txtCaption.Top + 44, 196, 19);
-	txtPath.Init(222, txtFilename.Top + 44, 196, 19);
-	txtParams.Init(222, txtPath.Top + 44, 196, 19);
-	chkPauseOnExit.Init(222, txtParams.Top + 32, sizeDefault, sizeDefault);
-	btnOK.Init(229, chkPauseOnExit.Top + 28, 84, sizeDefault, HotkeySymbol + 'Save');
-	btnCancel.Init(326, btnOK.Top, 84, sizeDefault, HotkeySymbol + 'Cancel');
+	TxtCaption.Init(222, BtnIcon.Top + 73, 196, SizeDefault);
+	TxtFilename.Init(222, TxtCaption.Top + 44, 196, SizeDefault);
+	TxtPath.Init(222, TxtFilename.Top + 44, 196, SizeDefault);
+	TxtParams.Init(222, TxtPath.Top + 44, 196, SizeDefault);
+	ChkPauseOnExit.Init(222, TxtParams.Top + 32, SizeDefault, SizeDefault);
+	BtnOK.Init(229, ChkPauseOnExit.Top + 28, 84, SizeDefault, HotkeySymbol + 'Save');
+	BtnCancel.Init(326, BtnOK.Top, 84, SizeDefault, HotkeySymbol + 'Cancel');
 
-	btnIcon.Transparent := true;
-	txtCaption.MaxLen := CaptionMaxLen;
-	txtFilename.MaxLen := SizeOf(ComStr); {Max length of a filename +}
-	txtParams.MaxLen := SizeOf(ComStr);
-	txtPath.MaxLen := SizeOf(DirStr);;
-	txtFileName.Text := DeskLink^[TargetLink]^.Filename;
-	txtParams.Text := DeskLink^[TargetLink]^.Parameters;
-	txtPath.Text := DeskLink^[TargetLink]^.Path;
-	txtCaption.Text := DeskLink^[TargetLink]^.Caption;
-	chkPauseOnExit.Checked := DeskLink^[TargetLink]^.PauseOnExit;
+	BtnIcon.Transparent := true;
+	TxtCaption.MaxLen := CaptionMaxLen;
+	TxtFilename.MaxLen := SizeOf(ComStr); {Max length of a filename +}
+	TxtParams.MaxLen := SizeOf(ComStr);
+	TxtPath.MaxLen := SizeOf(DirStr);;
+	TxtFileName.Text := DeskLink^[TargetLink]^.Filename;
+	TxtParams.Text := DeskLink^[TargetLink]^.Parameters;
+	TxtPath.Text := DeskLink^[TargetLink]^.Path;
+	TxtCaption.Text := DeskLink^[TargetLink]^.Caption;
+	ChkPauseOnExit.Checked := DeskLink^[TargetLink]^.PauseOnExit;
 
 	MouseHide;
-	x1 := winEdit.Left;
-	y1 := winEdit.Top;
-	x2 := winEdit.Left + winEdit.Width;
-	y2 := winEdit.Top + winEdit.Height;
+	x1 := WinEdit.Left;
+	y1 := WinEdit.Top;
+	x2 := WinEdit.Left + WinEdit.Width;
+	y2 := WinEdit.Top + WinEdit.Height;
 	BackgroundSize := ImageSize(x1, y1, x2, y2);
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(x1, y1, x2, y2, BackgroundP^);
 
-	winEdit.Draw;
-	txtCaption.Draw;
-	btnIcon.Draw;
-	txtFilename.Draw;
-	txtParams.Draw;
-	txtPath.Draw;
-	chkPauseOnExit.Draw;
-	btnOK.Draw;
-	btnCancel.Draw;
-	Print('C' + HotkeySymbol + 'aption:', 222, txtCaption.Top - 15, Theme.WindowText);
-	Print(HotkeySymbol + 'Program:', 222, txtFilename.Top - 15, Theme.WindowText);
-	Print('Pa' + HotkeySymbol + 'th:', 222, txtPath.Top - 15, Theme.WindowText);
-	Print('Pa' + HotkeySymbol + 'rameters:', 222, txtParams.Top - 15, Theme.WindowText);
-	Print('Pause after e' + HotkeySymbol + 'xecution', 242, chkPauseOnExit.Top + 3, Theme.WindowText);
-	SetFillStyle(SolidFill, Theme.Desktop);
-	Bar(btnIcon.Left + 2, btnIcon.Top + 2, btnIcon.Left + btnIcon.Width - 2, btnIcon.Top + btnIcon.Height - 2);
-	imgIcon.Draw;
+	WinEdit.Draw;
+	TxtCaption.Draw;
+	BtnIcon.Draw;
+	TxtFilename.Draw;
+	TxtParams.Draw;
+	TxtPath.Draw;
+	ChkPauseOnExit.Draw;
+	BtnOK.Draw;
+	BtnCancel.Draw;
+	Print('C' + HotkeySymbol + 'aption:', 222, TxtCaption.Top - 15, Thm.WinText);
+	Print(HotkeySymbol + 'Program:', 222, TxtFilename.Top - 15, Thm.WinText);
+	Print('Pa' + HotkeySymbol + 'th:', 222, TxtPath.Top - 15, Thm.WinText);
+	Print('Pa' + HotkeySymbol + 'rameters:', 222, TxtParams.Top - 15, Thm.WinText);
+	Print('Pause after e' + HotkeySymbol + 'xecution', 242, ChkPauseOnExit.Top + 3, Thm.WinText);
+	SetFillStyle(SolidFill, Thm.Desk);
+	Bar(BtnIcon.Left + 2, BtnIcon.Top + 2, BtnIcon.Left + BtnIcon.Width - 2, BtnIcon.Top + BtnIcon.Height - 2);
+	ImgIcon.Draw;
 	MouseShow;
 
 	repeat
 		Key := GetKey;
 
-		if ObjBtnClick(btnOK) or (Key = KeyEnter) or (Key = KeyAltS) then
+		if ObjBtnClick(BtnOK) or (Key = KeyEnter) or (Key = KeyAltS) then
 		begin
-			if Length(txtFileName.Text) <> 0 then
+			if Length(TxtFileName.Text) <> 0 then
 			begin
 				{Sanitize path}
-				if Length(txtPath.Text) <> 0 then
+				if Length(TxtPath.Text) <> 0 then
 				begin
-					if txtPath.Text[Length(txtPath.Text)] = '\' then
-							txtPath.Text := Copy(txtPath.Text, 1, Length(txtPath.Text) - 1);
-					if txtPath.Text + '\' = ProgramPath then
-						txtPath.Text := '';
+					if TxtPath.Text[Length(TxtPath.Text)] = '\' then
+							TxtPath.Text := Copy(TxtPath.Text, 1, Length(TxtPath.Text) - 1);
+					if TxtPath.Text + '\' = ProgramPath then
+						TxtPath.Text := '';
 				end;
-				DeskLink^[TargetLink]^.Caption := txtCaption.Text;
-				DeskLink^[TargetLink]^.Filename := txtFileName.Text;
-				DeskLink^[TargetLink]^.Path := txtPath.Text;
-				DeskLink^[TargetLink]^.Parameters := txtParams.Text;
-				DeskLink^[TargetLink]^.PauseOnExit := chkPauseOnExit.Checked;
+				DeskLink^[TargetLink]^.Caption := TxtCaption.Text;
+				DeskLink^[TargetLink]^.Filename := TxtFileName.Text;
+				DeskLink^[TargetLink]^.Path := TxtPath.Text;
+				DeskLink^[TargetLink]^.Parameters := TxtParams.Text;
+				DeskLink^[TargetLink]^.PauseOnExit := ChkPauseOnExit.Checked;
 				DeskLink^[TargetLink]^.ImageFile := ImgIcon.ImageFile;
 				
 				DeskLinkSave;
@@ -920,14 +920,14 @@ begin
 			begin
 				MsgBox('Invalid program',
 					'The ''Program'' field cannot be empty.',
-					msgError);
+					MsgError);
 			end;
 		end;
 
-		if ObjBtnClick(btnCancel) or (Key = KeyEscape) or (Key = KeyAltC) then
+		if ObjBtnClick(BtnCancel) or (Key = KeyEscape) or (Key = KeyAltC) then
 			break;
 
-		if ObjBtnClick(btnIcon) or (Key = KeyAltI) then
+		if ObjBtnClick(BtnIcon) or (Key = KeyAltI) then
 		begin
 			SelectedFile := FileSelect('*.bin', 'ICONS', True);
 			if Length(SelectedFile) > 0 then
@@ -936,53 +936,53 @@ begin
 				if (FDir = ProgramPath + 'ICONS\') and (FExt = '.BIN') then
 				begin
 					MouseHide;
-					SetFillStyle(SolidFill, Theme.Desktop);
-					Bar(btnIcon.Left + 2,
-						btnIcon.Top + 2, 
-						btnIcon.Left + btnIcon.Width - 2,
-						btnIcon.Top + btnIcon.Height - 2);
-					imgIcon.ImageFile := FName;
-					imgIcon.Draw;
+					SetFillStyle(SolidFill, Thm.Desk);
+					Bar(BtnIcon.Left + 2,
+						BtnIcon.Top + 2, 
+						BtnIcon.Left + BtnIcon.Width - 2,
+						BtnIcon.Top + BtnIcon.Height - 2);
+					ImgIcon.ImageFile := FName;
+					ImgIcon.Draw;
 					MouseShow;
 				end
 				else
 					MsgBox('Invalid icon file',
 						'The selected file is not a valid icon file.' + NewLine +
 						'Please select a .BIN file from the ICONS directory.',
-						msgError);
+						MsgError);
 			end;
 		end;
 
-		if ObjTxtClick(txtFilename) or (Key = KeyAltF) then
+		if ObjTxtClick(TxtFilename) or (Key = KeyAltF) then
 		begin
 			SelectedFile := FileSelect('*.exe', '', False);
 			if Length(SelectedFile) <> 0 then
 			begin
 				FSplit(SelectedFile, FDir, FName, FExt);
-				txtFileName.Text := FName + FExt;
-				txtPath.Text := FDir;
+				TxtFileName.Text := FName + FExt;
+				TxtPath.Text := FDir;
 				MouseHide;
-				txtFilename.Draw;
-				txtPath.Draw;
+				TxtFilename.Draw;
+				TxtPath.Draw;
 				MouseShow;
 			end;
 		end;
 	
-		if ObjTxtClick(txtCaption) or (Key = KeyAltA) then
-			ObjEditTxt(txtCaption, txtCaption.Text);
+		if ObjTxtClick(TxtCaption) or (Key = KeyAltA) then
+			ObjEditTxt(TxtCaption, TxtCaption.Text);
 
-		if ObjTxtClick(txtParams) or (Key = KeyAltR) then
-			ObjEditTxt(txtParams, txtParams.Text);
+		if ObjTxtClick(TxtParams) or (Key = KeyAltR) then
+			ObjEditTxt(TxtParams, TxtParams.Text);
 
-		if ObjTxtClick(txtPath) or (Key = KeyAltT) then
-			ObjEditTxt(txtPath, txtPath.Text);
+		if ObjTxtClick(TxtPath) or (Key = KeyAltT) then
+			ObjEditTxt(TxtPath, TxtPath.Text);
 
-		ObjChkClick(chkPauseOnExit);
+		ObjChkClick(ChkPauseOnExit);
 		if Key = KeyAltX then
 		begin
-			chkPauseOnExit.Checked := not chkPauseOnExit.Checked;
+			ChkPauseOnExit.Checked := not ChkPauseOnExit.Checked;
 			MouseHide;
-			chkPauseOnExit.Draw;
+			ChkPauseOnExit.Draw;
 			MouseShow;
 		end;
 			
@@ -1015,7 +1015,7 @@ begin
 		MsgBox('File not found',
 			'The program/file you are trying to open was not found:' + NewLine +
 			TargetLink.Filename,
-			msgError);
+			MsgError);
 		exit;
 	end;
 
@@ -1025,7 +1025,7 @@ begin
 		MsgBox('Invalid file type',
 			'The file you are trying to run is not a program.' + NewLine +
 			'Only .EXE, .COM and .BAT files can be executed.',
-			msgError);
+			MsgError);
 		exit;
 	end;
 
@@ -1039,7 +1039,7 @@ begin
 			MsgBox('COMSPEC not set',
 				'The COMSPEC environment variable is not set.' + NewLine +
 				'This is required to run batch files.',
-				msgError);
+				MsgError);
 			exit;
 		end;
 		{Move batch filename and parameters to parameters}
@@ -1058,7 +1058,7 @@ begin
 		MsgBox('Writing '+ RunFile + ' failed',
 			'Could not write to data file, can''t continue.' + NewLine +
 			'Please check that the CONFIG directory exists and is writable.',
-			msgError);
+			MsgError);
 		exit;
 	end;
 
@@ -1077,27 +1077,27 @@ var
 	Key: String;
 	TempLink: TLink;
 begin
-	btnAddLink.Init(3, 2, sizeDefault, sizeDefault, 'A' + HotkeySymbol + 'dd...');
-	btnRunCmd.Init(102, 2, sizeDefault, sizeDefault, HotkeySymbol + 'Run...');
-	btnPrevious.Init(255, 2, 42, sizeDefault, HotkeySymbol + '<');
-	btnNext.Init(343, 2, 42, sizeDefault, HotkeySymbol + '>');
-	btnAboutCosta.Init(446, 2, sizeDefault, sizeDefault, HotkeySymbol + 'About...');
-	btnExitCosta.Init(545, 2, sizeDefault, sizeDefault, 'E' + HotkeySymbol + 'xit');
-	btnTab.Init(0, 0, 37, 37, '');
-	btnTab.Transparent := true;
+	BtnAddLink.Init(3, 2, SizeDefault, SizeDefault, 'A' + HotkeySymbol + 'dd...');
+	BtnRunCmd.Init(102, 2, SizeDefault, SizeDefault, HotkeySymbol + 'Run...');
+	BtnPrevious.Init(255, 2, 42, SizeDefault, HotkeySymbol + CharArrowLeft);
+	BtnNext.Init(343, 2, 42, SizeDefault, HotkeySymbol + CharArrowRight);
+	BtnAboutCosta.Init(446, 2, SizeDefault, SizeDefault, HotkeySymbol + 'About...');
+	BtnExitCosta.Init(545, 2, SizeDefault, SizeDefault, 'E' + HotkeySymbol + 'xit');
+	BtnTab.Init(0, 0, 37, 37, '');
+	BtnTab.Transparent := true;
 	
 	{Used for saving background when tabbing through icons}
 	TabImgSize := ImageSize(0, 0, 37, 37);
 	GetMem(TabBackgroundP, TabImgSize);
 
 	{Switching desktop also loads links and draws the desktop}
-	DeskSwitchDesktop(Setting.DesktopID);
+	DeskSwitchDesktop(Setting.DeskID);
 	
 	repeat
 		Key := GetKey;
 
 		MousePoll;
-		if (MouseClicked <> mbNone) and (MouseY > 32) then
+		if (MouseClicked <> MbNone) and (MouseY > 32) then
 		begin
 			{The mouse was clicked. Before checking if a desktop link was clicked,
 			 check to see if any desktop links are present}
@@ -1120,7 +1120,7 @@ begin
 			end;
 		end;
 
-		if ObjBtnClick(btnAddLink) or (Key = KeyAltD) then
+		if ObjBtnClick(BtnAddLink) or (Key = KeyAltD) then
 		begin
 			FillChar(TempLink, SizeOf(TempLink), 0);
 			TempLink.ImageFile := 'RUNPROG';
@@ -1134,17 +1134,17 @@ begin
 				DeskLinkMove(DeskLinkCount);
 		end;
 
-		if ObjBtnClick(btnRunCmd) or (Key = KeyAltR) then
+		if ObjBtnClick(BtnRunCmd) or (Key = KeyAltR) then
 			DeskRunDialog;
 
-		if ObjBtnClick(btnAboutCosta) or (Key = KeyAltA) then
+		if ObjBtnClick(BtnAboutCosta) or (Key = KeyAltA) then
 			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 		
-		if ObjBtnClick(btnPrevious) or (Key = KeyLeft) or (Key = KeyPageUp) then
-			DeskSwitchDesktop(Setting.DesktopID - 1);
+		if ObjBtnClick(BtnPrevious) or (Key = KeyLeft) or (Key = KeyPageUp) then
+			DeskSwitchDesktop(Setting.DeskID - 1);
 
-		if ObjBtnClick(btnNext) or (Key = KeyRight) or (Key = KeyPageDown) then
-			DeskSwitchDesktop(Setting.DesktopID + 1);
+		if ObjBtnClick(BtnNext) or (Key = KeyRight) or (Key = KeyPageDown) then
+			DeskSwitchDesktop(Setting.DeskID + 1);
 
 		if Key = '1' then DeskSwitchDesktop(1);
 		if Key = '2' then DeskSwitchDesktop(2);
@@ -1152,13 +1152,13 @@ begin
 		if Key = '4' then DeskSwitchDesktop(4);
 		if Key = '5' then DeskSwitchDesktop(5);
 
-		if ObjBtnClick(btnExitCosta) or (Key = KeyAltX) or (Key = KeyAltF4) then
+		if ObjBtnClick(BtnExitCosta) or (Key = KeyAltX) or (Key = KeyAltF4) then
 		begin
 			if not Setting.ConfirmExit then
 				breaK;
 
 			if MsgBox('Exit ' + appName, 'This will exit Costa and return you to the DOS'
-					+ NewLine + 'prompt. Are you sure?', msgQuest) then
+					+ NewLine + 'prompt. Are you sure?', MsgQuest) then
 					break;
 		end;
 

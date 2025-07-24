@@ -23,7 +23,7 @@ var
 	ThemeAuthor:   string[20];
 
 	{Objects that are used both in and outside of the main procedure}
-	frmThemePreview: TFrame;
+	FrmThemePreview: TFrame;
 
 procedure LoadThemeList;
 var
@@ -46,7 +46,7 @@ begin
             Str(ThemeCount, MaxThemesStr);
             MsgBox('Too many themes',
                 'Only the first ' + MaxThemesStr + ' themes in the THEME directory' + NewLine +
-                'will be shown. Remove some themes to show all.', msgError);
+                'will be shown. Remove some themes to show all.', MsgError);
             break;
         end;
 
@@ -56,7 +56,7 @@ begin
             FSplit(FileInfo.Name, FPath, FName, FExt);
 			Inc(ThemeCount);
             ThemeList[ThemeCount] := FName;
-			if FName = Setting.ThemeFile then
+			if FName = Setting.ThmFile then
                 SelectedTheme := ThemeCount;
         end;
 		
@@ -69,11 +69,12 @@ end;
 
 procedure ThemePreview;
 var
-	winPreview: TWindow;
-	imgLogo, imgDeskLink: TIcon;
-	txtPreview: TTextbox;
-	btnPreview1, btnPreview2: TButton;
+	WinPreview: TWindow;
+	ImgLogo, ImgDeskLink: TIcon;
+	TxtPreview: TTextbox;
+	BtnPreview1, BtnPreview2: TButton;
 	f: file;
+	OrigTheme: TTheme;
 	LoadError: boolean;
 	ViewWidth, ViewHeight: integer;
 begin
@@ -85,138 +86,139 @@ begin
 	else if SelectedTheme > ThemeCount then
 		SelectedTheme := 1;
 	
+	OrigTheme := Thm; {Save original theme to restore later}
+	
 	Assign(f, ProgramPath + 'THEMES\' + ThemeList[SelectedTheme] + '.BIN');
 	{$I-}
 	Reset(f, 1);
 	{$I+}
 	if IOResult = 0 then
 	begin
-		BlockRead(f, Theme, SizeOf(TTheme));
+		BlockRead(f, Thm, SizeOf(TTheme));
 		BlockRead(f, ThemeName, SizeOf(ThemeName));
 		BlockRead(f, ThemeAuthor, SizeOf(ThemeAuthor));
 	end;
 	Close(f);
 
-	ViewWidth := frmThemePreview.Width - 4;
-	ViewHeight := frmThemePreview.Height - 4;
+	ViewWidth := FrmThemePreview.Width - 4;
+	ViewHeight := FrmThemePreview.Height - 4;
 
-	winPreview.Init(frmThemePreview.Left + 14, frmThemePreview.Top + 12, ViewWidth - 28, 123);
-	imgLogo.Init(winPreview.Left + 12, winPreview.Top + 12, 'LOGO');
-	imgDeskLink.Init(winPreview.Left, frmThemePreview.Top + frmThemePreview.Height - 42, 'PAINT');
-	txtPreview.Init(imgLogo.Left, imgLogo.Top + 45, winPreview.Width - 23, sizeDefault);
-	txtPreview.Text := 'Example textbox';
-	btnPreview1.Init(winPreview.Left + 12, winPreview.Top + winPreview.Height - 34, 86, 22, 'Button');
-	btnPreview2.Init(winPreview.Left + winPreview.Width - 12 - btnPreview1.Width,
-		btnPreview1.Top, btnPreview1.Width, 22, 'Button');
+	WinPreview.Init(FrmThemePreview.Left + 14, FrmThemePreview.Top + 12, ViewWidth - 28, 123);
+	ImgLogo.Init(WinPreview.Left + 12, WinPreview.Top + 12, 'LOGO');
+	ImgDeskLink.Init(WinPreview.Left, FrmThemePreview.Top + FrmThemePreview.Height - 42, 'PAINT');
+	TxtPreview.Init(ImgLogo.Left, ImgLogo.Top + 45, WinPreview.Width - 23, SizeDefault);
+	TxtPreview.Text := 'Textbox';
+	BtnPreview1.Init(WinPreview.Left + 12, WinPreview.Top + WinPreview.Height - 34, 86, SizeDefault, 'Button');
+	BtnPreview2.Init(WinPreview.Left + WinPreview.Width - 12 - BtnPreview1.Width, BtnPreview1.Top, 86, SizeDefault, 'Button');
 
 	MouseHide;
-	SetFillStyle(SolidFill, Theme.Desktop);
-	Bar(frmThemePreview.Left + 2, frmThemePreview.Top + 2,
-		frmThemePreview.Left + frmThemePreview.Width - 2, frmThemePreview.Top + frmThemePreview.Height - 2);
+	SetFillStyle(SolidFill, Thm.Desk);
+	Bar(FrmThemePreview.Left + 2, FrmThemePreview.Top + 2,
+		FrmThemePreview.Left + FrmThemePreview.Width - 2, FrmThemePreview.Top + FrmThemePreview.Height - 2);
 	
 	if LoadError then
 	begin
 		MsgBox('Theme load error',
 			'The theme file ' + ThemeList[SelectedTheme] + '.BIN could not be loaded.' + NewLine +
-			'Please check that the file is accesible and not corrupted.', msgError);
+			'Please check that the file is accesible and not corrupted.', MsgError);
 		Exit;
 	end;
 
-	winPreview.Draw;;
-	imgLogo.Draw;
-	imgDeskLink.Draw;
-	btnPreview1.Draw;
-	btnPreview2.Draw;
-	txtPreview.Draw;
+	WinPreview.Draw;;
+	ImgLogo.Draw;
+	ImgDeskLink.Draw;
+	BtnPreview1.Draw;
+	BtnPreview2.Draw;
+	TxtPreview.Draw;
 	
-	Print('Preview link', imgDeskLink.Left + 38, imgDeskLink.Top + 4, Theme.DesktopText);
-	Print('preview.exe', imgDeskLink.Left + 38, imgDeskLink.Top + 18, Theme.DesktopText);
+	Print('Preview link', ImgDeskLink.Left + 38, ImgDeskLink.Top + 4, Thm.DeskText);
+	Print('preview.exe', ImgDeskLink.Left + 38, ImgDeskLink.Top + 18, Thm.DeskText);
 
-	Print(ThemeName, imgLogo.Left + 42, imgLogo.Top + 5, Theme.WindowText);
-	Print(ThemeAuthor, imgLogo.Left + 42, imgLogo.Top + 19, Theme.WindowText);
+	Print(ThemeName, ImgLogo.Left + 42, ImgLogo.Top + 5, Thm.WinText);
+	Print(ThemeAuthor, ImgLogo.Left + 42, ImgLogo.Top + 19, Thm.WinText);
 	MouseShow;
 
-	SysLoadTheme(Setting.ThemeFile);
+	Thm := OrigTheme; {Restore original theme}
 end;
 
 var
-	btnExit, btnAbout: TButton;
-	btnPrevious, btnNext: TButton;
-	frmSettings, frmTheme: TFrame;
-	imgSetting, imgTheme: TIcon;
-	chkSetting: array[0..4] of TCheckbox;
+	BtnExit, BtnAbout: TButton;
+	BtnPrevious, BtnNext: TButton;
+	FrmSettings, FrmTheme: TFrame;
+	ImgSetting, ImgTheme: TIcon;
+	ChkSetting: array[0..4] of TCheckbox;
 	
 	Key: string;
 begin
-	SysShowLoading;
+	ShowLoading;
 
 	LoadThemeList;
 
-	btnExit.Init(545, 2, sizeDefault, sizeDefault, 'E' + HotkeySymbol + 'xit');
-	btnAbout.Init(446, 2, sizeDefault, sizeDefault, HotkeySymbol + 'About...');
+	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + HotkeySymbol + 'xit');
+	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, HotkeySymbol + 'About...');
 	
-	frmSettings.Init(14, 43, 310, 293);
-	frmTheme.Init(338, 43, 288, 293);
-	imgSetting.Init(frmSettings.Left + 14, frmSettings.Top + 14, 'CONFIG');
+	FrmSettings.Init(14, 43, 310, 293);
+	FrmTheme.Init(338, 43, 288, 293);
+	ImgSetting.Init(FrmSettings.Left + 14, FrmSettings.Top + 14, 'CONFIG');
 	
-	chkSetting[LinkDesc].Init(frmSettings.Left + 14, frmSettings.Top + 56, sizeDefault, sizeDefault);
-	chkSetting[LinkTarget].Init(chkSetting[LinkDesc].Left, chkSetting[LinkDesc].Top + 22, sizeDefault, sizeDefault);
-	chkSetting[LinkDelete].Init(chkSetting[LinkDesc].Left, chkSetting[LinkTarget].Top + 22, sizeDefault, sizeDefault);
-	chkSetting[ConfExit].Init(chkSetting[LinkDesc].Left, chkSetting[LinkDelete].Top + 22, sizeDefault, sizeDefault);
+	ChkSetting[LinkDesc].Init(FrmSettings.Left + 14, FrmSettings.Top + 56, SizeDefault, SizeDefault);
+	ChkSetting[LinkTarget].Init(ChkSetting[LinkDesc].Left, ChkSetting[LinkDesc].Top + 22, SizeDefault, SizeDefault);
+	ChkSetting[LinkDelete].Init(ChkSetting[LinkDesc].Left, ChkSetting[LinkTarget].Top + 22, SizeDefault, SizeDefault);
+	ChkSetting[ConfExit].Init(ChkSetting[LinkDesc].Left, ChkSetting[LinkDelete].Top + 22, SizeDefault, SizeDefault);
 
-	frmThemePreview.Init(frmTheme.Left + 14, frmTheme.Top + 55, frmTheme.Width - 28, 192);
-	imgTheme.Init(frmTheme.Left + 14, frmTheme.Top + 14, 'THEMES');
-	btnPrevious.Init(frmTheme.Left + 14, frmTheme.Top + frmTheme.Height - 34,
-		sizeDefault, sizeDefault, '< ' + HotkeySymbol + 'Previous');
-	btnNext.Init(frmTheme.Left + frmTheme.Width - 92 - 14, btnPrevious.Top,
-		sizeDefault, sizeDefault, HotkeySymbol + 'Next >');
+	FrmThemePreview.Init(FrmTheme.Left + 14, FrmTheme.Top + 55, FrmTheme.Width - 28, 192);
+	ImgTheme.Init(FrmTheme.Left + 14, FrmTheme.Top + 14, 'THEMES');
+	BtnPrevious.Init(FrmTheme.Left + 14, FrmTheme.Top + FrmTheme.Height - 34,
+		SizeDefault, SizeDefault, CharArrowLeft + ' ' + HotkeySymbol + 'Previous');
+	BtnNext.Init(FrmTheme.Left + FrmTheme.Width - 92 - 14, BtnPrevious.Top,
+		SizeDefault, SizeDefault, HotkeySymbol + 'Next ' + CharArrowRight);
 
-	chkSetting[LinkDesc].Checked := Setting.ShowLinkDescriptions;
-	chkSetting[LinkTarget].Checked := Setting.ShowLinkTargetFiles;
-	chkSetting[LinkDelete].Checked := Setting.ConfirmLinkDelete;
-	chkSetting[ConfExit].Checked := Setting.ConfirmExit;
+	ChkSetting[LinkDesc].Checked := Setting.ShowLinkDescriptions;
+	ChkSetting[LinkTarget].Checked := Setting.ShowLinkTargetFiles;
+	ChkSetting[LinkDelete].Checked := Setting.ConfirmLinkDelete;
+	ChkSetting[ConfExit].Checked := Setting.ConfirmExit;
 	
 	MouseHide;
 	MenuBar.Draw;
-	SetFillStyle(SolidFill, Theme.Window);
+	SetFillStyle(SolidFill, Thm.Win);
 	Bar(0, 29, 639, 349);
 	
-	btnExit.Draw;
-	btnAbout.Draw;
+	BtnExit.Draw;
+	BtnAbout.Draw;
 
 	if ThemeCount <> 0 then
 	begin
-		btnPrevious.Draw;
-		btnNext.Draw;
+		BtnPrevious.Draw;
+		BtnNext.Draw;
 	end;
 
-	frmSettings.Draw;
-	frmTheme.Draw;
-	frmThemePreview.Draw;
+	FrmSettings.Draw;
+	FrmTheme.Draw;
+	FrmThemePreview.Draw;
 
-	chkSetting[LinkDesc].Draw;
-	chkSetting[LinkTarget].Draw;
-	chkSetting[LinkDelete].Draw;
-	chkSetting[ConfExit].Draw;
-	imgSetting.Draw;
-	imgTheme.Draw;
+	ChkSetting[LinkDesc].Draw;
+	ChkSetting[LinkTarget].Draw;
+	ChkSetting[LinkDelete].Draw;
+	ChkSetting[ConfExit].Draw;
+	ImgSetting.Draw;
+	ImgTheme.Draw;
 
-	Print('Show icon ' + HotkeySymbol + 'descriptions', chkSetting[LinkDesc].Left + 20, chkSetting[LinkDesc].Top + 3,
-		Theme.WindowText);
-	Print('Show icon ' + HotkeySymbol + 'targets', chkSetting[LinkTarget].Left + 20, chkSetting[LinkTarget].Top + 3,
-		Theme.WindowText);
-	Print('Confirm icon ' + HotkeySymbol + 'removal', chkSetting[LinkDelete].Left + 20,
-		chkSetting[LinkDelete].Top + 3, Theme.WindowText);
-	Print('Confirm before ' + HotkeySymbol + 'exiting Costa', chkSetting[ConfExit].Left + 20,
-		chkSetting[ConfExit].Top + 3, Theme.WindowText);
+	Print('Show icon ' + HotkeySymbol + 'descriptions', ChkSetting[LinkDesc].Left + 20, ChkSetting[LinkDesc].Top + 3,
+		Thm.WinText);
+	Print('Show icon ' + HotkeySymbol + 'targets', ChkSetting[LinkTarget].Left + 20, ChkSetting[LinkTarget].Top + 3,
+		Thm.WinText);
+	Print('Confirm icon ' + HotkeySymbol + 'removal', ChkSetting[LinkDelete].Left + 20,
+		ChkSetting[LinkDelete].Top + 3, Thm.WinText);
+	Print('Confirm before ' + HotkeySymbol + 'exiting Costa', ChkSetting[ConfExit].Left + 20,
+		ChkSetting[ConfExit].Top + 3, Thm.WinText);
 
-	Print('Settings', imgSetting.Left + 42, imgSetting.Top + 5, Theme.WindowText);
-	Print('Tweak various aspects of Costa.', imgSetting.Left + 42, imgSetting.Top + 19, Theme.WindowText);
-	Print('Theme', imgTheme.Left + 42, imgTheme.Top + 5, Theme.WindowText);
-	Print('Choose colors for the UI.', imgTheme.Left + 42, imgTheme.Top + 19, Theme.WindowText);
+	Print('Settings', ImgSetting.Left + 42, ImgSetting.Top + 5, Thm.WinText);
+	Print('Tweak various aspects of Costa.', ImgSetting.Left + 42, ImgSetting.Top + 19, Thm.WinText);
+	Print('Theme', ImgTheme.Left + 42, ImgTheme.Top + 5, Thm.WinText);
+	Print('Choose colors for the UI.', ImgTheme.Left + 42, ImgTheme.Top + 19, Thm.WinText);
 
 	if ThemeCount = 0 then
-		Print('No themes found in \THEMES.', 387, 310, Theme.WindowText);
+		Print('No themes found in \THEMES.', 387, 310, Thm.WinText);
 	MouseShow;
 
 	ThemePreview;
@@ -226,64 +228,64 @@ begin
 
 		if ThemeCount > 0 then
 		begin
-			if ObjBtnClick(btnPrevious) or (Key = KeyAltP) or (Key = KeyLeft) then
+			if ObjBtnClick(BtnPrevious) or (Key = KeyAltP) or (Key = KeyLeft) then
 			 begin
 				Dec(SelectedTheme);
 				ThemePreview;
 			end;
 
-			if ObjBtnClick(btnNext) or (Key = KeyAltN) or (Key = KeyRight) then
+			if ObjBtnClick(BtnNext) or (Key = KeyAltN) or (Key = KeyRight) then
 			begin
 				Inc(SelectedTheme);
 				ThemePreview;
 			end;
 		end;
 
-		ObjChkClick(chkSetting[LinkDesc]);
-		ObjChkClick(chkSetting[LinkTarget]);
-		ObjChkClick(chkSetting[LinkDelete]);
-		ObjChkClick(chkSetting[ConfExit]);
+		ObjChkClick(ChkSetting[LinkDesc]);
+		ObjChkClick(ChkSetting[LinkTarget]);
+		ObjChkClick(ChkSetting[LinkDelete]);
+		ObjChkClick(ChkSetting[ConfExit]);
 
 		if Key = KeyAltD then
 		begin
-			chkSetting[LinkDesc].Checked := not chkSetting[LinkDesc].Checked;
+			ChkSetting[LinkDesc].Checked := not ChkSetting[LinkDesc].Checked;
 			MouseHide;
-			chkSetting[LinkDesc].Draw;
+			ChkSetting[LinkDesc].Draw;
 			MouseShow;
 		end;
 		if Key = KeyAltT then
 		begin
-			chkSetting[LinkTarget].Checked:= not chkSetting[LinkTarget].Checked;
+			ChkSetting[LinkTarget].Checked:= not ChkSetting[LinkTarget].Checked;
 			MouseHide;
-			chkSetting[LinkTarget].Draw;
+			ChkSetting[LinkTarget].Draw;
 			MouseShow;
 		end;
 		if Key = KeyAltR then
 		begin
-			chkSetting[LinkDelete].Checked := not chkSetting[LinkDelete].Checked;
+			ChkSetting[LinkDelete].Checked := not ChkSetting[LinkDelete].Checked;
 			MouseHide;
-			chkSetting[LinkDelete].Draw;
+			ChkSetting[LinkDelete].Draw;
 			MouseShow;
 		end;
 		if Key = KeyAltE then
 		begin
-			chkSetting[ConfExit].Checked := not chkSetting[ConfExit].Checked;
+			ChkSetting[ConfExit].Checked := not ChkSetting[ConfExit].Checked;
 			MouseHide;
-			chkSetting[ConfExit].Draw;
+			ChkSetting[ConfExit].Draw;
 			MouseShow;
 		end;
 
-		if ObjBtnClick(btnAbout) or (Key = KeyAltA) then
+		if ObjBtnClick(BtnAbout) or (Key = KeyAltA) then
 			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 
-		if ObjBtnClick(btnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
+		if ObjBtnClick(BtnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
 		begin
 			if ThemeCount > 0 then
-				Setting.ThemeFile := ThemeList[SelectedTheme];
-			Setting.ShowLinkDescriptions := chkSetting[LinkDesc].Checked;
-			Setting.ShowLinkTargetFiles := chkSetting[LinkTarget].Checked;
-			Setting.ConfirmLinkDelete := chkSetting[LinkDelete].Checked;
-			Setting.ConfirmExit := chkSetting[ConfExit].Checked;
+				Setting.ThmFile := ThemeList[SelectedTheme];
+			Setting.ShowLinkDescriptions := ChkSetting[LinkDesc].Checked;
+			Setting.ShowLinkTargetFiles := ChkSetting[LinkTarget].Checked;
+			Setting.ConfirmLinkDelete := ChkSetting[LinkDelete].Checked;
+			Setting.ConfirmExit := ChkSetting[ConfExit].Checked;
 			SysSaveSettings;
 			break;
 		end;

@@ -6,7 +6,7 @@ uses
 type
 	TTheme = record
 		Desktop,
-		DesktopText,
+		DeskText,
 		Window,
 		Button,
 		Textbox,
@@ -172,19 +172,19 @@ begin
 		else
 			ThemeName := TempRead;
 		
-		ReadLn(f, Theme.Desktop);
-		ReadLn(f, Theme.DesktopText);
-		ReadLn(f, Theme.Window);
-		ReadLn(f, Theme.WindowText);
-		ReadLn(f, Theme.Button);
-		ReadLn(f, Theme.Textbox);
-		ReadLn(f, Theme.TextboxText);
-		ReadLn(f, Theme.Light);
-		ReadLn(f, Theme.Shadow);
-		ReadLn(f, Theme.TitleBar);
-		ReadLn(f, Theme.TitleBarText);
-		ReadLn(f, Theme.Select);
-		ReadLn(f, Theme.SelectText);
+		ReadLn(f, Thm.Desk);
+		ReadLn(f, Thm.DeskText);
+		ReadLn(f, Thm.Win);
+		ReadLn(f, Thm.WinText);
+		ReadLn(f, Thm.Btn);
+		ReadLn(f, Thm.Txt);
+		ReadLn(f, Thm.TxtText);
+		ReadLn(f, Thm.Light);
+		ReadLn(f, Thm.Shadow);
+		ReadLn(f, Thm.Title);
+		ReadLn(f, Thm.TitleText);
+		ReadLn(f, Thm.Sel);
+		ReadLn(f, Thm.SelText);
 
 		Close(f);
 

@@ -10,7 +10,7 @@ const
 	LibVersion       = '2.0';
 	LibYear          = '2025';
 
-	sizeDefault      = -1;
+	SizeDefault      = -1;
 	sizeCenter       = -2;
 
 	DoubleClickDelay = 0.5;
@@ -25,10 +25,10 @@ const
 	{$I KEYCODES.INC}
 
 type
-	TMouseButton  = (mbNone, mbLeft, mbRight, mbBoth);
-	TButtonState  = (bsUp, bsDown);
-	TTextboxState = (tsNormal, tsEditing);
-	TMsgBoxType   = (msgInfo, msgWarn, msgQuest, msgError);
+	TMouseButton  = (MbNone, MbLeft, MbRight, MbBoth);
+	TButtonState  = (BsUp, BsDown);
+	TTextboxState = (TsNormal, TsEditing);
+	TMsgBox       = (MsgInfo, MsgWarn, MsgQuest, MsgError);
 
 	TUIObject = object
 		public
@@ -89,34 +89,34 @@ type
 	end;
 
 	TLibSetting = record
-		DesktopID: Integer;
+		DeskID: Integer;
 		ShowLinkDescriptions: Boolean;
 		ShowLinkTargetFiles: Boolean;
 		ConfirmLinkDelete: Boolean;
 		ConfirmExit: Boolean;
-		ThemeFile: string[8];
+		ThmFile: string[8];
 	end;
 
 	TTheme = record
-		Desktop,
-		DesktopText,
-		Window,
-		Button,
-		Textbox,
-		TextboxText,
-		WindowText,
-		TitleBar,
-		TitleBarText,
+		Desk,
+		DeskText,
+		Win,
+		Btn,
+		Txt,
+		TxtText,
+		WinText,
+		Title,
+		TitleText,
 		Light,
 		Shadow,
-		Select,
-		SelectText: Integer;
+		Sel,
+		SelText: Integer;
 	end;
 
 var
 	MenuBar: TMenu;
 	Setting: TLibSetting;
-	Theme: TTheme;
+	Thm: TTheme;
 	MouseVisible: Boolean;
 	MouseSupport: Boolean;
 	MouseX, MouseY: Integer;
@@ -127,7 +127,7 @@ procedure ObjChkClick(var TargetChk: TCheckbox);
 function  ObjClick(const TargetObj: TUIObject): Boolean;
 procedure ObjEditTxt(var TargetTxt: TTextbox; var Text: string);
 
-function  MsgBox(const msgTitle, msgText: string; msgType: TMsgBoxType): Boolean;
+function  MsgBox(const msgTitle, msgText: string; MsgType: TMsgBox): Boolean;
 procedure AboutBox(const ProgramName, ProgramVersion, ProgramAuthor, IconFile: string);
 
 function  FileExists(const FileName: string): Boolean;
@@ -148,14 +148,13 @@ Function  ProgramPath: DirStr;
 function  Timer: Real;
 
 procedure Print(Text: string; X, Y, Color: Integer);
-function  FontGetWidth(TargetText: String): Integer;
+function  PrintW(TargetText: String): Integer;
 
 procedure SoundNote(Frequency, Duration: Integer);
 
 procedure SysLoadSettings;
-procedure SysLoadTheme(ThemeFile: String);
 procedure SysSaveSettings;
-procedure SysShowLoading;
+procedure ShowLoading;
 
 implementation
 
@@ -164,12 +163,12 @@ const
 
 procedure TUIObject.SetSize(X, Y, W, H, DefaultW, DefaultH: Integer);
 begin
-	if W = sizeDefault then
+	if W = SizeDefault then
 		Width := DefaultW
 	else
 		Width := W;
 
-	if H = sizeDefault then
+	if H = SizeDefault then
 		Height := DefaultH
 	else
 		Height := H;
@@ -212,7 +211,7 @@ const
 begin
 	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
 	Self.Caption := CaptionS;
-	Self.State := bsUp;
+	Self.State := BsUp;
 	Self.Transparent := False;
 end;
 
@@ -225,18 +224,18 @@ begin
 	y1 := Top;
 	x2 := x1 + Width;
 	y2 := y1 + Height;
-	if State = bsUp then
+	if State = BsUp then
 	begin
 		Color1 := White;
-		Color2 := Theme.Button;
-		Color3 := Theme.Shadow;
-		Color4 := Theme.WindowText;
+		Color2 := Thm.Btn;
+		Color3 := Thm.Shadow;
+		Color4 := Thm.WinText;
 	end
 	else
 	begin
 		Color1 := Black;
-		Color2 := Theme.Shadow;
-		Color3 := Theme.Light;
+		Color2 := Thm.Shadow;
+		Color3 := Thm.Light;
 		Color4 := White;
 	end;
 	SetColor(Color2);
@@ -257,8 +256,8 @@ begin
 	begin
 		x1 := (x2 - x1) div 2 + x1;
 		y1 := (y2 - y1) div 2 + y1 - 3; {3 is the offset to center text vertically}
-		x1 := x1 - FontGetWidth(Caption) div 2;
-		if State = bsDown then
+		x1 := x1 - PrintW(Caption) div 2;
+		if State = BsDown then
 		begin
 			Inc(x1);
 			Inc(y1);
@@ -278,7 +277,7 @@ end;
 
 procedure TCheckbox.Draw;
 var
-	x1, x2, y1, y2, chkColor: Integer;
+	x1, x2, y1, y2, ChkColor: Integer;
 begin
 	x1 := Left;
 	y1 := Top;
@@ -286,30 +285,30 @@ begin
 	y2 := y1 + 15;
 	if Width = 0 then Width := 14;
 	if Height = 0 then Height := 14;
-	SetFillStyle(SolidFill, Theme.Textbox);
+	SetFillStyle(SolidFill, Thm.Txt);
 	Bar(x1 + 2, y1 + 2, x2 - 2, y2 - 2);
-	if Theme.Window = 0 then
-		chkColor := 15
+	if Thm.Win = 0 then
+		ChkColor := 15
 	else
-		chkColor := 0;
-	SetColor(chkColor);
+		ChkColor := 0;
+	SetColor(ChkColor);
 	Rectangle(x1 + 1, y1 + 1, x2, y2);
 	Line(x2 - 1, y1 + 2, x2 - 1, y2 - 1);
 	Line(x1 + 2, y2 - 1, x2 - 2, y2 - 1);
-	SetColor(Theme.Shadow);
+	SetColor(Thm.Shadow);
 	Line(x1, y1, x1, y2);
 	Line(x1 + 1, y1, x2, y1);
 	if Checked then
 	begin
-		SetColor(Theme.TextboxText);
+		SetColor(Thm.TxtText);
 		Line(x1 + 5, y1 + 8, x1 + 7, y1 + 10);
 		Line(x1 + 5, y1 + 9, x1 + 7, y1 + 11);
 		Line(x1 + 8, y1 + 9, x1 + 11, y1 + 6);
 		Line(x1 + 8, y1 + 10, x1 + 11, y1 + 7);
-		SetColor(Theme.Shadow);
+		SetColor(Thm.Shadow);
 		Line(x1 + 5, y1 + 7, x1 + 7, y1 + 9);
 		Line(x1 + 8, y1 + 8, x1 + 11, y1 + 5);
-		SetColor(Theme.Light);
+		SetColor(Thm.Light);
 		Line(x1 + 5, y1 + 10, x1 + 6, y1 + 11);
 		Line(x1 + 8, y1 + 11, x1 + 11, y1 + 8);
 	end;
@@ -322,7 +321,7 @@ const
 begin
 	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
 	Self.LightColor := 15;
-	Self.DarkColor := Theme.Shadow;
+	Self.DarkColor := Thm.Shadow;
 end;
 
 procedure TFrame.Draw;
@@ -338,7 +337,7 @@ const
 	DefaultW = 31;
 	DefaultH = 31;
 begin
-	Self.SetSize(x, y, sizeDefault, sizeDefault, DefaultW, DefaultH);
+	Self.SetSize(x, y, SizeDefault, SizeDefault, DefaultW, DefaultH);
 	Self.ImageFile := Image;
 end;
 
@@ -363,10 +362,10 @@ begin
 	Y := Top;
 
 	{Image border}
-	SetColor(Theme.Light);
+	SetColor(Thm.Light);
 	Line(X - 1, Y - 1, X + 32, Y - 1);
 	Line(X - 1, Y, X - 1, Y + 32);
-	SetColor(Theme.Shadow);
+	SetColor(Thm.Shadow);
 	Line(X, Y + 32, X + 32, Y + 32);
 	Line(X + 32, Y, X + 32, Y + 31);
 
@@ -422,10 +421,10 @@ end;
 
 procedure TMenu.Draw;
 begin
-	SetFillStyle(SolidFill, Theme.Window);
+	SetFillStyle(SolidFill, Thm.Win);
 	Bar(Left, Top, Left + Width, Height - 2);
 
-	SetColor(Theme.Shadow);
+	SetColor(Thm.Shadow);
 	Line(Top, Top + Height - 1, Left + Width, Top + Height - 1);
 
 	SetColor(Black);
@@ -439,7 +438,7 @@ const
 begin
 	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
 	Self.MaxLen := 255;
-	Self.State := tsNormal;
+	Self.State := TsNormal;
 	Self.Text := '';
 end;
 
@@ -450,27 +449,25 @@ var
 begin
 	x1 := Left;
 	y1 := Top;
-	if Width = 0 then Width := 120;
-	if Height = 0 then Height := 19;
 	x2 := x1 + Width;
 	y2 := y1 + Height;
-	SetFillStyle(SolidFill, Theme.Textbox);
+	SetFillStyle(SolidFill, Thm.Txt);
 	Bar(x1 + 2, y1 + 2, x2 - 2, y2 - 2);
-	SetColor(Theme.Light);
+	SetColor(Thm.Light);
 	Rectangle(x1, y1, x2 - 1, y2 - 1);
-	SetColor(Theme.Shadow);
+	SetColor(Thm.Shadow);
 	Rectangle(x1 + 1, y1 + 1, x2, y2);
 	S := Text;
 	if S <> '' then
 	begin
 		MaxShow := Width - 10;
-		while FontGetWidth(S) >= MaxShow do
+		while PrintW(S) >= MaxShow do
 			Delete(S, 1, 1);
-		Print(S, x1 + 5, y1 + 5, Theme.TextboxText);
+		Print(S, x1 + 5, y1 + 5, Thm.TxtText);
 	end;
-	if State = tsEditing then
+	if State = TsEditing then
 	begin
-		x1 := x1 + 7 + FontGetWidth(S);
+		x1 := x1 + 7 + PrintW(S);
 		Line(x1, y1 + 4, x1, y1 + 15);
 	end;
 end;
@@ -491,9 +488,9 @@ begin
 	y1 := Top;
 	x2 := x1 + Width;
 	y2 := y1 + Height;
-	SetFillStyle(SolidFill, Theme.TitleBar);
+	SetFillStyle(SolidFill, Thm.Title);
 	Bar(x1 + 2, y1 + 2, x2 - 2, y2 - 1);
-	SetFillStyle(SolidFill, Theme.Window);
+	SetFillStyle(SolidFill, Thm.Win);
 	Bar(x1 + 7, y1 + 7, x2 - 7, y2 - 7);
 	SetColor(15);
 	Line(x1, y1, x2 - 1, y1);
@@ -501,15 +498,15 @@ begin
 	SetColor(0);
 	Line(x2, y1, x2, y2);
 	Line(x1, y2, x2 - 1, y2);
-	SetColor(Theme.Shadow);
+	SetColor(Thm.Shadow);
 	Line(x2 - 1, y1 + 1, x2 - 1, y2 - 1);
 	Line(x1 + 1, y2 - 1, x2 - 2, y2 - 1);
-	SetColor(Theme.Light);
+	SetColor(Thm.Light);
 	Line(x1 + 1, y1 + 1, x2 - 2, y1 + 1);
 	Line(x1 + 1, y1 + 2, x1 + 1, y2 - 2);
-	SetColor(Theme.Shadow);
+	SetColor(Thm.Shadow);
 	Rectangle(x1 + 5, y1 + 5, x2 - 5, y2 - 5);
-	SetColor(Theme.Light);
+	SetColor(Thm.Light);
 	Rectangle(x1 + 6, y1 + 6, x2 - 6, y2 - 6);
 end;
 
@@ -558,7 +555,7 @@ begin
 	ValidDOSFilename := true;
 end;
 
-function FontGetWidth(TargetText: String): Integer;
+function PrintW(TargetText: String): Integer;
 var
 	Width: Integer;
 begin
@@ -567,7 +564,7 @@ begin
 	if Pos(HotkeySymbol, TargetText) > 0 then
 		Width := Width - 8; {Don't count the hotkey symbol}
 
-	FontGetWidth := Width;
+	PrintW := Width;
 end;
 
 procedure Print(Text: string; X, Y, Color: Integer);
@@ -619,7 +616,7 @@ var
 begin
 	if not MouseSupport then
 	begin
-		MouseClicked := mbNone;
+		MouseClicked := MbNone;
 		exit;
 	end;
 	regs.ax := 3;
@@ -666,24 +663,24 @@ Begin
 	If Not MouseSupport Then Exit; {Don't call interrupt if no mouse or already visible}
 	Regs.ax := 1;
 	Intr($33, Regs);
-	MouseVisible :=True;
+	MouseVisible := True;
 End;
 
 function ObjBtnClick(var TargetBtn: TButton): Boolean;
 begin
 	ObjBtnClick := False;
-	if (MouseClicked = mbLeft) and TargetBtn.IsMouseOver then
+	if (MouseClicked = MbLeft) and TargetBtn.IsMouseOver then
 	begin
 		MouseHide;
-		TargetBtn.State := bsDown;
+		TargetBtn.State := BsDown;
 		TargetBtn.Draw;
 		MouseShow;
 		repeat
 			if TargetBtn.IsMouseOver then
 			begin
-				if TargetBtn.State = bsUp then
+				if TargetBtn.State = BsUp then
 				begin
-					TargetBtn.State := bsDown;
+					TargetBtn.State := BsDown;
 					MouseHide;
 					TargetBtn.Draw;
 					MouseShow;
@@ -691,18 +688,18 @@ begin
 			end
 			else
 			begin
-				if TargetBtn.State = bsDown then
+				if TargetBtn.State = BsDown then
 				begin
-					TargetBtn.State := bsUp;
+					TargetBtn.State := BsUp;
 					MouseHide;
 					TargetBtn.Draw;
 					MouseShow;
 				end;
 			end;
-		until MouseClicked = mbNone;
-		if TargetBtn.State = bsDown then
+		until MouseClicked = MbNone;
+		if TargetBtn.State = BsDown then
 		begin
-			TargetBtn.State := bsUp;
+			TargetBtn.State := BsUp;
 			MouseHide;
 			TargetBtn.Draw;
 			MouseShow;
@@ -714,9 +711,9 @@ end;
 
 procedure ObjChkClick(var TargetChk: TCheckbox);
 begin
-	if (MouseClicked = mbLeft) and TargetChk.IsMouseOver then
+	if (MouseClicked = MbLeft) and TargetChk.IsMouseOver then
 	begin
-		repeat until MouseClicked = mbNone;
+		repeat until MouseClicked = MbNone;
 		if TargetChk.IsMouseOver then
 		begin
 			TargetChk.Checked := not TargetChk.Checked;
@@ -730,9 +727,9 @@ end;
 function ObjClick(const TargetObj: TUIObject): Boolean;
 begin
 	ObjClick := false;
-	if (MouseClicked = mbLeft) and Targetobj.IsMouseOver then
+	if (MouseClicked = MbLeft) and Targetobj.IsMouseOver then
 	begin
-		repeat until MouseClicked = mbNone;
+		repeat until MouseClicked = MbNone;
 		if TargetObj.IsMouseOver then
 			ObjClick := true;
 	end;
@@ -752,11 +749,11 @@ begin
 	OrigTxt := Text;
 	TempTxt := Text;
 
-	if FontGetWidth(TempTxt) + 2 < MaxShow then
+	if PrintW(TempTxt) + 2 < MaxShow then
 	begin
-		LineX1 := x1 + FontGetWidth(Text) + 2;
+		LineX1 := x1 + PrintW(Text) + 2;
 		MouseHide;
-		SetColor(Theme.TextboxText);
+		SetColor(Thm.TxtText);
 		Line(LineX1, y1 - 1, LineX1, y1 + 10);
 		MouseShow;
 	end
@@ -773,7 +770,7 @@ begin
 	repeat
 		Key := GetKey;
 
-		if (MouseClicked > mbNone) and not TargetTxt.IsMouseOver then
+		if (MouseClicked > MbNone) and not TargetTxt.IsMouseOver then
 			Key := KeyEnter; {If mouse is clicked outside the textbox, stop editing}
 		
 		if Length(Key) > 0 then
@@ -784,15 +781,15 @@ begin
 						if Length(TempTxt) > 0 then
 						begin
 							MouseHide;
-							if FontGetWidth(TempTxt) + 2 < MaxShow then
+							if PrintW(TempTxt) + 2 < MaxShow then
 							begin
 								{Erase only the last char}
-								LineX1 := x1 + FontGetWidth(TempTxt);
-								SetFillStyle(SolidFill, Theme.Textbox);
+								LineX1 := x1 + PrintW(TempTxt);
+								SetFillStyle(SolidFill, Thm.Txt);
 								Bar(LineX1 + 2, y1 - 2, LineX1 - 8, y1 + 11);
 								TempTxt := Copy(TempTxt, 1, Length(TempTxt) - 1);
-								LineX1 := x1 + FontGetWidth(TempTxt) + 2;
-								SetColor(Theme.TextboxText);
+								LineX1 := x1 + PrintW(TempTxt) + 2;
+								SetColor(Thm.TxtText);
 								Line(LineX1, y1 - 1, LineX1, y1 + 10);
 							end
 							else
@@ -808,9 +805,9 @@ begin
 				13: {Enter}
 					begin
 						Text := TempTxt;
-						LineX1 := x1 + FontGetWidth(Text) + 2;
+						LineX1 := x1 + PrintW(Text) + 2;
 						MouseHide;
-						SetColor(Theme.Textbox);
+						SetColor(Thm.Txt);
 						Line(LineX1, y1 - 1, LineX1, y1 + 10);
 						MouseShow;
 						Exit;
@@ -821,15 +818,15 @@ begin
 						if Length(TempTxt) <> MaxLen then
 						begin
 							MouseHide;
-							if FontGetWidth(TempTxt + Key) + 2 < MaxShow then
+							if PrintW(TempTxt + Key) + 2 < MaxShow then
 							begin
-								LineX1 := x1 + FontGetWidth(TempTxt) + 2;
-								SetColor(Theme.Textbox);
+								LineX1 := x1 + PrintW(TempTxt) + 2;
+								SetColor(Thm.Txt);
 								Line(LineX1, y1 - 1, LineX1, y1 + 10);
 								TempTxt := TempTxt + Key;
-								Print(TempTxt, x1, y1, Theme.TextboxText);
-								LineX1 := x1 + FontGetWidth(TempTxt) + 2;
-								SetColor(Theme.TextboxText);
+								Print(TempTxt, x1, y1, Thm.TxtText);
+								LineX1 := x1 + PrintW(TempTxt) + 2;
+								SetColor(Thm.TxtText);
 								Line(LineX1, y1 - 1, LineX1, y1 + 10);
 							end
 							else
@@ -857,9 +854,9 @@ end;
 function ObjTxtClick(const TargetTxt: TTextbox): Boolean;
 begin
 	ObjTxtClick := False;
-	if (MouseClicked = mbLeft) and TargetTxt.IsMouseOver then
+	if (MouseClicked = MbLeft) and TargetTxt.IsMouseOver then
 	begin
-		repeat until MouseClicked = mbNone;
+		repeat until MouseClicked = MbNone;
 		if TargetTxt.IsMouseOver then
 			ObjTxtClick := True;
 	end;
@@ -889,44 +886,44 @@ end;
 
 procedure AboutBox(const ProgramName, ProgramVersion, ProgramAuthor, IconFile: string);
 var
-	winAboutBox: TWindow;
-	btnClose: TButton;
-	imgLogo: TIcon;
+	WinAboutBox: TWindow;
+	BtnClose: TButton;
+	ImgLogo: TIcon;
 	x1, y1, x2, y2: Integer;
 	BackgroundSize: Word;
 	BackgroundP: Pointer;
 	Key: String;
 begin
-	winAboutBox.Init(sizeCenter, sizeCenter, 329, 216);
-	imgLogo.Init(168, winAboutBox.Top + 11, IconFile);
-	btnClose.Init(274, winAboutBox.Top + winAboutBox.Height - 34, sizeDefault, sizeDefault, HotkeySymbol + 'Close');
+	WinAboutBox.Init(sizeCenter, sizeCenter, 329, 216);
+	ImgLogo.Init(168, WinAboutBox.Top + 11, IconFile);
+	BtnClose.Init(274, WinAboutBox.Top + WinAboutBox.Height - 34, SizeDefault, SizeDefault, HotkeySymbol + 'Close');
 	MouseHide;
 
-	{Save background to restore when window is closed}
-	x1 := winAboutBox.Left;
-	y1 := winAboutBox.Top;
-	x2 := winAboutBox.Left + winAboutBox.Width;
-	y2 := winAboutBox.Top + winAboutBox.Height;
+	{Save background to restore when Window is closed}
+	x1 := WinAboutBox.Left;
+	y1 := WinAboutBox.Top;
+	x2 := WinAboutBox.Left + WinAboutBox.Width;
+	y2 := WinAboutBox.Top + WinAboutBox.Height;
 	BackgroundSize := ImageSize(x1, y1, x2, y2);
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(x1, y1, x2, y2, BackgroundP^);
 
-	winAboutBox.Draw;
-	btnClose.Draw;
-	imgLogo.Draw;
-	Print(ProgramName + ' ' + ProgramVersion, 212, winAboutBox.Top + 17, Theme.WindowText);
-	Print('By ' + ProgramAuthor, 212, winAboutBox.Top + 31, Theme.WindowText);
-	Print('Made with the ' + LibName + ' version', 168, winAboutBox.Top + 53, Theme.WindowText);
-	Print(LibVersion + ' by Jacob Palm, 2004-' + LibYear + '.', 168, winAboutBox.Top + 67, Theme.WindowText);
-	Print('May be freely distributed under the', 168, winAboutBox.Top + 95, Theme.WindowText);
-	Print('terms of the MIT License. More details', 168, winAboutBox.Top + 109, Theme.WindowText);
-	Print('can be found in the LICENSE file.', 168, winAboutBox.Top + 123, Theme.WindowText);
-	Print('More information and news online at:', 168, winAboutBox.Top + 151, Theme.WindowText);
-	Print('https://costa.jacobpalm.dk', 168, winAboutBox.Top + 165, Theme.WindowText);
+	WinAboutBox.Draw;
+	BtnClose.Draw;
+	ImgLogo.Draw;
+	Print(ProgramName + ' ' + ProgramVersion, 212, WinAboutBox.Top + 17, Thm.WinText);
+	Print('By ' + ProgramAuthor, 212, WinAboutBox.Top + 31, Thm.WinText);
+	Print('Made with the ' + LibName + ' version', 168, WinAboutBox.Top + 53, Thm.WinText);
+	Print(LibVersion + ' by Jacob Palm, 2004-' + LibYear + '.', 168, WinAboutBox.Top + 67, Thm.WinText);
+	Print('May be freely distributed under the', 168, WinAboutBox.Top + 95, Thm.WinText);
+	Print('terms of the MIT License. More details', 168, WinAboutBox.Top + 109, Thm.WinText);
+	Print('can be found in the LICENSE file.', 168, WinAboutBox.Top + 123, Thm.WinText);
+	Print('More information and news online at:', 168, WinAboutBox.Top + 151, Thm.WinText);
+	Print('https://costa.jacobpalm.dk', 168, WinAboutBox.Top + 165, Thm.WinText);
 	MouseShow;
 	repeat
 		Key := GetKey;
-		if ObjBtnClick(btnClose) or (Key = KeyEnter) or (Key = KeyEscape) or (Key = KeyAltC) then Break;
+		if ObjBtnClick(BtnClose) or (Key = KeyEnter) or (Key = KeyEscape) or (Key = KeyAltC) then Break;
 	until False;
 	MouseHide;
 	PutImage(x1, y1, BackgroundP^, NormalPut);
@@ -942,12 +939,12 @@ begin
 	LoadError := False;
 	
 	{Set defaults - will be overwritten if settings file loads successfully}
-	Setting.DesktopID := 1;
+	Setting.DeskID := 1;
 	Setting.ShowLinkDescriptions := True;
 	Setting.ShowLinkTargetFiles := False;
 	Setting.ConfirmLinkDelete := True;
 	Setting.ConfirmExit := False;
-	Setting.ThemeFile := 'DEFAULT';
+	Setting.ThmFile := 'DEFAULT';
 	
 	if not FileExists(ProgramPath + GlobalSettings) then
 		exit;
@@ -971,25 +968,25 @@ begin
 	Close(f);
 end;
 
-procedure SysLoadTheme(ThemeFile: String);
+procedure LoadTheme(ThemeFile: String);
 var
 	f: file;
 	ExpectedSize: LongInt;
 begin
 	{Default colors - will be overwritten if theme file loads successfully}
-	Theme.Desktop := Cyan;
-	Theme.DesktopText := Black;
-	Theme.Window := LightGray;
-	Theme.Button := LightGray;
-	Theme.Textbox := White;
-	Theme.TextboxText := Black;
-	Theme.WindowText := Black;
-	Theme.TitleBar := Blue;
-	Theme.TitleBarText := White;
-	Theme.Light := LightGray;
-	Theme.Shadow := DarkGray;
-	Theme.Select := Blue;
-	Theme.SelectText := White;
+	Thm.Desk      := Cyan;
+	Thm.DeskText  := Black;
+	Thm.Win       := LightGray;
+	Thm.Btn       := LightGray;
+	Thm.Txt       := White;
+	Thm.TxtText   := Black;
+	Thm.WinText   := Black;
+	Thm.Title     := Blue;
+	Thm.TitleText := White;
+	Thm.Light     := LightGray;
+	Thm.Shadow    := DarkGray;
+	Thm.Sel       := Blue;
+	Thm.SelText   := White;
 
 	{The end of the file contains 21 bytes for theme name, and 21	 for theme
 	 author, so the total size should be 40 bytes more than the theme type}
@@ -1009,17 +1006,17 @@ begin
 	end;
 
 	if FileSize(f) = ExpectedSize then
-		BlockRead(f, Theme, SizeOf(TTheme));
+		BlockRead(f, Thm, SizeOf(TTheme));
 	Close(f);
 end;
 
-function MsgBox(const msgTitle, msgText: string; msgType: TMsgBoxType): Boolean;
+function MsgBox(const msgTitle, msgText: string; MsgType: TMsgBox): Boolean;
 var
 	msgLines: array[1..16] of string;
 	msgLineCount, msgTextWidth, i: Integer;
-	btnFirst, btnSecond: TButton;
-	imgIcon: TIcon;
-	winMsgBox: TWindow;
+	BtnFirst, BtnSecond: TButton;
+	ImgIcon: TIcon;
+	WinMsgBox: TWindow;
 	S, T: string;
 	Key: String;
 	P, L: Integer;
@@ -1038,75 +1035,75 @@ begin
 		begin
 			Inc(msgLineCount);
 			msgLines[msgLineCount] := S;
-			if FontGetWidth(S) > msgTextWidth then
-				msgTextWidth := FontGetWidth(S);
+			if PrintW(S) > msgTextWidth then
+				msgTextWidth := PrintW(S);
 			Break;
 		end
 		else
 		begin
 			Inc(msgLineCount);
 			msgLines[msgLineCount] := Copy(S, 1, P-1);
-			if FontGetWidth(msgLines[msgLineCount]) > msgTextWidth then
-				msgTextWidth := FontGetWidth(msgLines[msgLineCount]);
+			if PrintW(msgLines[msgLineCount]) > msgTextWidth then
+				msgTextWidth := PrintW(msgLines[msgLineCount]);
 			Delete(S, 1, P);
 		end;
 	until S = '';
-	winMsgBox.Width := msgTextWidth + 68;
-	if msgType = msgQuest then
+	WinMsgBox.Width := msgTextWidth + 68;
+	if MsgType = MsgQuest then
 	begin
-		if winMsgBox.Width < 194 then winMsgBox.Width := 194;
+		if WinMsgBox.Width < 194 then WinMsgBox.Width := 194;
 	end
 	else
 	begin
-		if winMsgBox.Width < 102 then winMsgBox.Width := 102;
+		if WinMsgBox.Width < 102 then WinMsgBox.Width := 102;
 	end;
-	winMsgBox.Init(sizeCenter, sizeCenter, winMsgBox.Width, msgLineCount * 15 + 78);
-	imgIcon.Init(winMsgBox.Left + 13, winMsgBox.Top + 15, '');
-	case msgType of
-		msgInfo: imgIcon.ImageFile := 'MSGINFO';
-		msgWarn: imgIcon.ImageFile := 'MSGWARN';
-		msgQuest: imgIcon.ImageFile := 'MSGQUEST';
-		msgError: imgIcon.ImageFile := 'MSGERROR';
+	WinMsgBox.Init(sizeCenter, sizeCenter, WinMsgBox.Width, msgLineCount * 15 + 78);
+	ImgIcon.Init(WinMsgBox.Left + 13, WinMsgBox.Top + 15, '');
+	case MsgType of
+		MsgInfo: ImgIcon.ImageFile := 'MSGINFO';
+		MsgWarn: ImgIcon.ImageFile := 'MSGWARN';
+		MsgQuest: ImgIcon.ImageFile := 'MSGQUEST';
+		MsgError: ImgIcon.ImageFile := 'MSGERROR';
 	end;
-	btnFirst.Init(sizeCenter, winMsgBox.Top + 42 + (15 * msgLineCount), 80, sizeDefault, HotKeySymbol + 'OK');
-	if msgType = msgQuest then
+	BtnFirst.Init(sizeCenter, WinMsgBox.Top + 42 + (15 * msgLineCount), 80, SizeDefault, HotKeySymbol + 'OK');
+	if MsgType = MsgQuest then
 	begin
-		btnFirst.Caption := HotkeySymbol + 'Yes';
-		btnFirst.Left := 320 - 86;
+		BtnFirst.Caption := HotkeySymbol + 'Yes';
+		BtnFirst.Left := 320 - 86;
 	end;
-	btnSecond.Init(326, btnFirst.Top, 80, sizeDefault, HotkeySymbol + 'No');
+	BtnSecond.Init(326, BtnFirst.Top, 80, SizeDefault, HotkeySymbol + 'No');
 
 	MouseHide;
 
-	{Save background to restore when window is closed}
-	x1 := winMsgBox.Left;
-	y1 := winMsgBox.Top;
-	x2 := winMsgBox.Left + winMsgBox.Width;
-	y2 := winMsgBox.Top + winMsgBox.Height;
+	{Save background to restore when Window is closed}
+	x1 := WinMsgBox.Left;
+	y1 := WinMsgBox.Top;
+	x2 := WinMsgBox.Left + WinMsgBox.Width;
+	y2 := WinMsgBox.Top + WinMsgBox.Height;
 	BackgroundSize := ImageSize(x1, y1, x2, y2);
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(x1, y1, x2, y2, BackgroundP^);
 
-	winMsgBox.Draw;
-	btnFirst.Draw;
-	if msgType = msgQuest then
-		btnSecond.Draw;
-	imgIcon.Draw;
-	Print(msgTitle, winMsgBox.Left+56, winMsgBox.Top+15, Theme.WindowText);
+	WinMsgBox.Draw;
+	BtnFirst.Draw;
+	if MsgType = MsgQuest then
+		BtnSecond.Draw;
+	ImgIcon.Draw;
+	Print(msgTitle, WinMsgBox.Left+56, WinMsgBox.Top+15, Thm.WinText);
 	for i := 1 to msgLineCount do
-		Print(msgLines[i], winMsgBox.Left+56, winMsgBox.Top+17+(15*i), Theme.WindowText);
+		Print(msgLines[i], WinMsgBox.Left+56, WinMsgBox.Top+17+(15*i), Thm.WinText);
 	MouseShow;
 	repeat
 		Key := GetKey;
 			
-		if ObjBtnClick(btnFirst) then Key := KeyEnter;
-		if msgType = msgQuest then
+		if ObjBtnClick(BtnFirst) then Key := KeyEnter;
+		if MsgType = MsgQuest then
 		begin
-			if ObjBtnClick(btnSecond) then Key := KeyEscape;
+			if ObjBtnClick(BtnSecond) then Key := KeyEscape;
 		end;
 		if Key <> '' then
 		begin
-			if msgType = msgQuest then
+			if MsgType = MsgQuest then
 			begin
 				if (Key = KeyAltY) or (Key = KeyEnter) then
 				begin
@@ -1161,7 +1158,7 @@ begin
 		MsgBox('Could not save settings',
 			'Could not write to the configuration file' + NewLine + 
 			GlobalSettings + '.' + NewLine +
-			'Verify that the path exists and isn''t read-only.', msgError);
+			'Verify that the path exists and isn''t read-only.', MsgError);
 		Close(f);
 		Exit;
 	end;
@@ -1209,22 +1206,20 @@ begin
 end;
 
 procedure ClearInputBuffer;
-var
-	k: char;
 begin
 	repeat
 		if KeyPressed then
 			ReadKey;
-	until (MouseClicked = mbNone) and not KeyPressed; {Wait until mouse is released and no keys are pressed}
+	until (MouseClicked = MbNone) and not KeyPressed; {Wait until mouse is released and no keys are pressed}
 end;
 
-procedure SysShowLoading;
+procedure ShowLoading;
 var
-	btnLoading: TButton;
+	BtnLoading: TButton;
 begin
-	btnLoading.Init(sizeCenter, sizeCenter, 110, 34, 'Loading...');
+	BtnLoading.Init(sizeCenter, sizeCenter, 110, 34, 'Loading...');
 	MouseHide;
-	btnLoading.Draw;
+	BtnLoading.Draw;
 	MouseShow;
 end;
 
@@ -1234,6 +1229,7 @@ var
 	GraphMode: Integer;
 	ErrorCode: Integer;
 begin
+	{Initialize EGA 640x350 mode}
 	GraphDriver := EGA;
 	GraphMode := EGAHI;
 	InitGraph(GraphDriver, GraphMode, ProgramPath);
@@ -1244,16 +1240,20 @@ begin
 		Writeln('Graphics error: ', GraphErrorMsg(ErrorCode));
 		Halt(1);
 	End;
+
+	{Load settings and theme}
 	SysLoadSettings;
-	SysLoadTheme(Setting.ThemeFile);
-	if Setting.DesktopID < 1 then Setting.DesktopID := 1;
-	if Setting.DesktopID > 5 then Setting.DesktopID := 5;
+	LoadTheme(Setting.ThmFile);
+	if Setting.DeskID < 1 then Setting.DeskID := 1;
+	if Setting.DeskID > 5 then Setting.DeskID := 5;
+
+	{Initialize menu bar so app can use it right away}
 	MenuBar.Init;
 
+	{Check for mouse support}
 	Intr($33, regs);
 	MouseSupport := Regs.ax > 0;
 
-	repeat until MouseClicked = mbNone;
-	while KeyPressed do ReadKey;
+	ClearInputBuffer; {DOSBox tends to leave keys in the buffer, so clear it}
 	MouseShow;
 end.
