@@ -1,16 +1,16 @@
 
-unit Inputbox;
+unit InputDlg;
 
 interface
 
 uses
 	Costalib, Strings, Graph, Crt;
 
-function SysInputBox(msgTitle, msgText, msgIcon, msgDefault: string): string;
+function InputBox(msgTitle, msgText, msgIcon, msgDefault: string): string;
 
 implementation
 
-function SysInputBox(msgTitle, msgText, msgIcon, msgDefault: string): string;
+function InputBox(msgTitle, msgText, msgIcon, msgDefault: string): string;
 var
 	msgLines: array[1..16] of string;
 	msgLineCount, msgTextWidth, i, P: Integer;
@@ -54,8 +54,8 @@ begin
 		WindowWidth := 194;
 	WinInputBox.Init(sizeCenter, sizeCenter, WindowWidth, msgLineCount * 15 + 120);
 	TxtInput.Init(WinInputBox.Left + 12, WinInputBox.Top + 56 + (15 * msgLineCount), WinInputBox.Width - 24, 22);
-	BtnOK.Init(WinInputBox.Left + WinInputBox.Width - 182, TxtInput.Top + 30, 80, SizeDefault, HotkeySymbol + 'OK');
-	BtnCancel.Init(WinInputBox.Left + WinInputBox.Width - 92, BtnOK.Top, 80, SizeDefault, HotkeySymbol + 'Cancel');
+	BtnOK.Init(WinInputBox.Left + WinInputBox.Width - 182, TxtInput.Top + 30, 80, SizeDefault, Hotkey + 'OK');
+	BtnCancel.Init(WinInputBox.Left + WinInputBox.Width - 92, BtnOK.Top, 80, SizeDefault, Hotkey + 'Cancel');
 	TxtInput.Text := msgDefault;
 
 	if Length(msgIcon) > 0 then
@@ -94,7 +94,7 @@ begin
 	end;
 		
 
-	Print('I' + HotkeySymbol + 'nput:', TxtInput.Left, TxtInput.Top - 16, Thm.WinText);
+	Print('I' + Hotkey + 'nput:', TxtInput.Left, TxtInput.Top - 16, Thm.WinText);
 
 	if Length(msgIcon) > 0 then
 		ImgIcon.Draw;
@@ -104,20 +104,20 @@ begin
 	repeat
 		Key := GetKey;
 
-		if ObjBtnClick(BtnOK) or (Key = KeyAltO) or (Key = KeyEnter) then
+		if BtnClick(BtnOK) or (Key = KeyAltO) or (Key = KeyEnter) then
 		begin
-			SysInputBox := TxtInput.Text;
+			InputBox := TxtInput.Text;
 			Break;
 		end;
 
-		if ObjBtnClick(BtnCancel) or (Key = KeyAltC) or (Key = KeyEscape) then
+		if BtnClick(BtnCancel) or (Key = KeyAltC) or (Key = KeyEscape) then
 		begin
-			SysInputBox := '';
+			InputBox := '';
 			Break;
 		end;
 
-		if ObjTxtClick(TxtInput) or (Key = KeyAltN) then
-			ObjEditTxt(TxtInput, TxtInput.Text);
+		if TxtClick(TxtInput) or (Key = KeyAltN) then
+			EditTxt(TxtInput, TxtInput.Text);
 
 	until False;
 

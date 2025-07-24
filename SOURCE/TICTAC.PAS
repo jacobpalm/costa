@@ -507,11 +507,11 @@ begin
 		end;
 	end;
 	
-	BtnNew.Init(3, 2, SizeDefault, SizeDefault, HotkeySymbol + 'New game');
-	BtnAIToggle.Init(102, 2, SizeDefault, SizeDefault, HotkeySymbol + 'Mode');
-	BtnAudio.Init(201, 2, SizeDefault, SizeDefault, HotkeySymbol + 'Sound');
-	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, HotkeySymbol + 'About...');
-	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + HotkeySymbol + 'xit');
+	BtnNew.Init(3, 2, SizeDefault, SizeDefault, Hotkey + 'New game');
+	BtnAIToggle.Init(102, 2, SizeDefault, SizeDefault, Hotkey + 'Mode');
+	BtnAudio.Init(201, 2, SizeDefault, SizeDefault, Hotkey + 'Sound');
+	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, Hotkey + 'About...');
+	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + Hotkey + 'xit');
 	
 	MouseHide;
 	MenuBar.Draw;
@@ -538,20 +538,20 @@ begin
 	repeat
 		Key := GetKey;
 		
-		if ObjBtnClick(BtnNew) or (Key = KeyAltN) then
+		if BtnClick(BtnNew) or (Key = KeyAltN) then
 		begin
 			TicNewGame;
 			if EnableAI and (PlayerTurn = PlayerO) then
 				TicAIMove;
 		end;
 
-		if ObjBtnClick(BtnAbout) or (Key = KeyAltA) then
+		if BtnClick(BtnAbout) or (Key = KeyAltA) then
 			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 
-		if ObjBtnClick(BtnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
+		if BtnClick(BtnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
 			break;
 
-		if ObjBtnClick(BtnAIToggle) or (Key = KeyAltM) then
+		if BtnClick(BtnAIToggle) or (Key = KeyAltM) then
 		begin
 			EnableAI := not EnableAI;
 			TicNewGame;
@@ -559,7 +559,7 @@ begin
 				TicAIMove;
 		end;
 
-		if ObjBtnClick(BtnAudio) or (Key = KeyAltS) then
+		if BtnClick(BtnAudio) or (Key = KeyAltS) then
 		begin
 			EnableAudio := not EnableAudio;
 			TicPrintStatus;

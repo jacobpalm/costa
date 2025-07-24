@@ -154,8 +154,8 @@ begin
 
 	LoadThemeList;
 
-	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + HotkeySymbol + 'xit');
-	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, HotkeySymbol + 'About...');
+	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + Hotkey + 'xit');
+	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, Hotkey + 'About...');
 	
 	FrmSettings.Init(14, 43, 310, 293);
 	FrmTheme.Init(338, 43, 288, 293);
@@ -169,14 +169,14 @@ begin
 	FrmThemePreview.Init(FrmTheme.Left + 14, FrmTheme.Top + 55, FrmTheme.Width - 28, 192);
 	ImgTheme.Init(FrmTheme.Left + 14, FrmTheme.Top + 14, 'THEMES');
 	BtnPrevious.Init(FrmTheme.Left + 14, FrmTheme.Top + FrmTheme.Height - 34,
-		SizeDefault, SizeDefault, CharArrowLeft + ' ' + HotkeySymbol + 'Previous');
+		SizeDefault, SizeDefault, CharArrowLeft + ' ' + Hotkey + 'Previous');
 	BtnNext.Init(FrmTheme.Left + FrmTheme.Width - 92 - 14, BtnPrevious.Top,
-		SizeDefault, SizeDefault, HotkeySymbol + 'Next ' + CharArrowRight);
+		SizeDefault, SizeDefault, Hotkey + 'Next ' + CharArrowRight);
 
-	ChkSetting[LinkDesc].Checked := Setting.ShowLinkDescriptions;
-	ChkSetting[LinkTarget].Checked := Setting.ShowLinkTargetFiles;
-	ChkSetting[LinkDelete].Checked := Setting.ConfirmLinkDelete;
-	ChkSetting[ConfExit].Checked := Setting.ConfirmExit;
+	ChkSetting[LinkDesc].Checked := Setting.LinkCapt;
+	ChkSetting[LinkTarget].Checked := Setting.LinkTarget;
+	ChkSetting[LinkDelete].Checked := Setting.ConfLinkDel;
+	ChkSetting[ConfExit].Checked := Setting.ConfExit;
 	
 	MouseHide;
 	MenuBar.Draw;
@@ -203,13 +203,13 @@ begin
 	ImgSetting.Draw;
 	ImgTheme.Draw;
 
-	Print('Show icon ' + HotkeySymbol + 'descriptions', ChkSetting[LinkDesc].Left + 20, ChkSetting[LinkDesc].Top + 3,
+	Print('Show icon ' + Hotkey + 'descriptions', ChkSetting[LinkDesc].Left + 20, ChkSetting[LinkDesc].Top + 3,
 		Thm.WinText);
-	Print('Show icon ' + HotkeySymbol + 'targets', ChkSetting[LinkTarget].Left + 20, ChkSetting[LinkTarget].Top + 3,
+	Print('Show icon ' + Hotkey + 'targets', ChkSetting[LinkTarget].Left + 20, ChkSetting[LinkTarget].Top + 3,
 		Thm.WinText);
-	Print('Confirm icon ' + HotkeySymbol + 'removal', ChkSetting[LinkDelete].Left + 20,
+	Print('Confirm icon ' + Hotkey + 'removal', ChkSetting[LinkDelete].Left + 20,
 		ChkSetting[LinkDelete].Top + 3, Thm.WinText);
-	Print('Confirm before ' + HotkeySymbol + 'exiting Costa', ChkSetting[ConfExit].Left + 20,
+	Print('Confirm before ' + Hotkey + 'exiting Costa', ChkSetting[ConfExit].Left + 20,
 		ChkSetting[ConfExit].Top + 3, Thm.WinText);
 
 	Print('Settings', ImgSetting.Left + 42, ImgSetting.Top + 5, Thm.WinText);
@@ -228,23 +228,23 @@ begin
 
 		if ThemeCount > 0 then
 		begin
-			if ObjBtnClick(BtnPrevious) or (Key = KeyAltP) or (Key = KeyLeft) then
+			if BtnClick(BtnPrevious) or (Key = KeyAltP) or (Key = KeyLeft) then
 			 begin
 				Dec(SelectedTheme);
 				ThemePreview;
 			end;
 
-			if ObjBtnClick(BtnNext) or (Key = KeyAltN) or (Key = KeyRight) then
+			if BtnClick(BtnNext) or (Key = KeyAltN) or (Key = KeyRight) then
 			begin
 				Inc(SelectedTheme);
 				ThemePreview;
 			end;
 		end;
 
-		ObjChkClick(ChkSetting[LinkDesc]);
-		ObjChkClick(ChkSetting[LinkTarget]);
-		ObjChkClick(ChkSetting[LinkDelete]);
-		ObjChkClick(ChkSetting[ConfExit]);
+		ChkClick(ChkSetting[LinkDesc]);
+		ChkClick(ChkSetting[LinkTarget]);
+		ChkClick(ChkSetting[LinkDelete]);
+		ChkClick(ChkSetting[ConfExit]);
 
 		if Key = KeyAltD then
 		begin
@@ -275,17 +275,17 @@ begin
 			MouseShow;
 		end;
 
-		if ObjBtnClick(BtnAbout) or (Key = KeyAltA) then
+		if BtnClick(BtnAbout) or (Key = KeyAltA) then
 			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 
-		if ObjBtnClick(BtnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
+		if BtnClick(BtnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
 		begin
 			if ThemeCount > 0 then
 				Setting.ThmFile := ThemeList[SelectedTheme];
-			Setting.ShowLinkDescriptions := ChkSetting[LinkDesc].Checked;
-			Setting.ShowLinkTargetFiles := ChkSetting[LinkTarget].Checked;
-			Setting.ConfirmLinkDelete := ChkSetting[LinkDelete].Checked;
-			Setting.ConfirmExit := ChkSetting[ConfExit].Checked;
+			Setting.LinkCapt := ChkSetting[LinkDesc].Checked;
+			Setting.LinkTarget := ChkSetting[LinkTarget].Checked;
+			Setting.ConfLinkDel := ChkSetting[LinkDelete].Checked;
+			Setting.ConfExit := ChkSetting[ConfExit].Checked;
 			SysSaveSettings;
 			break;
 		end;

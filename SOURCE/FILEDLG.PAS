@@ -1,4 +1,4 @@
-unit FileSel;
+unit FileDlg;
 
 interface
 
@@ -431,8 +431,8 @@ begin
 	TxtDrive.Init(272, WinFileSelect.Top + 28, 150, SizeDefault);
 	TxtList[FileList].Init(101, WinFileSelect.Top + 71, 150, 185);
 	TxtList[DirList].Init(272, WinFileSelect.Top + 71, 150, 185);
-	BtnSelect.Init(448, WinFileSelect.Top + 28, SizeDefault, SizeDefault, HotkeySymbol + 'Select');
-	BtnCancel.Init(448, WinFileSelect.Top + 58, SizeDefault, SizeDefault, HotkeySymbol + 'Cancel');
+	BtnSelect.Init(448, WinFileSelect.Top + 28, SizeDefault, SizeDefault, Hotkey + 'Select');
+	BtnCancel.Init(448, WinFileSelect.Top + 58, SizeDefault, SizeDefault, Hotkey + 'Cancel');
 	BtnFilePrev.Init(253, TxtList[FileList].Top, 14, 91, CharArrowUp);
 	BtnFileNext.Init(253, TxtList[FileList].Top + 94, 14, 91, CharArrowDown);
 	BtnDirPrev.Init(424, TxtList[DirList].Top, 14, 91, CharArrowUp);
@@ -476,10 +476,10 @@ begin
 	BtnFileNext.Draw;
 	BtnDirPrev.Draw;
 	BtnDirNext.Draw;
-	Print(HotkeySymbol + 'Pattern:', 101, WinFileSelect.Top + 14, Thm.WinText);
-	Print(HotkeySymbol + 'Drive:', 272, WinFileSelect.Top + 14, Thm.WinText);
-	Print(HotkeySymbol + 'Files:', 101, WinFileSelect.Top + 57, Thm.WinText);
-	Print('F' + HotkeySymbol + 'olders:', 272, WinFileSelect.Top + 57, Thm.WinText);
+	Print(Hotkey + 'Pattern:', 101, WinFileSelect.Top + 14, Thm.WinText);
+	Print(Hotkey + 'Drive:', 272, WinFileSelect.Top + 14, Thm.WinText);
+	Print(Hotkey + 'Files:', 101, WinFileSelect.Top + 57, Thm.WinText);
+	Print('F' + Hotkey + 'olders:', 272, WinFileSelect.Top + 57, Thm.WinText);
 	MouseShow;
 
 	{If path provided, use it}
@@ -508,7 +508,7 @@ begin
 				Key := KeyEnter; {Double-clicked directory, change to it}
 		end;
 
-		if ObjBtnClick(BtnSelect) or (Key = KeyAltS) or (Key = KeyEnter) then
+		if BtnClick(BtnSelect) or (Key = KeyAltS) or (Key = KeyEnter) then
 		begin
 			if (ActiveList = FileList) and (SubFiles[ListSelection[FileList]] <> '') then
 			begin
@@ -525,15 +525,15 @@ begin
 			end;
 		end;
 
-		if ObjBtnClick(BtnCancel) or (Key = KeyAltC) or (Key = KeyEscape) then
+		if BtnClick(BtnCancel) or (Key = KeyAltC) or (Key = KeyEscape) then
 		begin
 			FileSelect := '';
 			Break;
 		end;
 
-		if ObjTxtClick(TxtDrive) or (Key = KeyAltD) then
+		if TxtClick(TxtDrive) or (Key = KeyAltD) then
 		begin
-			ObjEditTxt(TxtDrive, TxtDrive.Text);
+			EditTxt(TxtDrive, TxtDrive.Text);
 			if TxtDrive.Text <> Drive Then
 			begin
 				if not FileSetDrive(TxtDrive.Text[1]) then
@@ -546,25 +546,25 @@ begin
 			end;
 		end;
 
-		if ObjBtnClick(BtnFilePrev) then
+		if BtnClick(BtnFilePrev) then
 		begin
 			FileSetActiveList(FileList);
 			Key := KeyPageUp; {Simulate key press for moving selection up}
 		end;
 
-		if ObjBtnClick(BtnFileNext) then
+		if BtnClick(BtnFileNext) then
 		begin
 			FileSetActiveList(FileList);
 			Key := KeyPageDown; {Simulate key press for moving selection down}
 		end;
 
-		if ObjBtnClick(BtnDirPrev) then
+		if BtnClick(BtnDirPrev) then
 		begin
 			FileSetActiveList(DirList);
 			Key := KeyPageUp; {Simulate key press for moving view up}
 		end;
 
-		if ObjBtnClick(BtnDirNext) then
+		if BtnClick(BtnDirNext) then
 		begin
 			FileSetActiveList(DirList);
 			Key := KeyPageDown; {Simulate key press for moving view down}
@@ -597,9 +597,9 @@ begin
 		if (Key = KeyTab) or (Key = KeyShiftTab) then
 			FileSetActiveList(not ActiveList);
 
-		if ObjTxtClick(TxtPattern) or (Key = KeyAltP) then
+		if TxtClick(TxtPattern) or (Key = KeyAltP) then
 		begin
-			ObjEditTxt(TxtPattern, TxtPattern.Text);
+			EditTxt(TxtPattern, TxtPattern.Text);
 			if TxtPattern.Text <> Pattern then
 			begin
 				Pattern := TxtPattern.Text;

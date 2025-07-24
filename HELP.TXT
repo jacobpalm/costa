@@ -1,4 +1,4 @@
-The Costa GUI, version 1.8.0
+The Costa GUI, version 2.0
 By Jacob Palm
 
 User's guide and reference

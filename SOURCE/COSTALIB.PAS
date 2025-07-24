@@ -19,8 +19,8 @@ const
 	CharArrowDown:  Char = #25;
 	CharArrowRight: Char = #26;
 	CharArrowLeft:  Char = #27;
-	NewLine:        Char = #13;  {Wrap lines in msgbox, inputbox etc.}
-	HotkeySymbol:   Char = #127; {Marks hotkeys in object captions}
+	NewLine:        Char = #13;  {Wrap lines in Print, MsgBox, InputBox etc.}
+	Hotkey:   Char = #127; {Marks hotkeys in object captions}
 
 	{$I KEYCODES.INC}
 
@@ -90,10 +90,10 @@ type
 
 	TLibSetting = record
 		DeskID: Integer;
-		ShowLinkDescriptions: Boolean;
-		ShowLinkTargetFiles: Boolean;
-		ConfirmLinkDelete: Boolean;
-		ConfirmExit: Boolean;
+		LinkCapt: Boolean;
+		LinkTarget: Boolean;
+		ConfLinkDel: Boolean;
+		ConfExit: Boolean;
 		ThmFile: string[8];
 	end;
 
@@ -121,17 +121,17 @@ var
 	MouseSupport: Boolean;
 	MouseX, MouseY: Integer;
 
-function  ObjBtnClick(var TargetBtn: TButton): Boolean;
-function  ObjTxtClick(const TargetTxt: TTextbox): Boolean;
-procedure ObjChkClick(var TargetChk: TCheckbox);
+function  BtnClick(var TargetBtn: TButton): Boolean;
+function  TxtClick(const TargetTxt: TTextbox): Boolean;
+procedure ChkClick(var TargetChk: TCheckbox);
 function  ObjClick(const TargetObj: TUIObject): Boolean;
-procedure ObjEditTxt(var TargetTxt: TTextbox; var Text: string);
+procedure EditTxt(var TargetTxt: TTextbox; var Text: string);
 
 function  MsgBox(const msgTitle, msgText: string; MsgType: TMsgBox): Boolean;
 procedure AboutBox(const ProgramName, ProgramVersion, ProgramAuthor, IconFile: string);
 
 function  FileExists(const FileName: string): Boolean;
-function  ValidDOSFilename(Filename: string): Boolean;
+function  Valid8dot3(Filename: string): Boolean;
 
 procedure ClearInputBuffer;
 function  GetKey: string;
@@ -518,11 +518,11 @@ begin
 	FileExists := (DosError = 0);
 end;
 
-function ValidDOSFilename(Filename: string): Boolean;
+function Valid8dot3(Filename: string): Boolean;
 var
 	DotPos, NameLen, ExtLen, i: Integer;
 begin
-	ValidDOSFilename := false;
+	Valid8dot3 := false;
 
 	if Length(Filename) = 0 then
 		exit;
@@ -552,7 +552,7 @@ begin
 								')', '-', '{', '}', '''', '.']) then
 			exit;
 
-	ValidDOSFilename := true;
+	Valid8dot3 := true;
 end;
 
 function PrintW(TargetText: String): Integer;
@@ -561,7 +561,7 @@ var
 begin
 	Width := Length(TargetText) * 8; {Each character is 8 pixels wide}
 
-	if Pos(HotkeySymbol, TargetText) > 0 then
+	if Pos(Hotkey, TargetText) > 0 then
 		Width := Width - 8; {Don't count the hotkey symbol}
 
 	PrintW := Width;
@@ -576,7 +576,7 @@ var
 	 and draw an underline under the next character}
 	procedure HandleHotkey(X, Y: Integer; var LineStr: String);
 	begin
-		HotkeyPos := Pos(HotkeySymbol, LineStr);
+		HotkeyPos := Pos(Hotkey, LineStr);
 		if HotkeyPos > 0 then
 		begin
 			Delete(LineStr, HotkeyPos, 1);
@@ -601,7 +601,7 @@ begin
 		else
 		begin
 			{Last/only line}
-			HotkeyPos := Pos(HotkeySymbol, Text);
+			HotkeyPos := Pos(Hotkey, Text);
 			HandleHotkey(X, Y, Text);
 			OutTextXY(X, Y, Text);
 			break;
@@ -666,9 +666,9 @@ Begin
 	MouseVisible := True;
 End;
 
-function ObjBtnClick(var TargetBtn: TButton): Boolean;
+function BtnClick(var TargetBtn: TButton): Boolean;
 begin
-	ObjBtnClick := False;
+	BtnClick := False;
 	if (MouseClicked = MbLeft) and TargetBtn.IsMouseOver then
 	begin
 		MouseHide;
@@ -705,11 +705,11 @@ begin
 			MouseShow;
 		end;
 		if TargetBtn.IsMouseOver then
-			ObjBtnClick := True;
+			BtnClick := True;
 	end;
 end;
 
-procedure ObjChkClick(var TargetChk: TCheckbox);
+procedure ChkClick(var TargetChk: TCheckbox);
 begin
 	if (MouseClicked = MbLeft) and TargetChk.IsMouseOver then
 	begin
@@ -735,7 +735,7 @@ begin
 	end;
 end;
 
-procedure ObjEditTxt(var TargetTxt: TTextbox; var Text: string);
+procedure EditTxt(var TargetTxt: TTextbox; var Text: string);
 var
 	OrigTxt, TempTxt, Key: string;
 	x1, y1, LineX1, MaxLen, MaxShow: Integer;
@@ -851,14 +851,14 @@ begin
 	until False;
 end;
 
-function ObjTxtClick(const TargetTxt: TTextbox): Boolean;
+function TxtClick(const TargetTxt: TTextbox): Boolean;
 begin
-	ObjTxtClick := False;
+	TxtClick := False;
 	if (MouseClicked = MbLeft) and TargetTxt.IsMouseOver then
 	begin
 		repeat until MouseClicked = MbNone;
 		if TargetTxt.IsMouseOver then
-			ObjTxtClick := True;
+			TxtClick := True;
 	end;
 end;
 
@@ -896,7 +896,7 @@ var
 begin
 	WinAboutBox.Init(sizeCenter, sizeCenter, 329, 216);
 	ImgLogo.Init(168, WinAboutBox.Top + 11, IconFile);
-	BtnClose.Init(274, WinAboutBox.Top + WinAboutBox.Height - 34, SizeDefault, SizeDefault, HotkeySymbol + 'Close');
+	BtnClose.Init(274, WinAboutBox.Top + WinAboutBox.Height - 34, SizeDefault, SizeDefault, Hotkey + 'Close');
 	MouseHide;
 
 	{Save background to restore when Window is closed}
@@ -923,7 +923,7 @@ begin
 	MouseShow;
 	repeat
 		Key := GetKey;
-		if ObjBtnClick(BtnClose) or (Key = KeyEnter) or (Key = KeyEscape) or (Key = KeyAltC) then Break;
+		if BtnClick(BtnClose) or (Key = KeyEnter) or (Key = KeyEscape) or (Key = KeyAltC) then Break;
 	until False;
 	MouseHide;
 	PutImage(x1, y1, BackgroundP^, NormalPut);
@@ -940,10 +940,10 @@ begin
 	
 	{Set defaults - will be overwritten if settings file loads successfully}
 	Setting.DeskID := 1;
-	Setting.ShowLinkDescriptions := True;
-	Setting.ShowLinkTargetFiles := False;
-	Setting.ConfirmLinkDelete := True;
-	Setting.ConfirmExit := False;
+	Setting.LinkCapt := True;
+	Setting.LinkTarget := False;
+	Setting.ConfLinkDel := True;
+	Setting.ConfExit := False;
 	Setting.ThmFile := 'DEFAULT';
 	
 	if not FileExists(ProgramPath + GlobalSettings) then
@@ -1065,13 +1065,13 @@ begin
 		MsgQuest: ImgIcon.ImageFile := 'MSGQUEST';
 		MsgError: ImgIcon.ImageFile := 'MSGERROR';
 	end;
-	BtnFirst.Init(sizeCenter, WinMsgBox.Top + 42 + (15 * msgLineCount), 80, SizeDefault, HotKeySymbol + 'OK');
+	BtnFirst.Init(sizeCenter, WinMsgBox.Top + 42 + (15 * msgLineCount), 80, SizeDefault, Hotkey + 'OK');
 	if MsgType = MsgQuest then
 	begin
-		BtnFirst.Caption := HotkeySymbol + 'Yes';
+		BtnFirst.Caption := Hotkey + 'Yes';
 		BtnFirst.Left := 320 - 86;
 	end;
-	BtnSecond.Init(326, BtnFirst.Top, 80, SizeDefault, HotkeySymbol + 'No');
+	BtnSecond.Init(326, BtnFirst.Top, 80, SizeDefault, Hotkey + 'No');
 
 	MouseHide;
 
@@ -1096,10 +1096,10 @@ begin
 	repeat
 		Key := GetKey;
 			
-		if ObjBtnClick(BtnFirst) then Key := KeyEnter;
+		if BtnClick(BtnFirst) then Key := KeyEnter;
 		if MsgType = MsgQuest then
 		begin
-			if ObjBtnClick(BtnSecond) then Key := KeyEscape;
+			if BtnClick(BtnSecond) then Key := KeyEscape;
 		end;
 		if Key <> '' then
 		begin

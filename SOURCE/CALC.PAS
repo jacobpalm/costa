@@ -95,8 +95,8 @@ begin
 	BtnNumb[7].Init(26, FrmCalc.Top + 73, 40, SizeDefault, '7');
 	BtnNumb[8].Init(76, FrmCalc.Top + 73, 40, SizeDefault, '8');
 	BtnNumb[9].Init(126, FrmCalc.Top + 73, 40, SizeDefault, '9');
-	BtnC.Init(26, FrmCalc.Top + 40, 40, SizeDefault, HotkeySymbol + 'C');
-	BtnCE.Init(76, FrmCalc.Top + 40, 40, SizeDefault, 'C' + HotkeySymbol + 'E');
+	BtnC.Init(26, FrmCalc.Top + 40, 40, SizeDefault, Hotkey + 'C');
+	BtnCE.Init(76, FrmCalc.Top + 40, 40, SizeDefault, 'C' + Hotkey + 'E');
 	BtnDivide.Init(126, FrmCalc.Top + 40, 40, SizeDefault, '/');
 	BtnDot.Init(126, FrmCalc.Top + 172, 40, SizeDefault, '.');
 	BtnMulti.Init(176, FrmCalc.Top + 40, 40, SizeDefault, '*');
@@ -106,8 +106,8 @@ begin
 
 	TxtResults.Init(FrmCalc.Left + FrmCalc.Width + 12, FrmCalc.Top, 385, 295);
 
-	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, HotkeySymbol + 'About...');
-	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + HotkeySymbol + 'xit');
+	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, Hotkey + 'About...');
+	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + Hotkey + 'xit');
 
 	TxtCalc.MaxLen := 25;
 
@@ -133,20 +133,20 @@ begin
 	repeat
 		Key := GetKey;
 
-		if ObjBtnClick(BtnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
+		if BtnClick(BtnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
 		begin
 			MouseHide;
 			CloseGraph;
 			Halt;
 		end;
 
-		if ObjBtnClick(BtnAbout) or (Key = KeyAltA) then
+		if BtnClick(BtnAbout) or (Key = KeyAltA) then
 			AboutBox(AppName, AppVersion, AppAuthor, 'CALC');
 
 		for i := 0 to 9 do
 		begin
 			Str(i, ch);
-			if ObjBtnClick(BtnNumb[i]) or (Key = ch) then
+			if BtnClick(BtnNumb[i]) or (Key = ch) then
 			begin
 				TxtCalc.Text := TxtCalc.Text + ch;
 				MouseHide;
@@ -155,7 +155,7 @@ begin
 			end;
 		end;
 
-		if ObjBtnClick(BtnC) or (Key = 'c') then
+		if BtnClick(BtnC) or (Key = 'c') then
 		begin
 			TxtCalc.Text := '';
 			MouseHide;
@@ -163,7 +163,7 @@ begin
 			MouseShow;
 		end;
 
-		if ObjBtnClick(BtnCE) or (Key = 'e') then
+		if BtnClick(BtnCE) or (Key = 'e') then
 		begin
 			TxtCalc.Text := '';
 			MouseHide;
@@ -176,7 +176,7 @@ begin
 			LastClick := '';
 		end;
 
-		if ObjBtnClick(BtnDot) or ((Key = '.') or (Key = ',')) then
+		if BtnClick(BtnDot) or ((Key = '.') or (Key = ',')) then
 		begin
 			if (Length(TxtCalc.Text) < 22) and (Pos('.', TxtCalc.Text) = 0) then
 			begin
@@ -195,15 +195,15 @@ begin
 			end;
 		end;
 
-		if ObjBtnClick(BtnEquals) or (Key = '=') or (Key = KeyEnter) then
+		if BtnClick(BtnEquals) or (Key = '=') or (Key = KeyEnter) then
 		begin
 			
 		end;
 
-		if ObjBtnClick(BtnMulti) then Key := '*';
-		if ObjBtnClick(BtnDivide) then Key := '/';
-		if ObjBtnClick(BtnPlus) then Key := '+';
-		if ObjBtnClick(BtnMinus) then Key := '-';
+		if BtnClick(BtnMulti) then Key := '*';
+		if BtnClick(BtnDivide) then Key := '/';
+		if BtnClick(BtnPlus) then Key := '+';
+		if BtnClick(BtnMinus) then Key := '-';
 
 	until False;
 

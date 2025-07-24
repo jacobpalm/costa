@@ -518,8 +518,8 @@ var
 begin
 	PauseTime := Timer;
 	
-	BtnResume.Init(3, 2, SizeDefault, SizeDefault, HotkeySymbol + 'Resume');
-	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + HotkeySymbol + 'xit');
+	BtnResume.Init(3, 2, SizeDefault, SizeDefault, Hotkey + 'Resume');
+	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + Hotkey + 'xit');
 
 	MouseHide;
 	{PCOPY 0, 1} {DEUG - save background}
@@ -536,10 +536,10 @@ begin
 		if (Key = KeySpace) or (Key = KeyEnter) or (Key = KeyEscape) then
 			break;
 
-		if ObjBtnClick(BtnResume) or (Key = 'r') then
+		if BtnClick(BtnResume) or (Key = 'r') then
 			break;
 
-		if ObjBtnClick(BtnExit) then
+		if BtnClick(BtnExit) then
 		begin
 			CloseGraph;
 			Halt(0);
@@ -761,7 +761,7 @@ begin
 	BtnSize[1].Init(BtnSize[0].Left + 110, WinSetSize.Top + 11, 100, 100, '');
 	BtnSize[2].Init(WinSetSize.Left + 13, BtnSize[0].Top + 110, 100, 100, '');
 	BtnSize[3].Init(BtnSize[2].Left + 110, BtnSize[2].Top, 100, 100, '');
-	BtnCancel.Init(WinSetSize.Left + 13, BtnSize[2].Top + 110, 210, SizeDefault, HotkeySymbol + 'Cancel');
+	BtnCancel.Init(WinSetSize.Left + 13, BtnSize[2].Top + 110, 210, SizeDefault, Hotkey + 'Cancel');
 
 	BtnSize[0].Transparent := True;
 	BtnSize[1].Transparent := True;
@@ -785,19 +785,19 @@ begin
 	BtnSize[3].Draw;
 	BtnCancel.Draw;
 
-	TempStr := '9x' + HotkeySymbol + '9';
+	TempStr := '9x' + Hotkey + '9';
 	TextOffset := ((BtnSize[0].Width - PrintW(TempStr)) div 2);
 	Print(TempStr, BtnSize[0].Left + TextOffset, BtnSize[0].Top + 79, Thm.WinText);
 	
-	TempStr := '16x1' + HotkeySymbol + '6';
+	TempStr := '16x1' + Hotkey + '6';
 	TextOffset := ((BtnSize[1].Width - PrintW(TempStr)) div 2);
 	Print(TempStr, BtnSize[1].Left + TextOffset, BtnSize[1].Top + 79, Thm.WinText);
 
-	TempStr := HotkeySymbol + '22x18';
+	TempStr := Hotkey + '22x18';
 	TextOffset := ((BtnSize[2].Width - PrintW(TempStr)) div 2);
 	Print(TempStr, BtnSize[2].Left + TextOffset, BtnSize[2].Top + 79, Thm.WinText);
 
-	TempStr := HotkeySymbol + '39x18';
+	TempStr := Hotkey + '39x18';
 	TextOffset := ((BtnSize[3].Width - PrintW(TempStr)) div 2);
 	Print(TempStr, BtnSize[3].Left + TextOffset, BtnSize[3].Top + 79, Thm.WinText);
 	
@@ -833,34 +833,34 @@ begin
 	repeat
 		Key := GetKey;
 
-		if ObjBtnClick(BtnCancel) or (Key = KeyEscape) or (Key = 'c') then
+		if BtnClick(BtnCancel) or (Key = KeyEscape) or (Key = 'c') then
 		begin
 			MineSetSize := False;
 			break;
 		end;
 
-		if ObjBtnClick(BtnSize[0]) or (Key = '9') then
+		if BtnClick(BtnSize[0]) or (Key = '9') then
 		begin
 			FieldHeight := 9;
 			FieldWidth := 9;
 			break;
 		end;
 
-		if ObjBtnClick(BtnSize[1]) or (Key = '6') then
+		if BtnClick(BtnSize[1]) or (Key = '6') then
 		begin
 			FieldHeight := 16;
 			FieldWidth := 16;
 			break;
 		end;
 
-		if ObjBtnClick(BtnSize[2]) or (Key = '2') then
+		if BtnClick(BtnSize[2]) or (Key = '2') then
 		begin
 			FieldHeight := 18;
 			FieldWidth := 22;
 			break;
 		end;
 
-		if ObjBtnClick(BtnSize[3]) or (Key = '3') then
+		if BtnClick(BtnSize[3]) or (Key = '3') then
 		begin
 			FieldHeight := 18;
 			FieldWidth := 39;
@@ -902,12 +902,12 @@ end;
 
 
 begin
-	BtnNew.Init(3, 2, SizeDefault, SizeDefault, HotkeySymbol + 'New game');
-	BtnPause.Init(102, 2, SizeDefault, SizeDefault, HotkeySymbol + 'Pause');
-	BtnSize.Init(201, 2, SizeDefault, SizeDefault, 'Si' + HotkeySymbol + 'ze');
-	BtnAudio.Init(300, 2, SizeDefault, SizeDefault, HotkeySymbol + 'Sound');
-	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, HotkeySymbol + 'About...');
-	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + HotkeySymbol + 'xit');
+	BtnNew.Init(3, 2, SizeDefault, SizeDefault, Hotkey + 'New game');
+	BtnPause.Init(102, 2, SizeDefault, SizeDefault, Hotkey + 'Pause');
+	BtnSize.Init(201, 2, SizeDefault, SizeDefault, 'Si' + Hotkey + 'ze');
+	BtnAudio.Init(300, 2, SizeDefault, SizeDefault, Hotkey + 'Sound');
+	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, Hotkey + 'About...');
+	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + Hotkey + 'xit');
 	
 	MouseHide;
 	MenuBar.Draw;
@@ -930,31 +930,31 @@ begin
 	repeat
 		Key := GetKey;
 		
-		if ObjBtnClick(BtnNew) or (Key = 'n') then
+		if BtnClick(BtnNew) or (Key = 'n') then
 		begin
 			MineNewGame;
 			KeyVisible := False;
 		end;
 
-		if ObjBtnClick(BtnAudio) or (Key = 's') then
+		if BtnClick(BtnAudio) or (Key = 's') then
 		begin
 			EnableAudio := not EnableAudio;
 			MinePrintStatus(False, '');
 		end;
 
-		if ObjBtnClick(BtnPause) or (Key = 'p') then
+		if BtnClick(BtnPause) or (Key = 'p') then
 			MinePause;
 
-		if ObjBtnClick(BtnSize) or (Key = 'z') then
+		if BtnClick(BtnSize) or (Key = 'z') then
 		begin
 			if MineSetSize then
 				MineNewGame;
 		end;
 
-		if ObjBtnClick(BtnExit) or (Key = 'x') then
+		if BtnClick(BtnExit) or (Key = 'x') then
 			break;
 
-		if ObjBtnClick(BtnAbout) or (Key = 'a') then
+		if BtnClick(BtnAbout) or (Key = 'a') then
 			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 
 		if not GameOver then

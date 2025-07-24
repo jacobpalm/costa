@@ -1,7 +1,7 @@
 program ThemeEditor;
 
 uses
-	CostaLib, InputBox, FileSel, Graph, DOS;
+	CostaLib, InputDlg, FileDlg, Graph, DOS;
 
 const
 	AppName      = 'Theme Editor';
@@ -52,12 +52,12 @@ var
 	{Objects used in mulitple procedures}
 	BtnColor: array[0..15] of TButton;
 	BtnObject: TButton;
-	TxtThemeName, TxtThemeAuthor: TTextbox;
+	TxtName, TxtAuthor: TTextbox;
 
 {Forward declarations}
 procedure UpdatePreview; forward;
 function  SaveTheme(SaveAs: boolean): boolean; forward;
-function RTrim(s: string): string; forward;
+function  RTrim(s: string): string; forward;
 
 procedure SelectColor(Color: integer; DrawPreview: boolean);
 var
@@ -243,7 +243,7 @@ begin
 			break;
 
 		for i := 0 to High(BtnObjSelect) do
-			if ObjBtnClick(BtnObjSelect[i]) then
+			if BtnClick(BtnObjSelect[i]) then
 			begin
 				SelectedObject := TThemeObject(i);
 				ExitLoop := True;
@@ -311,10 +311,10 @@ begin
 	{Start with current theme as basis for editing}
 	ThemeData := Thm;
 	ThemeFile := '';
-	TxtThemeName.Text := 'New Theme';
-	TxtThemeAuthor.Text := '';
-	TxtThemeName.Draw;
-	TxtThemeAuthor.Draw;
+	TxtName.Text := 'New Theme';
+	TxtAuthor.Text := '';
+	TxtName.Draw;
+	TxtAuthor.Draw;
 	SelectColor(ThemeData.Desk, true);
 	ThemeChanged := False;
 end;
@@ -371,12 +371,12 @@ begin
 	BlockRead(f, LoadAuthor, SizeOf(LoadAuthor));
 	Close(f);
 
-	TxtThemeName.Text := Rtrim(LoadName);
-	TxtThemeAuthor.Text := Rtrim(LoadAuthor);
+	TxtName.Text := Rtrim(LoadName);
+	TxtAuthor.Text := Rtrim(LoadAuthor);
 	SelectColor(ThemeData.Desk, true);
 	ThemeFile := SelectedFile;
-	TxtThemeName.Draw;
-	TxtThemeAuthor.Draw;
+	TxtName.Draw;
+	TxtAuthor.Draw;
 	ThemeChanged := False;
 end;
 
@@ -392,13 +392,13 @@ begin
 
 	if (Length(ThemeFile) = 0) or SaveAs then
 	begin
-		Filename := UpperCase(SysInputBox(MSG_FILENAME_TITLE, MSG_FILENAME_PROMPT, AppIcon, ''));
+		Filename := UpperCase(InputBox(MSG_FILENAME_TITLE, MSG_FILENAME_PROMPT, AppIcon, ''));
 
 		{Validate input}
 		if Length(Filename) = 0 then
 			exit;
 
-		if not ValidDOSFilename(FileName + '.BIN') then
+		if not Valid8dot3(FileName + '.BIN') then
 		begin
 			MsgBox(MSG_ERROR_SAVING_TITLE, MSG_INVALID_FILENAME, MsgError);
 			exit;
@@ -419,8 +419,8 @@ begin
 
 	FillChar(SaveName, SizeOf(SaveName), 0);
 	FillChar(SaveAuthor, SizeOf(SaveAuthor), 0);
-	SaveName := TxtThemeName.Text;
-	SaveAuthor := TxtThemeAuthor.Text;
+	SaveName := TxtName.Text;
+	SaveAuthor := TxtAuthor.Text;
 	Assign(f, Filename);
 	{$I-}
 	Rewrite(f, 1);
@@ -463,18 +463,18 @@ begin
 	SetFillStyle(SolidFill, Thm.Win);
 	Bar(0, 29, 639, 349);
 
-	BtnNew.Init(2, 2, SizeDefault, SizeDefault, HotkeySymbol + 'New');
-	BtnOpen.Init(101, 2, SizeDefault, SizeDefault, HotkeySymbol + 'Load');
-	BtnSave.Init(200, 2, SizeDefault, SizeDefault, HotkeySymbol + 'Save');
-	BtnSaveAs.Init(299, 2, SizeDefault, SizeDefault, 'Sa' + HotkeySymbol + 've as');
-	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, HotkeySymbol + 'About...');
-	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + HotkeySymbol + 'xit');
-	TxtThemeName.Init(434, 59, 194, SizeDefault);
-	TxtThemeAuthor.Init(434, TxtThemeName.Top + 48, 194, SizeDefault);
-	BtnObject.Init(434, TxtThemeAuthor.Top + 48, 194, SizeDefault, 'Desk');
+	BtnNew.Init(2, 2, SizeDefault, SizeDefault, Hotkey + 'New');
+	BtnOpen.Init(101, 2, SizeDefault, SizeDefault, Hotkey + 'Load');
+	BtnSave.Init(200, 2, SizeDefault, SizeDefault, Hotkey + 'Save');
+	BtnSaveAs.Init(299, 2, SizeDefault, SizeDefault, 'Sa' + Hotkey + 've as');
+	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, Hotkey + 'About...');
+	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + Hotkey + 'xit');
+	TxtName.Init(434, 59, 194, SizeDefault);
+	TxtAuthor.Init(434, TxtName.Top + 48, 194, SizeDefault);
+	BtnObject.Init(434, TxtAuthor.Top + 48, 194, SizeDefault, 'Desk');
 
-	TxtThemeName.MaxLen := 20;
-	TxtThemeAuthor.MaxLen := 20;
+	TxtName.MaxLen := 20;
+	TxtAuthor.MaxLen := 20;
 
 	YPos := 0;
 	XPos := 0;
@@ -485,7 +485,7 @@ begin
 			YPos := 25;
 			XPos := 0;
 		end;
-		BtnColor[i].Init(TxtThemeAuthor.Left + XPos, TxtThemeAuthor.Top + 98 + YPos, 19, 19, '');
+		BtnColor[i].Init(TxtAuthor.Left + XPos, TxtAuthor.Top + 98 + YPos, 19, 19, '');
 		BtnColor[i].Transparent := True;
 		Inc(XPos, 25);
 	end;
@@ -497,8 +497,8 @@ begin
 	BtnSaveAs.Draw;
 	BtnAbout.Draw;
 	BtnExit.Draw;
-	TxtThemeName.Draw;
-	TxtThemeAuthor.Draw;
+	TxtName.Draw;
+	TxtAuthor.Draw;
 	BtnObject.Draw;
 	for i := 0 to 15 do
 	begin
@@ -509,12 +509,12 @@ begin
 			BtnColor[i].Top + BtnColor[i].Height - 2);
 	end;
 
-	Print('Theme na' + HotkeySymbol + 'me:', TxtThemeName.Left, TxtThemeName.Top - 16,
+	Print('Theme na' + Hotkey + 'me:', TxtName.Left, TxtName.Top - 16,
 		Thm.WinText);
-	Print('Theme a' + HotkeySymbol + 'uthor:', TxtThemeAuthor.Left, TxtThemeAuthor.Top - 16,
+	Print('Theme a' + Hotkey + 'uthor:', TxtAuthor.Left, TxtAuthor.Top - 16,
 		Thm.WinText);
-	Print(HotkeySymbol + 'Object selected:', 434, BtnObject.Top - 16, Thm.WinText);
-	Print(HotkeySymbol + 'Color for object:', 434, BtnColor[0].Top - 16, Thm.WinText);
+	Print(Hotkey + 'Object selected:', 434, BtnObject.Top - 16, Thm.WinText);
+	Print(Hotkey + 'Color for object:', 434, BtnColor[0].Top - 16, Thm.WinText);
 	
 	{Save system theme}
 	SysTheme := Thm;
@@ -530,41 +530,41 @@ begin
 		if Key = KeyAltC then
 			SelectColor(SelectedColor + 1, true);
 
-		if ObjBtnClick(BtnNew) or (Key = KeyAltN) then
+		if BtnClick(BtnNew) or (Key = KeyAltN) then
 			NewTheme;
 
-		if ObjBtnClick(BtnOpen) or (Key = KeyAltL) then
+		if BtnClick(BtnOpen) or (Key = KeyAltL) then
 			LoadTheme;
 		
-		if ObjBtnClick(BtnSave) or (Key = KeyAltS) then
+		if BtnClick(BtnSave) or (Key = KeyAltS) then
 			SaveTheme(false);
 
-		if ObjBtnClick(BtnSaveAs) or (Key = KeyAltV) then
+		if BtnClick(BtnSaveAs) or (Key = KeyAltV) then
 			SaveTheme(true);
 
-		if ObjBtnClick(BtnObject) or (Key = KeyAltO) then
+		if BtnClick(BtnObject) or (Key = KeyAltO) then
 			SelectObject;
 
-		if ObjTxtClick(TxtThemeName) or (Key = KeyAltM) then
+		if TxtClick(TxtName) or (Key = KeyAltM) then
 		begin
-			OriginalText := TxtThemeName.Text;
-			ObjEditTxt(TxtThemeName, TxtThemeName.Text);
-			if not (TxtThemeName.Text = OriginalText) then
+			OriginalText := TxtName.Text;
+			EditTxt(TxtName, TxtName.Text);
+			if not (TxtName.Text = OriginalText) then
 				ThemeChanged := True;
 		end;
 
-		if ObjTxtClick(TxtThemeAuthor) or (Key = KeyAltU) then
+		if TxtClick(TxtAuthor) or (Key = KeyAltU) then
 		begin
-			OriginalText := TxtThemeAuthor.Text;
-			ObjEditTxt(TxtThemeAuthor, TxtThemeAuthor.Text);
-			if not (TxtThemeAuthor.Text = OriginalText) then
+			OriginalText := TxtAuthor.Text;
+			EditTxt(TxtAuthor, TxtAuthor.Text);
+			if not (TxtAuthor.Text = OriginalText) then
 				ThemeChanged := True;
 		end;
 
-		if ObjBtnClick(BtnAbout) or (Key = KeyAltA) then
+		if BtnClick(BtnAbout) or (Key = KeyAltA) then
 			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 
-		if ObjBtnClick(BtnExit) or (Key = KeyAltX) or (Key = KeyEscape) then
+		if BtnClick(BtnExit) or (Key = KeyAltX) or (Key = KeyEscape) then
 		begin
 			{No changes, just exit}
 			if ThemeChanged = False then

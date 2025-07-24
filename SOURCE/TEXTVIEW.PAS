@@ -1,7 +1,7 @@
 program Textview;
 
 uses
-	Costalib, Filesel, Strings, Graph, Crt;
+	Costalib, FileDlg, Strings, Graph, Crt;
 
 const
 	AppName       = 'Text Viewer';
@@ -241,11 +241,11 @@ begin
 	{Store default heap error handler for later restoration}
 	DefaultHeapError := HeapError;
 
-	BtnOpen.Init(3, 2, SizeDefault, SizeDefault, HotkeySymbol + 'Open...');
-	BtnPageUp.Init(102, 2, SizeDefault, SizeDefault, 'Page ' + HotkeySymbol + 'up');
-	BtnPageDown.Init(201, 2, SizeDefault, SizeDefault, 'Page ' + HotkeySymbol + 'down');
-	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, HotkeySymbol + 'About...');
-	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + HotkeySymbol + 'xit');
+	BtnOpen.Init(3, 2, SizeDefault, SizeDefault, Hotkey + 'Open...');
+	BtnPageUp.Init(102, 2, SizeDefault, SizeDefault, 'Page ' + Hotkey + 'up');
+	BtnPageDown.Init(201, 2, SizeDefault, SizeDefault, 'Page ' + Hotkey + 'down');
+	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, Hotkey + 'About...');
+	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + Hotkey + 'xit');
 
 	MouseHide;
 	MenuBar.Draw;
@@ -271,10 +271,10 @@ begin
 	repeat
 		Key := GetKey;
 		
-		if ObjBtnClick(BtnAbout) or (Key = KeyAltA) then
+		if BtnClick(BtnAbout) or (Key = KeyAltA) then
 			AboutBox(AppName, AppVersion, AppAuthor, 'DOCUMENT');
 
-		if ObjBtnClick(BtnOpen) or (Key = KeyAltO) then
+		if BtnClick(BtnOpen) or (Key = KeyAltO) then
 		begin
 			NewFileName := FileSelect('*.Txt', '', False);
 			if Length(NewFilename) > 0 then
@@ -292,12 +292,12 @@ begin
 			end;
 		end;
 		
-		if ObjBtnClick(BtnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
+		if BtnClick(BtnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
 			break;
 
 		if FileOpened then
 		begin
-			if ObjBtnClick(BtnPageUp) or (Key = KeyPageUp) or (Key = KeyUp) or (Key = KeyAltU) then
+			if BtnClick(BtnPageUp) or (Key = KeyPageUp) or (Key = KeyUp) or (Key = KeyAltU) then
 			begin
 				if StartLine > 1 then
 				begin
@@ -311,7 +311,7 @@ begin
 				end;
 			end;
 
-			if ObjBtnClick(BtnPageDown) or (Key = KeyPageDown) or (Key = KeyDown) or (Key = KeyAltD) then
+			if BtnClick(BtnPageDown) or (Key = KeyPageDown) or (Key = KeyDown) or (Key = KeyAltD) then
 			begin
 				if StartLine < LineCount then
 				begin

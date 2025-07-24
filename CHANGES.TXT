@@ -1,27 +1,16 @@
-The Costa GUI, version 1.8.0
+The Costa GUI, version 2.0
 By Jacob Palm
 
 Changelog
 ------------------------------------------------------------------------------
 
-Costa 1.8.0 is a minor release, mostly focused on bugfixes. One new feature
-is that COSTA.BAT has been replaced with COSTA.EXE.
- -New launcher, COSTA.EXE, which works independently of current path, making
-  the SETUP.EXE program that created COSTA.BAT obsolete. SETUP.EXE has been
-  removed, and setup of Costa is no longer required. Internal code to handle
-  paths removed, resulting in quicker execution.
- -Fixed a bug that resulted in Minesweeper mistakingly thinking 1 field had
-  yet to be cleared, when the game had actually been won.
- -Fix mouse selection in file browser dialog, that was offset by a few
-  pixels.
- -Fix bug that resulted in icons being unmovable when no mouse driver was
-  loaded.
- -Optimized mouse code to only call mouse driver interrupts if a mouse was
-  detected at startup, improving speed on systems without a mouse.
- -Code to check if file exists rewritten to use MS-DOS interrupt calls,
-  resulting in quicker execution.
- -General optimizations to reduce overall size of Costa.
- -Text viewer now uses a variable width font, allowing much longer lines to
-  be displayed.
+Costa 2.0 is a major release of Costa. All of Costa has been translated or
+rewritten from the BASIC programming language to the Pascal language,
+resulting in significantly smaller and faster programs. The support for
+object-oriented programming in Pascal also makes coding apps using the Costa
+UI library a lot easier, and the code easier to read and maintain.
+ -New feature 1
+ -New feature 2
+ -...
 
 For older versions, see the complete changelog at https://costa.jacobpalm.dk

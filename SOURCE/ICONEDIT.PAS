@@ -1,7 +1,7 @@
 program IconEditor;
 
 uses
-	CostaLib, FileSel, InputBox, Strings, DOS, Graph;
+	CostaLib, FileDlg, InputDlg, Strings, DOS, Graph;
 
 const
 	AppName    = 'Icon Editor';
@@ -308,13 +308,13 @@ begin
 	{If icon hasn't already been saved, prompt for a filename}
 	if Length(IconFileName) = 0 then
 	begin
-		Filename := UpperCase(SysInputBox('Save icon file', 'Type a name for the icon file below, without path or' + NewLine +
+		Filename := UpperCase(InputBox('Save icon file', 'Type a name for the icon file below, without path or' + NewLine +
 			'extension (8 letters max, for example: MYICON).', 'PAINT', ''));
 
 		{Validate input}
 		if Length(Filename) = 0 then
 			exit;
-		if (Length(Filename) > 8) or (not ValidDOSFilename(FileName + '.BIN')) then
+		if (Length(Filename) > 8) or (not Valid8dot3(FileName + '.BIN')) then
 		begin
 			MsgBox('Invalid file name', 'The filename you specified was too long or invalid.' + NewLine +
 				'Do not type a path or extension, only a filename' + NewLine
@@ -469,16 +469,16 @@ var
 	ColChk: integer;
 begin
 	TxtDrawArea.Init(175, 44, 290, 290);
-	BtnNew.Init(2, 2, SizeDefault, SizeDefault, HotkeySymbol + 'New');
-	BtnOpen.Init(101, 2, SizeDefault, SizeDefault, HotkeySymbol + 'Load');
-	BtnSave.Init(200, 2, SizeDefault, SizeDefault, HotkeySymbol + 'Save');
-	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, HotkeySymbol + 'About...');
-	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + HotkeySymbol + 'xit');
+	BtnNew.Init(2, 2, SizeDefault, SizeDefault, Hotkey + 'New');
+	BtnOpen.Init(101, 2, SizeDefault, SizeDefault, Hotkey + 'Load');
+	BtnSave.Init(200, 2, SizeDefault, SizeDefault, Hotkey + 'Save');
+	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, Hotkey + 'About...');
+	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + Hotkey + 'xit');
 
 	XPos := TxtDrawArea.Left + TxtDrawArea.Width + 12;
-	BtnPencil.Init(XPos, TxtDrawArea.Top + 14, 56, SizeDefault, 'P' + HotkeySymbol + 'encil');
+	BtnPencil.Init(XPos, TxtDrawArea.Top + 14, 56, SizeDefault, 'P' + Hotkey + 'encil');
 	BtnPencil.State := BsDown;
-	BtnFloodFill.Init(XPos, BtnPencil.Top + 26, 56, SizeDefault, HotkeySymbol + 'Fill');
+	BtnFloodFill.Init(XPos, BtnPencil.Top + 26, 56, SizeDefault, Hotkey + 'Fill');
 	BtnPreview.Init(XPos, BtnFloodFill.Top + 51, 56, 56, '');
 
 	{Center preview image in area}
@@ -558,7 +558,7 @@ begin
 	SetLineStyle(SolidLn, 1, NormWidth);
 
 	Print('Preview', BtnPreview.Left, BtnPreview.Top - 15, Thm.WinText);
-	Print(HotkeySymbol + 'Color', TxtColor[0].Left, TxtDrawArea.Top, Thm.WinText);
+	Print(Hotkey + 'Color', TxtColor[0].Left, TxtDrawArea.Top, Thm.WinText);
 	Print('Tools', TxtDrawArea.Left + TxtDrawArea.Width + 12, TxtDrawArea.Top, Thm.WinText);
 	MouseShow;
 
@@ -572,19 +572,19 @@ begin
 	repeat
 		Key := GetKey;
 
-		if ObjBtnClick(BtnNew) or (Key = KeyAltN) then
+		if BtnClick(BtnNew) or (Key = KeyAltN) then
 			NewIcon;
 
-		if ObjBtnClick(BtnSave) or (Key = KeyAltS) then
+		if BtnClick(BtnSave) or (Key = KeyAltS) then
 			SaveIcon;
 
-		if ObjBtnClick(BtnOpen) or (Key = KeyAltL) then
+		if BtnClick(BtnOpen) or (Key = KeyAltL) then
 			LoadIcon;
 
-		if ObjBtnClick(BtnAbout) or (Key = KeyAltA) then
+		if BtnClick(BtnAbout) or (Key = KeyAltA) then
 			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 
-		if ObjBtnClick(BtnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
+		if BtnClick(BtnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
 			ExitEditor;
 
 		if ObjClick(BtnPencil) or (Key = KeyAltE) then
