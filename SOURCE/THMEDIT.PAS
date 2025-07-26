@@ -61,7 +61,7 @@ function  RTrim(s: string): string; forward;
 
 procedure SelectColor(Color: integer; DrawPreview: boolean);
 var
-	x1, y1, x2, y2: Integer;
+	X1, Y1, X2, Y2: Integer;
 begin
 	if Color < 0 then
 		Color := 15
@@ -70,23 +70,23 @@ begin
 	
 	MouseHide;
 	{Erase previous selection}
-	x1 := BtnColor[SelectedColor].Left + 4;
-	y1 := BtnColor[SelectedColor].Top + 4;
-	x2 := BtnColor[SelectedColor].Left + BtnColor[SelectedColor].Width - 4;
-	y2 := BtnColor[SelectedColor].Top + BtnColor[SelectedColor].Height - 4;
+	X1 := BtnColor[SelectedColor].Left + 4;
+	Y1 := BtnColor[SelectedColor].Top + 4;
+	X2 := BtnColor[SelectedColor].Left + BtnColor[SelectedColor].Width - 4;
+	Y2 := BtnColor[SelectedColor].Top + BtnColor[SelectedColor].Height - 4;
 	SetFillStyle(SolidFill, SelectedColor);
-	Bar(x1, y1, x2, y2);
+	Bar(X1, Y1, X2, Y2);
 
 	{Change color and draw new selection}
 	SelectedColor := Color;
-	x1 := BtnColor[SelectedColor].Left + 4;
-	y1 := BtnColor[SelectedColor].Top + 4;
-	x2 := BtnColor[SelectedColor].Left + BtnColor[SelectedColor].Width - 4;
-	y2 := BtnColor[SelectedColor].Top + BtnColor[SelectedColor].Height - 4;
+	X1 := BtnColor[SelectedColor].Left + 4;
+	Y1 := BtnColor[SelectedColor].Top + 4;
+	X2 := BtnColor[SelectedColor].Left + BtnColor[SelectedColor].Width - 4;
+	Y2 := BtnColor[SelectedColor].Top + BtnColor[SelectedColor].Height - 4;
 	SetColor(DarkGray);
-	Rectangle(x1, y1, x2, y2);
+	Rectangle(X1, Y1, X2, Y2);
 	SetColor(White);
-	Rectangle(x1 + 1, y1 + 1, x2 - 1, y2 - 1);
+	Rectangle(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
 	MouseShow;
 
 	{Change the color of the currently selected object}
@@ -123,40 +123,40 @@ var
 	BtnPreview1, BtnPreview2, BtnPreview3: TButton;
 	ImgPreview, ImgLogo: TIcon;
 	TxtListPreview: TTextbox;
-	x1, y1, x2, y2: Integer;
+	X1, Y1, X2, Y2: Integer;
 begin
 	{Overwrite system theme with current theme}
 	Thm := ThemeData;
 
 	FrmPreview.Init(12, 42, 410, 293);
-	x1 := FrmPreview.Left;
-	y1 := FrmPreview.Top;
-	x2 := FrmPreview.Left + FrmPreview.Width;
-	y2 := FrmPreview.Top + FrmPreview.Height;
-	BtnPreview3.Init(x2 - 96, y1 + 3, SizeDefault, SizeDefault, 'Button');
-	TxtListPreview.Init(x2 - 182, y2 - 82, 166, 66);
+	X1 := FrmPreview.Left;
+	Y1 := FrmPreview.Top;
+	X2 := FrmPreview.Left + FrmPreview.Width;
+	Y2 := FrmPreview.Top + FrmPreview.Height;
+	BtnPreview3.Init(X2 - 96, Y1 + 3, SizeDefault, SizeDefault, 'Button');
+	TxtListPreview.Init(X2 - 182, Y2 - 82, 166, 66);
 	TxtPreviewText := 'Textbox contents';
-	ImgPreview.Init(FrmPreview.Left + 16, y2 - 48, 'PAINT');
+	ImgPreview.Init(FrmPreview.Left + 16, Y2 - 48, 'PAINT');
 
 	MouseHide;
 	FrmPreview.Draw;
 	SetFillStyle(SolidFill, Thm.Desk);
-	Bar(FrmPreview.Left + 2, y1 + 2, x2 - 2, y2 - 2);
+	Bar(FrmPreview.Left + 2, Y1 + 2, X2 - 2, Y2 - 2);
 	SetFillStyle(SolidFill, Thm.Win);
-	Bar(FrmPreview.Left + 2, y1 + 2, x2 - 2, y1 + 27);
+	Bar(FrmPreview.Left + 2, Y1 + 2, X2 - 2, Y1 + 27);
 	SetColor(Thm.Shadow);
-	Line(FrmPreview.Left + 2, y1 + 28, x2 - 2, y1 + 28);
+	Line(FrmPreview.Left + 2, Y1 + 28, X2 - 2, Y1 + 28);
 	SetColor(Black);
-	Line(FrmPreview.Left + 2, y1 + 29, x2 - 2, y1 + 29);
+	Line(FrmPreview.Left + 2, Y1 + 29, X2 - 2, Y1 + 29);
 
-	WinPreview.Init(x1 + ((FrmPreview.Width - 260) div 2), y1 + 65, 260, 127);
-	x1 := WinPreview.Left;
-	y1 := WinPreview.Top;
-	ImgLogo.Init(x1 + 12, y1 + 12, 'LOGO');
-	TxtPreview.Init(x1 + 12, y1 + 56, 236, SizeDefault);
+	WinPreview.Init(X1 + ((FrmPreview.Width - 260) div 2), Y1 + 65, 260, 127);
+	X1 := WinPreview.Left;
+	Y1 := WinPreview.Top;
+	ImgLogo.Init(X1 + 12, Y1 + 12, 'LOGO');
+	TxtPreview.Init(X1 + 12, Y1 + 56, 236, SizeDefault);
 	TxtPreview.Text := 'Textbox';
-	BtnPreview1.Init(x1 + 14, y1 + 93, 111, SizeDefault, 'Button up');
-	BtnPreview2.Init(x1 + 133, y1 + 93, 111, SizeDefault, 'Button down');
+	BtnPreview1.Init(X1 + 14, Y1 + 93, 111, SizeDefault, 'Button up');
+	BtnPreview2.Init(X1 + 133, Y1 + 93, 111, SizeDefault, 'Button down');
 	BtnPreview2.State := BsDown;
 
 	WinPreview.Draw;
@@ -176,15 +176,15 @@ begin
 
 	{Draw list preview}
 	SetFillStyle(SolidFill, Thm.Sel);
-	x1 := TxtListPreview.Left;
-	y1 := TxtListPreview.Top;
-	x2 := TxtListPreview.Left + TxtListPreview.Width;
-	Bar(x1 + 2, y1 + 15, x2 - 2, y1 + 27);
-	Print('List item', x1 + 5, y1 + 5, Thm.TxtText);
-	Print('Selected item', x1 + 5, y1 + 5 + 12, Thm.SelText);
-	Print('List item', x1 + 5, y1 + 5 + 24, Thm.TxtText);
-	Print('List item', x1 + 5, y1 + 5 + 36, Thm.TxtText);
-	Print('List item', x1 + 5, y1 + 5 + 48, Thm.TxtText);
+	X1 := TxtListPreview.Left;
+	Y1 := TxtListPreview.Top;
+	X2 := TxtListPreview.Left + TxtListPreview.Width;
+	Bar(X1 + 2, Y1 + 15, X2 - 2, Y1 + 27);
+	Print('List item', X1 + 5, Y1 + 5, Thm.TxtText);
+	Print('Selected item', X1 + 5, Y1 + 5 + 12, Thm.SelText);
+	Print('List item', X1 + 5, Y1 + 5 + 24, Thm.TxtText);
+	Print('List item', X1 + 5, Y1 + 5 + 36, Thm.TxtText);
+	Print('List item', X1 + 5, Y1 + 5 + 48, Thm.TxtText);
 	MouseShow;
 
 	{Restore system theme}
@@ -199,7 +199,7 @@ var
 	ActiveSelection: TThemeObject;
 	NextSelection: integer;
 	Key: string;
-	x1, y1, x2, y2: Integer;
+	X1, Y1, X2, Y2: Integer;
 	BackgroundSize: Word;
 	BackgroundP: Pointer;
 	ExitLoop: boolean;
@@ -210,13 +210,13 @@ begin
 		BtnObjSelect[I].Init(WinSelectObject.Left + 13, WinSelectObject.Top + (I * 23) + 15, 200, SizeDefault, ObjectCaptions[i]);
 
 	MouseHide;
-	x1 := WinSelectObject.Left;
-	y1 := WinSelectObject.Top;
-	x2 := WinSelectObject.Left + WinSelectObject.Width;
-	y2 := WinSelectObject.Top + WinSelectObject.Height;
-	BackgroundSize := ImageSize(x1, y1, x2, y2);
+	X1 := WinSelectObject.Left;
+	Y1 := WinSelectObject.Top;
+	X2 := WinSelectObject.Left + WinSelectObject.Width;
+	Y2 := WinSelectObject.Top + WinSelectObject.Height;
+	BackgroundSize := ImageSize(X1, Y1, X2, Y2);
 	GetMem(BackgroundP, BackgroundSize);
-	GetImage(x1, y1, x2, y2, BackgroundP^);
+	GetImage(X1, Y1, X2, Y2, BackgroundP^);
 	
 	WinSelectObject.Draw;
 	ActiveSelection := SelectedObject;
@@ -272,7 +272,7 @@ begin
 
 	until ExitLoop;
 	MouseHide;
-	PutImage(x1, y1, BackgroundP^, NormalPut);
+	PutImage(X1, Y1, BackgroundP^, NormalPut);
 	FreeMem(BackgroundP, BackgroundSize);
 	BtnObject.Caption := ObjectCaptions[Ord(SelectedObject)];
 	BtnObject.Draw;
@@ -326,7 +326,7 @@ var
 	FDir: DirStr;
 	FName: NameStr;
 	FExt: ExtStr;
-	f: File;
+	F: File;
 	LoadError: boolean;
 	DoSave: boolean;
 begin
@@ -350,26 +350,26 @@ begin
 	end;
 
 	LoadError := False;
-	Assign(f, ProgramPath + 'THEMES\' + FName + '.BIN');
+	Assign(F, ProgramPath + 'THEMES\' + FName + '.BIN');
 	{$I-}
-	Reset(f, 1);
+	Reset(F, 1);
 	{$I+}
 	if IOResult <> 0 then
 		LoadError := True
-	else if FileSize(f) <> SizeOf(TTheme) + 42 then
+	else if FileSize(F) <> SizeOf(TTheme) + 42 then
 		LoadError := True;
 	
 	if LoadError then
 	begin
-		Close(f);
+		Close(F);
 		MsgBox(MSG_ERROR_OPENING_TITLE, MSG_ERROR_OPENING, MsgError);
 		exit;
 	end;
 
-	BlockRead(f, ThemeData, SizeOf(TTheme));
-	BlockRead(f, LoadName, SizeOf(LoadName));
-	BlockRead(f, LoadAuthor, SizeOf(LoadAuthor));
-	Close(f);
+	BlockRead(F, ThemeData, SizeOf(TTheme));
+	BlockRead(F, LoadName, SizeOf(LoadName));
+	BlockRead(F, LoadAuthor, SizeOf(LoadAuthor));
+	Close(F);
 
 	TxtName.Text := Rtrim(LoadName);
 	TxtAuthor.Text := Rtrim(LoadAuthor);
@@ -382,7 +382,7 @@ end;
 
 function SaveTheme(SaveAs: boolean): boolean;
 var	
-	f: File;
+	F: File;
 	Filename: string;
 	SaveName, SaveAuthor: string[20];
 	SaveError: boolean;
@@ -421,19 +421,19 @@ begin
 	FillChar(SaveAuthor, SizeOf(SaveAuthor), 0);
 	SaveName := TxtName.Text;
 	SaveAuthor := TxtAuthor.Text;
-	Assign(f, Filename);
+	Assign(F, Filename);
 	{$I-}
-	Rewrite(f, 1);
+	Rewrite(F, 1);
 	{$I+}
 	if IOResult <> 0 then
 	begin
 		MsgBox(MSG_ERROR_SAVING_TITLE, MSG_ERROR_SAVING, MsgError);
 		exit;
 	end;
-	BlockWrite(f, ThemeData, SizeOf(TTheme));
-	BlockWrite(f, SaveName, SizeOf(SaveName));
-	BlockWrite(f, SaveAuthor, SizeOf(SaveAuthor));
-	Close(f);
+	BlockWrite(F, ThemeData, SizeOf(TTheme));
+	BlockWrite(F, SaveName, SizeOf(SaveName));
+	BlockWrite(F, SaveAuthor, SizeOf(SaveAuthor));
+	Close(F);
 	ThemeFile := Filename;
 	ThemeChanged := False;
 	SaveTheme := True;
@@ -548,7 +548,7 @@ begin
 		if TxtClick(TxtName) or (Key = KeyAltM) then
 		begin
 			OriginalText := TxtName.Text;
-			EditTxt(TxtName, TxtName.Text);
+			TxtName.Edit;
 			if not (TxtName.Text = OriginalText) then
 				ThemeChanged := True;
 		end;
@@ -556,7 +556,7 @@ begin
 		if TxtClick(TxtAuthor) or (Key = KeyAltU) then
 		begin
 			OriginalText := TxtAuthor.Text;
-			EditTxt(TxtAuthor, TxtAuthor.Text);
+			TxtAuthor.Edit;
 			if not (TxtAuthor.Text = OriginalText) then
 				ThemeChanged := True;
 		end;

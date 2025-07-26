@@ -32,9 +32,9 @@ type
 
 procedure ImageConvert;
 var
-	f: Text;
+	F: Text;
 	outputfile: file;
-	col, x, y: Integer;
+	Col, X, Y: Integer;
 	GraphDriver: Integer;
 	GraphMode: Integer;
 	ErrorCode: Integer;
@@ -65,9 +65,9 @@ begin
 	begin
 		FSplit(DirInfo.Name, FDir, FName, FExt);
 
-		Assign(f, '..\DATA\IMAGES\' + DirInfo.Name);
+		Assign(F, '..\DATA\IMAGES\' + DirInfo.Name);
 		{$I-}
-		Reset(f);
+		Reset(F);
 		{$I+}
 		if IOResult <> 0 then
 		begin
@@ -76,16 +76,16 @@ begin
 			Halt(1);
 		end;
 
-		for x := 0 to 31 do
+		for X := 0 to 31 do
 		begin
-			for y := 0 to 31 do
+			for Y := 0 to 31 do
 			begin
-				Read(f, col);
-				PutPixel(x, y, col);
+				Read(F, Col);
+				PutPixel(X, Y, Col);
 			end;
 		end;
 
-		Close(f);
+		Close(F);
 
 		GetImage(0, 0, 31, 31, P^);
 
@@ -131,7 +131,7 @@ end;
 
 procedure ThemeConvert;
 var
-	f: Text;
+	F: Text;
 	OutputFile: File;
 	ThemeName: String[20];
 	ThemeAuthor: String[20];
@@ -148,9 +148,9 @@ begin
 		Write('Processing theme: ', DirInfo.Name, '... ');
 		FSplit(DirInfo.Name, FDir, FName, FExt);
 
-		Assign(f, '..\DATA\THEMES\' + DirInfo.Name);
+		Assign(F, '..\DATA\THEMES\' + DirInfo.Name);
 		{$I-}
-		Reset(f);
+		Reset(F);
 		{$I+}
 
 		FillChar(ThemeAuthor, SizeOf(ThemeAuthor), 0);
@@ -159,34 +159,34 @@ begin
 		TempRead := '';
 		
 		{Author}
-		ReadLn(f, TempRead);
+		ReadLn(F, TempRead);
 		if Length(TempRead) > SizeOf(ThemeAuthor) then
 			ThemeAuthor := Copy(TempRead, 1, SizeOf(ThemeAuthor))
 		else
 			ThemeAuthor := TempRead;
 
 		{Name}
-		ReadLn(f, TempRead);
+		ReadLn(F, TempRead);
 		if Length(TempRead) > SizeOf(ThemeName) then
 			ThemeName := Copy(TempRead, 1, SizeOf(ThemeName))
 		else
 			ThemeName := TempRead;
 		
-		ReadLn(f, Thm.Desk);
-		ReadLn(f, Thm.DeskText);
-		ReadLn(f, Thm.Win);
-		ReadLn(f, Thm.WinText);
-		ReadLn(f, Thm.Btn);
-		ReadLn(f, Thm.Txt);
-		ReadLn(f, Thm.TxtText);
-		ReadLn(f, Thm.Light);
-		ReadLn(f, Thm.Shadow);
-		ReadLn(f, Thm.Title);
-		ReadLn(f, Thm.TitleText);
-		ReadLn(f, Thm.Sel);
-		ReadLn(f, Thm.SelText);
+		ReadLn(F, Thm.Desk);
+		ReadLn(F, Thm.DeskText);
+		ReadLn(F, Thm.Win);
+		ReadLn(F, Thm.WinText);
+		ReadLn(F, Thm.Btn);
+		ReadLn(F, Thm.Txt);
+		ReadLn(F, Thm.TxtText);
+		ReadLn(F, Thm.Light);
+		ReadLn(F, Thm.Shadow);
+		ReadLn(F, Thm.Title);
+		ReadLn(F, Thm.TitleText);
+		ReadLn(F, Thm.Sel);
+		ReadLn(F, Thm.SelText);
 
-		Close(f);
+		Close(F);
 
 		Assign(OutputFile, '..\THEMES\'+FName+'.BIN');
 		{$I-}
@@ -210,7 +210,7 @@ end;
 
 procedure DesklinkConvert;
 var
-	f: Text;
+	F: Text;
 	OutputFile: File;
 	DeskLink: DeskLinkType;
 	DesklinkCount: Integer;
@@ -227,9 +227,9 @@ begin
 		Write('Processing desktop file: ', DirInfo.Name, '... ');
 		FSplit(DirInfo.Name, FDir, FName, FExt);
 
-		Assign(f, '..\DATA\CONFIG\'+FName+'.RAW');
+		Assign(F, '..\DATA\CONFIG\'+FName+'.RAW');
 		{$I-}
-		Reset(f);
+		Reset(F);
 		{$I+}
 		if IOResult <> 0 then
 		begin
@@ -248,7 +248,7 @@ begin
 			Halt(1);
 		end;
 
-		ReadLn(f, DesklinkCount);
+		ReadLn(F, DesklinkCount);
 		Writeln('There are ', DesklinkCount, ' desklinks in this file.');
 		BlockWrite(OutputFile, DesklinkCount, SizeOf(DesklinkCount));
 		if DesklinkCount > 0 then
@@ -257,21 +257,21 @@ begin
 			begin
 				Writeln('Processing desklink ', i, '...');
 				FillChar(DeskLink, SizeOf(DeskLinkType), 0);
-				ReadLn(f, DeskLink.Caption);
-				ReadLn(f, DeskLink.FileName);
-				ReadLn(f, DeskLink.Path);
-				ReadLn(f, DeskLink.Parameters);
-				ReadLn(f, DeskLink.ImageFile);
-				ReadLn(f, PauseValue);
+				ReadLn(F, DeskLink.Caption);
+				ReadLn(F, DeskLink.FileName);
+				ReadLn(F, DeskLink.Path);
+				ReadLn(F, DeskLink.Parameters);
+				ReadLn(F, DeskLink.ImageFile);
+				ReadLn(F, PauseValue);
 				DeskLink.PauseOnExit := PauseValue <> 0;
-				ReadLn(f, DeskLink.Left);
-				ReadLn(f, DeskLink.Top);
+				ReadLn(F, DeskLink.Left);
+				ReadLn(F, DeskLink.Top);
 				
 				BlockWrite(OutputFile, DeskLink, SizeOf(DeskLink));
 			end;
 		end;
 		
-		Close(f);
+		Close(F);
 		Close(OutputFile);
 
 		Writeln('[OK]');

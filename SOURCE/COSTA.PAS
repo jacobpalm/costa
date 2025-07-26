@@ -90,7 +90,7 @@ end; {RunProgram}
 {Main program}
 var
 	SResult: SearchRec;
-	f: file;
+	F: file;
 begin
 	{Low byte of DosVersion contains major DOS version.
 		This program will actually run on DOS 3.0, but the other
@@ -140,24 +140,24 @@ begin
 			Continue;
 
 		{Open file, read data and delete file}
-		Assign(f, CostaPath + '\' + RunFile);
+		Assign(F, CostaPath + '\' + RunFile);
 		{$I-}
-		Reset(f, 1);
+		Reset(F, 1);
 		{$I+}
 
 		{If there was an error or size doesn't match, continue to next iteration}
-		if (IOResult <> 0) or (FileSize(f) <> SizeOf(RunLink)) then
+		if (IOResult <> 0) or (FileSize(F) <> SizeOf(RunLink)) then
 		begin
 			{$IFDEF DEBUG}
 				Writeln('Error reading run file: ', RunFile);
-				Writeln('File size: ', FileSize(f), ' bytes, expected: ', SizeOf(RunLink), ' bytes.');
+				Writeln('File size: ', FileSize(F), ' bytes, expected: ', SizeOf(RunLink), ' bytes.');
 			{$ENDIF}
-			Close(f);
+			Close(F);
 			Continue;
 		end;
-		BlockRead(f, RunLink, SizeOf(RunLink));
-		Erase(f);
-		Close(f);
+		BlockRead(F, RunLink, SizeOf(RunLink));
+		Erase(F);
+		Close(F);
 
 		RunProgram;
 	end; {main loop}

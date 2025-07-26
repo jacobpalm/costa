@@ -108,7 +108,7 @@ end;
 procedure DeskLinkLoad;
 var
 	i: integer;
-	f: file;
+	F: file;
 	DeskLinkFile: string;
 	ReadLink: TLink;
 	ReadBytes: Word;
@@ -130,26 +130,26 @@ begin
 			exit;
 	end;
 
-	Assign(f, DeskLinkFile);
+	Assign(F, DeskLinkFile);
 	{$I-}
-	Reset(f, 1);
+	Reset(F, 1);
 	{$I+}
 	if IOResult <> 0 then
 	begin
 		MsgBox('Error loading desktop links', 'Could not open file for reading. The' + NewLine + 
 			'file may corrupt or inaccesible:' + newLine +
 			DeskLinkFile, MsgError);
-		Close(f);
+		Close(F);
 		Exit;
 	end;
 
 	{Read the number of links in the file}
-	BlockRead(f, DeskLinkCount, SizeOf(DeskLinkCount));
+	BlockRead(F, DeskLinkCount, SizeOf(DeskLinkCount));
 	
 	{No links, exit}
 	if DeskLinkCount = 0 then
 	begin
-		Close(f);
+		Close(F);
 		exit;
 	end;
 
@@ -159,7 +159,7 @@ begin
 	begin
 		MsgBox('Error loading desktop links',
 			'Ran out of memory while loading desktop links.', MsgError);
-		Close(f);
+		Close(F);
 		Exit;
 	end;
 	
@@ -167,14 +167,14 @@ begin
 	for i := 1 to DeskLinkCount do
 	begin
 		FillChar(ReadLink, SizeOf(ReadLink), 0);
-		BlockRead(f, ReadLink, SizeOf(ReadLink), ReadBytes);
+		BlockRead(F, ReadLink, SizeOf(ReadLink), ReadBytes);
 		if ReadBytes <> SizeOf(ReadLink) then
 		begin
 			MsgBox('Error loading desktop links',
 				'File size mismatch. This indicates that the desktop file' + NewLine + 
 				'is corrupt:' + NewLine +
 				DeskLinkFile, MsgError);
-			Close(f);
+			Close(F);
 			DeskLinkFree;
 			if NewLink <> nil then
 				Dispose(NewLink);
@@ -187,14 +187,14 @@ begin
 		{Add to array}
 		DeskLink^[i] := NewLink;
 	end;
-	Close(f);
+	Close(F);
 end;
 
 procedure DeskLinkSave;
 var
 	i, j: integer;
 	TempLink: PLink;
-	f: file;
+	F: file;
 	DeskLinkFile: string;
 	mbVoid: Boolean;
 begin
@@ -223,31 +223,31 @@ begin
 	{Save}
 	Str(Setting.DeskID, DeskLinkFile);
 	DeskLinkFile := 'CONFIG\DESKLNK' + DeskLinkFile + '.BIN';
-	Assign(f, DeskLinkFile);
+	Assign(F, DeskLinkFile);
 	{$I-}
-	Rewrite(f, 1);
+	Rewrite(F, 1);
 	{$I+}
 	if IOResult <> 0 then
 	begin
 		MsgBox('Error saving desktop links', 'Could not open file for writing. The' + NewLine + 
 			'file read-only or inaccesible:' + newLine +
 			DeskLinkFile, MsgError);
-		Close(f);
+		Close(F);
 		Exit;
 	end;
-	BlockWrite(f, DesklinkCount, SizeOf(DesklinkCount));
+	BlockWrite(F, DesklinkCount, SizeOf(DesklinkCount));
 
 	{No links, close file}
 	if DeskLinkCount = 0 then
 	begin
-		Close(f);
+		Close(F);
 		Exit;
 	end;
 
 	{Write all links to file}
 	for i := 1 to DeskLinkCount do
 	begin
-		BlockWrite(f, DeskLink^[i]^, SizeOf(TLink));
+		BlockWrite(F, DeskLink^[i]^, SizeOf(TLink));
 	end;
 end;
 
@@ -350,7 +350,7 @@ end;
 procedure DeskDrawDesktop(FullRedraw: boolean);
 var
 	ImgDeskLinkIcon: TIcon;
-	i, x, y: integer;
+	i, X, Y: integer;
 	DeskStr: string;
 begin
 	MouseHide;
@@ -380,16 +380,16 @@ begin
 	
 	for i := 1 to DeskLinkCount do
 	begin
-		x := DeskLink^[i]^.Left;
-		y := DeskLink^[i]^.Top;
-		ImgDeskLinkIcon.Init(x, y, DeskLink^[i]^.ImageFile);
+		X := DeskLink^[i]^.Left;
+		Y := DeskLink^[i]^.Top;
+		ImgDeskLinkIcon.Init(X, Y, DeskLink^[i]^.ImageFile);
 		ImgDeskLinkIcon.Draw;
 
 		if Setting.LinkCapt then
 		begin
-			Print(DeskLink^[i]^.Caption, x + 38, y + 4, Thm.DeskText);
+			Print(DeskLink^[i]^.Caption, X + 38, Y + 4, Thm.DeskText);
 			if Setting.LinkTarget then
-				Print(DeskLink^[i]^.FileName, x + 38, y + 18, Thm.DeskText);
+				Print(DeskLink^[i]^.FileName, X + 38, Y + 18, Thm.DeskText);
 		end;
 	end;
 	
@@ -462,7 +462,7 @@ var
 	BtnOK, BtnCancel, BtnBrowse: TButton;
 	Key: string;
 	SelectedFile: string;
-	x1, y1, x2, y2: integer;
+	X1, Y1, X2, Y2: integer;
 	BackgroundSize: Word;
 	BackgroundP: Pointer;
 	RunLink: TLink;
@@ -479,13 +479,13 @@ begin
 	BtnCancel.Init(WinRun.Left + WinRun.Width - 94, BtnOK.Top, 80, SizeDefault, Hotkey + 'Cancel');
 		
 	MouseHide;
-	x1 := WinRun.Left;
-	y1 := WinRun.Top;
-	x2 := WinRun.Left + WinRun.Width;
-	y2 := WinRun.Top + WinRun.Height;
-	BackgroundSize := ImageSize(x1, y1, x2, y2);
+	X1 := WinRun.Left;
+	Y1 := WinRun.Top;
+	X2 := WinRun.Left + WinRun.Width;
+	Y2 := WinRun.Top + WinRun.Height;
+	BackgroundSize := ImageSize(X1, Y1, X2, Y2);
 	GetMem(BackgroundP, BackgroundSize);
-	GetImage(x1, y1, x2, y2, BackgroundP^);
+	GetImage(X1, Y1, X2, Y2, BackgroundP^);
 
 	WinRun.Draw;
 	BtnOK.Draw;
@@ -494,10 +494,8 @@ begin
 	TxtProgram.Draw;
 	TxtParameters.Draw;
 	
-	y2 := TxtProgram.Top - 16;
-	Print(Hotkey + 'Program:', TxtProgram.Left, y2, Thm.WinText);
-	y2 := TxtParameters.Top - 16;
-	Print('Pa' + Hotkey + 'rameters:', TxtParameters.Left, y2, Thm.WinText);
+	Print(Hotkey + 'Program:', TxtProgram.Left, TxtProgram.Top - 16, Thm.WinText);
+	Print('Pa' + Hotkey + 'rameters:', TxtParameters.Left, TxtParameters.Top - 16, Thm.WinText);
 	MouseShow;
 
 	repeat
@@ -530,12 +528,12 @@ begin
 		end;
 
 		if TxtClick(TxtParameters) or (Key = KeyAltR) then
-			EditTxt(TxtParameters, TxtParameters.Text);
+			TxtParameters.Edit;
 	until false;
 
 	{Restore background}
 	MouseHide;
-	PutImage(x1, y1, BackgroundP^, NormalPut);
+	PutImage(X1, Y1, BackgroundP^, NormalPut);
 	FreeMem(BackgroundP, BackgroundSize);
 	MouseShow;		
 end;
@@ -545,7 +543,7 @@ var
 	WinLinkMenu: TWindow;
 	BtnOpen, BtnEdit, BtnMove, BtnRemove, BtnCancel: TButton;
 	ImgIcon: TIcon;
-	x1, y1, x2, y2: integer;
+	X1, Y1, X2, Y2: integer;
 	BackgroundSize: Word;
 	BackgroundP: Pointer;
 	Caption, Filename, Path, Parameters: string;
@@ -576,13 +574,13 @@ begin
 		Parameters := Copy(Parameters, 1, 33) + '...';
 
 	MouseHide;
-	x1 := WinLinkMenu.Left;
-	y1 := WinLinkMenu.Top;
-	x2 := WinLinkMenu.Left + WinLinkMenu.Width;
-	y2 := WinLinkMenu.Top + WinLinkMenu.Height;
-	BackgroundSize := ImageSize(x1, y1, x2, y2);
+	X1 := WinLinkMenu.Left;
+	Y1 := WinLinkMenu.Top;
+	X2 := WinLinkMenu.Left + WinLinkMenu.Width;
+	Y2 := WinLinkMenu.Top + WinLinkMenu.Height;
+	BackgroundSize := ImageSize(X1, Y1, X2, Y2);
 	GetMem(BackgroundP, BackgroundSize);
-	GetImage(x1, y1, x2, y2, BackgroundP^);
+	GetImage(X1, Y1, X2, Y2, BackgroundP^);
 	
 	WinLinkMenu.Draw;
 	BtnOpen.Draw;
@@ -592,13 +590,13 @@ begin
 	BtnCancel.Draw;
 	ImgIcon.Draw;
 
-	Print(DeskLink^[TargetLink]^.Caption, x1 + 54, y1 + 17, 0);
-	Print(DeskLink^[TargetLink]^.Filename, x1 + 54, y1 + 31, 0);
-	Print('Path:', x1 + 12, y1 + 59, 0);
-	Print('Parameters:', x1 + 12, y1 + 76, 0);
+	Print(DeskLink^[TargetLink]^.Caption, X1 + 54, Y1 + 17, 0);
+	Print(DeskLink^[TargetLink]^.Filename, X1 + 54, Y1 + 31, 0);
+	Print('Path:', X1 + 12, Y1 + 59, 0);
+	Print('Parameters:', X1 + 12, Y1 + 76, 0);
 	
-	Print(Path, x1 + 108, y1 + 59, Thm.WinText);
-	Print(Parameters, x1 + 108, y1 + 76, Thm.WinText);
+	Print(Path, X1 + 108, Y1 + 59, Thm.WinText);
+	Print(Parameters, X1 + 108, Y1 + 76, Thm.WinText);
 	MouseShow;
 
 	{Clear buffers, sometimes needed on DOSBox}
@@ -611,7 +609,7 @@ begin
 		if BtnClick(BtnCancel) or (Key = KeyAltC) or (Key = KeyEscape) then
 		begin
 			MouseHide;
-			PutImage(x1, y1, BackgroundP^, NormalPut);
+			PutImage(X1, Y1, BackgroundP^, NormalPut);
 			MouseShow;
 			FreeMem(BackgroundP, BackgroundSize);
 			break;
@@ -631,7 +629,7 @@ begin
 		if BtnClick(BtnEdit) or (Key = KeyAltE) then
 		begin
 			MouseHide;
-			PutImage(x1, y1, BackgroundP^, NormalPut);
+			PutImage(X1, Y1, BackgroundP^, NormalPut);
 			MouseShow;
 			FreeMem(BackgroundP, BackgroundSize);
 			DeskLinkEdit(TargetLink);
@@ -642,7 +640,7 @@ begin
 		if BtnClick(BtnMove) or (Key = KeyAltM) then
 		begin
 			MouseHide;
-			PutImage(x1, y1, BackgroundP^, NormalPut);
+			PutImage(X1, Y1, BackgroundP^, NormalPut);
 			MouseShow;
 			FreeMem(BackgroundP, BackgroundSize);
 			DeskLinkMove(TargetLink);
@@ -830,7 +828,7 @@ var
 	Key: string;
 	MbVoid: Boolean;
 	SelectedFile: string;
-	x1, y1, x2, y2: integer;
+	X1, Y1, X2, Y2: integer;
 	BackgroundSize: Word;
 	BackgroundP: Pointer;
 	FDir: DirStr;
@@ -862,13 +860,13 @@ begin
 	ChkPauseOnExit.Checked := DeskLink^[TargetLink]^.PauseOnExit;
 
 	MouseHide;
-	x1 := WinEdit.Left;
-	y1 := WinEdit.Top;
-	x2 := WinEdit.Left + WinEdit.Width;
-	y2 := WinEdit.Top + WinEdit.Height;
-	BackgroundSize := ImageSize(x1, y1, x2, y2);
+	X1 := WinEdit.Left;
+	Y1 := WinEdit.Top;
+	X2 := WinEdit.Left + WinEdit.Width;
+	Y2 := WinEdit.Top + WinEdit.Height;
+	BackgroundSize := ImageSize(X1, Y1, X2, Y2);
 	GetMem(BackgroundP, BackgroundSize);
-	GetImage(x1, y1, x2, y2, BackgroundP^);
+	GetImage(X1, Y1, X2, Y2, BackgroundP^);
 
 	WinEdit.Draw;
 	TxtCaption.Draw;
@@ -969,13 +967,13 @@ begin
 		end;
 	
 		if TxtClick(TxtCaption) or (Key = KeyAltA) then
-			EditTxt(TxtCaption, TxtCaption.Text);
+			TxtCaption.Edit;
 
 		if TxtClick(TxtParams) or (Key = KeyAltR) then
-			EditTxt(TxtParams, TxtParams.Text);
+			TxtParams.Edit;
 
 		if TxtClick(TxtPath) or (Key = KeyAltT) then
-			EditTxt(TxtPath, TxtPath.Text);
+			TxtPath.Edit;
 
 		ChkClick(ChkPauseOnExit);
 		if Key = KeyAltX then
@@ -989,7 +987,7 @@ begin
 	until false;
 
 	MouseHide;
-	PutImage(x1, y1, BackgroundP^, NormalPut);
+	PutImage(X1, Y1, BackgroundP^, NormalPut);
 	FreeMem(BackgroundP, BackgroundSize);
 	MouseShow;
 end;
@@ -999,7 +997,7 @@ const
 	RunFile = 'CONFIG\RUN.BIN';
 var
 	MbVoid: boolean;
-	f: file;
+	F: file;
 	FPath: DirStr;
 	FName: NameStr;
 	FExt: ExtStr;
@@ -1048,13 +1046,13 @@ begin
 		TargetLink.FileName := ComSpec;
 	end;
 
-	Assign(f, ProgramPath + RunFile);
+	Assign(F, ProgramPath + RunFile);
 	{$I-}
-	Rewrite(f, 1);
+	Rewrite(F, 1);
 	{$I+}
 	if IOResult <> 0 then
 	begin
-		Close(f);
+		Close(F);
 		MsgBox('Writing '+ RunFile + ' failed',
 			'Could not write to data file, can''t continue.' + NewLine +
 			'Please check that the CONFIG directory exists and is writable.',
@@ -1062,8 +1060,8 @@ begin
 		exit;
 	end;
 
-	BlockWrite(f, TargetLink, SizeOf(TargetLink));
-	Close(f);
+	BlockWrite(F, TargetLink, SizeOf(TargetLink));
+	Close(F);
 	SysSaveSettings;
 
 	ClearInputBuffer;

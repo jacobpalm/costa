@@ -73,7 +73,7 @@ var
 	ImgLogo, ImgDeskLink: TIcon;
 	TxtPreview: TTextbox;
 	BtnPreview1, BtnPreview2: TButton;
-	f: file;
+	F: file;
 	OrigTheme: TTheme;
 	LoadError: boolean;
 	ViewWidth, ViewHeight: integer;
@@ -88,17 +88,17 @@ begin
 	
 	OrigTheme := Thm; {Save original theme to restore later}
 	
-	Assign(f, ProgramPath + 'THEMES\' + ThemeList[SelectedTheme] + '.BIN');
+	Assign(F, ProgramPath + 'THEMES\' + ThemeList[SelectedTheme] + '.BIN');
 	{$I-}
-	Reset(f, 1);
+	Reset(F, 1);
 	{$I+}
 	if IOResult = 0 then
 	begin
-		BlockRead(f, Thm, SizeOf(TTheme));
-		BlockRead(f, ThemeName, SizeOf(ThemeName));
-		BlockRead(f, ThemeAuthor, SizeOf(ThemeAuthor));
+		BlockRead(F, Thm, SizeOf(TTheme));
+		BlockRead(F, ThemeName, SizeOf(ThemeName));
+		BlockRead(F, ThemeAuthor, SizeOf(ThemeAuthor));
 	end;
-	Close(f);
+	Close(F);
 
 	ViewWidth := FrmThemePreview.Width - 4;
 	ViewHeight := FrmThemePreview.Height - 4;

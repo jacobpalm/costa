@@ -40,8 +40,8 @@ var
 	KeyVisible: boolean;
 	Key: string;
 
-function MineGetNeighbors(Row, Col: integer): integer; forward;
-function MineSetSize: boolean; forward;
+function  MineGetNeighbors(Row, Col: integer): integer; forward;
+function  MineSetSize: boolean; forward;
 procedure MineClearNeighbors(Row, Col: integer); forward;
 procedure MineClickCell(Row, Col: integer; MouseButton: TMouseButton); forward;
 procedure MineDrawCell(Row, Col: integer); forward;
@@ -58,7 +58,7 @@ procedure MineWin; forward;
 procedure MineClearNeighbors(Row, Col: integer);
 var
 	CheckRow, CheckCol: integer;
-	CheckNeighborRow, CheckNeighborCol: integer;
+	NeighborRow, NeighborCol: integer;
 	NeighborsCleared: boolean;
 begin
 	{If the cell has neighbors, an empty space was not clicked and thus nothing
@@ -68,8 +68,9 @@ begin
 
 	MouseHide;
 	{Set the current pos in the mask as cleared, then start a loop that checks
-	 all neighbors to cleared cells Empty cells are cleared as well and marked
-	 in the mask, to be checked on end; loop. Repeat until no cells are cleared}
+	 all neighbors to cleared cells. Empty cells are cleared as well and marked
+	 in the mask, to be checked on next iteration. Repeat until no cells are
+	 cleared}
 	MineField[Row, Col] := MineField[Row, Col] XOR FieldMasked;
 	repeat
 		NeighborsCleared := False;
@@ -89,28 +90,28 @@ begin
 					begin
 
 						{Check all neighbors}
-						for CheckNeighborRow := CheckRow - 1 TO CheckRow + 1 do
+						for NeighborRow := CheckRow - 1 TO CheckRow + 1 do
 						begin
-							for CheckNeighborCol := CheckCol - 1 TO CheckCol + 1 do
+							for NeighborCol := CheckCol - 1 TO CheckCol + 1 do
 							begin
 
 								{Prevent 'out of bounds' errors}
-								if (CheckNeighborRow >= 0) and (CheckNeighborCol >= 0) then
+								if (NeighborRow >= 0) and (NeighborCol >= 0) then
 								begin
-									if (CheckNeighborRow < FieldHeight) and (CheckNeighborCol < FieldWidth) then
+									if (NeighborRow < FieldHeight) and (NeighborCol < FieldWidth) then
 									begin
 									
-										if MineField[CheckNeighborRow, CheckNeighborCol] = 0 then
+										if MineField[NeighborRow, NeighborCol] = 0 then
 										begin
 											{If neighbor is empty, clear it}
-											MineField[CheckNeighborRow, CheckNeighborCol] := MineField[CheckNeighborRow, CheckNeighborCol] xor FieldCleared;
-											MineDrawCell(CheckNeighborRow, CheckNeighborCol);
+											MineField[NeighborRow, NeighborCol] := MineField[NeighborRow, NeighborCol] xor FieldCleared;
+											MineDrawCell(NeighborRow, NeighborCol);
 											NeighborsCleared := True;
 											Inc(CellsCleared);
 
 											{If cleared field has no neighbours, add it to the mask}
-											if MineGetNeighbors(CheckNeighborRow, CheckNeighborCol) = 0 then
-												MineField[CheckNeighborRow, CheckNeighborCol] := MineField[CheckNeighborRow, CheckNeighborCol] xor FieldMasked;
+											if MineGetNeighbors(NeighborRow, NeighborCol) = 0 then
+												MineField[NeighborRow, NeighborCol] := MineField[NeighborRow, NeighborCol] xor FieldMasked;
 										end;
 								
 									end;
@@ -227,39 +228,39 @@ end;
 
 procedure MineDrawCell(Row, Col: integer);
 var
-	x1, y1, x2, y2: integer;
+	X1, Y1, X2, Y2: integer;
 	TextColor, Neighbors: integer;
 	NeighborStr: string;
 begin
 	
-	x1 := AreaField.Left + 1 + Col * CellSize;
-	y1 := AreaField.Top + 1 + Row * CellSize;
-	x2 := x1 + CellSize - 2;
-	y2 := y1 + CellSize - 2;
+	X1 := AreaField.Left + 1 + Col * CellSize;
+	Y1 := AreaField.Top + 1 + Row * CellSize;
+	X2 := X1 + CellSize - 2;
+	Y2 := Y1 + CellSize - 2;
 
 	if (MineField[Row, Col] and FieldExploded) <> 0 then
 	begin
 		{Exploded field. Kaboom!}
 		SetFillStyle(SolidFill,  Red);
-		Bar(x1, y1, x2, y2);
+		Bar(X1, Y1, X2, Y2);
 
 		{Mine}
 		SetFillStyle(SolidFill,  Black);
-		Bar(x1 + 5, y1 + 3, x1 + 9, y1 + 11);
-		Bar(x1 + 3, y1 + 5, x1 + 11, y1 + 9);
-		PutPixel(x1 + 3, y1 + 3, Black);
-		PutPixel(x1 + 3, y1 + 11, Black);
-		PutPixel(x1 + 4, y1 + 4, Black);
-		PutPixel(x1 + 4, y1 + 10, Black);
-		PutPixel(x1 + 10, y1 + 10, Black);
-		PutPixel(x1 + 11, y1 + 11, Black);
-		PutPixel(x1 + 10, y1 + 4, Black);
-		PutPixel(x1 + 11, y1 + 3, Black);
+		Bar(X1 + 5, Y1 + 3, X1 + 9, Y1 + 11);
+		Bar(X1 + 3, Y1 + 5, X1 + 11, Y1 + 9);
+		PutPixel(X1 + 3, Y1 + 3, Black);
+		PutPixel(X1 + 3, Y1 + 11, Black);
+		PutPixel(X1 + 4, Y1 + 4, Black);
+		PutPixel(X1 + 4, Y1 + 10, Black);
+		PutPixel(X1 + 10, Y1 + 10, Black);
+		PutPixel(X1 + 11, Y1 + 11, Black);
+		PutPixel(X1 + 10, Y1 + 4, Black);
+		PutPixel(X1 + 11, Y1 + 3, Black);
 		SetColor(0);
-		Line(x1 + 1, y1 + 7, x2 - 1, y1 + 7);
-		Line(x1 + 7, y1 + 1, x1 + 7, y2 - 1);
+		Line(X1 + 1, Y1 + 7, X2 - 1, Y1 + 7);
+		Line(X1 + 7, Y1 + 1, X1 + 7, Y2 - 1);
 		SetColor(White);
-		Rectangle(x1 + 5, y1 + 5, x1 + 6, y1 + 6);
+		Rectangle(X1 + 5, Y1 + 5, X1 + 6, Y1 + 6);
 	end
 	else if (MineField[Row, Col] and FieldFlagged) <> 0 then
 	begin
@@ -268,37 +269,37 @@ begin
 		if (MineField[Row, Col] and FieldKBSelected) <> 0 then
 		begin
 			SetFillStyle(SolidFill, White);
-			Bar(x1 + 1, y1 + 1, x2 - 1, y2 - 1);
+			Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
 		end
 		else
 		begin
 			SetFillStyle(SolidFill, LightGray);
-			Bar(x1 + 1, y1 + 1, x2 - 1, y2 - 1);
+			Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
 		end;
 
 		{Flag pole}
 		SetColor(Black);
-		Line(x1 + 6, y1 + 2, x1 + 6, y1 + 10);
-		Line(x1 + 4, y1 + 11, x1 + 8, y1 + 11);
-		Line(x1 + 3, y1 + 12, x1 + 9, y1 + 12);
+		Line(X1 + 6, Y1 + 2, X1 + 6, Y1 + 10);
+		Line(X1 + 4, Y1 + 11, X1 + 8, Y1 + 11);
+		Line(X1 + 3, Y1 + 12, X1 + 9, Y1 + 12);
 		{Flag}
 		SetColor(LightRed);
-		Line(x1 + 7, y1 + 2, x1 + 7, y1 + 8);
-		Line(x1 + 8, y1 + 3, x1 + 8, y1 + 7);
-		Line(x1 + 9, y1 + 4, x1 + 9, y1 + 6);
-		PutPixel(x1 + 10, y1 + 5, LightRed);
+		Line(X1 + 7, Y1 + 2, X1 + 7, Y1 + 8);
+		Line(X1 + 8, Y1 + 3, X1 + 8, Y1 + 7);
+		Line(X1 + 9, Y1 + 4, X1 + 9, Y1 + 6);
+		PutPixel(X1 + 10, Y1 + 5, LightRed);
 	end
 	else if (MineField[Row, Col] and FieldCleared) <> 0 then
 	begin
 		{Cleared field}
 		SetFillStyle(SolidFill, LightGray);
-		Bar(x1, y1, x2, y2);
+		Bar(X1, Y1, X2, Y2);
 
 		{Draw keyboard indicator if selected}
 		if (MineField[Row, Col] and FieldKBSelected) <> 0 then
 		begin
 			SetFillStyle(SolidFill, White);
-			Bar(x1 + 1, y1 + 1, x2 - 1, y2 - 1);
+			Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
 		end;
 
 		{Draw neighbor count, if any}
@@ -316,7 +317,7 @@ begin
 				8: TextColor := 8;
 			end;
 			Str(Neighbors, NeighborStr);
-			Print(NeighborStr, x1 + ((CellSize - PrintW(NeighborStr)) div 2), y1 + 3, TextColor);
+			Print(NeighborStr, X1 + ((CellSize - PrintW(NeighborStr)) div 2), Y1 + 3, TextColor);
 		end;
 	end
 	else if (MineField[Row, Col] and FieldKBSelected) <> 0 then
@@ -324,7 +325,7 @@ begin
 		{Uncleared, not flagged, not exploded, but selected with keyboard}
 		{Draw keyboard indicator if selected}
 		SetFillStyle(SolidFill, White);
-		Bar(x1 + 1, y1 + 1, x2 - 1, y2 - 1);
+		Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
 	end
 	else
 	begin
@@ -333,7 +334,7 @@ begin
 
 		{Clear button face}
 		SetFillStyle(SolidFill, LightGray);
-		Bar(x1 + 1, y1 + 1, x2 - 1, y2 - 1);
+		Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
 	end;
 
 end;
@@ -341,15 +342,15 @@ end;
 procedure MineDrawField;
 var
 	FieldRow, FieldCol: integer;
-	x1, y1, x2, y2: integer;
+	X1, Y1, X2, Y2: integer;
 begin
 	AreaField.Init(SizeCenter, 0, FieldWidth * CellSize, FieldHeight * CellSize);
 	AreaField.Top := 180 - (AreaField.Height div 2);
 
-	x1 := AreaField.Left;
-	y1 := AreaField.Top;
-	x2 := AreaField.Left + AreaField.Width;
-	y2 := AreaField.Top + AreaField.Height;
+	X1 := AreaField.Left;
+	Y1 := AreaField.Top;
+	X2 := AreaField.Left + AreaField.Width;
+	Y2 := AreaField.Top + AreaField.Height;
 
 	MouseHide;
 	SetFillStyle(SolidFill, Thm.Win);
@@ -357,41 +358,41 @@ begin
 
 	{Button color}
 	SetFillStyle(SolidFill, LightGray);
-	Bar(x1, y1, x2, y2);
+	Bar(X1, Y1, X2, Y2);
 
 	{Button light and shadows for first row/column}
 	SetColor(White);
-	Line(x1 + 1, y1 + 1, x2, y1 + 1);
-	Line(x1 + 1, y1 + 1, x1 + 1, y2);
+	Line(X1 + 1, Y1 + 1, X2, Y1 + 1);
+	Line(X1 + 1, Y1 + 1, X1 + 1, Y2);
 	SetColor(DarkGray);
-	Line(x1 + 2, y2 - 1, x2 - 1, y2 - 1);
-	Line(x2 - 1, y1 + 2, x2 - 1, y2 - 1);
+	Line(X1 + 2, Y2 - 1, X2 - 1, Y2 - 1);
+	Line(X2 - 1, Y1 + 2, X2 - 1, Y2 - 1);
 
 	{Button light and shadows}
 	for FieldCol := 1 to FieldWidth - 1 do
 	begin
 		SetColor(White);
-		Line(x1 + FieldCol * CellSize + 1, y1, x1 + FieldCol * CellSize + 1, y1 + FieldHeight * CellSize);
+		Line(X1 + FieldCol * CellSize + 1, Y1, X1 + FieldCol * CellSize + 1, Y1 + FieldHeight * CellSize);
 		SetColor(DarkGray);
-		Line(x1 + FieldCol * CellSize - 1, y1 + 1, x1 + FieldCol * CellSize - 1, y1 + FieldHeight * CellSize);
+		Line(X1 + FieldCol * CellSize - 1, Y1 + 1, X1 + FieldCol * CellSize - 1, Y1 + FieldHeight * CellSize);
 	end;
 	for FieldRow := 1 to FieldHeight - 1 do
 	begin
 		SetColor(White);
-		Line(x1, y1 + FieldRow * CellSize + 1, x1 + FieldWidth * CellSize, y1 + FieldRow * CellSize + 1);
+		Line(X1, Y1 + FieldRow * CellSize + 1, X1 + FieldWidth * CellSize, Y1 + FieldRow * CellSize + 1);
 		SetColor(DarkGray);
-		Line(x1 + 1, y1 + FieldRow * CellSize - 1, x1 + FieldWidth * CellSize, y1 + FieldRow * CellSize - 1);
+		Line(X1 + 1, Y1 + FieldRow * CellSize - 1, X1 + FieldWidth * CellSize, Y1 + FieldRow * CellSize - 1);
 	end;
 
 	{Button borders}
 	SetColor(Black);
 	for FieldCol := 1 to FieldWidth - 1 do
-		Line(x1 + FieldCol * CellSize, y1, x1 + FieldCol * CellSize, y1 + FieldHeight * CellSize);
+		Line(X1 + FieldCol * CellSize, Y1, X1 + FieldCol * CellSize, Y1 + FieldHeight * CellSize);
 	for FieldRow := 1 to FieldHeight - 1 do
-		Line(x1, y1 + FieldRow * CellSize, x1 + FieldWidth * CellSize, y1 + FieldRow * CellSize);
+		Line(X1, Y1 + FieldRow * CellSize, X1 + FieldWidth * CellSize, Y1 + FieldRow * CellSize);
 
 	{Borders around playfield}
-	Rectangle(x1, y1, x2, y2);
+	Rectangle(X1, Y1, X2, Y2);
 	
 	MouseShow;
 
@@ -719,8 +720,8 @@ end;
 
 procedure MineReveal;
 var
-	x1, y1, x2, y2: integer;
-	row, col: integer;
+	X1, Y1, X2, Y2: integer;
+	Row, Col: integer;
 begin
 
 	SetColor(Red);
@@ -731,11 +732,11 @@ begin
 		begin
 			if (MineField[Row, Col] and FieldMined) <> 0 then
 			begin
-				x1 := AreaField.Left + 1 + Col * CellSize;
-				y1 := AreaField.Top + 1 + Row * CellSize;
-				x2 := x1 + CellSize - 2;
-				y2 := y1 + CellSize - 2;
-				Rectangle(x1, y1, x2, y2);
+				X1 := AreaField.Left + 1 + Col * CellSize;
+				Y1 := AreaField.Top + 1 + Row * CellSize;
+				X2 := X1 + CellSize - 2;
+				Y2 := Y1 + CellSize - 2;
+				Rectangle(X1, Y1, X2, Y2);
 			end;
 		end;
 	end;
@@ -749,7 +750,7 @@ var
 	BtnSize: array[0..3] of TButton;
 	BtnCancel: TButton;
 	X, Y, TextOffset: integer;
-	x1, y1, x2, y2: integer;
+	X1, Y1, X2, Y2: integer;
 	BackgroundSize: Word;
 	BackgroundP: Pointer;
 	TempStr: string;
@@ -770,13 +771,13 @@ begin
 
 	MouseHide;
 	{Save background to restore when window is closed}
-	x1 := WinSetSize.Left;
-	y1 := WinSetSize.Top;
-	x2 := WinSetSize.Left + WinSetSize.Width;
-	y2 := WinSetSize.Top + WinSetSize.Height;
-	BackgroundSize := ImageSize(x1, y1, x2, y2);
+	X1 := WinSetSize.Left;
+	Y1 := WinSetSize.Top;
+	X2 := WinSetSize.Left + WinSetSize.Width;
+	Y2 := WinSetSize.Top + WinSetSize.Height;
+	BackgroundSize := ImageSize(X1, Y1, X2, Y2);
 	GetMem(BackgroundP, BackgroundSize);
-	GetImage(x1, y1, x2, y2, BackgroundP^);
+	GetImage(X1, Y1, X2, Y2, BackgroundP^);
 
 	WinSetSize.Draw;
 	BtnSize[0].Draw;
@@ -870,7 +871,7 @@ begin
 	until false;
 
 	MouseHide;
-	PutImage(x1, y1, BackgroundP^, NormalPut);
+	PutImage(X1, Y1, BackgroundP^, NormalPut);
 	FreeMem(BackgroundP, BackgroundSize);
 	MouseShow;		
 end;
@@ -930,28 +931,28 @@ begin
 	repeat
 		Key := GetKey;
 		
-		if BtnClick(BtnNew) or (Key = 'n') then
+		if BtnClick(BtnNew) or (Key = KeyAltN) then
 		begin
 			MineNewGame;
 			KeyVisible := False;
 		end;
 
-		if BtnClick(BtnAudio) or (Key = 's') then
+		if BtnClick(BtnAudio) or (Key = KeyAltS) then
 		begin
 			EnableAudio := not EnableAudio;
 			MinePrintStatus(False, '');
 		end;
 
-		if BtnClick(BtnPause) or (Key = 'p') then
+		if BtnClick(BtnPause) or (Key = KeyAltP) then
 			MinePause;
 
-		if BtnClick(BtnSize) or (Key = 'z') then
+		if BtnClick(BtnSize) or (Key = KeyAltZ) then
 		begin
 			if MineSetSize then
 				MineNewGame;
 		end;
 
-		if BtnClick(BtnExit) or (Key = 'x') then
+		if BtnClick(BtnExit) or (Key = KeyAltD) then
 			break;
 
 		if BtnClick(BtnAbout) or (Key = 'a') then

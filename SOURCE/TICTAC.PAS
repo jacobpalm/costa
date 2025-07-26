@@ -237,23 +237,23 @@ end;
 
 procedure TicDrawBackground;
 var
-	x: integer;
+	X: integer;
 begin
 	SetFillStyle(SolidFill, Green);
 	Bar(0, 29, 639, 349);
 
 	SetLineStyle(UserBitLn, $1111, 1);
 	SetColor(LightGreen);
-	for x := 0 to 639 do
+	for X := 0 to 639 do
 	begin
-		if x mod 6 = 0 then
-			Line(x, 29, x, 349);
+		if X mod 6 = 0 then
+			Line(X, 29, X, 349);
 	end;
 
-	for x := 3 to 639 do
+	for X := 3 to 639 do
 	begin
-		if (x - 3) mod 6 = 0 then
-			Line(x, 31, x, 349);
+		if (X - 3) mod 6 = 0 then
+			Line(X, 31, X, 349);
 	end;
 	SetLineStyle(SolidLn, 0, 1);	
 end;
@@ -261,23 +261,23 @@ end;
 procedure TicDrawBoard;
 var
 	Row, Col: integer;
-	x1, y1, x2, y2: integer;
+	X1, Y1, X2, Y2: integer;
 begin
 	MouseHide;
 	for Row := 1 to 3 do
 	begin
 		for Col := 1 to 3 do
 		begin
-			x1 := TxtPlayField[Row, Col].Left;
-			y1 := TxtPlayField[Row, Col].Top;
-			x2 := TxtPlayField[Row, Col].Left + TxtPlayField[Row, Col].Width;
-			y2 := TxtPlayField[Row, Col].Top + TxtPlayField[Row, Col].Height;
+			X1 := TxtPlayField[Row, Col].Left;
+			Y1 := TxtPlayField[Row, Col].Top;
+			X2 := TxtPlayField[Row, Col].Left + TxtPlayField[Row, Col].Width;
+			Y2 := TxtPlayField[Row, Col].Top + TxtPlayField[Row, Col].Height;
 			SetFillStyle(SolidFill, White);
-			Bar(x1 + 2, y1 + 2, x2 - 2, y2 - 2);
+			Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 2);
 			SetColor(LightGreen);
-			Rectangle(x1, y1, x2 - 1, y2 - 1);
+			Rectangle(X1, Y1, X2 - 1, Y2 - 1);
 			SetColor(DarkGray);
-			Rectangle(x1 + 1, y1 + 1, x2, y2);
+			Rectangle(X1 + 1, Y1 + 1, X2, Y2);
 		end;
 	end;
 	MouseShow;
@@ -285,50 +285,50 @@ end;
 
 procedure TicDrawXO(Row, Col: integer; Player: TPlayer);
 var
-	x, y: integer;
+	X, Y: integer;
 begin
-	x := TxtPlayField[Row, Col].Left;
-	y := TxtPlayField[Row, Col].Top;
+	X := TxtPlayField[Row, Col].Left;
+	Y := TxtPlayField[Row, Col].Top;
 
 	MouseHide;
 	SetColor(Black);
 	if Player = PlayerX then
 	begin
-		Line(x + 11, y + 12, x + 48, y + 49);
-		Line(x + 11, y + 13, x + 47, y + 49);
-		Line(x + 12, y + 12, x + 49, y + 49);
-		Line(x + 13, y + 12, x + 49, y + 48);
-		Line(x + 11, y + 48, x + 47, y + 12);
-		Line(x + 11, y + 49, x + 48, y + 12);
-		Line(x + 12, y + 49, x + 49, y + 12);
-		Line(x + 13, y + 49, x + 49, y + 13);
+		Line(X + 11, Y + 12, X + 48, Y + 49);
+		Line(X + 11, Y + 13, X + 47, Y + 49);
+		Line(X + 12, Y + 12, X + 49, Y + 49);
+		Line(X + 13, Y + 12, X + 49, Y + 48);
+		Line(X + 11, Y + 48, X + 47, Y + 12);
+		Line(X + 11, Y + 49, X + 48, Y + 12);
+		Line(X + 12, Y + 49, X + 49, Y + 12);
+		Line(X + 13, Y + 49, X + 49, Y + 13);
 	end
 	else
 	begin
 		{DEBUG - circle is not really round, and PutPixel/Line needs rework}
-		Circle(x + 30, y + 30, 19);
-		Circle(x + 30, y + 30, 18);
-		Circle(x + 30, y + 30, 17);
-		PutPixel(x + 14, y + 23, Black);
-		PutPixel(x + 15, y + 21, Black);
-		PutPixel(x + 21, y + 15, Black);
-		PutPixel(x + 23, y + 14, Black);
-		PutPixel(x + 14, y + 37, Black);
-		PutPixel(x + 15, y + 39, Black);
-		PutPixel(x + 21, y + 45, Black);
-		PutPixel(x + 23, y + 46, Black);
-		PutPixel(x + 37, y + 46, Black);
-		PutPixel(x + 39, y + 45, Black);
-		PutPixel(x + 45, y + 39, Black);
-		PutPixel(x + 46, y + 37, Black);
-		PutPixel(x + 46, y + 23, Black);
-		PutPixel(x + 45, y + 21, Black);
-		PutPixel(x + 39, y + 15, Black);
-		PutPixel(x + 37, y + 14, Black);
-		Line(x + 16, y + 18, x + 18, y + 16);
-		Line(x + 42, y + 16, x + 44, y + 18);
-		Line(x + 44, y + 42, x + 42, y + 44);
-		Line(x + 16, y + 42, x + 18, y + 44);
+		Circle(X + 30, Y + 30, 19);
+		Circle(X + 30, Y + 30, 18);
+		Circle(X + 30, Y + 30, 17);
+		PutPixel(X + 14, Y + 23, Black);
+		PutPixel(X + 15, Y + 21, Black);
+		PutPixel(X + 21, Y + 15, Black);
+		PutPixel(X + 23, Y + 14, Black);
+		PutPixel(X + 14, Y + 37, Black);
+		PutPixel(X + 15, Y + 39, Black);
+		PutPixel(X + 21, Y + 45, Black);
+		PutPixel(X + 23, Y + 46, Black);
+		PutPixel(X + 37, Y + 46, Black);
+		PutPixel(X + 39, Y + 45, Black);
+		PutPixel(X + 45, Y + 39, Black);
+		PutPixel(X + 46, Y + 37, Black);
+		PutPixel(X + 46, Y + 23, Black);
+		PutPixel(X + 45, Y + 21, Black);
+		PutPixel(X + 39, Y + 15, Black);
+		PutPixel(X + 37, Y + 14, Black);
+		Line(X + 16, Y + 18, X + 18, Y + 16);
+		Line(X + 42, Y + 16, X + 44, Y + 18);
+		Line(X + 44, Y + 42, X + 42, Y + 44);
+		Line(X + 16, Y + 42, X + 18, Y + 44);
 	end;
 	MouseShow;
 

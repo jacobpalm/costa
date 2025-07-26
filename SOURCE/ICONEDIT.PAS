@@ -136,7 +136,7 @@ end;
 
 procedure SetDrawColor(Col: integer);
 var
-	x1, y1, x2, y2: integer;
+	X1, Y1, X2, Y2: integer;
 begin
 	{Prevent color outside range}
 	if Col < 0 then
@@ -146,23 +146,23 @@ begin
 	
 	{Remove selection marker from previous color}
 	MouseHide;
-	x1 := TxtColor[DrawColor].Left + 4;
-	y1 := TxtColor[DrawColor].Top + 4;
-	x2 := TxtColor[DrawColor].Left + TxtColor[DrawColor].Width - 4;
-	y2 := TxtColor[DrawColor].Top + TxtColor[DrawColor].Height - 4;
+	X1 := TxtColor[DrawColor].Left + 4;
+	Y1 := TxtColor[DrawColor].Top + 4;
+	X2 := TxtColor[DrawColor].Left + TxtColor[DrawColor].Width - 4;
+	Y2 := TxtColor[DrawColor].Top + TxtColor[DrawColor].Height - 4;
 	SetFillStyle(SolidFill, DrawColor);
-	Bar(x1, y1, x2, y2);
+	Bar(X1, Y1, X2, Y2);
 
 	{Change color and draw new selection marker}
 	DrawColor := Col;
-	x1 := TxtColor[DrawColor].Left + 4;
-	y1 := TxtColor[DrawColor].Top + 4;
-	x2 := TxtColor[DrawColor].Left + TxtColor[DrawColor].Width - 4;
-	y2 := TxtColor[DrawColor].Top + TxtColor[DrawColor].Height - 4;
+	X1 := TxtColor[DrawColor].Left + 4;
+	Y1 := TxtColor[DrawColor].Top + 4;
+	X2 := TxtColor[DrawColor].Left + TxtColor[DrawColor].Width - 4;
+	Y2 := TxtColor[DrawColor].Top + TxtColor[DrawColor].Height - 4;
 	SetColor(DarkGray);
-	Rectangle(x1, y1, x2, y2);
+	Rectangle(X1, Y1, X2, Y2);
 	SetColor(White);
-	Rectangle(x1 + 1, y1 + 1, x2 - 1, y2 - 1);
+	Rectangle(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
 	MouseShow;
 end;
 
@@ -299,10 +299,10 @@ end;
 procedure SaveIcon;
 var
 	Filename: String;
-	f: file;
+	F: file;
 	Size: Word;
 	p: Pointer;
-	x1, y1, x2, y2: Integer;
+	X1, Y1, X2, Y2: Integer;
 	mbResult: Boolean;
 begin
 	{If icon hasn't already been saved, prompt for a filename}
@@ -336,18 +336,18 @@ begin
 	end;
 	
 	{Allocate memory and get the image data}
-	x1 := ImgPreview.Left;
-	y1 := ImgPreview.Top;
-	x2 := ImgPreview.Left + 31;
-	y2 := ImgPreview.Top + 31;
-	Size := ImageSize(x1, y1, x2, y2);
+	X1 := ImgPreview.Left;
+	Y1 := ImgPreview.Top;
+	X2 := ImgPreview.Left + 31;
+	Y2 := ImgPreview.Top + 31;
+	Size := ImageSize(X1, Y1, X2, Y2);
 	GetMem(p, Size);
-	GetImage(x1, y1, x2, y2, p^);
+	GetImage(X1, Y1, X2, Y2, p^);
 	
 	{Open the file and output the data}
-	Assign(f, Filename);
+	Assign(F, Filename);
 	{$I-}
-	Rewrite(f, 1);
+	Rewrite(F, 1);
 	{$I+}
 	if IOResult <> 0 then
 	begin
@@ -357,8 +357,8 @@ begin
 		FreeMem(p, Size);
 		exit;
 	end;
-	BlockWrite(f, p^, Size);
-	Close(f);
+	BlockWrite(F, p^, Size);
+	Close(F);
 	FreeMem(p, Size);
 
 	IconFileName := Filename;

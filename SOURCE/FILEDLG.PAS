@@ -105,21 +105,21 @@ end;
 procedure DrawFileList(TargetList: integer; HighLightActive, FullRedraw: Boolean);
 var
 	I, Counter: Integer;
-	x1, y1, x2, y2, YOffset: Integer;
+	X1, Y1, X2, Y2, YOffset: Integer;
 	FGColor, BGColor: Integer;
 	ItemText: String;
 begin
-	x1 := TxtList[TargetList].Left + 2;
-	y1 := TxtList[TargetList].Top + 3;
-	x2 := TxtList[TargetList].Left + TxtList[TargetList].Width - 2;
-	y2 := TxtList[TargetList].Top + 15;
+	X1 := TxtList[TargetList].Left + 2;
+	Y1 := TxtList[TargetList].Top + 3;
+	X2 := TxtList[TargetList].Left + TxtList[TargetList].Width - 2;
+	Y2 := TxtList[TargetList].Top + 15;
 	YOffset := ((ListSelection[TargetList] - ListStartPos[TargetList]) * ListItemHeight);
 
 	MouseHide;
 	if FullRedraw then
 	begin
 	SetFillStyle(SolidFill, Thm.Txt);
-	Bar(x1, y1, x2, y2 - 1 + ((MaxVisibleItems - 1) * ListItemHeight));
+	Bar(X1, Y1, X2, Y2 - 1 + ((MaxVisibleItems - 1) * ListItemHeight));
 	Counter := 0;
 	for I := ListStartPos[TargetList] to ListStartPos[TargetList] + MaxVisibleItems - 1 do
 	begin
@@ -135,13 +135,13 @@ begin
 		begin
 			{Draw highlighted item}
 			SetFillStyle(SolidFill, Thm.Sel);
-			Bar(x1, y1 + (Counter * ListItemHeight), x2, y2 - 1 + (Counter * ListItemHeight));
-			Print(ItemText, x1 + 3, y1 + 2 + (Counter * ListItemHeight), Thm.SelText);
+			Bar(X1, Y1 + (Counter * ListItemHeight), X2, Y2 - 1 + (Counter * ListItemHeight));
+			Print(ItemText, X1 + 3, Y1 + 2 + (Counter * ListItemHeight), Thm.SelText);
 		end
 		else
 		begin
 			{Draw normal item}
-			Print(ItemText, x1 + 3, y1 + 2 + (Counter * ListItemHeight), Thm.TxtText);
+			Print(ItemText, X1 + 3, Y1 + 2 + (Counter * ListItemHeight), Thm.TxtText);
 		end;
 
 		Inc(Counter);
@@ -170,8 +170,8 @@ begin
 	if ItemText <> '' then
 	begin
 		SetFillStyle(SolidFill, BGColor);
-		Bar(x1, y1 + YOffset, x2, y2 - 1 + YOffset);
-		Print(ItemText, x1 + 3, y1 + 2 + YOffset, FGColor);
+		Bar(X1, Y1 + YOffset, X2, Y2 - 1 + YOffset);
+		Print(ItemText, X1 + 3, Y1 + 2 + YOffset, FGColor);
 	end;
 	end;
 	MouseShow;
@@ -418,7 +418,7 @@ var
 	BtnDirPrev, BtnDirNext: TButton;
 	OriginalPath: string;
 	Counter, I: Integer;
-	x1, y1, x2, y2: Integer;
+	X1, Y1, X2, Y2: Integer;
 	BackgroundSize: Word;
 	BackgroundP: Pointer;
 	Key: string;
@@ -457,13 +457,13 @@ begin
 	MouseHide;
 
 	{Save background to restore when window is closed}
-	x1 := WinFileSelect.Left;
-	y1 := WinFileSelect.Top;
-	x2 := WinFileSelect.Left + WinFileSelect.Width;
-	y2 := WinFileSelect.Top + WinFileSelect.Height;
-	BackgroundSize := ImageSize(x1, y1, x2, y2);
+	X1 := WinFileSelect.Left;
+	Y1 := WinFileSelect.Top;
+	X2 := WinFileSelect.Left + WinFileSelect.Width;
+	Y2 := WinFileSelect.Top + WinFileSelect.Height;
+	BackgroundSize := ImageSize(X1, Y1, X2, Y2);
 	GetMem(BackgroundP, BackgroundSize);
-	GetImage(x1, y1, x2, y2, BackgroundP^);
+	GetImage(X1, Y1, X2, Y2, BackgroundP^);
 
 	WinFileSelect.Draw;
 	TxtPattern.Draw;
@@ -533,7 +533,7 @@ begin
 
 		if TxtClick(TxtDrive) or (Key = KeyAltD) then
 		begin
-			EditTxt(TxtDrive, TxtDrive.Text);
+			TxtDrive.Edit;
 			if TxtDrive.Text <> Drive Then
 			begin
 				if not FileSetDrive(TxtDrive.Text[1]) then
@@ -599,7 +599,7 @@ begin
 
 		if TxtClick(TxtPattern) or (Key = KeyAltP) then
 		begin
-			EditTxt(TxtPattern, TxtPattern.Text);
+			TxtPattern.Edit;
 			if TxtPattern.Text <> Pattern then
 			begin
 				Pattern := TxtPattern.Text;
@@ -613,7 +613,7 @@ begin
 
 	until False;
 	MouseHide;
-	PutImage(x1, y1, BackgroundP^, NormalPut);
+	PutImage(X1, Y1, BackgroundP^, NormalPut);
 	FreeMem(BackgroundP, BackgroundSize);
 	MouseShow;
 

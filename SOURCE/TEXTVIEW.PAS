@@ -133,7 +133,7 @@ end;
 
 function LoadFile(TargetFile: String): Boolean;
 var
-	f: Text;
+	F: Text;
 	ReadData, Truncated: String;
 begin
 	if not FileExists(TargetFile) then
@@ -143,9 +143,9 @@ begin
 		Exit;
 	end;
 
-	Assign(f, TargetFile);
+	Assign(F, TargetFile);
 	{$I-}
-	Reset(f);
+	Reset(F);
 	{$I+}
 	if IOResult <> 0 then
 	begin
