@@ -4,33 +4,40 @@ uses
 	CostaLib, Graph, Crt;
 
 const
-	AppName          = 'Minesweeper';
-	AppVersion       = '2.0';
-	AppAuthor        = 'Jacob Palm';
-	AppIcon          = 'MINE';
+	AppName           = 'Minesweeper';
+	AppVersion        = '2.0';
+	AppAuthor         = 'Jacob Palm';
+	AppIcon           = 'MINE';
 
-	FieldMined       = 1;
-	FieldFlagged     = 2;
-	FieldCleared     = 4;
-	FieldNumbered    = 8;
-	FieldExploded    = 16;
-	FieldMasked      = 32;
-	FieldKBSelected  = 64;
+	FieldMined        = 1;
+	FieldFlagged      = 2;
+	FieldCleared      = 4;
+	FieldNumbered     = 8;
+	FieldExploded     = 16;
+	FieldMasked       = 32;
+	FieldKBSelected   = 64;
 
-	CellSize         = 16; {Size of each clickable field}
+	CellSize          = 16; {Size of each clickable field}
+
+	MSG_GAME_OVER     = 'Kaboom! Game over.';
+	MSG_FLAGGED_COUNT = 'Flagged mines:';
+	MSG_WIN           = 'Minefield cleared, good job!';
+	MSG_SOUND         = 'Sound:';
+	MSG_ON            = 'On';
+	MSG_OFF           = 'Off';
 
 type
-	TSound = (SoundNew, SoundIllegalMove, SoundWin, SoundLoose, SoundClear, SoundFlag);
+	TSound     = (SoundNew, SoundIllegalMove, SoundWin, SoundLoose, SoundClear, SoundFlag);
+	TDirection = (DirHide, DirShow, DirUp, DirDown, DirLeft, DirRight);
 
 var
 	EnableAudio: boolean;
 	GameOver: boolean;
 	MineCount: integer;
-	FieldWidth, FieldHeight: integer;
+	FieldW, FieldH: integer;
 	AreaField: TArea;
 	StartTime, TimeCompare: real;
 	CellsCleared, CellsFlagged: integer;
-	DebugMode: boolean;
 	KeyRow, KeyCol: integer;
 	MineField: array[0..17, 0..38] of integer;
 
@@ -40,30 +47,61 @@ var
 	KeyVisible: boolean;
 	Key: string;
 
-function  MineGetNeighbors(Row, Col: integer): integer; forward;
-function  MineSetSize: boolean; forward;
-procedure MineClearNeighbors(Row, Col: integer); forward;
-procedure MineClickCell(Row, Col: integer; MouseButton: TMouseButton); forward;
-procedure MineDrawCell(Row, Col: integer); forward;
-procedure MineDrawField; forward;
-procedure MineHelpFirstMove(Row, Col: integer); forward;
-procedure MineNewGame; forward;
-procedure MinePause; forward;
-procedure MinePlaySound(SoundType: TSound); forward;
-procedure MinePrintStatus(MineCountOnly: Boolean; StatusMessage: string); forward;
-procedure MinePrintTime; forward;
-procedure MineReveal; forward;
-procedure MineWin; forward;
+function  GetNeighborCount(Row, Col: integer): integer; forward;
+function  SetFieldSize: boolean; forward;
+procedure ClearNeighbors(Row, Col: integer); forward;
+procedure ClickCell(Row, Col: integer; MouseButton: TMouseButton); forward;
+procedure DrawCell(Row, Col: integer); forward;
+procedure DrawField; forward;
+procedure HelpFirstMove(Row, Col: integer); forward;
+procedure NewGame; forward;
+procedure Pause; forward;
+procedure PlaySound(SoundType: TSound); forward;
+procedure PrintStatus(MineCountOnly: Boolean; StatusMessage: string); forward;
+procedure PrintTime; forward;
+procedure RevealMines; forward;
+procedure WinGame; forward;
 
-procedure MineClearNeighbors(Row, Col: integer);
+procedure ClearNeighbors(Row, Col: integer);
 var
 	CheckRow, CheckCol: integer;
-	NeighborRow, NeighborCol: integer;
 	NeighborsCleared: boolean;
+
+	function MaskNeighbors(Row, Col: integer): boolean;
+	var
+		NeighborRow, NeighborCol: integer;
+	begin
+		MaskNeighbors := false;
+		{Check all neighbors}
+		for NeighborRow := Row - 1 TO Row + 1 do
+		begin
+			for NeighborCol := Col - 1 TO Col + 1 do
+			begin
+				{Prevent 'out of bounds' errors}
+				if (NeighborRow >= 0) and (NeighborCol >= 0) and
+				   (NeighborRow < FieldH) and (NeighborCol < FieldW) then
+				begin
+					if MineField[NeighborRow, NeighborCol] = 0 then
+					begin
+						{If neighbor is empty, clear it}
+						MineField[NeighborRow, NeighborCol] := MineField[NeighborRow, NeighborCol] xor FieldCleared;
+						DrawCell(NeighborRow, NeighborCol);
+						MaskNeighbors := true;
+						Inc(CellsCleared);
+
+						{If cleared field has no neighbours itself, mask if for next iteration}
+						if GetNeighborCount(NeighborRow, NeighborCol) = 0 then
+							MineField[NeighborRow, NeighborCol] := MineField[NeighborRow, NeighborCol] xor FieldMasked;
+					end;
+				end;
+			end;
+		end;
+	end;
+
 begin
 	{If the cell has neighbors, an empty space was not clicked and thus nothing
 	 should be cleared around it}
-	if MineGetNeighbors(Row, Col) <> 0 then
+	if GetNeighborCount(Row, Col) <> 0 then
 		exit;
 
 	MouseHide;
@@ -73,71 +111,33 @@ begin
 	 cleared}
 	MineField[Row, Col] := MineField[Row, Col] XOR FieldMasked;
 	repeat
-		NeighborsCleared := False;
-
-		for CheckRow := 0 to FieldHeight - 1 do
+		NeighborsCleared := false;
+		for CheckRow := 0 to FieldH - 1 do
 		begin
-			for CheckCol := 0 to FieldWidth - 1 do
+			for CheckCol := 0 to FieldW - 1 do
 			begin
-
 				if (MineField[CheckRow, CheckCol] and FieldMasked) <> 0 then
 				begin
 					{Remove from mask to avoid redundant checks}
 					MineField[CheckRow, CheckCol] := MineField[CheckRow, CheckCol] and not FieldMasked;
 
 					{Clear only if has no neighbors}
-					if MineGetNeighbors(CheckRow, CheckCol) = 0 then
-					begin
-
-						{Check all neighbors}
-						for NeighborRow := CheckRow - 1 TO CheckRow + 1 do
-						begin
-							for NeighborCol := CheckCol - 1 TO CheckCol + 1 do
-							begin
-
-								{Prevent 'out of bounds' errors}
-								if (NeighborRow >= 0) and (NeighborCol >= 0) then
-								begin
-									if (NeighborRow < FieldHeight) and (NeighborCol < FieldWidth) then
-									begin
-									
-										if MineField[NeighborRow, NeighborCol] = 0 then
-										begin
-											{If neighbor is empty, clear it}
-											MineField[NeighborRow, NeighborCol] := MineField[NeighborRow, NeighborCol] xor FieldCleared;
-											MineDrawCell(NeighborRow, NeighborCol);
-											NeighborsCleared := True;
-											Inc(CellsCleared);
-
-											{If cleared field has no neighbours, add it to the mask}
-											if MineGetNeighbors(NeighborRow, NeighborCol) = 0 then
-												MineField[NeighborRow, NeighborCol] := MineField[NeighborRow, NeighborCol] xor FieldMasked;
-										end;
-								
-									end;
-								end;
-
-							end;
-						end;
-
-					end;
-					
+					if GetNeighborCount(CheckRow, CheckCol) = 0 then
+						if MaskNeighbors(CheckRow, CheckCol) then
+							NeighborsCleared := true;			
 				end;
-
 			end;
 		end;
-
 	until NeighborsCleared = false;
 	MouseShow;
-		
 end;
 
-procedure MineClickCell(Row, Col: integer; MouseButton: TMouseButton);
+procedure ClickCell(Row, Col: integer; MouseButton: TMouseButton);
 begin
 
 	if (MineField[Row, Col] and FieldCleared) <> 0 then
 	begin
-		MinePlaySound(SoundIllegalMove);
+		PlaySound(SoundIllegalMove);
 		exit;
 	end;
 
@@ -146,7 +146,7 @@ begin
 		StartTime := Timer;
 
 		{If first move, make sure there are no mines where there was clicked}
-		MineHelpFirstMove(Row, Col);
+		HelpFirstMove(Row, Col);
 	end;
 
 	case MouseButton of
@@ -155,7 +155,7 @@ begin
 			{Clicked a flagged cell}
 			if (MineField[Row, Col] and FieldFlagged) <> 0 then
 			begin
-				MinePlaySound(SoundIllegalMove);
+				PlaySound(SoundIllegalMove);
 				exit;
 			end;
 
@@ -163,20 +163,20 @@ begin
 			if (MineField[Row, Col] and FieldMined) <> 0 then
 			begin
 				MouseHide;
-				for Row := 0 to FieldHeight - 1 do
+				for Row := 0 to FieldH - 1 do
 				begin
-					for Col := 0 to FieldWidth - 1 do
+					for Col := 0 to FieldW - 1 do
 					begin
 						if (MineField[Row, Col] and FieldMined) <> 0 then
 						begin
 							MineField[Row, Col] := MineField[Row, Col] or FieldExploded;
-							MineDrawCell(Row, Col);
+							DrawCell(Row, Col);
 						end;
 					end;
 				end;
 				MouseShow;
-				MinePrintStatus(False, 'Kaboom! Game over.');
-				MinePlaySound(SoundLoose);
+				PrintStatus(False, MSG_GAME_OVER);
+				PlaySound(SoundLoose);
 				GameOver := true;
 				exit;
 			end;
@@ -185,18 +185,18 @@ begin
 			MouseHide;
 			MineField[Row, Col] := MineField[Row, Col] or FieldCleared;
 			Inc(CellsCleared);
-			MineDrawCell(Row, Col);
-			if CellsCleared = (FieldHeight * FieldWidth) - MineCount then
+			DrawCell(Row, Col);
+			if CellsCleared = (FieldH * FieldW) - MineCount then
 			begin
-				MineWin;
+				WinGame;
 				MouseShow;
 			end
 			else
 			begin
-				MinePlaySound(SoundClear);
-				MineClearNeighbors(Row, Col);
-				if CellsCleared = (FieldHeight * FieldWidth) - MineCount then
-					MineWin;
+				PlaySound(SoundClear);
+				ClearNeighbors(Row, Col);
+				if CellsCleared = (FieldH * FieldW) - MineCount then
+					WinGame;
 			end;
 			MouseShow;
 		end;
@@ -217,16 +217,16 @@ begin
 				MineField[Row, Col] := MineField[Row, Col] and not FieldFlagged;
 			end;
 			MouseHide;
-			MineDrawCell(Row, Col);
-			MinePrintStatus(true, '');
+			DrawCell(Row, Col);
+			PrintStatus(true, '');
 			MouseShow;
-			MinePlaySound(SoundFlag);
+			PlaySound(SoundFlag);
 		end;
 	end;
 																			
 end;
 
-procedure MineDrawCell(Row, Col: integer);
+procedure DrawCell(Row, Col: integer);
 var
 	X1, Y1, X2, Y2: integer;
 	TextColor, Neighbors: integer;
@@ -303,7 +303,7 @@ begin
 		end;
 
 		{Draw neighbor count, if any}
-		Neighbors := MineGetNeighbors(Row, Col);
+		Neighbors := GetNeighborCount(Row, Col);
 		if Neighbors > 0 then
 		begin
 			case Neighbors of
@@ -339,12 +339,12 @@ begin
 
 end;
 
-procedure MineDrawField;
+procedure DrawField;
 var
 	FieldRow, FieldCol: integer;
 	X1, Y1, X2, Y2: integer;
 begin
-	AreaField.Init(SizeCenter, 0, FieldWidth * CellSize, FieldHeight * CellSize);
+	AreaField.Init(SizeCenter, 0, FieldW * CellSize, FieldH * CellSize);
 	AreaField.Top := 180 - (AreaField.Height div 2);
 
 	X1 := AreaField.Left;
@@ -369,27 +369,27 @@ begin
 	Line(X2 - 1, Y1 + 2, X2 - 1, Y2 - 1);
 
 	{Button light and shadows}
-	for FieldCol := 1 to FieldWidth - 1 do
+	for FieldCol := 1 to FieldW - 1 do
 	begin
 		SetColor(White);
-		Line(X1 + FieldCol * CellSize + 1, Y1, X1 + FieldCol * CellSize + 1, Y1 + FieldHeight * CellSize);
+		Line(X1 + FieldCol * CellSize + 1, Y1, X1 + FieldCol * CellSize + 1, Y1 + FieldH * CellSize);
 		SetColor(DarkGray);
-		Line(X1 + FieldCol * CellSize - 1, Y1 + 1, X1 + FieldCol * CellSize - 1, Y1 + FieldHeight * CellSize);
+		Line(X1 + FieldCol * CellSize - 1, Y1 + 1, X1 + FieldCol * CellSize - 1, Y1 + FieldH * CellSize);
 	end;
-	for FieldRow := 1 to FieldHeight - 1 do
+	for FieldRow := 1 to FieldH - 1 do
 	begin
 		SetColor(White);
-		Line(X1, Y1 + FieldRow * CellSize + 1, X1 + FieldWidth * CellSize, Y1 + FieldRow * CellSize + 1);
+		Line(X1, Y1 + FieldRow * CellSize + 1, X1 + FieldW * CellSize, Y1 + FieldRow * CellSize + 1);
 		SetColor(DarkGray);
-		Line(X1 + 1, Y1 + FieldRow * CellSize - 1, X1 + FieldWidth * CellSize, Y1 + FieldRow * CellSize - 1);
+		Line(X1 + 1, Y1 + FieldRow * CellSize - 1, X1 + FieldW * CellSize, Y1 + FieldRow * CellSize - 1);
 	end;
 
 	{Button borders}
 	SetColor(Black);
-	for FieldCol := 1 to FieldWidth - 1 do
-		Line(X1 + FieldCol * CellSize, Y1, X1 + FieldCol * CellSize, Y1 + FieldHeight * CellSize);
-	for FieldRow := 1 to FieldHeight - 1 do
-		Line(X1, Y1 + FieldRow * CellSize, X1 + FieldWidth * CellSize, Y1 + FieldRow * CellSize);
+	for FieldCol := 1 to FieldW - 1 do
+		Line(X1 + FieldCol * CellSize, Y1, X1 + FieldCol * CellSize, Y1 + FieldH * CellSize);
+	for FieldRow := 1 to FieldH - 1 do
+		Line(X1, Y1 + FieldRow * CellSize, X1 + FieldW * CellSize, Y1 + FieldRow * CellSize);
 
 	{Borders around playfield}
 	Rectangle(X1, Y1, X2, Y2);
@@ -398,7 +398,7 @@ begin
 
 end;
 
-function MineGetNeighbors(Row, Col: integer): integer;
+function GetNeighborCount(Row, Col: integer): integer;
 var
 	Neighbors: integer;
 	CheckRow, CheckCol: integer;
@@ -411,7 +411,7 @@ begin
 
 			if (CheckRow >= 0) and (CheckCol >= 0) then
 			begin
-				if (CheckRow < FieldHeight) and (CheckCol < FieldWidth) then
+				if (CheckRow < FieldH) and (CheckCol < FieldW) then
 				begin
 					if (MineField[CheckRow, CheckCol] and FieldMined) <> 0 then
 						Inc(Neighbors);
@@ -421,10 +421,10 @@ begin
 		end;
 	end;
 
-	MineGetNeighbors := Neighbors;
+	GetNeighborCount := Neighbors;
 end;
 
-procedure MineHelpFirstMove(Row, Col: integer);
+procedure HelpFirstMove(Row, Col: integer);
 var
 	CheckRow, CheckCol, MinesMoved, MinePlace: integer;
 begin
@@ -438,8 +438,8 @@ begin
 			{Mines were moved, randomly place them elsewhere}
 			Randomize;
 			repeat
-				CheckRow := Random(FieldHeight);
-				CheckCol := Random(FieldWidth);
+				CheckRow := Random(FieldH);
+				CheckCol := Random(FieldW);
 				if (MineField[CheckRow, CheckCol] and FieldMined) = 0 then
 				begin
 					MineField[CheckRow, CheckCol] := FieldMined;
@@ -456,7 +456,7 @@ begin
 			begin
 				if (CheckRow >= 0) and (CheckCol >= 0) then
 				begin
-					if (CheckRow < FieldHeight) and (CheckCol < FieldWidth) then
+					if (CheckRow < FieldH) and (CheckCol < FieldW) then
 					begin
 						if (MineField[CheckRow, CheckCol] and FieldMined) <> 0 then
 						begin
@@ -472,14 +472,14 @@ begin
 
 end;
 
-procedure MineNewGame;
+procedure NewGame;
 var
 	FieldRow, FieldCol, MinePlace: integer;
 begin
 	{Clear mine array}	
 	FillChar(MineField, SizeOf(MineField), 0);
 
-	case FieldWidth of
+	case FieldW of
 		9: MineCount := 10;   {0.12% of 9x9,    81}
 		16: MineCount := 40;  {0.15% of 16x16, 240}
 		22: MineCount := 67;  {0.17% of 18x22, 396}
@@ -489,8 +489,8 @@ begin
 	Randomize;
 	MinePlace := 0;
 	repeat
-		FieldRow := Random(FieldHeight);
-		FieldCol := Random(FieldWidth);
+		FieldRow := Random(FieldH);
+		FieldCol := Random(FieldW);
 		if (MineField[FieldRow, FieldCol] and FieldMined) = 0 then
 		begin
 			MineField[FieldRow, FieldCol] := FieldMined;
@@ -498,19 +498,19 @@ begin
 		end;
 	until MinePlace = MineCount;
 
-	MineDrawField;
-	MinePlaySound(SoundNew);
+	DrawField;
+	PlaySound(SoundNew);
 	GameOver := false;
 	CellsCleared := 0;
 	CellsFlagged := 0;
 	StartTime := 0;
-	KeyRow := FieldHeight div 2;
-	KeyCol := FieldWidth div 2;
+	KeyRow := FieldH div 2;
+	KeyCol := FieldW div 2;
 	
-	MinePrintStatus(False, '');
+	PrintStatus(False, '');
 end;
 
-procedure MinePause;
+procedure Pause;
 var
 	BtnResume, BtnExit: TButton;
 	Row, Col: integer;
@@ -523,7 +523,6 @@ begin
 	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + Hotkey + 'xit');
 
 	MouseHide;
-	{PCOPY 0, 1} {DEUG - save background}
 	SetFillStyle(SolidFill, Thm.Win);
 	Bar(0, 29, 639, 329);
 	MenuBar.Draw;
@@ -537,7 +536,7 @@ begin
 		if (Key = KeySpace) or (Key = KeyEnter) or (Key = KeyEscape) then
 			break;
 
-		if BtnClick(BtnResume) or (Key = 'r') then
+		if BtnClick(BtnResume) or (Key = KeyAltR) then
 			break;
 
 		if BtnClick(BtnExit) then
@@ -556,24 +555,24 @@ begin
 	BtnPause.Draw;
 	BtnAbout.Draw;
 	BtnExit.Draw;
-	MineDrawField;
-	for Row := 0 to FieldHeight - 1 do
+	DrawField;
+	for Row := 0 to FieldH - 1 do
 	begin
-		for Col := 0 to FieldWidth - 1 do
+		for Col := 0 to FieldW - 1 do
 		begin
-			MineDrawCell(Row, Col);
+			DrawCell(Row, Col);
 		end;
 	end;
 	MouseShow;
 
-	MinePrintStatus(False, '');
+	PrintStatus(False, '');
 	if StartTime <> 0 then
 		StartTime := StartTime + (Timer - PauseTime);
-	MinePrintTime;
+	PrintTime;
 
 end;
 
-procedure MinePlaySound(SoundType: TSound);
+procedure PlaySound(SoundType: TSound);
 var
 	i: integer;
 begin
@@ -616,7 +615,7 @@ begin
 
 end;
 
-procedure MinePrintStatus(MineCountOnly: boolean; StatusMessage: string);
+procedure PrintStatus(MineCountOnly: boolean; StatusMessage: string);
 var
 	MessageText: String;
 	FlaggedStr, CountStr: string;
@@ -648,22 +647,21 @@ begin
 	if Length(StatusMessage) > 0 then
 		MessageText := StatusMessage
 	else
-		MessageText := 'Flagged mines: ' + FlaggedStr + '/' + CountStr;
+		MessageText := MSG_FLAGGED_COUNT + ' ' + FlaggedStr + '/' + CountStr;
 	
 	Print(MessageText, 8, 332, Thm.WinText);
 
+	MessageText := MSG_SOUND + ' ';
 	if EnableAudio then
-		MessageText := 'Sound: On'
+		MessageText := MessageText + MSG_ON
 	else
-		MessageText := 'Sound: Off';
+		MessageText := MessageText + MSG_OFF;
 	
 	Print(MessageText, (630 - PrintW(MessageText)), 332, Thm.WinText);
-	
 	MouseShow;
-
 end;
 
-procedure MinePrintTime;
+procedure PrintTime;
 var
 	MessageText: String;
 	Hours, Minutes, Seconds: integer;
@@ -681,13 +679,6 @@ begin
 	{Clear timer only}
 	SetFillStyle(SolidFill, Thm.Win);
 	Bar(278, 330, 360, 343);
-
-	{DEBUG}
-	{IF StartTime > INT(TIMER) then
-		{If we cross midnight, start timer over to avoid weird times.
-		{Ugly fix, might change later.
-		StartTime = INT(TIMER)
-	end;}
 
 	if StartTime <> 0 then
 	begin
@@ -718,7 +709,7 @@ begin
 	MouseShow;
 end;
 
-procedure MineReveal;
+procedure RevealMines;
 var
 	X1, Y1, X2, Y2: integer;
 	Row, Col: integer;
@@ -726,9 +717,9 @@ begin
 
 	SetColor(Red);
 	MouseHide;
-	for Row := 0 to FieldHeight - 1 do
+	for Row := 0 to FieldH - 1 do
 	begin
-		for Col := 0 to FieldWidth - 1 do
+		for Col := 0 to FieldW - 1 do
 		begin
 			if (MineField[Row, Col] and FieldMined) <> 0 then
 			begin
@@ -744,7 +735,7 @@ begin
 						
 end;
 
-function MineSetSize: boolean;
+function SetFieldSize: boolean;
 var
 	WinSetSize: TWindow;
 	BtnSize: array[0..3] of TButton;
@@ -829,42 +820,42 @@ begin
 	
 	MouseShow;
 
-	MineSetSize := true; {Only cancel button will set this to false}
+	SetFieldSize := true; {Only cancel button will set this to false}
 
 	repeat
 		Key := GetKey;
 
-		if BtnClick(BtnCancel) or (Key = KeyEscape) or (Key = 'c') then
+		if BtnClick(BtnCancel) or (Key = KeyEscape) or (Key = KeyAltC) then
 		begin
-			MineSetSize := False;
+			SetFieldSize := False;
 			break;
 		end;
 
 		if BtnClick(BtnSize[0]) or (Key = '9') then
 		begin
-			FieldHeight := 9;
-			FieldWidth := 9;
+			FieldH := 9;
+			FieldW := 9;
 			break;
 		end;
 
 		if BtnClick(BtnSize[1]) or (Key = '6') then
 		begin
-			FieldHeight := 16;
-			FieldWidth := 16;
+			FieldH := 16;
+			FieldW := 16;
 			break;
 		end;
 
 		if BtnClick(BtnSize[2]) or (Key = '2') then
 		begin
-			FieldHeight := 18;
-			FieldWidth := 22;
+			FieldH := 18;
+			FieldW := 22;
 			break;
 		end;
 
 		if BtnClick(BtnSize[3]) or (Key = '3') then
 		begin
-			FieldHeight := 18;
-			FieldWidth := 39;
+			FieldH := 18;
+			FieldW := 39;
 			break;
 		end;
 
@@ -876,28 +867,58 @@ begin
 	MouseShow;		
 end;
 
-procedure MineWin;
+procedure MoveKBIndicator(Direction: TDirection);
+begin
+	KeyVisible := true;
+	MineField[KeyRow, KeyCol] := MineField[KeyRow, KeyCol] and not FieldKBSelected;
+	MouseHide;
+	DrawCell(KeyRow, KeyCol);
+	case Direction of
+		DirUp:
+			if KeyRow > 0 then
+				Dec(KeyRow);
+		DirDown:
+			if KeyRow < FieldH - 1 then
+				Inc(KeyRow);
+		DirLeft:
+			if KeyCol > 0 then
+				Dec(KeyCol);
+		DirRight:
+			if KeyCol < FieldW - 1 then
+				Inc(KeyCol);
+		DirHide:
+			begin
+				MouseShow;
+				exit;
+			end;
+	end;
+	MineField[KeyRow, KeyCol] := MineField[KeyRow, KeyCol] xor FieldKBSelected;
+	DrawCell(KeyRow, KeyCol);
+	MouseShow;
+end;
+
+procedure WinGame;
 var
 	FieldRow, FieldCol: integer;
 begin
 	{Victory! Reveal mines, show status and end game}
-	for FieldRow := 0 to FieldHeight - 1 do
+	for FieldRow := 0 to FieldH - 1 do
 	begin
-		for FieldCol := 0 to FieldWidth - 1 do
+		for FieldCol := 0 to FieldW - 1 do
 		begin
 			if (MineField[FieldRow, FieldCol] and FieldMined) <> 0 then
 			begin
 				if (MineField[FieldRow, FieldCol] and FieldFlagged) = 0 then
 				begin
 					MineField[FieldRow, FieldCol] := MineField[FieldRow, FieldCol] xor FieldFlagged;
-					MineDrawCell(FieldRow, FieldCol);
+					DrawCell(FieldRow, FieldCol);
 					Inc(CellsFlagged);
 				end;
 			end;
 		end;
 	end;
-	MinePrintStatus(False, 'Minefield cleared, good job!');
-	MinePlaySound(SoundWin);
+	PrintStatus(False, MSG_WIN);
+	PlaySound(SoundWin);
 	GameOver := True;
 end;
 
@@ -922,10 +943,10 @@ begin
 
 	{Default settings}
 	EnableAudio := True;
-	FieldWidth := 16;
-	FieldHeight := 16;
+	FieldW := 16;
+	FieldH := 16;
 
-	MineNewGame;
+	NewGame;
 	
 	TimeCompare := Timer + 1;
 	repeat
@@ -933,112 +954,62 @@ begin
 		
 		if BtnClick(BtnNew) or (Key = KeyAltN) then
 		begin
-			MineNewGame;
+			NewGame;
 			KeyVisible := False;
 		end;
 
 		if BtnClick(BtnAudio) or (Key = KeyAltS) then
 		begin
 			EnableAudio := not EnableAudio;
-			MinePrintStatus(False, '');
+			PrintStatus(False, '');
 		end;
 
 		if BtnClick(BtnPause) or (Key = KeyAltP) then
-			MinePause;
+			Pause;
 
 		if BtnClick(BtnSize) or (Key = KeyAltZ) then
 		begin
-			if MineSetSize then
-				MineNewGame;
+			if SetFieldSize then
+				NewGame;
 		end;
 
-		if BtnClick(BtnExit) or (Key = KeyAltD) then
+		if BtnClick(BtnExit) or (Key = KeyAltX) then
 			break;
 
-		if BtnClick(BtnAbout) or (Key = 'a') then
+		if BtnClick(BtnAbout) or (Key = KeyAltA) then
 			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 
 		if not GameOver then
 		begin
 			if Key = '?' then
-			begin
-				DebugMode := true;
-				MineReveal;
-			end;
+				RevealMines;
+
+			if (Key = KeyEnter) and KeyVisible then
+				ClickCell(KeyRow, KeyCol, MbLeft);
+
+			if (Key = KeySpace) and KeyVisible then
+				ClickCell(KeyRow, KeyCol, MbRight);
 
 			if ((Key = KeySpace) or (Key = KeyEnter)) and (KeyVisible = false) then
 			begin
-				KeyVisible := True;
-				MineField[KeyRow, KeyCol] := MineField[KeyRow, KeyCol] xor FieldKBSelected;
-				MouseHide;
-				MineDrawCell(KeyRow, KeyCol);
-				MouseShow;
-				Key := '';
+				MoveKBIndicator(DirShow);
 				ClearInputBuffer;
 			end;
 
-			if (Key = KeyEnter) and KeyVisible then
-				MineClickCell(KeyRow, KeyCol, MbLeft);
-
-			if (Key = KeySpace) and KeyVisible then
-				MineClickCell(KeyRow, KeyCol, MbRight);
-					
-			{Up}
-			if (Key = KeyUp) and (KeyRow > 0) then
-			begin
-				KeyVisible := true;
-				MineField[KeyRow, KeyCol] := MineField[KeyRow, KeyCol] and not FieldKBSelected;
-				MouseHide;
-				MineDrawCell(KeyRow, KeyCol);
-				Dec(KeyRow);
-				MineField[KeyRow, KeyCol] := MineField[KeyRow, KeyCol] xor FieldKBSelected;
-				MineDrawCell(KeyRow, KeyCol);
-				MouseShow;
-			end;
-
-			{Down}
-			if (Key = KeyDown) and (KeyRow < FieldHeight - 1) then
-			begin
-				KeyVisible := true;
-				MineField[KeyRow, KeyCol] := MineField[KeyRow, KeyCol] and not FieldKBSelected;
-				MouseHide;
-				MineDrawCell(KeyRow, KeyCol);
-				Inc(KeyRow);
-				MineField[KeyRow, KeyCol] := MineField[KeyRow, KeyCol] xor FieldKBSelected;
-				MineDrawCell(KeyRow, KeyCol);
-				MouseShow;
-			end;
-
-			{Left}
-			if (Key = KeyLeft) and (KeyCol > 0) then
-			begin
-				KeyVisible := true;
-				MineField[KeyRow, KeyCol] := MineField[KeyRow, KeyCol] and not FieldKBSelected;
-				MouseHide;
-				MineDrawCell(KeyRow, KeyCol);
-				Dec(KeyCol);
-				MineField[KeyRow, KeyCol] := MineField[KeyRow, KeyCol] xor FieldKBSelected;
-				MineDrawCell(KeyRow, KeyCol);
-				MouseShow;
-			end;
-
-			{Right}
-			if (Key = KeyRight) and (KeyCol < FieldWidth - 1) then
-			begin
-				KeyVisible := true;
-				MineField[KeyRow, KeyCol] := MineField[KeyRow, KeyCol] and not FieldKBSelected;
-				MouseHide;
-				MineDrawCell(KeyRow, KeyCol);
-				Inc(KeyCol);
-				MineField[KeyRow, KeyCol] := MineField[KeyRow, KeyCol] xor FieldKBSelected;
-				MineDrawCell(KeyRow, KeyCol);
-				MouseShow;
-			end;
+			If Key = KeyUp then
+				MoveKBIndicator(DirUp);
+			If Key = KeyDown then
+				MoveKBIndicator(DirDown);
+			If Key = KeyLeft then
+				MoveKBIndicator(DirLeft);
+			If Key = KeyRight then
+				MoveKBIndicator(DirRight);
 			
 			if (StartTime <> 0) and (TimeCompare < Timer) then
 			begin
-				MinePrintTime;
-				TimeCompare := timer + 1;
+				{DEBUG - doesn't update correctly}
+				PrintTime;
+				TimeCompare := Timer + 1;
 			end;
 		
 			if (MouseClicked <> MbNone) and AreaField.IsMouseOver then
@@ -1052,20 +1023,15 @@ begin
 
 				{Play field is one pixel too wide for calculation above, dirty fix
 				 for this to prevent out of bounds clicks}
-				if FieldCol = FieldWidth then
+				if FieldCol = FieldW then
 					Dec(FieldCol);
-				if FieldRow = FieldHeight then
+				if FieldRow = FieldH then
 					Dec(FieldRow);
 			
 				if KeyVisible then
-				begin
-					KeyVisible := false;
-					MineField[KeyRow, KeyCol] := MineField[KeyRow, KeyCol] and not FieldKBSelected;
-					MouseHide;
-					MineDrawCell(KeyRow, KeyCol);
-					MouseShow;
-				end;
-				MineClickCell(FieldRow, FieldCol, MouseButton);
+					MoveKBIndicator(DirHide);
+				
+				ClickCell(FieldRow, FieldCol, MouseButton);
 
 				KeyRow := FieldRow;
 				KeyCol := FieldCol;

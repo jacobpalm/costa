@@ -11,6 +11,29 @@ const
 
 	PixelSize  = 9; {Size of each field in the drawing area}
 
+	MSG_UNSAVED_TITLE      = 'Icon has been modified';
+	MSG_UNSAVED_TEXT       = 'This icon contains unsaved changes. Do you' + #13 +
+	                         'want to save it before you exit?';
+	MSG_SAVE_TITLE         = 'Save icon file';
+	MSG_SAVE_TEXT          = 'Type a name for the icon file below, without path or' + #13 +
+	                         'extension (8 letters max, for example: MYICON).';
+	MSG_INVALID_NAME_TITLE = 'Invalid filename';
+	MSG_INVALID_NAME_TEXT  = 'The filename you specified was too long or invalid.' + #13 +
+	                         'Do not type a path or extension, only a filename' + #13 +
+	                         'with a maximum length of 8 characters.';
+	MSG_FILE_EXISTS_TITLE  = 'File already exists';
+	MSG_FILE_EXISTS_TEXT   = 'The specified icon file already exists. Do you want' + #13 +
+	                         'to overwrite it with this icon?';
+	MSG_SAVE_ERROR_TITLE   = 'Could not save icon';
+	MSG_SAVE_ERROR_TEXT    = 'The icon could not be saved. Verify that the filename is valid:' + #13;
+	MSG_ALREADY_OPEN_TITLE = 'File already open';
+	MSG_ALREADY_OPEN_TEXT  = 'The icon you selected is already opened.' + #13 +
+	                         'Do you want to discard all changes and reload' + #13 +
+	                         'the icon as it was last saved?';
+	MSG_INVALID_ICON_TITLE = 'Invalid icon file';
+	MSG_INVALID_ICON_TEXT  = 'The selected file is not a valid icon file.' + #13 +
+	                         'Please select a .BIN file from the ICONS directory.';
+
 type
 	TTool = (toolPencil, toolFloodFill);
 	TCursorDir = (    
@@ -270,9 +293,7 @@ begin
 
 	if IconChanged = true then
 	begin
-		mbResult := MsgBox('Icon has been modified',
-			'This icon contains unsaved changes. Do you' + NewLine +
-			'want to save it before you make a new?', MsgQuest);
+		mbResult := MsgBox(MSG_UNSAVED_TITLE, MSG_UNSAVED_TEXT, MsgQuest);
 		if mbResult = true then
 		begin
 			SaveIcon;
@@ -308,17 +329,14 @@ begin
 	{If icon hasn't already been saved, prompt for a filename}
 	if Length(IconFileName) = 0 then
 	begin
-		Filename := UpperCase(InputBox('Save icon file', 'Type a name for the icon file below, without path or' + NewLine +
-			'extension (8 letters max, for example: MYICON).', 'PAINT', ''));
+		Filename := UpperCase(InputBox(MSG_SAVE_TITLE, MSG_SAVE_TEXT, AppIcon, ''));
 
 		{Validate input}
 		if Length(Filename) = 0 then
 			exit;
 		if (Length(Filename) > 8) or (not Valid8dot3(FileName + '.BIN')) then
 		begin
-			MsgBox('Invalid file name', 'The filename you specified was too long or invalid.' + NewLine +
-				'Do not type a path or extension, only a filename' + NewLine
-				+ 'with a maximum length of 8 characters.', MsgError);
+			MsgBox(MSG_INVALID_NAME_TITLE, MSG_INVALID_NAME_TEXT, MsgError);
 			exit;
 		end;
 		Filename := ProgramPath + 'ICONS\' + Filename + '.BIN';
@@ -329,8 +347,7 @@ begin
 	{Check if file already exists}
 	if FileExists(Filename) and (Filename <> IconFileName) then
 	begin
-		mbResult := MsgBox('File already exists', 'The specified icon file already exists. Do you want' + NewLine
-			+ 'to overwrite it with this icon?', MsgQuest);
+		mbResult := MsgBox(MSG_FILE_EXISTS_TITLE, MSG_FILE_EXISTS_TEXT, MsgQuest);
 		if mbResult = false then
 			exit;
 	end;
@@ -351,9 +368,7 @@ begin
 	{$I+}
 	if IOResult <> 0 then
 	begin
-		MsgBox('Could not save icon',
-			'The icon could not be saved. Verify that the filename is valid:' + NewLine +
-			Filename, MsgError);
+		MsgBox(MSG_SAVE_ERROR_TITLE, MSG_SAVE_ERROR_TEXT + Filename, MsgError);
 		FreeMem(p, Size);
 		exit;
 	end;
@@ -376,8 +391,7 @@ var
 begin
 	if IconChanged = true then
 	begin
-		mbResult := MsgBox('Icon has been modified', 'This icon contains unsaved changes. Do you' + NewLine
-			+ 'want to save it before you load another?', MsgQuest);
+		mbResult := MsgBox(MSG_UNSAVED_TITLE, MSG_UNSAVED_TEXT, MsgQuest);
 		if mbResult = true then
 		begin
 			SaveIcon;
@@ -394,19 +408,13 @@ begin
 	FSplit(IconToLoad, FPath, FName, FExt);
 	if (FPath <> ProgramPath + 'ICONS\') or (FExt <> '.BIN') then
 	begin
-		MsgBox('Invalid icon file',
-			'The selected file is not a valid icon file.' + NewLine +
-			'Please select a .BIN file from the ICONS directory.',
-			MsgError);
-		exit;
+		MsgBox(MSG_INVALID_ICON_TITLE, MSG_INVALID_ICON_TEXT, MsgError);
 	end;
 	
 	if (FName = IconFileName) and (IconChanged = true) then
 	begin
 		{If the icon is already loaded, but has been changed, ask if we should reload it}
-		mbResult := MsgBox('File already open', 'The icon you selected is already opened.' + NewLine +
-			'Do you want to discard all changes and reload' + NewLine +
-			'the icon as it was last saved?', MsgQuest);
+		mbResult := MsgBox(MSG_ALREADY_OPEN_TITLE, MSG_ALREADY_OPEN_TEXT, MsgQuest);
 		if mbResult = false then
 			exit;
 	end;
@@ -444,8 +452,7 @@ var
 begin
 	if IconChanged = true then
 	begin
-		mbResult := MsgBox('Icon has been modified', 'This icon contains unsaved changes. Do you' + NewLine +
-			'want to save it before you exit?', MsgQuest);
+		mbResult := MsgBox(MSG_UNSAVED_TITLE, MSG_UNSAVED_TEXT, MsgQuest);
 		if mbResult = true then
 		begin
 			SaveIcon;

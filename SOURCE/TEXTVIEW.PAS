@@ -7,9 +7,16 @@ const
 	AppName       = 'Text Viewer';
 	AppVersion    = '2.0';
 	AppAuthor     = 'Jacob Palm';
-	InitialCap    = 100;           {Initial capacity for the line array}
+	AppIcon       = 'DOCUMENT';
+
+	InitialCap    = 100; {Initial capacity for the line array}
 	MaxLinesShown = 22;
 	MaxLineLength = 78;
+
+	MSG_OPEN_ERROR_TITLE = 'Error opening file';
+	MSG_FILE_NOT_FOUND   = 'File not found: ' + #13;
+	MSG_READ_ERROR       = 'Error reading file, make sure it is accessible: ' + #13;
+	MSG_END_OF_FILE      = '* end of file *';
 
 type
 	PLine = ^LineStr;
@@ -138,7 +145,7 @@ var
 begin
 	if not FileExists(TargetFile) then
 	begin
-		MsgBox('File not found', 'Error while trying to find the file:' + NewLine + TargetFile, MsgError);
+		MsgBox(MSG_OPEN_ERROR_TITLE, MSG_FILE_NOT_FOUND + TargetFile, MsgError);
 		LoadFile := False;
 		Exit;
 	end;
@@ -149,7 +156,7 @@ begin
 	{$I+}
 	if IOResult <> 0 then
 	begin
-		MsgBox('File error', 'Error while opening the file: ' + NewLine + TargetFile, MsgError);
+		MsgBox(MSG_OPEN_ERROR_TITLE, MSG_READ_ERROR + TargetFile, MsgError);
 		LoadFile := False;
 		Exit;
 	end;
@@ -207,7 +214,7 @@ begin
 	end;
 	Close(F);
 
-	AddLine('* end of file *');
+	AddLine(MSG_END_OF_FILE);
 	if LineCount > 0 then
 		LoadFile := True
 	else
@@ -272,7 +279,7 @@ begin
 		Key := GetKey;
 		
 		if BtnClick(BtnAbout) or (Key = KeyAltA) then
-			AboutBox(AppName, AppVersion, AppAuthor, 'DOCUMENT');
+			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 
 		if BtnClick(BtnOpen) or (Key = KeyAltO) then
 		begin

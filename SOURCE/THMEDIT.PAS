@@ -13,6 +13,7 @@ const
 		'Desktop', 'Desktop text', 'Window', 'Window border', 'Window title',
 		'Window text', 'Button', 'Textbox', 'Textbox text', '3D light',
 		'3D Shadow', 'Selection', 'Selection text');
+	DefaultName                = 'New Theme';
 
 	MSG_FILE_EXISTS_TITLE      = 'File already exists';
 	MSG_FILE_EXISTS_PROMPT     = 'The specified file already exists. Do you want' + #13 +
@@ -34,6 +35,11 @@ const
 	MSG_ERROR_SAVING_TITLE     = 'Error saving theme file';
 	MSG_ERROR_SAVING           = 'The theme file could not be saved. Verify free disk' + #13 +
 	                             'space and that the directory isn''t write-protected.';
+	MSG_PREVIEW                = 'This is a preview of' + #13 + 'your theme';
+	MSG_PREVIEW_LINK           = 'Preview link';
+	MSG_PREVIEW_EXE            = 'preview.exe';
+	MSG_LIST_ITEM              = 'List item';
+	MSG_SELECTED_ITEM          = 'Selected item';
 
 
 type
@@ -119,7 +125,6 @@ var
 	FrmPreview: TFrame;
 	WinPreview: TWindow;
 	TxtPreview: TTextbox;
-	TxtPreviewText: string;
 	BtnPreview1, BtnPreview2, BtnPreview3: TButton;
 	ImgPreview, ImgLogo: TIcon;
 	TxtListPreview: TTextbox;
@@ -133,9 +138,8 @@ begin
 	Y1 := FrmPreview.Top;
 	X2 := FrmPreview.Left + FrmPreview.Width;
 	Y2 := FrmPreview.Top + FrmPreview.Height;
-	BtnPreview3.Init(X2 - 96, Y1 + 3, SizeDefault, SizeDefault, 'Button');
+	BtnPreview3.Init(X2 - 96, Y1 + 3, SizeDefault, SizeDefault, ObjectCaptions[Ord(TThemeObject(Btn))]);
 	TxtListPreview.Init(X2 - 182, Y2 - 82, 166, 66);
-	TxtPreviewText := 'Textbox contents';
 	ImgPreview.Init(FrmPreview.Left + 16, Y2 - 48, 'PAINT');
 
 	MouseHide;
@@ -154,9 +158,9 @@ begin
 	Y1 := WinPreview.Top;
 	ImgLogo.Init(X1 + 12, Y1 + 12, 'LOGO');
 	TxtPreview.Init(X1 + 12, Y1 + 56, 236, SizeDefault);
-	TxtPreview.Text := 'Textbox';
-	BtnPreview1.Init(X1 + 14, Y1 + 93, 111, SizeDefault, 'Button up');
-	BtnPreview2.Init(X1 + 133, Y1 + 93, 111, SizeDefault, 'Button down');
+	TxtPreview.Text := ObjectCaptions[Ord(TThemeObject(Txt))];
+	BtnPreview1.Init(X1 + 14, Y1 + 93, 111, SizeDefault, ObjectCaptions[Ord(TThemeObject(Btn))]);
+	BtnPreview2.Init(X1 + 133, Y1 + 93, 111, SizeDefault, ObjectCaptions[Ord(TThemeObject(Btn))]);
 	BtnPreview2.State := BsDown;
 
 	WinPreview.Draw;
@@ -169,22 +173,21 @@ begin
 	ImgPreview.Draw;
 	
 	{Text on Desk and window}
-	Print('This is a preview of', ImgLogo.Left + 42, ImgLogo.Top + 5, Thm.WinText);
-	Print('your theme.', ImgLogo.Left + 42, ImgLogo.Top + 19, Thm.WinText);
-	Print('Preview link', ImgPreview.Left + 38, ImgPreview.Top + 4, Thm.DeskText);
-	Print('preview.exe', ImgPreview.Left + 38, ImgPreview.Top + 18, Thm.DeskText);
+	Print(MSG_PREVIEW, ImgLogo.Left + 42, ImgLogo.Top + 5, Thm.WinText);
+	Print(MSG_PREVIEW_LINK, ImgPreview.Left + 38, ImgPreview.Top + 4, Thm.DeskText);
+	Print(MSG_PREVIEW_EXE, ImgPreview.Left + 38, ImgPreview.Top + 18, Thm.DeskText);
 
 	{Draw list preview}
-	SetFillStyle(SolidFill, Thm.Sel);
 	X1 := TxtListPreview.Left;
 	Y1 := TxtListPreview.Top;
 	X2 := TxtListPreview.Left + TxtListPreview.Width;
-	Bar(X1 + 2, Y1 + 15, X2 - 2, Y1 + 27);
-	Print('List item', X1 + 5, Y1 + 5, Thm.TxtText);
-	Print('Selected item', X1 + 5, Y1 + 5 + 12, Thm.SelText);
-	Print('List item', X1 + 5, Y1 + 5 + 24, Thm.TxtText);
-	Print('List item', X1 + 5, Y1 + 5 + 36, Thm.TxtText);
-	Print('List item', X1 + 5, Y1 + 5 + 48, Thm.TxtText);
+	SetFillStyle(SolidFill, Thm.Sel);
+	Bar(X1 + 2, Y1 + 14, X2 - 2, Y1 + 26);
+	Print(MSG_LIST_ITEM, X1 + 5, Y1 + 5, Thm.TxtText);
+	Print(MSG_SELECTED_ITEM, X1 + 5, Y1 + 5 + 12, Thm.SelText);
+	Print(MSG_LIST_ITEM, X1 + 5, Y1 + 5 + 24, Thm.TxtText);
+	Print(MSG_LIST_ITEM, X1 + 5, Y1 + 5 + 36, Thm.TxtText);
+	Print(MSG_LIST_ITEM, X1 + 5, Y1 + 5 + 48, Thm.TxtText);
 	MouseShow;
 
 	{Restore system theme}
@@ -311,7 +314,7 @@ begin
 	{Start with current theme as basis for editing}
 	ThemeData := Thm;
 	ThemeFile := '';
-	TxtName.Text := 'New Theme';
+	TxtName.Text := DefaultName;
 	TxtAuthor.Text := '';
 	TxtName.Draw;
 	TxtAuthor.Draw;
@@ -412,8 +415,8 @@ begin
 	{Check if file already exists}
 	if FileExists(Filename) and (Filename <> ThemeFile) then
 	begin
-		mbResult := MsgBox(MSG_FILE_EXISTS_TITLE, MSG_FILE_EXISTS_PROMPT, MsgQuest);
-		if mbResult = false then
+		MbResult := MsgBox(MSG_FILE_EXISTS_TITLE, MSG_FILE_EXISTS_PROMPT, MsgQuest);
+		if MbResult = false then
 			exit;
 	end;
 

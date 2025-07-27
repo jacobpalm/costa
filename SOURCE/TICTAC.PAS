@@ -4,37 +4,37 @@ uses
 	CostaLib, Crt, Strings, Graph;
 
 const
-	AppName          = 'Tic Tac Toe';
-	AppVersion       = '2.0';
-	AppAuthor        = 'Jacob Palm';
-	AppIcon          = 'TICTAC';
+	AppName    = 'Tic Tac Toe';
+	AppVersion = '2.0';
+	AppAuthor  = 'Jacob Palm';
+	AppIcon    = 'TICTAC';
 
 type
-	TPlayer = (PlayerNone, PlayerX, PlayerO);
-	TSound = (sndX, sndO, sndIllegal, sndWin, sndLoose, sndDraw, sndNew);
-	TGameMsg = (msgWin, msgDraw, msgAITurn, msgPlayerTurn, msgNewGame);
+	TPlayer  = (PlayerNone, PlayerX, PlayerO);
+	TSound   = (SndX, SndO, SndIllegal, SndWin, SndLoose, SndDraw, SndNew);
+	TGameMsg = (MsgWin, MsgDraw, MsgPcTurn, MsgPlayerTurn, MsgNewGame);
 
 var
-	PlayerStart, PlayerTurn: TPlayer;
-	TotalTurns: integer;
-	EnableAI, EnableAudio: boolean;
 	PlayField: array[1..3, 1..3] of TPlayer;
 	TxtPlayField: array[1..3, 1..3] of TTextbox;
+	PlayerStart, PlayerTurn: TPlayer;
+	TotalTurns: integer;
+	VersusPC, SoundOn: boolean;
 
 {Forward declarations}
-procedure TicDrawXO(Row, Col: integer; Player: TPlayer); forward;
-procedure TicPlaySound(SoundType: TSound); forward;
-procedure TicPrintMessage(MessageType: TGameMsg); forward;
-procedure TicPrintStatus; forward;
-function TicCanWin(Player: TPlayer; var Row, Col: integer): boolean; forward;
-function TicCheckWin: boolean; forward;
+procedure DrawXO(Row, Col: integer; Player: TPlayer); forward;
+procedure PlaySound(SoundType: TSound); forward;
+procedure PrintMsg(MessageType: TGameMsg); forward;
+procedure PrintStatus; forward;
+function  CanWin(Player: TPlayer; var Row, Col: integer): boolean; forward;
+function  DidWin: boolean; forward;
 
-procedure TicAIMove;
+procedure PcMove;
 var
 	Row, Col: integer;
 	FoundMove: boolean;
 begin
-	TicPrintMessage(msgAITurn);
+	PrintMsg(MsgPcTurn);
 	FoundMove := false;
 
 	{Simulate some random "thinking" time}
@@ -42,17 +42,17 @@ begin
 	Delay(Random(850) + 550);
 
 	{Check if the computer can win}
-	if TicCanWin(PlayerO, Row, Col) then
+	if CanWin(PlayerO, Row, Col) then
 	begin
 		PlayField[Row, Col] := PlayerO;
-		TicDrawXO(Row, Col, PlayerO);
+		DrawXO(Row, Col, PlayerO);
 		FoundMove := true;
 	end
 	{Check if player can win, block if so}
-	else if TicCanWin(PlayerX, Row, Col) then
+	else if CanWin(PlayerX, Row, Col) then
 	begin
 		PlayField[Row, Col] := PlayerO;
-		TicDrawXO(Row, Col, PlayerO);
+		DrawXO(Row, Col, PlayerO);
 		FoundMove := true;
 	end;
 
@@ -66,18 +66,18 @@ begin
 		if PlayField[Row, Col] = PlayerNone then
 		begin
 			PlayField[Row, Col] := PlayerO;
-			TicDrawXO(Row, Col, PlayerO);
+			DrawXO(Row, Col, PlayerO);
 			break;
 		end;
 		until false;
 	end;
 
-	TicPlaySound(sndO);
+	PlaySound(SndO);
 	Inc(TotalTurns);
-	if TicCheckWin then
+	if DidWin then
 	begin
-		TicPrintMessage(msgWin);
-		TicPlaySound(sndLoose); {Loose, because AI wins}
+		PrintMsg(MsgWin);
+		PlaySound(SndLoose); {Loose, because AI wins}
 		TotalTurns := 9;
 		exit;
 	end;
@@ -85,23 +85,23 @@ begin
 	{If board is full with no winner, it's a draw}
 	if TotalTurns = 9 then
 	begin
-		TicPrintMessage(msgDraw);
-		TicPlaySound(sndDraw);
+		PrintMsg(MsgDraw);
+		PlaySound(SndDraw);
 	end
 	else
 	begin
 		{Switch to player, game goes on}
 		PlayerTurn := PlayerX;
-		TicPrintMessage(msgPlayerTurn);
+		PrintMsg(MsgPlayerTurn);
 	end;
 end;
 
-function TicCheckWin: boolean;
+function DidWin: boolean;
 var
   Row, Col: integer;
   Sum: integer;
 begin
-	TicCheckWin := false;
+	DidWin := false;
 
 	{Check rows}
 	for Row := 1 to 3 do
@@ -110,7 +110,7 @@ begin
 			(PlayField[Row, 2] = PlayField[Row, 3]) and
 			(PlayField[Row, 1] <> PlayerNone) then
 		begin
-			TicCheckWin := true;
+			DidWin := true;
 			exit;
 		end;
 	end;
@@ -122,7 +122,7 @@ begin
 			(PlayField[2, Col] = PlayField[3, Col]) and
 			(PlayField[1, Col] <> PlayerNone) then
 		begin
-			TicCheckWin := true;
+			DidWin := true;
 			exit;
 		end;
 	end;
@@ -132,7 +132,7 @@ begin
 		(PlayField[2, 2] = PlayField[3, 3]) and
 		(PlayField[1, 1] <> PlayerNone) then
 	begin
-		TicCheckWin := true;
+		DidWin := true;
 		exit;
 	end;
 
@@ -141,17 +141,17 @@ begin
 		(PlayField[2, 2] = PlayField[3, 1]) and
 		(PlayField[1, 3] <> PlayerNone) then
 	begin
-		TicCheckWin := true;
+		DidWin := true;
 		exit;
 	end;
 end;
 
-function TicCanWin(Player: TPlayer; var Row, Col: integer): boolean;
+function CanWin(Player: TPlayer; var Row, Col: integer): boolean;
 var
 	r, c: integer;
 	Sum: integer;
 begin
-    TicCanWin := false;
+    CanWin := false;
 
     {Check rows}
     for r := 1 to 3 do
@@ -168,7 +168,7 @@ begin
       if (Sum = 2) and (Col <> 0) then
       begin
         Row := r;
-        TicCanWin := true;
+        CanWin := true;
         exit;
       end;
     end;
@@ -188,7 +188,7 @@ begin
       if (Sum = 2) and (Row <> 0) then
       begin
         Col := c;
-        TicCanWin := true;
+        CanWin := true;
         exit;
       end;
     end;
@@ -209,7 +209,7 @@ begin
     end;
     if (Sum = 2) and (Row <> 0) then
     begin
-      TicCanWin := true;
+      CanWin := true;
       exit;
     end;
 
@@ -230,12 +230,12 @@ begin
 	end;
 	if (Sum = 2) and (Row <> 0) then
 	begin
-		TicCanWin := true;
+		CanWin := true;
 		exit;
 	end;
 end;
 
-procedure TicDrawBackground;
+procedure DrawBg;
 var
 	X: integer;
 begin
@@ -258,7 +258,7 @@ begin
 	SetLineStyle(SolidLn, 0, 1);	
 end;
 
-procedure TicDrawBoard;
+procedure DrawBoard;
 var
 	Row, Col: integer;
 	X1, Y1, X2, Y2: integer;
@@ -283,7 +283,7 @@ begin
 	MouseShow;
 end;
 
-procedure TicDrawXO(Row, Col: integer; Player: TPlayer);
+procedure DrawXO(Row, Col: integer; Player: TPlayer);
 var
 	X, Y: integer;
 begin
@@ -334,14 +334,14 @@ begin
 
 end;
 
-procedure TicNewGame;
+procedure NewGame;
 var
 	Row, Col: integer;
 begin
 	for Row := 1 to 3 do
 		for Col := 1 to 3 do
 			PlayField[Row, Col] := PlayerNone;
-	TicDrawBoard;
+	DrawBoard;
 
 	TotalTurns := 0;
 	if PlayerStart = PlayerX then
@@ -351,28 +351,28 @@ begin
 	
 	PlayerTurn := PlayerStart;
 
-	TicPrintMessage(msgNewGame);
-	TicPrintStatus;
-	TicPlaySound(sndNew);
+	PrintMsg(MsgNewGame);
+	PrintStatus;
+	PlaySound(SndNew);
 end;
 
-procedure TicPlaySound(SoundType: TSound);
+procedure PlaySound(SoundType: TSound);
 begin
-	if not EnableAudio then
+	if not SoundOn then
 		exit;
 
 	case SoundType of
-		sndX:       SoundNote(400, 70);
-		sndO:       SoundNote(800, 70);
-		sndIllegal: SoundNote(100, 70);
-		{sndWin:     PLAY 'O2 T100 C D T200 G T400 E'
-		sndLoose:   PLAY 'O1 T400 E3 G3 D6 T100 C9 C9'
-		sndDraw:    PLAY 'O1 T400 C9 T100 E9 G9 D C9'
-		sndNew:     PLAY 'O2 T180 C8 C8 E3'}
+		SndX:       SoundNote(400, 70);
+		SndO:       SoundNote(800, 70);
+		SndIllegal: SoundNote(100, 70);
+		{SndWin:     PLAY 'O2 T100 C D T200 G T400 E'
+		SndLoose:   PLAY 'O1 T400 E3 G3 D6 T100 C9 C9'
+		SndDraw:    PLAY 'O1 T400 C9 T100 E9 G9 D C9'
+		SndNew:     PLAY 'O2 T180 C8 C8 E3'}
 	end;
 end;
 
-procedure TicPrintMessage(MessageType: TGameMsg);
+procedure PrintMsg(MessageType: TGameMsg);
 var
 	Message: string;
 	CurrentTurn: string[1];
@@ -386,7 +386,7 @@ begin
 	else
 		CurrentTurn := 'O';
 
-	if MessageType = msgWin then
+	if MessageType = MsgWin then
 	begin
 		case Randomizer of
 			1: Message := CurrentTurn + ' has brought honor to the family!';
@@ -398,7 +398,7 @@ begin
 		end;
 	end;
 
-	if MessageType = msgDraw then
+	if MessageType = MsgDraw then
 	begin
 		case Randomizer of
 			1: Message := 'It was a real nail-biter, but neither player could best the other.';
@@ -410,7 +410,7 @@ begin
 		end;
 	end;
 
-	if MessageType = msgAITurn then
+	if MessageType = MsgPcTurn then
 	begin
 		case Randomizer of
 			1: Message := CurrentTurn + ' is contemplating the next move...';
@@ -422,7 +422,7 @@ begin
 		end;
 	end;
 
-	if MessageType = msgPlayerTurn then
+	if MessageType = MsgPlayerTurn then
 	begin
 		case Randomizer of
 			1: Message := 'Make your move, ' + CurrentTurn + '!';
@@ -434,7 +434,7 @@ begin
 		end;
 	end;
 
-	if MessageType = msgNewGame then
+	if MessageType = MsgNewGame then
 	begin
 		case Randomizer of
 			1: Message := CurrentTurn + ' gets to make the first move!';
@@ -453,19 +453,19 @@ begin
 	MouseShow;
 end;
 
-procedure TicPrintStatus;
+procedure PrintStatus;
 var
 	Message: string;
 begin	
 	Message := 'Playing ';
-	if EnableAI then
+	if VersusPC then
 		Message := Message + 'against computer'
 	else
 		Message := Message + 'two players     ';
 
 	Message := Message + '     Sound: ';
 
-	if EnableAudio then
+	if SoundOn then
 		Message := Message + 'On '
 	else
 		Message := Message + 'Off';
@@ -481,7 +481,7 @@ end;
 var
 	FieldClicked: boolean;
 	FrmTic: TFrame;
-	BtnNew, BtnAIToggle, BtnAudio, BtnAbout, BtnExit: TButton;
+	BtnNew, BtnGameMode, BtnAudio, BtnAbout, BtnExit: TButton;
 	Row, Col: integer;
 	Key: string;
 begin
@@ -490,7 +490,6 @@ begin
 	FrmTic.Init(sizeCenter, sizeCenter, 221, 221);
 	Inc(FrmTic.Top, 16); {To accomodate menu bar}
 	FrmTic.LightColor := LightGreen;
-	FrmTic.DarkColor := Thm.Shadow;
 
 	for Row := 1 to 3 do
 	begin
@@ -508,21 +507,21 @@ begin
 	end;
 	
 	BtnNew.Init(3, 2, SizeDefault, SizeDefault, Hotkey + 'New game');
-	BtnAIToggle.Init(102, 2, SizeDefault, SizeDefault, Hotkey + 'Mode');
+	BtnGameMode.Init(102, 2, SizeDefault, SizeDefault, Hotkey + 'Mode');
 	BtnAudio.Init(201, 2, SizeDefault, SizeDefault, Hotkey + 'Sound');
 	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, Hotkey + 'About...');
 	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + Hotkey + 'xit');
 	
 	MouseHide;
 	MenuBar.Draw;
-	TicDrawBackground;
+	DrawBg;
 
 	SetFillStyle(SolidFill, Green);
 	Bar(FrmTic.Left + 2, FrmTic.Top + 2, FrmTic.Left + FrmTic.Width - 2,
 		FrmTic.Top + FrmTic.Height - 2);
 	FrmTic.Draw;
 	BtnNew.Draw;
-	BtnAIToggle.Draw;
+	BtnGameMode.Draw;
 	BtnAudio.Draw;
 	BtnAbout.Draw;
 	BtnExit.Draw;
@@ -530,19 +529,19 @@ begin
 
 	PlayerTurn := PlayerX;
 	PlayerStart := PlayerX;
-	TicDrawBoard;
-	TicPlaySound(sndNew);
-	TicPrintMessage(msgNewGame);
-	TicPrintStatus;
+	DrawBoard;
+	PlaySound(SndNew);
+	PrintMsg(MsgNewGame);
+	PrintStatus;
 
 	repeat
 		Key := GetKey;
 		
 		if BtnClick(BtnNew) or (Key = KeyAltN) then
 		begin
-			TicNewGame;
-			if EnableAI and (PlayerTurn = PlayerO) then
-				TicAIMove;
+			NewGame;
+			if VersusPC and (PlayerTurn = PlayerO) then
+				PcMove;
 		end;
 
 		if BtnClick(BtnAbout) or (Key = KeyAltA) then
@@ -551,18 +550,18 @@ begin
 		if BtnClick(BtnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
 			break;
 
-		if BtnClick(BtnAIToggle) or (Key = KeyAltM) then
+		if BtnClick(BtnGameMode) or (Key = KeyAltM) then
 		begin
-			EnableAI := not EnableAI;
-			TicNewGame;
-			if EnableAI and (PlayerTurn = PlayerO) then
-				TicAIMove;
+			VersusPC := not VersusPC;
+			NewGame;
+			if VersusPC and (PlayerTurn = PlayerO) then
+				PcMove;
 		end;
 
 		if BtnClick(BtnAudio) or (Key = KeyAltS) then
 		begin
-			EnableAudio := not EnableAudio;
-			TicPrintStatus;
+			SoundOn := not SoundOn;
+			PrintStatus;
 		end;
 
 		if TotalTurns < 9 then
@@ -590,18 +589,18 @@ begin
 				begin
 					FieldClicked := false;
 					PlayField[Row, Col] := PlayerTurn;
-					TicDrawXO(Row, Col, PlayerTurn);
+					DrawXO(Row, Col, PlayerTurn);
 					if PlayerTurn = PlayerX then
-						TicPlaySound(sndX)
+						PlaySound(SndX)
 					else
-						TicPlaySound(sndO);
+						PlaySound(SndO);
 					Inc(TotalTurns);
 
-					if TicCheckWin = true then
+					if DidWin then
 					begin
-						TicPrintMessage(msgWin);
+						PrintMsg(MsgWin);
 						TotalTurns := 9;
-						TicPlaySound(sndWin);
+						PlaySound(SndWin);
 					end
 					else
 					begin
@@ -612,21 +611,21 @@ begin
 							else
 								PlayerTurn := PlayerX;
 
-							if (EnableAI = true) and (PlayerTurn = PlayerO) then
-								TicAIMove
+							if (VersusPC) and (PlayerTurn = PlayerO) then
+								PcMove
 							else
-								TicPrintMessage(msgPlayerTurn);
+								PrintMsg(MsgPlayerTurn);
 						end
 						else
 						begin
-							TicPrintMessage(msgDraw);
-							TicPlaySound(sndDraw);
+							PrintMsg(MsgDraw);
+							PlaySound(SndDraw);
 						end;
 
 					end;
 				end
 				else
-					TicPlaySound(sndIllegal);
+					PlaySound(SndIllegal);
 			end;
 		end;
 

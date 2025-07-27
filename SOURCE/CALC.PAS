@@ -7,6 +7,7 @@ const
 	AppName    = 'Calculator';
 	AppVersion = '2.0';
 	AppAuthor  = 'Jacob Palm';
+	AppIcon	   = 'CALC';
 
 var
 	LogLinesWritten: Integer;
@@ -23,7 +24,7 @@ var
 	ch: string[1];
 	CalcErr: Boolean;
 
-function Calc_FormatNum(TargetStr: string): string;
+function FormatNum(TargetStr: string): string;
 var
 	IntPart, DecPart, TempStr, SignStr: string;
 	i, Len, Count: integer;
@@ -63,10 +64,10 @@ begin
 			TempStr := ',' + TempStr;
 	end;
 
-	Calc_FormatNum := SignStr + TempStr + DecPart;
+	FormatNum := SignStr + TempStr + DecPart;
 end;
 
-procedure Calc_LogLine(Text: string; var TargetTxt: TTextbox);
+procedure LogLine(Text: string; var TargetTxt: TTextbox);
 const
 	MaxLogLines = 18;
 	TopOffset = 52;
@@ -141,7 +142,7 @@ begin
 		end;
 
 		if BtnClick(BtnAbout) or (Key = KeyAltA) then
-			AboutBox(AppName, AppVersion, AppAuthor, 'CALC');
+			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 
 		for i := 0 to 9 do
 		begin
@@ -155,7 +156,7 @@ begin
 			end;
 		end;
 
-		if BtnClick(BtnC) or (Key = 'c') then
+		if BtnClick(BtnC) or (Key = KeyAltC) then
 		begin
 			TxtCalc.Text := '';
 			MouseHide;
@@ -163,12 +164,12 @@ begin
 			MouseShow;
 		end;
 
-		if BtnClick(BtnCE) or (Key = 'e') then
+		if BtnClick(BtnCE) or (Key = KeyAltE) then
 		begin
 			TxtCalc.Text := '';
 			MouseHide;
 			TxtCalc.Draw;
-			Calc_LogLine('', TxtResults);
+			LogLine('', TxtResults);
 			MouseShow;
 			MathFunc := '';
 			NumOps := 0;
@@ -189,7 +190,7 @@ begin
 				if TxtCalc.Text = '' then TxtCalc.Text := '0';
 				TxtCalc.Text := TxtCalc.Text + '.';
 				MouseHide;
-				TxtCalc.Text := Calc_FormatNum(TxtCalc.Text);
+				TxtCalc.Text := FormatNum(TxtCalc.Text);
 				TxtCalc.Draw;
 				MouseShow;
 			end;

@@ -507,32 +507,29 @@ begin
 		end;
 
 		{Any printable character}
-		if Length(Key) = 1 then
+		if (Length(Key) = 1) and (Length(Text) < MaxLen) then
 		begin
-			if (Ord(Key[1]) >= 32) and (Ord(Key[1]) <= 126) then
+			if (Ord(Key[1]) < 32) or (Ord(Key[1]) > 126) then
+				continue;
+
+			MouseHide;
+			if PrintW(Text + Key) + 2 < MaxShow then
 			begin
-				if Length(Text) < MaxLen then
-				begin
-					MouseHide;
-					if PrintW(Text + Key) + 2 < MaxShow then
-					begin
-						CursorX := X1 + PrintW(Text) + 2;
-						SetColor(Thm.Txt);
-						Line(CursorX, Y1 - 1, CursorX, Y1 + 10);
-						Text := Text + Key;
-						Print(Text, X1, Y1, Thm.TxtText);
-						CursorX := X1 + PrintW(Text) + 2;
-						SetColor(Thm.TxtText);
-						Line(CursorX, Y1 - 1, CursorX, Y1 + 10);
-					end
-					else
-					begin
-						Text := Text + Key;
-						Self.Draw;
-					end;
-					MouseShow;
-				end;
+				CursorX := X1 + PrintW(Text) + 2;
+				SetColor(Thm.Txt);
+				Line(CursorX, Y1 - 1, CursorX, Y1 + 10);
+				Text := Text + Key;
+				Print(Text, X1, Y1, Thm.TxtText);
+				CursorX := X1 + PrintW(Text) + 2;
+				SetColor(Thm.TxtText);
+				Line(CursorX, Y1 - 1, CursorX, Y1 + 10);
+			end
+			else
+			begin
+				Text := Text + Key;
+				Self.Draw;
 			end;
+			MouseShow;
 		end;
 
 	until False;

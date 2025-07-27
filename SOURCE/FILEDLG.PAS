@@ -39,7 +39,7 @@ var
 	Drive: String[1];
 	ClickedDoubleTimer: Real;
 
-procedure FileSetActiveList(TargetList: Integer); forward;
+procedure SetActiveList(TargetList: Integer); forward;
 
 procedure GetChildFiles(Path: String; FilePattern: String);
 var
@@ -177,7 +177,7 @@ begin
 	MouseShow;
 end;
 
-procedure FilePreview;
+procedure DrawPreview;
 var
 	ImageFile: String;
 	FDir: DirStr;
@@ -209,7 +209,7 @@ begin
 	end;
 end;
 
-procedure FileMoveSelection(TargetList: Integer; Direction: TDirection);
+procedure MoveSelection(TargetList: Integer; Direction: TDirection);
 var
 	NewSelection, NewStartPos: Integer;
 begin
@@ -281,17 +281,17 @@ begin
 	end;
 		
 	{Update image preview in case an image file is now selected}
-	FilePreview;
+	DrawPreview;
 end;
 
-function FileMouseSelection(TargetList: integer): boolean;
+function MouseSelection(TargetList: integer): boolean;
 var
 	ClickedX, ClickedY, ClickedItem: Integer;
 begin
 	MousePoll;
 	ClickedX := MouseX - TxtList[TargetList].Left;
 	ClickedY := MouseY - TxtList[TargetList].Top;
-	FileMouseSelection := False;
+	MouseSelection := False;
 
 	{Validate click inside, not on border}
 	if (ClickedX > 1) and (ClickedX < TxtList[TargetList].Width - 2) then
@@ -301,7 +301,7 @@ begin
 			{Clicked inside}
 
 			if ActiveList <> TargetList then
-				FileSetActiveList(TargetList);
+				SetActiveList(TargetList);
 			
 			{There is a 3-pixel border before the first item.
 			Calculate clicked item}
@@ -313,7 +313,7 @@ begin
 				Draw current item with focus}
 				DrawFileList(TargetList, True, False);
 				while MouseClicked > MbNone do;
-				FileMouseSelection := False;
+				MouseSelection := False;
 				Exit;
 			end;
 
@@ -324,7 +324,7 @@ begin
 				begin
 					{Already selected and clicked again, check for double-click}
 					if Timer < ClickedDoubleTimer + DoubleClickDelay then
-						FileMouseSelection := True
+						MouseSelection := True
 					else
 						DrawFileList(TargetList, True, False);
 				end
@@ -344,12 +344,12 @@ begin
 		end;
 	end;
 
-	FilePreview;
+	DrawPreview;
 	ClickedDoubleTimer := Timer;
 	while MouseClicked > MbNone do;
 end;
 
-procedure FileSetActiveList(TargetList: Integer);
+procedure SetActiveList(TargetList: Integer);
 begin
 	if TargetList = ActiveList then
 		exit; {Already active}
@@ -359,7 +359,7 @@ begin
 	DrawFileList(ActiveList, True, False);
 end;
 
-function FileSetDrive(DriveLetter: Char): Boolean;
+function SetDrive(DriveLetter: Char): Boolean;
 var
 	CurrentDir: String;
 	TempLetter: String[1];
@@ -378,18 +378,18 @@ begin
 		GetChildDirs(Path);
 		DrawFileList(FileList, True, True);
 		DrawFileList(DirList, False, True);
-		FileSetDrive := True;
-		FilePreview;
+		SetDrive := True;
+		DrawPreview;
 		Exit;
 	end
 	else
 	 ChDir(Path); {Restore original path if drive change fails}
 	end;
 
-	FileSetDrive := False;
+	SetDrive := False;
 end;
 
-procedure FileSetDir(DirName: String);
+procedure SetDir(DirName: String);
 begin
 	{$I-}
 	ChDir(DirName);
@@ -406,7 +406,7 @@ begin
 		DrawFileList(FileList, False, True);
 		DrawFileList(DirList, True, True);
 	end;
-	FilePreview;
+	DrawPreview;
 end;
 
 function FileSelect(DefaultPattern, StartPath: string; ImageSelect: boolean): string;
@@ -484,7 +484,7 @@ begin
 
 	{If path provided, use it}
 	if Length(StartPath) > 0 then
-		FileSetDir(StartPath)
+		SetDir(StartPath)
 	else
 	begin
 		GetChildFiles(Path, Pattern);
@@ -498,13 +498,13 @@ begin
 
 		if (MouseClicked > MbNone) and TxtList[FileList].IsMouseOver then
 		begin
-			if FileMouseSelection(FileList) then
+			if MouseSelection(FileList) then
 				Key := KeyEnter; {Double-clicked file, select it}
 		end;
 
 		if (MouseClicked > MbNone) and TxtList[DirList].IsMouseOver then
 		begin
-			if FileMouseSelection(DirList) then
+			if MouseSelection(DirList) then
 				Key := KeyEnter; {Double-clicked directory, change to it}
 		end;
 
@@ -521,7 +521,7 @@ begin
 			
 			if (ActiveList = DirList) and (SubDirs[ListSelection[DirList]] <> '') then
 			begin
-				FileSetDir(SubDirs[ListSelection[DirList]]);
+				SetDir(SubDirs[ListSelection[DirList]]);
 			end;
 		end;
 
@@ -536,7 +536,7 @@ begin
 			TxtDrive.Edit;
 			if TxtDrive.Text <> Drive Then
 			begin
-				if not FileSetDrive(TxtDrive.Text[1]) then
+				if not SetDrive(TxtDrive.Text[1]) then
 				begin
 					TxtDrive.Text := Drive; {Restore original drive letter}
 					MouseHide;
@@ -548,54 +548,54 @@ begin
 
 		if BtnClick(BtnFilePrev) then
 		begin
-			FileSetActiveList(FileList);
+			SetActiveList(FileList);
 			Key := KeyPageUp; {Simulate key press for moving selection up}
 		end;
 
 		if BtnClick(BtnFileNext) then
 		begin
-			FileSetActiveList(FileList);
+			SetActiveList(FileList);
 			Key := KeyPageDown; {Simulate key press for moving selection down}
 		end;
 
 		if BtnClick(BtnDirPrev) then
 		begin
-			FileSetActiveList(DirList);
+			SetActiveList(DirList);
 			Key := KeyPageUp; {Simulate key press for moving view up}
 		end;
 
 		if BtnClick(BtnDirNext) then
 		begin
-			FileSetActiveList(DirList);
+			SetActiveList(DirList);
 			Key := KeyPageDown; {Simulate key press for moving view down}
 		end;
 
 		if Key = KeyUp then
-			FileMoveSelection(ActiveList, Up);
+			MoveSelection(ActiveList, Up);
 
 		if Key = KeyDown then
-			FileMoveSelection(ActiveList, Down);
+			MoveSelection(ActiveList, Down);
 
 		if Key = KeyHome then
-			FileMoveSelection(ActiveList, First);
+			MoveSelection(ActiveList, First);
 
 		if Key = KeyEnd then
-			FileMoveSelection(ActiveList, Last);
+			MoveSelection(ActiveList, Last);
 
 		if Key = KeyPageUp then
-			FileMoveSelection(ActiveList, PageUp);
+			MoveSelection(ActiveList, PageUp);
 
 		if Key = KeyPageDown then
-			FileMoveSelection(ActiveList, PageDown);
+			MoveSelection(ActiveList, PageDown);
 
 		if (Key = KeyAltF) then
-			FileSetActiveList(FileList);
+			SetActiveList(FileList);
 
 		if (Key = KeyAltO) then
-			FileSetActiveList(DirList);
+			SetActiveList(DirList);
 
 		if (Key = KeyTab) or (Key = KeyShiftTab) then
-			FileSetActiveList(not ActiveList);
+			SetActiveList(not ActiveList);
 
 		if TxtClick(TxtPattern) or (Key = KeyAltP) then
 		begin
@@ -607,7 +607,7 @@ begin
 				ListStartPos[FileList] := 1;
 				ListSelection[FileList] := 1;
 				DrawFileList(FileList, True, True);
-				FilePreview;
+				DrawPreview;
 			end;
 		end;
 

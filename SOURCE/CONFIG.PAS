@@ -124,7 +124,7 @@ begin
 		Exit;
 	end;
 
-	WinPreview.Draw;;
+	WinPreview.Draw;
 	ImgLogo.Draw;
 	ImgDeskLink.Draw;
 	BtnPreview1.Draw;

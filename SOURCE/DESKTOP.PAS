@@ -4,17 +4,50 @@ uses
 	Costalib, FileDlg, Graph, Crt, Strings, DOS;
 
 const
-	AppName       = 'Desktop';
-	AppVersion    = '2.0';
-	AppAuthor     = 'Jacob Palm';
-	AppIcon       = 'LOGO';
+	AppName                   = 'Desktop';
+	AppVersion                = '2.0';
+	AppAuthor                 = 'Jacob Palm';
+	AppIcon                   = 'LOGO';
 
-	CaptionMaxLen = 20; {Maximum length for link captions}
+	CaptionMaxLen             = 20; {Maximum length for link captions}
+
+	MSG_LOAD_ERROR_TITLE      = 'Error loading desktop links';
+	MSG_OUT_OF_MEMORY         = 'Out of memory.';
+	MSG_DATA_ERROR            = 'Could not open file for reading. The' + #13 + 
+	                            'file may corrupt or inaccesible:' + #13;
+	MSG_FILE_SIZE_ERROR       = 'File size mismatch. This indicates that the desktop file' + #13 + 
+	                            'is corrupt:' + #13;
+	MSG_SAVE_ERROR_TITLE      = 'Error saving desktop links';
+	MSG_SAVE_ERROR            = 'Could not open file for writing. The' + #13 + 
+	                            'file may be read-only or inaccesible:' + #13;
+	MSG_UNSPECIFIED           = 'Unspecified';
+	MSG_NONE                  = 'None';
+	MSG_PATH                  = 'Path:';
+	MSG_PARAMETERS            = 'Parameters:';
+	MSG_REMOVE_LINK_TITLE     = 'Remove desktop link';
+	MSG_REMOVE_LINK           = 'This will permanently delete this' + #13 + 
+	                            'desktop link. Are you sure?';
+	MSG_INVALID_PROGRAM_TITLE = 'Invalid program';
+	MSG_PROGRAM_MISSING       = 'The ''Program'' field cannot be empty.';
+	MSG_INVALID_ICON_TITLE    = 'Invalid icon file';
+	MSG_INVALID_ICON          = 'The selected file is not a valid icon file.' + #13 +
+	                            'Please select a .BIN file from the ICONS directory.';
+	MSG_NOT_A_PROGRAM_TITLE   = 'Not a program';
+	MSG_NOT_A_PROGRAM         = 'The file you are trying to run is not a program.' + #13 +
+	                            'Only .EXE, .COM and .BAT files can be executed.';
+	MSG_FILE_NOT_FOUND_TITLE  = 'File not found';
+	MSG_PROGRAM_NOT_FOUND     = 'The program/file you are trying to open was not found:' + #13;
+	MSG_COMSPEC_TITLE         = 'COMSPEC not set';
+	MSG_COMSPEC               = 'The COMSPEC environment variable is not set.' + #13 +
+	                            'This is required to run batch files.';
+	MSG_EXIT                  = 'Exit';
+	MSG_EXIT_PROMPT           = 'This will exit Costa and return you to the DOS' + #13 +
+	                            'prompt. Are you sure?';
 
 type
 	PLink = ^TLink;
 	TLink = record
-		Caption: String[20];
+		Caption: String[CaptionMaxLen];
 		FileName: PathStr;
 		Path: DirStr;
 		Parameters: ComStr;
@@ -29,29 +62,29 @@ type
 	TDirection = (None, Next, Previous); {For tabbing through links}
 
 var
-	DeskLink: PLinkArray;
-	DeskLinkCount: Integer;
+	Links: PLinkArray;
+	LinkCount: Integer;
 	KeySelection: Integer;
 	TabImgSize: Word;
 	TabBackgroundP: Pointer;
 
-	{Buttons need to be redrawable from DeskDrawDesktop}
-	BtnAddLink, BtnRunCmd, BtnAboutCosta, BtnExitCosta: TButton;
+	{Buttons need to be redrawable from DrawDesktop}
+	BtnAddLink, BtnRun, BtnAbout, BtnExit: TButton;
 	BtnPrevious, BtnNext: TButton;
 	BtnTab: TButton;
 
 {Forward declarations}
-	procedure DeskDrawDesktop(FullRedraw: boolean); forward;
-	procedure DeskRunDialog; forward;
-	procedure DeskLinkEdit(TargetLink: integer); forward;
-	procedure DeskLinkLoad; forward;
-	procedure DeskLinkMenu(TargetLink: integer); forward;
-	procedure DeskLinkMove(TargetLink: integer); forward;
-	procedure DeskLinkSave; forward;
-	procedure DeskLinkFree; forward;
-	procedure DeskLinkTab(Direction: TDirection); forward;
-	function DeskLinkInit: Boolean; forward;
-	procedure DeskRun(TargetLink: TLink); forward;
+	procedure DrawDesktop(FullRedraw: boolean); forward;
+	procedure RunDlg; forward;
+	procedure LinkEdit(TargetLink: integer); forward;
+	procedure LinkLoad; forward;
+	procedure LinkMenu(TargetLink: integer); forward;
+	procedure LinkMove(TargetLink: integer); forward;
+	procedure LinkSave; forward;
+	procedure LinkFree; forward;
+	procedure LinkTab(Direction: TDirection); forward;
+	function  LinkInit: Boolean; forward;
+	procedure RunProg(TargetLink: TLink); forward;
 
 function LinkHeapError(Size: Word): Integer; far;
 begin
@@ -61,121 +94,116 @@ begin
 		Exit;
 	end;
 
-	DeskLinkFree; {Free any previously allocated lines}
-	MsgBox('Out of memory', 'Not enough memory to load desktop links.', MsgError);
+	LinkFree; {Free any previously allocated lines}
+	MsgBox(MSG_LOAD_ERROR_TITLE, MSG_OUT_OF_MEMORY, MsgError);
 	LinkHeapError := 1; {Make GetMem return a nil pointer}
 end;
 
-procedure DeskLinkFree;
+procedure LinkFree;
 var
 	i: Integer;
 begin
-	if DeskLinkCount = 0 then
+	if LinkCount = 0 then
 		exit;
 
 	{Dispose all links in the array}
-	for i := 1 to DeskLinkCount do
-		Dispose(DeskLink^[i]);
+	for i := 1 to LinkCount do
+		Dispose(Links^[i]);
 
 	{Free the memory allocated for the array itself}
-	FreeMem(DeskLink, DeskLinkCount * SizeOf(PLink));
+	FreeMem(Links, LinkCount * SizeOf(PLink));
 
-	DeskLinkCount := 0;
+	LinkCount := 0;
 end;
 
-function DeskLinkInit: Boolean;
+function LinkInit: Boolean;
 var
 	DefaultHeapError: Pointer;
 begin
-	if DeskLinkCount = 0 then
+	if LinkCount = 0 then
 	begin
-		DeskLinkInit := false;
+		LinkInit := false;
 		Exit;
 	end;
 
 	{Use custom heap error handler to avoid program crash on out of memory}
 	DefaultHeapError := HeapError;
 	HeapError := @LinkHeapError;
-	GetMem(DeskLink, DeskLinkCount * SizeOf(PLink));
+	GetMem(Links, LinkCount * SizeOf(PLink));
 	HeapError := DefaultHeapError;
 
-	if DeskLink = nil then
-		DeskLinkInit := false
+	if Links = nil then
+		LinkInit := false
 	else
-		DeskLinkInit := true;
+		LinkInit := true;
 end;
 
-procedure DeskLinkLoad;
+procedure LinkLoad;
 var
 	i: integer;
 	F: file;
-	DeskLinkFile: string;
+	LinkFile: string;
 	ReadLink: TLink;
 	ReadBytes: Word;
 	NewLink: PLink;
 begin
-	{Make sure DeskLink is freed before loading new links}
-	DeskLinkFree;
+	{Make sure Links is freed before loading new links}
+	LinkFree;
 
-	Str(Setting.DeskID, DeskLinkFile);
-	DeskLinkFile := 'CONFIG\DESKLNK' + DeskLinkFile + '.BIN';
+	Str(Setting.DeskID, LinkFile);
+	LinkFile := 'CONFIG\DESKLNK' + LinkFile + '.BIN';
 	
 	{If file doesn't exist, try to load default desktop links. If
 	 that file doesn't exist either, exit and show empty desktop}
-	if not FileExists(DeskLinkFile) then
+	if not FileExists(LinkFile) then
 	begin
 		if FileExists('CONFIG\DESKDEF.BIN') and (Setting.DeskID = 1) then
-			DeskLinkFile := 'CONFIG\DESKDEF.BIN'
+			LinkFile := 'CONFIG\DESKDEF.BIN'
 		else
 			exit;
 	end;
 
-	Assign(F, DeskLinkFile);
+	Assign(F, LinkFile);
 	{$I-}
 	Reset(F, 1);
 	{$I+}
 	if IOResult <> 0 then
 	begin
-		MsgBox('Error loading desktop links', 'Could not open file for reading. The' + NewLine + 
-			'file may corrupt or inaccesible:' + newLine +
-			DeskLinkFile, MsgError);
+		MsgBox(MSG_LOAD_ERROR_TITLE, MSG_DATA_ERROR +
+			LinkFile, MsgError);
 		Close(F);
 		Exit;
 	end;
 
 	{Read the number of links in the file}
-	BlockRead(F, DeskLinkCount, SizeOf(DeskLinkCount));
+	BlockRead(F, LinkCount, SizeOf(LinkCount));
 	
 	{No links, exit}
-	if DeskLinkCount = 0 then
+	if LinkCount = 0 then
 	begin
 		Close(F);
 		exit;
 	end;
 
-	{Allocate memory for the array of links - DeskLinkCount is global so
-	 DesklLinkInit knows the appropriate size}
-	if not DeskLinkInit then
+	{Allocate memory for the array of links - LinkCount is global so
+	 LinkInit knows the appropriate size}
+	if not LinkInit then
 	begin
-		MsgBox('Error loading desktop links',
-			'Ran out of memory while loading desktop links.', MsgError);
+		MsgBox(MSG_LOAD_ERROR_TITLE, MSG_OUT_OF_MEMORY, MsgError);
 		Close(F);
 		Exit;
 	end;
 	
 	{Load all links from file}
-	for i := 1 to DeskLinkCount do
+	for i := 1 to LinkCount do
 	begin
 		FillChar(ReadLink, SizeOf(ReadLink), 0);
 		BlockRead(F, ReadLink, SizeOf(ReadLink), ReadBytes);
 		if ReadBytes <> SizeOf(ReadLink) then
 		begin
-			MsgBox('Error loading desktop links',
-				'File size mismatch. This indicates that the desktop file' + NewLine + 
-				'is corrupt:' + NewLine +
-				DeskLinkFile, MsgError);
+			MsgBox(MSG_LOAD_ERROR_TITLE, MSG_FILE_SIZE_ERROR + LinkFile, MsgError);
 			Close(F);
-			DeskLinkFree;
+			LinkFree;
 			if NewLink <> nil then
 				Dispose(NewLink);
 			Exit;
@@ -185,141 +213,135 @@ begin
 		New(NewLink);
 		NewLink^ := ReadLink;
 		{Add to array}
-		DeskLink^[i] := NewLink;
+		Links^[i] := NewLink;
 	end;
 	Close(F);
 end;
 
-procedure DeskLinkSave;
+procedure LinkSave;
 var
 	i, j: integer;
 	TempLink: PLink;
 	F: file;
-	DeskLinkFile: string;
+	LinkFile: string;
 	mbVoid: Boolean;
 begin
 	{Sort before saving if array contains more than one item - this
 	 enables TAB cycling from left to right, top to bottom}
-	if DeskLinkCount > 1 then
+	if LinkCount > 1 then
 	begin
-		for i := 1 to DeskLinkCount - 1 do
+		for i := 1 to LinkCount - 1 do
 		begin
-			for j := 1 to DeskLinkCount - i do
+			for j := 1 to LinkCount - i do
 			begin
 				{Compare positions: first by Left, then by Top if Left is equal}
-				if (DeskLink^[j]^.Left > DeskLink^[j + 1]^.Left) or
-				((DeskLink^[j]^.Left = DeskLink^[j + 1]^.Left) and
-					(DeskLink^[j]^.Top > DeskLink^[j + 1]^.Top)) then
+				if (Links^[j]^.Left > Links^[j + 1]^.Left) or
+				   ((Links^[j]^.Left = Links^[j + 1]^.Left) and
+					(Links^[j]^.Top > Links^[j + 1]^.Top)) then
 				begin
 					{Swap links}
-					TempLink := DeskLink^[j];
-					DeskLink^[j] := DeskLink^[j + 1];
-					DeskLink^[j + 1] := TempLink;
+					TempLink := Links^[j];
+					Links^[j] := Links^[j + 1];
+					Links^[j + 1] := TempLink;
 				end;
 			end;
 		end;
 	end;
 
 	{Save}
-	Str(Setting.DeskID, DeskLinkFile);
-	DeskLinkFile := 'CONFIG\DESKLNK' + DeskLinkFile + '.BIN';
-	Assign(F, DeskLinkFile);
+	Str(Setting.DeskID, LinkFile);
+	LinkFile := 'CONFIG\DESKLNK' + LinkFile + '.BIN';
+	Assign(F, LinkFile);
 	{$I-}
 	Rewrite(F, 1);
 	{$I+}
 	if IOResult <> 0 then
 	begin
-		MsgBox('Error saving desktop links', 'Could not open file for writing. The' + NewLine + 
-			'file read-only or inaccesible:' + newLine +
-			DeskLinkFile, MsgError);
+		MsgBox(MSG_SAVE_ERROR_TITLE, MSG_SAVE_ERROR + LinkFile, MsgError);
 		Close(F);
 		Exit;
 	end;
-	BlockWrite(F, DesklinkCount, SizeOf(DesklinkCount));
+	BlockWrite(F, LinkCount, SizeOf(LinkCount));
 
 	{No links, close file}
-	if DeskLinkCount = 0 then
+	if LinkCount = 0 then
 	begin
 		Close(F);
 		Exit;
 	end;
 
 	{Write all links to file}
-	for i := 1 to DeskLinkCount do
+	for i := 1 to LinkCount do
 	begin
-		BlockWrite(F, DeskLink^[i]^, SizeOf(TLink));
+		BlockWrite(F, Links^[i]^, SizeOf(TLink));
 	end;
 end;
 
-procedure DeskLinkAdd(NewLink: TLink);
+procedure LinkAdd(NewLink: TLink);
 var
-	NewDeskLinkArr: PLinkArray;
+	NewLinks: PLinkArray;
 	PNewLink: PLink;
 	i: Integer;
 	DefaultHeapError: Pointer;
 begin
 	{If array hasn't been initialized, do so now}
-	if DeskLinkCount = 0 then
+	if LinkCount = 0 then
 	begin
-		DeskLinkCount := 1;
-		DeskLinkInit;
+		LinkCount := 1;
+		LinkInit;
 	end
 	else
 	begin
 		{Allocate new memory for the resized array}
 		DefaultHeapError := HeapError;
 		HeapError := @LinkHeapError;
-		GetMem(NewDeskLinkArr, (DeskLinkCount + 1) * SizeOf(PLink));
+		GetMem(NewLinks, (LinkCount + 1) * SizeOf(PLink));
 		HeapError := DefaultHeapError;
 
-		if NewDeskLinkArr = nil then
-		begin
-			{DEBUG - link add failed, out of memory}
-			CloseGraph;
-			WriteLn('Out of memory while adding a new link.');
-			halt;
+		{If memory allocation failed, exit - error message will
+		 already have been shown}
+		if NewLinks = nil then
 			exit;
-		end;
 
 		{Copy existing lines to the new array}
-		Move(DeskLink^[1], NewDeskLinkArr^[1], DeskLinkCount * SizeOf(PLink));
+		Move(Links^[1], NewLinks^[1], LinkCount * SizeOf(PLink));
 
 		{Free memory of the old array}
-		FreeMem(DeskLink, DeskLinkCount * SizeOf(PLink));
+		FreeMem(Links, LinkCount * SizeOf(PLink));
 
 		{Update the pointer to the new array}
-		DeskLink := NewDeskLinkArr;
+		Links := NewLinks;
 
-		Inc(DeskLinkCount);
+		Inc(LinkCount);
 	end;
 
 	New(PNewLink);
 	PNewLink^ := NewLink;
-	DeskLink^[DeskLinkCount] := PNewLink;
+	Links^[LinkCount] := PNewLink;
 end;
 
-procedure DeskLinkRemove(TargetLink: integer);
+procedure LinkRemove(TargetLink: integer);
 var
-	NewDeskLinkArr: PLinkArray;
+	NewLinks: PLinkArray;
 	PNewLink: PLink;
 	i, Copied: Integer;
 	DefaultHeapError: Pointer;
 begin
 	{If only one link left, or none, free the array}
-	if DeskLinkCount <= 1 then
+	if LinkCount <= 1 then
 	begin
-		DeskLinkFree;
-		DeskLinkCount := 0;
+		LinkFree;
+		LinkCount := 0;
 		Exit;
 	end;
 
 	{Allocate new memory for the resized array}
 	DefaultHeapError := HeapError;
 	HeapError := @LinkHeapError;
-	GetMem(NewDeskLinkArr, (DeskLinkCount - 1) * SizeOf(PLink));
+	GetMem(NewLinks, (LinkCount - 1) * SizeOf(PLink));
 	HeapError := DefaultHeapError;
 
-	if NewDeskLinkArr = nil then
+	if NewLinks = nil then
 	begin
 		{DEBUG - out of memory}
 		exit;
@@ -327,29 +349,29 @@ begin
 
 	{Copy existing lines to the new array}
 	Copied := 0;
-	for i := 1 to DeskLinkCount do
+	for i := 1 to LinkCount do
 	begin
 		if i <> TargetLink then
 		begin
 			Inc(Copied);
-			NewDeskLinkArr^[Copied] := DeskLink^[i];
+			NewLinks^[Copied] := Links^[i];
 		end;
 	end;
 
 	{Dispose of the link being removed}
-	Dispose(DeskLink^[TargetLink]);
+	Dispose(Links^[TargetLink]);
 
 	{Free memory of the old array}
-	FreeMem(DeskLink, DeskLinkCount * SizeOf(PLink));
+	FreeMem(Links, LinkCount * SizeOf(PLink));
 
 	{Update the pointer to the new array}
-	DeskLink := NewDeskLinkArr;
-	Dec(DeskLinkCount);
+	Links := NewLinks;
+	Dec(LinkCount);
 end;
 
-procedure DeskDrawDesktop(FullRedraw: boolean);
+procedure DrawDesktop(FullRedraw: boolean);
 var
-	ImgDeskLinkIcon: TIcon;
+	ImgIcon: TIcon;
 	i, X, Y: integer;
 	DeskStr: string;
 begin
@@ -359,9 +381,9 @@ begin
 	begin
 		MenuBar.Draw;
 		BtnAddLink.Draw;
-		BtnRunCmd.Draw;
-		BtnAboutCosta.Draw;
-		BtnExitCosta.Draw;
+		BtnRun.Draw;
+		BtnAbout.Draw;
+		BtnExit.Draw;
 		BtnPrevious.Draw;
 		BtnNext.Draw;
 		Str(Setting.DeskID, DeskStr);
@@ -372,31 +394,31 @@ begin
 	SetFillStyle(SolidFill, Thm.Desk);
 	Bar(0, 29, 639, 349);
 	
-	if DeskLinkCount = 0 then
+	if LinkCount = 0 then
 	begin
 		MouseShow;
 		exit;
 	end;
 	
-	for i := 1 to DeskLinkCount do
+	for i := 1 to LinkCount do
 	begin
-		X := DeskLink^[i]^.Left;
-		Y := DeskLink^[i]^.Top;
-		ImgDeskLinkIcon.Init(X, Y, DeskLink^[i]^.ImageFile);
-		ImgDeskLinkIcon.Draw;
+		X := Links^[i]^.Left;
+		Y := Links^[i]^.Top;
+		ImgIcon.Init(X, Y, Links^[i]^.ImageFile);
+		ImgIcon.Draw;
 
 		if Setting.LinkCapt then
 		begin
-			Print(DeskLink^[i]^.Caption, X + 38, Y + 4, Thm.DeskText);
+			Print(Links^[i]^.Caption, X + 38, Y + 4, Thm.DeskText);
 			if Setting.LinkTarget then
-				Print(DeskLink^[i]^.FileName, X + 38, Y + 18, Thm.DeskText);
+				Print(Links^[i]^.FileName, X + 38, Y + 18, Thm.DeskText);
 		end;
 	end;
 	
 	MouseShow;
 end;
 
-procedure DeskSwitchDesktop(DeskID: integer);
+procedure SwitchDesk(DeskID: integer);
 begin
 	if DeskID < 1 then
 		DeskID := 5
@@ -404,24 +426,24 @@ begin
 		DeskID := 1;
 
 	Setting.DeskID := DeskID;
-	DeskLinkLoad;
+	LinkLoad;
 	KeySelection := 0;
 
-	DeskDrawDesktop(true);
+	DrawDesktop(true);
 end;
 
-procedure DeskLinkTab(Direction: TDirection);
+procedure LinkTab(Direction: TDirection);
 begin
 
 	{Check if any links exist before tabbing}
-	if DeskLinkCount = 0 then
+	if LinkCount = 0 then
 		Exit;
 
 	{If an icon is already selected, then deselect it by restoring the background}
 	if KeySelection <> 0 then
 	begin
 		MouseHide;
-		PutImage(DeskLink^[KeySelection]^.Left - 3, DeskLink^[KeySelection]^.Top - 3,
+		PutImage(Links^[KeySelection]^.Left - 3, Links^[KeySelection]^.Top - 3,
 			TabBackgroundP^, NormalPut);
 		MouseShow;
 	end;
@@ -438,27 +460,27 @@ begin
 		Dec(KeySelection);
 
 	{Wrap around if we go below first or above last link}
-	if KeySelection > DeskLinkCount then
+	if KeySelection > LinkCount then
 		KeySelection := 1
 	else if KeySelection < 1 then
-		KeySelection := DeskLinkCount;
+		KeySelection := LinkCount;
 
 	{Draw the selected link, saving background first}
 	MouseHide;
 	{Save background of new selected link}
-	GetImage(DeskLink^[KeySelection]^.Left - 3, DeskLink^[KeySelection]^.Top - 3,
-		DeskLink^[KeySelection]^.Left + 34, DeskLink^[KeySelection]^.Top + 34, TabBackgroundP^);
+	GetImage(Links^[KeySelection]^.Left - 3, Links^[KeySelection]^.Top - 3,
+		Links^[KeySelection]^.Left + 34, Links^[KeySelection]^.Top + 34, TabBackgroundP^);
 	{Draw the tab button around the selected link}
-	BtnTab.Left := DeskLink^[KeySelection]^.Left - 3;
-	BtnTab.Top := DeskLink^[KeySelection]^.Top - 3;
+	BtnTab.Left := Links^[KeySelection]^.Left - 3;
+	BtnTab.Top := Links^[KeySelection]^.Top - 3;
 	BtnTab.Draw;
 	MouseShow;
 end;
 
-procedure DeskRunDialog;
+procedure RunDlg;
 var
 	WinRun: TWindow;
-	TxtProgram, TxtParameters: TTextbox;
+	TxtFilename, TxtParams: TTextbox;
 	BtnOK, BtnCancel, BtnBrowse: TButton;
 	Key: string;
 	SelectedFile: string;
@@ -467,15 +489,13 @@ var
 	BackgroundP: Pointer;
 	RunLink: TLink;
 begin
-	TxtProgram.Text := '';
-	TxtParameters.Text := '';
 	FillChar(RunLink, SizeOf(RunLink), 0);
 
 	WinRun.Init(sizeCenter, sizeCenter, 382, 137);
-	TxtProgram.Init(WinRun.Left + 12, WinRun.Top + 27, WinRun.Width - 68, SizeDefault);
-	TxtParameters.Init(TxtProgram.Left, TxtProgram.Top + 46, WinRun.Width - 26, SizeDefault);
-	BtnBrowse.Init(TxtProgram.Left + TxtProgram.Width + 9, TxtProgram.Top, 33, SizeDefault, '...');
-	BtnOK.Init(WinRun.Left + WinRun.Width - 184, TxtParameters.Top + 30, 80, SizeDefault, Hotkey + 'OK');
+	TxtFilename.Init(WinRun.Left + 12, WinRun.Top + 27, WinRun.Width - 68, SizeDefault);
+	TxtParams.Init(TxtFilename.Left, TxtFilename.Top + 46, WinRun.Width - 26, SizeDefault);
+	BtnBrowse.Init(TxtFilename.Left + TxtFilename.Width + 9, TxtFilename.Top, 33, SizeDefault, '...');
+	BtnOK.Init(WinRun.Left + WinRun.Width - 184, TxtParams.Top + 30, 80, SizeDefault, Hotkey + 'OK');
 	BtnCancel.Init(WinRun.Left + WinRun.Width - 94, BtnOK.Top, 80, SizeDefault, Hotkey + 'Cancel');
 		
 	MouseHide;
@@ -491,11 +511,11 @@ begin
 	BtnOK.Draw;
 	BtnCancel.Draw;
 	BtnBrowse.Draw;
-	TxtProgram.Draw;
-	TxtParameters.Draw;
+	TxtFilename.Draw;
+	TxtParams.Draw;
 	
-	Print(Hotkey + 'Program:', TxtProgram.Left, TxtProgram.Top - 16, Thm.WinText);
-	Print('Pa' + Hotkey + 'rameters:', TxtParameters.Left, TxtParameters.Top - 16, Thm.WinText);
+	Print(Hotkey + 'Program:', TxtFilename.Left, TxtFilename.Top - 16, Thm.WinText);
+	Print('Pa' + Hotkey + 'rameters:', TxtParams.Left, TxtParams.Top - 16, Thm.WinText);
 	MouseShow;
 
 	repeat
@@ -503,11 +523,11 @@ begin
 
 		if BtnClick(BtnOK) or (Key = KeyAltO) or (Key = KeyEnter) then
 		begin
-			if Length(TxtProgram.Text) > 0 then
+			if Length(TxtFilename.Text) > 0 then
 			begin
-				RunLink.FileName := TxtProgram.Text;
-				RunLink.Parameters := TxtParameters.Text;
-				DeskRun(RunLink);
+				RunLink.FileName := TxtFilename.Text;
+				RunLink.Parameters := TxtParams.Text;
+				RunProg(RunLink);
 			end;
 			break;
 		end;
@@ -515,20 +535,20 @@ begin
 		if BtnClick(BtnCancel) or (Key = KeyAltC) or (Key = KeyEscape) then
 			break;
 
-		if BtnClick(BtnBrowse) or TxtClick(TxtProgram) or (Key = '.') or (Key = KeyAltP) then
+		if BtnClick(BtnBrowse) or TxtClick(TxtFilename) or (Key = '.') or (Key = KeyAltP) then
 		begin
 			SelectedFile := FileSelect('*.exe', '', false);
 			if Length(SelectedFile) > 0 then
 			begin
-				TxtProgram.Text := SelectedFile;
+				TxtFilename.Text := SelectedFile;
 				MouseHide;
-				TxtProgram.Draw;
+				TxtFilename.Draw;
 				MouseShow;
 			end;
 		end;
 
-		if TxtClick(TxtParameters) or (Key = KeyAltR) then
-			TxtParameters.Edit;
+		if TxtClick(TxtParams) or (Key = KeyAltR) then
+			TxtParams.Edit;
 	until false;
 
 	{Restore background}
@@ -538,7 +558,7 @@ begin
 	MouseShow;		
 end;
 
-procedure DeskLinkMenu(TargetLink: integer);
+procedure LinkMenu(TargetLink: integer);
 var
 	WinLinkMenu: TWindow;
 	BtnOpen, BtnEdit, BtnMove, BtnRemove, BtnCancel: TButton;
@@ -546,9 +566,9 @@ var
 	X1, Y1, X2, Y2: integer;
 	BackgroundSize: Word;
 	BackgroundP: Pointer;
-	Caption, Filename, Path, Parameters: string;
+	Path, Parameters: string;
 	DoDelete: boolean;
-	Key, CroppedText: string;
+	Key: string;
 begin
 	WinLinkMenu.Init(sizeCenter, sizeCenter, 413, 165);
 	BtnOpen.Init(WinLinkMenu.Left + 12, WinLinkMenu.Top + WinLinkMenu.Height - 64, 389,
@@ -557,16 +577,14 @@ begin
 	BtnMove.Init(BtnEdit.Left + 99, BtnEdit.Top, SizeDefault, SizeDefault, Hotkey + 'Move');
 	BtnRemove.Init(BtnMove.Left + 99, BtnEdit.Top, SizeDefault, SizeDefault, Hotkey + 'Remove');
 	BtnCancel.Init(BtnRemove.Left + 99, BtnEdit.Top, SizeDefault, SizeDefault, Hotkey + 'Cancel');
-	ImgIcon.Init(WinLinkMenu.Left + 12, WinLinkMenu.Top + 11, DeskLink^[TargetLink]^.ImageFile);
+	ImgIcon.Init(WinLinkMenu.Left + 12, WinLinkMenu.Top + 11, Links^[TargetLink]^.ImageFile);
 
-	Caption := DeskLink^[TargetLink]^.Caption;
-	Filename := DeskLink^[TargetLink]^.Filename;
-	Path := DeskLink^[TargetLink]^.Path;
-	Parameters := DeskLink^[TargetLink]^.Parameters;
+	Path := Links^[TargetLink]^.Path;
+	Parameters := Links^[TargetLink]^.Parameters;
 	if Length(Path) = 0 then
-		Path := 'Unspecified';
+		Path := MSG_UNSPECIFIED;
 	if Length(Parameters) = 0 then
-		Parameters := 'None';
+		Parameters := MSG_NONE;
 
 	if Length(Path) > 36 then
 		Path := Copy(Path, 1, 33) + '...';
@@ -590,11 +608,10 @@ begin
 	BtnCancel.Draw;
 	ImgIcon.Draw;
 
-	Print(DeskLink^[TargetLink]^.Caption, X1 + 54, Y1 + 17, 0);
-	Print(DeskLink^[TargetLink]^.Filename, X1 + 54, Y1 + 31, 0);
-	Print('Path:', X1 + 12, Y1 + 59, 0);
-	Print('Parameters:', X1 + 12, Y1 + 76, 0);
-	
+	Print(Links^[TargetLink]^.Caption, X1 + 54, Y1 + 17, Thm.WinText);
+	Print(Links^[TargetLink]^.Filename, X1 + 54, Y1 + 31, Thm.WinText);
+	Print(MSG_PATH, X1 + 12, Y1 + 59, Thm.WinText);
+	Print(MSG_PARAMETERS, X1 + 12, Y1 + 76, Thm.WinText);
 	Print(Path, X1 + 108, Y1 + 59, Thm.WinText);
 	Print(Parameters, X1 + 108, Y1 + 76, Thm.WinText);
 	MouseShow;
@@ -619,9 +636,9 @@ begin
 		if BtnClick(BtnOpen) or (Key = KeyAltO) or (Key = KeyEnter) then
 		begin
 			FreeMem(BackgroundP, BackgroundSize);
-			DeskRun(DeskLink^[TargetLink]^);
+			RunProg(Links^[TargetLink]^);
 			{If we've returned from the run, redraw the desktop since we've freed the memory}
-			DeskDrawDesktop(true);
+			DrawDesktop(true);
 			break;
 		end;
 
@@ -632,7 +649,7 @@ begin
 			PutImage(X1, Y1, BackgroundP^, NormalPut);
 			MouseShow;
 			FreeMem(BackgroundP, BackgroundSize);
-			DeskLinkEdit(TargetLink);
+			LinkEdit(TargetLink);
 			break;
 		end;
 
@@ -643,7 +660,7 @@ begin
 			PutImage(X1, Y1, BackgroundP^, NormalPut);
 			MouseShow;
 			FreeMem(BackgroundP, BackgroundSize);
-			DeskLinkMove(TargetLink);
+			LinkMove(TargetLink);
 			break;
 		end;
 
@@ -651,15 +668,15 @@ begin
 		if BtnClick(BtnRemove) or (Key = KeyAltR) then
 		begin
 			if Setting.ConfLinkDel then
-				DoDelete := MsgBox('Remove desktop link', 'This will permanently delete this' +
-					NewLine + 'desktop link. Are you sure?', MsgQuest)
+				DoDelete := MsgBox(MSG_REMOVE_LINK_TITLE, MSG_REMOVE_LINK, MsgQuest)
 			else
 				DoDelete := true;
 
 			if DoDelete then
 			begin
-				DeskLinkRemove(TargetLink);
-				DeskDrawDesktop(false);
+				LinkRemove(TargetLink);
+				DrawDesktop(false);
+				LinkSave;
 				FreeMem(BackgroundP, BackgroundSize);
 				break;
 			end;
@@ -669,7 +686,7 @@ begin
 			 
 end;
 
-procedure DeskLinkMove(TargetLink: integer);
+procedure LinkMove(TargetLink: integer);
 const
 	GridSize   = 4; {Size of grid in pixels, used for aligning icons}
 var
@@ -687,9 +704,9 @@ begin
 	
 	{Delete current icon - it will be recreated after move to same or other
 	 desktop}
-	IconToMove := DeskLink^[TargetLink]^;
-	DeskLinkRemove(TargetLink);
-	DeskLinkSave;
+	IconToMove := Links^[TargetLink]^;
+	LinkRemove(TargetLink);
+	LinkSave;
 
 	DrawX := IconToMove.Left;
 	DrawY := IconToMove.Top;
@@ -728,9 +745,9 @@ begin
 		{Escape}
 		if Key = KeyEscape then
 		begin
-			DeskSwitchDesktop(OriginalDesktop);
-			DeskLinkAdd(IconToMove);
-			DeskLinkSave;
+			SwitchDesk(OriginalDesktop);
+			LinkAdd(IconToMove);
+			LinkSave;
 			exit;
 		end;
 		
@@ -785,17 +802,17 @@ begin
 			while (Port[$3DA] and 8) = 0 do;
 		end;
 
-		if Key = '1' then DeskSwitchDesktop(1);
-		if Key = '2' then DeskSwitchDesktop(2);
-		if Key = '3' then DeskSwitchDesktop(3);
-		if Key = '4' then DeskSwitchDesktop(4);
-		if Key = '5' then DeskSwitchDesktop(5);
+		if Key = '1' then SwitchDesk(1);
+		if Key = '2' then SwitchDesk(2);
+		if Key = '3' then SwitchDesk(3);
+		if Key = '4' then SwitchDesk(4);
+		if Key = '5' then SwitchDesk(5);
 
 		if BtnClick(BtnPrevious) or (Key = KeyPageUp) then
-			DeskSwitchDesktop(Setting.DeskID - 1);
+			SwitchDesk(Setting.DeskID - 1);
 
 		if BtnClick(BtnNext) or (Key = KeyPageDown) then
-			DeskSwitchDesktop(Setting.DeskID + 1);
+			SwitchDesk(Setting.DeskID + 1);
 
 		{Redraw icon at current position if desktop has been switched}
 		if Setting.DeskID <> SwitchedDesktop then
@@ -811,14 +828,14 @@ begin
 
 	IconToMove.Left := DrawX;
 	IconToMove.Top := DrawY;
-	DeskLinkAdd(IconToMove);
-	DeskLinkSave;
-	DeskDrawDesktop(true);
+	LinkAdd(IconToMove);
+	LinkSave;
+	DrawDesktop(true);
 	
 	ClearInputBuffer;
 end;
 
-procedure DeskLinkEdit(TargetLink: integer);
+procedure LinkEdit(TargetLink: integer);
 var
 	WinEdit: TWindow;
 	TxtCaption, TxtFilename, TxtParams, TxtPath: TTextbox;
@@ -838,7 +855,7 @@ begin
 	WinEdit.Init(210, 35, 220, 312);
 
 	BtnIcon.Init(296, WinEdit.Top + 12, 48, 48, '');
-	ImgIcon.Init(305, BtnIcon.Top + 9, DeskLink^[TargetLink]^.ImageFile);
+	ImgIcon.Init(305, BtnIcon.Top + 9, Links^[TargetLink]^.ImageFile);
 	
 	TxtCaption.Init(222, BtnIcon.Top + 73, 196, SizeDefault);
 	TxtFilename.Init(222, TxtCaption.Top + 44, 196, SizeDefault);
@@ -852,12 +869,12 @@ begin
 	TxtCaption.MaxLen := CaptionMaxLen;
 	TxtFilename.MaxLen := SizeOf(ComStr); {Max length of a filename +}
 	TxtParams.MaxLen := SizeOf(ComStr);
-	TxtPath.MaxLen := SizeOf(DirStr);;
-	TxtFileName.Text := DeskLink^[TargetLink]^.Filename;
-	TxtParams.Text := DeskLink^[TargetLink]^.Parameters;
-	TxtPath.Text := DeskLink^[TargetLink]^.Path;
-	TxtCaption.Text := DeskLink^[TargetLink]^.Caption;
-	ChkPauseOnExit.Checked := DeskLink^[TargetLink]^.PauseOnExit;
+	TxtPath.MaxLen := SizeOf(DirStr);
+	TxtFileName.Text := Links^[TargetLink]^.Filename;
+	TxtParams.Text := Links^[TargetLink]^.Parameters;
+	TxtPath.Text := Links^[TargetLink]^.Path;
+	TxtCaption.Text := Links^[TargetLink]^.Caption;
+	ChkPauseOnExit.Checked := Links^[TargetLink]^.PauseOnExit;
 
 	MouseHide;
 	X1 := WinEdit.Left;
@@ -902,23 +919,21 @@ begin
 					if TxtPath.Text + '\' = ProgramPath then
 						TxtPath.Text := '';
 				end;
-				DeskLink^[TargetLink]^.Caption := TxtCaption.Text;
-				DeskLink^[TargetLink]^.Filename := TxtFileName.Text;
-				DeskLink^[TargetLink]^.Path := TxtPath.Text;
-				DeskLink^[TargetLink]^.Parameters := TxtParams.Text;
-				DeskLink^[TargetLink]^.PauseOnExit := ChkPauseOnExit.Checked;
-				DeskLink^[TargetLink]^.ImageFile := ImgIcon.ImageFile;
+				Links^[TargetLink]^.Caption := TxtCaption.Text;
+				Links^[TargetLink]^.Filename := TxtFileName.Text;
+				Links^[TargetLink]^.Path := TxtPath.Text;
+				Links^[TargetLink]^.Parameters := TxtParams.Text;
+				Links^[TargetLink]^.PauseOnExit := ChkPauseOnExit.Checked;
+				Links^[TargetLink]^.ImageFile := ImgIcon.ImageFile;
 				
-				DeskLinkSave;
-				DeskDrawDesktop(false);
+				LinkSave;
+				DrawDesktop(false);
 				FreeMem(BackgroundP, BackgroundSize);
 				exit;
 			end
 			else
 			begin
-				MsgBox('Invalid program',
-					'The ''Program'' field cannot be empty.',
-					MsgError);
+				MsgBox(MSG_INVALID_PROGRAM_TITLE, MSG_PROGRAM_MISSING, MsgInfo);
 			end;
 		end;
 
@@ -944,10 +959,7 @@ begin
 					MouseShow;
 				end
 				else
-					MsgBox('Invalid icon file',
-						'The selected file is not a valid icon file.' + NewLine +
-						'Please select a .BIN file from the ICONS directory.',
-						MsgError);
+					MsgBox(MSG_INVALID_ICON_TITLE, MSG_INVALID_ICON, MsgError);
 			end;
 		end;
 
@@ -992,7 +1004,7 @@ begin
 	MouseShow;
 end;
 
-procedure DeskRun(TargetLink: TLink);
+procedure RunProg(TargetLink: TLink);
 const
 	RunFile = 'CONFIG\RUN.BIN';
 var
@@ -1010,20 +1022,14 @@ begin
 	{If still not found, don't run it}
 	if not FileExists(TargetLink.Filename) then
 	begin
-		MsgBox('File not found',
-			'The program/file you are trying to open was not found:' + NewLine +
-			TargetLink.Filename,
-			MsgError);
+		MsgBox(MSG_FILE_NOT_FOUND_TITLE, MSG_PROGRAM_NOT_FOUND + TargetLink.Filename, MsgError);
 		exit;
 	end;
 
 	FSplit(TargetLink.Filename, FPath, FName, FExt);
 	if (FExt <> '.EXE') and (FExt <> '.COM') and (FExt <> '.BAT') then
 	begin
-		MsgBox('Invalid file type',
-			'The file you are trying to run is not a program.' + NewLine +
-			'Only .EXE, .COM and .BAT files can be executed.',
-			MsgError);
+		MsgBox(MSG_NOT_A_PROGRAM_TITLE, MSG_NOT_A_PROGRAM, MsgError);
 		exit;
 	end;
 
@@ -1034,9 +1040,8 @@ begin
 		ComSpec := GetEnv('COMSPEC');
 		if Length(ComSpec) = 0 then
 		begin
-			MsgBox('COMSPEC not set',
-				'The COMSPEC environment variable is not set.' + NewLine +
-				'This is required to run batch files.',
+			MsgBox(MSG_COMSPEC_TITLE,
+				MSG_COMSPEC,
 				MsgError);
 			exit;
 		end;
@@ -1053,10 +1058,7 @@ begin
 	if IOResult <> 0 then
 	begin
 		Close(F);
-		MsgBox('Writing '+ RunFile + ' failed',
-			'Could not write to data file, can''t continue.' + NewLine +
-			'Please check that the CONFIG directory exists and is writable.',
-			MsgError);
+		MsgBox(MSG_SAVE_ERROR_TITLE, MSG_SAVE_ERROR + RunFile, MsgError);
 		exit;
 	end;
 
@@ -1076,11 +1078,11 @@ var
 	TempLink: TLink;
 begin
 	BtnAddLink.Init(3, 2, SizeDefault, SizeDefault, 'A' + Hotkey + 'dd...');
-	BtnRunCmd.Init(102, 2, SizeDefault, SizeDefault, Hotkey + 'Run...');
+	BtnRun.Init(102, 2, SizeDefault, SizeDefault, Hotkey + 'Run...');
 	BtnPrevious.Init(255, 2, 42, SizeDefault, Hotkey + CharArrowLeft);
 	BtnNext.Init(343, 2, 42, SizeDefault, Hotkey + CharArrowRight);
-	BtnAboutCosta.Init(446, 2, SizeDefault, SizeDefault, Hotkey + 'About...');
-	BtnExitCosta.Init(545, 2, SizeDefault, SizeDefault, 'E' + Hotkey + 'xit');
+	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, Hotkey + 'About...');
+	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + Hotkey + 'xit');
 	BtnTab.Init(0, 0, 37, 37, '');
 	BtnTab.Transparent := true;
 	
@@ -1089,7 +1091,7 @@ begin
 	GetMem(TabBackgroundP, TabImgSize);
 
 	{Switching desktop also loads links and draws the desktop}
-	DeskSwitchDesktop(Setting.DeskID);
+	SwitchDesk(Setting.DeskID);
 	
 	repeat
 		Key := GetKey;
@@ -1099,17 +1101,17 @@ begin
 		begin
 			{The mouse was clicked. Before checking if a desktop link was clicked,
 			 check to see if any desktop links are present}
-			if DeskLinkCount <> 0 then
+			if LinkCount <> 0 then
 			begin
-				for i := DeskLinkCount downto 1 do
+				for i := LinkCount downto 1 do
 				begin
 					{Check if the mouse was within the coordinates of the link}
-					if (MouseX >= DeskLink^[i]^.Left) and (MouseX <= DeskLink^[i]^.Left + 31) then
+					if (MouseX >= Links^[i]^.Left) and (MouseX <= Links^[i]^.Left + 31) then
 					begin
-						if (MouseY >= DeskLink^[i]^.Top) and (MouseY <= DeskLink^[i]^.Top + 31) then
+						if (MouseY >= Links^[i]^.Top) and (MouseY <= Links^[i]^.Top + 31) then
 						begin
 							{If we reach this point, the link was clicked}
-							DeskLinkMenu(i);
+							LinkMenu(i);
 							break;
 						end;
 					end;
@@ -1124,53 +1126,52 @@ begin
 			TempLink.ImageFile := 'RUNPROG';
 			TempLink.Left := 304;
 			TempLink.Top := 174;
-			DeskLinkAdd(TempLink);
-			DeskLinkEdit(DeskLinkCount);
-			if Length(DeskLink^[DeskLinkCount]^.Filename) = 0 then
-				DeskLinkRemove(DeskLinkCount)
+			LinkAdd(TempLink);
+			LinkEdit(LinkCount);
+			if Length(Links^[LinkCount]^.Filename) = 0 then
+				LinkRemove(LinkCount)
 			else
-				DeskLinkMove(DeskLinkCount);
+				LinkMove(LinkCount);
 		end;
 
-		if BtnClick(BtnRunCmd) or (Key = KeyAltR) then
-			DeskRunDialog;
+		if BtnClick(BtnRun) or (Key = KeyAltR) then
+			RunDlg;
 
-		if BtnClick(BtnAboutCosta) or (Key = KeyAltA) then
+		if BtnClick(BtnAbout) or (Key = KeyAltA) then
 			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 		
 		if BtnClick(BtnPrevious) or (Key = KeyLeft) or (Key = KeyPageUp) then
-			DeskSwitchDesktop(Setting.DeskID - 1);
+			SwitchDesk(Setting.DeskID - 1);
 
 		if BtnClick(BtnNext) or (Key = KeyRight) or (Key = KeyPageDown) then
-			DeskSwitchDesktop(Setting.DeskID + 1);
+			SwitchDesk(Setting.DeskID + 1);
 
-		if Key = '1' then DeskSwitchDesktop(1);
-		if Key = '2' then DeskSwitchDesktop(2);
-		if Key = '3' then DeskSwitchDesktop(3);
-		if Key = '4' then DeskSwitchDesktop(4);
-		if Key = '5' then DeskSwitchDesktop(5);
+		if Key = '1' then SwitchDesk(1);
+		if Key = '2' then SwitchDesk(2);
+		if Key = '3' then SwitchDesk(3);
+		if Key = '4' then SwitchDesk(4);
+		if Key = '5' then SwitchDesk(5);
 
-		if BtnClick(BtnExitCosta) or (Key = KeyAltX) or (Key = KeyAltF4) then
+		if BtnClick(BtnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
 		begin
 			if not Setting.ConfExit then
-				breaK;
+				break;
 
-			if MsgBox('Exit ' + appName, 'This will exit Costa and return you to the DOS'
-					+ NewLine + 'prompt. Are you sure?', MsgQuest) then
+			if MsgBox(MSG_EXIT + ' ' + appName, MSG_EXIT_PROMPT, MsgQuest) then
 					break;
 		end;
 
 		if (Key = KeyTab) then
-			DeskLinkTab(Next);
+			LinkTab(Next);
 		
 		if (Key = KeyShiftTab) then
-			DeskLinkTab(Previous);
+			LinkTab(Previous);
 				
 		if (Key = KeyEnter) and (KeySelection <> 0) then
 		begin
 			SelectedLink := KeySelection;
-			DeskLinkTab(None);
-			DeskLinkMenu(SelectedLink);
+			LinkTab(None);
+			LinkMenu(SelectedLink);
 		end;
 	
 	until False;
