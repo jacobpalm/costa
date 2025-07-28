@@ -4,9 +4,10 @@ By Jacob Palm
 Changelog
 ------------------------------------------------------------------------------
 
-Costa 2.0 is a major release of Costa. All of Costa has been translated or
-rewritten from the BASIC programming language to the Pascal language,
-resulting in significantly smaller and faster programs. The support for
+Costa 2.0 is a major release of Costa. All of Costa has been translated from
+the BASIC programming language to the Pascal language, and large parts of the
+UI code has been rewritten to use features that weren't available in BASIC.
+The result is significantly smaller and faster programs. The support for
 object-oriented programming in Pascal also makes coding apps using the Costa
 UI library a lot easier, and the code easier to read and maintain.
  -New feature 1

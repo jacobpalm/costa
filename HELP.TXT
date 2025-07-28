@@ -3,7 +3,6 @@ By Jacob Palm
 
 User's guide and reference
 ------------------------------------------------------------------------------
-
 1.0 Before you start
  1.1 What is Costa?
  1.2 System requirements
@@ -11,24 +10,23 @@ User's guide and reference
  2.1 Starting Costa
  2.2 Exiting Costa
  2.3 Managing desktop icons
- 2.4 Running DOS commands
+ 2.4 Running programs without an icon
  2.5 Using without a mouse
 3.0 Customizing Costa
- 3.1 Profiles
+ 3.1 Desktops
  3.2 Launching the Configuration program
  3.3 The theme selector
- 3.4 File associations
- 3.5 Other settings
+ 3.4 Settings
 
 Before you start
 ------------------------------------------------------------------------------
-1.1 - What is Costa?
+1.1 What is Costa?
 
- Costa is a shell with a graphical user interface, which replaces the
- DOS-prompt with a mouse operated environment consisting of windows, buttons,
+ Costa is a shell with a graphical user interface, which replaces the DOS
+ prompt with a mouse operated environment consisting of windows, buttons,
  textboxes and such. The low system requirements make Costa very useful for
- for older machines, which are also the machines that typically run the
- MS-DOS operating system.
+ older machines, which are also the machines that typically run the MS-DOS
+ operating system.
 
  When using Costa, you can use icons to launch programs instead of long and
  difficult commands. Launching a program is just a mouse click away, and 
@@ -37,19 +35,19 @@ Before you start
  means better consistency between programs and an easier learning curve for
  users.
 
- Costa is developed by Jacob Palm. More info can be found at Costas website:
- https://costa.jacobpalm.dk
+ Costa is developed by Jacob Palm. More info can be found at Costa's 
+ website: https://costa.jacobpalm.dk
 
-1.2 - System requirements
+1.2 System requirements
 
  Unlike most of the modern interfaces, Costa doesn't require much to run.
  Costa is designed for MS-DOS, but tested with PC-DOS, DR-DOS, FreeDOS,
- Novell DR Multiuser DOS and DOSBox as well. In theory it should run on any
+ Novell DR Multiuser DOS and DOSBox as well. In theory, it should run on any
  IBM compatible system with:
 
  - An 8088 or better CPU (386 or better recommended).
  - EGA or VGA graphics supporting 640x350 pixels at 16 colors (most newer EGA
-   or any VGA compatible card should do).
+   card, or any VGA compatible card, should do).
  - A recommended minimum of 200 KB available memory while running Costa. When
    running external programs or games, Costa will use about 8 KB RAM.
  - MS-DOS 4.0 or newer, or a compatible operating system.
@@ -62,19 +60,19 @@ Before you start
 
 Using Costa
 ------------------------------------------------------------------------------
-2.1 - Starting Costa
+2.1 Starting Costa
  
  Starting Costa is very simple - simply run COSTA.EXE. This will bring you to
  Costa's desktop. Individual accessories can be run directly from DOS, but
  the desktop must be started by running COSTA.EXE.
 
-2.2 - Exiting Costa
+2.2 Exiting Costa
 
  To exit Costa, close any program you have running to return to the desktop.
  Once you see the desktop, simply click the "Exit" button and then confirm
  that you want to exit.
 
-2.3 - Managing desktop icons
+2.3 Managing desktop icons
  
  To open a desktop icon using the mouse, simply click it. You can also use
  the TAB key on your keyboard to cycle through the icons from left to right,
@@ -85,40 +83,41 @@ Using Costa
  information about the icon, as well as a few options.
 
   -Open
-   Run the program or open the target file specified for this desktop ico.n
+   Runs the program specified for this icon.
 
-  -Customize
-   Opens a dialog where you can change the target filename, path, icon and
-   more. If the "Pause after execution" checkbox is selected, Costa will wait 
-   for a key press before returning to the desktop once the program ends.
-   This is useful if you need to see the output of a program before returning 
-   to the desktop.
+  -Edit...
+   Opens a dialog where you can change the target program, path, icon and
+   more. If the "Pause after exit" checkbox is selected, Costa will wait for 
+   a key press before returning to the desktop once the program ends. This is
+   useful if you need to see the output of a program before returning to the
+   desktop.
 
   -Move
    Allows you to move the icon freely around the screen. Once the icon is
-   where you want it to be, click any mouse button. If you don't have a 
+   where you want it to be, click any mouse button. If you don't have a
    mouse, use the arrow keys to move the icon and press Enter when done. You 
    can also move icons to other desktops using the buttons in the top menu,
-   or by switching to another desktop using the 1-5 keys on your keyboard.
+   or by switching to another desktop using the number 1-5 keys or Page Up
+   or Page Down keys on your keyboard.
 
   -Remove
-   Removes the desktop icon permanently. Costa will ask you to confirm this
-   action, by default.
+   Removes the desktop icon. By default, Costa will ask you to confirm this
+   action as it cannot be undone.
 
- To close the menu without choosing any options, click Cancel or press the
+ To close the menu without choosing any options, click "Cancel" or press the
  Escape key.
 
  To add a new desktop icon, click the "Add icon" button in the top right
  corner of the desktop. A dialog will appear, allowing you to define the
- properties of your new icon If you click "Cancel" in this dialog, no new
+ properties of your new icon. If you click "Cancel" in this dialog, no new
  icon will be added.
 
-2.4 Running DOS program
+2.4 Running DOS programs without an icon
 
- You can execute a DOS program directly from the desktop, without having to
- open a DOS prompt first or adding an icon. To do so, click the "Execute"
- button on the desktop. This will show a dialog where you can select a
- program or a file associated with a program.
+ You can run a DOS program directly from the desktop, without having to open
+ a DOS prompt first or adding an icon. To do so, click the "Run..." button
+ on the desktop. This will show a dialog where you can select a program, and
+ specify any parameters you want to pass to it.
 
 2.5 Using without a mouse
 
@@ -129,16 +128,15 @@ Using Costa
  All around in Costa, you will see underlined letters. For instance, all
  buttons have an underlined letter. Labels above input fields also have an
  underlined letter. To use a button, or to activate an input field, simply
- press the underlined letter on the keyboard (unlike some other GUIs, you
- don't need to hold down the ALT key at the same time).
+ hold the ALT key on your keyboard, and press the underlined letter.
 
  In some places, you will see buttons with an arrow on them. To use these
  buttons, simply press the corresponding arrow key on the keyboard.
 
  While you are using an input field, all pressed keys will be entered into
  the field. To finish editing, press the Enter key to save your input, or
- press the ESC key to revert the input field to the previous value and finish
- editing.
+ press the Escape key to revert the input field to the previous value and
+ finish editing.
 
  The open file in textviewer can be scrolled up and down using the arrow up
  and arrow down keys - you can also use the Page Up and Page Down keys to
@@ -152,7 +150,7 @@ Using Costa
  In Tic Tac Toe, you can use the numeric keypad to place an X or O on the
  game board.
 
- In Minesweeper, use the arrow keys to navigate the mine field. Then, use the
+ In Minesweeper, use the arrow keys to navigate the minefield. Then, use the
  Space key to flag or unflag a cell, and the Enter key to clear a cell.
 
  Lastly, the "Select object" dialog in the theme editor can be navigated
@@ -190,51 +188,24 @@ Customizing Costa
  immediately.
  
  If none of the default themes suit your taste, use the included theme editor
- to make your own. User submitted teams are always welcome!
+ to make your own. User submitted themes are always welcome!
 
-3.4 File associations
+3.4 Settings
 
- When enabled, file associations allow you to open files in the right program
- automatically. For instance, if .TXT files are associated with EDIT.COM and
- you try to open README.TXT, Costa will launch EDIT.COM and tell it to open
- README.TXT for you. This way, instead of running:
-
-  C:\DOS\EDIT.COM C:\EXAMPLE\README.TXT
-
- you can just run:
-
-  C:\EXAMPLE\README.TXT
-
- with the exact same result.
-
- To edit file associations, use the bottom-left panel of the Configuration
- program. Here, you can enter a file type, after which Costa will show you
- the currently associated command in the "Open with" text box. If the "Open
- with" text box remains empty, no command is associated with the file type.
-
- To then assign a command, simply enter it in the "Open with" text box. To
- clear an associated command, remove the contents of the "Open with" textbox.
- It is not neccessary to save your changes, they take effect right away.
-
- Hint: Press the "..." button, or press the "." key on your keyboard, to
- browse your computer for the program you want to associate a file type with.
- 
-3.5 Other settings
-
- The top-left panel in the Configuration program, allows you to tweak various
+ The left panel in the Configuration program allows you to tweak various
  aspects of Costa to your liking.
  
  To toggle a feature on or off, click the checkbox in front of it. An X in a
  checkbox indicates an enabled feature, an empty checkbox indicates a
- disabled feature. Saving is not neccesary, changes take effect right away.
+ disabled feature. Saving is not necessary, changes take effect right away.
 
- - Show icon descriptions
-   Toggles whether or not the title of a lin icon should be displayed on the
-   desktop.
+ - Show icon captions
+   Toggles whether or not the caption (title) of an icon should be displayed
+   next to it on the desktop.
 
- - Show icon targets
-   If "Show icon descriptions" is enabled, you can choose to have the
-   filename the icon points to shown underneath the description.
+ - Show icon program names
+   If "Show icon captions" is enabled, you can choose to have the filename
+   which the icon points to shown underneath the caption.
 
  - Confirm icon removal
    When enabled, Costa will prompt for confirmation before removing any icon
@@ -243,8 +214,3 @@ Customizing Costa
  - Confirm before exiting Costa
    If enabled you will be asked if you really want to exit Costa when you
    click the "Exit" button on the desktop.
-
- - Use file type associations
-   Toggles wether or not file type associations are used. If not checked,
-   Costa will only be able to open executable programs, not documents and
-   other file types directly in their associated programs.
