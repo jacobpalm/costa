@@ -26,10 +26,11 @@ caching software (SmartDrive or similar) when running on older machines -
 especially if running Costa from a floppy drive.
 
 ## Licensing
-Costa if open source, and released under the MIT License. See the
+Costa is open source, and released under the MIT License. See the
 [*LICENSE* file](https://github.com/jacobpalm/costa/blob/master/LICENSE)
 for more information on how you may use the code, and what credits
-should be given if you do.
+should be given if you do, as well as the terms for distributing the
+releases I make.
 
 ## Further information
 See the included documentation for more information, or visit the homepage
