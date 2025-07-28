@@ -33,8 +33,7 @@ should be given if you do.
 
 ## Further information
 See the included documentation for more information, or visit the homepage
-of Costa at
-  (http://costa.jacobpalm.dk)
+of Costa at http://costa.jacobpalm.dk
   
 ## Icons and themes always welcome!
 If you have made any icons you would like to see included with Costa, or
