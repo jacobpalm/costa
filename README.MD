@@ -71,6 +71,6 @@ To build Costa, run the build script from the command line:
 _BUILD.BAT
 ```
 
-This will automatically build all .PAS files in the SOURCE directory, using
+This will automatically build all *.PAS* files in the *SOURCE* directory, using
 predefined switches which are documented in comments in the build script
 itself.
