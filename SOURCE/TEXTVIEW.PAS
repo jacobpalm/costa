@@ -10,7 +10,7 @@ const
 	AppIcon       = 'DOCUMENT';
 
 	InitialCap    = 100; {Initial capacity for the line array}
-	MaxLinesShown = 22;
+	MaxLinesShown = 27;
 	MaxLineLength = 78;
 
 	CAP_OPEN      = #127 + 'Open...';
@@ -240,12 +240,11 @@ begin
 		Inc(DrawnLines);
 		
 		{Clear line}
-		Bar(7, (15 * (i - StartLine + 1)) + 22, 633, 15 * (i - StartLine + 1) + 36);
+		Bar(7, (PrintLineH * (i - StartLine + 1)) + 22, 633, PrintLineH * (i - StartLine + 1) + 36);
 
-		{No text to display, skip}
 		if (DrawnLines < MaxLinesShown) and (i <= LineCount) then
 			{Dereference the line pointer and print the text}
-			Print(Lines^[i]^, 9, (15 * (i - StartLine + 1)) + 24, Thm.TxtText);
+			Print(Lines^[i]^, 9, (PrintLineH * (i - StartLine + 1)) + 24, Thm.TxtText);
 
 	end;
 	MouseShow;
