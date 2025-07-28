@@ -484,8 +484,8 @@ begin
 	BtnSaveAs.Init(299, 2, SizeDefault, SizeDefault, CAP_SAVE_AS);
 	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
 	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
-	TxtAuthor.Init(434, TxtName.Top + 48, 194, SizeDefault);
 	TxtName.Init(434, 59, 194, SizeDefault);
+	TxtAuthor.Init(434, TxtName.Top + 48, 194, SizeDefault);
 	BtnObject.Init(434, TxtAuthor.Top + 48, 194, SizeDefault, CAP_OBJECT[0]);
 
 	TxtName.MaxLen := 20;

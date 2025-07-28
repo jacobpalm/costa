@@ -25,8 +25,8 @@ const
 	CAP_CAPTION       = 'C' + #127 + 'aption:';
 	CAP_PATH          = 'Pa' + #127 + 'th:';
 	CAP_ADD           = 'A' + #127 + 'dd...';
-	CAP_RUN           = #127 + 'Run';
-	CAP_ABOUT         = #127 + 'About';
+	CAP_RUN           = #127 + 'Run...';
+	CAP_ABOUT         = #127 + 'About...';
 	CAP_EXIT          = 'E' + #127 + 'xit';
 
 	

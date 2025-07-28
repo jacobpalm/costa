@@ -4,20 +4,21 @@ uses
 	CostaLib, FileDlg, InputDlg, Strings, DOS, Graph;
 
 const
-	AppName    = 'Icon Editor';
-	AppVersion = '2.0';
-	AppAuthor  = 'Jacob Palm';
-	AppIcon    = 'PAINT';
+	AppName     = 'Icon Editor';
+	AppVersion  = '2.0';
+	AppAuthor   = 'Jacob Palm';
+	AppIcon     = 'PAINT';
 
-	PixelSize  = 9; {Size of each field in the drawing area}
+	PixelSize   = 9; {Size of each field in the drawing area}
 
-	CAP_EXIT   = 'E' + #127 + 'xit';
-	CAP_ABOUT  = #127 + 'About...';
-	CAP_NEW    = #127 + 'New';
-	CAP_OPEN   = #127 + 'Open...';
-	CAP_SAVE   = #127 + 'Save';
-	CAP_PENCIL = 'P' + #127 + 'encil';
-	CAP_FILL   = #127 + 'Fill';
+	CAP_EXIT    = 'E' + #127 + 'xit';
+	CAP_ABOUT   = #127 + 'About...';
+	CAP_NEW     = #127 + 'New';
+	CAP_OPEN    = #127 + 'Open...';
+	CAP_SAVE    = #127 + 'Save';
+	CAP_SAVE_AS = 'Sa' + #127 + 've as...';
+	CAP_PENCIL  = 'P' + #127 + 'encil';
+	CAP_FILL    = #127 + 'Fill';
 
 	MSG_UNSAVED_TITLE      = 'Icon has been modified';
 	MSG_UNSAVED_TEXT       = 'This icon contains unsaved changes. Do you' + #13 +
@@ -75,7 +76,7 @@ var
 	ImgPreview: TIcon;
 
 {Forward declarations}
-procedure SaveIcon; forward;
+procedure SaveIcon(SaveAs: boolean); forward;
 
 
 procedure SetPixel(X, Y, Col: Integer);
@@ -304,7 +305,7 @@ begin
 		mbResult := MsgBox(MSG_UNSAVED_TITLE, MSG_UNSAVED_TEXT, MsgQuest);
 		if mbResult = true then
 		begin
-			SaveIcon;
+			SaveIcon(false);
 			{If icon is still changed it wasn't saved, so exit}
 			if IconChanged = true then
 				exit;
@@ -325,7 +326,7 @@ begin
 	IconChanged := false;
 end;
 
-procedure SaveIcon;
+procedure SaveIcon(SaveAs: boolean);
 var
 	Filename: String;
 	F: file;
@@ -334,8 +335,8 @@ var
 	X1, Y1, X2, Y2: Integer;
 	mbResult: Boolean;
 begin
-	{If icon hasn't already been saved, prompt for a filename}
-	if Length(IconFileName) = 0 then
+	{If icon hasn't already been saved, or SaveAs specified, prompt for a filename}
+	if (Length(IconFileName) = 0) or SaveAs then
 	begin
 		Filename := UpperCase(InputBox(MSG_SAVE_TITLE, MSG_SAVE_TEXT, AppIcon, ''));
 
@@ -402,7 +403,7 @@ begin
 		mbResult := MsgBox(MSG_UNSAVED_TITLE, MSG_UNSAVED_TEXT, MsgQuest);
 		if mbResult = true then
 		begin
-			SaveIcon;
+			SaveIcon(false);
 			{If icon is still changed it wasn't saved, so exit}
 			if IconChanged = true then
 				exit;
@@ -463,7 +464,7 @@ begin
 		mbResult := MsgBox(MSG_UNSAVED_TITLE, MSG_UNSAVED_TEXT, MsgQuest);
 		if mbResult = true then
 		begin
-			SaveIcon;
+			SaveIcon(false);
 			{If icon is still changed it wasn't saved, so exit}
 			if IconChanged = true then
 				exit;
@@ -477,7 +478,7 @@ end;
 {Main program start}
 var
 	BtnPreview: TButton;
-	BtnNew, BtnOpen, BtnSave: TButton;
+	BtnNew, BtnOpen, BtnSave, BtnSaveAs: TButton;
 	BtnExit, BtnAbout: TButton;
 	Key: string;
 	YPos, XPos, CursorX, CursorY, i: Integer;
@@ -487,6 +488,7 @@ begin
 	BtnNew.Init(2, 2, SizeDefault, SizeDefault, CAP_NEW);
 	BtnOpen.Init(101, 2, SizeDefault, SizeDefault, CAP_OPEN);
 	BtnSave.Init(200, 2, SizeDefault, SizeDefault, CAP_SAVE);
+	BtnSaveAs.Init(299, 2, SizeDefault, SizeDefault, CAP_SAVE_AS);
 	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
 	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
 
@@ -519,6 +521,8 @@ begin
 	BtnNew.Draw;
 	BtnOpen.Draw;
 	BtnSave.Draw;
+	
+	BtnSaveAs.Draw;
 	BtnAbout.Draw;
 	BtnExit.Draw;
 
@@ -591,7 +595,10 @@ begin
 			NewIcon;
 
 		if BtnClick(BtnSave) or (Key = KeyAltS) then
-			SaveIcon;
+			SaveIcon(false);
+		
+		if BtnClick(BtnSaveAs) or (Key = KeyAltV) then
+			SaveIcon(true);
 
 		if BtnClick(BtnOpen) or (Key = KeyAltO) then
 			LoadIcon;

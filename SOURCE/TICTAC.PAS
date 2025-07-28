@@ -15,6 +15,48 @@ const
 	CAP_ABOUT = #127 + 'About...';
 	CAP_EXIT = 'E' + #127 + 'xit';
 
+	MSG_GAMEMODE_PC = 'Playing against computer';
+	MSG_GAMEMODE_PLAYER = 'Playing two players';
+	MSG_SOUND_ON = 'Sound: On';
+	MSG_SOUND_OFF = 'Sound: Off';
+
+	MSG_WIN_TEXT: array[0..5] of string = (
+		'%s has brought honor to the family!',
+		'%s has emerged victoriously from the battle!',
+		'Nothing could stop %s from achieving victory!',
+		'The crowd is gasping, amazed at the incredible play by %s!',
+		'%s has brought down utter destruction on the opponent!',
+		'%s is unbeatable on the playing field!'	);
+	MSG_DRAW_TEXT: array[0..5] of string = (
+		'It was a real nail-biter, but neither player could best the other.',
+		'No winners means no losers, I guess.',
+		'A high-stakes game that could have gone both ways.',
+		'As eager as both players were, neither of them could achieve victory.',
+		'No bragging rights for either player - try again!',
+		'An otherwise intense game, which ended with disappointment for both sides.');
+	MSG_PC_TURN_TEXT: array[0..5] of string = (
+		'%s is contemplating the next move...',
+		'%s is calculating all possible outcomes...',
+		'The stakes are too high for %s not to think this through...',
+		'%s is struggling to find enough CPU power to beat the opponent...',
+		'%s is becoming sentient in the quest to beat the humans...',
+		'%s is working hard to not loose to a feeble human...');
+	MSG_PLAYER_TURN_TEXT: array[0..5] of string = (
+		'Make your move, %s!',
+		'How are you going to beat your opponent, %s?',
+		'Uh oh, what a powerfull move! What will %s do now?',
+		'Take your time %s - the stakes are too high to slip up now!',
+		'How will you eliminate your opponent, %s?',
+		'Now is the time to prove yourself, %s!');
+	MSG_NEW_GAME_TEXT: array[0..5] of string = (
+		'%s gets to make the first move!',
+		'Looks like %s will be the one to strike first!',
+		'How will %s begin the battle?',
+		'%s is preparing the surprise attack carefully...',
+		'%s is thinking about the optimal way to start the game...',
+		'First move is yours %s, use it wisely!'
+	);
+
 type
 	TPlayer  = (PlayerNone, PlayerX, PlayerO);
 	TSound   = (SndX, SndO, SndIllegal, SndWin, SndLoose, SndDraw, SndNew);
@@ -371,6 +413,7 @@ begin
 		SndX:       SoundNote(400, 70);
 		SndO:       SoundNote(800, 70);
 		SndIllegal: SoundNote(100, 70);
+		{DEBUG}
 		{SndWin:     PLAY 'O2 T100 C D T200 G T400 E'
 		SndLoose:   PLAY 'O1 T400 E3 G3 D6 T100 C9 C9'
 		SndDraw:    PLAY 'O1 T400 C9 T100 E9 G9 D C9'
@@ -385,72 +428,22 @@ var
 	Randomizer: integer;
 begin
 	Randomize;
-	Randomizer := Random(6) + 1;
+	Randomizer := Random(6);
 
 	if PlayerTurn = PlayerX then
 		CurrentTurn := 'X'
 	else
 		CurrentTurn := 'O';
 
-	if MessageType = MsgWin then
-	begin
-		case Randomizer of
-			1: Message := CurrentTurn + ' has brought honor to the family!';
-			2: Message := CurrentTurn + ' has emerged victoriously from the battle!';
-			3: Message := 'Nothing could stop ' + CurrentTurn + ' from achieving victory!';
-			4: Message := 'The crowd is gasping, amazed at the incredible play by ' + CurrentTurn + '!';
-			5: Message := CurrentTurn + ' has brought down utter destruction on the opponent!';
-			6: Message := CurrentTurn + ' is unbeatable on the playing field!';
-		end;
+	case MessageType of
+		MsgWin:        Message := MSG_WIN_TEXT[Randomizer];
+		MsgDraw:       Message := MSG_DRAW_TEXT[Randomizer];
+		MsgPcTurn:     Message := MSG_PC_TURN_TEXT[Randomizer];
+		MsgPlayerTurn: Message := MSG_PLAYER_TURN_TEXT[Randomizer];
+		MsgNewGame:    Message := MSG_NEW_GAME_TEXT[Randomizer];
 	end;
-
-	if MessageType = MsgDraw then
-	begin
-		case Randomizer of
-			1: Message := 'It was a real nail-biter, but neither player could best the other.';
-			2: Message := 'No winners means no losers, I guess.';
-			3: Message := 'A high-stakes game that could have gone both ways.';
-			4: Message := 'As eager as both players were, neither of them could achieve victory.';
-			5: Message := 'No bragging rights for either player - try again!';
-			6: Message := 'An otherwise intense game, which ended with disappointment for both sides.';
-		end;
-	end;
-
-	if MessageType = MsgPcTurn then
-	begin
-		case Randomizer of
-			1: Message := CurrentTurn + ' is contemplating the next move...';
-			2: Message := CurrentTurn + ' is calculating all possible outcomes...';
-			3: Message := 'The stakes are too high for ' + CurrentTurn + ' not to think this through...';
-			4: Message := CurrentTurn + ' is struggling to find enough CPU power to beat the opponent...';
-			5: Message := CurrentTurn + ' is becoming sentient in the quest to beat the humans...';
-			6: Message := CurrentTurn + ' is working hard to not loose to a feeble human...';
-		end;
-	end;
-
-	if MessageType = MsgPlayerTurn then
-	begin
-		case Randomizer of
-			1: Message := 'Make your move, ' + CurrentTurn + '!';
-			2: Message := 'How are you going to beat your opponent, ' + CurrentTurn + '?';
-			3: Message := 'Uh oh, what a powerfull move! What will ' + CurrentTurn + ' do now?';
-			4: Message := 'Take your time ' + CurrentTurn + ' - the stakes are too high to slip up now!';
-			5: Message := 'How will you eliminate your opponent, ' + CurrentTurn + '?';
-			6: Message := 'Now is the time to prove yourself, ' + CurrentTurn + '!';
-		end;
-	end;
-
-	if MessageType = MsgNewGame then
-	begin
-		case Randomizer of
-			1: Message := CurrentTurn + ' gets to make the first move!';
-			2: Message := 'Looks like ' + CurrentTurn + ' will be the one to strike first!';
-			3: Message := 'How will ' + CurrentTurn + ' begin the battle?';
-			4: Message := CurrentTurn + ' is preparing the surprise attack carefully...';
-			5: Message := CurrentTurn + ' is thinking about the optimal way to start the game...';
-			6: Message := 'First move is yours ' + CurrentTurn + ', use it wisely!';
-		end;
-	end;
+	
+	Message := ReplaceMsg(Message, CurrentTurn);
 
 	MouseHide;
 	SetFillStyle(SolidFill, Green);
@@ -461,25 +454,23 @@ end;
 
 procedure PrintStatus;
 var
-	Message: string;
+	ModeMsg, SoundMsg: string;
 begin	
-	Message := 'Playing ';
 	if VersusPC then
-		Message := Message + 'against computer'
+		ModeMsg := MSG_GAMEMODE_PC
 	else
-		Message := Message + 'two players     ';
-
-	Message := Message + '     Sound: ';
+		ModeMsg := MSG_GAMEMODE_PLAYER;
 
 	if SoundOn then
-		Message := Message + 'On '
+		SoundMsg := MSG_SOUND_ON
 	else
-		Message := Message + 'Off';
+		SoundMsg := MSG_SOUND_OFF;
 
 	MouseHide;
 	SetFillStyle(SolidFill, Green);
 	Bar(162, 316, 477, 332);
-	Print(Message, (640 - PrintW(Message)) div 2, 320, Black);
+	Print(ModeMsg, 166, 320, Black);
+	Print(SoundMsg, 476 - PrintW(SoundMsg), 320, Black);
 	MouseShow;
 end;
 
@@ -487,7 +478,7 @@ end;
 var
 	FieldClicked: boolean;
 	FrmTic: TFrame;
-	BtnNew, BtnGameMode, BtnAudio, BtnAbout, BtnExit: TButton;
+	BtnNew, BtnGameMode, BtnSound, BtnAbout, BtnExit: TButton;
 	Row, Col: integer;
 	Key: string;
 begin
@@ -514,8 +505,8 @@ begin
 	
 	BtnNew.Init(3, 2, SizeDefault, SizeDefault, CAP_NEW_GAME);
 	BtnGameMode.Init(102, 2, SizeDefault, SizeDefault, CAP_GAME_MODE);
-	BtnAudio.Init(201, 2, SizeDefault, SizeDefault, CAP_SOUND);
-	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_AUDIO);
+	BtnSound.Init(201, 2, SizeDefault, SizeDefault, CAP_SOUND);
+	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
 	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
 	
 	MouseHide;
@@ -528,7 +519,7 @@ begin
 	FrmTic.Draw;
 	BtnNew.Draw;
 	BtnGameMode.Draw;
-	BtnAudio.Draw;
+	BtnSound.Draw;
 	BtnAbout.Draw;
 	BtnExit.Draw;
 	MouseShow;
@@ -564,7 +555,7 @@ begin
 				PcMove;
 		end;
 
-		if BtnClick(BtnAudio) or (Key = KeyAltS) then
+		if BtnClick(BtnSound) or (Key = KeyAltS) then
 		begin
 			SoundOn := not SoundOn;
 			PrintStatus;

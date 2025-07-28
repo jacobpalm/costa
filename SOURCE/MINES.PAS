@@ -21,7 +21,7 @@ const
 
 	CAP_NEW_GAME      = #127 + 'New game';
 	CAP_PAUSE         = #127 + 'Pause';
-	CAP_SIZE          = 'Si' + #127 + 'ze';
+	CAP_SIZE          = 'Si' + #127 + 'ze...';
 	CAP_SOUND         = #127 + 'Sound';
 	CAP_ABOUT         = #127 + 'About...';
 	CAP_EXIT          = 'E' + #127 + 'xit';
