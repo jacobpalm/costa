@@ -14,13 +14,15 @@ const
 	sizeCenter       = -2;
 
 	DoubleClickDelay = 0.5;
+	PrintLineH       = 12; {Height of a single line in pixels}
+	PrintCharW       = 8;
 
 	CharArrowUp:    Char = #24; {Arrows symbols for fonts}
 	CharArrowDown:  Char = #25;
 	CharArrowRight: Char = #26;
 	CharArrowLeft:  Char = #27;
 	NewLine:        Char = #13;  {Wrap lines in Print, MsgBox, InputBox etc.}
-	Hotkey:   Char = #127; {Marks hotkeys in object captions}
+	Hotkey:         Char = #127; {Marks hotkeys in object captions}
 
 	{$I KEYCODES.INC}
 
@@ -51,8 +53,9 @@ type
 	end;
 
 	TCheckbox = object(TUIObject)
+		Caption: string;
 		Checked: Boolean;
-		constructor Init(X, Y, W, H: Integer);
+		constructor Init(X, Y: Integer; CaptionS: String);
 		procedure Draw;
 	end;
 
@@ -141,14 +144,16 @@ procedure MouseMove(X, Y: Integer);
 procedure MousePoll;
 procedure MouseShow;
 
-function  UpperCase(s: string): string;
-function  Replace(Input, OldSubStr, NewSubStr: String): String;
-
 Function  ProgramPath: DirStr;
 function  Timer: Real;
 
 procedure Print(Text: string; X, Y, Color: Integer);
-function  PrintW(TargetText: String): Integer;
+function  PrintW(Text: String): Integer;
+function  PrintH(Text: string): Integer;
+
+function  UpperCase(s: string): string;
+function  Replace(Input, OldSubStr, NewSubStr: String): String;
+function  ReplaceMsg(const Msg, Value: String): String;
 
 procedure SoundNote(Frequency, Duration: Integer);
 
@@ -160,6 +165,27 @@ implementation
 
 const
 	GlobalSettings = 'CONFIG\SETTINGS.BIN';
+
+	CAP_LOADING                  = 'Loading...';
+	CAP_OK                       = #127 + 'OK';
+	CAP_YES                      = #127 + 'Yes';
+	CAP_NO                       = #127 + 'No';
+	CAP_CLOSE                    = #127 + 'Close';
+	MSG_BY_TEXT                  = 'By %s';
+	MSG_ABOUT_TEXT               = 'Made with the %s version' + #13 +
+	                               '%s by Jacob Palm, 2004-%s.' + #13 +
+	                               #13 +
+	                               'May be freely distributed under the' + #13 +
+	                               'terms of the MIT License. More details' + #13 +
+	                               'can be found in the LICENSE file.' + #13 +
+	                               #13 +
+	                               'More information and news online at:' + #13 +
+	                               'https://costa.jacobpalm.dk';
+	MSG_SAVE_SETTING_ERROR_TITLE = 'Error saving settings';
+	MSG_SAVE_SETTING_ERROR_TEXT  = 'Could not write to the settings file' + #13 + 
+	                               '%s.' + #13 +
+	                               'Verify that the path exists and isn''t read-only.';
+	MSG_GRAPHICS_ERROR           = 'Graphics error:';
 
 procedure TUIObject.SetSize(X, Y, W, H, DefaultW, DefaultH: Integer);
 begin
@@ -266,13 +292,14 @@ begin
 	end;
 end;
 
-constructor TCheckbox.Init(X, Y, W, H: Integer);
+constructor TCheckbox.Init(X, Y: Integer; CaptionS: String);
 const
 	DefaultW = 15;
 	DefaultH = 15;
 begin
-	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
-	Self.Checked := False;
+	Self.SetSize(X, Y, DefaultW, DefaultH, DefaultW, DefaultH);
+	Caption := CaptionS;
+	Checked := False;
 end;
 
 procedure TCheckbox.Draw;
@@ -312,6 +339,8 @@ begin
 		Line(X1 + 5, Y1 + 10, X1 + 6, Y1 + 11);
 		Line(X1 + 8, Y1 + 11, X1 + 11, Y1 + 8);
 	end;
+	if Length(Caption) > 0 then
+		Print (Caption, X1 + 22, Y1 + 4, Thm.WinText);
 end;
 
 constructor TFrame.Init(X, Y, W, H: Integer);
@@ -406,8 +435,7 @@ begin
 	begin
 		SetFillStyle(SolidFill, Red);
 		Bar(X, Y, X + 31, Y + 31);
-		Print('IMG', X + 5, Y + 6, White);
-		Print('ERR', X + 5, Y + 19, White);
+		Print('IMG' + #13 + 'ERR', X + 5, Y + 6, White);
 	end;
 end;
 
@@ -663,16 +691,55 @@ begin
 	Valid8dot3 := true;
 end;
 
-function PrintW(TargetText: String): Integer;
+function PrintW(Text: String): Integer;
 var
-	Width: Integer;
+	TextLine: String;
+	MaxWidth, LineWidth, NewLinePos: Integer;
 begin
-	Width := Length(TargetText) * 8; {Each character is 8 pixels wide}
+	MaxWidth := 0;
+	while length(Text) > 0 do
+	begin
+		NewLinePos := Pos(NewLine, Text);
+		if NewLinePos > 0 then
+		begin
+			{Extract the line up to newline, print it, and remove it from Text}
+			TextLine := Copy(Text, 1, NewLinePos - 1);
+			LineWidth := Length(TextLine);
+			if Pos(Hotkey, TextLine) > 0 then
+				Dec(LineWidth); {Don't count the hotkey symbol}
+			if LineWidth > MaxWidth then
+				MaxWidth := LineWidth;
+			Delete(Text, 1, NewLinePos); {Remove the processed line}
+		end
+		else
+		begin
+			{Last/only line}
+			LineWidth := Length(Text);
+			if Pos(Hotkey, Text) > 0 then
+				Dec(LineWidth); {Don't count the hotkey symbol}
+			if LineWidth > MaxWidth then
+				MaxWidth := LineWidth;
+			break;
+		end;
+	end;
+	PrintW := MaxWidth * PrintCharW; {Each character is 8 pixels wide}
+end;
 
-	if Pos(Hotkey, TargetText) > 0 then
-		Width := Width - 8; {Don't count the hotkey symbol}
+function PrintH(Text: string): Integer;
+var
+	Lines, i: Integer;
+begin
+	Lines := 0;
 
-	PrintW := Width;
+	if Text <> '' then
+		Lines := 1; {At least one line}
+
+	{Count the number of NewLines to determine additional lines}
+	for i := 1 to Length(Text) do
+		if Text[i] = NewLine then
+			Inc(Lines);
+
+	PrintH := Lines * PrintLineH;
 end;
 
 procedure Print(Text: string; X, Y, Color: Integer);
@@ -688,7 +755,7 @@ var
 		if HotkeyPos > 0 then
 		begin
 			Delete(LineStr, HotkeyPos, 1);
-			Line(X + HotkeyPos * 8 - 9, Y + 9, X + HotkeyPos * 8 - 1, Y + 9);
+			Line(X + HotkeyPos * PrintCharW - 9, Y + 9, X + HotkeyPos * PrintCharW - 1, Y + 9);
 		end;
 	end;
 begin
@@ -714,7 +781,7 @@ begin
 			OutTextXY(X, Y, Text);
 			break;
 		end;
-		Y := Y + 12; {Move down one line}
+		Y := Y + PrintLineH; {Move down one line}
 	end;
 end;
 
@@ -861,6 +928,21 @@ begin
   NoSound;
 end;
 
+function ReplaceMsg(const Msg, Value: String): String;
+var
+	Output: String;
+	PosVal: Integer;
+begin
+	Output := Msg;
+	PosVal := Pos('%s', Output); {Find the position of the %S placeholder}
+	if PosVal > 0 then
+	begin
+		Delete(Output, PosVal, 2); {Remove %S}
+		Insert(Value, Output, PosVal); {Insert value instead}
+	end;
+	ReplaceMsg := Output;
+end;
+
 function Replace(Input, OldSubStr, NewSubStr: String): String;
 var
 	PosStart: Integer;
@@ -884,18 +966,22 @@ var
 	X1, Y1, X2, Y2: Integer;
 	BackgroundSize: Word;
 	BackgroundP: Pointer;
-	Key: String;
+	Text, Key: String;
 begin
-	WinAboutBox.Init(sizeCenter, sizeCenter, 329, 216);
-	ImgLogo.Init(168, WinAboutBox.Top + 11, IconFile);
-	BtnClose.Init(274, WinAboutBox.Top + WinAboutBox.Height - 34, SizeDefault, SizeDefault, Hotkey + 'Close');
-	MouseHide;
+	Text := ReplaceMsg(MSG_ABOUT_TEXT, LibName);
+	Text := ReplaceMsg(Text, LibVersion);
+	Text := ReplaceMsg(Text, LibYear);
 
-	{Save background to restore when Window is closed}
+	WinAboutBox.Init(sizeCenter, sizeCenter, PrintW(Text) + 29, PrintH(Text) + 95);
 	X1 := WinAboutBox.Left;
 	Y1 := WinAboutBox.Top;
 	X2 := WinAboutBox.Left + WinAboutBox.Width;
 	Y2 := WinAboutBox.Top + WinAboutBox.Height;
+	ImgLogo.Init(X1 + 13, Y1 + 15, IconFile);
+	BtnClose.Init(SizeCenter, Y2 - 34, SizeDefault, SizeDefault, CAP_CLOSE);
+	MouseHide;
+
+	{Save background to restore when Window is closed}
 	BackgroundSize := ImageSize(X1, Y1, X2, Y2);
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(X1, Y1, X2, Y2, BackgroundP^);
@@ -903,15 +989,11 @@ begin
 	WinAboutBox.Draw;
 	BtnClose.Draw;
 	ImgLogo.Draw;
-	Print(ProgramName + ' ' + ProgramVersion, 212, WinAboutBox.Top + 17, Thm.WinText);
-	Print('By ' + ProgramAuthor, 212, WinAboutBox.Top + 31, Thm.WinText);
-	Print('Made with the ' + LibName + ' version', 168, WinAboutBox.Top + 53, Thm.WinText);
-	Print(LibVersion + ' by Jacob Palm, 2004-' + LibYear + '.', 168, WinAboutBox.Top + 67, Thm.WinText);
-	Print('May be freely distributed under the', 168, WinAboutBox.Top + 95, Thm.WinText);
-	Print('terms of the MIT License. More details', 168, WinAboutBox.Top + 109, Thm.WinText);
-	Print('can be found in the LICENSE file.', 168, WinAboutBox.Top + 123, Thm.WinText);
-	Print('More information and news online at:', 168, WinAboutBox.Top + 151, Thm.WinText);
-	Print('https://costa.jacobpalm.dk', 168, WinAboutBox.Top + 165, Thm.WinText);
+	Print(ProgramName + ' ' + ProgramVersion, X1 + 56, Y1 + 21, Thm.WinText);
+	Print(ReplaceMsg(MSG_BY_TEXT, ProgramAuthor), X1 + 56, Y1 + 33, Thm.WinText);
+	
+	Print(Text, X1 + 15, Y1 + 53, Thm.WinText);
+	
 	MouseShow;
 	repeat
 		Key := GetKey;
@@ -1004,52 +1086,23 @@ end;
 
 function MsgBox(const MsgTitle, MsgText: string; MsgType: TMsgBox): Boolean;
 var
-	MsgLines: array[1..16] of string;
-	MsgLinesCount, MsgTextWidth, i: Integer;
+	WinMsgBox: TWindow;
 	BtnFirst, BtnSecond: TButton;
 	ImgIcon: TIcon;
-	WinMsgBox: TWindow;
-	S, T: string;
-	Key: String;
-	P, L: Integer;
+	BoxW, BoxH: Integer;
 	X1, Y1, X2, Y2: Integer;
 	BackgroundSize: Word;
 	BackgroundP: Pointer;
+	Key: String;
 begin
-	S := MsgText;
-	if (S <> '') and (S[Length(S)] = NewLine) then
-		Delete(S, Length(S), 1);
-	MsgLinesCount := 0;
-	MsgTextWidth := 0;
-	repeat
-		P := Pos(NewLine, S);
-		if P = 0 then
-		begin
-			Inc(MsgLinesCount);
-			MsgLines[MsgLinesCount] := S;
-			if PrintW(S) > MsgTextWidth then
-				MsgTextWidth := PrintW(S);
-			Break;
-		end
-		else
-		begin
-			Inc(MsgLinesCount);
-			MsgLines[MsgLinesCount] := Copy(S, 1, P-1);
-			if PrintW(MsgLines[MsgLinesCount]) > MsgTextWidth then
-				MsgTextWidth := PrintW(MsgLines[MsgLinesCount]);
-			Delete(S, 1, P);
-		end;
-	until S = '';
-	WinMsgBox.Width := MsgTextWidth + 68;
-	if MsgType = MsgQuest then
-	begin
-		if WinMsgBox.Width < 194 then WinMsgBox.Width := 194;
-	end
-	else
-	begin
-		if WinMsgBox.Width < 102 then WinMsgBox.Width := 102;
-	end;
-	WinMsgBox.Init(sizeCenter, sizeCenter, WinMsgBox.Width, MsgLinesCount * 15 + 78);
+	BoxW := PrintW(MsgText) + 68;
+	BoxH := PrintH(MsgText) + 78;
+	if (MsgType = MsgQuest) and (BoxW < 194) then
+		BoxW := 194
+	else if BoxW < 102 then
+		BoxW := 102;
+
+	WinMsgBox.Init(sizeCenter, sizeCenter, BoxW, BoxH);
 	ImgIcon.Init(WinMsgBox.Left + 13, WinMsgBox.Top + 15, '');
 	case MsgType of
 		MsgInfo:  ImgIcon.ImageFile := 'MSGINFO';
@@ -1057,13 +1110,13 @@ begin
 		MsgQuest: ImgIcon.ImageFile := 'MSGQUEST';
 		MsgError: ImgIcon.ImageFile := 'MSGERROR';
 	end;
-	BtnFirst.Init(sizeCenter, WinMsgBox.Top + WinMsgBox.Height - 36, SizeDefault, SizeDefault, Hotkey + 'OK');
+	BtnFirst.Init(sizeCenter, WinMsgBox.Top + WinMsgBox.Height - 36, SizeDefault, SizeDefault, CAP_OK);
 	if MsgType = MsgQuest then
 	begin
-		BtnFirst.Caption := Hotkey + 'Yes';
+		BtnFirst.Caption := CAP_YES;
 		BtnFirst.Left := 224;
 	end;
-	BtnSecond.Init(324, BtnFirst.Top, SizeDefault, SizeDefault, Hotkey + 'No');
+	BtnSecond.Init(324, BtnFirst.Top, SizeDefault, SizeDefault, CAP_NO);
 
 	MouseHide;
 
@@ -1082,9 +1135,9 @@ begin
 		BtnSecond.Draw;
 	ImgIcon.Draw;
 	Print(MsgTitle, WinMsgBox.Left+56, WinMsgBox.Top+15, Thm.WinText);
-	for i := 1 to MsgLinesCount do
-		Print(MsgLines[i], WinMsgBox.Left+56, WinMsgBox.Top+17+(15*i), Thm.WinText);
+	Print(MsgText, WinMsgBox.Left+56, WinMsgBox.Top+31, Thm.WinText);
 	MouseShow;
+
 	repeat
 		Key := GetKey;
 			
@@ -1146,10 +1199,7 @@ begin
 	{$I+}
 	if IOResult <> 0 then
 	begin
-		MsgBox('Could not save settings',
-			'Could not write to the configuration file' + NewLine + 
-			GlobalSettings + '.' + NewLine +
-			'Verify that the path exists and isn''t read-only.', MsgError);
+		MsgBox(MSG_SAVE_SETTING_ERROR_TITLE, MSG_SAVE_SETTING_ERROR_TEXT, MsgError);
 		Close(F);
 		Exit;
 	end;
@@ -1208,7 +1258,7 @@ procedure ShowLoading;
 var
 	BtnLoading: TButton;
 begin
-	BtnLoading.Init(sizeCenter, sizeCenter, 110, 34, 'Loading...');
+	BtnLoading.Init(sizeCenter, sizeCenter, 110, 34, CAP_LOADING);
 	MouseHide;
 	BtnLoading.Draw;
 	MouseShow;
@@ -1228,7 +1278,7 @@ begin
 	If ErrorCode <> GrOk Then
 	Begin
 		CloseGraph;
-		Writeln('Graphics error: ', GraphErrorMsg(ErrorCode));
+		Writeln(MSG_GRAPHICS_ERROR, GraphErrorMsg(ErrorCode));
 		Halt(1);
 	End;
 

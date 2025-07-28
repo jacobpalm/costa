@@ -9,11 +9,34 @@ const
 	AppAuthor  = 'Jacob Palm';
 	AppIcon    = 'CONFIG';
 
-const
 	LinkDesc   = 0;
 	LinkTarget = 1;
 	LinkDelete = 2;
 	ConfExit   = 3;
+
+	CAP_EXIT             = 'E' + #127 + 'xit';
+	CAP_ABOUT            = #127 + 'About...';
+	CAP_PREVIOUS         = #27 + ' ' + #127 + 'Previous';
+	CAP_NEXT             = #127 + 'Next ' + #26;
+	CAP_LINKDESC         = 'Show icon ' + #127 + 'descriptions';
+	CAP_LINKTARGET       = 'Show icon ' + #127 + 'targets';
+	CAP_LINKDELETE       = 'Confirm icon ' + #127 + 'removal';
+	CAP_CONFEXIT         = 'Confirm before ' + #127 + 'exiting Costa';
+	CAP_BUTTON           = 'Button';
+	CAP_TEXTBOX          = 'Textbox';
+	CAP_PREVIEW_LINK     = 'Preview link';
+	CAP_PREVIEW_EXE      = 'preview.exe';
+	CAP_SETTINGS         = 'Settings' + #13 +
+	                       'Tweak various aspects of Costa.';
+	CAP_THEMES           = 'Theme' + #13 +
+	                       'Choose colors for the UI.';
+
+	MSG_NO_THEMES        = 'No themes found in \THEMES.';
+	MSG_LOAD_ERROR_TITLE = 'Error loading';
+	MSG_LOAD_ERROR_TEXT  = 'The theme file %s.BIN could not be loaded.' + #13 +
+	                      'Please check that the file is accessible and not corrupted.';
+	MSG_THEME_OVERFLOW   = 'Only the first %s themes in the THEME directory will be' + #13 +
+	                       'shown. Remove some themes to show all.';
 
 var
 	ThemeList:     array[1..100] of string;
@@ -44,9 +67,7 @@ begin
         if ThemeCount = High(ThemeList) then
         begin
             Str(ThemeCount, MaxThemesStr);
-            MsgBox('Too many themes',
-                'Only the first ' + MaxThemesStr + ' themes in the THEME directory' + NewLine +
-                'will be shown. Remove some themes to show all.', MsgError);
+            MsgBox(MSG_LOAD_ERROR_TITLE, ReplaceMsg(MSG_THEME_OVERFLOW, MaxThemesStr), MsgError);
             break;
         end;
 
@@ -107,9 +128,9 @@ begin
 	ImgLogo.Init(WinPreview.Left + 12, WinPreview.Top + 12, 'LOGO');
 	ImgDeskLink.Init(WinPreview.Left, FrmThemePreview.Top + FrmThemePreview.Height - 42, 'PAINT');
 	TxtPreview.Init(ImgLogo.Left, ImgLogo.Top + 45, WinPreview.Width - 23, SizeDefault);
-	TxtPreview.Text := 'Textbox';
-	BtnPreview1.Init(WinPreview.Left + 12, WinPreview.Top + WinPreview.Height - 34, 86, SizeDefault, 'Button');
-	BtnPreview2.Init(WinPreview.Left + WinPreview.Width - 12 - BtnPreview1.Width, BtnPreview1.Top, 86, SizeDefault, 'Button');
+	TxtPreview.Text := CAP_TEXTBOX;
+	BtnPreview1.Init(WinPreview.Left + 12, WinPreview.Top + WinPreview.Height - 34, 86, SizeDefault, CAP_BUTTON);
+	BtnPreview2.Init(WinPreview.Left + WinPreview.Width - 12 - BtnPreview1.Width, BtnPreview1.Top, 86, SizeDefault, CAP_BUTTON);
 
 	MouseHide;
 	SetFillStyle(SolidFill, Thm.Desk);
@@ -118,9 +139,7 @@ begin
 	
 	if LoadError then
 	begin
-		MsgBox('Theme load error',
-			'The theme file ' + ThemeList[SelectedTheme] + '.BIN could not be loaded.' + NewLine +
-			'Please check that the file is accesible and not corrupted.', MsgError);
+		MsgBox(MSG_LOAD_ERROR_TITLE, ReplaceMsg(MSG_LOAD_ERROR_TEXT, ThemeList[SelectedTheme]), MsgError);
 		Exit;
 	end;
 
@@ -131,8 +150,8 @@ begin
 	BtnPreview2.Draw;
 	TxtPreview.Draw;
 	
-	Print('Preview link', ImgDeskLink.Left + 38, ImgDeskLink.Top + 4, Thm.DeskText);
-	Print('preview.exe', ImgDeskLink.Left + 38, ImgDeskLink.Top + 18, Thm.DeskText);
+	Print(CAP_PREVIEW_LINK, ImgDeskLink.Left + 38, ImgDeskLink.Top + 4, Thm.DeskText);
+	Print(CAP_PREVIEW_EXE, ImgDeskLink.Left + 38, ImgDeskLink.Top + 18, Thm.DeskText);
 
 	Print(ThemeName, ImgLogo.Left + 42, ImgLogo.Top + 5, Thm.WinText);
 	Print(ThemeAuthor, ImgLogo.Left + 42, ImgLogo.Top + 19, Thm.WinText);
@@ -154,29 +173,26 @@ begin
 
 	LoadThemeList;
 
-	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + Hotkey + 'xit');
-	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, Hotkey + 'About...');
+	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
+	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
 	
 	FrmSettings.Init(14, 43, 310, 293);
 	FrmTheme.Init(338, 43, 288, 293);
 	ImgSetting.Init(FrmSettings.Left + 14, FrmSettings.Top + 14, 'CONFIG');
 	
-	ChkSetting[LinkDesc].Init(FrmSettings.Left + 14, FrmSettings.Top + 56, SizeDefault, SizeDefault);
-	ChkSetting[LinkTarget].Init(ChkSetting[LinkDesc].Left, ChkSetting[LinkDesc].Top + 22, SizeDefault, SizeDefault);
-	ChkSetting[LinkDelete].Init(ChkSetting[LinkDesc].Left, ChkSetting[LinkTarget].Top + 22, SizeDefault, SizeDefault);
-	ChkSetting[ConfExit].Init(ChkSetting[LinkDesc].Left, ChkSetting[LinkDelete].Top + 22, SizeDefault, SizeDefault);
-
-	FrmThemePreview.Init(FrmTheme.Left + 14, FrmTheme.Top + 55, FrmTheme.Width - 28, 192);
-	ImgTheme.Init(FrmTheme.Left + 14, FrmTheme.Top + 14, 'THEMES');
-	BtnPrevious.Init(FrmTheme.Left + 14, FrmTheme.Top + FrmTheme.Height - 34,
-		SizeDefault, SizeDefault, CharArrowLeft + ' ' + Hotkey + 'Previous');
-	BtnNext.Init(FrmTheme.Left + FrmTheme.Width - 92 - 14, BtnPrevious.Top,
-		SizeDefault, SizeDefault, Hotkey + 'Next ' + CharArrowRight);
-
+	ChkSetting[LinkDesc].Init(FrmSettings.Left + 14, FrmSettings.Top + 56, CAP_LINKDESC);
+	ChkSetting[LinkTarget].Init(ChkSetting[LinkDesc].Left, ChkSetting[LinkDesc].Top + 22, CAP_LINKTARGET);
+	ChkSetting[LinkDelete].Init(ChkSetting[LinkDesc].Left, ChkSetting[LinkTarget].Top + 22, CAP_LINKDELETE);
+	ChkSetting[ConfExit].Init(ChkSetting[LinkDesc].Left, ChkSetting[LinkDelete].Top + 22, CAP_CONFEXIT);
 	ChkSetting[LinkDesc].Checked := Setting.LinkCapt;
 	ChkSetting[LinkTarget].Checked := Setting.LinkTarget;
 	ChkSetting[LinkDelete].Checked := Setting.ConfLinkDel;
 	ChkSetting[ConfExit].Checked := Setting.ConfExit;
+
+	FrmThemePreview.Init(FrmTheme.Left + 14, FrmTheme.Top + 55, FrmTheme.Width - 28, 192);
+	ImgTheme.Init(FrmTheme.Left + 14, FrmTheme.Top + 14, 'THEMES');
+	BtnPrevious.Init(FrmTheme.Left + 14, FrmTheme.Top + FrmTheme.Height - 34, SizeDefault, SizeDefault, CAP_PREVIOUS);
+	BtnNext.Init(FrmTheme.Left + FrmTheme.Width - 92 - 14, BtnPrevious.Top, SizeDefault, SizeDefault, CAP_NEXT);
 	
 	MouseHide;
 	MenuBar.Draw;
@@ -185,40 +201,25 @@ begin
 	
 	BtnExit.Draw;
 	BtnAbout.Draw;
+	FrmSettings.Draw;
+	FrmTheme.Draw;
+	FrmThemePreview.Draw;
+	ChkSetting[LinkDesc].Draw;
+	ChkSetting[LinkTarget].Draw;
+	ChkSetting[LinkDelete].Draw;
+	ChkSetting[ConfExit].Draw;
+	Print(CAP_SETTINGS, ImgSetting.Left + 42, ImgSetting.Top + 5, Thm.WinText);
+	Print(CAP_THEMES, ImgTheme.Left + 42, ImgTheme.Top + 5, Thm.WinText);
+	ImgSetting.Draw;
+	ImgTheme.Draw;
 
 	if ThemeCount <> 0 then
 	begin
 		BtnPrevious.Draw;
 		BtnNext.Draw;
-	end;
-
-	FrmSettings.Draw;
-	FrmTheme.Draw;
-	FrmThemePreview.Draw;
-
-	ChkSetting[LinkDesc].Draw;
-	ChkSetting[LinkTarget].Draw;
-	ChkSetting[LinkDelete].Draw;
-	ChkSetting[ConfExit].Draw;
-	ImgSetting.Draw;
-	ImgTheme.Draw;
-
-	Print('Show icon ' + Hotkey + 'descriptions', ChkSetting[LinkDesc].Left + 20, ChkSetting[LinkDesc].Top + 3,
-		Thm.WinText);
-	Print('Show icon ' + Hotkey + 'targets', ChkSetting[LinkTarget].Left + 20, ChkSetting[LinkTarget].Top + 3,
-		Thm.WinText);
-	Print('Confirm icon ' + Hotkey + 'removal', ChkSetting[LinkDelete].Left + 20,
-		ChkSetting[LinkDelete].Top + 3, Thm.WinText);
-	Print('Confirm before ' + Hotkey + 'exiting Costa', ChkSetting[ConfExit].Left + 20,
-		ChkSetting[ConfExit].Top + 3, Thm.WinText);
-
-	Print('Settings', ImgSetting.Left + 42, ImgSetting.Top + 5, Thm.WinText);
-	Print('Tweak various aspects of Costa.', ImgSetting.Left + 42, ImgSetting.Top + 19, Thm.WinText);
-	Print('Theme', ImgTheme.Left + 42, ImgTheme.Top + 5, Thm.WinText);
-	Print('Choose colors for the UI.', ImgTheme.Left + 42, ImgTheme.Top + 19, Thm.WinText);
-
-	if ThemeCount = 0 then
-		Print('No themes found in \THEMES.', 387, 310, Thm.WinText);
+	end
+	else
+		Print(MSG_NO_THEMES, 387, 310, Thm.WinText);
 	MouseShow;
 
 	ThemePreview;

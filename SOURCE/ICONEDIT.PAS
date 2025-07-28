@@ -11,6 +11,14 @@ const
 
 	PixelSize  = 9; {Size of each field in the drawing area}
 
+	CAP_EXIT   = 'E' + #127 + 'xit';
+	CAP_ABOUT  = #127 + 'About...';
+	CAP_NEW    = #127 + 'New';
+	CAP_OPEN   = #127 + 'Open...';
+	CAP_SAVE   = #127 + 'Save';
+	CAP_PENCIL = 'P' + #127 + 'encil';
+	CAP_FILL   = #127 + 'Fill';
+
 	MSG_UNSAVED_TITLE      = 'Icon has been modified';
 	MSG_UNSAVED_TEXT       = 'This icon contains unsaved changes. Do you' + #13 +
 	                         'want to save it before you exit?';
@@ -476,16 +484,16 @@ var
 	ColChk: integer;
 begin
 	TxtDrawArea.Init(175, 44, 290, 290);
-	BtnNew.Init(2, 2, SizeDefault, SizeDefault, Hotkey + 'New');
-	BtnOpen.Init(101, 2, SizeDefault, SizeDefault, Hotkey + 'Load');
-	BtnSave.Init(200, 2, SizeDefault, SizeDefault, Hotkey + 'Save');
-	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, Hotkey + 'About...');
-	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + Hotkey + 'xit');
+	BtnNew.Init(2, 2, SizeDefault, SizeDefault, CAP_NEW);
+	BtnOpen.Init(101, 2, SizeDefault, SizeDefault, CAP_OPEN);
+	BtnSave.Init(200, 2, SizeDefault, SizeDefault, CAP_SAVE);
+	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
+	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
 
 	XPos := TxtDrawArea.Left + TxtDrawArea.Width + 12;
-	BtnPencil.Init(XPos, TxtDrawArea.Top + 14, 56, SizeDefault, 'P' + Hotkey + 'encil');
+	BtnPencil.Init(XPos, TxtDrawArea.Top + 14, 56, SizeDefault, CAP_PENCIL);
 	BtnPencil.State := BsDown;
-	BtnFloodFill.Init(XPos, BtnPencil.Top + 26, 56, SizeDefault, Hotkey + 'Fill');
+	BtnFloodFill.Init(XPos, BtnPencil.Top + 26, 56, SizeDefault, CAP_FILL);
 	BtnPreview.Init(XPos, BtnFloodFill.Top + 51, 56, 56, '');
 
 	{Center preview image in area}
@@ -585,7 +593,7 @@ begin
 		if BtnClick(BtnSave) or (Key = KeyAltS) then
 			SaveIcon;
 
-		if BtnClick(BtnOpen) or (Key = KeyAltL) then
+		if BtnClick(BtnOpen) or (Key = KeyAltO) then
 			LoadIcon;
 
 		if BtnClick(BtnAbout) or (Key = KeyAltA) then

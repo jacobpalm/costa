@@ -13,10 +13,15 @@ uses
 	DOS;
 
 const
-	CostaExe    = 'COSTA.EXE';
-	DesktopExe  = 'DESKTOP.EXE';
-	RunFile     = 'CONFIG\RUN.BIN';
-	ContinueStr = 'Press Enter to continue...';
+	CostaExe        = 'COSTA.EXE';
+	DesktopExe      = 'DESKTOP.EXE';
+	RunFile         = 'CONFIG\RUN.BIN';
+	
+	MSG_CONTINUE    = 'Press Enter to continue...';
+	MSG_LOWMEM      = 'Out of memory.';
+	MSG_PATH_ERROR  = 'Error changing path to ';
+	MSG_DOS_TOO_OLD = 'Costa requires DOS 4.0 or later.';
+	MSG_NOT_FOUND   = ' not found.';
 
 type
 	TLink = record
@@ -42,7 +47,7 @@ begin
 		Writeln('Changing path to ', RunLink.Path);
 		Writeln('Running program ', RunLink.FileName);
 		Writeln('With parameters ', RunLink.Parameters);
-		Write(ContinueStr);
+		Write(MSG_CONTINUE);
 		Readln;
 	{$ENDIF}
 
@@ -55,10 +60,10 @@ begin
 	{$I+}
 	if IOResult <> 0 then
 	begin
-		Writeln('Error changing path to ', RunLink.Path);
+		Writeln(MSG_PATH_ERROR, RunLink.Path);
 		if Length(RunLink.Path) = 0 then
 			Halt; {Can't change to Costa path, so exit to avoid infinite loop}
-		Writeln(ContinueStr);
+		Writeln(MSG_CONTINUE);
 		Readln;
 		Exit;
 	end;
@@ -71,7 +76,7 @@ begin
 	{Low memory condition}
 	if DosError = 8 then
 	begin
-		Writeln('Out of memory.');
+		Writeln(MSG_LOWMEM);
 		PauseOnExit := True;
 		{If desktop can't be launched, exit}
 		if RunLink.FileName = DesktopExe then
@@ -82,7 +87,7 @@ begin
 	if PauseOnExit then
 	begin
 		Writeln;
-		Write(ContinueStr);
+		Write(MSG_CONTINUE);
 		Readln;
 	end;
 end; {RunProgram}
@@ -97,7 +102,7 @@ begin
 		included programs won't, so might as well check here}
 	if Lo(DosVersion) < 4 then
 	begin
-		Writeln('DOS 4+ required.');
+		Writeln(MSG_DOS_TOO_OLD);
 		Halt(1);
 	end;
 
@@ -111,7 +116,7 @@ begin
 
 	{$IFDEF DEBUG}
 		Writeln('Path to Costa is ', CostaPath);
-		Write(ContinueStr);
+		Write(MSG_CONTINUE);
 		Readln;
 	{$ENDIF}
 
@@ -119,7 +124,7 @@ begin
 	FindFirst(CostaPath + '\' + DesktopExe, Archive, SResult);
 	if DosError > 0 then
 	begin
-		Writeln(DesktopExe + ' not found.');
+		Writeln(DesktopExe + MSG_NOT_FOUND);
 		Halt(1);
 	end;
 

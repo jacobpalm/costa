@@ -9,11 +9,27 @@ const
 	AppAuthor    = 'Jacob Palm';
 	AppIcon      = 'THEMES';
 
-	ObjectCaptions: array[0..12] of string = (
+	DefaultName  = 'New Theme';
+
+	CAP_OBJECT: array[0..12] of string = (
 		'Desktop', 'Desktop text', 'Window', 'Window border', 'Window title',
 		'Window text', 'Button', 'Textbox', 'Textbox text', '3D light',
 		'3D Shadow', 'Selection', 'Selection text');
-	DefaultName                = 'New Theme';
+
+	CAP_NEW           = #127 + 'New';
+	CAP_OPEN          = #127 + 'Open...';
+	CAP_SAVE          = #127 + 'Save';
+	CAP_SAVE_AS       = 'Sa' + #127 + 've as...';
+	CAP_ABOUT         = #127 + 'About...';
+	CAP_EXIT          = 'E' + #127 + 'xit';
+	CAP_NAME          = 'Theme na' + #127 + 'me';
+	CAP_AUTHOR        = 'Theme a' + #127 + 'uthor';
+	CAP_OBJECT_SEL    = 'O' + #127 + 'bject selected:';
+	CAP_COLOR_SEL     = #127 + 'Color for object:';
+	CAP_PREVIEW_LINK  = 'Preview link';
+	CAP_PREVIEW_EXE   = 'preview.exe';
+	CAP_LIST_ITEM     = 'List item';
+	CAP_SELECTED_ITEM = 'Selected item';
 
 	MSG_FILE_EXISTS_TITLE      = 'File already exists';
 	MSG_FILE_EXISTS_PROMPT     = 'The specified file already exists. Do you want' + #13 +
@@ -36,10 +52,6 @@ const
 	MSG_ERROR_SAVING           = 'The theme file could not be saved. Verify free disk' + #13 +
 	                             'space and that the directory isn''t write-protected.';
 	MSG_PREVIEW                = 'This is a preview of' + #13 + 'your theme';
-	MSG_PREVIEW_LINK           = 'Preview link';
-	MSG_PREVIEW_EXE            = 'preview.exe';
-	MSG_LIST_ITEM              = 'List item';
-	MSG_SELECTED_ITEM          = 'Selected item';
 
 
 type
@@ -138,7 +150,7 @@ begin
 	Y1 := FrmPreview.Top;
 	X2 := FrmPreview.Left + FrmPreview.Width;
 	Y2 := FrmPreview.Top + FrmPreview.Height;
-	BtnPreview3.Init(X2 - 96, Y1 + 3, SizeDefault, SizeDefault, ObjectCaptions[Ord(TThemeObject(Btn))]);
+	BtnPreview3.Init(X2 - 96, Y1 + 3, SizeDefault, SizeDefault, CAP_OBJECT[Ord(TThemeObject(Btn))]);
 	TxtListPreview.Init(X2 - 182, Y2 - 82, 166, 66);
 	ImgPreview.Init(FrmPreview.Left + 16, Y2 - 48, 'PAINT');
 
@@ -158,9 +170,9 @@ begin
 	Y1 := WinPreview.Top;
 	ImgLogo.Init(X1 + 12, Y1 + 12, 'LOGO');
 	TxtPreview.Init(X1 + 12, Y1 + 56, 236, SizeDefault);
-	TxtPreview.Text := ObjectCaptions[Ord(TThemeObject(Txt))];
-	BtnPreview1.Init(X1 + 14, Y1 + 93, 111, SizeDefault, ObjectCaptions[Ord(TThemeObject(Btn))]);
-	BtnPreview2.Init(X1 + 133, Y1 + 93, 111, SizeDefault, ObjectCaptions[Ord(TThemeObject(Btn))]);
+	TxtPreview.Text := CAP_OBJECT[Ord(TThemeObject(Txt))];
+	BtnPreview1.Init(X1 + 14, Y1 + 93, 111, SizeDefault, CAP_OBJECT[Ord(TThemeObject(Btn))]);
+	BtnPreview2.Init(X1 + 133, Y1 + 93, 111, SizeDefault, CAP_OBJECT[Ord(TThemeObject(Btn))]);
 	BtnPreview2.State := BsDown;
 
 	WinPreview.Draw;
@@ -174,8 +186,8 @@ begin
 	
 	{Text on Desk and window}
 	Print(MSG_PREVIEW, ImgLogo.Left + 42, ImgLogo.Top + 5, Thm.WinText);
-	Print(MSG_PREVIEW_LINK, ImgPreview.Left + 38, ImgPreview.Top + 4, Thm.DeskText);
-	Print(MSG_PREVIEW_EXE, ImgPreview.Left + 38, ImgPreview.Top + 18, Thm.DeskText);
+	Print(CAP_PREVIEW_LINK, ImgPreview.Left + 38, ImgPreview.Top + 4, Thm.DeskText);
+	Print(CAP_PREVIEW_EXE, ImgPreview.Left + 38, ImgPreview.Top + 18, Thm.DeskText);
 
 	{Draw list preview}
 	X1 := TxtListPreview.Left;
@@ -183,11 +195,11 @@ begin
 	X2 := TxtListPreview.Left + TxtListPreview.Width;
 	SetFillStyle(SolidFill, Thm.Sel);
 	Bar(X1 + 2, Y1 + 14, X2 - 2, Y1 + 26);
-	Print(MSG_LIST_ITEM, X1 + 5, Y1 + 5, Thm.TxtText);
-	Print(MSG_SELECTED_ITEM, X1 + 5, Y1 + 5 + 12, Thm.SelText);
-	Print(MSG_LIST_ITEM, X1 + 5, Y1 + 5 + 24, Thm.TxtText);
-	Print(MSG_LIST_ITEM, X1 + 5, Y1 + 5 + 36, Thm.TxtText);
-	Print(MSG_LIST_ITEM, X1 + 5, Y1 + 5 + 48, Thm.TxtText);
+	Print(CAP_LIST_ITEM, X1 + 5, Y1 + 5, Thm.TxtText);
+	Print(CAP_SELECTED_ITEM, X1 + 5, Y1 + 5 + 12, Thm.SelText);
+	Print(CAP_LIST_ITEM, X1 + 5, Y1 + 5 + 24, Thm.TxtText);
+	Print(CAP_LIST_ITEM, X1 + 5, Y1 + 5 + 36, Thm.TxtText);
+	Print(CAP_LIST_ITEM, X1 + 5, Y1 + 5 + 48, Thm.TxtText);
 	MouseShow;
 
 	{Restore system theme}
@@ -210,7 +222,7 @@ begin
 	ExitLoop := False;
 	WinSelectObject.Init(sizeCenter, sizeCenter, 226, 326);
 	for i := 0 to High(BtnObjSelect) do
-		BtnObjSelect[I].Init(WinSelectObject.Left + 13, WinSelectObject.Top + (I * 23) + 15, 200, SizeDefault, ObjectCaptions[i]);
+		BtnObjSelect[I].Init(WinSelectObject.Left + 13, WinSelectObject.Top + (I * 23) + 15, 200, SizeDefault, CAP_OBJECT[i]);
 
 	MouseHide;
 	X1 := WinSelectObject.Left;
@@ -277,7 +289,7 @@ begin
 	MouseHide;
 	PutImage(X1, Y1, BackgroundP^, NormalPut);
 	FreeMem(BackgroundP, BackgroundSize);
-	BtnObject.Caption := ObjectCaptions[Ord(SelectedObject)];
+	BtnObject.Caption := CAP_OBJECT[Ord(SelectedObject)];
 	BtnObject.Draw;
 	MouseShow;
 
@@ -466,15 +478,15 @@ begin
 	SetFillStyle(SolidFill, Thm.Win);
 	Bar(0, 29, 639, 349);
 
-	BtnNew.Init(2, 2, SizeDefault, SizeDefault, Hotkey + 'New');
-	BtnOpen.Init(101, 2, SizeDefault, SizeDefault, Hotkey + 'Load');
-	BtnSave.Init(200, 2, SizeDefault, SizeDefault, Hotkey + 'Save');
-	BtnSaveAs.Init(299, 2, SizeDefault, SizeDefault, 'Sa' + Hotkey + 've as');
-	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, Hotkey + 'About...');
-	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + Hotkey + 'xit');
-	TxtName.Init(434, 59, 194, SizeDefault);
+	BtnNew.Init(2, 2, SizeDefault, SizeDefault, CAP_NEW);
+	BtnOpen.Init(101, 2, SizeDefault, SizeDefault, CAP_OPEN);
+	BtnSave.Init(200, 2, SizeDefault, SizeDefault, CAP_SAVE);
+	BtnSaveAs.Init(299, 2, SizeDefault, SizeDefault, CAP_SAVE_AS);
+	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
+	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
 	TxtAuthor.Init(434, TxtName.Top + 48, 194, SizeDefault);
-	BtnObject.Init(434, TxtAuthor.Top + 48, 194, SizeDefault, 'Desk');
+	TxtName.Init(434, 59, 194, SizeDefault);
+	BtnObject.Init(434, TxtAuthor.Top + 48, 194, SizeDefault, CAP_OBJECT[0]);
 
 	TxtName.MaxLen := 20;
 	TxtAuthor.MaxLen := 20;
@@ -512,12 +524,10 @@ begin
 			BtnColor[i].Top + BtnColor[i].Height - 2);
 	end;
 
-	Print('Theme na' + Hotkey + 'me:', TxtName.Left, TxtName.Top - 16,
-		Thm.WinText);
-	Print('Theme a' + Hotkey + 'uthor:', TxtAuthor.Left, TxtAuthor.Top - 16,
-		Thm.WinText);
-	Print(Hotkey + 'Object selected:', 434, BtnObject.Top - 16, Thm.WinText);
-	Print(Hotkey + 'Color for object:', 434, BtnColor[0].Top - 16, Thm.WinText);
+	Print(CAP_NAME, TxtName.Left, TxtName.Top - 16, Thm.WinText);
+	Print(CAP_AUTHOR, TxtAuthor.Left, TxtAuthor.Top - 16, Thm.WinText);
+	Print(CAP_OBJECT_SEL, 434, BtnObject.Top - 16, Thm.WinText);
+	Print(CAP_COLOR_SEL, 434, BtnColor[0].Top - 16, Thm.WinText);
 	
 	{Save system theme}
 	SysTheme := Thm;
@@ -536,7 +546,7 @@ begin
 		if BtnClick(BtnNew) or (Key = KeyAltN) then
 			NewTheme;
 
-		if BtnClick(BtnOpen) or (Key = KeyAltL) then
+		if BtnClick(BtnOpen) or (Key = KeyAltO) then
 			LoadTheme;
 		
 		if BtnClick(BtnSave) or (Key = KeyAltS) then
@@ -545,7 +555,7 @@ begin
 		if BtnClick(BtnSaveAs) or (Key = KeyAltV) then
 			SaveTheme(true);
 
-		if BtnClick(BtnObject) or (Key = KeyAltO) then
+		if BtnClick(BtnObject) or (Key = KeyAltB) then
 			SelectObject;
 
 		if TxtClick(TxtName) or (Key = KeyAltM) then

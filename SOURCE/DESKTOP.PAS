@@ -11,6 +11,27 @@ const
 
 	CaptionMaxLen             = 20; {Maximum length for link captions}
 
+	CAP_BROWSE        = '...';
+	CAP_OK            = #127 + 'OK';
+	CAP_CANCEL        = #127 + 'Cancel';
+	CAP_PROGRAM       = #127 + 'Program:';
+	CAP_PARAMETERS    = 'Pa' + #127 + 'rameters:';
+	CAP_OPEN          = #127 + 'Open';
+	CAP_EDIT          = #127 + 'Edit...';
+	CAP_MOVE          = #127 + 'Move';
+	CAP_REMOVE        = #127 + 'Remove';
+	CAP_SAVE          = #127 + 'Save';
+	CAP_PAUSE_ON_EXIT = 'Pause after e' + #127 + 'xecution';
+	CAP_CAPTION       = 'C' + #127 + 'aption:';
+	CAP_PATH          = 'Pa' + #127 + 'th:';
+	CAP_ADD           = 'A' + #127 + 'dd...';
+	CAP_RUN           = #127 + 'Run';
+	CAP_ABOUT         = #127 + 'About';
+	CAP_EXIT          = 'E' + #127 + 'xit';
+
+	
+
+
 	MSG_LOAD_ERROR_TITLE      = 'Error loading desktop links';
 	MSG_OUT_OF_MEMORY         = 'Out of memory.';
 	MSG_DATA_ERROR            = 'Could not open file for reading. The' + #13 + 
@@ -494,9 +515,9 @@ begin
 	WinRun.Init(sizeCenter, sizeCenter, 382, 137);
 	TxtFilename.Init(WinRun.Left + 12, WinRun.Top + 27, WinRun.Width - 68, SizeDefault);
 	TxtParams.Init(TxtFilename.Left, TxtFilename.Top + 46, WinRun.Width - 26, SizeDefault);
-	BtnBrowse.Init(TxtFilename.Left + TxtFilename.Width + 9, TxtFilename.Top, 33, SizeDefault, '...');
-	BtnOK.Init(WinRun.Left + WinRun.Width - 184, TxtParams.Top + 30, 80, SizeDefault, Hotkey + 'OK');
-	BtnCancel.Init(WinRun.Left + WinRun.Width - 94, BtnOK.Top, 80, SizeDefault, Hotkey + 'Cancel');
+	BtnBrowse.Init(TxtFilename.Left + TxtFilename.Width + 9, TxtFilename.Top, 33, SizeDefault, CAP_BROWSE);
+	BtnOK.Init(WinRun.Left + WinRun.Width - 184, TxtParams.Top + 30, 80, SizeDefault, CAP_OK);
+	BtnCancel.Init(WinRun.Left + WinRun.Width - 94, BtnOK.Top, 80, SizeDefault, CAP_CANCEL);
 		
 	MouseHide;
 	X1 := WinRun.Left;
@@ -514,8 +535,8 @@ begin
 	TxtFilename.Draw;
 	TxtParams.Draw;
 	
-	Print(Hotkey + 'Program:', TxtFilename.Left, TxtFilename.Top - 16, Thm.WinText);
-	Print('Pa' + Hotkey + 'rameters:', TxtParams.Left, TxtParams.Top - 16, Thm.WinText);
+	Print(CAP_PROGRAM, TxtFilename.Left, TxtFilename.Top - 16, Thm.WinText);
+	Print(CAP_PARAMETERS, TxtParams.Left, TxtParams.Top - 16, Thm.WinText);
 	MouseShow;
 
 	repeat
@@ -573,10 +594,10 @@ begin
 	WinLinkMenu.Init(sizeCenter, sizeCenter, 413, 165);
 	BtnOpen.Init(WinLinkMenu.Left + 12, WinLinkMenu.Top + WinLinkMenu.Height - 64, 389,
 		SizeDefault, Hotkey + 'Open');
-	BtnEdit.Init(BtnOpen.Left, BtnOpen.Top + 30, SizeDefault, SizeDefault, Hotkey + 'Edit...');
-	BtnMove.Init(BtnEdit.Left + 99, BtnEdit.Top, SizeDefault, SizeDefault, Hotkey + 'Move');
-	BtnRemove.Init(BtnMove.Left + 99, BtnEdit.Top, SizeDefault, SizeDefault, Hotkey + 'Remove');
-	BtnCancel.Init(BtnRemove.Left + 99, BtnEdit.Top, SizeDefault, SizeDefault, Hotkey + 'Cancel');
+	BtnEdit.Init(BtnOpen.Left, BtnOpen.Top + 30, SizeDefault, SizeDefault, CAP_EDIT);
+	BtnMove.Init(BtnEdit.Left + 99, BtnEdit.Top, SizeDefault, SizeDefault, CAP_MOVE);
+	BtnRemove.Init(BtnMove.Left + 99, BtnEdit.Top, SizeDefault, SizeDefault, CAP_REMOVE);
+	BtnCancel.Init(BtnRemove.Left + 99, BtnEdit.Top, SizeDefault, SizeDefault, CAP_CANCEL);
 	ImgIcon.Init(WinLinkMenu.Left + 12, WinLinkMenu.Top + 11, Links^[TargetLink]^.ImageFile);
 
 	Path := Links^[TargetLink]^.Path;
@@ -861,9 +882,9 @@ begin
 	TxtFilename.Init(222, TxtCaption.Top + 44, 196, SizeDefault);
 	TxtPath.Init(222, TxtFilename.Top + 44, 196, SizeDefault);
 	TxtParams.Init(222, TxtPath.Top + 44, 196, SizeDefault);
-	ChkPauseOnExit.Init(222, TxtParams.Top + 32, SizeDefault, SizeDefault);
-	BtnOK.Init(229, ChkPauseOnExit.Top + 28, 84, SizeDefault, Hotkey + 'Save');
-	BtnCancel.Init(326, BtnOK.Top, 84, SizeDefault, Hotkey + 'Cancel');
+	ChkPauseOnExit.Init(222, TxtParams.Top + 32, CAP_PAUSE_ON_EXIT);
+	BtnOK.Init(229, ChkPauseOnExit.Top + 28, 84, SizeDefault, CAP_SAVE);
+	BtnCancel.Init(326, BtnOK.Top, 84, SizeDefault, CAP_CANCEL);
 
 	BtnIcon.Transparent := true;
 	TxtCaption.MaxLen := CaptionMaxLen;
@@ -894,11 +915,10 @@ begin
 	ChkPauseOnExit.Draw;
 	BtnOK.Draw;
 	BtnCancel.Draw;
-	Print('C' + Hotkey + 'aption:', 222, TxtCaption.Top - 15, Thm.WinText);
-	Print(Hotkey + 'Program:', 222, TxtFilename.Top - 15, Thm.WinText);
-	Print('Pa' + Hotkey + 'th:', 222, TxtPath.Top - 15, Thm.WinText);
-	Print('Pa' + Hotkey + 'rameters:', 222, TxtParams.Top - 15, Thm.WinText);
-	Print('Pause after e' + Hotkey + 'xecution', 242, ChkPauseOnExit.Top + 3, Thm.WinText);
+	Print(CAP_CAPTION, 222, TxtCaption.Top - 15, Thm.WinText);
+	Print(CAP_PROGRAM, 222, TxtFilename.Top - 15, Thm.WinText);
+	Print(CAP_PATH, 222, TxtPath.Top - 15, Thm.WinText);
+	Print(CAP_PARAMETERS, 222, TxtParams.Top - 15, Thm.WinText);
 	SetFillStyle(SolidFill, Thm.Desk);
 	Bar(BtnIcon.Left + 2, BtnIcon.Top + 2, BtnIcon.Left + BtnIcon.Width - 2, BtnIcon.Top + BtnIcon.Height - 2);
 	ImgIcon.Draw;
@@ -942,7 +962,7 @@ begin
 
 		if BtnClick(BtnIcon) or (Key = KeyAltI) then
 		begin
-			SelectedFile := FileSelect('*.bin', 'ICONS', True);
+			SelectedFile := FileSelect('*.BIN', 'ICONS', True);
 			if Length(SelectedFile) > 0 then
 			begin
 				FSplit(SelectedFile, FDir, FName, FExt);
@@ -965,7 +985,7 @@ begin
 
 		if TxtClick(TxtFilename) or (Key = KeyAltF) then
 		begin
-			SelectedFile := FileSelect('*.exe', '', False);
+			SelectedFile := FileSelect('*.EXE', '', False);
 			if Length(SelectedFile) <> 0 then
 			begin
 				FSplit(SelectedFile, FDir, FName, FExt);
@@ -1077,12 +1097,12 @@ var
 	Key: String;
 	TempLink: TLink;
 begin
-	BtnAddLink.Init(3, 2, SizeDefault, SizeDefault, 'A' + Hotkey + 'dd...');
-	BtnRun.Init(102, 2, SizeDefault, SizeDefault, Hotkey + 'Run...');
+	BtnAddLink.Init(3, 2, SizeDefault, SizeDefault, CAP_ADD);
+	BtnRun.Init(102, 2, SizeDefault, SizeDefault, CAP_RUN);
 	BtnPrevious.Init(255, 2, 42, SizeDefault, Hotkey + CharArrowLeft);
 	BtnNext.Init(343, 2, 42, SizeDefault, Hotkey + CharArrowRight);
-	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, Hotkey + 'About...');
-	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + Hotkey + 'xit');
+	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
+	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
 	BtnTab.Init(0, 0, 37, 37, '');
 	BtnTab.Transparent := true;
 	

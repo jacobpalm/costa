@@ -4,10 +4,16 @@ uses
 	CostaLib, Crt, Strings, Graph;
 
 const
-	AppName    = 'Calculator';
-	AppVersion = '2.0';
-	AppAuthor  = 'Jacob Palm';
-	AppIcon	   = 'CALC';
+	AppName              = 'Calculator';
+	AppVersion           = '2.0';
+	AppAuthor            = 'Jacob Palm';
+	AppIcon	             = 'CALC';
+
+	CAP_ABOUT            = #127 + 'About...';
+	CAP_EXIT             = 'E' + #127 + 'xit';
+	CAP_CLEAR            = #127 + 'C';
+	CAP_CLEAR_EVERYTHING = 'C' + #127 + 'E';
+	MSG_DIV_ZERO         = 'Division by zero';
 
 var
 	LogLinesWritten: Integer;
@@ -96,8 +102,8 @@ begin
 	BtnNumb[7].Init(26, FrmCalc.Top + 73, 40, SizeDefault, '7');
 	BtnNumb[8].Init(76, FrmCalc.Top + 73, 40, SizeDefault, '8');
 	BtnNumb[9].Init(126, FrmCalc.Top + 73, 40, SizeDefault, '9');
-	BtnC.Init(26, FrmCalc.Top + 40, 40, SizeDefault, Hotkey + 'C');
-	BtnCE.Init(76, FrmCalc.Top + 40, 40, SizeDefault, 'C' + Hotkey + 'E');
+	BtnC.Init(26, FrmCalc.Top + 40, 40, SizeDefault, CAP_CLEAR);
+	BtnCE.Init(76, FrmCalc.Top + 40, 40, SizeDefault, CAP_CLEAR_EVERYTHING);
 	BtnDivide.Init(126, FrmCalc.Top + 40, 40, SizeDefault, '/');
 	BtnDot.Init(126, FrmCalc.Top + 172, 40, SizeDefault, '.');
 	BtnMulti.Init(176, FrmCalc.Top + 40, 40, SizeDefault, '*');
@@ -107,8 +113,8 @@ begin
 
 	TxtResults.Init(FrmCalc.Left + FrmCalc.Width + 12, FrmCalc.Top, 385, 295);
 
-	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, Hotkey + 'About...');
-	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + Hotkey + 'xit');
+	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
+	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
 
 	TxtCalc.MaxLen := 25;
 

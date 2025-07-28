@@ -1,25 +1,32 @@
 {
-	The Costa GUI sample application
+	The Costa GUI sample program
 	By Jacob Palm
 
-	This code demonstrates how to get started with a simple application using
-	the Costa library, to create applications the have the look and feel of
+	This code demonstrates how to get started with a simple program using
+	the Costa library, to create programs the have the look and feel of
 	Costa.
 }
 
 program Sample;
 
 uses
-	{Any application utilizing the Costa library will have CostaLib added to
+	{Any program utilizing the Costa library will have CostaLib added to
 	 the 'uses' clause.}
 	CostaLib, Crt, Graph;
 
 const
-	AppName    = 'Sample Application';
+	AppName    = 'Sample program';
 	AppVersion = '2.0';
 	AppAuthor  = 'Jacob Palm';
 	AppIcon    = 'PROGRAM';
-	ExitText   = 'Are you sure you want to exit the sample' + #13 + 'application?';
+
+	CAP_ABOUT = 'A' + #127 + 'bout...';
+	CAP_EXIT  = 'E' + #127 + 'xit';
+
+	MSG_SAMPLE_TEXT = 'Sample text for the program,' + #13 +
+	                  'on multiple lines.';
+	MSG_EXIT_TITLE  = 'Exit sample program';
+	MSG_EXIT_PROMPT = 'Are you sure you want to exit the sample' + #13 + 'program?';
 
 var
 	{Objects are just variables you can declare like any other}
@@ -35,14 +42,14 @@ begin
 	WinSample.Init(sizeCenter, sizeCenter, 244, 200);
 
 	{Set Exit button position and size - left, top, width, height}
-	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + Hotkey + 'xit');
+	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
 	{The Hotkey character determines which letter on the button is
 	 underlined.
 	 This is actually handled by the Print procedure, and can be used
 	 anywhere text is printed.}
 
 	{About button}
-	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, Hotkey + 'About');
+	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
 				
 	{Create an icon. Only the filename, without extension or path, is set.
 	 This is because icons are always in the same directory. An icon does
@@ -64,8 +71,7 @@ begin
 	WinSample.Draw;
 	BtnAbout.Draw;
 	BtnExit.Draw;
-	Print('Sample text, header font', WinSample.Left + 12, WinSample.Top + 70, Thm.WinText);
-	Print('Sample text, normal font', WinSample.Left + 12, WinSample.Top + 85, Thm.WinText);
+	Print(MSG_SAMPLE_TEXT, WinSample.Left + 12, WinSample.Top + 70, Thm.WinText);
 	MouseShow;
 
 	ImgSample.Draw;
@@ -82,7 +88,7 @@ begin
 			{Show a messagebox, asking to confirm that the user wants to exit.
 			  is a constant from the Costa library, used to indicate the
 			 type of messagebox we want to show (question, error etc.).}
-			if MsgBox('Exit sample application', ExitText, MsgQuest) then
+			if MsgBox(MSG_EXIT_TITLE, MSG_EXIT_PROMPT, MsgQuest) then
 			begin
 				CloseGraph;
 				Halt;
@@ -90,7 +96,7 @@ begin
 		end;
 
 		{Use the built-in function for showing an about box - this ensures
-		 consistency between all applications}
+		 consistency between all programs}
 		if BtnClick(BtnAbout) or (Key = KeyAltA) then
 		  AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 		

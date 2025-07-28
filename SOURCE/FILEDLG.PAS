@@ -20,6 +20,13 @@ const
 	DirList         = -1;
 	ListItemHeight  = 12;
 
+	CAP_PATTERN     = #127 + 'Pattern';
+	CAP_DRIVE       = 'D' + #127 + 'rive';
+	CAP_FILES       = #127 + 'Files';
+	CAP_DIRS        = #127 + 'Directories';
+	CAP_SELECT      = #127 + 'Select';
+	CAP_CANCEL      = #127 + 'Cancel';
+
 type
 	TDirection = (Up, Down, First, Last, PageUp, PageDown);
 
@@ -57,11 +64,11 @@ begin
 		{If CON is opened the program will crash}
 		if (ListCount[FileList] < MaxFiles) and (FileInfo.Name <> 'CON') then
 		begin
-		Inc(ListCount[FileList]);
-		SubFiles[ListCount[FileList]] := FileInfo.Name;
+			Inc(ListCount[FileList]);
+			SubFiles[ListCount[FileList]] := FileInfo.Name;
 		end
 		else
-		Break; {Stop if maximum file count is exceeded}
+			Break; {Stop if maximum file count is exceeded}
 	end;
 	FindNext(FileInfo);
 	end;
@@ -78,8 +85,8 @@ begin
 	{Add '..' for parent directory if not at root}
 	if Length(Path) > 3 then
 	begin
-	Inc(ListCount[DirList]);
-	SubDirs[ListCount[DirList]] := '..';
+		Inc(ListCount[DirList]);
+		SubDirs[ListCount[DirList]] := '..';
 	end;
 
 	FindFirst(Path + '\*.*', Directory, DirInfo);
@@ -89,13 +96,13 @@ begin
 	begin
 		if (DirInfo.Name <> '.') and (DirInfo.Name <> '..') then
 		begin
-		if ListCount[DirList] < MaxDirs then
-		begin
-			Inc(ListCount[DirList]);
-			SubDirs[ListCount[DirList]] := DirInfo.Name
-		end
-		else
-			Break; {Stop if maximum directory count is exceeded}
+			if ListCount[DirList] < MaxDirs then
+			begin
+				Inc(ListCount[DirList]);
+				SubDirs[ListCount[DirList]] := DirInfo.Name
+			end
+			else
+				Break; {Stop if maximum directory count is exceeded}
 		end;
 	end;
 	FindNext(DirInfo);
@@ -118,61 +125,61 @@ begin
 	MouseHide;
 	if FullRedraw then
 	begin
-	SetFillStyle(SolidFill, Thm.Txt);
-	Bar(X1, Y1, X2, Y2 - 1 + ((MaxVisibleItems - 1) * ListItemHeight));
-	Counter := 0;
-	for I := ListStartPos[TargetList] to ListStartPos[TargetList] + MaxVisibleItems - 1 do
-	begin
-		if I <= ListCount[TargetList] then
+		SetFillStyle(SolidFill, Thm.Txt);
+		Bar(X1, Y1, X2, Y2 - 1 + ((MaxVisibleItems - 1) * ListItemHeight));
+		Counter := 0;
+		for I := ListStartPos[TargetList] to ListStartPos[TargetList] + MaxVisibleItems - 1 do
 		begin
-		if TargetList = FileList then
-			ItemText := SubFiles[I]
-		else
-			ItemText := SubDirs[I];
+			if I <= ListCount[TargetList] then
+			begin
+			if TargetList = FileList then
+				ItemText := SubFiles[I]
+			else
+				ItemText := SubDirs[I];
 
-		{Highlight active selected item}
-		if (I = ListSelection[TargetList]) and (ActiveList = TargetList) then
+			{Highlight active selected item}
+			if (I = ListSelection[TargetList]) and (ActiveList = TargetList) then
+			begin
+				{Draw highlighted item}
+				SetFillStyle(SolidFill, Thm.Sel);
+				Bar(X1, Y1 + (Counter * ListItemHeight), X2, Y2 - 1 + (Counter * ListItemHeight));
+				Print(ItemText, X1 + 3, Y1 + 2 + (Counter * ListItemHeight), Thm.SelText);
+			end
+			else
+			begin
+				{Draw normal item}
+				Print(ItemText, X1 + 3, Y1 + 2 + (Counter * ListItemHeight), Thm.TxtText);
+			end;
+
+			Inc(Counter);
+			end;
+		end;
+	end
+	else
+	begin
+		{Not a full redraw, only draw the selected item}
+		if HighLightActive and (ActiveList = TargetList) then
 		begin
-			{Draw highlighted item}
-			SetFillStyle(SolidFill, Thm.Sel);
-			Bar(X1, Y1 + (Counter * ListItemHeight), X2, Y2 - 1 + (Counter * ListItemHeight));
-			Print(ItemText, X1 + 3, Y1 + 2 + (Counter * ListItemHeight), Thm.SelText);
+			FGColor := Thm.SelText;
+			BGColor := Thm.Sel;
 		end
 		else
 		begin
-			{Draw normal item}
-			Print(ItemText, X1 + 3, Y1 + 2 + (Counter * ListItemHeight), Thm.TxtText);
+			FGColor := Thm.TxtText;
+			BGColor := Thm.Txt;
 		end;
 
-		Inc(Counter);
+		if TargetList = FileList then
+			ItemText := SubFiles[ListSelection[FileList]]
+		else
+			ItemText := SubDirs[ListSelection[DirList]];
+		
+		if ItemText <> '' then
+		begin
+			SetFillStyle(SolidFill, BGColor);
+			Bar(X1, Y1 + YOffset, X2, Y2 - 1 + YOffset);
+			Print(ItemText, X1 + 3, Y1 + 2 + YOffset, FGColor);
 		end;
-	end;
-	end
-	else
-	begin
-	{Not a full redraw, only draw the selected item}
-	if HighLightActive and (ActiveList = TargetList) then
-	begin
-		FGColor := Thm.SelText;
-		BGColor := Thm.Sel;
-	end
-	else
-	begin
-		FGColor := Thm.TxtText;
-		BGColor := Thm.Txt;
-	end;
-
-	if TargetList = FileList then
-		ItemText := SubFiles[ListSelection[FileList]]
-	else
-		ItemText := SubDirs[ListSelection[DirList]];
-	
-	if ItemText <> '' then
-	begin
-		SetFillStyle(SolidFill, BGColor);
-		Bar(X1, Y1 + YOffset, X2, Y2 - 1 + YOffset);
-		Print(ItemText, X1 + 3, Y1 + 2 + YOffset, FGColor);
-	end;
 	end;
 	MouseShow;
 end;
@@ -431,8 +438,8 @@ begin
 	TxtDrive.Init(272, WinFileSelect.Top + 28, 150, SizeDefault);
 	TxtList[FileList].Init(101, WinFileSelect.Top + 71, 150, 185);
 	TxtList[DirList].Init(272, WinFileSelect.Top + 71, 150, 185);
-	BtnSelect.Init(448, WinFileSelect.Top + 28, SizeDefault, SizeDefault, Hotkey + 'Select');
-	BtnCancel.Init(448, WinFileSelect.Top + 58, SizeDefault, SizeDefault, Hotkey + 'Cancel');
+	BtnSelect.Init(448, WinFileSelect.Top + 28, SizeDefault, SizeDefault, CAP_SELECT);
+	BtnCancel.Init(448, WinFileSelect.Top + 58, SizeDefault, SizeDefault, CAP_CANCEL);
 	BtnFilePrev.Init(253, TxtList[FileList].Top, 14, 91, CharArrowUp);
 	BtnFileNext.Init(253, TxtList[FileList].Top + 94, 14, 91, CharArrowDown);
 	BtnDirPrev.Init(424, TxtList[DirList].Top, 14, 91, CharArrowUp);
@@ -476,10 +483,10 @@ begin
 	BtnFileNext.Draw;
 	BtnDirPrev.Draw;
 	BtnDirNext.Draw;
-	Print(Hotkey + 'Pattern:', 101, WinFileSelect.Top + 14, Thm.WinText);
-	Print(Hotkey + 'Drive:', 272, WinFileSelect.Top + 14, Thm.WinText);
-	Print(Hotkey + 'Files:', 101, WinFileSelect.Top + 57, Thm.WinText);
-	Print('F' + Hotkey + 'olders:', 272, WinFileSelect.Top + 57, Thm.WinText);
+	Print(CAP_PATTERN, 101, WinFileSelect.Top + 14, Thm.WinText);
+	Print(CAP_DRIVE, 272, WinFileSelect.Top + 14, Thm.WinText);
+	Print(CAP_FILES, 101, WinFileSelect.Top + 57, Thm.WinText);
+	Print(CAP_DIRS, 272, WinFileSelect.Top + 57, Thm.WinText);
 	MouseShow;
 
 	{If path provided, use it}
@@ -531,7 +538,7 @@ begin
 			Break;
 		end;
 
-		if TxtClick(TxtDrive) or (Key = KeyAltD) then
+		if TxtClick(TxtDrive) or (Key = KeyAltR) then
 		begin
 			TxtDrive.Edit;
 			if TxtDrive.Text <> Drive Then
@@ -591,7 +598,7 @@ begin
 		if (Key = KeyAltF) then
 			SetActiveList(FileList);
 
-		if (Key = KeyAltO) then
+		if (Key = KeyAltD) then
 			SetActiveList(DirList);
 
 		if (Key = KeyTab) or (Key = KeyShiftTab) then

@@ -9,6 +9,12 @@ const
 	AppAuthor  = 'Jacob Palm';
 	AppIcon    = 'TICTAC';
 
+	CAP_NEW_GAME = #127 + 'New game';
+	CAP_GAME_MODE = #127 + 'Mode';
+	CAP_SOUND = #127 + 'Sound';
+	CAP_ABOUT = #127 + 'About...';
+	CAP_EXIT = 'E' + #127 + 'xit';
+
 type
 	TPlayer  = (PlayerNone, PlayerX, PlayerO);
 	TSound   = (SndX, SndO, SndIllegal, SndWin, SndLoose, SndDraw, SndNew);
@@ -506,11 +512,11 @@ begin
 		end;
 	end;
 	
-	BtnNew.Init(3, 2, SizeDefault, SizeDefault, Hotkey + 'New game');
-	BtnGameMode.Init(102, 2, SizeDefault, SizeDefault, Hotkey + 'Mode');
-	BtnAudio.Init(201, 2, SizeDefault, SizeDefault, Hotkey + 'Sound');
-	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, Hotkey + 'About...');
-	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + Hotkey + 'xit');
+	BtnNew.Init(3, 2, SizeDefault, SizeDefault, CAP_NEW_GAME);
+	BtnGameMode.Init(102, 2, SizeDefault, SizeDefault, CAP_GAME_MODE);
+	BtnAudio.Init(201, 2, SizeDefault, SizeDefault, CAP_SOUND);
+	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_AUDIO);
+	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
 	
 	MouseHide;
 	MenuBar.Draw;

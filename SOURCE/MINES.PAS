@@ -19,6 +19,19 @@ const
 
 	CellSize          = 16; {Size of each clickable field}
 
+	CAP_NEW_GAME      = #127 + 'New game';
+	CAP_PAUSE         = #127 + 'Pause';
+	CAP_SIZE          = 'Si' + #127 + 'ze';
+	CAP_SOUND         = #127 + 'Sound';
+	CAP_ABOUT         = #127 + 'About...';
+	CAP_EXIT          = 'E' + #127 + 'xit';
+	CAP_RESUME        = #127 + 'Resume';
+	CAP_CANCEL        = #127 + 'Cancel';
+	CAP_9X9           = #127 + '9x9';
+	CAP_16X16         = #127 + '16x16';
+	CAP_22X18         = #127 + '22x18';
+	CAP_39X18         = #127 + '39x18';
+
 	MSG_GAME_OVER     = 'Kaboom! Game over.';
 	MSG_FLAGGED_COUNT = 'Flagged mines:';
 	MSG_WIN           = 'Minefield cleared, good job!';
@@ -519,8 +532,8 @@ var
 begin
 	PauseTime := Timer;
 	
-	BtnResume.Init(3, 2, SizeDefault, SizeDefault, Hotkey + 'Resume');
-	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + Hotkey + 'xit');
+	BtnResume.Init(3, 2, SizeDefault, SizeDefault, CAP_RESUME);
+	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
 
 	MouseHide;
 	SetFillStyle(SolidFill, Thm.Win);
@@ -744,7 +757,6 @@ var
 	X1, Y1, X2, Y2: integer;
 	BackgroundSize: Word;
 	BackgroundP: Pointer;
-	TempStr: string;
 	Key: string;
 begin
 	WinSetSize.Init(SizeCenter, SizeCenter, 236, 264);
@@ -753,7 +765,7 @@ begin
 	BtnSize[1].Init(BtnSize[0].Left + 110, WinSetSize.Top + 11, 100, 100, '');
 	BtnSize[2].Init(WinSetSize.Left + 13, BtnSize[0].Top + 110, 100, 100, '');
 	BtnSize[3].Init(BtnSize[2].Left + 110, BtnSize[2].Top, 100, 100, '');
-	BtnCancel.Init(WinSetSize.Left + 13, BtnSize[2].Top + 110, 210, SizeDefault, Hotkey + 'Cancel');
+	BtnCancel.Init(WinSetSize.Left + 13, BtnSize[2].Top + 110, 210, SizeDefault, CAP_CANCEL);
 
 	BtnSize[0].Transparent := True;
 	BtnSize[1].Transparent := True;
@@ -777,21 +789,17 @@ begin
 	BtnSize[3].Draw;
 	BtnCancel.Draw;
 
-	TempStr := '9x' + Hotkey + '9';
-	TextOffset := ((BtnSize[0].Width - PrintW(TempStr)) div 2);
-	Print(TempStr, BtnSize[0].Left + TextOffset, BtnSize[0].Top + 79, Thm.WinText);
-	
-	TempStr := '16x1' + Hotkey + '6';
-	TextOffset := ((BtnSize[1].Width - PrintW(TempStr)) div 2);
-	Print(TempStr, BtnSize[1].Left + TextOffset, BtnSize[1].Top + 79, Thm.WinText);
+	TextOffset := ((BtnSize[0].Width - PrintW(CAP_9X9)) div 2);
+	Print(CAP_9X9, BtnSize[0].Left + TextOffset, BtnSize[0].Top + 79, Thm.WinText);
 
-	TempStr := Hotkey + '22x18';
-	TextOffset := ((BtnSize[2].Width - PrintW(TempStr)) div 2);
-	Print(TempStr, BtnSize[2].Left + TextOffset, BtnSize[2].Top + 79, Thm.WinText);
+	TextOffset := ((BtnSize[1].Width - PrintW(CAP_16X16)) div 2);
+	Print(CAP_16X16, BtnSize[1].Left + TextOffset, BtnSize[1].Top + 79, Thm.WinText);
 
-	TempStr := Hotkey + '39x18';
-	TextOffset := ((BtnSize[3].Width - PrintW(TempStr)) div 2);
-	Print(TempStr, BtnSize[3].Left + TextOffset, BtnSize[3].Top + 79, Thm.WinText);
+	TextOffset := ((BtnSize[2].Width - PrintW(CAP_22X18)) div 2);
+	Print(CAP_22X18, BtnSize[2].Left + TextOffset, BtnSize[2].Top + 79, Thm.WinText);
+
+	TextOffset := ((BtnSize[3].Width - PrintW(CAP_39X18)) div 2);
+	Print(CAP_39X18, BtnSize[3].Left + TextOffset, BtnSize[3].Top + 79, Thm.WinText);
 	
 	SetColor(Thm.WinText);
 	{9x9}
@@ -838,7 +846,7 @@ begin
 			break;
 		end;
 
-		if BtnClick(BtnSize[1]) or (Key = '6') then
+		if BtnClick(BtnSize[1]) or (Key = '1') then
 		begin
 			FieldH := 16;
 			FieldW := 16;
@@ -924,12 +932,12 @@ end;
 
 
 begin
-	BtnNew.Init(3, 2, SizeDefault, SizeDefault, Hotkey + 'New game');
-	BtnPause.Init(102, 2, SizeDefault, SizeDefault, Hotkey + 'Pause');
-	BtnSize.Init(201, 2, SizeDefault, SizeDefault, 'Si' + Hotkey + 'ze');
-	BtnAudio.Init(300, 2, SizeDefault, SizeDefault, Hotkey + 'Sound');
-	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, Hotkey + 'About...');
-	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + Hotkey + 'xit');
+	BtnNew.Init(3, 2, SizeDefault, SizeDefault, CAP_NEW_GAME);
+	BtnPause.Init(102, 2, SizeDefault, SizeDefault, CAP_PAUSE);
+	BtnSize.Init(201, 2, SizeDefault, SizeDefault, CAP_SIZE);
+	BtnAudio.Init(300, 2, SizeDefault, SizeDefault, CAP_SOUND);
+	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
+	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
 	
 	MouseHide;
 	MenuBar.Draw;

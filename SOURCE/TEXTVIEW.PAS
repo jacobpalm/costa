@@ -13,10 +13,17 @@ const
 	MaxLinesShown = 22;
 	MaxLineLength = 78;
 
+	CAP_OPEN      = #127 + 'Open...';
+	CAP_PAGE_UP   = 'Page ' + #127 + 'up';
+	CAP_PAGE_DOWN = 'Page ' + #127 + 'down';
+	CAP_ABOUT     = #127 + 'About...';
+	CAP_EXIT      = 'E' + #127 + 'xit';
+
 	MSG_OPEN_ERROR_TITLE = 'Error opening file';
 	MSG_FILE_NOT_FOUND   = 'File not found: ' + #13;
 	MSG_READ_ERROR       = 'Error reading file, make sure it is accessible: ' + #13;
 	MSG_END_OF_FILE      = '* end of file *';
+	MSG_MEMORY_TEXT      = 'Not enough memory to open this file.';
 
 type
 	PLine = ^LineStr;
@@ -53,7 +60,7 @@ begin
 	SetFillStyle(SolidFill, Thm.Txt);
 	Bar(0, 29, 639, 349);
 	MouseShow;
-	MsgBox('Out of memory', 'Not enough memory to open this file.', MsgError);
+	MsgBox(MSG_OPEN_ERROR_TITLE, MSG_MEMORY_TEXT, MsgError);
 	CustomHeapError := 1; {Make GetMem return a nil pointer}
 end;
 
@@ -248,11 +255,11 @@ begin
 	{Store default heap error handler for later restoration}
 	DefaultHeapError := HeapError;
 
-	BtnOpen.Init(3, 2, SizeDefault, SizeDefault, Hotkey + 'Open...');
-	BtnPageUp.Init(102, 2, SizeDefault, SizeDefault, 'Page ' + Hotkey + 'up');
-	BtnPageDown.Init(201, 2, SizeDefault, SizeDefault, 'Page ' + Hotkey + 'down');
-	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, Hotkey + 'About...');
-	BtnExit.Init(545, 2, SizeDefault, SizeDefault, 'E' + Hotkey + 'xit');
+	BtnOpen.Init(3, 2, SizeDefault, SizeDefault, CAP_OPEN);
+	BtnPageUp.Init(102, 2, SizeDefault, SizeDefault, CAP_PAGE_UP);
+	BtnPageDown.Init(201, 2, SizeDefault, SizeDefault, CAP_PAGE_DOWN);
+	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
+	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
 
 	MouseHide;
 	MenuBar.Draw;
@@ -283,7 +290,7 @@ begin
 
 		if BtnClick(BtnOpen) or (Key = KeyAltO) then
 		begin
-			NewFileName := FileSelect('*.Txt', '', False);
+			NewFileName := FileSelect('*.TXT', '', False);
 			if Length(NewFilename) > 0 then
 			begin
 				if LoadFile(NewFilename) then
