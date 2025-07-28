@@ -18,8 +18,8 @@ const
 	CAP_ABOUT            = #127 + 'About...';
 	CAP_PREVIOUS         = #27 + ' ' + #127 + 'Previous';
 	CAP_NEXT             = #127 + 'Next ' + #26;
-	CAP_LINKDESC         = 'Show icon ' + #127 + 'descriptions';
-	CAP_LINKTARGET       = 'Show icon ' + #127 + 'targets';
+	CAP_LINKDESC         = 'Show icon ' + #127 + 'captions';
+	CAP_LINKTARGET       = 'Show icon pr' + #127 + 'ogram names';
 	CAP_LINKDELETE       = 'Confirm icon ' + #127 + 'removal';
 	CAP_CONFEXIT         = 'Confirm before ' + #127 + 'exiting Costa';
 	CAP_BUTTON           = 'Button';
@@ -247,14 +247,14 @@ begin
 		ChkClick(ChkSetting[LinkDelete]);
 		ChkClick(ChkSetting[ConfExit]);
 
-		if Key = KeyAltD then
+		if Key = KeyAltC then
 		begin
 			ChkSetting[LinkDesc].Checked := not ChkSetting[LinkDesc].Checked;
 			MouseHide;
 			ChkSetting[LinkDesc].Draw;
 			MouseShow;
 		end;
-		if Key = KeyAltT then
+		if Key = KeyAltO then
 		begin
 			ChkSetting[LinkTarget].Checked:= not ChkSetting[LinkTarget].Checked;
 			MouseHide;

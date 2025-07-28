@@ -21,7 +21,7 @@ const
 	CAP_MOVE          = #127 + 'Move';
 	CAP_REMOVE        = #127 + 'Remove';
 	CAP_SAVE          = #127 + 'Save';
-	CAP_PAUSE_ON_EXIT = 'Pause after e' + #127 + 'xecution';
+	CAP_PAUSE_ON_EXIT = 'Pause after e' + #127 + 'xit';
 	CAP_CAPTION       = 'C' + #127 + 'aption:';
 	CAP_PATH          = 'Pa' + #127 + 'th:';
 	CAP_ADD           = 'A' + #127 + 'dd...';
