@@ -25,7 +25,7 @@ type
 		FileName: String[50];
 		Path: String[50];
 		Parameters: String[50];
-		ImageFile: String[8];
+		IconFile: String[8];
 		PauseOnExit: Boolean;
 		Left, Top: Integer;
 	end;
@@ -261,7 +261,7 @@ begin
 				ReadLn(F, DeskLink.FileName);
 				ReadLn(F, DeskLink.Path);
 				ReadLn(F, DeskLink.Parameters);
-				ReadLn(F, DeskLink.ImageFile);
+				ReadLn(F, DeskLink.IconFile);
 				ReadLn(F, PauseValue);
 				DeskLink.PauseOnExit := PauseValue <> 0;
 				ReadLn(F, DeskLink.Left);

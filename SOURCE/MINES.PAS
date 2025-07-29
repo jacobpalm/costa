@@ -44,7 +44,7 @@ type
 	TDirection = (DirHide, DirShow, DirUp, DirDown, DirLeft, DirRight);
 
 var
-	EnableAudio: boolean;
+	EnableSound: boolean;
 	GameOver: boolean;
 	MineCount: integer;
 	FieldW, FieldH: integer;
@@ -54,7 +54,7 @@ var
 	KeyRow, KeyCol: integer;
 	MineField: array[0..17, 0..38] of integer;
 
-	BtnNew, BtnSize, BtnAudio, BtnPause, BtnAbout, BtnExit: TButton;
+	BtnNew, BtnSize, BtnSound, BtnPause, BtnAbout, BtnExit: TButton;
 	FieldRow, FieldCol: integer;
 	MouseButton: TMouseButton;
 	KeyVisible: boolean;
@@ -549,10 +549,10 @@ begin
 		if (Key = KeySpace) or (Key = KeyEnter) or (Key = KeyEscape) then
 			break;
 
-		if BtnClick(BtnResume) or (Key = KeyAltR) then
+		if BtnResume.Clicked or (Key = KeyAltR) then
 			break;
 
-		if BtnClick(BtnExit) then
+		if BtnExit.Clicked then
 		begin
 			CloseGraph;
 			Halt(0);
@@ -564,7 +564,7 @@ begin
 	MenuBar.Draw;
 	BtnNew.Draw;
 	BtnSize.Draw;
-	BtnAudio.Draw;
+	BtnSound.Draw;
 	BtnPause.Draw;
 	BtnAbout.Draw;
 	BtnExit.Draw;
@@ -590,7 +590,7 @@ var
 	i: integer;
 begin
 
-	if not EnableAudio then
+	if not EnableSound then
 		exit;
 
 	case SoundType of
@@ -665,7 +665,7 @@ begin
 	Print(MessageText, 8, 332, Thm.WinText);
 
 	MessageText := MSG_SOUND + ' ';
-	if EnableAudio then
+	if EnableSound then
 		MessageText := MessageText + MSG_ON
 	else
 		MessageText := MessageText + MSG_OFF;
@@ -833,34 +833,34 @@ begin
 	repeat
 		Key := GetKey;
 
-		if BtnClick(BtnCancel) or (Key = KeyEscape) or (Key = KeyAltC) then
+		if BtnCancel.Clicked or (Key = KeyEscape) or (Key = KeyAltC) then
 		begin
 			SetFieldSize := False;
 			break;
 		end;
 
-		if BtnClick(BtnSize[0]) or (Key = '9') then
+		if BtnSize[0].Clicked or (Key = KeyAlt9) then
 		begin
 			FieldH := 9;
 			FieldW := 9;
 			break;
 		end;
 
-		if BtnClick(BtnSize[1]) or (Key = '1') then
+		if BtnSize[1].Clicked or (Key = KeyAlt1) then
 		begin
 			FieldH := 16;
 			FieldW := 16;
 			break;
 		end;
 
-		if BtnClick(BtnSize[2]) or (Key = '2') then
+		if BtnSize[2].Clicked or (Key = KeyAlt2) then
 		begin
 			FieldH := 18;
 			FieldW := 22;
 			break;
 		end;
 
-		if BtnClick(BtnSize[3]) or (Key = '3') then
+		if BtnSize[3].Clicked or (Key = KeyAlt3) then
 		begin
 			FieldH := 18;
 			FieldW := 39;
@@ -935,7 +935,7 @@ begin
 	BtnNew.Init(3, 2, SizeDefault, SizeDefault, CAP_NEW_GAME);
 	BtnPause.Init(102, 2, SizeDefault, SizeDefault, CAP_PAUSE);
 	BtnSize.Init(201, 2, SizeDefault, SizeDefault, CAP_SIZE);
-	BtnAudio.Init(300, 2, SizeDefault, SizeDefault, CAP_SOUND);
+	BtnSound.Init(300, 2, SizeDefault, SizeDefault, CAP_SOUND);
 	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
 	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
 	
@@ -943,14 +943,14 @@ begin
 	MenuBar.Draw;
 	BtnNew.Draw;
 	BtnSize.Draw;
-	BtnAudio.Draw;
+	BtnSound.Draw;
 	BtnPause.Draw;
 	BtnAbout.Draw;
 	BtnExit.Draw;
 	MouseShow;
 
 	{Default settings}
-	EnableAudio := True;
+	EnableSound := True;
 	FieldW := 16;
 	FieldH := 16;
 
@@ -960,31 +960,31 @@ begin
 	repeat
 		Key := GetKey;
 		
-		if BtnClick(BtnNew) or (Key = KeyAltN) then
+		if BtnNew.Clicked or (Key = KeyAltN) then
 		begin
 			NewGame;
 			KeyVisible := False;
 		end;
 
-		if BtnClick(BtnAudio) or (Key = KeyAltS) then
+		if BtnSound.Clicked or (Key = KeyAltS) then
 		begin
-			EnableAudio := not EnableAudio;
+			EnableSound := not EnableSound;
 			PrintStatus(False, '');
 		end;
 
-		if BtnClick(BtnPause) or (Key = KeyAltP) then
+		if BtnPause.Clicked or (Key = KeyAltP) then
 			Pause;
 
-		if BtnClick(BtnSize) or (Key = KeyAltZ) then
+		if BtnSize.Clicked or (Key = KeyAltZ) then
 		begin
 			if SetFieldSize then
 				NewGame;
 		end;
 
-		if BtnClick(BtnExit) or (Key = KeyAltX) then
+		if BtnExit.Clicked or (Key = KeyAltX) then
 			break;
 
-		if BtnClick(BtnAbout) or (Key = KeyAltA) then
+		if BtnAbout.Clicked or (Key = KeyAltA) then
 			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 
 		if not GameOver then
@@ -1043,7 +1043,7 @@ begin
 
 				KeyRow := FieldRow;
 				KeyCol := FieldCol;
-				{Prevent audio from running wild if mouse/key is held down}
+				{Prevent sound from running wild if mouse/key is held down}
 				ClearInputBuffer;
 
 			end;

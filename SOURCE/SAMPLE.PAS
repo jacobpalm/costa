@@ -43,10 +43,6 @@ begin
 
 	{Set Exit button position and size - left, top, width, height}
 	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
-	{The Hotkey character determines which letter on the button is
-	 underlined.
-	 This is actually handled by the Print procedure, and can be used
-	 anywhere text is printed.}
 
 	{About button}
 	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
@@ -83,7 +79,7 @@ begin
 		{BtnClick will return True or False, and can be used to check
 		 if a button is clicked. It will also take care of drawing the
 		 button in pressed or unpressed state.}
-		if BtnClick(BtnExit) or (Key = KeyAltX) then
+		if BtnExit.Clicked or (Key = KeyAltX) then
 		begin
 			{Show a messagebox, asking to confirm that the user wants to exit.
 			  is a constant from the Costa library, used to indicate the
@@ -97,7 +93,7 @@ begin
 
 		{Use the built-in function for showing an about box - this ensures
 		 consistency between all programs}
-		if BtnClick(BtnAbout) or (Key = KeyAltA) then
+		if BtnAbout.Clicked or (Key = KeyAltA) then
 		  AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 		
 	until False;

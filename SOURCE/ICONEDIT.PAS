@@ -19,6 +19,9 @@ const
 	CAP_SAVE_AS = 'Sa' + #127 + 've as...';
 	CAP_PENCIL  = 'P' + #127 + 'encil';
 	CAP_FILL    = #127 + 'Fill';
+	CAP_COLOR   = #127 + 'Color';
+	CAP_PREVIEW = 'Preview';
+	CAP_TOOLS   = 'Tools';
 
 	MSG_UNSAVED_TITLE      = 'Icon has been modified';
 	MSG_UNSAVED_TEXT       = 'This icon contains unsaved changes. Do you' + #13 +
@@ -70,9 +73,9 @@ var
 	KeyboardPosVisible: boolean;
 
 	{Objects which are modified outside main loop}
-	TxtDrawArea: TTextbox;
+	AreaCanvas: TArea;
 	BtnPencil, BtnFloodFill: TButton;
-	TxtColor: array[0..15] of TTextbox;
+	AreaColor: array[0..15] of TArea;
 	ImgPreview: TIcon;
 
 {Forward declarations}
@@ -178,19 +181,19 @@ begin
 	
 	{Remove selection marker from previous color}
 	MouseHide;
-	X1 := TxtColor[DrawColor].Left + 4;
-	Y1 := TxtColor[DrawColor].Top + 4;
-	X2 := TxtColor[DrawColor].Left + TxtColor[DrawColor].Width - 4;
-	Y2 := TxtColor[DrawColor].Top + TxtColor[DrawColor].Height - 4;
+	X1 := AreaColor[DrawColor].Left + 4;
+	Y1 := AreaColor[DrawColor].Top + 4;
+	X2 := AreaColor[DrawColor].Left + AreaColor[DrawColor].Width - 4;
+	Y2 := AreaColor[DrawColor].Top + AreaColor[DrawColor].Height - 4;
 	SetFillStyle(SolidFill, DrawColor);
 	Bar(X1, Y1, X2, Y2);
 
 	{Change color and draw new selection marker}
 	DrawColor := Col;
-	X1 := TxtColor[DrawColor].Left + 4;
-	Y1 := TxtColor[DrawColor].Top + 4;
-	X2 := TxtColor[DrawColor].Left + TxtColor[DrawColor].Width - 4;
-	Y2 := TxtColor[DrawColor].Top + TxtColor[DrawColor].Height - 4;
+	X1 := AreaColor[DrawColor].Left + 4;
+	Y1 := AreaColor[DrawColor].Top + 4;
+	X2 := AreaColor[DrawColor].Left + AreaColor[DrawColor].Width - 4;
+	Y2 := AreaColor[DrawColor].Top + AreaColor[DrawColor].Height - 4;
 	SetColor(DarkGray);
 	Rectangle(X1, Y1, X2, Y2);
 	SetColor(White);
@@ -225,7 +228,7 @@ procedure GetCursorPos(var X, Y: Integer);
 var
 	tmpX, tmpY: String;
 begin
-	if TxtDrawArea.IsMouseOver then
+	if AreaCanvas.IsMouseOver then
 	begin
 		MousePoll;
 		X := (MouseX - OffsetX) div PixelSize;
@@ -361,7 +364,7 @@ begin
 			exit;
 	end;
 	
-	{Allocate memory and get the image data}
+	{Allocate memory and get the icon data}
 	X1 := ImgPreview.Left;
 	Y1 := ImgPreview.Top;
 	X2 := ImgPreview.Left + 31;
@@ -433,11 +436,11 @@ begin
 	{Clear IconData with invalid values - this makes sure color 0 will also be drawn}
 	FillChar(IconData, SizeOf(IconData), 255);
 	IconFileName := FName;
-	ImgPreview.ImageFile := Fname;
+	ImgPreview.IconFile := Fname;
 	
 	MouseHide;
 	ImgPreview.Draw;
-	{Get color of each pixel from the preview image and set it in the icon data}
+	{Get color of each pixel from the preview icon and set it in the icon data}
 	for X := 0 to 31 do
 	begin
 		for Y := 0 to 31 do
@@ -484,7 +487,7 @@ var
 	YPos, XPos, CursorX, CursorY, i: Integer;
 	ColChk: integer;
 begin
-	TxtDrawArea.Init(175, 44, 290, 290);
+	AreaCanvas.Init(175, 44, 290, 290);
 	BtnNew.Init(2, 2, SizeDefault, SizeDefault, CAP_NEW);
 	BtnOpen.Init(101, 2, SizeDefault, SizeDefault, CAP_OPEN);
 	BtnSave.Init(200, 2, SizeDefault, SizeDefault, CAP_SAVE);
@@ -492,13 +495,13 @@ begin
 	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
 	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
 
-	XPos := TxtDrawArea.Left + TxtDrawArea.Width + 12;
-	BtnPencil.Init(XPos, TxtDrawArea.Top + 14, 56, SizeDefault, CAP_PENCIL);
+	XPos := AreaCanvas.Left + AreaCanvas.Width + 12;
+	BtnPencil.Init(XPos, AreaCanvas.Top + 14, 56, SizeDefault, CAP_PENCIL);
 	BtnPencil.State := BsDown;
 	BtnFloodFill.Init(XPos, BtnPencil.Top + 26, 56, SizeDefault, CAP_FILL);
 	BtnPreview.Init(XPos, BtnFloodFill.Top + 51, 56, 56, '');
 
-	{Center preview image in area}
+	{Center preview icon in area}
 	XPos := (BtnPreview.Width - 34) div 2;
 	YPos := (BtnPreview.Height - 34) div 2;
 	XPos := BtnPreview.Left + XPos;
@@ -507,14 +510,14 @@ begin
 	
 	{Draw area offset is used to calculate the position of each pixel
 	 in the drawing area, so that it can be drawn in the correct place}
-	OffsetX := TxtDrawArea.Left + 2;
-	OffsetY := TxtDrawArea.Top + 2;
+	OffsetX := AreaCanvas.Left + 2;
+	OffsetY := AreaCanvas.Top + 2;
 
 	MouseHide;
 	MenuBar.Draw;
 	SetFillStyle(SolidFill, Thm.Win);
 	Bar(0, 29, 639, 349);
-	TxtDrawArea.Draw;
+	AreaCanvas.Draw;
 	BtnPencil.Draw;
 	BtnFloodFill.Draw;
 	BtnPreview.Draw;
@@ -531,16 +534,16 @@ begin
 	begin
 		if i < 8 then
 		begin
-			XPos := TxtDrawArea.Left - 51;
-			YPos := TxtDrawArea.Top + (i * 21) + 14;
+			XPos := AreaCanvas.Left - 51;
+			YPos := AreaCanvas.Top + (i * 21) + 14;
 		end
 		else
 		begin
-			XPos := TxtDrawArea.Left - 30;
-			YPos := TxtDrawArea.Top + ((i - 8) * 21) + 14;
+			XPos := AreaCanvas.Left - 30;
+			YPos := AreaCanvas.Top + ((i - 8) * 21) + 14;
 		end;
-		TxtColor[i].Init(XPos, YPos, 20, 20);
-		TxtColor[i].Draw;
+		AreaColor[i].Init(XPos, YPos, 20, 20);
+		AreaColor[i].Draw;
 		SetFillStyle(SolidFill, i);
 		Bar(XPos + 2, YPos + 2, XPos + 18, YPos + 18);
 	end;
@@ -556,29 +559,29 @@ begin
 	begin
 		SetColor(DarkGray);
 		SetLineStyle(SolidLn, 1, NormWidth);
-		Line(TxtDrawArea.Left + 2, TxtDrawArea.Top + 1 + (YPos * PixelSize),
-			TxtDrawArea.Left + TxtDrawArea.Width - 2, TxtDrawArea.Top + 1 + (YPos * PixelSize));
+		Line(AreaCanvas.Left + 2, AreaCanvas.Top + 1 + (YPos * PixelSize),
+			AreaCanvas.Left + AreaCanvas.Width - 2, AreaCanvas.Top + 1 + (YPos * PixelSize));
 		SetColor(Black);
 		SetLineStyle(UserBitLn, $AAAA, 1);
-		Line(TxtDrawArea.Left + 2, TxtDrawArea.Top + 1 + (YPos * PixelSize),
-			TxtDrawArea.Left + TxtDrawArea.Width - 2, TxtDrawArea.Top + 1 + (YPos * PixelSize));
+		Line(AreaCanvas.Left + 2, AreaCanvas.Top + 1 + (YPos * PixelSize),
+			AreaCanvas.Left + AreaCanvas.Width - 2, AreaCanvas.Top + 1 + (YPos * PixelSize));
 	end;
 	for XPos := 0 to 31 do
 	begin
 		SetColor(DarkGray);
 		SetLineStyle(SolidLn, 1, NormWidth);
-		Line(TxtDrawArea.Left + 1 + (XPos * PixelSize), TxtDrawArea.Top + 2,
-			TxtDrawArea.Left + 1 + (XPos * PixelSize), TxtDrawArea.Top + TxtDrawArea.Height - 2);
+		Line(AreaCanvas.Left + 1 + (XPos * PixelSize), AreaCanvas.Top + 2,
+			AreaCanvas.Left + 1 + (XPos * PixelSize), AreaCanvas.Top + AreaCanvas.Height - 2);
 		SetColor(Black);
 		SetLineStyle(UserBitLn, $AAAA, 1);
-		Line(TxtDrawArea.Left + 1 + (XPos * PixelSize), TxtDrawArea.Top + 2,
-			TxtDrawArea.Left + 1 + (XPos * PixelSize), TxtDrawArea.Top + TxtDrawArea.Height - 2);
+		Line(AreaCanvas.Left + 1 + (XPos * PixelSize), AreaCanvas.Top + 2,
+			AreaCanvas.Left + 1 + (XPos * PixelSize), AreaCanvas.Top + AreaCanvas.Height - 2);
 	end;
 	SetLineStyle(SolidLn, 1, NormWidth);
 
-	Print('Preview', BtnPreview.Left, BtnPreview.Top - 15, Thm.WinText);
-	Print(Hotkey + 'Color', TxtColor[0].Left, TxtDrawArea.Top, Thm.WinText);
-	Print('Tools', TxtDrawArea.Left + TxtDrawArea.Width + 12, TxtDrawArea.Top, Thm.WinText);
+	Print(CAP_PREVIEW, BtnPreview.Left, BtnPreview.Top - 15, Thm.WinText);
+	Print(CAP_COLOR, AreaColor[0].Left, AreaCanvas.Top, Thm.WinText);
+	Print(CAP_TOOLS, AreaCanvas.Left + AreaCanvas.Width + 12, AreaCanvas.Top, Thm.WinText);
 	MouseShow;
 
 	{Sert array to invalid color values, so that any color including 0 will be drawn on first field click}
@@ -591,28 +594,28 @@ begin
 	repeat
 		Key := GetKey;
 
-		if BtnClick(BtnNew) or (Key = KeyAltN) then
+		if BtnNew.Clicked or (Key = KeyAltN) then
 			NewIcon;
 
-		if BtnClick(BtnSave) or (Key = KeyAltS) then
+		if BtnSave.Clicked or (Key = KeyAltS) then
 			SaveIcon(false);
 		
-		if BtnClick(BtnSaveAs) or (Key = KeyAltV) then
+		if BtnSaveAs.Clicked or (Key = KeyAltV) then
 			SaveIcon(true);
 
-		if BtnClick(BtnOpen) or (Key = KeyAltO) then
+		if BtnOpen.Clicked or (Key = KeyAltO) then
 			LoadIcon;
 
-		if BtnClick(BtnAbout) or (Key = KeyAltA) then
+		if BtnAbout.Clicked or (Key = KeyAltA) then
 			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 
-		if BtnClick(BtnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
+		if BtnExit.Clicked or (Key = KeyAltX) or (Key = KeyAltF4) then
 			ExitEditor;
 
-		if ObjClick(BtnPencil) or (Key = KeyAltE) then
+		if BtnPencil.Clicked or (Key = KeyAltE) then
 			SetTool(toolPencil);
 
-		if ObjClick(BtnFloodFill) or (Key = KeyAltF) then
+		if BtnFloodFill.Clicked or (Key = KeyAltF) then
 			SetTool(toolFloodFill);
 
 		if Key = KeyAltC then
@@ -660,11 +663,11 @@ begin
 
 		{Mouse clicked in color selection area}
 		for i := 0 to 15 do
-			if ObjClick(TxtColor[i]) then
+			if AreaColor[i].Clicked then
 					SetDrawColor(i);
 
 		{Mouse clicked in drawing area}
-		if (MouseClicked <> MbNone) and TxtDrawArea.IsMouseOver then
+		if (MouseClicked <> MbNone) and AreaCanvas.IsMouseOver then
 		begin
 			{Mouse clicked, so hide keybard indicator}
 			if KeyboardPosVisible then

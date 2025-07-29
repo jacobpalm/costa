@@ -10,19 +10,19 @@ const
 	LibVersion       = '2.0';
 	LibYear          = '2025';
 
-	SizeDefault      = -1;
-	sizeCenter       = -2;
+	SizeDefault      = -1; {Used to set default width/height on object init}
+	sizeCenter       = -2; {Used to center objects on screen}
 
 	DoubleClickDelay = 0.5;
-	PrintLineH       = 12; {Height of a single line in pixels}
-	PrintCharW       = 8;
+	PrintLineH       = 12; {Font dimensions - line height}
+	PrintCharW       = 8;  {Width of a single character}
 
 	CharArrowUp:    Char = #24; {Arrows symbols for fonts}
 	CharArrowDown:  Char = #25;
 	CharArrowRight: Char = #26;
 	CharArrowLeft:  Char = #27;
 	NewLine:        Char = #13;  {Wrap lines in Print, MsgBox, InputBox etc.}
-	Hotkey:         Char = #127; {Marks hotkeys in object captions}
+	HotkeyChr:      Char = #127; {Marks hotkeys in object captions}
 
 	{$I KEYCODES.INC}
 
@@ -36,38 +36,45 @@ type
 		public
 			Left, Top, Width, Height: Integer;
 			function IsMouseOver: Boolean;
+			function Clicked: Boolean;
 		private
 			procedure SetSize(X, Y, W, H, DefaultW, DefaultH: Integer);
 	end;
 
 	TArea = object(TUIObject)
+		Transparent: Boolean;
 		constructor Init(X, Y, W, H: Integer);
+		procedure Draw;
 	end;
 
 	TButton = object(TUIObject)
-		Caption: string;
+		Caption,
+		Hotkey: string;
 		Transparent: Boolean;
 		State: TButtonState;
-		constructor Init(X, Y, W, H: Integer; CaptionS: string);
+		constructor Init(X, Y, W, H: Integer; Cap: string);
 		procedure Draw;
+		function Clicked: Boolean;
 	end;
 
 	TCheckbox = object(TUIObject)
 		Caption: string;
 		Checked: Boolean;
-		constructor Init(X, Y: Integer; CaptionS: String);
+		constructor Init(X, Y: Integer; Cap: String);
 		procedure Draw;
+		procedure Toggle;
 	end;
 
 	TFrame = object(TUIObject)
-		LightColor, DarkColor: Integer;
+		LightColor,
+		DarkColor: Integer;
 		constructor Init(X, Y, W, H: Integer);
 		procedure Draw;
 	end;
 
 	TIcon = object(TUIObject)
-		ImageFile: string[8];
-		constructor Init(X, Y: Integer; Image: string);
+		IconFile: string[8];
+		constructor Init(X, Y: Integer; Icon: string);
 		procedure Draw;
 	end;
 
@@ -124,11 +131,6 @@ var
 	MouseVisible: Boolean;
 	MouseSupport: Boolean;
 	MouseX, MouseY: Integer;
-
-function  BtnClick(var TargetBtn: TButton): Boolean;
-function  TxtClick(const TargetTxt: TTextbox): Boolean;
-procedure ChkClick(var TargetChk: TCheckbox);
-function  ObjClick(const TargetObj: TUIObject): Boolean;
 
 function  MsgBox(const MsgTitle, MsgText: string; MsgType: TMsgBox): Boolean;
 procedure AboutBox(const ProgramName, ProgramVersion, ProgramAuthor, IconFile: string);
@@ -210,6 +212,16 @@ begin
 		Top := Y;
 end;
 
+function TUIObject.Clicked: Boolean;
+begin
+	Clicked := False;
+	if (MouseClicked = MbLeft) and Self.IsMouseOver then
+	begin
+		repeat;	until MouseClicked = MbNone;
+		Clicked := Self.IsMouseOver;
+	end;
+end;
+
 function TUIObject.IsMouseOver: Boolean;
 var
 	X1, Y1, X2, Y2: Integer;
@@ -228,15 +240,35 @@ const
 	DefaultH = 50;
 begin
 	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
+	Transparent := False;
 end;
 
-constructor TButton.Init(X, Y, W, H: Integer; CaptionS: string);
+procedure TArea.Draw;
+var
+	X1, X2, Y1, Y2: Integer;
+begin
+	X1 := Left;
+	Y1 := Top;
+	X2 := X1 + Width;
+	Y2 := Y1 + Height;
+	if not Transparent then
+	begin
+		SetFillStyle(SolidFill, Thm.Txt);
+		Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 2);
+	end;
+	SetColor(Thm.Light);
+	Rectangle(X1, Y1, X2 - 1, Y2 - 1);
+	SetColor(Thm.Shadow);
+	Rectangle(X1 + 1, Y1 + 1, X2, Y2);
+end;
+
+constructor TButton.Init(X, Y, W, H: Integer; Cap: string);
 const
 	DefaultW = 92;
 	DefaultH = 22;
 begin
 	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
-	Self.Caption := CaptionS;
+	Self.Caption := Cap;
 	Self.State := BsUp;
 	Self.Transparent := False;
 end;
@@ -292,13 +324,56 @@ begin
 	end;
 end;
 
-constructor TCheckbox.Init(X, Y: Integer; CaptionS: String);
+function TButton.Clicked: Boolean;
+begin
+	Clicked := False;
+	if (MouseClicked = MbLeft) and Self.IsMouseOver then
+	begin
+		MouseHide;
+		State := BsDown;
+		Self.Draw;
+		MouseShow;
+		repeat
+			if Self.IsMouseOver then
+			begin
+				if State = BsUp then
+				begin
+					State := BsDown;
+					MouseHide;
+					Self.Draw;
+					MouseShow;
+				end;
+			end
+			else
+			begin
+				if State = BsDown then
+				begin
+					State := BsUp;
+					MouseHide;
+					Self.Draw;
+					MouseShow;
+				end;
+			end;
+		until MouseClicked = MbNone;
+
+		if State = BsDown then
+		begin
+			State := BsUp;
+			MouseHide;
+			Self.Draw;
+			MouseShow;
+		end;
+		Clicked := Self.IsMouseOver;
+	end;
+end;
+
+constructor TCheckbox.Init(X, Y: Integer; Cap: String);
 const
 	DefaultW = 15;
 	DefaultH = 15;
 begin
 	Self.SetSize(X, Y, DefaultW, DefaultH, DefaultW, DefaultH);
-	Caption := CaptionS;
+	Caption := Cap;
 	Checked := False;
 end;
 
@@ -310,8 +385,7 @@ begin
 	Y1 := Top;
 	X2 := X1 + 15;
 	Y2 := Y1 + 15;
-	if Width = 0 then Width := 14;
-	if Height = 0 then Height := 14;
+
 	SetFillStyle(SolidFill, Thm.Txt);
 	Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 2);
 	if Thm.Win = 0 then
@@ -343,6 +417,14 @@ begin
 		Print (Caption, X1 + 22, Y1 + 4, Thm.WinText);
 end;
 
+procedure TCheckbox.Toggle;
+begin
+	Checked := not Checked;
+	MouseHide;
+	Self.Draw;
+	MouseShow;
+end;
+
 constructor TFrame.Init(X, Y, W, H: Integer);
 const
 	DefaultW = 100;
@@ -361,19 +443,19 @@ begin
 	Rectangle(Left, Top, Left + Width - 1, Top + Height - 1);
 end;
 
-constructor TIcon.Init(X, Y: Integer; Image: string);
+constructor TIcon.Init(X, Y: Integer; Icon: string);
 const
 	DefaultW = 31;
 	DefaultH = 31;
 begin
 	Self.SetSize(X, Y, SizeDefault, SizeDefault, DefaultW, DefaultH);
-	Self.ImageFile := Image;
+	Self.IconFile := Icon;
 end;
 
 procedure TIcon.Draw;
 var
 	X, Y: Integer;
-	ImagePointer: Pointer;
+	IconPointer: Pointer;
 	Size: Word;
 	F: File;
 	IconError: Boolean;
@@ -381,7 +463,7 @@ var
 begin
 	IconError := False;
 	
-	Filename := ProgramPath + 'ICONS\' + ImageFile + '.BIN';
+	Filename := ProgramPath + 'ICONS\' + IconFile + '.BIN';
 	if not FileExists(Filename) then
 		IconError := True;
 
@@ -390,7 +472,7 @@ begin
 	X := Left;
 	Y := Top;
 
-	{Image border}
+	{Icon border}
 	SetColor(Thm.Light);
 	Line(X - 1, Y - 1, X + 32, Y - 1);
 	Line(X - 1, Y, X - 1, Y + 32);
@@ -398,8 +480,8 @@ begin
 	Line(X, Y + 32, X + 32, Y + 32);
 	Line(X + 32, Y, X + 32, Y + 31);
 
-	{If no image file, draw an empty box}
-	if Length(ImageFile) = 0 then
+	{If no Icon file, draw an empty box}
+	if Length(IconFile) = 0 then
 	begin
 		SetFillStyle(SolidFill, White);
 		Bar(X, Y, X + 31, Y + 31);
@@ -424,11 +506,11 @@ begin
 
 	if not IconError then
 	begin
-		GetMem(ImagePointer, Size);
-		BlockRead(F, ImagePointer^, Size);
+		GetMem(IconPointer, Size);
+		BlockRead(F, IconPointer^, Size);
 		Close(F);
-		PutImage(X, Y, ImagePointer^, CopyPut);
-		FreeMem(ImagePointer, Size);
+		PutImage(X, Y, IconPointer^, CopyPut);
+		FreeMem(IconPointer, Size);
 	end;
 
 	if IconError then
@@ -705,7 +787,7 @@ begin
 			{Extract the line up to newline, print it, and remove it from Text}
 			TextLine := Copy(Text, 1, NewLinePos - 1);
 			LineWidth := Length(TextLine);
-			if Pos(Hotkey, TextLine) > 0 then
+			if Pos(HotkeyChr, TextLine) > 0 then
 				Dec(LineWidth); {Don't count the hotkey symbol}
 			if LineWidth > MaxWidth then
 				MaxWidth := LineWidth;
@@ -715,7 +797,7 @@ begin
 		begin
 			{Last/only line}
 			LineWidth := Length(Text);
-			if Pos(Hotkey, Text) > 0 then
+			if Pos(HotkeyChr, Text) > 0 then
 				Dec(LineWidth); {Don't count the hotkey symbol}
 			if LineWidth > MaxWidth then
 				MaxWidth := LineWidth;
@@ -751,7 +833,7 @@ var
 	 and draw an underline under the next character}
 	procedure HandleHotkey(X, Y: Integer; var LineStr: String);
 	begin
-		HotkeyPos := Pos(Hotkey, LineStr);
+		HotkeyPos := Pos(HotkeyChr, LineStr);
 		if HotkeyPos > 0 then
 		begin
 			Delete(LineStr, HotkeyPos, 1);
@@ -776,7 +858,6 @@ begin
 		else
 		begin
 			{Last/only line}
-			HotkeyPos := Pos(Hotkey, Text);
 			HandleHotkey(X, Y, Text);
 			OutTextXY(X, Y, Text);
 			break;
@@ -840,86 +921,6 @@ Begin
 	Intr($33, Regs);
 	MouseVisible := True;
 End;
-
-function BtnClick(var TargetBtn: TButton): Boolean;
-begin
-	BtnClick := False;
-	if (MouseClicked = MbLeft) and TargetBtn.IsMouseOver then
-	begin
-		MouseHide;
-		TargetBtn.State := BsDown;
-		TargetBtn.Draw;
-		MouseShow;
-		repeat
-			if TargetBtn.IsMouseOver then
-			begin
-				if TargetBtn.State = BsUp then
-				begin
-					TargetBtn.State := BsDown;
-					MouseHide;
-					TargetBtn.Draw;
-					MouseShow;
-				end;
-			end
-			else
-			begin
-				if TargetBtn.State = BsDown then
-				begin
-					TargetBtn.State := BsUp;
-					MouseHide;
-					TargetBtn.Draw;
-					MouseShow;
-				end;
-			end;
-		until MouseClicked = MbNone;
-		if TargetBtn.State = BsDown then
-		begin
-			TargetBtn.State := BsUp;
-			MouseHide;
-			TargetBtn.Draw;
-			MouseShow;
-		end;
-		if TargetBtn.IsMouseOver then
-			BtnClick := True;
-	end;
-end;
-
-procedure ChkClick(var TargetChk: TCheckbox);
-begin
-	if (MouseClicked = MbLeft) and TargetChk.IsMouseOver then
-	begin
-		repeat until MouseClicked = MbNone;
-		if TargetChk.IsMouseOver then
-		begin
-			TargetChk.Checked := not TargetChk.Checked;
-			MouseHide;
-			TargetChk.Draw;
-			MouseShow;
-		end;
-	end;
-end;
-
-function ObjClick(const TargetObj: TUIObject): Boolean;
-begin
-	ObjClick := false;
-	if (MouseClicked = MbLeft) and Targetobj.IsMouseOver then
-	begin
-		repeat until MouseClicked = MbNone;
-		if TargetObj.IsMouseOver then
-			ObjClick := true;
-	end;
-end;
-
-function TxtClick(const TargetTxt: TTextbox): Boolean;
-begin
-	TxtClick := False;
-	if (MouseClicked = MbLeft) and TargetTxt.IsMouseOver then
-	begin
-		repeat until MouseClicked = MbNone;
-		if TargetTxt.IsMouseOver then
-			TxtClick := True;
-	end;
-end;
 
 procedure SoundNote(Frequency, Duration: Integer);
 begin
@@ -997,7 +998,7 @@ begin
 	MouseShow;
 	repeat
 		Key := GetKey;
-		if BtnClick(BtnClose) or (Key = KeyEnter) or (Key = KeyEscape) or (Key = KeyAltC) then Break;
+		if BtnClose.Clicked or (Key = KeyEnter) or (Key = KeyEscape) or (Key = KeyAltC) then Break;
 	until False;
 	MouseHide;
 	PutImage(X1, Y1, BackgroundP^, NormalPut);
@@ -1105,10 +1106,10 @@ begin
 	WinMsgBox.Init(sizeCenter, sizeCenter, BoxW, BoxH);
 	ImgIcon.Init(WinMsgBox.Left + 13, WinMsgBox.Top + 15, '');
 	case MsgType of
-		MsgInfo:  ImgIcon.ImageFile := 'MSGINFO';
-		MsgWarn:  ImgIcon.ImageFile := 'MSGWARN';
-		MsgQuest: ImgIcon.ImageFile := 'MSGQUEST';
-		MsgError: ImgIcon.ImageFile := 'MSGERROR';
+		MsgInfo:  ImgIcon.IconFile := 'MSGINFO';
+		MsgWarn:  ImgIcon.IconFile := 'MSGWARN';
+		MsgQuest: ImgIcon.IconFile := 'MSGQUEST';
+		MsgError: ImgIcon.IconFile := 'MSGERROR';
 	end;
 	BtnFirst.Init(sizeCenter, WinMsgBox.Top + WinMsgBox.Height - 36, SizeDefault, SizeDefault, CAP_OK);
 	if MsgType = MsgQuest then
@@ -1141,10 +1142,10 @@ begin
 	repeat
 		Key := GetKey;
 			
-		if BtnClick(BtnFirst) then Key := KeyEnter;
+		if BtnFirst.Clicked then Key := KeyEnter;
 		if MsgType = MsgQuest then
 		begin
-			if BtnClick(BtnSecond) then Key := KeyEscape;
+			if BtnSecond.Clicked then Key := KeyEscape;
 		end;
 		if Key <> '' then
 		begin

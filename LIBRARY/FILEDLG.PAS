@@ -5,7 +5,7 @@ interface
 uses
 	Costalib;
 
-function FileSelect(DefaultPattern, StartPath: string; ImageSelect: boolean): string;
+function FileSelect(DefaultPattern, StartPath: string; IconSelect: boolean): string;
 
 implementation
 
@@ -186,7 +186,7 @@ end;
 
 procedure DrawPreview;
 var
-	ImageFile: String;
+	IconFile: String;
 	FDir: DirStr;
 	FName: NameStr;
 	FExt: ExtStr;
@@ -197,7 +197,7 @@ begin
 		if (Length(FName) <> 0) and (FExt = '.BIN') then
 		begin
 			MouseHide;
-			ImgPreview.ImageFile := FName;
+			ImgPreview.IconFile := FName;
 			ImgPreview.Draw;
 			MouseShow;
 			PreviewShown := true;
@@ -287,7 +287,7 @@ begin
 		DrawFileList(TargetList, True, False);
 	end;
 		
-	{Update image preview in case an image file is now selected}
+	{Update Icon preview in case an Icon file is now selected}
 	DrawPreview;
 end;
 
@@ -416,7 +416,7 @@ begin
 	DrawPreview;
 end;
 
-function FileSelect(DefaultPattern, StartPath: string; ImageSelect: boolean): string;
+function FileSelect(DefaultPattern, StartPath: string; IconSelect: boolean): string;
 var
 	WinFileSelect: TWindow;
 	TxtDrive, TxtPattern: TTextbox;
@@ -515,7 +515,7 @@ begin
 				Key := KeyEnter; {Double-clicked directory, change to it}
 		end;
 
-		if BtnClick(BtnSelect) or (Key = KeyAltS) or (Key = KeyEnter) then
+		if BtnSelect.Clicked or (Key = KeyAltS) or (Key = KeyEnter) then
 		begin
 			if (ActiveList = FileList) and (SubFiles[ListSelection[FileList]] <> '') then
 			begin
@@ -532,13 +532,13 @@ begin
 			end;
 		end;
 
-		if BtnClick(BtnCancel) or (Key = KeyAltC) or (Key = KeyEscape) then
+		if BtnCancel.Clicked or (Key = KeyAltC) or (Key = KeyEscape) then
 		begin
 			FileSelect := '';
 			Break;
 		end;
 
-		if TxtClick(TxtDrive) or (Key = KeyAltR) then
+		if TxtDrive.Clicked or (Key = KeyAltR) then
 		begin
 			TxtDrive.Edit;
 			if TxtDrive.Text <> Drive Then
@@ -553,25 +553,25 @@ begin
 			end;
 		end;
 
-		if BtnClick(BtnFilePrev) then
+		if BtnFilePrev.Clicked then
 		begin
 			SetActiveList(FileList);
 			Key := KeyPageUp; {Simulate key press for moving selection up}
 		end;
 
-		if BtnClick(BtnFileNext) then
+		if BtnFileNext.Clicked then
 		begin
 			SetActiveList(FileList);
 			Key := KeyPageDown; {Simulate key press for moving selection down}
 		end;
 
-		if BtnClick(BtnDirPrev) then
+		if BtnDirPrev.Clicked then
 		begin
 			SetActiveList(DirList);
 			Key := KeyPageUp; {Simulate key press for moving view up}
 		end;
 
-		if BtnClick(BtnDirNext) then
+		if BtnDirNext.Clicked then
 		begin
 			SetActiveList(DirList);
 			Key := KeyPageDown; {Simulate key press for moving view down}
@@ -604,7 +604,7 @@ begin
 		if (Key = KeyTab) or (Key = KeyShiftTab) then
 			SetActiveList(not ActiveList);
 
-		if TxtClick(TxtPattern) or (Key = KeyAltP) then
+		if TxtPattern.Clicked or (Key = KeyAltP) then
 		begin
 			TxtPattern.Edit;
 			if TxtPattern.Text <> Pattern then

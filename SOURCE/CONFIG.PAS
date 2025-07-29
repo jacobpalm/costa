@@ -229,57 +229,32 @@ begin
 
 		if ThemeCount > 0 then
 		begin
-			if BtnClick(BtnPrevious) or (Key = KeyAltP) or (Key = KeyLeft) then
+			if BtnPrevious.Clicked or (Key = KeyAltP) or (Key = KeyLeft) then
 			 begin
 				Dec(SelectedTheme);
 				ThemePreview;
 			end;
 
-			if BtnClick(BtnNext) or (Key = KeyAltN) or (Key = KeyRight) then
+			if BtnNext.Clicked or (Key = KeyAltN) or (Key = KeyRight) then
 			begin
 				Inc(SelectedTheme);
 				ThemePreview;
 			end;
 		end;
 
-		ChkClick(ChkSetting[LinkDesc]);
-		ChkClick(ChkSetting[LinkTarget]);
-		ChkClick(ChkSetting[LinkDelete]);
-		ChkClick(ChkSetting[ConfExit]);
+		if ChkSetting[LinkDesc].Clicked or (Key = KeyAltC) then
+			ChkSetting[LinkDesc].Toggle;
+		if ChkSetting[LinkTarget].Clicked or (Key = KeyAltO) then
+			ChkSetting[LinkTarget].Toggle;
+		if ChkSetting[LinkDelete].Clicked or (Key = KeyAltR) then
+			ChkSetting[LinkDelete].Toggle;
+		if ChkSetting[ConfExit].Clicked or (Key = KeyAltE) then
+			ChkSetting[ConfExit].Toggle;
 
-		if Key = KeyAltC then
-		begin
-			ChkSetting[LinkDesc].Checked := not ChkSetting[LinkDesc].Checked;
-			MouseHide;
-			ChkSetting[LinkDesc].Draw;
-			MouseShow;
-		end;
-		if Key = KeyAltO then
-		begin
-			ChkSetting[LinkTarget].Checked:= not ChkSetting[LinkTarget].Checked;
-			MouseHide;
-			ChkSetting[LinkTarget].Draw;
-			MouseShow;
-		end;
-		if Key = KeyAltR then
-		begin
-			ChkSetting[LinkDelete].Checked := not ChkSetting[LinkDelete].Checked;
-			MouseHide;
-			ChkSetting[LinkDelete].Draw;
-			MouseShow;
-		end;
-		if Key = KeyAltE then
-		begin
-			ChkSetting[ConfExit].Checked := not ChkSetting[ConfExit].Checked;
-			MouseHide;
-			ChkSetting[ConfExit].Draw;
-			MouseShow;
-		end;
-
-		if BtnClick(BtnAbout) or (Key = KeyAltA) then
+		if BtnAbout.Clicked or (Key = KeyAltA) then
 			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 
-		if BtnClick(BtnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
+		if BtnExit.Clicked or (Key = KeyAltX) or (Key = KeyAltF4) then
 		begin
 			if ThemeCount > 0 then
 				Setting.ThmFile := ThemeList[SelectedTheme];

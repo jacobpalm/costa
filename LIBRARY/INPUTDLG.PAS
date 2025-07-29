@@ -62,19 +62,19 @@ begin
 	repeat
 		Key := GetKey;
 
-		if BtnClick(BtnOK) or (Key = KeyAltO) or (Key = KeyEnter) then
+		if BtnOK.Clicked or (Key = KeyAltO) or (Key = KeyEnter) then
 		begin
 			InputBox := TxtInput.Text;
 			Break;
 		end;
 
-		if BtnClick(BtnCancel) or (Key = KeyAltC) or (Key = KeyEscape) then
+		if BtnCancel.Clicked or (Key = KeyAltC) or (Key = KeyEscape) then
 		begin
 			InputBox := '';
 			Break;
 		end;
 
-		if TxtClick(TxtInput) or (Key = KeyAltN) then
+		if TxtInput.Clicked or (Key = KeyAltN) then
 			TxtInput.Edit;
 
 	until False;

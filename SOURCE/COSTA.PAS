@@ -29,7 +29,7 @@ type
 		FileName: PathStr;
 		Path: DirStr;
 		Parameters: ComStr;
-		ImageFile: String[8];
+		IconFile: String[8];
 		PauseOnExit: Boolean;
 		Left, Top: Integer;
 	end;

@@ -284,10 +284,10 @@ begin
 	repeat
 		Key := GetKey;
 		
-		if BtnClick(BtnAbout) or (Key = KeyAltA) then
+		if BtnAbout.Clicked or (Key = KeyAltA) then
 			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 
-		if BtnClick(BtnOpen) or (Key = KeyAltO) then
+		if BtnOpen.Clicked or (Key = KeyAltO) then
 		begin
 			NewFileName := FileSelect('*.TXT', '', False);
 			if Length(NewFilename) > 0 then
@@ -305,12 +305,12 @@ begin
 			end;
 		end;
 		
-		if BtnClick(BtnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
+		if BtnExit.Clicked or (Key = KeyAltX) or (Key = KeyAltF4) then
 			break;
 
 		if FileOpened then
 		begin
-			if BtnClick(BtnPageUp) or (Key = KeyPageUp) or (Key = KeyUp) or (Key = KeyAltU) then
+			if BtnPageUp.Clicked or (Key = KeyPageUp) or (Key = KeyUp) or (Key = KeyAltU) then
 			begin
 				if StartLine > 1 then
 				begin
@@ -324,7 +324,7 @@ begin
 				end;
 			end;
 
-			if BtnClick(BtnPageDown) or (Key = KeyPageDown) or (Key = KeyDown) or (Key = KeyAltD) then
+			if BtnPageDown.Clicked or (Key = KeyPageDown) or (Key = KeyDown) or (Key = KeyAltD) then
 			begin
 				if StartLine < LineCount then
 				begin

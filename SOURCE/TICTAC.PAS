@@ -534,20 +534,20 @@ begin
 	repeat
 		Key := GetKey;
 		
-		if BtnClick(BtnNew) or (Key = KeyAltN) then
+		if BtnNew.Clicked or (Key = KeyAltN) then
 		begin
 			NewGame;
 			if VersusPC and (PlayerTurn = PlayerO) then
 				PcMove;
 		end;
 
-		if BtnClick(BtnAbout) or (Key = KeyAltA) then
+		if BtnAbout.Clicked or (Key = KeyAltA) then
 			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 
-		if BtnClick(BtnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
+		if BtnExit.Clicked or (Key = KeyAltX) or (Key = KeyAltF4) then
 			break;
 
-		if BtnClick(BtnGameMode) or (Key = KeyAltM) then
+		if BtnGameMode.Clicked or (Key = KeyAltM) then
 		begin
 			VersusPC := not VersusPC;
 			NewGame;
@@ -555,7 +555,7 @@ begin
 				PcMove;
 		end;
 
-		if BtnClick(BtnSound) or (Key = KeyAltS) then
+		if BtnSound.Clicked or (Key = KeyAltS) then
 		begin
 			SoundOn := not SoundOn;
 			PrintStatus;
@@ -567,7 +567,7 @@ begin
 			begin
 				for Col := 1 to 3 do
 				begin
-					if ObjClick(TxtPlayField[Row, Col]) then
+					if TxtPlayField[Row, Col].Clicked then
 					begin
 						FieldClicked := true;
 						break;
@@ -579,7 +579,7 @@ begin
 
 			if FieldClicked then
 			begin
-				{Prevent audio from running wild if mouse/key is held down}
+				{Prevent sound from running wild if mouse/key is held down}
 				ClearInputBuffer;
 
 				if PlayField[Row, Col] = PlayerNone then

@@ -140,20 +140,20 @@ begin
 	repeat
 		Key := GetKey;
 
-		if BtnClick(BtnExit) or (Key = KeyAltX) or (Key = KeyAltF4) then
+		if BtnExit.Clicked or (Key = KeyAltX) or (Key = KeyAltF4) then
 		begin
 			MouseHide;
 			CloseGraph;
 			Halt;
 		end;
 
-		if BtnClick(BtnAbout) or (Key = KeyAltA) then
+		if BtnAbout.Clicked or (Key = KeyAltA) then
 			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 
 		for i := 0 to 9 do
 		begin
 			Str(i, ch);
-			if BtnClick(BtnNumb[i]) or (Key = ch) then
+			if BtnNumb[i].Clicked or (Key = ch) then
 			begin
 				TxtCalc.Text := TxtCalc.Text + ch;
 				MouseHide;
@@ -162,7 +162,7 @@ begin
 			end;
 		end;
 
-		if BtnClick(BtnC) or (Key = KeyAltC) then
+		if BtnC.Clicked or (Key = KeyAltC) then
 		begin
 			TxtCalc.Text := '';
 			MouseHide;
@@ -170,7 +170,7 @@ begin
 			MouseShow;
 		end;
 
-		if BtnClick(BtnCE) or (Key = KeyAltE) then
+		if BtnCE.Clicked or (Key = KeyAltE) then
 		begin
 			TxtCalc.Text := '';
 			MouseHide;
@@ -183,7 +183,7 @@ begin
 			LastClick := '';
 		end;
 
-		if BtnClick(BtnDot) or ((Key = '.') or (Key = ',')) then
+		if BtnDot.Clicked or ((Key = '.') or (Key = ',')) then
 		begin
 			if (Length(TxtCalc.Text) < 22) and (Pos('.', TxtCalc.Text) = 0) then
 			begin
@@ -202,15 +202,15 @@ begin
 			end;
 		end;
 
-		if BtnClick(BtnEquals) or (Key = '=') or (Key = KeyEnter) then
+		if BtnEquals.Clicked or (Key = '=') or (Key = KeyEnter) then
 		begin
 			
 		end;
 
-		if BtnClick(BtnMulti) then Key := '*';
-		if BtnClick(BtnDivide) then Key := '/';
-		if BtnClick(BtnPlus) then Key := '+';
-		if BtnClick(BtnMinus) then Key := '-';
+		if BtnMulti.Clicked then Key := '*';
+		if BtnDivide.Clicked then Key := '/';
+		if BtnPlus.Clicked then Key := '+';
+		if BtnMinus.Clicked then Key := '-';
 
 	until False;
 
