@@ -14,6 +14,11 @@ REM -E            = specify path to produced EXE/TPU
 
 CD C:\COSTA
 DEL *.TPU
+
+REM Build library
+FOR %%F IN (LIBRARY\*.PAS) DO C:\TP\BIN\TPC -B -$D- -$E- -$L- %%F -ULIBRARY -ILIBRARY -OLIBRARY -EC:\COSTA
+
+REM Build applications
 FOR %%F IN (SOURCE\*.PAS) DO C:\TP\BIN\TPC -B -$D- -$E- -$L- %%F -USOURCE -ISOURCE -OSOURCE -EC:\COSTA
 
 ECHO.
