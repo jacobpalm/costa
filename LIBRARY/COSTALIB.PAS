@@ -43,6 +43,7 @@ type
 
 	TArea = object(TUIObject)
 		Transparent: Boolean;
+		BGColor: Integer;
 		constructor Init(X, Y, W, H: Integer);
 		procedure Draw;
 	end;
@@ -67,7 +68,9 @@ type
 
 	TFrame = object(TUIObject)
 		LightColor,
-		DarkColor: Integer;
+		DarkColor,
+		BGColor: Integer;
+		Transparent: Boolean;
 		constructor Init(X, Y, W, H: Integer);
 		procedure Draw;
 	end;
@@ -141,13 +144,14 @@ function  Valid8dot3(Filename: string): Boolean;
 
 procedure ClearInputBuffer;
 function  GetKey: string;
+
 function  MouseClicked: TMouseButton;
 procedure MouseHide;
 procedure MouseMove(X, Y: Integer);
 procedure MousePoll;
 procedure MouseShow;
 
-Function  ProgramPath: DirStr;
+function  ProgramPath: DirStr;
 function  Timer: Real;
 
 procedure Print(Text: string; X, Y, Color: Integer);
@@ -241,6 +245,7 @@ const
 	DefaultH = 50;
 begin
 	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
+	BGColor := Thm.Txt;
 	Transparent := False;
 end;
 
@@ -254,7 +259,7 @@ begin
 	Y2 := Y1 + Height;
 	if not Transparent then
 	begin
-		SetFillStyle(SolidFill, Thm.Txt);
+		SetFillStyle(SolidFill, BgColor);
 		Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 2);
 	end;
 	SetColor(Thm.Light);
@@ -432,8 +437,10 @@ const
 	DefaultH = 100;
 begin
 	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
-	Self.LightColor := 15;
-	Self.DarkColor := Thm.Shadow;
+	LightColor := 15;
+	DarkColor := Thm.Shadow;
+	BGColor := Thm.Win;
+	Transparent := True;
 end;
 
 procedure TFrame.Draw;
@@ -442,6 +449,12 @@ begin
 	Rectangle(Left + 1, Top + 1, Left + Width - 1, Top + Height);
 	SetColor(DarkColor);
 	Rectangle(Left, Top, Left + Width - 1, Top + Height - 1);
+
+	if not Transparent then
+	begin
+		SetFillStyle(SolidFill, BGColor);
+		Bar(Left + 2, Top + 2, Left + Width - 2, Top + Height - 2);
+	end;
 end;
 
 constructor TIcon.Init(X, Y: Integer; Icon: string);
@@ -450,7 +463,7 @@ const
 	DefaultH = 31;
 begin
 	Self.SetSize(X, Y, SizeDefault, SizeDefault, DefaultW, DefaultH);
-	Self.IconFile := Icon;
+	IconFile := Icon;
 end;
 
 procedure TIcon.Draw;
@@ -532,14 +545,15 @@ end;
 
 procedure TMenu.Draw;
 begin
+	{Background}
 	SetFillStyle(SolidFill, Thm.Win);
-	Bar(Left, Top, Left + Width, Height - 2);
+	Bar(Left, Top, Left + Width, Top + Height - 2);
 
+	{3D border below}
 	SetColor(Thm.Shadow);
-	Line(Top, Top + Height - 1, Left + Width, Top + Height - 1);
-
+	Line(Left, Top + Height - 1, Left + Width, Top + Height - 1);
 	SetColor(Black);
-	Line(Top, Top + Height, Left + Width, Top + Height);
+	Line(Left, Top + Height, Left + Width, Top + Height);
 end;
 
 constructor TTextbox.Init(X, Y, W, H: Integer; Cap: String);
@@ -681,7 +695,7 @@ begin
 	{Draw caption if set}
 	if Length(Caption) > 0 then
 	Print(Caption, X1, Y1 - 15, Thm.WinText);
-	
+
 	S := Text;
 	if S <> '' then
 	begin

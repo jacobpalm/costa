@@ -962,10 +962,7 @@ begin
 				begin
 					MouseHide;
 					SetFillStyle(SolidFill, Thm.Desk);
-					Bar(BtnIcon.Left + 2,
-						BtnIcon.Top + 2, 
-						BtnIcon.Left + BtnIcon.Width - 2,
-						BtnIcon.Top + BtnIcon.Height - 2);
+					Bar(BtnIcon.Left + 2, BtnIcon.Top + 2, BtnIcon.Left + BtnIcon.Width - 2, BtnIcon.Top + BtnIcon.Height - 2);
 					ImgIcon.IconFile := FName;
 					ImgIcon.Draw;
 					MouseShow;

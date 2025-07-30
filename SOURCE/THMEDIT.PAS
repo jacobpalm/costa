@@ -139,6 +139,7 @@ var
 	TxtPreview: TTextbox;
 	BtnPreview1, BtnPreview2, BtnPreview3: TButton;
 	ImgPreview, ImgLogo: TIcon;
+	MnuPreview: TMenu;
 	AreaListPreview: TArea;
 	X1, Y1, X2, Y2: Integer;
 begin
@@ -146,24 +147,26 @@ begin
 	Thm := ThemeData;
 
 	FrmPreview.Init(12, 42, 410, 293);
+	FrmPreview.Transparent := false;
+	FrmPreview.BgColor := Thm.Desk;
 	X1 := FrmPreview.Left;
 	Y1 := FrmPreview.Top;
 	X2 := FrmPreview.Left + FrmPreview.Width;
 	Y2 := FrmPreview.Top + FrmPreview.Height;
+	MnuPreview.Init;
+	with MnuPreview do
+	begin
+		Left := FrmPreview.Left + 2;
+		Top := FrmPreview.Top + 2;
+		Width := FrmPreview.Width - 4;
+	end;
 	BtnPreview3.Init(X2 - 96, Y1 + 3, SizeDefault, SizeDefault, CAP_OBJECT[Ord(TThemeObject(Btn))]);
 	AreaListPreview.Init(X2 - 182, Y2 - 82, 166, 66);
 	ImgPreview.Init(FrmPreview.Left + 16, Y2 - 48, 'PAINT');
 
 	MouseHide;
 	FrmPreview.Draw;
-	SetFillStyle(SolidFill, Thm.Desk);
-	Bar(FrmPreview.Left + 2, Y1 + 2, X2 - 2, Y2 - 2);
-	SetFillStyle(SolidFill, Thm.Win);
-	Bar(FrmPreview.Left + 2, Y1 + 2, X2 - 2, Y1 + 27);
-	SetColor(Thm.Shadow);
-	Line(FrmPreview.Left + 2, Y1 + 28, X2 - 2, Y1 + 28);
-	SetColor(Black);
-	Line(FrmPreview.Left + 2, Y1 + 29, X2 - 2, Y1 + 29);
+	MnuPreview.Draw;
 
 	WinPreview.Init(X1 + ((FrmPreview.Width - 260) div 2), Y1 + 65, 260, 127);
 	X1 := WinPreview.Left;
@@ -501,7 +504,7 @@ begin
 			XPos := 0;
 		end;
 		AreaColor[i].Init(TxtAuthor.Left + XPos, TxtAuthor.Top + 98 + YPos, 19, 19);
-		AreaColor[i].Transparent := True;
+		AreaColor[i].BGColor := i;
 		Inc(XPos, 25);
 	end;
 
@@ -516,12 +519,7 @@ begin
 	TxtAuthor.Draw;
 	BtnObject.Draw;
 	for i := 0 to 15 do
-	begin
 		AreaColor[i].Draw;
-		SetFillStyle(SolidFill, i);
-		Bar(AreaColor[i].Left + 2, AreaColor[i].Top + 2, AreaColor[i].Left + AreaColor[i].Width - 2,
-			AreaColor[i].Top + AreaColor[i].Height - 2);
-	end;
 
 	Print(CAP_OBJECT_SEL, 434, BtnObject.Top - 16, Thm.WinText);
 	Print(CAP_COLOR_SEL, 434, AreaColor[0].Top - 16, Thm.WinText);

@@ -316,12 +316,13 @@ begin
 	begin
 		for Col := 1 to 3 do
 		begin
+			AreaPlayField[Row, Col].Draw;
 			X1 := AreaPlayField[Row, Col].Left;
 			Y1 := AreaPlayField[Row, Col].Top;
 			X2 := AreaPlayField[Row, Col].Left + AreaPlayField[Row, Col].Width;
 			Y2 := AreaPlayField[Row, Col].Top + AreaPlayField[Row, Col].Height;
-			SetFillStyle(SolidFill, White);
-			Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 2);
+			{Draw light green border around each cell instead of
+			 default color, to match app theme}
 			SetColor(LightGreen);
 			Rectangle(X1, Y1, X2 - 1, Y2 - 1);
 			SetColor(DarkGray);
@@ -485,6 +486,8 @@ begin
 	FieldClicked := false;
 
 	FrmTic.Init(sizeCenter, sizeCenter, 221, 221);
+	FrmTic.Transparent := false;
+	FrmTic.BgColor := Green;
 	Inc(FrmTic.Top, 16); {To accomodate menu bar}
 	FrmTic.LightColor := LightGreen;
 
@@ -500,6 +503,7 @@ begin
 		else
 			AreaPlayField[Row, Col].Init(AreaPlayField[Row, Col - 1].Left + 70,
 				AreaPlayField[Row, Col - 1].Top, 60, 60);
+		AreaPlayField[Row, Col].BGColor := White;
 		end;
 	end;
 	
@@ -513,9 +517,6 @@ begin
 	MenuBar.Draw;
 	DrawBg;
 
-	SetFillStyle(SolidFill, Green);
-	Bar(FrmTic.Left + 2, FrmTic.Top + 2, FrmTic.Left + FrmTic.Width - 2,
-		FrmTic.Top + FrmTic.Height - 2);
 	FrmTic.Draw;
 	BtnNew.Draw;
 	BtnGameMode.Draw;

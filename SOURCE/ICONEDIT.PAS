@@ -181,12 +181,7 @@ begin
 	
 	{Remove selection marker from previous color}
 	MouseHide;
-	X1 := AreaColor[DrawColor].Left + 4;
-	Y1 := AreaColor[DrawColor].Top + 4;
-	X2 := AreaColor[DrawColor].Left + AreaColor[DrawColor].Width - 4;
-	Y2 := AreaColor[DrawColor].Top + AreaColor[DrawColor].Height - 4;
-	SetFillStyle(SolidFill, DrawColor);
-	Bar(X1, Y1, X2, Y2);
+	AreaColor[DrawColor].Draw;
 
 	{Change color and draw new selection marker}
 	DrawColor := Col;
@@ -480,12 +475,11 @@ end;
 
 {Main program start}
 var
-	BtnPreview: TButton;
 	BtnNew, BtnOpen, BtnSave, BtnSaveAs: TButton;
 	BtnExit, BtnAbout: TButton;
+	AreaPreview: TArea;
 	Key: string;
 	YPos, XPos, CursorX, CursorY, i: Integer;
-	ColChk: integer;
 begin
 	AreaCanvas.Init(175, 44, 290, 290);
 	BtnNew.Init(2, 2, SizeDefault, SizeDefault, CAP_NEW);
@@ -499,13 +493,14 @@ begin
 	BtnPencil.Init(XPos, AreaCanvas.Top + 14, 56, SizeDefault, CAP_PENCIL);
 	BtnPencil.State := BsDown;
 	BtnFloodFill.Init(XPos, BtnPencil.Top + 26, 56, SizeDefault, CAP_FILL);
-	BtnPreview.Init(XPos, BtnFloodFill.Top + 51, 56, 56, '');
+	AreaPreview.Init(XPos, BtnFloodFill.Top + 51, 56, 56);
+	AreaPreview.BgColor := Thm.Desk;
 
 	{Center preview icon in area}
-	XPos := (BtnPreview.Width - 34) div 2;
-	YPos := (BtnPreview.Height - 34) div 2;
-	XPos := BtnPreview.Left + XPos;
-	YPos := BtnPreview.Top + YPos;
+	XPos := (AreaPreview.Width - 34) div 2;
+	YPos := (AreaPreview.Height - 34) div 2;
+	XPos := AreaPreview.Left + XPos;
+	YPos := AreaPreview.Top + YPos;
 	ImgPreview.Init(XPos, YPos, '');
 	
 	{Draw area offset is used to calculate the position of each pixel
@@ -518,41 +513,30 @@ begin
 	SetFillStyle(SolidFill, Thm.Win);
 	Bar(0, 29, 639, 349);
 	AreaCanvas.Draw;
-	BtnPencil.Draw;
-	BtnFloodFill.Draw;
-	BtnPreview.Draw;
+	AreaPreview.Draw;
+	ImgPreview.Draw;
 	BtnNew.Draw;
 	BtnOpen.Draw;
 	BtnSave.Draw;
-	
 	BtnSaveAs.Draw;
 	BtnAbout.Draw;
 	BtnExit.Draw;
+	BtnPencil.Draw;
+	BtnFloodFill.Draw;
 
 	{Init and draw each color selection box}
 	for i := 0 to 15 do
 	begin
 		if i < 8 then
-		begin
-			XPos := AreaCanvas.Left - 51;
-			YPos := AreaCanvas.Top + (i * 21) + 14;
-		end
+			XPos := AreaCanvas.Left - 51
 		else
-		begin
 			XPos := AreaCanvas.Left - 30;
-			YPos := AreaCanvas.Top + ((i - 8) * 21) + 14;
-		end;
+		
+    	YPos := AreaCanvas.Top + ((i mod 8) * 21) + 14;
 		AreaColor[i].Init(XPos, YPos, 20, 20);
+		AreaColor[i].BGColor := i;
 		AreaColor[i].Draw;
-		SetFillStyle(SolidFill, i);
-		Bar(XPos + 2, YPos + 2, XPos + 18, YPos + 18);
 	end;
-
-	{Draw preview area}
-	SetFillStyle(SolidFill, Thm.Desk);
-	Bar(BtnPreview.Left + 2, BtnPreview.Top + 2,
-		BtnPreview.Left + BtnPreview.Width - 2, BtnPreview.Top + BtnPreview.Height - 2);
-	ImgPreview.Draw;
 
 	{Draw grid in drawing area - black line with a dotted grey line on top so it's visible on all colors}
 	for YPos := 0 to 31 do
@@ -579,7 +563,7 @@ begin
 	end;
 	SetLineStyle(SolidLn, 1, NormWidth);
 
-	Print(CAP_PREVIEW, BtnPreview.Left, BtnPreview.Top - 15, Thm.WinText);
+	Print(CAP_PREVIEW, AreaPreview.Left, AreaPreview.Top - 15, Thm.WinText);
 	Print(CAP_COLOR, AreaColor[0].Left, AreaCanvas.Top, Thm.WinText);
 	Print(CAP_TOOLS, AreaCanvas.Left + AreaCanvas.Width + 12, AreaCanvas.Top, Thm.WinText);
 	MouseShow;
