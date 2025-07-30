@@ -40,7 +40,7 @@ begin
 	ImgIcon.Init(X1 + 13, Y1 + 15, MsgIcon);
 	BtnOK.Init(X2 - 207, Y2 - 36, SizeDefault, SizeDefault, CAP_OK);
 	BtnCancel.Init(X2 - 105, BtnOK.Top, SizeDefault, SizeDefault, CAP_CANCEL);
-	TxtInput.Init(X1 + 12, BtnOK.Top - 27, WinInputBox.Width - 25, SizeDefault);
+	TxtInput.Init(X1 + 12, BtnOK.Top - 27, WinInputBox.Width - 25, SizeDefault, CAP_INPUT);
 	TxtInput.Text := MsgDefault;
 
 	MouseHide;
@@ -56,7 +56,6 @@ begin
 
 	Print(MsgTitle, X1 + 56, Y1 + 15, Thm.WinText);
 	Print(MsgText, X1 + 56, Y1 + 31, Thm.WinText);
-	Print(CAP_INPUT, TxtInput.Left, TxtInput.Top - 16, Thm.WinText);
 	MouseShow;
 
 	repeat

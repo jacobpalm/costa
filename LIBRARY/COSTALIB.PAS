@@ -85,9 +85,10 @@ type
 
 	TTextbox = object(TUIObject)
 		public
-			MaxLen: Integer;
+			Caption,
 			Text: string;
-			constructor Init(X, Y, W, H: Integer);
+			MaxLen: Integer;
+			constructor Init(X, Y, W, H: Integer; Cap: String);
 			procedure Edit;
 			procedure Draw;
 		private
@@ -541,15 +542,16 @@ begin
 	Line(Top, Top + Height, Left + Width, Top + Height);
 end;
 
-constructor TTextbox.Init(X, Y, W, H: Integer);
+constructor TTextbox.Init(X, Y, W, H: Integer; Cap: String);
 const
 	DefaultW = 120;
 	DefaultH = 19;
 begin
 	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
-	Self.MaxLen := 255;
-	Self.State := TsNormal;
-	Self.Text := '';
+	Caption := Cap;
+	MaxLen := 255;
+	State := TsNormal;
+	Text := '';
 end;
 
 procedure TTextbox.Edit;
@@ -675,6 +677,11 @@ begin
 	Rectangle(X1, Y1, X2 - 1, Y2 - 1);
 	SetColor(Thm.Shadow);
 	Rectangle(X1 + 1, Y1 + 1, X2, Y2);
+
+	{Draw caption if set}
+	if Length(Caption) > 0 then
+	Print(Caption, X1, Y1 - 15, Thm.WinText);
+	
 	S := Text;
 	if S <> '' then
 	begin

@@ -513,8 +513,8 @@ begin
 	FillChar(RunLink, SizeOf(RunLink), 0);
 
 	WinRun.Init(sizeCenter, sizeCenter, 382, 137);
-	TxtFilename.Init(WinRun.Left + 12, WinRun.Top + 27, WinRun.Width - 68, SizeDefault);
-	TxtParams.Init(TxtFilename.Left, TxtFilename.Top + 46, WinRun.Width - 26, SizeDefault);
+	TxtFilename.Init(WinRun.Left + 12, WinRun.Top + 27, WinRun.Width - 68, SizeDefault, CAP_PROGRAM);
+	TxtParams.Init(TxtFilename.Left, TxtFilename.Top + 46, WinRun.Width - 26, SizeDefault, CAP_PARAMETERS);
 	BtnBrowse.Init(TxtFilename.Left + TxtFilename.Width + 9, TxtFilename.Top, 33, SizeDefault, CAP_BROWSE);
 	BtnOK.Init(WinRun.Left + WinRun.Width - 184, TxtParams.Top + 30, 80, SizeDefault, CAP_OK);
 	BtnCancel.Init(WinRun.Left + WinRun.Width - 94, BtnOK.Top, 80, SizeDefault, CAP_CANCEL);
@@ -534,9 +534,6 @@ begin
 	BtnBrowse.Draw;
 	TxtFilename.Draw;
 	TxtParams.Draw;
-	
-	Print(CAP_PROGRAM, TxtFilename.Left, TxtFilename.Top - 16, Thm.WinText);
-	Print(CAP_PARAMETERS, TxtParams.Left, TxtParams.Top - 16, Thm.WinText);
 	MouseShow;
 
 	repeat
@@ -877,10 +874,10 @@ begin
 	BtnIcon.Init(296, WinEdit.Top + 12, 48, 48, '');
 	ImgIcon.Init(305, BtnIcon.Top + 9, Links^[TargetLink]^.IconFile);
 	
-	TxtCaption.Init(222, BtnIcon.Top + 73, 196, SizeDefault);
-	TxtFilename.Init(222, TxtCaption.Top + 44, 196, SizeDefault);
-	TxtPath.Init(222, TxtFilename.Top + 44, 196, SizeDefault);
-	TxtParams.Init(222, TxtPath.Top + 44, 196, SizeDefault);
+	TxtCaption.Init(222, BtnIcon.Top + 73, 196, SizeDefault, CAP_CAPTION);
+	TxtFilename.Init(222, TxtCaption.Top + 44, 196, SizeDefault, CAP_PROGRAM);
+	TxtPath.Init(222, TxtFilename.Top + 44, 196, SizeDefault, CAP_PATH);
+	TxtParams.Init(222, TxtPath.Top + 44, 196, SizeDefault, CAP_PARAMETERS);
 	ChkPauseOnExit.Init(222, TxtParams.Top + 32, CAP_PAUSE_ON_EXIT);
 	BtnOK.Init(229, ChkPauseOnExit.Top + 28, 84, SizeDefault, CAP_SAVE);
 	BtnCancel.Init(326, BtnOK.Top, 84, SizeDefault, CAP_CANCEL);
@@ -914,10 +911,6 @@ begin
 	ChkPauseOnExit.Draw;
 	BtnOK.Draw;
 	BtnCancel.Draw;
-	Print(CAP_CAPTION, 222, TxtCaption.Top - 15, Thm.WinText);
-	Print(CAP_PROGRAM, 222, TxtFilename.Top - 15, Thm.WinText);
-	Print(CAP_PATH, 222, TxtPath.Top - 15, Thm.WinText);
-	Print(CAP_PARAMETERS, 222, TxtParams.Top - 15, Thm.WinText);
 	SetFillStyle(SolidFill, Thm.Desk);
 	Bar(BtnIcon.Left + 2, BtnIcon.Top + 2, BtnIcon.Left + BtnIcon.Width - 2, BtnIcon.Top + BtnIcon.Height - 2);
 	ImgIcon.Draw;

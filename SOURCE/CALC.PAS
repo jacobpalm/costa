@@ -17,18 +17,8 @@ const
 
 var
 	LogLinesWritten: Integer;
-	FrmCalc: TFrame;
-	TxtCalc, TxtResults: TTextbox;
-	BtnNumb: array[0..9] of TButton;
-	BtnC, BtnCE, BtnDivide, BtnMulti, BtnMinus, BtnPlus: TButton;
-	BtnEquals, BtnDot, BtnExit, BtnAbout: TButton;
-	i: Integer;
-	MathFunc: string[1];
-	TotalSum, Op1: Integer;
-	NumOps: Integer;
-	Key, LastClick: string;
-	ch: string[1];
-	CalcErr: Boolean;
+	AreaLog: TArea;
+	
 
 function FormatNum(TargetStr: string): string;
 var
@@ -73,7 +63,7 @@ begin
 	FormatNum := SignStr + TempStr + DecPart;
 end;
 
-procedure LogLine(Text: string; var TargetTxt: TTextbox);
+procedure LogLine(Text: string);
 const
 	MaxLogLines = 18;
 	TopOffset = 52;
@@ -82,16 +72,29 @@ begin
 	if LogLinesWritten > MaxLogLines then
 	begin
 		LogLinesWritten := 0;
-		TargetTxt.Draw;
+		AreaLog.Draw;
 	end;
 	Print(Text, 624 - Length(Text) * 8, TopOffset + (LogLinesWritten * 15), Thm.WinText);
 end;
 
+var
+	FrmCalc: TFrame;
+	TxtCalc: TTextbox;
+	BtnNumb: array[0..9] of TButton;
+	BtnC, BtnCE, BtnDivide, BtnMulti, BtnMinus, BtnPlus: TButton;
+	BtnEquals, BtnDot, BtnExit, BtnAbout: TButton;
+	i: Integer;
+	MathFunc: string[1];
+	TotalSum, Op1: Integer;
+	NumOps: Integer;
+	Key, LastClick: string;
+	ch: string[1];
+	CalcErr: Boolean;
 begin
 	LogLinesWritten := 0;
 	
 	FrmCalc.Init(12, 42, 218, 208);
-	TxtCalc.Init(25, FrmCalc.Top + 12, 191, SizeDefault);
+	TxtCalc.Init(25, FrmCalc.Top + 12, 191, SizeDefault, '');
 	BtnNumb[0].Init(26, FrmCalc.Top + 172, 90, SizeDefault, '0');
 	BtnNumb[1].Init(26, FrmCalc.Top + 139, 40, SizeDefault, '1');
 	BtnNumb[2].Init(76, FrmCalc.Top + 139, 40, SizeDefault, '2');
@@ -111,7 +114,7 @@ begin
 	BtnPlus.Init(176, FrmCalc.Top + 106, 40, SizeDefault, '+');
 	BtnEquals.Init(176, FrmCalc.Top + 139, 40, 55, '=');
 
-	TxtResults.Init(FrmCalc.Left + FrmCalc.Width + 12, FrmCalc.Top, 385, 295);
+	AreaLog.Init(FrmCalc.Left + FrmCalc.Width + 12, FrmCalc.Top, 385, 295);
 
 	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
 	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
@@ -131,7 +134,7 @@ begin
 	BtnEquals.Draw; BtnDot.Draw; BtnExit.Draw;
 	BtnAbout.Draw;
 
-	TxtResults.Draw;
+	AreaLog.Draw;
 	MouseShow;
 
 	LogLinesWritten := -1;
@@ -175,7 +178,7 @@ begin
 			TxtCalc.Text := '';
 			MouseHide;
 			TxtCalc.Draw;
-			LogLine('', TxtResults);
+			LogLine('');
 			MouseShow;
 			MathFunc := '';
 			NumOps := 0;

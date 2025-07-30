@@ -31,7 +31,7 @@ type
 	TDirection = (Up, Down, First, Last, PageUp, PageDown);
 
 var
-	TxtList:       array[-1..0] of TTextbox;
+	AreaList:       array[-1..0] of TArea;
 	ListStartPos:  array[-1..0] of Integer;
 	ListSelection: array[-1..0] of Integer;
 	ListCount:     array[-1..0] of Integer;
@@ -116,10 +116,10 @@ var
 	FGColor, BGColor: Integer;
 	ItemText: String;
 begin
-	X1 := TxtList[TargetList].Left + 2;
-	Y1 := TxtList[TargetList].Top + 3;
-	X2 := TxtList[TargetList].Left + TxtList[TargetList].Width - 2;
-	Y2 := TxtList[TargetList].Top + 15;
+	X1 := AreaList[TargetList].Left + 2;
+	Y1 := AreaList[TargetList].Top + 3;
+	X2 := AreaList[TargetList].Left + AreaList[TargetList].Width - 2;
+	Y2 := AreaList[TargetList].Top + 15;
 	YOffset := ((ListSelection[TargetList] - ListStartPos[TargetList]) * ListItemHeight);
 
 	MouseHide;
@@ -296,14 +296,14 @@ var
 	ClickedX, ClickedY, ClickedItem: Integer;
 begin
 	MousePoll;
-	ClickedX := MouseX - TxtList[TargetList].Left;
-	ClickedY := MouseY - TxtList[TargetList].Top;
+	ClickedX := MouseX - AreaList[TargetList].Left;
+	ClickedY := MouseY - AreaList[TargetList].Top;
 	MouseSelection := False;
 
 	{Validate click inside, not on border}
-	if (ClickedX > 1) and (ClickedX < TxtList[TargetList].Width - 2) then
+	if (ClickedX > 1) and (ClickedX < AreaList[TargetList].Width - 2) then
 	begin
-		if (ClickedY > 2) and (ClickedY < TxtList[TargetList].Height - 1) then
+		if (ClickedY > 2) and (ClickedY < AreaList[TargetList].Height - 1) then
 		begin
 			{Clicked inside}
 
@@ -432,18 +432,18 @@ var
 	ClickedX, ClickedY, ClickedItem, RedrawNeeded: Integer;
 begin
 	WinFileSelect.Init(sizeCenter, sizeCenter, 468, 270);
-	TxtPattern.Init(101, WinFileSelect.Top + 28, 150, SizeDefault);
-	TxtDrive.Init(272, WinFileSelect.Top + 28, 150, SizeDefault);
-	TxtPattern.Init(101, WinFileSelect.Top + 28, 150, SizeDefault);
-	TxtDrive.Init(272, WinFileSelect.Top + 28, 150, SizeDefault);
-	TxtList[FileList].Init(101, WinFileSelect.Top + 71, 150, 185);
-	TxtList[DirList].Init(272, WinFileSelect.Top + 71, 150, 185);
+	TxtPattern.Init(101, WinFileSelect.Top + 28, 150, SizeDefault, CAP_PATTERN);
+	TxtDrive.Init(272, WinFileSelect.Top + 28, 150, SizeDefault, CAP_DRIVE);
+	TxtPattern.Init(101, WinFileSelect.Top + 28, 150, SizeDefault, CAP_PATTERN);
+	TxtDrive.Init(272, WinFileSelect.Top + 28, 150, SizeDefault, CAP_DRIVE);
+	AreaList[FileList].Init(101, WinFileSelect.Top + 71, 150, 185);
+	AreaList[DirList].Init(272, WinFileSelect.Top + 71, 150, 185);
 	BtnSelect.Init(448, WinFileSelect.Top + 28, SizeDefault, SizeDefault, CAP_SELECT);
 	BtnCancel.Init(448, WinFileSelect.Top + 58, SizeDefault, SizeDefault, CAP_CANCEL);
-	BtnFilePrev.Init(253, TxtList[FileList].Top, 14, 91, CharArrowUp);
-	BtnFileNext.Init(253, TxtList[FileList].Top + 94, 14, 91, CharArrowDown);
-	BtnDirPrev.Init(424, TxtList[DirList].Top, 14, 91, CharArrowUp);
-	BtnDirNext.Init(424, TxtList[DirList].Top + 94, 14, 91, CharArrowDown);
+	BtnFilePrev.Init(253, AreaList[FileList].Top, 14, 91, CharArrowUp);
+	BtnFileNext.Init(253, AreaList[FileList].Top + 94, 14, 91, CharArrowDown);
+	BtnDirPrev.Init(424, AreaList[DirList].Top, 14, 91, CharArrowUp);
+	BtnDirNext.Init(424, AreaList[DirList].Top + 94, 14, 91, CharArrowDown);
 	TxtDrive.MaxLen := 1;
 	TxtPattern.MaxLen := 12; {8.3 including the dot}
 	ImgPreview.Init(BtnCancel.Left + 30, BtnCancel.Top + 50, '');
@@ -475,16 +475,14 @@ begin
 	WinFileSelect.Draw;
 	TxtPattern.Draw;
 	TxtDrive.Draw;
-	TxtList[FileList].Draw;
-	TxtList[DirList].Draw;
+	AreaList[FileList].Draw;
+	AreaList[DirList].Draw;
 	BtnSelect.Draw;
 	BtnCancel.Draw;
 	BtnFilePrev.Draw;
 	BtnFileNext.Draw;
 	BtnDirPrev.Draw;
 	BtnDirNext.Draw;
-	Print(CAP_PATTERN, 101, WinFileSelect.Top + 14, Thm.WinText);
-	Print(CAP_DRIVE, 272, WinFileSelect.Top + 14, Thm.WinText);
 	Print(CAP_FILES, 101, WinFileSelect.Top + 57, Thm.WinText);
 	Print(CAP_DIRS, 272, WinFileSelect.Top + 57, Thm.WinText);
 	MouseShow;
@@ -503,13 +501,13 @@ begin
 	repeat
 		Key := GetKey;
 
-		if (MouseClicked > MbNone) and TxtList[FileList].IsMouseOver then
+		if (MouseClicked > MbNone) and AreaList[FileList].IsMouseOver then
 		begin
 			if MouseSelection(FileList) then
 				Key := KeyEnter; {Double-clicked file, select it}
 		end;
 
-		if (MouseClicked > MbNone) and TxtList[DirList].IsMouseOver then
+		if (MouseClicked > MbNone) and AreaList[DirList].IsMouseOver then
 		begin
 			if MouseSelection(DirList) then
 				Key := KeyEnter; {Double-clicked directory, change to it}

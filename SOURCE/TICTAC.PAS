@@ -64,7 +64,7 @@ type
 
 var
 	PlayField: array[1..3, 1..3] of TPlayer;
-	TxtPlayField: array[1..3, 1..3] of TTextbox;
+	AreaPlayField: array[1..3, 1..3] of TArea;
 	PlayerStart, PlayerTurn: TPlayer;
 	TotalTurns: integer;
 	VersusPC, SoundOn: boolean;
@@ -316,10 +316,10 @@ begin
 	begin
 		for Col := 1 to 3 do
 		begin
-			X1 := TxtPlayField[Row, Col].Left;
-			Y1 := TxtPlayField[Row, Col].Top;
-			X2 := TxtPlayField[Row, Col].Left + TxtPlayField[Row, Col].Width;
-			Y2 := TxtPlayField[Row, Col].Top + TxtPlayField[Row, Col].Height;
+			X1 := AreaPlayField[Row, Col].Left;
+			Y1 := AreaPlayField[Row, Col].Top;
+			X2 := AreaPlayField[Row, Col].Left + AreaPlayField[Row, Col].Width;
+			Y2 := AreaPlayField[Row, Col].Top + AreaPlayField[Row, Col].Height;
 			SetFillStyle(SolidFill, White);
 			Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 2);
 			SetColor(LightGreen);
@@ -335,8 +335,8 @@ procedure DrawXO(Row, Col: integer; Player: TPlayer);
 var
 	X, Y: integer;
 begin
-	X := TxtPlayField[Row, Col].Left;
-	Y := TxtPlayField[Row, Col].Top;
+	X := AreaPlayField[Row, Col].Left;
+	Y := AreaPlayField[Row, Col].Top;
 
 	MouseHide;
 	SetColor(Black);
@@ -493,13 +493,13 @@ begin
 		for Col := 1 to 3 do
 		begin
 		if (Row = 1) and (Col = 1) then
-			TxtPlayField[Row, Col].Init(FrmTic.Left + 10, FrmTic.Top + 10, 60, 60)
+			AreaPlayField[Row, Col].Init(FrmTic.Left + 10, FrmTic.Top + 10, 60, 60)
 		else if Col = 1 then
-			TxtPlayField[Row, Col].Init(TxtPlayField[Row - 1, Col].Left,
-				TxtPlayField[Row - 1, Col].Top + 70, 60, 60)
+			AreaPlayField[Row, Col].Init(AreaPlayField[Row - 1, Col].Left,
+				AreaPlayField[Row - 1, Col].Top + 70, 60, 60)
 		else
-			TxtPlayField[Row, Col].Init(TxtPlayField[Row, Col - 1].Left + 70,
-				TxtPlayField[Row, Col - 1].Top, 60, 60);
+			AreaPlayField[Row, Col].Init(AreaPlayField[Row, Col - 1].Left + 70,
+				AreaPlayField[Row, Col - 1].Top, 60, 60);
 		end;
 	end;
 	
@@ -567,7 +567,7 @@ begin
 			begin
 				for Col := 1 to 3 do
 				begin
-					if TxtPlayField[Row, Col].Clicked then
+					if AreaPlayField[Row, Col].Clicked then
 					begin
 						FieldClicked := true;
 						break;

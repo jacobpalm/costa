@@ -1,6 +1,8 @@
 @echo off
 if "%1"=="" goto noparams
 
+call buildlib.bat
+
 del %1.exe
 tpc -m source\%1.pas -E. -USOURCE -ISOURCE -OSOURCE
 if errorlevel 1 goto end

@@ -169,7 +169,7 @@ begin
 	X1 := WinPreview.Left;
 	Y1 := WinPreview.Top;
 	ImgLogo.Init(X1 + 12, Y1 + 12, 'LOGO');
-	TxtPreview.Init(X1 + 12, Y1 + 56, 236, SizeDefault);
+	TxtPreview.Init(X1 + 12, Y1 + 56, 236, SizeDefault, '');
 	TxtPreview.Text := CAP_OBJECT[Ord(TThemeObject(Txt))];
 	BtnPreview1.Init(X1 + 14, Y1 + 93, 111, SizeDefault, CAP_OBJECT[Ord(TThemeObject(Btn))]);
 	BtnPreview2.Init(X1 + 133, Y1 + 93, 111, SizeDefault, CAP_OBJECT[Ord(TThemeObject(Btn))]);
@@ -484,8 +484,8 @@ begin
 	BtnSaveAs.Init(299, 2, SizeDefault, SizeDefault, CAP_SAVE_AS);
 	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
 	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
-	TxtName.Init(434, 59, 194, SizeDefault);
-	TxtAuthor.Init(434, TxtName.Top + 48, 194, SizeDefault);
+	TxtName.Init(434, 59, 194, SizeDefault, CAP_NAME);
+	TxtAuthor.Init(434, TxtName.Top + 48, 194, SizeDefault, CAP_AUTHOR);
 	BtnObject.Init(434, TxtAuthor.Top + 48, 194, SizeDefault, CAP_OBJECT[0]);
 
 	TxtName.MaxLen := 20;
@@ -523,8 +523,6 @@ begin
 			AreaColor[i].Top + AreaColor[i].Height - 2);
 	end;
 
-	Print(CAP_NAME, TxtName.Left, TxtName.Top - 16, Thm.WinText);
-	Print(CAP_AUTHOR, TxtAuthor.Left, TxtAuthor.Top - 16, Thm.WinText);
 	Print(CAP_OBJECT_SEL, 434, BtnObject.Top - 16, Thm.WinText);
 	Print(CAP_COLOR_SEL, 434, AreaColor[0].Top - 16, Thm.WinText);
 	

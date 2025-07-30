@@ -127,7 +127,7 @@ begin
 	WinPreview.Init(FrmThemePreview.Left + 14, FrmThemePreview.Top + 12, ViewWidth - 28, 123);
 	ImgLogo.Init(WinPreview.Left + 12, WinPreview.Top + 12, 'LOGO');
 	ImgDeskLink.Init(WinPreview.Left, FrmThemePreview.Top + FrmThemePreview.Height - 42, 'PAINT');
-	TxtPreview.Init(ImgLogo.Left, ImgLogo.Top + 45, WinPreview.Width - 23, SizeDefault);
+	TxtPreview.Init(ImgLogo.Left, ImgLogo.Top + 45, WinPreview.Width - 23, SizeDefault, '');
 	TxtPreview.Text := CAP_TEXTBOX;
 	BtnPreview1.Init(WinPreview.Left + 12, WinPreview.Top + WinPreview.Height - 34, 86, SizeDefault, CAP_BUTTON);
 	BtnPreview2.Init(WinPreview.Left + WinPreview.Width - 12 - BtnPreview1.Width, BtnPreview1.Top, 86, SizeDefault, CAP_BUTTON);
