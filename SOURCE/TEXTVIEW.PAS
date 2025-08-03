@@ -22,8 +22,8 @@ const
 	MSG_OPEN_ERROR_TITLE = 'Error opening file';
 	MSG_FILE_NOT_FOUND   = 'File not found: ' + #13;
 	MSG_READ_ERROR       = 'Error reading file, make sure it is accessible: ' + #13;
-	MSG_END_OF_FILE      = '* end of file *';
 	MSG_MEMORY_TEXT      = 'Not enough memory to open this file.';
+	MSG_END_OF_FILE      = '* end of file *';
 
 type
 	PLine = ^LineStr;
@@ -32,17 +32,20 @@ type
 	PLineArray = ^LineArray;
 	LineArray = Array[1..1] of PLine; {Flexible array to simulate dynamic sizing}
 
+	TDirection = (LineUp, LineDown, PageUp, PageDown, Top, Bottom);
+
 var
 	Lines: PLineArray;
-	BtnOpen, BtnAbout, BtnExit, BtnPageUp, BtnPageDown: TButton;
-	Filename, NewFileName: String;
-	StartLine, PrevStartLine: Integer;
-	Capacity: Integer;
+	StartLine,
+	Capacity,
 	LineCount: Integer;
 	FileOpened: Boolean;
-	Key: String;
+
 	DefaultHeapError: Pointer; {We'll be taking care of heap errors ourselves}
 
+	BtnPageUp, BtnPageDown: TButton;
+
+procedure DrawText; forward;
 procedure FreeLines; forward;
 
 function CustomHeapError(Size: Word): Integer; far;
@@ -54,7 +57,6 @@ begin
 	end;
 
 	FreeLines; {Free any previously allocated lines}
-	Filename := '';
 	FileOpened := False;
 	MouseHide;
 	SetFillStyle(SolidFill, Thm.Txt);
@@ -124,7 +126,6 @@ begin
 	Capacity := 0;
 	LineCount := 0;
 	StartLine := 1;
-	PrevStartLine := 1;
 end;
 
 procedure AddLine(S: String);
@@ -145,26 +146,27 @@ begin
 	Lines^[LineCount] := NewLine;
 end;
 
-function LoadFile(TargetFile: String): Boolean;
+procedure LoadFile(FileName: String);
 var
 	F: Text;
 	ReadData, Truncated: String;
 begin
-	if not FileExists(TargetFile) then
+	if FileName = '' then
+		Exit;
+
+	if not FileExists(FileName) then
 	begin
-		MsgBox(MSG_OPEN_ERROR_TITLE, MSG_FILE_NOT_FOUND + TargetFile, MsgError);
-		LoadFile := False;
+		MsgBox(MSG_OPEN_ERROR_TITLE, MSG_FILE_NOT_FOUND + FileName, MsgError);
 		Exit;
 	end;
 
-	Assign(F, TargetFile);
+	Assign(F, FileName);
 	{$I-}
 	Reset(F);
 	{$I+}
 	if IOResult <> 0 then
 	begin
-		MsgBox(MSG_OPEN_ERROR_TITLE, MSG_READ_ERROR + TargetFile, MsgError);
-		LoadFile := False;
+		MsgBox(MSG_OPEN_ERROR_TITLE, MSG_READ_ERROR + FileName, MsgError);
 		Exit;
 	end;
 
@@ -175,16 +177,17 @@ begin
 	 
 	{Initialize with default capacity, exit if failed} 
 	if not InitLines(InitialCap) then
+	begin
+		FileOpened := False;
+		DrawText;
 		Exit;
-
-	StartLine := 1;
-	PrevStartLine := 1;
+	end;
 
 	while not Eof(F) do
 	begin
 		ReadLn(F, ReadData);
 
-		{Blank lines}
+		{Blank lines won't work for loop below, so add and continue}
 		if Length(ReadData) = 0 then
 		begin
 			AddLine('');
@@ -214,18 +217,29 @@ begin
 		{Exit if lines array has been freed due to memory error}
 		if LineCount = 0 then
 		begin
-			LoadFile := False;
-			Close(F);
+			FileOpened := False;
+			DrawText;
 			Exit;
 		end;
 	end;
 	Close(F);
 
+	{Add end of file indicator, since the textbox doesn't have scrollbars to indicate
+	 position}
+	AddLine('');
 	AddLine(MSG_END_OF_FILE);
-	if LineCount > 0 then
-		LoadFile := True
-	else
-		LoadFile := False;
+
+	StartLine := 1;
+	if not FileOpened then
+	begin
+		{If a file wasn't previously opened, scroll buttons won't be visible}
+		FileOpened := True;
+		MouseHide;
+		BtnPageUp.Draw;
+		BtnPageDown.Draw;
+		MouseShow;
+	end;
+	DrawText;
 end;
 
 procedure DrawText;
@@ -234,6 +248,15 @@ var
 begin
 	MouseHide;
 	SetFillStyle(SolidFill, Thm.Txt);
+
+	{If no file is opened, clear the entire text area}
+	if not FileOpened then
+	begin
+		Bar(0, 29, 639, 349);
+		MouseShow;
+		Exit;
+	end;
+
 	DrawnLines := 0;
 	for i := StartLine to StartLine + MaxLinesShown do
 	begin
@@ -250,6 +273,38 @@ begin
 	MouseShow;
 end;
 
+procedure ScrollText(Direction: TDirection);
+var
+	PrevStartLine: Integer;
+begin
+	if not FileOpened then
+		Exit;
+
+	PrevStartLine := StartLine;
+	case Direction of
+		LineUp: Dec(StartLine);
+		LineDown: Inc(StartLine);
+		PageUp: Dec(StartLine, MaxLinesShown);
+		PageDown: Inc(StartLine, MaxLinesShown);
+		Top: StartLine := 1;
+		Bottom: StartLine := LineCount - MaxLinesShown + 2;
+	end;
+
+	if StartLine > LineCount - MaxLinesShown + 2 then
+		StartLine := LineCount - MaxLinesShown + 2;
+
+	if StartLine < 1 then
+		StartLine := 1;
+
+	{Redraw text only if the start line has changed}
+	if StartLine <> PrevStartLine then
+		DrawText;
+end;
+
+var
+	BtnOpen, BtnAbout, BtnExit: TButton;
+	FileName: String;
+	Key: String;
 begin
 	{Store default heap error handler for later restoration}
 	DefaultHeapError := HeapError;
@@ -265,21 +320,12 @@ begin
 	SetFillStyle(SolidFill, Thm.Txt);
 	Bar(0, 29, 639, 349);
 	BtnOpen.Draw;
-	BtnPageUp.Draw;
-	BtnPageDown.Draw;
 	BtnAbout.Draw;
 	BtnExit.Draw;
 	MouseShow;
 	
-	if ParamStr(1) <> '' then
-	begin
-		Filename := ParamStr(1);
-		FileOpened := LoadFile(Filename);
-		if FileOpened then
-			DrawText
-		else
-			Filename := '';
-	end;
+	{Pass first command line argument as file name, LoadFile will ignore it if empty}
+	LoadFile(ParamStr(1));
 
 	repeat
 		Key := GetKey;
@@ -289,78 +335,34 @@ begin
 
 		if BtnOpen.Clicked or (Key = KeyAltO) then
 		begin
-			NewFileName := FileSelect('*.TXT', '', False);
-			if Length(NewFilename) > 0 then
-			begin
-				if LoadFile(NewFilename) then
-				begin
-					Filename := NewFilename;
-					FileOpened := True;
-					MouseHide;
-					BtnPageUp.Draw;
-					BtnPageDown.Draw;
-					MouseShow;
-					DrawText;
-				end;
-			end;
+			FileName := FileSelect('*.TXT', '', False);
+			LoadFile(FileName);
 		end;
 		
 		if BtnExit.Clicked or (Key = KeyAltX) or (Key = KeyAltF4) then
 			break;
 
+		if Key = KeyUp then
+			ScrollText(LineUp);
+
+		if Key = KeyDown then
+			ScrollText(LineDown);
+
+		If Key = KeyHome then
+			ScrollText(Top);
+
+		If Key = KeyEnd then
+			ScrollText(Bottom);
+
+		{Scroll buttons aren't visible if no file is opened}
 		if FileOpened then
 		begin
-			if BtnPageUp.Clicked or (Key = KeyPageUp) or (Key = KeyUp) or (Key = KeyAltU) then
-			begin
-				if StartLine > 1 then
-				begin
-					if Key = KeyUp then
-						Dec(StartLine) {One line up}
-					else
-						Dec(StartLine, MaxLinesShown); {One page up}
+			if BtnPageUp.Clicked or (Key = KeyPageUp) or (Key = KeyAltU) then
+				ScrollText(PageUp);
 
-					if StartLine < 1 then
-						StartLine := 1;
-				end;
-			end;
-
-			if BtnPageDown.Clicked or (Key = KeyPageDown) or (Key = KeyDown) or (Key = KeyAltD) then
-			begin
-				if StartLine < LineCount then
-				begin
-					if Key = KeyDown then
-						Inc(StartLine) {One line down}
-					else
-						Inc(StartLine, MaxLinesShown); {One page down}
-					
-					{Don't scroll further than the last line of the file being the last on screen}
-					if StartLine > LineCount - MaxLinesShown + 2 then
-						StartLine := LineCount - MaxLinesShown + 2;
-					
-					if StartLine < 1 then
-						StartLine := 1;
-				end;
-			end;
-
-			If Key = KeyHome then
-				StartLine := 1;
-
-			if Key = KeyEnd then
-			begin
-				StartLine := LineCount - MaxLinesShown + 2;
-				If StartLine > LineCount then
-					StartLine := LineCount;
-			end;
-
-			If StartLine <> PrevStartLine then
-			begin
-				MouseHide;
-				DrawText;
-				MouseShow;
-				PrevStartLine := StartLine;
-			end;
+			if BtnPageDown.Clicked or (Key = KeyPageDown) or (Key = KeyAltD) then
+				ScrollText(PageDown);
 		end;
-		
 	until False;
 	
 	CloseGraph;
