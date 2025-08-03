@@ -1119,10 +1119,8 @@ var
 begin
 	BoxW := PrintW(MsgText) + 68;
 	BoxH := PrintH(MsgText) + 78;
-	if (MsgType = MsgQuest) and (BoxW < 194) then
-		BoxW := 194
-	else if BoxW < 102 then
-		BoxW := 102;
+	if BoxW < 270 then
+		BoxW := 270;
 
 	WinMsgBox.Init(sizeCenter, sizeCenter, BoxW, BoxH);
 	ImgIcon.Init(WinMsgBox.Left + 13, WinMsgBox.Top + 15, '');

@@ -11,26 +11,23 @@ const
 
 	CaptionMaxLen             = 20; {Maximum length for link captions}
 
-	CAP_BROWSE        = '...';
-	CAP_OK            = #127 + 'OK';
-	CAP_CANCEL        = #127 + 'Cancel';
-	CAP_PROGRAM       = #127 + 'Program:';
-	CAP_PARAMETERS    = 'Pa' + #127 + 'rameters:';
-	CAP_OPEN          = #127 + 'Open';
-	CAP_EDIT          = #127 + 'Edit...';
-	CAP_MOVE          = #127 + 'Move';
-	CAP_REMOVE        = #127 + 'Remove';
-	CAP_SAVE          = #127 + 'Save';
-	CAP_PAUSE_ON_EXIT = 'Pause after e' + #127 + 'xit';
-	CAP_CAPTION       = 'C' + #127 + 'aption:';
-	CAP_PATH          = 'Pa' + #127 + 'th:';
-	CAP_ADD           = 'A' + #127 + 'dd...';
-	CAP_RUN           = #127 + 'Run...';
-	CAP_ABOUT         = #127 + 'About...';
-	CAP_EXIT          = 'E' + #127 + 'xit';
-
-	
-
+	CAP_BROWSE                = '...';
+	CAP_OK                    = #127 + 'OK';
+	CAP_CANCEL                = #127 + 'Cancel';
+	CAP_PROGRAM               = #127 + 'Program:';
+	CAP_PARAMETERS            = 'Pa' + #127 + 'rameters:';
+	CAP_OPEN                  = #127 + 'Open';
+	CAP_EDIT                  = #127 + 'Edit...';
+	CAP_MOVE                  = #127 + 'Move';
+	CAP_REMOVE                = #127 + 'Remove';
+	CAP_SAVE                  = #127 + 'Save';
+	CAP_PAUSE_ON_EXIT         = 'Pause after e' + #127 + 'xit';
+	CAP_CAPTION               = 'C' + #127 + 'aption:';
+	CAP_PATH                  = 'Pa' + #127 + 'th:';
+	CAP_ADD                   = 'A' + #127 + 'dd...';
+	CAP_RUN                   = #127 + 'Run...';
+	CAP_ABOUT                 = #127 + 'About...';
+	CAP_EXIT                  = 'E' + #127 + 'xit';
 
 	MSG_LOAD_ERROR_TITLE      = 'Error loading desktop links';
 	MSG_OUT_OF_MEMORY         = 'Out of memory.';

@@ -4,15 +4,15 @@ uses
 	CostaLib, Graph, DOS;
 
 const
-	AppName    = 'Configuration Utility';
-	AppVersion = '2.0';
-	AppAuthor  = 'Jacob Palm';
-	AppIcon    = 'CONFIG';
+	AppName              = 'Configuration Utility';
+	AppVersion           = '2.0';
+	AppAuthor            = 'Jacob Palm';
+	AppIcon              = 'CONFIG';
 
-	LinkDesc   = 0;
-	LinkTarget = 1;
-	LinkDelete = 2;
-	ConfExit   = 3;
+	LinkDesc             = 0;
+	LinkTarget           = 1;
+	LinkDelete           = 2;
+	ConfExit             = 3;
 
 	CAP_EXIT             = 'E' + #127 + 'xit';
 	CAP_ABOUT            = #127 + 'About...';

@@ -4,21 +4,21 @@ uses
 	CostaLib, Crt, Strings, Graph;
 
 const
-	AppName    = 'Tic Tac Toe';
-	AppVersion = '2.0';
-	AppAuthor  = 'Jacob Palm';
-	AppIcon    = 'TICTAC';
+	AppName             = 'Tic Tac Toe';
+	AppVersion          = '2.0';
+	AppAuthor           = 'Jacob Palm';
+	AppIcon             = 'TICTAC';
 
-	CAP_NEW_GAME = #127 + 'New game';
-	CAP_GAME_MODE = #127 + 'Mode';
-	CAP_SOUND = #127 + 'Sound';
-	CAP_ABOUT = #127 + 'About...';
-	CAP_EXIT = 'E' + #127 + 'xit';
+	CAP_NEW_GAME        = #127 + 'New game';
+	CAP_GAME_MODE       = #127 + 'Mode';
+	CAP_SOUND           = #127 + 'Sound';
+	CAP_ABOUT           = #127 + 'About...';
+	CAP_EXIT            = 'E' + #127 + 'xit';
 
-	MSG_GAMEMODE_PC = 'Playing against computer';
+	MSG_GAMEMODE_PC     = 'Playing against computer';
 	MSG_GAMEMODE_PLAYER = 'Playing two players';
-	MSG_SOUND_ON = 'Sound: On';
-	MSG_SOUND_OFF = 'Sound: Off';
+	MSG_SOUND_ON        = 'Sound: On';
+	MSG_SOUND_OFF       = 'Sound: Off';
 
 	MSG_WIN_TEXT: array[0..5] of string = (
 		'%s has brought honor to the family!',

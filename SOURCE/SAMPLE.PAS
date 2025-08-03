@@ -15,13 +15,13 @@ uses
 	CostaLib, Crt, Graph;
 
 const
-	AppName    = 'Sample program';
-	AppVersion = '2.0';
-	AppAuthor  = 'Jacob Palm';
-	AppIcon    = 'PROGRAM';
+	AppName         = 'Sample program';
+	AppVersion      = '2.0';
+	AppAuthor       = 'Jacob Palm';
+	AppIcon         = 'PROGRAM';
 
-	CAP_ABOUT = 'A' + #127 + 'bout...';
-	CAP_EXIT  = 'E' + #127 + 'xit';
+	CAP_ABOUT       = 'A' + #127 + 'bout...';
+	CAP_EXIT        = 'E' + #127 + 'xit';
 
 	MSG_SAMPLE_TEXT = 'Sample text for the program,' + #13 +
 	                  'on multiple lines.';

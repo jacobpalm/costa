@@ -4,20 +4,20 @@ uses
 	Costalib, FileDlg, Strings, Graph, Crt;
 
 const
-	AppName       = 'Text Viewer';
-	AppVersion    = '2.0';
-	AppAuthor     = 'Jacob Palm';
-	AppIcon       = 'DOCUMENT';
+	AppName              = 'Text Viewer';
+	AppVersion           = '2.0';
+	AppAuthor            = 'Jacob Palm';
+	AppIcon              = 'DOCUMENT';
 
-	InitialCap    = 100; {Initial capacity for the line array}
-	MaxLinesShown = 27;
-	MaxLineLength = 78;
+	InitialCap           = 100; {Initial capacity for the line array}
+	MaxLinesShown        = 27;
+	MaxLineLength        = 78;
 
-	CAP_OPEN      = #127 + 'Open...';
-	CAP_PAGE_UP   = 'Page ' + #127 + 'up';
-	CAP_PAGE_DOWN = 'Page ' + #127 + 'down';
-	CAP_ABOUT     = #127 + 'About...';
-	CAP_EXIT      = 'E' + #127 + 'xit';
+	CAP_OPEN             = #127 + 'Open...';
+	CAP_PAGE_UP          = 'Page ' + #127 + 'up';
+	CAP_PAGE_DOWN        = 'Page ' + #127 + 'down';
+	CAP_ABOUT            = #127 + 'About...';
+	CAP_EXIT             = 'E' + #127 + 'xit';
 
 	MSG_OPEN_ERROR_TITLE = 'Error opening file';
 	MSG_FILE_NOT_FOUND   = 'File not found: ' + #13;

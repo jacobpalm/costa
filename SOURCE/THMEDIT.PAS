@@ -4,17 +4,12 @@ uses
 	CostaLib, InputDlg, FileDlg, Graph, DOS;
 
 const
-	AppName      = 'Theme Editor';
-	AppVersion   = '2.0';
-	AppAuthor    = 'Jacob Palm';
-	AppIcon      = 'THEMES';
+	AppName           = 'Theme Editor';
+	AppVersion        = '2.0';
+	AppAuthor         = 'Jacob Palm';
+	AppIcon           = 'THEMES';
 
-	DefaultName  = 'New Theme';
-
-	CAP_OBJECT: array[0..12] of string = (
-		'Desktop', 'Desktop text', 'Window', 'Window border', 'Window title',
-		'Window text', 'Button', 'Textbox', 'Textbox text', '3D light',
-		'3D Shadow', 'Selection', 'Selection text');
+	DefaultName       = 'New Theme';
 
 	CAP_NEW           = #127 + 'New';
 	CAP_OPEN          = #127 + 'Open...';
@@ -30,6 +25,11 @@ const
 	CAP_PREVIEW_EXE   = 'preview.exe';
 	CAP_LIST_ITEM     = 'List item';
 	CAP_SELECTED_ITEM = 'Selected item';
+
+	CAP_OBJECT: array[0..12] of string = (
+		'Desktop', 'Desktop text', 'Window', 'Window border', 'Window title',
+		'Window text', 'Button', 'Textbox', 'Textbox text', '3D light',
+		'3D Shadow', 'Selection', 'Selection text');
 
 	MSG_FILE_EXISTS_TITLE      = 'File already exists';
 	MSG_FILE_EXISTS_PROMPT     = 'The specified file already exists. Do you want' + #13 +
@@ -88,12 +88,7 @@ begin
 	
 	MouseHide;
 	{Erase previous selection}
-	X1 := AreaColor[SelectedColor].Left + 4;
-	Y1 := AreaColor[SelectedColor].Top + 4;
-	X2 := AreaColor[SelectedColor].Left + AreaColor[SelectedColor].Width - 4;
-	Y2 := AreaColor[SelectedColor].Top + AreaColor[SelectedColor].Height - 4;
-	SetFillStyle(SolidFill, SelectedColor);
-	Bar(X1, Y1, X2, Y2);
+	AreaColor[SelectedColor].Draw;
 
 	{Change color and draw new selection}
 	SelectedColor := Color;

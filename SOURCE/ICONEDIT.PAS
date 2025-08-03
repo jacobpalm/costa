@@ -4,24 +4,24 @@ uses
 	CostaLib, FileDlg, InputDlg, Strings, DOS, Graph;
 
 const
-	AppName     = 'Icon Editor';
-	AppVersion  = '2.0';
-	AppAuthor   = 'Jacob Palm';
-	AppIcon     = 'PAINT';
+	AppName                = 'Icon Editor';
+	AppVersion             = '2.0';
+	AppAuthor              = 'Jacob Palm';
+	AppIcon                = 'PAINT';
 
-	PixelSize   = 9; {Size of each field in the drawing area}
+	PixelSize              = 9; {Size of each field in the drawing area}
 
-	CAP_EXIT    = 'E' + #127 + 'xit';
-	CAP_ABOUT   = #127 + 'About...';
-	CAP_NEW     = #127 + 'New';
-	CAP_OPEN    = #127 + 'Open...';
-	CAP_SAVE    = #127 + 'Save';
-	CAP_SAVE_AS = 'Sa' + #127 + 've as...';
-	CAP_PENCIL  = 'P' + #127 + 'encil';
-	CAP_FILL    = #127 + 'Fill';
-	CAP_COLOR   = #127 + 'Color';
-	CAP_PREVIEW = 'Preview';
-	CAP_TOOLS   = 'Tools';
+	CAP_EXIT               = 'E' + #127 + 'xit';
+	CAP_ABOUT              = #127 + 'About...';
+	CAP_NEW                = #127 + 'New';
+	CAP_OPEN               = #127 + 'Open...';
+	CAP_SAVE               = #127 + 'Save';
+	CAP_SAVE_AS            = 'Sa' + #127 + 've as...';
+	CAP_PENCIL             = 'P' + #127 + 'encil';
+	CAP_FILL               = #127 + 'Fill';
+	CAP_COLOR              = #127 + 'Color';
+	CAP_PREVIEW            = 'Preview';
+	CAP_TOOLS              = 'Tools';
 
 	MSG_UNSAVED_TITLE      = 'Icon has been modified';
 	MSG_UNSAVED_TEXT       = 'This icon contains unsaved changes. Do you' + #13 +
