@@ -34,12 +34,18 @@ const
 	MSG_NO_THEMES        = 'No themes found in \THEMES.';
 	MSG_LOAD_ERROR_TITLE = 'Error loading';
 	MSG_LOAD_ERROR_TEXT  = 'The theme file %s.BIN could not be loaded.' + #13 +
-	                      'Please check that the file is accessible and not corrupted.';
-	MSG_THEME_OVERFLOW   = 'Only the first %s themes in the THEME directory will be' + #13 +
-	                       'shown. Remove some themes to show all.';
+	                       'Please check that the file is accessible and not corrupted.';
+
+type
+	PThemeList = ^TThemeList;
+	TThemeList = record
+		FileName: string;
+		Next: PThemeList;
+	end;
+	
 
 var
-	ThemeList:     array[1..100] of string;
+	NewThemeList:  PThemeList;
 	ThemeCount:    integer;
 	SelectedTheme: integer;
 	ThemeName:     string[20];
@@ -48,13 +54,14 @@ var
 	{Objects that are used both in and outside of the main procedure}
 	FrmThemePreview: TFrame;
 
+procedure AddThemeToList(const ThemeName: string); forward;
+
 procedure LoadThemeList;
 var
     FileInfo: SearchRec;
     FPath: DirStr;
     FName: NameStr;
     FExt: ExtStr;
-    MaxThemesStr: string;
     ExpectedSize: integer;
 begin
     ThemeCount := 0;
@@ -64,19 +71,13 @@ begin
     FindFirst(ProgramPath + 'THEMES\*.BIN', Archive, FileInfo);
     while DosError = 0 do
     begin
-        if ThemeCount = High(ThemeList) then
-        begin
-            Str(ThemeCount, MaxThemesStr);
-            MsgBox(MSG_LOAD_ERROR_TITLE, ReplaceMsg(MSG_THEME_OVERFLOW, MaxThemesStr), MsgError);
-            break;
-        end;
 
         {Load only if size matches expected size}
         if FileInfo.Size = ExpectedSize then
         begin
             FSplit(FileInfo.Name, FPath, FName, FExt);
-			Inc(ThemeCount);
-            ThemeList[ThemeCount] := FName;
+			AddThemeToList(FName);
+			
 			if FName = Setting.ThmFile then
                 SelectedTheme := ThemeCount;
         end;
@@ -86,6 +87,55 @@ begin
 
     if SelectedTheme = 0 then
         SelectedTheme := 1;
+end;
+
+procedure AddThemeToList(const ThemeName: string);
+var
+	NewNode, LastNode: PThemeList;
+begin
+	{Initialize new node which will be added to the end of ThemeList}
+	New(NewNode);
+	NewNode^.FileName := ThemeName;
+	NewNode^.Next := nil;
+
+	if NewThemeList = nil then
+		{This is the first node being added}
+		NewThemeList := NewNode
+	else
+	begin
+		{Previous nodes exists, so find last one and add pointer to new
+		 node to it}
+		LastNode := NewThemeList;
+		while LastNode^.Next <> nil do
+			LastNode := LastNode^.Next;
+		LastNode^.Next := NewNode;
+	end;
+	
+	Inc(ThemeCount);
+end;
+
+function SelectedFileName: string;
+var
+	Node: PThemeList;
+	i: Integer;
+begin
+	if SelectedTheme < 1 then
+		SelectedTheme := ThemeCount
+	else if SelectedTheme > ThemeCount then
+		SelectedTheme := 1;
+	
+	Node := NewThemeList;
+	i := 1;
+	while (Node <> nil) and (i < SelectedTheme) do
+	begin
+		Node := Node^.Next;
+		Inc(i);
+	end;
+
+	if i = SelectedTheme then
+		SelectedFileName := Node^.FileName
+	else
+		SelectedFileName := '';
 end;
 
 procedure ThemePreview;
@@ -98,18 +148,17 @@ var
 	OrigTheme: TTheme;
 	LoadError: boolean;
 	ViewWidth, ViewHeight: integer;
+	FileName: string;
 begin
 	LoadError := False;
-
-	{Load the selected theme file}
-	if SelectedTheme < 1 then
-		SelectedTheme := ThemeCount
-	else if SelectedTheme > ThemeCount then
-		SelectedTheme := 1;
-	
 	OrigTheme := Thm; {Save original theme to restore later}
 	
-	Assign(F, ProgramPath + 'THEMES\' + ThemeList[SelectedTheme] + '.BIN');
+	FileName := SelectedFileName;
+	if FileName = '' then
+		exit;
+
+	{Load the selected theme file}
+	Assign(F, ProgramPath + 'THEMES\' + FileName + '.BIN');
 	{$I-}
 	Reset(F, 1);
 	{$I+}
@@ -118,7 +167,15 @@ begin
 		BlockRead(F, Thm, SizeOf(TTheme));
 		BlockRead(F, ThemeName, SizeOf(ThemeName));
 		BlockRead(F, ThemeAuthor, SizeOf(ThemeAuthor));
+	end
+	else
+	begin
+		{We don't exit here, because we want to clear the preview window
+		 if theme couldn't be loaded}
+		Thm := OrigTheme;
+		LoadError := True;
 	end;
+
 	Close(F);
 
 	ViewWidth := FrmThemePreview.Width - 4;
@@ -139,7 +196,7 @@ begin
 	
 	if LoadError then
 	begin
-		MsgBox(MSG_LOAD_ERROR_TITLE, ReplaceMsg(MSG_LOAD_ERROR_TEXT, ThemeList[SelectedTheme]), MsgError);
+		MsgBox(MSG_LOAD_ERROR_TITLE, ReplaceMsg(MSG_LOAD_ERROR_TEXT, FileName), MsgError);
 		Exit;
 	end;
 
@@ -257,7 +314,7 @@ begin
 		if BtnExit.Clicked or (Key = KeyAltX) or (Key = KeyAltF4) then
 		begin
 			if ThemeCount > 0 then
-				Setting.ThmFile := ThemeList[SelectedTheme];
+				Setting.ThmFile := SelectedFileName;
 			Setting.LinkCapt := ChkSetting[LinkDesc].Checked;
 			Setting.LinkTarget := ChkSetting[LinkTarget].Checked;
 			Setting.ConfLinkDel := ChkSetting[LinkDelete].Checked;
