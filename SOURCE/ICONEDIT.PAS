@@ -63,7 +63,6 @@ type
 	TCanvasAction = (MouseAction, KeyboardAction);
 
 	TIconData = array[0..IconSize, 0..IconSize] of byte;
-	TFillMask = array[0..IconSize, 0..IconSize] of TFillState;
 
 var
 	IconData: TIconData;
@@ -127,13 +126,15 @@ begin
 				{Keep drawing until mouse is released - if keyboard action, loop will
 				 exit after drawing one pixel}
 				repeat
-
-					{Plot the current pixel if color is different}
-					if IconData[CanvasX, CanvasY] <> DrawColor then
+					if CanvasX <> OutOfBound then
 					begin
-						MouseHide;
-						SetPixel(CanvasX, CanvasY, DrawColor);
-						MouseShow;
+						{Plot the current pixel if color is different}
+						if IconData[CanvasX, CanvasY] <> DrawColor then
+						begin
+							MouseHide;
+							SetPixel(CanvasX, CanvasY, DrawColor);
+							MouseShow;
+						end;
 					end;
 
 					if Action = KeyboardAction then
@@ -141,8 +142,6 @@ begin
 
 					GetCursorPos(CanvasX, CanvasY);
 
-					if (CanvasX = -1) then
-						continue;
 				until MouseClicked = MbNone;
 			end;
 
@@ -159,7 +158,7 @@ begin
 	{Make sure indicator will appear where mouse was lifted}
 	if Action = MouseAction then
 	begin
-		if (CanvasX > -1) then
+		if CanvasX <> OutOfBound then
 		begin
 			IndicatorX := CanvasX;
 			IndicatorY := CanvasY;
@@ -190,62 +189,77 @@ begin
 end;
 
 procedure FillArea(X, Y, FillColor: Integer);
+type
+	PNode = ^TNode;
+	TNode = record
+		X, Y: Integer;
+		Next: PNode;
+	end;
 var
-	FillMask: TFillMask;
-	CheckX, CheckY: Integer;
-	PixelsFilled: Boolean;
+	Stack: PNode; {Pointer to the first item in the stack}
 	ReplaceColor: Integer;
 
-	{Helper function to fill a single pixel and mark its neighbors for check}
-	procedure FillPixel(X, Y, ReplaceCol, FillCol: Integer);
+	{Pushes a pixel onto the stack for checking later}
+	procedure Push(X, Y: Integer);
+	var
+		NewNode: PNode;
 	begin
-		if (X < 0) or (Y < 0) or (X > IconSize) or (Y > IconSize) then
-			exit;
+		{Allocate a new node and set its values}
+		New(NewNode);
+		NewNode^.X := X;
+		NewNode^.Y := Y;
+		{Point new nodes Next to the current stack, and set it as
+		 the new stack head}
+		NewNode^.Next := Stack;
+		Stack := NewNode;
+	end;
 
-		if IconData[X, Y] = ReplaceCol then
+	{Retrieves a pixel from the stack for processing}
+	function Pop(var X, Y: Integer): Boolean;
+	var
+		TempNode: PNode;
+	begin
+		if Stack <> nil then
 		begin
-			SetPixel(X, Y, FillCol);
-			FillMask[X, Y] := FilledNeedsCheck;
-		end;
-	end;
-begin
-	{If the pixel already has the current color, there's nothing to paint.
-	 Wait mouse release and exit}
-	if IconData[X, Y] = FillColor then
-	begin
-		repeat until MouseClicked = MbNone;
-		exit;
+			X := Stack^.X;
+			Y := Stack^.Y;
+			TempNode := Stack;
+			Stack := Stack^.Next; {Set next stack item as head}
+			Dispose(TempNode); {Dispose the TNode element that was popped}
+			Pop := true;
+		end
+		else
+			Pop := false;
 	end;
 
-	IconChanged := true;
-	FillChar(Fillmask, SizeOf(FillMask), #0);
-	{Clicked pixel has the color we want to replace}
+begin
 	ReplaceColor := IconData[X, Y];
 
-	{Fill the specified pixel}
-	FillPixel(X, Y, ReplaceColor, FillColor);
-	
-	{Loop through FillMask as long as we find pixels that need to be checked}
-	repeat
-		PixelsFilled := false;
+	if ReplaceColor = FillColor then
+		exit;
 
-		for CheckX := 0 to IconSize do
+	Stack := nil;
+
+	{Add initially clicked pixel to the stack}
+	Push(X, Y);
+
+	{As long as there are pixels in the stack, check them}
+	while Pop(X, Y) do
+	begin
+		if (X < 0) or (Y < 0) or (X > IconSize) or (Y > IconSize) then
+			continue;
+
+		if IconData[X, Y] = ReplaceColor then
 		begin
-			for CheckY := 0 to IconSize do
-			begin
-				if FillMask[CheckX, CheckY] = FilledNeedsCheck then
-				begin
-					PixelsFilled := true;
-					FillPixel(CheckX - 1, CheckY, ReplaceColor, FillColor);
-					FillPixel(CheckX + 1, CheckY, ReplaceColor, FillColor);
-					FillPixel(CheckX, CheckY - 1, ReplaceColor, FillColor);
-					FillPixel(CheckX, CheckY + 1, ReplaceColor, FillColor);
-					{We've checked neighbors, so mark this pixel filled in mask}
-					FillMask[CheckX, CheckY] := FilledChecked;
-				end;
-			end;
+			{Set color of the pixel, and mark its neighbours for checking by
+			 pushing them onto the stack}
+			SetPixel(X, Y, FillColor);
+			Push(X - 1, Y);
+			Push(X + 1, Y);
+			Push(X, Y - 1);
+			Push(X, Y + 1);
 		end;
-	until not PixelsFilled;
+	end;
 
 	{Stick around as long as the mouse is clicked - to avoid fill while mouse
 	 is moved around. We only want one fill per click.}
@@ -319,8 +333,8 @@ begin
 	else
 	begin
 		{Out of bounds}
-		X := -1;
-		Y := -1;
+		X := OutOfBound;
+		Y := OutOfBound;
 	end;
 end;
 
@@ -331,7 +345,7 @@ begin
 	if (KeyboardPosVisible) or (Direction = DirHide) then
 	begin
 		{Remove indicator from previous pixel}
-		if (IndicatorX > -1) and (IndicatorY > -1) then
+		if (IndicatorX > OutOfBound) and (IndicatorY > OutOfBound) then
 		begin
 			CanvasX := OffsetX + (IndicatorX * PixelSize);
 			CanvasY := OffsetY + (IndicatorY * PixelSize);
@@ -625,6 +639,7 @@ begin
 	YPos := AreaCanvas.Top + 14;
 	for i := 0 to MaxColor do
 	begin
+		{On 8th item, move XPos to next column and reset YPos}
 		if i = 8 then
 		begin
 			inc(XPos, 21);
