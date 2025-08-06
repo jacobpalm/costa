@@ -9,14 +9,6 @@ const
 	AppAuthor         = 'Jacob Palm';
 	AppIcon           = 'MINE';
 
-	FieldMined        = 1;
-	FieldFlagged      = 2;
-	FieldCleared      = 4;
-	FieldNumbered     = 8;
-	FieldExploded     = 16;
-	FieldMasked       = 32;
-	FieldKBSelected   = 64;
-
 	CellSize          = 16; {Size of each clickable field}
 
 	CAP_NEW_GAME      = #127 + 'New game';
@@ -38,22 +30,23 @@ const
 	MSG_SOUND         = 'Sound:';
 	MSG_ON            = 'On';
 	MSG_OFF           = 'Off';
-
 type
 	TSound     = (SoundNew, SoundIllegalMove, SoundWin, SoundLoose, SoundClear, SoundFlag);
 	TDirection = (DirHide, DirShow, DirUp, DirDown, DirLeft, DirRight);
+	TFlag      = (Mined, Flagged, Cleared, Numbered, Exploded, Masked, KBSelected, Reserved);
+	TFlagSet   = set of TFlag;
 
 var
+	Field: array[0..17, 0..38] of TFlagSet;
 	EnableSound: boolean;
 	GameOver: boolean;
 	MineCount: integer;
 	FieldW, FieldH: integer;
-	AreaField: TArea;
 	StartTime, TimeCompare: real;
 	CellsCleared, CellsFlagged: integer;
 	KeyRow, KeyCol: integer;
-	MineField: array[0..17, 0..38] of integer;
 
+	AreaField: TArea;
 	BtnNew, BtnSize, BtnSound, BtnPause, BtnAbout, BtnExit: TButton;
 	FieldRow, FieldCol: integer;
 	MouseButton: TMouseButton;
@@ -94,17 +87,17 @@ var
 				if (NeighborRow >= 0) and (NeighborCol >= 0) and
 				   (NeighborRow < FieldH) and (NeighborCol < FieldW) then
 				begin
-					if MineField[NeighborRow, NeighborCol] = 0 then
+					{If neighbor is empty (equal to an empty set) then clear it}
+					if Field[NeighborRow, NeighborCol] = [] then
 					begin
-						{If neighbor is empty, clear it}
-						MineField[NeighborRow, NeighborCol] := MineField[NeighborRow, NeighborCol] xor FieldCleared;
+						Include(Field[NeighborRow, NeighborCol], Cleared);
 						DrawCell(NeighborRow, NeighborCol);
 						MaskNeighbors := true;
 						Inc(CellsCleared);
 
 						{If cleared field has no neighbours itself, mask if for next iteration}
 						if GetNeighborCount(NeighborRow, NeighborCol) = 0 then
-							MineField[NeighborRow, NeighborCol] := MineField[NeighborRow, NeighborCol] xor FieldMasked;
+							Include(Field[NeighborRow, NeighborCol], Masked);
 					end;
 				end;
 			end;
@@ -122,17 +115,17 @@ begin
 	 all neighbors to cleared cells. Empty cells are cleared as well and marked
 	 in the mask, to be checked on next iteration. Repeat until no cells are
 	 cleared}
-	MineField[Row, Col] := MineField[Row, Col] XOR FieldMasked;
+	Include(Field[Row, Col], Masked);
 	repeat
 		NeighborsCleared := false;
 		for CheckRow := 0 to FieldH - 1 do
 		begin
 			for CheckCol := 0 to FieldW - 1 do
 			begin
-				if (MineField[CheckRow, CheckCol] and FieldMasked) <> 0 then
+				if Masked in Field[CheckRow, CheckCol] then
 				begin
 					{Remove from mask to avoid redundant checks}
-					MineField[CheckRow, CheckCol] := MineField[CheckRow, CheckCol] and not FieldMasked;
+					Exclude(Field[CheckRow, CheckCol], Masked);
 
 					{Clear only if has no neighbors}
 					if GetNeighborCount(CheckRow, CheckCol) = 0 then
@@ -148,7 +141,7 @@ end;
 procedure ClickCell(Row, Col: integer; MouseButton: TMouseButton);
 begin
 
-	if (MineField[Row, Col] and FieldCleared) <> 0 then
+	if Cleared in Field[Row, Col] then
 	begin
 		PlaySound(SoundIllegalMove);
 		exit;
@@ -166,23 +159,23 @@ begin
 		MbLeft:
 		begin
 			{Clicked a flagged cell}
-			if (MineField[Row, Col] and FieldFlagged) <> 0 then
+			if Flagged in Field[Row, Col]  then
 			begin
 				PlaySound(SoundIllegalMove);
 				exit;
 			end;
 
 			{Clicked a mined field}
-			if (MineField[Row, Col] and FieldMined) <> 0 then
+			if Mined in Field[Row, Col] then
 			begin
 				MouseHide;
 				for Row := 0 to FieldH - 1 do
 				begin
 					for Col := 0 to FieldW - 1 do
 					begin
-						if (MineField[Row, Col] and FieldMined) <> 0 then
+						if Mined in Field[Row, Col] then
 						begin
-							MineField[Row, Col] := MineField[Row, Col] or FieldExploded;
+							Include(Field[Row, Col], Exploded);
 							DrawCell(Row, Col);
 						end;
 					end;
@@ -196,9 +189,10 @@ begin
 
 			{If we reach this point, clear the field and adjacent empty fields}
 			MouseHide;
-			MineField[Row, Col] := MineField[Row, Col] or FieldCleared;
+			Include(Field[Row, Col], Cleared);
 			Inc(CellsCleared);
 			DrawCell(Row, Col);
+			{DEBUG - this can be simplified}
 			if CellsCleared = (FieldH * FieldW) - MineCount then
 			begin
 				WinGame;
@@ -218,16 +212,16 @@ begin
 		begin
 
 			{If right-clicked a cell, flag it}
-			if (MineField[Row, Col] and FieldFlagged) = 0 then
+			if not (Flagged in Field[Row, Col]) then
 			begin
+				Include(Field[Row, Col], Flagged);
 				Inc(CellsFlagged);
-				MineField[Row, Col] := MineField[Row, Col] or FieldFlagged;
 			end
 			else
 			begin
 				{If already flagged, unflag}
+				Exclude(Field[Row, Col], Flagged);
 				Dec(CellsFlagged);
-				MineField[Row, Col] := MineField[Row, Col] and not FieldFlagged;
 			end;
 			MouseHide;
 			DrawCell(Row, Col);
@@ -251,7 +245,7 @@ begin
 	X2 := X1 + CellSize - 2;
 	Y2 := Y1 + CellSize - 2;
 
-	if (MineField[Row, Col] and FieldExploded) <> 0 then
+	if Exploded in Field[Row, Col] then
 	begin
 		{Exploded field. Kaboom!}
 		SetFillStyle(SolidFill,  Red);
@@ -275,11 +269,11 @@ begin
 		SetColor(White);
 		Rectangle(X1 + 5, Y1 + 5, X1 + 6, Y1 + 6);
 	end
-	else if (MineField[Row, Col] and FieldFlagged) <> 0 then
+	else if Flagged in Field[Row, Col] then
 	begin
 		{Flagged field}
 		{Background}
-		if (MineField[Row, Col] and FieldKBSelected) <> 0 then
+		if KBSelected in Field[Row, Col] then
 		begin
 			SetFillStyle(SolidFill, White);
 			Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
@@ -302,14 +296,14 @@ begin
 		Line(X1 + 9, Y1 + 4, X1 + 9, Y1 + 6);
 		PutPixel(X1 + 10, Y1 + 5, LightRed);
 	end
-	else if (MineField[Row, Col] and FieldCleared) <> 0 then
+	else if Cleared in Field[Row, Col] then
 	begin
 		{Cleared field}
 		SetFillStyle(SolidFill, LightGray);
 		Bar(X1, Y1, X2, Y2);
 
 		{Draw keyboard indicator if selected}
-		if (MineField[Row, Col] and FieldKBSelected) <> 0 then
+		if KBSelected in Field[Row, Col] then
 		begin
 			SetFillStyle(SolidFill, White);
 			Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
@@ -333,10 +327,9 @@ begin
 			Print(NeighborStr, X1 + ((CellSize - PrintW(NeighborStr)) div 2), Y1 + 3, TextColor);
 		end;
 	end
-	else if (MineField[Row, Col] and FieldKBSelected) <> 0 then
+	else if KBSelected in Field[Row, Col] then
 	begin
 		{Uncleared, not flagged, not exploded, but selected with keyboard}
-		{Draw keyboard indicator if selected}
 		SetFillStyle(SolidFill, White);
 		Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
 	end
@@ -426,7 +419,7 @@ begin
 			begin
 				if (CheckRow < FieldH) and (CheckCol < FieldW) then
 				begin
-					if (MineField[CheckRow, CheckCol] and FieldMined) <> 0 then
+					if Mined in Field[CheckRow, CheckCol] then
 						Inc(Neighbors);
 				end;
 			end;
@@ -453,9 +446,9 @@ begin
 			repeat
 				CheckRow := Random(FieldH);
 				CheckCol := Random(FieldW);
-				if (MineField[CheckRow, CheckCol] and FieldMined) = 0 then
+				if not (Mined in Field[CheckRow, CheckCol]) then
 				begin
-					MineField[CheckRow, CheckCol] := FieldMined;
+					Include(Field[CheckRow, CheckCol], Mined);
 					Inc(MinePlace);
 				end;
 			until MinePlace = MinesMoved;
@@ -471,9 +464,9 @@ begin
 				begin
 					if (CheckRow < FieldH) and (CheckCol < FieldW) then
 					begin
-						if (MineField[CheckRow, CheckCol] and FieldMined) <> 0 then
+						if Mined in Field[CheckRow, CheckCol] then
 						begin
-							MineField[CheckRow, CheckCol] := 0;
+							Exclude(Field[CheckRow, CheckCol], Mined);
 							Inc(MinesMoved);
 						end;
 					end;
@@ -490,7 +483,7 @@ var
 	FieldRow, FieldCol, MinePlace: integer;
 begin
 	{Clear mine array}	
-	FillChar(MineField, SizeOf(MineField), 0);
+	FillChar(Field, SizeOf(Field), 0);
 
 	case FieldW of
 		9: MineCount := 10;   {0.12% of 9x9,    81}
@@ -504,9 +497,9 @@ begin
 	repeat
 		FieldRow := Random(FieldH);
 		FieldCol := Random(FieldW);
-		if (MineField[FieldRow, FieldCol] and FieldMined) = 0 then
+		if not (Mined in Field[FieldRow, FieldCol]) then
 		begin
-			MineField[FieldRow, FieldCol] := FieldMined;
+			Include(Field[FieldRow, FieldCol], Mined);
 			Inc(MinePlace);
 		end;
 	until MinePlace = MineCount;
@@ -734,7 +727,7 @@ begin
 	begin
 		for Col := 0 to FieldW - 1 do
 		begin
-			if (MineField[Row, Col] and FieldMined) <> 0 then
+			if Mined in Field[Row, Col] then
 			begin
 				X1 := AreaField.Left + 1 + Col * CellSize;
 				Y1 := AreaField.Top + 1 + Row * CellSize;
@@ -878,7 +871,9 @@ end;
 procedure MoveKBIndicator(Direction: TDirection);
 begin
 	KeyVisible := true;
-	MineField[KeyRow, KeyCol] := MineField[KeyRow, KeyCol] and not FieldKBSelected;
+
+	{Hide current indicator before moving}
+	Exclude(Field[KeyRow, KeyCol], KBSelected);
 	MouseHide;
 	DrawCell(KeyRow, KeyCol);
 	case Direction of
@@ -900,7 +895,9 @@ begin
 				exit;
 			end;
 	end;
-	MineField[KeyRow, KeyCol] := MineField[KeyRow, KeyCol] xor FieldKBSelected;
+
+	{Add new indicator and draw it}
+	Include(Field[KeyRow, KeyCol], KBSelected);
 	DrawCell(KeyRow, KeyCol);
 	MouseShow;
 end;
@@ -914,11 +911,11 @@ begin
 	begin
 		for FieldCol := 0 to FieldW - 1 do
 		begin
-			if (MineField[FieldRow, FieldCol] and FieldMined) <> 0 then
+			if Mined in Field[FieldRow, FieldCol] then
 			begin
-				if (MineField[FieldRow, FieldCol] and FieldFlagged) = 0 then
+				if not (Flagged in Field[FieldRow, FieldCol]) then
 				begin
-					MineField[FieldRow, FieldCol] := MineField[FieldRow, FieldCol] xor FieldFlagged;
+					Include(Field[FieldRow, FieldCol], Flagged);
 					DrawCell(FieldRow, FieldCol);
 					Inc(CellsFlagged);
 				end;
