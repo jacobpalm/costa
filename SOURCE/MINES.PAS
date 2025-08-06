@@ -33,29 +33,26 @@ const
 type
 	TSound     = (SoundNew, SoundIllegalMove, SoundWin, SoundLoose, SoundClear, SoundFlag);
 	TDirection = (DirHide, DirShow, DirUp, DirDown, DirLeft, DirRight);
-	TFlag      = (Mined, Flagged, Cleared, Numbered, Exploded, Masked, KBSelected, Reserved);
+	TFlag      = (Mined, Flagged, Cleared, Exploded, Selected);
 	TFlagSet   = set of TFlag;
 
 var
 	Field: array[0..17, 0..38] of TFlagSet;
+	FieldW, FieldH: integer;
+	MineCount, ClearedCount, FlaggedCount: integer;
+	StartTime: real;
 	EnableSound: boolean;
 	GameOver: boolean;
-	MineCount: integer;
-	FieldW, FieldH: integer;
-	StartTime, TimeCompare: real;
-	CellsCleared, CellsFlagged: integer;
-	KeyRow, KeyCol: integer;
+	IndicatorRow, IndicatorCol: integer;
+	KeyVisible: boolean;
 
 	AreaField: TArea;
 	BtnNew, BtnSize, BtnSound, BtnPause, BtnAbout, BtnExit: TButton;
-	FieldRow, FieldCol: integer;
 	MouseButton: TMouseButton;
-	KeyVisible: boolean;
-	Key: string;
 
 function  GetNeighborCount(Row, Col: integer): integer; forward;
 function  SetFieldSize: boolean; forward;
-procedure ClearNeighbors(Row, Col: integer); forward;
+procedure ClearCell(Row, Col: integer); forward;
 procedure ClickCell(Row, Col: integer; MouseButton: TMouseButton); forward;
 procedure DrawCell(Row, Col: integer); forward;
 procedure DrawField; forward;
@@ -68,74 +65,83 @@ procedure PrintTime; forward;
 procedure RevealMines; forward;
 procedure WinGame; forward;
 
-procedure ClearNeighbors(Row, Col: integer);
+procedure ClearCell(Row, Col: integer);
+type
+	PNode = ^TNode;
+	TNode = record
+		Row, Col: integer;
+		Next: PNode;
+	end;
 var
-	CheckRow, CheckCol: integer;
-	NeighborsCleared: boolean;
+	Stack: PNode;
+	NeighborRow, NeighborCol: integer;
 
-	function MaskNeighbors(Row, Col: integer): boolean;
+	procedure Push(Row, Col: integer);
 	var
-		NeighborRow, NeighborCol: integer;
+		NewNode: PNode;
 	begin
-		MaskNeighbors := false;
-		{Check all neighbors}
-		for NeighborRow := Row - 1 TO Row + 1 do
-		begin
-			for NeighborCol := Col - 1 TO Col + 1 do
-			begin
-				{Prevent 'out of bounds' errors}
-				if (NeighborRow >= 0) and (NeighborCol >= 0) and
-				   (NeighborRow < FieldH) and (NeighborCol < FieldW) then
-				begin
-					{If neighbor is empty (equal to an empty set) then clear it}
-					if Field[NeighborRow, NeighborCol] = [] then
-					begin
-						Include(Field[NeighborRow, NeighborCol], Cleared);
-						DrawCell(NeighborRow, NeighborCol);
-						MaskNeighbors := true;
-						Inc(CellsCleared);
+		New(NewNode);
+		NewNode^.Row := Row;
+		NewNode^.Col := Col;
+		NewNode^.Next := Stack;
+		Stack := NewNode;
+	end;
 
-						{If cleared field has no neighbours itself, mask if for next iteration}
-						if GetNeighborCount(NeighborRow, NeighborCol) = 0 then
-							Include(Field[NeighborRow, NeighborCol], Masked);
-					end;
+	function Pop(var Row, Col: integer): boolean;
+	var
+		Temp: PNode;
+	begin
+		Pop := false;
+		if Stack = nil then
+			exit;
+
+		Temp := Stack;
+		Row := Temp^.Row;
+		Col := Temp^.Col;
+		Stack := Temp^.Next;
+		Dispose(Temp);
+		Pop := true;
+	end;
+
+begin
+
+	Stack := nil;
+	Push(Row, Col);
+
+	while Pop(Row, Col) do
+	begin
+		{Skip already cleared, or flagged, fields}
+		if (Cleared in Field[Row, Col]) or (Flagged in Field[Row, Col]) then
+			continue;
+
+		{Add cleared flag, redraw cell and increment cleared cells count}
+		Include(Field[Row, Col], Cleared);
+		DrawCell(Row, Col);
+		Inc(ClearedCount);
+		
+		{If current field has no mines around it, add its neighbors to the stack
+		 for checking if they should be cleared as well}
+		if GetNeighborCount(Row, Col) = 0 then
+		begin
+			for NeighborRow := Row - 1 to Row + 1 do
+			begin
+				for NeighborCol := Col - 1 to Col + 1 do
+				begin
+					{Don't add the same cell again}
+					if (NeighborRow = Row) and (NeighborCol = Col) then
+						continue;
+
+					{Check bounds}
+					if (NeighborRow < 0) or (NeighborRow >= FieldH) or
+					   (NeighborCol < 0) or (NeighborCol >= FieldW) then
+						continue;
+					
+					if Field[NeighborRow, NeighborCol] = [] then
+						Push(NeighborRow, NeighborCol);
 				end;
 			end;
 		end;
 	end;
-
-begin
-	{If the cell has neighbors, an empty space was not clicked and thus nothing
-	 should be cleared around it}
-	if GetNeighborCount(Row, Col) <> 0 then
-		exit;
-
-	MouseHide;
-	{Set the current pos in the mask as cleared, then start a loop that checks
-	 all neighbors to cleared cells. Empty cells are cleared as well and marked
-	 in the mask, to be checked on next iteration. Repeat until no cells are
-	 cleared}
-	Include(Field[Row, Col], Masked);
-	repeat
-		NeighborsCleared := false;
-		for CheckRow := 0 to FieldH - 1 do
-		begin
-			for CheckCol := 0 to FieldW - 1 do
-			begin
-				if Masked in Field[CheckRow, CheckCol] then
-				begin
-					{Remove from mask to avoid redundant checks}
-					Exclude(Field[CheckRow, CheckCol], Masked);
-
-					{Clear only if has no neighbors}
-					if GetNeighborCount(CheckRow, CheckCol) = 0 then
-						if MaskNeighbors(CheckRow, CheckCol) then
-							NeighborsCleared := true;			
-				end;
-			end;
-		end;
-	until NeighborsCleared = false;
-	MouseShow;
 end;
 
 procedure ClickCell(Row, Col: integer; MouseButton: TMouseButton);
@@ -147,7 +153,7 @@ begin
 		exit;
 	end;
 
-	if CellsCleared = 0 then
+	if ClearedCount = 0 then
 	begin
 		StartTime := Timer;
 
@@ -189,22 +195,12 @@ begin
 
 			{If we reach this point, clear the field and adjacent empty fields}
 			MouseHide;
-			Include(Field[Row, Col], Cleared);
-			Inc(CellsCleared);
-			DrawCell(Row, Col);
-			{DEBUG - this can be simplified}
-			if CellsCleared = (FieldH * FieldW) - MineCount then
-			begin
-				WinGame;
-				MouseShow;
-			end
+			ClearCell(Row, Col);
+			MouseHide;
+			if ClearedCount = (FieldH * FieldW) - MineCount then
+				WinGame
 			else
-			begin
 				PlaySound(SoundClear);
-				ClearNeighbors(Row, Col);
-				if CellsCleared = (FieldH * FieldW) - MineCount then
-					WinGame;
-			end;
 			MouseShow;
 		end;
 			
@@ -215,13 +211,13 @@ begin
 			if not (Flagged in Field[Row, Col]) then
 			begin
 				Include(Field[Row, Col], Flagged);
-				Inc(CellsFlagged);
+				Inc(FlaggedCount);
 			end
 			else
 			begin
 				{If already flagged, unflag}
 				Exclude(Field[Row, Col], Flagged);
-				Dec(CellsFlagged);
+				Dec(FlaggedCount);
 			end;
 			MouseHide;
 			DrawCell(Row, Col);
@@ -273,7 +269,7 @@ begin
 	begin
 		{Flagged field}
 		{Background}
-		if KBSelected in Field[Row, Col] then
+		if Selected in Field[Row, Col] then
 		begin
 			SetFillStyle(SolidFill, White);
 			Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
@@ -303,7 +299,7 @@ begin
 		Bar(X1, Y1, X2, Y2);
 
 		{Draw keyboard indicator if selected}
-		if KBSelected in Field[Row, Col] then
+		if Selected in Field[Row, Col] then
 		begin
 			SetFillStyle(SolidFill, White);
 			Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
@@ -327,7 +323,7 @@ begin
 			Print(NeighborStr, X1 + ((CellSize - PrintW(NeighborStr)) div 2), Y1 + 3, TextColor);
 		end;
 	end
-	else if KBSelected in Field[Row, Col] then
+	else if Selected in Field[Row, Col] then
 	begin
 		{Uncleared, not flagged, not exploded, but selected with keyboard}
 		SetFillStyle(SolidFill, White);
@@ -415,13 +411,11 @@ begin
 		for CheckCol := Col - 1 to Col + 1 do
 		begin
 
-			if (CheckRow >= 0) and (CheckCol >= 0) then
+			if (CheckRow >= 0) and (CheckCol >= 0) and
+			   (CheckRow < FieldH) and (CheckCol < FieldW) then
 			begin
-				if (CheckRow < FieldH) and (CheckCol < FieldW) then
-				begin
-					if Mined in Field[CheckRow, CheckCol] then
-						Inc(Neighbors);
-				end;
+				if Mined in Field[CheckRow, CheckCol] then
+					Inc(Neighbors);
 			end;
 
 		end;
@@ -460,15 +454,13 @@ begin
 		begin
 			for CheckCol := Col - 1 to Col + 1 do
 			begin
-				if (CheckRow >= 0) and (CheckCol >= 0) then
+				if (CheckRow >= 0) and (CheckCol >= 0) and
+				   (CheckRow < FieldH) and (CheckCol < FieldW) then
 				begin
-					if (CheckRow < FieldH) and (CheckCol < FieldW) then
+					if Mined in Field[CheckRow, CheckCol] then
 					begin
-						if Mined in Field[CheckRow, CheckCol] then
-						begin
-							Exclude(Field[CheckRow, CheckCol], Mined);
-							Inc(MinesMoved);
-						end;
+						Exclude(Field[CheckRow, CheckCol], Mined);
+						Inc(MinesMoved);
 					end;
 				end;
 			end;
@@ -507,18 +499,18 @@ begin
 	DrawField;
 	PlaySound(SoundNew);
 	GameOver := false;
-	CellsCleared := 0;
-	CellsFlagged := 0;
+	ClearedCount := 0;
+	FlaggedCount := 0;
 	StartTime := 0;
-	KeyRow := FieldH div 2;
-	KeyCol := FieldW div 2;
+	IndicatorRow := FieldH div 2;
+	IndicatorCol := FieldW div 2;
 	
 	PrintStatus(False, '');
 end;
 
 procedure Pause;
 var
-	BtnResume, BtnExit: TButton;
+	BtnResume: TButton;
 	Row, Col: integer;
 	PauseTime: real;
 	Key: string;
@@ -526,7 +518,6 @@ begin
 	PauseTime := Timer;
 	
 	BtnResume.Init(3, 2, SizeDefault, SizeDefault, CAP_RESUME);
-	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
 
 	MouseHide;
 	SetFillStyle(SolidFill, Thm.Win);
@@ -554,13 +545,11 @@ begin
 	until false;
 
 	MouseHide;
-	MenuBar.Draw;
 	BtnNew.Draw;
 	BtnSize.Draw;
 	BtnSound.Draw;
 	BtnPause.Draw;
 	BtnAbout.Draw;
-	BtnExit.Draw;
 	DrawField;
 	for Row := 0 to FieldH - 1 do
 	begin
@@ -627,7 +616,7 @@ var
 	FlaggedStr, CountStr: string;
 begin
 	
-	Str(CellsFlagged, FlaggedStr);
+	Str(FlaggedCount, FlaggedStr);
 	Str(MineCount, CountStr);
 	SetFillStyle(SolidFill, Thm.Win);
 
@@ -638,7 +627,6 @@ begin
 	
 	if MineCountOnly then
 	begin
-		
 		Bar(106, 330, 184, 343);
 		MessageText := FlaggedStr + '/' + CountStr;
 		Print(MessageText, 110, 332, Thm.WinText);
@@ -868,27 +856,27 @@ begin
 	MouseShow;		
 end;
 
-procedure MoveKBIndicator(Direction: TDirection);
+procedure MoveIndicator(Direction: TDirection);
 begin
 	KeyVisible := true;
 
 	{Hide current indicator before moving}
-	Exclude(Field[KeyRow, KeyCol], KBSelected);
+	Exclude(Field[IndicatorRow, IndicatorCol], Selected);
 	MouseHide;
-	DrawCell(KeyRow, KeyCol);
+	DrawCell(IndicatorRow, IndicatorCol);
 	case Direction of
 		DirUp:
-			if KeyRow > 0 then
-				Dec(KeyRow);
+			if IndicatorRow > 0 then
+				Dec(IndicatorRow);
 		DirDown:
-			if KeyRow < FieldH - 1 then
-				Inc(KeyRow);
+			if IndicatorRow < FieldH - 1 then
+				Inc(IndicatorRow);
 		DirLeft:
-			if KeyCol > 0 then
-				Dec(KeyCol);
+			if IndicatorCol > 0 then
+				Dec(IndicatorCol);
 		DirRight:
-			if KeyCol < FieldW - 1 then
-				Inc(KeyCol);
+			if IndicatorCol < FieldW - 1 then
+				Inc(IndicatorCol);
 		DirHide:
 			begin
 				MouseShow;
@@ -897,8 +885,8 @@ begin
 	end;
 
 	{Add new indicator and draw it}
-	Include(Field[KeyRow, KeyCol], KBSelected);
-	DrawCell(KeyRow, KeyCol);
+	Include(Field[IndicatorRow, IndicatorCol], Selected);
+	DrawCell(IndicatorRow, IndicatorCol);
 	MouseShow;
 end;
 
@@ -917,7 +905,7 @@ begin
 				begin
 					Include(Field[FieldRow, FieldCol], Flagged);
 					DrawCell(FieldRow, FieldCol);
-					Inc(CellsFlagged);
+					Inc(FlaggedCount);
 				end;
 			end;
 		end;
@@ -927,7 +915,10 @@ begin
 	GameOver := True;
 end;
 
-
+var
+	FieldRow, FieldCol: integer;
+	TimeCompare: real;
+	Key: string;
 begin
 	BtnNew.Init(3, 2, SizeDefault, SizeDefault, CAP_NEW_GAME);
 	BtnPause.Init(102, 2, SizeDefault, SizeDefault, CAP_PAUSE);
@@ -990,25 +981,25 @@ begin
 				RevealMines;
 
 			if (Key = KeyEnter) and KeyVisible then
-				ClickCell(KeyRow, KeyCol, MbLeft);
+				ClickCell(IndicatorRow, IndicatorCol, MbLeft);
 
 			if (Key = KeySpace) and KeyVisible then
-				ClickCell(KeyRow, KeyCol, MbRight);
+				ClickCell(IndicatorRow, IndicatorCol, MbRight);
 
 			if ((Key = KeySpace) or (Key = KeyEnter)) and (KeyVisible = false) then
 			begin
-				MoveKBIndicator(DirShow);
+				MoveIndicator(DirShow);
 				ClearInputBuffer;
 			end;
 
 			If Key = KeyUp then
-				MoveKBIndicator(DirUp);
+				MoveIndicator(DirUp);
 			If Key = KeyDown then
-				MoveKBIndicator(DirDown);
+				MoveIndicator(DirDown);
 			If Key = KeyLeft then
-				MoveKBIndicator(DirLeft);
+				MoveIndicator(DirLeft);
 			If Key = KeyRight then
-				MoveKBIndicator(DirRight);
+				MoveIndicator(DirRight);
 			
 			if (StartTime <> 0) and (TimeCompare < Timer) then
 			begin
@@ -1034,12 +1025,12 @@ begin
 					Dec(FieldRow);
 			
 				if KeyVisible then
-					MoveKBIndicator(DirHide);
+					MoveIndicator(DirHide);
 				
 				ClickCell(FieldRow, FieldCol, MouseButton);
 
-				KeyRow := FieldRow;
-				KeyCol := FieldCol;
+				IndicatorRow := FieldRow;
+				IndicatorCol := FieldCol;
 				{Prevent sound from running wild if mouse/key is held down}
 				ClearInputBuffer;
 
@@ -1048,7 +1039,6 @@ begin
 		end;
 
 	until false;
-
 	CloseGraph;
 
 end.
