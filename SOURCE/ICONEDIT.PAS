@@ -50,7 +50,7 @@ const
 	                         'Please select a .BIN file from the ICONS directory.';
 
 type
-	TTool = (toolPencil, toolFloodFill);
+	TTool = (ToolPencil, ToolFloodFill);
 	TCursorDir = (    
 		DirHide,
 		DirStay,
@@ -59,23 +59,23 @@ type
 		DirUp,
 		DirDown        
 	);
-	TFillState = (NotFilled, FilledNeedsCheck, FilledChecked);
 	TCanvasAction = (MouseAction, KeyboardAction);
 
+	{2D array storing each pixel on the canvas, by its EGA/VGA color value}
 	TIconData = array[0..IconSize, 0..IconSize] of byte;
 
 var
 	IconData: TIconData;
 	CurrentTool: TTool;
-	DrawColor: Integer;
+	DrawColor: Integer; {Currently selected color for drawing}
 	IconFileName: String;
 	IconChanged: Boolean;
 
-	IndicatorX, IndicatorY: Integer;
-	OffsetX, OffsetY: Integer;
-	KeyboardPosVisible: boolean;
+	IndicatorX, IndicatorY: Integer; {Position of the keyboard indicator in the canvas area}
+	IndicatorVisible: boolean;
+	OffsetX, OffsetY: Integer; {Offset for the top-left corner of the canvas, used to calculate pixel positions}
 
-	{Objects which are modified outside main loop}
+	{UI objects which are used outside main loop}
 	AreaCanvas: TArea;
 	BtnPencil, BtnFloodFill: TButton;
 	AreaColor: array[0..MaxColor] of TArea;
@@ -85,19 +85,21 @@ var
 procedure GetCursorPos(var X, Y: Integer); forward;
 procedure MoveIndicator(Direction: TCursorDir); forward;
 procedure SaveIcon(SaveAs: boolean); forward;
-procedure SetPixel(X, Y, Col: Integer); forward;
+procedure DrawPixel(X, Y, Col: Integer); forward;
 procedure SetTool(Tool: TTool); forward;
-procedure FillArea(X, Y, FillColor: Integer); forward;
+procedure FloodFill(X, Y, FillColor: Integer); forward;
 
+{DoCanvasAction is called when the mouse is clicked in the canvas area, or when
+ the user presses Enter/Space to draw the currently selected pixel}
 procedure DoCanvasAction(Action: TCanvasAction);
 var
 	CanvasX, CanvasY: Integer;
 begin
 	{If keyboard action was taken but indicator is hidden, just show it without
 	 drawing}
-	if (Action = KeyboardAction) and (not KeyboardPosVisible) then
+	if (Action = KeyboardAction) and (not IndicatorVisible) then
 	begin
-		KeyboardPosVisible := true;
+		IndicatorVisible := true;
 		MoveIndicator(DirStay);
 		exit;
 	end;
@@ -106,7 +108,7 @@ begin
 	 keyboard action was taken}
 	if Action = MouseAction then
 	begin
-		if KeyboardPosVisible then
+		if IndicatorVisible then
 			MoveIndicator(DirHide);
 		GetCursorPos(CanvasX, CanvasY);
 	end
@@ -121,7 +123,7 @@ begin
 		exit;
 
 	case CurrentTool of
-		toolPencil:
+		ToolPencil:
 			begin
 				{Keep drawing until mouse is released - if keyboard action, loop will
 				 exit after drawing one pixel}
@@ -132,7 +134,7 @@ begin
 						if IconData[CanvasX, CanvasY] <> DrawColor then
 						begin
 							MouseHide;
-							SetPixel(CanvasX, CanvasY, DrawColor);
+							DrawPixel(CanvasX, CanvasY, DrawColor);
 							MouseShow;
 						end;
 					end;
@@ -145,13 +147,13 @@ begin
 				until MouseClicked = MbNone;
 			end;
 
-		toolFloodFill:
+		ToolFloodFill:
 			begin
 				MouseHide;
-				FillArea(CanvasX, CanvasY, DrawColor);
+				FloodFill(CanvasX, CanvasY, DrawColor);
 				MouseShow;
 				{After flood fill, switch back to the pencil tool}
-				SetTool(toolPencil);
+				SetTool(ToolPencil);
 			end;
 	end;
 	
@@ -170,7 +172,9 @@ begin
 		MoveIndicator(DirStay);
 end;
 
-procedure SetPixel(X, Y, Col: Integer);
+{DrawPixel draws a pixel at the specified coordinates on the canvas and updates the
+ IconData array. It also updates the ImgPreview icon}
+procedure DrawPixel(X, Y, Col: Integer);
 var
 	CanvasX, CanvasY: Integer;
 begin
@@ -184,12 +188,20 @@ begin
 	IconData[X, Y] := Col;
 
 	SetFillStyle(SolidFill, Col);
+	{Draw on canvas}
 	Bar(CanvasX, CanvasY, CanvasX + PixelSize - 2, CanvasY + PixelSize - 2);
+	{Update preview}
 	PutPixel(ImgPreview.Left + X, ImgPreview.Top + Y, Col);
 end;
 
-procedure FillArea(X, Y, FillColor: Integer);
+{Floodfill fils an area of the canvas with the specified color. When a pixel is filled
+ its neighbors are pushed to the stack. The neighbors are then checked by popping them
+ from the stack and filling them if they match the original color. This continues until
+ no more pixels are left in the stack. A stack is used to avoid recursion, as that
+ would quickly lead to a stack overflow for large areas.}
+procedure FloodFill(X, Y, FillColor: Integer);
 type
+	{Pointer and record type for a node in the stack}
 	PNode = ^TNode;
 	TNode = record
 		X, Y: Integer;
@@ -197,7 +209,7 @@ type
 	end;
 var
 	Stack: PNode; {Pointer to the first item in the stack}
-	ReplaceColor: Integer;
+	ReplaceColor: Integer; {The color to replace, which is the color of the pixel clicked on}
 
 	{Pushes a pixel onto the stack for checking later}
 	procedure Push(X, Y: Integer);
@@ -223,8 +235,9 @@ var
 		begin
 			X := Stack^.X;
 			Y := Stack^.Y;
+			{Retrieve the top item from the stack and set its Next as the new head}
 			TempNode := Stack;
-			Stack := Stack^.Next; {Set next stack item as head}
+			Stack := Stack^.Next;
 			Dispose(TempNode); {Dispose the TNode element that was popped}
 			Pop := true;
 		end
@@ -233,27 +246,29 @@ var
 	end;
 
 begin
+	{Only adjacent pixels of this color will be filled}
 	ReplaceColor := IconData[X, Y];
 
+	{No point in filling area with the color it already has}
 	if ReplaceColor = FillColor then
 		exit;
 
+	{Initialize stack and push clicked pixel to it}
 	Stack := nil;
-
-	{Add initially clicked pixel to the stack}
 	Push(X, Y);
 
-	{As long as there are pixels in the stack, check them}
+	{As long as there are pixels in the stack, retrieve and check them}
 	while Pop(X, Y) do
 	begin
+		{Check bounds}
 		if (X < 0) or (Y < 0) or (X > IconSize) or (Y > IconSize) then
 			continue;
 
+		{If pixel has the right color, fill it and mark its neighbours for checking by
+		 pushing them onto the stack}
 		if IconData[X, Y] = ReplaceColor then
 		begin
-			{Set color of the pixel, and mark its neighbours for checking by
-			 pushing them onto the stack}
-			SetPixel(X, Y, FillColor);
+			DrawPixel(X, Y, FillColor);
 			Push(X - 1, Y);
 			Push(X + 1, Y);
 			Push(X, Y - 1);
@@ -261,11 +276,12 @@ begin
 		end;
 	end;
 
-	{Stick around as long as the mouse is clicked - to avoid fill while mouse
-	 is moved around. We only want one fill per click.}
+	{Wait for mouse release to avoid unintended drawing}
 	repeat until MouseClicked = MbNone;
 end;
 
+{SetDrawColor changes the currently selected drawing color and moves the
+ selection marker to the corresponding color area}
 procedure SetDrawColor(Col: integer);
 var
 	X1, Y1, X2, Y2: integer;
@@ -293,18 +309,20 @@ begin
 	MouseShow;
 end;
 
+{SetTools sets the current tool and updates button visuals accordingly}
 procedure SetTool(Tool: TTool);
 begin
 	if Tool = CurrentTool then
 		exit;
 
-	{Set the current tool to the specified one, and update the button visuals}
-	if Tool = toolPencil then
+	{Set the current tool to the specified one, and update the button visuals so
+	 that the button for the current tool appears pressed down}
+	if Tool = ToolPencil then
 	begin
 		BtnPencil.State := BsDown;
 		BtnFloodFill.State := BsUp;
 	end
-	else if Tool = toolFloodFill then
+	else if Tool = ToolFloodFill then
 	begin
 		BtnPencil.State := BsUp;
 		BtnFloodFill.State := BsDown;
@@ -316,15 +334,18 @@ begin
 	MouseShow;
 end;
 
+{GetCursorPos retrieves the pixel in the canvas which the mouse is currently over.
+ Values are returned in X and Y. If the mouse is not over the canvas, OutOfBound is
+ returned for both X and Y.}
 procedure GetCursorPos(var X, Y: Integer);
-var
-	tmpX, tmpY: String;
 begin
 	if AreaCanvas.IsMouseOver then
 	begin
 		MousePoll;
 		X := (MouseX - OffsetX) div PixelSize;
 		Y := (MouseY - OffsetY) div PixelSize;
+
+		{Ensure X and Y are within bounds}
 		if X < 0 then X := 0;
 		if Y < 0 then Y := 0;
 		if X > IconSize then X := IconSize;
@@ -338,11 +359,13 @@ begin
 	end;
 end;
 
+{MoveIndicator moves the keyboard indicator in the specified direction,
+ or hides/shows it.}
 procedure MoveIndicator(Direction: TCursorDir);
 var
 	CanvasX, CanvasY: Integer;
 begin
-	if (KeyboardPosVisible) or (Direction = DirHide) then
+	if (IndicatorVisible) or (Direction = DirHide) then
 	begin
 		{Remove indicator from previous pixel}
 		if (IndicatorX > OutOfBound) and (IndicatorY > OutOfBound) then
@@ -358,11 +381,11 @@ begin
 
 	if Direction = DirHide then
 	begin
-		KeyboardPosVisible := false;
+		IndicatorVisible := false;
 		exit;
 	end
 	else
-		KeyboardPosVisible := true;
+		IndicatorVisible := true;
 
 	{No need to handle DirStay, all it does is ensure the indicator is visible}
 	case Direction of
@@ -389,7 +412,10 @@ begin
 	MouseShow;
 end;
 
-procedure DrawGrid;
+{The canvas is divided into pixels by horizontal and vertical lines in a grid. These lines
+ are dotted in alternate colors to make them visible on any background. DrawCanvasGrid draws
+ this grid on the canvas area.}
+procedure DrawCanvasGrid;
 var
   Pos: Integer;
 begin
@@ -418,16 +444,21 @@ begin
   SetLineStyle(SolidLn, 1, NormWidth);
 end;
 
+{UnsavedChangesToKeep checks if there are unsaved changes in the icon.
+ If there are, it prompts the user to save the icon. If the user chooses to save,
+ it calls SaveIcon. If the save is successful, there are no unsaved changes and
+ the function returns false. If the user chooses not to save, or if the save fails,
+ the function returns true, indicating that there are unsaved changes that should be kept.}
 function UnsavedChangesToKeep: Boolean;
 var
-	mbResult: Boolean;
+	MbResult: Boolean;
 begin
 	UnsavedChangesToKeep := false;
 	if IconChanged = false then
 		exit;
 
-	mbResult := MsgBox(MSG_UNSAVED_TITLE, MSG_UNSAVED_TEXT, MsgQuest);
-	if mbResult = true then
+	MbResult := MsgBox(MSG_UNSAVED_TITLE, MSG_UNSAVED_TEXT, MsgQuest);
+	if MbResult = true then
 	begin
 		SaveIcon(false);
 
@@ -436,28 +467,35 @@ begin
 	end;
 end;
 
+{NewIcon clears icon data and draws an empty canvas}
 procedure NewIcon;
 var
 	CanvasX, CanvasY: Integer;
-	mbResult: Boolean;
+	MbResult: Boolean;
 begin
 	if UnsavedChangesToKeep then
 		exit;
 
-	{Draw all pixels white}
+	{Fill icon data with the default color (white)}
+	FillChar(IconData, SizeOf(IconData), White);
+	
+	{Clear drawing area}
 	MouseHide;
-	for CanvasX := 0 to IconSize do
-		for CanvasY := 0 to IconSize do
-			SetPixel(CanvasX, CanvasY, White);
+	AreaCanvas.Draw;
+	DrawCanvasGrid;
 	MouseShow;
 
-	KeyboardPosVisible := false;
-	IndicatorX := 16;
-	IndicatorY := 16;
+	if IndicatorVisible then
+		MoveIndicator(DirStay);
+
 	IconFileName := '';
 	IconChanged := false;
 end;
 
+{SavesIcon saves the icon, and asks for a filename first if the icon has not been saved
+ before, or if SaveAs is true. It checks if the file already exists and prompts the user
+ to overwrite it if necessary. If the save is successful, it updates IconFileName and
+ IconChanged. If the save fails, it shows an error message.}
 procedure SaveIcon(SaveAs: boolean);
 var
 	Filename: String;
@@ -465,7 +503,7 @@ var
 	Size: Word;
 	p: Pointer;
 	X1, Y1, X2, Y2: Integer;
-	mbResult: Boolean;
+	MbResult: Boolean;
 begin
 	{If icon hasn't already been saved, or SaveAs specified, prompt for a filename}
 	if (Length(IconFileName) = 0) or SaveAs then
@@ -488,8 +526,8 @@ begin
 	{Check if file already exists}
 	if FileExists(Filename) and (Filename <> IconFileName) then
 	begin
-		mbResult := MsgBox(MSG_FILE_EXISTS_TITLE, MSG_FILE_EXISTS_TEXT, MsgQuest);
-		if mbResult = false then
+		MbResult := MsgBox(MSG_FILE_EXISTS_TITLE, MSG_FILE_EXISTS_TEXT, MsgQuest);
+		if MbResult = false then
 			exit;
 	end;
 	
@@ -509,78 +547,90 @@ begin
 	{$I+}
 	if IOResult <> 0 then
 	begin
+		{The file could not be opened for writing, show an error}
 		MsgBox(MSG_SAVE_ERROR_TITLE, MSG_SAVE_ERROR_TEXT + Filename, MsgError);
 		FreeMem(p, Size);
 		exit;
 	end;
+	{Output the icon data, p^, to the file}
 	BlockWrite(F, p^, Size);
 	Close(F);
 	FreeMem(p, Size);
 
+	{If save was successful, update the icon file name and mark it as not changed}
 	IconFileName := Filename;
 	IconChanged := false;
 end;
 
+{LoadIcon loads an icon from a .BIN file. It checks if there are unsaved changes
+ before loading, and if the file is valid. If the icon is already loaded and has been
+ changed, it prompts the user to reload it. If the icon is successfully loaded, it updates
+ the ImgPreview icon and IconData array with the new pixel colors.}
 procedure LoadIcon;
 var
 	IconToLoad: String;
 	FPath: DirStr;
 	FName: NameStr;
 	FExt: ExtStr;
-	mbResult: Boolean;
+	MbResult: Boolean;
 	X, Y, PixelCol: Integer;
 begin
 	if UnsavedChangesToKeep then
 		exit;
 
+	{Open file dialog to select icon file}
 	IconToLoad := FileSelect('*.BIN', ProgramPath + 'ICONS', true);
-	if length(IconToLoad) = 0 then
+	if Length(IconToLoad) = 0 then
 		exit;
 
+	{Validate the selected file - must be in the ICONS directory and have .BIN extension}
 	FSplit(IconToLoad, FPath, FName, FExt);
 	if (FPath <> ProgramPath + 'ICONS\') or (FExt <> '.BIN') then
 	begin
 		MsgBox(MSG_INVALID_ICON_TITLE, MSG_INVALID_ICON_TEXT, MsgError);
 	end;
 	
+	{If the icon is already loaded, but has been changed, ask if we should reload it}
 	if (FName = IconFileName) and (IconChanged = true) then
 	begin
-		{If the icon is already loaded, but has been changed, ask if we should reload it}
-		mbResult := MsgBox(MSG_ALREADY_OPEN_TITLE, MSG_ALREADY_OPEN_TEXT, MsgQuest);
-		if mbResult = false then
+		MbResult := MsgBox(MSG_ALREADY_OPEN_TITLE, MSG_ALREADY_OPEN_TEXT, MsgQuest);
+		if MbResult = false then
 			exit;
 	end;
 
 	{We made it this far - load icon}
 
-	{Clear IconData with invalid values - this makes sure color 0 will also be drawn}
+	{Clear IconData with invalid values - this makes sure color 0 will also be drawn,
+	 since DrawPixel checks if the color is different before drawing}
 	FillChar(IconData, SizeOf(IconData), 255);
 	IconFileName := FName;
 	ImgPreview.IconFile := Fname;
 	
 	MouseHide;
 	ImgPreview.Draw;
-	{Get color of each pixel from the preview icon and set it in the icon data}
+	{Get color of each pixel from the preview icon and draw it on the canvas}
 	for X := 0 to IconSize do
 	begin
 		for Y := 0 to IconSize do
 		begin
 			PixelCol := GetPixel(ImgPreview.Left + X, ImgPreview.Top + Y);
-			SetPixel(X, Y, PixelCol);
+			DrawPixel(X, Y, PixelCol);
 		end;
 	end;
 	MouseShow;
 
-	IndicatorX := 16;
-	IndicatorY := 16;
-	KeyboardPosVisible := false;
+	{If keyboard indicator was visible before load, redraw it}
+	if IndicatorVisible then
+		MoveIndicator(DirStay);
+	
+	{Update icon file name and mark it as not changed}
 	IconFilename := IconToLoad;
 	IconChanged := false;
 end;
 
+{ExitEditor simply closes the graphics mode and halts the program.
+ If there are unsaved changes, it prompts the user to save them first.}
 procedure ExitEditor;
-var
-	mbResult: Boolean;
 begin
 	if UnsavedChangesToKeep then
 		exit;
@@ -597,7 +647,9 @@ var
 	Key: string;
 	YPos, XPos, i: Integer;
 begin
+	{Initialize UI objects}
 	AreaCanvas.Init(175, 44, 290, 290);
+	AreaCanvas.BgColor := White;
 	BtnNew.Init(2, 2, SizeDefault, SizeDefault, CAP_NEW);
 	BtnOpen.Init(101, 2, SizeDefault, SizeDefault, CAP_OPEN);
 	BtnSave.Init(200, 2, SizeDefault, SizeDefault, CAP_SAVE);
@@ -613,16 +665,16 @@ begin
 	AreaPreview.BgColor := Thm.Desk;
 	ImgPreview.Init(AreaPreview.Left + 12, AreaPreview.Top + 12, '');
 	
-	{Draw area offset is used to calculate the position of each pixel
+	{Canvas area offset is used to calculate the position of each pixel
 	 in the drawing area, so that it can be drawn in the correct place}
 	OffsetX := AreaCanvas.Left + 2;
 	OffsetY := AreaCanvas.Top + 2;
 
+	{Draw the UI}
 	MouseHide;
 	MenuBar.Draw;
 	SetFillStyle(SolidFill, Thm.Win);
 	Bar(0, 29, 639, 349);
-	AreaCanvas.Draw;
 	AreaPreview.Draw;
 	ImgPreview.Draw;
 	BtnNew.Draw;
@@ -634,7 +686,7 @@ begin
 	BtnPencil.Draw;
 	BtnFloodFill.Draw;
 
-	{Init and draw each color selection box}
+	{Initialize and draw each color selection box}
 	XPos := AreaCanvas.Left - 51;
 	YPos := AreaCanvas.Top + 14;
 	for i := 0 to MaxColor do
@@ -648,21 +700,20 @@ begin
 		AreaColor[i].Init(XPos, YPos, 20, 20);
 		AreaColor[i].BGColor := i;
 		AreaColor[i].Draw;
-		inc(YPos, 21);
+		Inc(YPos, 21);
 	end;
-
-	DrawGrid;
 
 	Print(CAP_PREVIEW, AreaPreview.Left, AreaPreview.Top - 15, Thm.WinText);
 	Print(CAP_COLOR, AreaColor[0].Left, AreaCanvas.Top, Thm.WinText);
 	Print(CAP_TOOLS, AreaCanvas.Left + AreaCanvas.Width + 12, AreaCanvas.Top, Thm.WinText);
 	MouseShow;
 
-	{Set array to invalid color values, so that any color including 0 will be drawn on first field click}
-	FillChar(IconData, SizeOf(IconData), 255);
+	{Set default draw color and move keyboard indicator to center}
 	SetDrawColor(0);
 	IndicatorX := 16;
 	IndicatorY := 16;
+
+	NewIcon;
 	
 	{Main loop}
 	repeat
@@ -687,10 +738,10 @@ begin
 			ExitEditor;
 
 		if BtnPencil.Clicked or (Key = KeyAltE) then
-			SetTool(toolPencil);
+			SetTool(ToolPencil);
 
 		if BtnFloodFill.Clicked or (Key = KeyAltF) then
-			SetTool(toolFloodFill);
+			SetTool(ToolFloodFill);
 
 		if Key = KeyAltC then
 			SetDrawColor(DrawColor + 1);

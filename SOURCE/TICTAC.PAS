@@ -26,7 +26,7 @@ const
 		'Nothing could stop %s from achieving victory!',
 		'The crowd is gasping, amazed at the incredible play by %s!',
 		'%s has brought down utter destruction on the opponent!',
-		'%s is unbeatable on the playing field!'	);
+		'%s is unbeatable on the playing field!');
 	MSG_DRAW_TEXT: array[0..5] of string = (
 		'It was a real nail-biter, but neither player could best the other.',
 		'No winners means no losers, I guess.',
@@ -54,8 +54,7 @@ const
 		'How will %s begin the battle?',
 		'%s is preparing the surprise attack carefully...',
 		'%s is thinking about the optimal way to start the game...',
-		'First move is yours %s, use it wisely!'
-	);
+		'First move is yours %s, use it wisely!');
 
 type
 	TPlayer  = (PlayerNone, PlayerX, PlayerO);
