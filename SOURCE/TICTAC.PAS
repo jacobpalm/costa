@@ -487,8 +487,9 @@ begin
 	FrmTic.Init(sizeCenter, sizeCenter, 221, 221);
 	FrmTic.Transparent := false;
 	FrmTic.BgColor := Green;
-	Inc(FrmTic.Top, 16); {To accomodate menu bar}
 	FrmTic.LightColor := LightGreen;
+	FrmTic.DarkColor := DarkGray;
+	Inc(FrmTic.Top, 16); {To accomodate menu bar}
 
 	for Row := 1 to 3 do
 	begin

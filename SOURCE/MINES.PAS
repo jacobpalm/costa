@@ -38,25 +38,25 @@ type
 
 var
 	Field: array[0..17, 0..38] of TFlagSet;
-	FieldW, FieldH: integer;
+	FieldW, FieldH: byte; {Actual field size, within limits of Field array}
 	MineCount, ClearedCount, FlaggedCount: integer;
 	StartTime: real;
 	EnableSound: boolean;
 	GameOver: boolean;
-	IndicatorRow, IndicatorCol: integer;
-	KeyVisible: boolean;
+	IndicatorRow, IndicatorCol: byte; {Keyboard indicator position}
+	IndicatorOn: boolean;
 
 	AreaField: TArea;
 	BtnNew, BtnSize, BtnSound, BtnPause, BtnAbout, BtnExit: TButton;
 	MouseButton: TMouseButton;
 
-function  GetNeighborCount(Row, Col: integer): integer; forward;
+function  GetNeighborCount(Row, Col: byte): byte; forward;
 function  SetFieldSize: boolean; forward;
-procedure ClearCell(Row, Col: integer); forward;
-procedure ClickCell(Row, Col: integer; MouseButton: TMouseButton); forward;
-procedure DrawCell(Row, Col: integer); forward;
+procedure ClearCell(Row, Col: byte); forward;
+procedure ClickCell(Row, Col: byte; MouseButton: TMouseButton); forward;
+procedure DrawCell(Row, Col: byte); forward;
 procedure DrawField; forward;
-procedure HelpFirstMove(Row, Col: integer); forward;
+procedure HelpFirstMove(Row, Col: byte); forward;
 procedure NewGame; forward;
 procedure Pause; forward;
 procedure PlaySound(SoundType: TSound); forward;
@@ -65,18 +65,18 @@ procedure PrintTime; forward;
 procedure RevealMines; forward;
 procedure WinGame; forward;
 
-procedure ClearCell(Row, Col: integer);
+procedure ClearCell(Row, Col: byte);
 type
 	PNode = ^TNode;
 	TNode = record
-		Row, Col: integer;
+		Row, Col: byte;
 		Next: PNode;
 	end;
 var
 	Stack: PNode;
-	NeighborRow, NeighborCol: integer;
+	NeighborRow, NeighborCol: byte;
 
-	procedure Push(Row, Col: integer);
+	procedure Push(Row, Col: byte);
 	var
 		NewNode: PNode;
 	begin
@@ -87,7 +87,7 @@ var
 		Stack := NewNode;
 	end;
 
-	function Pop(var Row, Col: integer): boolean;
+	function Pop(var Row, Col: byte): boolean;
 	var
 		Temp: PNode;
 	begin
@@ -144,7 +144,7 @@ begin
 	end;
 end;
 
-procedure ClickCell(Row, Col: integer; MouseButton: TMouseButton);
+procedure ClickCell(Row, Col: byte; MouseButton: TMouseButton);
 begin
 
 	if Cleared in Field[Row, Col] then
@@ -229,10 +229,10 @@ begin
 																			
 end;
 
-procedure DrawCell(Row, Col: integer);
+procedure DrawCell(Row, Col: byte);
 var
 	X1, Y1, X2, Y2: integer;
-	TextColor, Neighbors: integer;
+	TextColor, Neighbors: byte;
 	NeighborStr: string;
 begin
 	
@@ -343,7 +343,7 @@ end;
 
 procedure DrawField;
 var
-	FieldRow, FieldCol: integer;
+	FieldRow, FieldCol: byte;
 	X1, Y1, X2, Y2: integer;
 begin
 	AreaField.Init(SizeCenter, 0, FieldW * CellSize, FieldH * CellSize);
@@ -400,10 +400,10 @@ begin
 
 end;
 
-function GetNeighborCount(Row, Col: integer): integer;
+function GetNeighborCount(Row, Col: byte): byte;
 var
-	Neighbors: integer;
-	CheckRow, CheckCol: integer;
+	Neighbors: byte;
+	CheckRow, CheckCol: byte;
 begin
 	Neighbors := 0;
 	for CheckRow := Row - 1 to Row + 1 do
@@ -424,9 +424,9 @@ begin
 	GetNeighborCount := Neighbors;
 end;
 
-procedure HelpFirstMove(Row, Col: integer);
+procedure HelpFirstMove(Row, Col: byte);
 var
-	CheckRow, CheckCol, MinesMoved, MinePlace: integer;
+	CheckRow, CheckCol, MinesMoved, MinePlace: byte;
 begin
 	{Called on first click in field. Checks clicked and all adjacent cells, and
 	 moves any mines away from them to prevent loosing right away.}
@@ -472,7 +472,7 @@ end;
 
 procedure NewGame;
 var
-	FieldRow, FieldCol, MinePlace: integer;
+	FieldRow, FieldCol, MinePlace: byte;
 begin
 	{Clear mine array}	
 	FillChar(Field, SizeOf(Field), 0);
@@ -511,7 +511,7 @@ end;
 procedure Pause;
 var
 	BtnResume: TButton;
-	Row, Col: integer;
+	Row, Col: byte;
 	PauseTime: real;
 	Key: string;
 begin
@@ -658,7 +658,7 @@ end;
 procedure PrintTime;
 var
 	MessageText: String;
-	Hours, Minutes, Seconds: integer;
+	Hours, Minutes, Seconds: byte;
 	TempStr: string;
 begin
 	{Only draw time if we are still playing}
@@ -706,7 +706,7 @@ end;
 procedure RevealMines;
 var
 	X1, Y1, X2, Y2: integer;
-	Row, Col: integer;
+	Row, Col: byte;
 begin
 
 	SetColor(Red);
@@ -858,7 +858,7 @@ end;
 
 procedure MoveIndicator(Direction: TDirection);
 begin
-	KeyVisible := true;
+	IndicatorOn := true;
 
 	{Hide current indicator before moving}
 	Exclude(Field[IndicatorRow, IndicatorCol], Selected);
@@ -892,7 +892,7 @@ end;
 
 procedure WinGame;
 var
-	FieldRow, FieldCol: integer;
+	FieldRow, FieldCol: byte;
 begin
 	{Victory! Reveal mines, show status and end game}
 	for FieldRow := 0 to FieldH - 1 do
@@ -916,7 +916,7 @@ begin
 end;
 
 var
-	FieldRow, FieldCol: integer;
+	FieldRow, FieldCol: byte;
 	TimeCompare: real;
 	Key: string;
 begin
@@ -951,7 +951,7 @@ begin
 		if BtnNew.Clicked or (Key = KeyAltN) then
 		begin
 			NewGame;
-			KeyVisible := False;
+			IndicatorOn := False;
 		end;
 
 		if BtnSound.Clicked or (Key = KeyAltS) then
@@ -980,13 +980,13 @@ begin
 			if Key = '?' then
 				RevealMines;
 
-			if (Key = KeyEnter) and KeyVisible then
+			if (Key = KeyEnter) and IndicatorOn then
 				ClickCell(IndicatorRow, IndicatorCol, MbLeft);
 
-			if (Key = KeySpace) and KeyVisible then
+			if (Key = KeySpace) and IndicatorOn then
 				ClickCell(IndicatorRow, IndicatorCol, MbRight);
 
-			if ((Key = KeySpace) or (Key = KeyEnter)) and (KeyVisible = false) then
+			if ((Key = KeySpace) or (Key = KeyEnter)) and (IndicatorOn = false) then
 			begin
 				MoveIndicator(DirShow);
 				ClearInputBuffer;
@@ -1024,7 +1024,7 @@ begin
 				if FieldRow = FieldH then
 					Dec(FieldRow);
 			
-				if KeyVisible then
+				if IndicatorOn then
 					MoveIndicator(DirHide);
 				
 				ClickCell(FieldRow, FieldCol, MouseButton);

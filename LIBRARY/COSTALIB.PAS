@@ -6,16 +6,16 @@ uses
 	Crt, Dos, Graph, Strings;
 
 const
-	LibName          = 'Costa UI Library';
-	LibVersion       = '2.0';
-	LibYear          = '2025';
+	LibName              = 'Costa UI Library';
+	LibVersion           = '2.0';
+	LibYear              = '2025';
 
-	SizeDefault      = -1; {Used to set default width/height on object init}
-	sizeCenter       = -2; {Used to center objects on screen}
+	SizeDefault          = -1; {Used to set default width/height on object init}
+	sizeCenter           = -2; {Used to center objects on screen}
 
-	DoubleClickDelay = 0.5;
-	PrintLineH       = 12; {Font dimensions - line height}
-	PrintCharW       = 8;  {Width of a single character}
+	DoubleClickDelay     = 0.5;
+	PrintLineH           = 12; {Font dimensions - line height}
+	PrintCharW           = 8;  {Width of a single character}
 
 	CharArrowUp:    Char = #24; {Arrows symbols for fonts}
 	CharArrowDown:  Char = #25;
@@ -173,11 +173,14 @@ implementation
 const
 	GlobalSettings = 'CONFIG\SETTINGS.BIN';
 
+	{Caption strings}
 	CAP_LOADING                  = 'Loading...';
 	CAP_OK                       = #127 + 'OK';
 	CAP_YES                      = #127 + 'Yes';
 	CAP_NO                       = #127 + 'No';
 	CAP_CLOSE                    = #127 + 'Close';
+
+	{Message strings}
 	MSG_BY_TEXT                  = 'By %s';
 	MSG_ABOUT_TEXT               = 'Made with the %s version' + #13 +
 	                               '%s by Jacob Palm, 2004-%s.' + #13 +
@@ -194,6 +197,9 @@ const
 	                               'Verify that the path exists and isn''t read-only.';
 	MSG_GRAPHICS_ERROR           = 'Graphics error:';
 
+{Used by each descendandt object to set its size and positon on init - DefaultW and DefaultH are
+ constants from the object's Init method, used to set the default width and height if W or H is
+ SizeDefault}
 procedure TUIObject.SetSize(X, Y, W, H, DefaultW, DefaultH: Integer);
 begin
 	if W = SizeDefault then
@@ -206,6 +212,7 @@ begin
 	else
 		Height := H;
 
+	{Check if object needs to be centered horizontally or vertically}
 	if X = sizeCenter then
 		Left := (GetMaxX - Width) div 2
 	else
@@ -217,6 +224,7 @@ begin
 		Top := Y;
 end;
 
+{Detect mouse clicks on object}
 function TUIObject.Clicked: Boolean;
 begin
 	Clicked := False;
@@ -227,6 +235,7 @@ begin
 	end;
 end;
 
+{Check if mouse is over the object}
 function TUIObject.IsMouseOver: Boolean;
 var
 	X1, Y1, X2, Y2: Integer;
@@ -252,20 +261,35 @@ end;
 procedure TArea.Draw;
 var
 	X1, X2, Y1, Y2: Integer;
+	BorderTLColor, BorderBRColor: Byte; {TL = top+left, BR = bottom+right}
 begin
 	X1 := Left;
 	Y1 := Top;
 	X2 := X1 + Width;
 	Y2 := Y1 + Height;
-	if not Transparent then
-	begin
-		SetFillStyle(SolidFill, BgColor);
-		Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 2);
-	end;
-	SetColor(Thm.Light);
-	Rectangle(X1, Y1, X2 - 1, Y2 - 1);
-	SetColor(Thm.Shadow);
-	Rectangle(X1 + 1, Y1 + 1, X2, Y2);
+
+	{Interior}
+    If Not Transparent Then
+    Begin
+        SetFillStyle(SolidFill, BgColor);
+        Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
+    End;
+
+    {Top + left border}
+	SetColor(Black);
+    Line(X1, Y1, X2, Y1);
+    Line(X1, Y1 + 1, X1, Y2);
+    SetColor(Thm.Shadow);
+	Line(X1 + 1, Y1 + 1, X2 - 1, Y1 + 1);
+	Line (X1 + 1, Y1 + 2, X1 + 1, Y2 - 1);
+
+    {Bottom + right border}
+	SetColor(White);
+    Line(X2, Y1 + 1, X2, Y2);
+    Line(X1 + 1, Y2, X2 - 1, Y2);
+    SetColor(Thm.Light);
+	Line(X2 - 1, Y1 + 2, X2 - 1, Y2 - 1);
+	Line(X1 + 2, Y2 - 1, X2 - 2, Y2 - 1);
 end;
 
 constructor TButton.Init(X, Y, W, H: Integer; Cap: string);
@@ -282,51 +306,53 @@ end;
 procedure TButton.Draw;
 var
 	X1, X2, Y1, Y2: Integer;
-	Color1, Color2, Color3, Color4: Integer;
+	BorderTLColor, BorderBRColor: Byte; {TL = top+left, BR = bottom+right}
 begin
 	X1 := Left;
 	Y1 := Top;
 	X2 := X1 + Width;
 	Y2 := Y1 + Height;
+
+	{Interior}
+    If Not Transparent Then
+    Begin
+        SetFillStyle(SolidFill, Thm.Btn);
+        Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
+    End;
+    
+    {Invert border colors if pressed down}
 	if State = BsUp then
 	begin
-		Color1 := White;
-		Color2 := Thm.Btn;
-		Color3 := Thm.Shadow;
-		Color4 := Thm.WinText;
+		BorderTLColor := Thm.Light;
+		BorderBRColor := Thm.Shadow;
 	end
-	else
-	begin
-		Color1 := Black;
-		Color2 := Thm.Shadow;
-		Color3 := Thm.Light;
-		Color4 := White;
-	end;
-	SetColor(Color2);
-	if not Transparent then
-	begin
-		SetFillStyle(SolidFill, Color2);
-		Bar(X1, Y1, X2-1, Y2-1)
-	end
-	else
-		Rectangle(X1, Y1, X2-1, Y2-1);
-	SetColor(Color1);
-	Line(X1+1, Y1+1, X2-2, Y1+1);
-	Line(X1+1, Y1+2, X1+1, Y2-2);
-	SetColor(Color3);
-	Line(X1, Y2, X2, Y2);
-	Line(X2, Y1, X2, Y2-1);
-	if Caption <> '' then
+    else
+    begin
+        BorderTLColor := Thm.Shadow;
+		BorderBRColor := Thm.Light;
+    end;
+
+    {Top + left border}
+    SetColor(BorderTLColor);
+    Line(X1, Y1, X2, Y1);
+    Line(X1, Y1 + 1, X1, Y2);
+
+    {Bottom + right border}
+    SetColor(BorderBRColor);
+    Line(X2, Y1 + 1, X2, Y2);
+    Line(X1 + 1, Y2, X2 - 1, Y2);
+
+    if Caption <> '' then
 	begin
 		X1 := (X2 - X1) div 2 + X1;
-		Y1 := (Y2 - Y1) div 2 + Y1 - 3; {3 is the offset to center text vertically}
 		X1 := X1 - PrintW(Caption) div 2;
+		Y1 := (Y2 - Y1) div 2 + Y1 - 3; {3 is the offset to center text vertically}
 		if State = BsDown then
 		begin
 			Inc(X1);
 			Inc(Y1);
 		end;
-		Print(Caption, X1, Y1, Color4);
+		Print(Caption, X1, Y1, Thm.WinText);
 	end;
 end;
 
@@ -392,19 +418,20 @@ begin
 	X2 := X1 + 15;
 	Y2 := Y1 + 15;
 
+	{Interior}
 	SetFillStyle(SolidFill, Thm.Txt);
-	Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 2);
-	if Thm.Win = 0 then
-		ChkColor := 15
-	else
-		ChkColor := 0;
-	SetColor(ChkColor);
-	Rectangle(X1 + 1, Y1 + 1, X2, Y2);
-	Line(X2 - 1, Y1 + 2, X2 - 1, Y2 - 1);
-	Line(X1 + 2, Y2 - 1, X2 - 2, Y2 - 1);
-	SetColor(Thm.Shadow);
-	Line(X1, Y1, X1, Y2);
-	Line(X1 + 1, Y1, X2, Y1);
+	Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
+
+    {Top + left border}
+    SetColor(Thm.Shadow);
+    Line(X1, Y1, X2, Y1);
+    Line(X1, Y1 + 1, X1, Y2);
+
+    {Bottom + right border}
+    SetColor(Thm.Light);
+    Line(X2, Y1 + 1, X2, Y2);
+    Line(X1 + 1, Y2, X2 - 1, Y2);
+
 	if Checked then
 	begin
 		SetColor(Thm.TxtText);
@@ -437,7 +464,7 @@ const
 	DefaultH = 100;
 begin
 	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
-	LightColor := 15;
+	LightColor := Thm.Light;
 	DarkColor := Thm.Shadow;
 	BGColor := Thm.Win;
 	Transparent := True;
@@ -445,16 +472,18 @@ end;
 
 procedure TFrame.Draw;
 begin
-	SetColor(LightColor);
-	Rectangle(Left + 1, Top + 1, Left + Width - 1, Top + Height);
-	SetColor(DarkColor);
-	Rectangle(Left, Top, Left + Width - 1, Top + Height - 1);
-
+	{Interior}
 	if not Transparent then
 	begin
 		SetFillStyle(SolidFill, BGColor);
 		Bar(Left + 2, Top + 2, Left + Width - 2, Top + Height - 2);
 	end;
+
+	{Borders}
+	SetColor(LightColor);
+	Rectangle(Left + 1, Top + 1, Left + Width - 1, Top + Height);
+	SetColor(DarkColor);
+	Rectangle(Left, Top, Left + Width - 1, Top + Height - 1);
 end;
 
 constructor TIcon.Init(X, Y: Integer; Icon: string);
@@ -547,7 +576,7 @@ procedure TMenu.Draw;
 begin
 	{Background}
 	SetFillStyle(SolidFill, Thm.Win);
-	Bar(Left, Top, Left + Width, Top + Height - 2);
+	Bar(Left, Top, Left + Width, Top + Height - 1);
 
 	{3D border below}
 	SetColor(Thm.Shadow);
@@ -685,17 +714,32 @@ begin
 	Y1 := Top;
 	X2 := X1 + Width;
 	Y2 := Y1 + Height;
+
+	{Interior}
 	SetFillStyle(SolidFill, Thm.Txt);
-	Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 2);
-	SetColor(Thm.Light);
-	Rectangle(X1, Y1, X2 - 1, Y2 - 1);
-	SetColor(Thm.Shadow);
-	Rectangle(X1 + 1, Y1 + 1, X2, Y2);
+	Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
+
+    {Top + left border}
+    SetColor(Thm.Shadow);
+    Line(X1, Y1, X2, Y1);
+    Line(X1, Y1 + 1, X1, Y2);
+	SetColor(Black);
+	Line(X1 + 1, Y1 + 1, X2 - 1, Y1 + 1);
+	Line (X1 + 1, Y1 + 2, X1 + 1, Y2 - 1);
+
+    {Bottom + right border}
+	SetColor(White);
+    Line(X2, Y1 + 1, X2, Y2);
+    Line(X1 + 1, Y2, X2 - 1, Y2);
+    SetColor(Thm.Light);
+	Line(X2 - 1, Y1 + 2, X2 - 1, Y2 - 1);
+	Line(X1 + 2, Y2 - 1, X2 - 2, Y2 - 1);
 
 	{Draw caption if set}
 	if Length(Caption) > 0 then
 	Print(Caption, X1, Y1 - 15, Thm.WinText);
 
+	{Draw text inside the textbox}
 	S := Text;
 	if S <> '' then
 	begin
