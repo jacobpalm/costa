@@ -11,6 +11,7 @@
 # Costa profile and configuration data
 CONFIG/DESKLNK?.BIN
 CONFIG/SETTINGS.BIN
+CONFIG/RUN.BIN
 
 #Intermediate file formats used when converting data
 *.RAW

@@ -1,7 +1,7 @@
 The Costa GUI, version 2.0
 By Jacob Palm
 
-User's guide and reference
+User Guide
 ------------------------------------------------------------------------------
 1.0 Before you start
  1.1 What is Costa?

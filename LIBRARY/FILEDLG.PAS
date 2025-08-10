@@ -31,7 +31,7 @@ type
 	TDirection = (Up, Down, First, Last, PageUp, PageDown);
 
 var
-	AreaList:       array[-1..0] of TArea;
+	AreaList:      array[-1..0] of TArea;
 	ListStartPos:  array[-1..0] of Integer;
 	ListSelection: array[-1..0] of Integer;
 	ListCount:     array[-1..0] of Integer;
