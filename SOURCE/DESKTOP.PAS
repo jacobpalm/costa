@@ -1,5 +1,7 @@
 program Desktop;
 
+{$M 32768, 0, 655360} {Require at least 32 KB stack}
+
 uses
 	Costalib, FileDlg, Graph, Crt, Strings, DOS;
 
@@ -11,10 +13,9 @@ const
 
 	CaptionMaxLen             = 20; {Maximum length for link captions}
 
-	CAP_BROWSE                = '...';
 	CAP_OK                    = #127 + 'OK';
 	CAP_CANCEL                = #127 + 'Cancel';
-	CAP_PROGRAM               = #127 + 'Program:';
+	CAP_FILENAME              = #127 + 'Filename:';
 	CAP_PARAMETERS            = 'Pa' + #127 + 'rameters:';
 	CAP_OPEN                  = #127 + 'Open';
 	CAP_EDIT                  = #127 + 'Edit...';
@@ -24,6 +25,7 @@ const
 	CAP_PAUSE_ON_EXIT         = 'Pause after e' + #127 + 'xit';
 	CAP_CAPTION               = 'C' + #127 + 'aption:';
 	CAP_PATH                  = 'Pa' + #127 + 'th:';
+	CAP_ICON                  = #127 + 'Icon:';
 	CAP_ADD                   = 'A' + #127 + 'dd...';
 	CAP_RUN                   = #127 + 'Run...';
 	CAP_ABOUT                 = #127 + 'About...';
@@ -46,7 +48,7 @@ const
 	MSG_REMOVE_LINK           = 'This will permanently delete this' + #13 + 
 	                            'desktop link. Are you sure?';
 	MSG_INVALID_PROGRAM_TITLE = 'Invalid program';
-	MSG_PROGRAM_MISSING       = 'The ''Program'' field cannot be empty.';
+	MSG_PROGRAM_MISSING       = 'The ''Filename'' field cannot be empty.';
 	MSG_INVALID_ICON_TITLE    = 'Invalid icon file';
 	MSG_INVALID_ICON          = 'The selected file is not a valid icon file.' + #13 +
 	                            'Please select a .BIN file from the ICONS directory.';
@@ -69,20 +71,22 @@ type
 		FileName: PathStr;
 		Path: DirStr;
 		Parameters: ComStr;
-		IconFile: String[8];
+		IconFile: String[8]; {8 char filename w/o extension}
 		PauseOnExit: Boolean;
 		Left, Top: Integer;
 	end;
 
-	PLinkArray = ^TLinkArray;
-	TLinkArray = Array[1..1] of PLink; {Flexible array to simulate dynamic sizing}
+	PLinkNode = ^TLinkNode;
+	TLinkNode = record
+		Link: TLink;       {Link data}
+		Next: PLinkNode;   {Pointer to the next node in the list}
+	end;
 
-	TDirection = (None, Next, Previous); {For tabbing through links}
+	TSelectAction = (Hide, Show, Next, Previous); {For tabbing through links}
 
 var
-	Links: PLinkArray;
-	LinkCount: Integer;
-	KeySelection: Integer;
+	Links: PLinkNode;
+	SelectedLink: PLinkNode; {Used for cycling through links with TAB key}
 	TabImgSize: Word;
 	TabBackgroundP: Pointer;
 
@@ -94,66 +98,27 @@ var
 {Forward declarations}
 	procedure DrawDesktop(FullRedraw: boolean); forward;
 	procedure RunDlg; forward;
-	procedure LinkEdit(TargetLink: integer); forward;
+	procedure LinkAdd(NewLink: TLink); forward;
+	procedure LinkEdit(TargetNode: PLinkNode); forward;
 	procedure LinkLoad; forward;
-	procedure LinkMenu(TargetLink: integer); forward;
-	procedure LinkMove(TargetLink: integer); forward;
+	procedure LinkMenu(TargetNode: PLinkNode); forward;
+	procedure LinkMove(TargetNode: PLinkNode); forward;
 	procedure LinkSave; forward;
 	procedure LinkFree; forward;
-	procedure LinkTab(Direction: TDirection); forward;
-	function  LinkInit: Boolean; forward;
+	procedure SetSelection(Action: TSelectAction); forward;
 	procedure RunProg(TargetLink: TLink); forward;
-
-function LinkHeapError(Size: Word): Integer; far;
-begin
-	if Size = 0 then
-	begin
-		LinkHeapError := 0;
-		Exit;
-	end;
-
-	LinkFree; {Free any previously allocated lines}
-	MsgBox(MSG_LOAD_ERROR_TITLE, MSG_OUT_OF_MEMORY, MsgError);
-	LinkHeapError := 1; {Make GetMem return a nil pointer}
-end;
 
 procedure LinkFree;
 var
-	i: Integer;
+	TempNode: PLinkNode;
 begin
-	if LinkCount = 0 then
-		exit;
-
-	{Dispose all links in the array}
-	for i := 1 to LinkCount do
-		Dispose(Links^[i]);
-
-	{Free the memory allocated for the array itself}
-	FreeMem(Links, LinkCount * SizeOf(PLink));
-
-	LinkCount := 0;
-end;
-
-function LinkInit: Boolean;
-var
-	DefaultHeapError: Pointer;
-begin
-	if LinkCount = 0 then
+	{Traverse linked list and free each node}
+	while Links <> nil do
 	begin
-		LinkInit := false;
-		Exit;
+		TempNode := Links;
+		Links := Links^.Next;
+		Dispose(TempNode);
 	end;
-
-	{Use custom heap error handler to avoid program crash on out of memory}
-	DefaultHeapError := HeapError;
-	HeapError := @LinkHeapError;
-	GetMem(Links, LinkCount * SizeOf(PLink));
-	HeapError := DefaultHeapError;
-
-	if Links = nil then
-		LinkInit := false
-	else
-		LinkInit := true;
 end;
 
 procedure LinkLoad;
@@ -167,6 +132,7 @@ var
 begin
 	{Make sure Links is freed before loading new links}
 	LinkFree;
+	SelectedLink := nil;
 
 	Str(Setting.DeskID, LinkFile);
 	LinkFile := 'CONFIG\DESKLNK' + LinkFile + '.BIN';
@@ -187,85 +153,38 @@ begin
 	{$I+}
 	if IOResult <> 0 then
 	begin
-		MsgBox(MSG_LOAD_ERROR_TITLE, MSG_DATA_ERROR +
-			LinkFile, MsgError);
+		MsgBox(MSG_LOAD_ERROR_TITLE, MSG_DATA_ERROR + LinkFile, MsgError);
 		Close(F);
 		Exit;
 	end;
 
-	{Read the number of links in the file}
-	BlockRead(F, LinkCount, SizeOf(LinkCount));
-	
-	{No links, exit}
-	if LinkCount = 0 then
-	begin
-		Close(F);
-		exit;
-	end;
-
-	{Allocate memory for the array of links - LinkCount is global so
-	 LinkInit knows the appropriate size}
-	if not LinkInit then
-	begin
-		MsgBox(MSG_LOAD_ERROR_TITLE, MSG_OUT_OF_MEMORY, MsgError);
-		Close(F);
-		Exit;
-	end;
-	
-	{Load all links from file}
-	for i := 1 to LinkCount do
+	while not EOF(F) do
 	begin
 		FillChar(ReadLink, SizeOf(ReadLink), 0);
 		BlockRead(F, ReadLink, SizeOf(ReadLink), ReadBytes);
-		if ReadBytes <> SizeOf(ReadLink) then
+		if ReadBytes = SizeOf(ReadLink) then
+			LinkAdd(ReadLink)
+		else
 		begin
+			{File size mismatch, probably corrupt file}
 			MsgBox(MSG_LOAD_ERROR_TITLE, MSG_FILE_SIZE_ERROR + LinkFile, MsgError);
 			Close(F);
 			LinkFree;
-			if NewLink <> nil then
-				Dispose(NewLink);
 			Exit;
 		end;
-		
-		{Create a new link pointer and assign the read data}
-		New(NewLink);
-		NewLink^ := ReadLink;
-		{Add to array}
-		Links^[i] := NewLink;
 	end;
+	
 	Close(F);
 end;
 
 procedure LinkSave;
 var
-	i, j: integer;
 	TempLink: PLink;
+	TempNode: PLinkNode;
 	F: file;
 	LinkFile: string;
-	mbVoid: Boolean;
+	i, j: integer;
 begin
-	{Sort before saving if array contains more than one item - this
-	 enables TAB cycling from left to right, top to bottom}
-	if LinkCount > 1 then
-	begin
-		for i := 1 to LinkCount - 1 do
-		begin
-			for j := 1 to LinkCount - i do
-			begin
-				{Compare positions: first by Left, then by Top if Left is equal}
-				if (Links^[j]^.Left > Links^[j + 1]^.Left) or
-				   ((Links^[j]^.Left = Links^[j + 1]^.Left) and
-					(Links^[j]^.Top > Links^[j + 1]^.Top)) then
-				begin
-					{Swap links}
-					TempLink := Links^[j];
-					Links^[j] := Links^[j + 1];
-					Links^[j + 1] := TempLink;
-				end;
-			end;
-		end;
-	end;
-
 	{Save}
 	Str(Setting.DeskID, LinkFile);
 	LinkFile := 'CONFIG\DESKLNK' + LinkFile + '.BIN';
@@ -279,118 +198,143 @@ begin
 		Close(F);
 		Exit;
 	end;
-	BlockWrite(F, LinkCount, SizeOf(LinkCount));
 
 	{No links, close file}
-	if LinkCount = 0 then
+	if Links = nil then
 	begin
 		Close(F);
 		Exit;
 	end;
 
 	{Write all links to file}
-	for i := 1 to LinkCount do
+	TempNode := Links;
+	while TempNode <> nil do
 	begin
-		BlockWrite(F, Links^[i]^, SizeOf(TLink));
+		BlockWrite(F, TempNode^.Link, SizeOf(TLink));
+		TempNode := TempNode^.Next;
 	end;
+
+	Close(F);
 end;
 
 procedure LinkAdd(NewLink: TLink);
 var
-	NewLinks: PLinkArray;
-	PNewLink: PLink;
-	i: Integer;
-	DefaultHeapError: Pointer;
+	NewNode, TempNode: PLinkNode;
 begin
-	{If array hasn't been initialized, do so now}
-	if LinkCount = 0 then
-	begin
-		LinkCount := 1;
-		LinkInit;
-	end
+	New(NewNode);
+	FillChar(NewNode^, SizeOf(TLinkNode), 0);
+	NewNode^.Link := NewLink;
+	NewNode^.Next := nil;
+
+	{If no links already exist, this link will be head of the list}
+	if Links = nil then
+		Links := NewNode
 	else
 	begin
-		{Allocate new memory for the resized array}
-		DefaultHeapError := HeapError;
-		HeapError := @LinkHeapError;
-		GetMem(NewLinks, (LinkCount + 1) * SizeOf(PLink));
-		HeapError := DefaultHeapError;
-
-		{If memory allocation failed, exit - error message will
-		 already have been shown}
-		if NewLinks = nil then
-			exit;
-
-		{Copy existing lines to the new array}
-		Move(Links^[1], NewLinks^[1], LinkCount * SizeOf(PLink));
-
-		{Free memory of the old array}
-		FreeMem(Links, LinkCount * SizeOf(PLink));
-
-		{Update the pointer to the new array}
-		Links := NewLinks;
-
-		Inc(LinkCount);
+		{Find the end of the list and append the new link}
+		TempNode := Links;
+		while TempNode^.Next <> nil do
+			TempNode := TempNode^.Next;
+		TempNode^.Next := NewNode;
 	end;
-
-	New(PNewLink);
-	PNewLink^ := NewLink;
-	Links^[LinkCount] := PNewLink;
 end;
 
-procedure LinkRemove(TargetLink: integer);
+procedure LinkRemove(TargetNode: PLinkNode);
 var
-	NewLinks: PLinkArray;
-	PNewLink: PLink;
-	i, Copied: Integer;
-	DefaultHeapError: Pointer;
+	TempNode, PrevNode: PLinkNode;
+	i: integer;
 begin
-	{If only one link left, or none, free the array}
-	if LinkCount <= 1 then
-	begin
-		LinkFree;
-		LinkCount := 0;
-		Exit;
-	end;
-
-	{Allocate new memory for the resized array}
-	DefaultHeapError := HeapError;
-	HeapError := @LinkHeapError;
-	GetMem(NewLinks, (LinkCount - 1) * SizeOf(PLink));
-	HeapError := DefaultHeapError;
-
-	if NewLinks = nil then
-	begin
-		{DEBUG - out of memory}
+	if TargetNode = nil then
 		exit;
-	end;
 
-	{Copy existing lines to the new array}
-	Copied := 0;
-	for i := 1 to LinkCount do
+	TempNode := Links;
+	PrevNode := nil;
+	i := 1;
+
+	{Find the target node in the linked list, and keep track of the previous node}
+	while (TempNode <> nil) and (TempNode <> TargetNode) do
 	begin
-		if i <> TargetLink then
-		begin
-			Inc(Copied);
-			NewLinks^[Copied] := Links^[i];
-		end;
+		PrevNode := TempNode;
+		TempNode := TempNode^.Next;
+		Inc(i);
 	end;
 
-	{Dispose of the link being removed}
-	Dispose(Links^[TargetLink]);
+	{TargetNode not found, nothing to remove}
+	if TempNode = nil then
+		Exit;
 
-	{Free memory of the old array}
-	FreeMem(Links, LinkCount * SizeOf(PLink));
+	{If no previous node, we are removing the head node}
+	if PrevNode = nil then
+		Links := TempNode^.Next
+	else
+		PrevNode^.Next := TempNode^.Next;
 
-	{Update the pointer to the new array}
-	Links := NewLinks;
-	Dec(LinkCount);
+	{Free memory of removed link}
+	Dispose(TempNode);
+
+	SelectedLink := nil;
+end;
+
+{Sorts the links in the Links linked list by position on screen, from top left
+ to bottom right. This is used to enable cycling through links with the TAB key,
+ without having to iterate through the entire list to find the next link.}
+procedure LinkSort;
+var
+	Sorted: Boolean;
+	CurrentNode, NextNode, PrevNode: PLinkNode;
+begin
+	{ Can't sort Links if there are no links }
+	if Links = nil then
+		Exit;
+
+	{Itererate through Links until no swaps are made}
+	repeat
+		Sorted := true;
+		CurrentNode := Links;
+		PrevNode := nil;
+ 
+		while (CurrentNode <> nil) and (CurrentNode^.Next <> nil) do
+		begin
+			NextNode := CurrentNode^.Next;
+
+			{If the current node is further to the left than the next node, swap them. If they are at the same left position,
+			 swap them if the next node is further down}
+			if (CurrentNode^.Link.Left > NextNode^.Link.Left) or
+			   ((CurrentNode^.Link.Left = NextNode^.Link.Left) and
+			    (CurrentNode^.Link.Top > NextNode^.Link.Top)) then
+			begin
+				{Swap the two nodes in the Links linked list}
+				
+				{If PrevNode is nil, we are swapping the head node}
+				if PrevNode = nil then
+					Links := NextNode
+				else
+					PrevNode^.Next := NextNode;
+
+				CurrentNode^.Next := NextNode^.Next;
+				NextNode^.Next := CurrentNode;
+
+				{We are not sorted yet, since we made a swap}
+				Sorted := false;
+
+				{NextNode is now the previous node for the next iteration}
+				PrevNode := NextNode;
+			end
+			else
+			begin
+				{No swap occured, move to the next node}
+				PrevNode := CurrentNode;
+				CurrentNode := CurrentNode^.Next;
+			end;
+		end;
+	until Sorted;
 end;
 
 procedure DrawDesktop(FullRedraw: boolean);
 var
 	ImgIcon: TIcon;
-	i, X, Y: integer;
+	TempNode: PLinkNode;
+	X, Y: integer;
 	DeskStr: string;
 begin
 	MouseHide;
@@ -412,25 +356,22 @@ begin
 	SetFillStyle(SolidFill, Thm.Desk);
 	Bar(0, 29, 639, 349);
 	
-	if LinkCount = 0 then
+	TempNode := Links;
+	while TempNode <> nil do
 	begin
-		MouseShow;
-		exit;
-	end;
-	
-	for i := 1 to LinkCount do
-	begin
-		X := Links^[i]^.Left;
-		Y := Links^[i]^.Top;
-		ImgIcon.Init(X, Y, Links^[i]^.IconFile);
+		X := TempNode^.Link.Left;
+		Y := TempNode^.Link.Top;
+		ImgIcon.Init(X, Y, TempNode^.Link.IconFile);
 		ImgIcon.Draw;
 
 		if Setting.LinkCapt then
 		begin
-			Print(Links^[i]^.Caption, X + 38, Y + 4, Thm.DeskText);
+			Print(TempNode^.Link.Caption, X + 38, Y + 4, Thm.DeskText);
 			if Setting.LinkTarget then
-				Print(Links^[i]^.FileName, X + 38, Y + 18, Thm.DeskText);
+				Print(TempNode^.Link.FileName, X + 38, Y + 18, Thm.DeskText);
 		end;
+
+		TempNode := TempNode^.Next;
 	end;
 	
 	MouseShow;
@@ -445,52 +386,70 @@ begin
 
 	Setting.DeskID := DeskID;
 	LinkLoad;
-	KeySelection := 0;
 
 	DrawDesktop(true);
 end;
 
-procedure LinkTab(Direction: TDirection);
+procedure SetSelection(Action: TSelectAction);
+var
+	LastNode, PrevNode: PLinkNode;
 begin
+	{Nothing to tab through, exit}
+	if Links = nil then
+		exit;
 
-	{Check if any links exist before tabbing}
-	if LinkCount = 0 then
-		Exit;
-
-	{If an icon is already selected, then deselect it by restoring the background}
-	if KeySelection <> 0 then
+	{Remove current selection, if any}
+	if (SelectedLink <> nil) and (Action <> Show) then
 	begin
 		MouseHide;
-		PutImage(Links^[KeySelection]^.Left - 3, Links^[KeySelection]^.Top - 3,
-			TabBackgroundP^, NormalPut);
+		PutImage(SelectedLink^.Link.Left - 3, SelectedLink^.Link.Top - 3, TabBackgroundP^, NormalPut);
 		MouseShow;
 	end;
 
-	if Direction = None then
-	begin
-		KeySelection := 0;
-		Exit;
+	case Action of
+		Hide:
+			{No selection, so nothing else to do}
+			exit;
+
+		Next:
+			{If no selection, or last node selected, wrap around to first node}
+			if (SelectedLink = nil) or (SelectedLink^.Next = nil) then
+				SelectedLink := Links
+			else
+				SelectedLink := SelectedLink^.Next;
+
+		Previous:
+			begin
+				{If no previous selection, or first node selected, wrap around to last node}
+				if (SelectedLink = nil) or (SelectedLink = Links) then
+				begin
+					{Find the last node in Links by iterating until there is no Next node}
+					SelectedLink := Links;
+					while (SelectedLink^.Next <> nil) do
+						SelectedLink := SelectedLink^.Next;
+				end
+				else
+				begin
+					{Find the previous node by iterating through the list}
+					PrevNode := Links;
+					while (PrevNode <> nil) and (PrevNode^.Next <> SelectedLink) do
+						PrevNode := PrevNode^.Next;
+					if PrevNode <> nil then
+						SelectedLink := PrevNode
+					else
+						SelectedLink := Links; {We didn't find the previous node, so wrap around to the head node}
+				end;
+			end;
 	end;
-
-	if Direction = Next then
-		Inc(KeySelection)
-	else if Direction = Previous then
-		Dec(KeySelection);
-
-	{Wrap around if we go below first or above last link}
-	if KeySelection > LinkCount then
-		KeySelection := 1
-	else if KeySelection < 1 then
-		KeySelection := LinkCount;
 
 	{Draw the selected link, saving background first}
 	MouseHide;
 	{Save background of new selected link}
-	GetImage(Links^[KeySelection]^.Left - 3, Links^[KeySelection]^.Top - 3,
-		Links^[KeySelection]^.Left + 34, Links^[KeySelection]^.Top + 34, TabBackgroundP^);
+	GetImage(SelectedLink^.Link.Left - 3, SelectedLink^.Link.Top - 3,
+	         SelectedLink^.Link.Left + 34, SelectedLink^.Link.Top + 34, TabBackgroundP^);
 	{Draw the tab button around the selected link}
-	BtnTab.Left := Links^[KeySelection]^.Left - 3;
-	BtnTab.Top := Links^[KeySelection]^.Top - 3;
+	BtnTab.Left := SelectedLink^.Link.Left - 3;
+	BtnTab.Top := SelectedLink^.Link.Top - 3;
 	BtnTab.Draw;
 	MouseShow;
 end;
@@ -499,7 +458,7 @@ procedure RunDlg;
 var
 	WinRun: TWindow;
 	TxtFilename, TxtParams: TTextbox;
-	BtnOK, BtnCancel, BtnBrowse: TButton;
+	BtnOK, BtnCancel: TButton;
 	Key: string;
 	SelectedFile: string;
 	X1, Y1, X2, Y2: integer;
@@ -510,9 +469,8 @@ begin
 	FillChar(RunLink, SizeOf(RunLink), 0);
 
 	WinRun.Init(sizeCenter, sizeCenter, 382, 137);
-	TxtFilename.Init(WinRun.Left + 12, WinRun.Top + 27, WinRun.Width - 68, SizeDefault, CAP_PROGRAM);
-	TxtParams.Init(TxtFilename.Left, TxtFilename.Top + 46, WinRun.Width - 26, SizeDefault, CAP_PARAMETERS);
-	BtnBrowse.Init(TxtFilename.Left + TxtFilename.Width + 9, TxtFilename.Top, 33, SizeDefault, CAP_BROWSE);
+	TxtFilename.Init(WinRun.Left + 12, WinRun.Top + 27, WinRun.Width - 68, SizeDefault, CAP_FILENAME);
+	TxtParams.Init(TxtFilename.Left, TxtFilename.Top + 46, TxtFilename.Width, SizeDefault, CAP_PARAMETERS);
 	BtnOK.Init(WinRun.Left + WinRun.Width - 184, TxtParams.Top + 30, 80, SizeDefault, CAP_OK);
 	BtnCancel.Init(WinRun.Left + WinRun.Width - 94, BtnOK.Top, 80, SizeDefault, CAP_CANCEL);
 		
@@ -528,7 +486,6 @@ begin
 	WinRun.Draw;
 	BtnOK.Draw;
 	BtnCancel.Draw;
-	BtnBrowse.Draw;
 	TxtFilename.Draw;
 	TxtParams.Draw;
 	MouseShow;
@@ -550,7 +507,7 @@ begin
 		if BtnCancel.Clicked or (Key = KeyAltC) or (Key = KeyEscape) then
 			break;
 
-		if BtnBrowse.Clicked or TxtFilename.Clicked or (Key = '.') or (Key = KeyAltP) then
+		if TxtFilename.Clicked or (Key = KeyAltF) then
 		begin
 			SelectedFile := FileSelect('*.exe', '', false);
 			if Length(SelectedFile) > 0 then
@@ -573,7 +530,7 @@ begin
 	MouseShow;		
 end;
 
-procedure LinkMenu(TargetLink: integer);
+procedure LinkMenu(TargetNode: PLinkNode);
 var
 	WinLinkMenu: TWindow;
 	BtnOpen, BtnEdit, BtnMove, BtnRemove, BtnCancel: TButton;
@@ -591,10 +548,10 @@ begin
 	BtnMove.Init(BtnEdit.Left + 99, BtnEdit.Top, SizeDefault, SizeDefault, CAP_MOVE);
 	BtnRemove.Init(BtnMove.Left + 99, BtnEdit.Top, SizeDefault, SizeDefault, CAP_REMOVE);
 	BtnCancel.Init(BtnRemove.Left + 99, BtnEdit.Top, SizeDefault, SizeDefault, CAP_CANCEL);
-	ImgIcon.Init(WinLinkMenu.Left + 12, WinLinkMenu.Top + 11, Links^[TargetLink]^.IconFile);
+	ImgIcon.Init(WinLinkMenu.Left + 12, WinLinkMenu.Top + 11, TargetNode^.Link.IconFile);
 
-	Path := Links^[TargetLink]^.Path;
-	Parameters := Links^[TargetLink]^.Parameters;
+	Path := TargetNode^.Link.Path;
+	Parameters := TargetNode^.Link.Parameters;
 	if Length(Path) = 0 then
 		Path := MSG_UNSPECIFIED;
 	if Length(Parameters) = 0 then
@@ -622,8 +579,8 @@ begin
 	BtnCancel.Draw;
 	ImgIcon.Draw;
 
-	Print(Links^[TargetLink]^.Caption, X1 + 54, Y1 + 17, Thm.WinText);
-	Print(Links^[TargetLink]^.Filename, X1 + 54, Y1 + 31, Thm.WinText);
+	Print(TargetNode^.Link.Caption, X1 + 54, Y1 + 17, Thm.WinText);
+	Print(TargetNode^.Link.Filename, X1 + 54, Y1 + 31, Thm.WinText);
 	Print(MSG_PATH, X1 + 12, Y1 + 59, Thm.WinText);
 	Print(MSG_PARAMETERS, X1 + 12, Y1 + 76, Thm.WinText);
 	Print(Path, X1 + 108, Y1 + 59, Thm.WinText);
@@ -650,7 +607,7 @@ begin
 		if BtnOpen.Clicked or (Key = KeyAltO) or (Key = KeyEnter) then
 		begin
 			FreeMem(BackgroundP, BackgroundSize);
-			RunProg(Links^[TargetLink]^);
+			RunProg(TargetNode^.Link);
 			{If we've returned from the run, redraw the desktop since we've freed the memory}
 			DrawDesktop(true);
 			break;
@@ -663,7 +620,7 @@ begin
 			PutImage(X1, Y1, BackgroundP^, NormalPut);
 			MouseShow;
 			FreeMem(BackgroundP, BackgroundSize);
-			LinkEdit(TargetLink);
+			LinkEdit(TargetNode);
 			break;
 		end;
 
@@ -674,7 +631,7 @@ begin
 			PutImage(X1, Y1, BackgroundP^, NormalPut);
 			MouseShow;
 			FreeMem(BackgroundP, BackgroundSize);
-			LinkMove(TargetLink);
+			LinkMove(TargetNode);
 			break;
 		end;
 
@@ -688,7 +645,7 @@ begin
 
 			if DoDelete then
 			begin
-				LinkRemove(TargetLink);
+				LinkRemove(TargetNode);
 				DrawDesktop(false);
 				LinkSave;
 				FreeMem(BackgroundP, BackgroundSize);
@@ -700,9 +657,9 @@ begin
 			 
 end;
 
-procedure LinkMove(TargetLink: integer);
+procedure LinkMove(TargetNode: PLinkNode);
 const
-	GridSize   = 4; {Size of grid in pixels, used for aligning icons}
+	GridSize = 4; {Size of grid in pixels, used for aligning icons}
 var
 	BtnPrevious, BtnNext: TButton;
 	IconSize: Word;
@@ -718,8 +675,8 @@ begin
 	
 	{Delete current icon - it will be recreated after move to same or other
 	 desktop}
-	IconToMove := Links^[TargetLink]^;
-	LinkRemove(TargetLink);
+	IconToMove := TargetNode^.Link;
+	LinkRemove(TargetNode);
 	LinkSave;
 
 	DrawX := IconToMove.Left;
@@ -843,13 +800,15 @@ begin
 	IconToMove.Left := DrawX;
 	IconToMove.Top := DrawY;
 	LinkAdd(IconToMove);
+	LinkSort; {Sort links by position on screen}
 	LinkSave;
+	SelectedLink := nil;
 	DrawDesktop(true);
 	
 	ClearInputBuffer;
 end;
 
-procedure LinkEdit(TargetLink: integer);
+procedure LinkEdit(TargetNode: PLinkNode);
 var
 	WinEdit: TWindow;
 	TxtCaption, TxtFilename, TxtParams, TxtPath: TTextbox;
@@ -857,7 +816,6 @@ var
 	ImgIcon: TIcon;
 	ChkPauseOnExit: TCheckbox;
 	Key: string;
-	MbVoid: Boolean;
 	SelectedFile: string;
 	X1, Y1, X2, Y2: integer;
 	BackgroundSize: Word;
@@ -866,13 +824,17 @@ var
 	FName: NameStr;
 	FExt: ExtStr;
 begin
-	WinEdit.Init(210, 35, 220, 312);
+	{Can't edit a non-existing link}
+	if TargetNode = nil then
+		exit;
 
-	BtnIcon.Init(296, WinEdit.Top + 12, 48, 48, '');
-	ImgIcon.Init(305, BtnIcon.Top + 9, Links^[TargetLink]^.IconFile);
+	WinEdit.Init(210, 31, 220, 317);
+
+	BtnIcon.Init(SizeCenter, WinEdit.Top + 26, 41, 41, '');
+	ImgIcon.Init(BtnIcon.Left + 5, BtnIcon.Top + 5, TargetNode^.Link.IconFile);
 	
-	TxtCaption.Init(222, BtnIcon.Top + 73, 196, SizeDefault, CAP_CAPTION);
-	TxtFilename.Init(222, TxtCaption.Top + 44, 196, SizeDefault, CAP_PROGRAM);
+	TxtCaption.Init(222, BtnIcon.Top + 66, 196, SizeDefault, CAP_CAPTION);
+	TxtFilename.Init(222, TxtCaption.Top + 44, 196, SizeDefault, CAP_FILENAME);
 	TxtPath.Init(222, TxtFilename.Top + 44, 196, SizeDefault, CAP_PATH);
 	TxtParams.Init(222, TxtPath.Top + 44, 196, SizeDefault, CAP_PARAMETERS);
 	ChkPauseOnExit.Init(222, TxtParams.Top + 32, CAP_PAUSE_ON_EXIT);
@@ -884,11 +846,11 @@ begin
 	TxtFilename.MaxLen := SizeOf(ComStr); {Max length of a filename +}
 	TxtParams.MaxLen := SizeOf(ComStr);
 	TxtPath.MaxLen := SizeOf(DirStr);
-	TxtFileName.Text := Links^[TargetLink]^.Filename;
-	TxtParams.Text := Links^[TargetLink]^.Parameters;
-	TxtPath.Text := Links^[TargetLink]^.Path;
-	TxtCaption.Text := Links^[TargetLink]^.Caption;
-	ChkPauseOnExit.Checked := Links^[TargetLink]^.PauseOnExit;
+	TxtFileName.Text := TargetNode^.Link.Filename;
+	TxtParams.Text := TargetNode^.Link.Parameters;
+	TxtPath.Text := TargetNode^.Link.Path;
+	TxtCaption.Text := TargetNode^.Link.Caption;
+	ChkPauseOnExit.Checked := TargetNode^.Link.PauseOnExit;
 
 	MouseHide;
 	X1 := WinEdit.Left;
@@ -911,7 +873,10 @@ begin
 	SetFillStyle(SolidFill, Thm.Desk);
 	Bar(BtnIcon.Left + 2, BtnIcon.Top + 2, BtnIcon.Left + BtnIcon.Width - 2, BtnIcon.Top + BtnIcon.Height - 2);
 	ImgIcon.Draw;
+	Print(CAP_ICON, 222, WinEdit.Top + 11, Thm.WinText);
 	MouseShow;
+
+	SelectedFile := '';
 
 	repeat
 		Key := GetKey;
@@ -928,12 +893,12 @@ begin
 					if TxtPath.Text + '\' = ProgramPath then
 						TxtPath.Text := '';
 				end;
-				Links^[TargetLink]^.Caption := TxtCaption.Text;
-				Links^[TargetLink]^.Filename := TxtFileName.Text;
-				Links^[TargetLink]^.Path := TxtPath.Text;
-				Links^[TargetLink]^.Parameters := TxtParams.Text;
-				Links^[TargetLink]^.PauseOnExit := ChkPauseOnExit.Checked;
-				Links^[TargetLink]^.IconFile := ImgIcon.IconFile;
+				TargetNode^.Link.Caption := TxtCaption.Text;
+				TargetNode^.Link.Filename := TxtFileName.Text;
+				TargetNode^.Link.Path := TxtPath.Text;
+				TargetNode^.Link.Parameters := TxtParams.Text;
+				TargetNode^.Link.PauseOnExit := ChkPauseOnExit.Checked;
+				TargetNode^.Link.IconFile := ImgIcon.IconFile;
 				
 				LinkSave;
 				DrawDesktop(false);
@@ -1073,8 +1038,8 @@ end;
 
 {Main program}
 var
-	SelectedLink, i: Integer;
 	Key: String;
+	TempNode: PLinkNode;
 	TempLink: TLink;
 begin
 	BtnAddLink.Init(3, 2, SizeDefault, SizeDefault, CAP_ADD);
@@ -1096,42 +1061,57 @@ begin
 	repeat
 		Key := GetKey;
 
+		if Key = KeyF5 then
+		begin
+			LinkSort;
+			{DEBUG}
+			DrawDesktop(false);
+		end;
+
 		MousePoll;
 		if (MouseClicked <> MbNone) and (MouseY > 32) then
 		begin
-			{The mouse was clicked. Before checking if a desktop link was clicked,
-			 check to see if any desktop links are present}
-			if LinkCount <> 0 then
+			{The mouse was clicked. Check if it was on a link icon}
+			TempNode := Links;
+			while TempNode <> nil do
 			begin
-				for i := LinkCount downto 1 do
+				if (MouseX >= TempNode^.Link.Left) and
+				   (MouseX <= TempNode^.Link.Left + 31) and
+				   (MouseY >= TempNode^.Link.Top) and
+				   (MouseY <= TempNode^.Link.Top + 31) then
 				begin
-					{Check if the mouse was within the coordinates of the link}
-					if (MouseX >= Links^[i]^.Left) and (MouseX <= Links^[i]^.Left + 31) then
-					begin
-						if (MouseY >= Links^[i]^.Top) and (MouseY <= Links^[i]^.Top + 31) then
-						begin
-							{If we reach this point, the link was clicked}
-							LinkMenu(i);
-							break;
-						end;
-					end;
-
+					LinkMenu(TempNode);
+					Break;
 				end;
+				TempNode := TempNode^.Next;
 			end;
 		end;
 
 		if BtnAddLink.Clicked or (Key = KeyAltD) then
 		begin
+			{Add a new link}
 			FillChar(TempLink, SizeOf(TempLink), 0);
 			TempLink.IconFile := 'RUNPROG';
 			TempLink.Left := 304;
 			TempLink.Top := 174;
 			LinkAdd(TempLink);
-			LinkEdit(LinkCount);
-			if Length(Links^[LinkCount]^.Filename) = 0 then
-				LinkRemove(LinkCount)
+			
+			{Find the newly added link in the linked list, it will
+			 be the last one with a nil Next pointer}
+			TempNode := Links;
+			while TempNode^.Next <> nil do
+				TempNode := TempNode^.Next;
+			
+			{Edit the new link}
+			LinkEdit(TempNode);
+
+			{If the filename of the link is empty, the user didn't save it,
+			 so remove the link from the list. Otherwise, let the user place
+			 it where they'd like using LinkMove}
+			if Length(TempNode^.Link.Filename) = 0 then
+				LinkRemove(TempNode)
 			else
-				LinkMove(LinkCount);
+				LinkMove(TempNode);
 		end;
 
 		if BtnRun.Clicked or (Key = KeyAltR) then
@@ -1162,16 +1142,17 @@ begin
 		end;
 
 		if (Key = KeyTab) then
-			LinkTab(Next);
+			SetSelection(Next);
 		
 		if (Key = KeyShiftTab) then
-			LinkTab(Previous);
+			SetSelection(Previous);
 				
-		if (Key = KeyEnter) and (KeySelection <> 0) then
+		if (Key = KeyEnter) and (SelectedLink <> nil) then
 		begin
-			SelectedLink := KeySelection;
-			LinkTab(None);
+			SetSelection(Hide); {Remove the indicator around the selected link}
 			LinkMenu(SelectedLink);
+			if SelectedLink <> nil then
+				SetSelection(Show); {Redraw the indicator around the selected link}
 		end;
 	
 	until False;
