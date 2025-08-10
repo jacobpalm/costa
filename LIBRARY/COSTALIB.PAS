@@ -17,7 +17,7 @@ const
 	PrintLineH           = 12; {Font dimensions - line height}
 	PrintCharW           = 8;  {Width of a single character}
 
-	CharArrowUp:    Char = #24; {Arrows symbols for fonts}
+	CharArrowUp:	Char = #24; {Arrows symbols for fonts}
 	CharArrowDown:  Char = #25;
 	CharArrowRight: Char = #26;
 	CharArrowLeft:  Char = #27;
@@ -174,11 +174,11 @@ const
 	GlobalSettings = 'CONFIG\SETTINGS.BIN';
 
 	{Caption strings}
-	CAP_LOADING                  = 'Loading...';
-	CAP_OK                       = #127 + 'OK';
-	CAP_YES                      = #127 + 'Yes';
-	CAP_NO                       = #127 + 'No';
-	CAP_CLOSE                    = #127 + 'Close';
+	CAP_LOADING = 'Loading...';
+	CAP_OK      = #127 + 'OK';
+	CAP_YES     = #127 + 'Yes';
+	CAP_NO      = #127 + 'No';
+	CAP_CLOSE   = #127 + 'Close';
 
 	{Message strings}
 	MSG_BY_TEXT                  = 'By %s';
@@ -269,25 +269,25 @@ begin
 	Y2 := Y1 + Height;
 
 	{Interior}
-    If Not Transparent Then
-    Begin
-        SetFillStyle(SolidFill, BgColor);
-        Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
-    End;
+	If Not Transparent Then
+	Begin
+		SetFillStyle(SolidFill, BgColor);
+		Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
+	End;
 
-    {Top + left border}
+	{Top + left border}
 	SetColor(Black);
-    Line(X1, Y1, X2, Y1);
-    Line(X1, Y1 + 1, X1, Y2);
-    SetColor(Thm.Shadow);
+	Line(X1, Y1, X2, Y1);
+	Line(X1, Y1 + 1, X1, Y2);
+	SetColor(Thm.Shadow);
 	Line(X1 + 1, Y1 + 1, X2 - 1, Y1 + 1);
 	Line (X1 + 1, Y1 + 2, X1 + 1, Y2 - 1);
 
-    {Bottom + right border}
+	{Bottom + right border}
 	SetColor(White);
-    Line(X2, Y1 + 1, X2, Y2);
-    Line(X1 + 1, Y2, X2 - 1, Y2);
-    SetColor(Thm.Light);
+	Line(X2, Y1 + 1, X2, Y2);
+	Line(X1 + 1, Y2, X2 - 1, Y2);
+	SetColor(Thm.Light);
 	Line(X2 - 1, Y1 + 2, X2 - 1, Y2 - 1);
 	Line(X1 + 2, Y2 - 1, X2 - 2, Y2 - 1);
 end;
@@ -306,7 +306,7 @@ end;
 procedure TButton.Draw;
 var
 	X1, X2, Y1, Y2: Integer;
-	BorderTLColor, BorderBRColor: Byte; {TL = top+left, BR = bottom+right}
+	TLColor1, TLColor2, BRColor1, BRColor2: Byte; {TL = top+left, BR = bottom+right}
 begin
 	X1 := Left;
 	Y1 := Top;
@@ -314,39 +314,51 @@ begin
 	Y2 := Y1 + Height;
 
 	{Interior}
-    If Not Transparent Then
-    Begin
-        SetFillStyle(SolidFill, Thm.Btn);
-        Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
-    End;
-    
-    {Invert border colors if pressed down}
+	If Not Transparent Then
+	Begin
+		SetFillStyle(SolidFill, Thm.Btn);
+		Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
+	End;
+	
+	{Invert border colors if pressed down}
 	if State = BsUp then
 	begin
-		BorderTLColor := Thm.Light;
-		BorderBRColor := Thm.Shadow;
+		TLColor1 := White;
+		TLColor2 := Thm.Light;
+		BRColor1 := Black;
+		BRColor2 := Thm.Shadow;
 	end
-    else
-    begin
-        BorderTLColor := Thm.Shadow;
-		BorderBRColor := Thm.Light;
-    end;
+	else
+	begin
+		TLColor1 := Black;
+		TLColor2 := Thm.Shadow;
+		BRColor1 := White;
+		BRColor2 := Thm.Light;
+	end;
 
-    {Top + left border}
-    SetColor(BorderTLColor);
-    Line(X1, Y1, X2, Y1);
-    Line(X1, Y1 + 1, X1, Y2);
+	{Top + left outer border}
+	SetColor(TLColor1);
+	Line(X1, Y1, X2, Y1);
+	Line(X1, Y1 + 1, X1, Y2);
+	{Inner border}
+	SetColor(TLColor2);
+	Line(X1 + 1, Y1 + 1, X2 - 1, Y1 + 1);
+	Line (X1 + 1, Y1 + 2, X1 + 1, Y2 - 1);
 
-    {Bottom + right border}
-    SetColor(BorderBRColor);
-    Line(X2, Y1 + 1, X2, Y2);
-    Line(X1 + 1, Y2, X2 - 1, Y2);
+	{Bottom + right outer border}
+	SetColor(BRColor1);
+	Line(X2, Y1 + 1, X2, Y2);
+	Line(X1 + 1, Y2, X2 - 1, Y2);
+	{Inner border}
+	SetColor(BRColor2);
+	Line(X2 - 1, Y1 + 2, X2 - 1, Y2 - 1);
+	Line(X1 + 2, Y2 - 1, X2 - 2, Y2 - 1);
 
-    if Caption <> '' then
+	if Caption <> '' then
 	begin
 		X1 := (X2 - X1) div 2 + X1;
 		X1 := X1 - PrintW(Caption) div 2;
-		Y1 := (Y2 - Y1) div 2 + Y1 - 3; {3 is the offset to center text vertically}
+		Y1 := (Y2 - Y1) div 2 + Y1 - 4; {4 is the offset to center text vertically}
 		if State = BsDown then
 		begin
 			Inc(X1);
@@ -422,15 +434,21 @@ begin
 	SetFillStyle(SolidFill, Thm.Txt);
 	Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
 
-    {Top + left border}
-    SetColor(Thm.Shadow);
-    Line(X1, Y1, X2, Y1);
-    Line(X1, Y1 + 1, X1, Y2);
+	{Top + left border}
+	SetColor(Black);
+	Line(X1, Y1, X2, Y1);
+	Line(X1, Y1 + 1, X1, Y2);
+	SetColor(Thm.Shadow);
+	Line(X1 + 1, Y1 + 1, X2 - 1, Y1 + 1);
+	Line (X1 + 1, Y1 + 2, X1 + 1, Y2 - 1);
 
-    {Bottom + right border}
-    SetColor(Thm.Light);
-    Line(X2, Y1 + 1, X2, Y2);
-    Line(X1 + 1, Y2, X2 - 1, Y2);
+	{Bottom + right border}
+	SetColor(White);
+	Line(X2, Y1 + 1, X2, Y2);
+	Line(X1 + 1, Y2, X2 - 1, Y2);
+	SetColor(Thm.Light);
+	Line(X2 - 1, Y1 + 2, X2 - 1, Y2 - 1);
+	Line(X1 + 2, Y2 - 1, X2 - 2, Y2 - 1);
 
 	if Checked then
 	begin
@@ -719,19 +737,19 @@ begin
 	SetFillStyle(SolidFill, Thm.Txt);
 	Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
 
-    {Top + left border}
-    SetColor(Thm.Shadow);
-    Line(X1, Y1, X2, Y1);
-    Line(X1, Y1 + 1, X1, Y2);
+	{Top + left border}
+	SetColor(Thm.Shadow);
+	Line(X1, Y1, X2, Y1);
+	Line(X1, Y1 + 1, X1, Y2);
 	SetColor(Black);
 	Line(X1 + 1, Y1 + 1, X2 - 1, Y1 + 1);
 	Line (X1 + 1, Y1 + 2, X1 + 1, Y2 - 1);
 
-    {Bottom + right border}
+	{Bottom + right border}
 	SetColor(White);
-    Line(X2, Y1 + 1, X2, Y2);
-    Line(X1 + 1, Y2, X2 - 1, Y2);
-    SetColor(Thm.Light);
+	Line(X2, Y1 + 1, X2, Y2);
+	Line(X1 + 1, Y2, X2 - 1, Y2);
+	SetColor(Thm.Light);
 	Line(X2 - 1, Y1 + 2, X2 - 1, Y2 - 1);
 	Line(X1 + 2, Y2 - 1, X2 - 2, Y2 - 1);
 
@@ -832,7 +850,7 @@ begin
 	for i := 1 to Length(Filename) do
 		if not (Filename[i] in ['A'..'Z', 'a'..'z', '0'..'9', '_', '~',
 		                        '!', '@', '#', '$', '%', '^', '&', '(',
-								')', '-', '{', '}', '''', '.']) then
+		                        ')', '-', '{', '}', '''', '.']) then
 			exit;
 
 	Valid8dot3 := true;
@@ -1114,18 +1132,18 @@ var
 	ExpectedSize: LongInt;
 begin
 	{Default colors - will be overwritten if theme file loads successfully}
-	Thm.Desk      := Cyan;
+	Thm.Desk	  := Cyan;
 	Thm.DeskText  := Black;
-	Thm.Win       := LightGray;
-	Thm.Btn       := LightGray;
-	Thm.Txt       := White;
+	Thm.Win	   := LightGray;
+	Thm.Btn	   := LightGray;
+	Thm.Txt	   := White;
 	Thm.TxtText   := Black;
 	Thm.WinText   := Black;
-	Thm.Title     := Blue;
+	Thm.Title	 := Blue;
 	Thm.TitleText := White;
-	Thm.Light     := LightGray;
-	Thm.Shadow    := DarkGray;
-	Thm.Sel       := Blue;
+	Thm.Light	 := LightGray;
+	Thm.Shadow	:= DarkGray;
+	Thm.Sel	   := Blue;
 	Thm.SelText   := White;
 
 	{The end of the file contains 21 bytes for theme name, and 21	 for theme
