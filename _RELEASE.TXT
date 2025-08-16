@@ -1,6 +1,6 @@
 
                                 The Costa GUI
-                                By Jacob Palm                   
+                                By Jacob Palm
 
                     Release instructions for new versions
 
@@ -13,32 +13,32 @@ Costa - what tasks must be performed, what files should be included, etc.
 these strictly. They are mainly written to help myself remember every detail
 when releasing a new version.
 
- - Update version information in SOURCE\APPINFO.BI
- - Update version text in the icon "LOGO"
- - Update version information in DOCS\HELP.TXT, and read through to see if
-   any information about new/changes features need to be documented.
-   Take note of section 1.3 - "News in this version."
- - Update changelog in DOCS\CHANGES.TXT
- - Update year in LICENSE, if relevant
- - Compile all EXE files by running _BUILD.BAT
-   Manual compiler options, if needed:
-     Use 286 optimizations, include run-time error checking.
-     Compile all with VBDOS standard library loaded (/L parameter)
- - Remove all .DAT files from the DATA\CONFIG folder - make sure to
-   keep .DEF files which contains the default desktop icons, file
-   associations etc.
- - Copy _DISTRUB.BAT to COSTA.BAT (contains "first run" information for the
-   user)
- - Exclude the following from the ZIP file:
-   SOURCE folder
-   .git folder
-   .gitignore
-   .ds_store files from all subfolders if packaging on a Mac
-   README.MD
-   All files with a name starting with underscore
- - Merge Git branch to main, if any
- - Tag a release on GitHub for this version, and add the ZIP archive for
-   the release
- - After final commit and push to Git, create ZIP archive of source for
-   own archive
- - Update website with download link, archive and screenshots
+- Update version information in HELP.TXT, and read through to see if any
+  information about new/changes features need to be documented. Take note of
+  section 1.3 - "News in this version."
+- Update changelog in DOCS\CHANGES.TXT
+- Update year in LICENSE
+- Update version information in the CONST section of each unit
+- Compile all EXE files by running _BUILD.BAT
+- Remove all .BIN files except from DESKDEF.BIN from the CONFIG directory
+- Exclude the following from the ZIP file:
+  - Directories:
+    - LIBRARY
+    - SOURCE
+    - .git
+  - Files:
+    - .gitattributes
+    - .gitignore
+    - .ds_store files from all subdirectories, if packaging on a Mac
+    - All files in the root directory of the project, except:
+      - LICENSE,
+      - EGAVGA.BGI
+      - HELP.TXT
+      - CHANGES.TXT
+      - *.EXE
+- Merge Git branch to main, if any
+- Tag a release on GitHub for this version, and add the ZIP archive for
+  the release
+- After final commit and push to Git, create ZIP archive of source for
+  own archive
+- Update website with download link, archive and screenshots

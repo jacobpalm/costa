@@ -8,7 +8,7 @@ which are also the machines that typically run the MS-DOS operating system.
 ![The Costa GUI](https://costa.jacobpalm.dk/assets/img/screenshots/aboutbox.png)
 
 ## System requirements
-Costa is designed for MS-DOS, but tested with PC-DOS, DR-DOS, FreeDOS, 
+Costa is designed for MS-DOS, but tested with PC-DOS, DR-DOS, FreeDOS,
 Novell DR Multiuser DOS and DOSBox as well. In theory it should run on any
 IBM compatible system with at least:
 
@@ -35,22 +35,28 @@ releases I make.
 ## Further information
 See the included documentation for more information, or visit the homepage
 of Costa at http://costa.jacobpalm.dk
-  
+
 ## Icons and themes always welcome!
 If you have made any icons you would like to see included with Costa, or
 perhaps a nifty theme, feel free to drop me a message. I am always looking
-to add more to Costa, and credit will of course be given! 
+to add more to Costa, and credit will of course be given!
 
 ## Using this code
 Costa is written using Borland Turbo Pascal 7, but should be compatible
-with Microsoft QuickPascal as well - although this has not been tested.
-Free Pascal support has not been tested either.
+to some extent with Microsoft QuickPascal as well - although this has not
+been tested. Free Pascal support has not been tested either at this point.
+
+[!NOTE]
+Previous version, up to and including 1.8.0, were written using Microsoft
+Visual Basic for DOS. If you're looking for the BASIC code, switch to the
+non-maintained "Archived_1xx" branch of this repository.
 
 All programs (except *COSTA.PAS*) are written using the **Costa UI Library**.
 This library resides in the unit *COSTALIB.PAS*, which must be included
 in the USES section of all programs. Some additional units are
 included, such as *FILESEL.PAS* for implementing "Open" dialogs and
-*INPUTDLG.PAS* for showing an input box to the user.
+*INPUTDLG.PAS* for showing an input box to the user. All library code is
+stored in the *LIBRARY* directory.
 
 *COSTA.PAS* is the memory-resident part of Costa. It launches the desktop,
 and when the desktop exits, it checks if it should terminate, or if the
@@ -62,8 +68,8 @@ and make as much memory as possible available for programs.
 The source code and build script assume the following:
   * That the source code has been extracted/cloned to *C:\COSTA* (this path is
     only required for development, once built Costa will run from any path)
-  * That Turbo Pascal is installed in *C:\TP* using default folder structure
-    (compiler placed in the *BIN* subdirectory of that path).
+  * That Turbo Pascal is installed in *C:\TP* using default directory
+    structure (compiler placed in the *BIN* subdirectory of that path).
 
 ## Building Costa
 To build Costa, run the build script from the command line:
