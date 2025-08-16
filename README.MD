@@ -46,10 +46,10 @@ Costa is written using Borland Turbo Pascal 7, but should be compatible
 to some extent with Microsoft QuickPascal as well - although this has not
 been tested. Free Pascal support has not been tested either at this point.
 
-[!NOTE]
-Previous version, up to and including 1.8.0, were written using Microsoft
-Visual Basic for DOS. If you're looking for the BASIC code, switch to the
-non-maintained "Archived_1xx" branch of this repository.
+> [!NOTE]
+> Previous version, up to and including 1.8.0, were written using Microsoft
+> Visual Basic for DOS. If you're looking for the BASIC code, switch to the
+> non-maintained "Archived_1xx" branch of this repository.
 
 All programs (except *COSTA.PAS*) are written using the **Costa UI Library**.
 This library resides in the unit *COSTALIB.PAS*, which must be included
