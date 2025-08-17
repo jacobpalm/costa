@@ -7,18 +7,20 @@ uses
 
 function FileSelect(DefaultPattern, StartPath: string; IconSelect: boolean): string;
 
+{Only the FileSelect function is exported, the rest are internal}
+
 implementation
 
 uses
 	DOS, Graph;
 
 const
-	MaxFiles        = 150; {Maximum number of files}
-	MaxDirs         = 100; {Maximum number of directories}
-	MaxVisibleItems = 15;
 	FileList        = 0;
 	DirList         = -1;
+	MaxVisibleItems = 15;
 	ListItemHeight  = 12;
+
+	MaxNameLength   = 12; {8.3 filename including the dot}
 
 	CAP_PATTERN     = #127 + 'Pattern';
 	CAP_DRIVE       = 'D' + #127 + 'rive';
@@ -30,47 +32,113 @@ const
 type
 	TDirection = (Up, Down, First, Last, PageUp, PageDown);
 
+	PFileNode = ^TFileNode;
+	TFileNode = record
+		Name: string[MaxNameLength];
+		Next: PFileNode;
+	end;
+
 var
-	AreaList:      array[-1..0] of TArea;
+	ListHead:      array[-1..0] of PFileNode;
 	ListStartPos:  array[-1..0] of Integer;
 	ListSelection: array[-1..0] of Integer;
-	ListCount:     array[-1..0] of Integer;
-	SubDirs:       array[1..MaxDirs] of String[12];
-	SubFiles:      array[1..MaxFiles] of String[12];
+	ListLength:    array[-1..0] of Integer;
+	AreaList:      array[-1..0] of TArea;
+	ActiveList:    Integer;
 
 	PreviewShown:  boolean;
 	ImgPreview:    TIcon;
 
-	ActiveList: Integer;
 	Path, Pattern: String;
-	Drive: String[1];
+	Drive:         String[1];
+
 	ClickedDoubleTimer: Real;
 
 procedure SetActiveList(TargetList: Integer); forward;
+
+procedure AddToList(const ItemName: string; TargetList: Integer);
+var
+	NewNode, LastNode: PFileNode;
+begin
+	{Init new node}
+	New(NewNode);
+	NewNode^.Name := ItemName;
+	NewNode^.Next := nil;
+
+	if not Assigned(ListHead[TargetList]) then
+	begin
+		{First item in the list}
+		ListHead[TargetList] := NewNode;
+		ListLength[TargetList] := 1;
+	end
+	else
+	begin
+		{Find the last node in the list}
+		LastNode := ListHead[TargetList];
+		while Assigned(LastNode^.Next) do
+			LastNode := LastNode^.Next;
+		{Add new node at the end}
+		LastNode^.Next := NewNode;
+
+		Inc(ListLength[TargetList]);
+	end;
+end;
+
+procedure ClearList(TargetList: Integer);
+var
+	NextNode: PFileNode;
+begin
+	while Assigned(ListHead[TargetList]) do
+	begin
+		NextNode := ListHead[TargetList]^.Next;
+		Dispose(ListHead[TargetList]);
+		ListHead[TargetList] := NextNode;
+	end;
+	ListLength[TargetList] := 0;
+	ListStartPos[TargetList] := 1;
+	ListSelection[TargetList] := 1;
+end;
+
+function GetListItemName(TargetList, Position: Integer): String;
+var
+    I: Integer;
+	TargetNode: PFileNode;
+begin
+    TargetNode := ListHead[TargetList];
+	if Position > 1 then
+	begin
+		for I := 1 to Position - 1 do
+		begin
+			if not Assigned(TargetNode) then
+				break;
+			
+			TargetNode := TargetNode^.Next
+		end;
+	end;
+
+	if Assigned(TargetNode) then
+		GetListItemName := TargetNode^.Name
+	else
+		GetListItemName := '';
+end;
 
 procedure GetChildFiles(Path: String; FilePattern: String);
 var
 	FileInfo: SearchRec;
 begin
 	{Clear previous file list}
-	ListCount[FileList] := 0;
-	FillChar(SubFiles, SizeOf(SubFiles), #0);
+	ClearList(FileList);
 
 	FindFirst(Path + '\' + FilePattern, Archive, FileInfo);
 	while DosError = 0 do
 	begin
-	if (FileInfo.Attr and Directory) = 0 then
-	begin
-		{If CON is opened the program will crash}
-		if (ListCount[FileList] < MaxFiles) and (FileInfo.Name <> 'CON') then
+		if (FileInfo.Attr and Directory) = 0 then
 		begin
-			Inc(ListCount[FileList]);
-			SubFiles[ListCount[FileList]] := FileInfo.Name;
-		end
-		else
-			Break; {Stop if maximum file count is exceeded}
-	end;
-	FindNext(FileInfo);
+			{If CON is opened the program will crash}
+			if FileInfo.Name <> 'CON' then
+				AddToList(FileInfo.Name, FileList);
+		end;
+		FindNext(FileInfo);
 	end;
 end;
 
@@ -79,37 +147,23 @@ var
 	DirInfo: SearchRec;
 begin
 	{Clear previous directory list}
-	ListCount[DirList] := 0;
-	FillChar(SubDirs, SizeOf(SubDirs), #0);
-
+	ClearList(DirList);
+	
 	{Add '..' for parent directory if not at root}
 	if Length(Path) > 3 then
-	begin
-		Inc(ListCount[DirList]);
-		SubDirs[ListCount[DirList]] := '..';
-	end;
-
+		AddToList('..', DirList);
+	
 	FindFirst(Path + '\*.*', Directory, DirInfo);
 	while DosError = 0 do
 	begin
-	if (DirInfo.Attr and Directory) <> 0 then
-	begin
-		if (DirInfo.Name <> '.') and (DirInfo.Name <> '..') then
-		begin
-			if ListCount[DirList] < MaxDirs then
-			begin
-				Inc(ListCount[DirList]);
-				SubDirs[ListCount[DirList]] := DirInfo.Name
-			end
-			else
-				Break; {Stop if maximum directory count is exceeded}
-		end;
-	end;
-	FindNext(DirInfo);
+		if ((DirInfo.Attr and Directory) <> 0) and (DirInfo.Name <> '.') and (DirInfo.Name <> '..') then
+			AddToList(DirInfo.Name, DirList);
+		
+		FindNext(DirInfo);
 	end;
 end;
 
-procedure DrawFileList(TargetList: integer; HighLightActive, FullRedraw: Boolean);
+procedure DrawList(TargetList: integer; HighLightActive, FullRedraw: Boolean);
 var
 	I, Counter: Integer;
 	X1, Y1, X2, Y2, YOffset: Integer;
@@ -121,43 +175,59 @@ begin
 	X2 := AreaList[TargetList].Left + AreaList[TargetList].Width - 2;
 	Y2 := AreaList[TargetList].Top + 15;
 	YOffset := ((ListSelection[TargetList] - ListStartPos[TargetList]) * ListItemHeight);
+	Counter := 0;
 
 	MouseHide;
 	if FullRedraw then
 	begin
 		SetFillStyle(SolidFill, Thm.Txt);
 		Bar(X1, Y1, X2, Y2 - 1 + ((MaxVisibleItems - 1) * ListItemHeight));
-		Counter := 0;
+		
+		if ListHead[TargetList] = nil then
+			Exit; {Nothing to draw}
+
+		if ListStartPos[TargetList] > ListLength[TargetList] then
+			ListStartPos[TargetList] := 1; {Reset start position if it exceeds item count}
+
+
+		{Draw items from the start position}
 		for I := ListStartPos[TargetList] to ListStartPos[TargetList] + MaxVisibleItems - 1 do
 		begin
-			if I <= ListCount[TargetList] then
+			if I <= ListLength[TargetList] then
 			begin
-			if TargetList = FileList then
-				ItemText := SubFiles[I]
-			else
-				ItemText := SubDirs[I];
+				{ItemText := ListItem^.Name;}
+				ItemText := GetListItemName(TargetList, I);
 
-			{Highlight active selected item}
-			if (I = ListSelection[TargetList]) and (ActiveList = TargetList) then
-			begin
-				{Draw highlighted item}
-				SetFillStyle(SolidFill, Thm.Sel);
-				Bar(X1, Y1 + (Counter * ListItemHeight), X2, Y2 - 1 + (Counter * ListItemHeight));
-				Print(ItemText, X1 + 3, Y1 + 2 + (Counter * ListItemHeight), Thm.SelText);
-			end
-			else
-			begin
-				{Draw normal item}
-				Print(ItemText, X1 + 3, Y1 + 2 + (Counter * ListItemHeight), Thm.TxtText);
-			end;
+				{Highlight active selected item}
+				if (I = ListSelection[TargetList]) and (ActiveList = TargetList) then
+				begin
+					{Draw highlighted item}
+					SetFillStyle(SolidFill, Thm.Sel);
+					Bar(X1, Y1 + (Counter * ListItemHeight), X2, Y2 - 1 + (Counter * ListItemHeight));
+					Print(ItemText, X1 + 3, Y1 + 2 + (Counter * ListItemHeight), Thm.SelText);
+				end
+				else
+				begin
+					{Draw normal item}
+					Print(ItemText, X1 + 3, Y1 + 2 + (Counter * ListItemHeight), Thm.TxtText);
+				end;
 
-			Inc(Counter);
+				Inc(Counter);
 			end;
 		end;
 	end
 	else
 	begin
 		{Not a full redraw, only draw the selected item}
+
+		{Unless we're out of bounds}
+		if (ListSelection[TargetList] > ListLength[TargetList]) or
+		   (ListSelection[TargetList] < 1) then
+		begin
+			MouseShow;
+			Exit;
+		end;
+
 		if HighLightActive and (ActiveList = TargetList) then
 		begin
 			FGColor := Thm.SelText;
@@ -169,11 +239,7 @@ begin
 			BGColor := Thm.Txt;
 		end;
 
-		if TargetList = FileList then
-			ItemText := SubFiles[ListSelection[FileList]]
-		else
-			ItemText := SubDirs[ListSelection[DirList]];
-		
+		ItemText := GetListItemName(TargetList, ListSelection[TargetList]);
 		if ItemText <> '' then
 		begin
 			SetFillStyle(SolidFill, BGColor);
@@ -193,7 +259,7 @@ var
 begin
 	if (Path = ProgramPath + 'ICONS') and (ListSelection[FileList] <> 0) then
 	begin
-		FSplit(SubFiles[ListSelection[FileList]], FDir, FName, FExt);
+		FSplit(GetListItemName(FileList, ListSelection[FileList]), FDir, FName, FExt);
 		if (Length(FName) <> 0) and (FExt = '.BIN') then
 		begin
 			MouseHide;
@@ -218,7 +284,8 @@ end;
 
 procedure MoveSelection(TargetList: Integer; Direction: TDirection);
 var
-	NewSelection, NewStartPos: Integer;
+	NewSelection, NewStartPos, i: Integer;
+	ListItem: PFileNode;
 begin
 	NewSelection := ListSelection[TargetList];
 	NewStartPos := ListStartPos[TargetList];
@@ -227,7 +294,7 @@ begin
 		Up: Dec(NewSelection);
 		Down: Inc(NewSelection);
 		First: NewSelection := 1;
-		Last: NewSelection := ListCount[TargetList];
+		Last: NewSelection := ListLength[TargetList];
 		PageUp: Dec(NewSelection, MaxVisibleItems);
 		PageDown: Inc(NewSelection, MaxVisibleItems);
 	end;
@@ -235,15 +302,15 @@ begin
 	{Check for out of bounds selection}
 	if NewSelection < 1 then
 		NewSelection := 1
-	else if NewSelection > ListCount[TargetList] then
-		NewSelection := ListCount[TargetList];
+	else if NewSelection > ListLength[TargetList] then
+		NewSelection := ListLength[TargetList];
 	
 	{If selection is the same, no need to do anything}
 	if NewSelection = ListSelection[TargetList] then
 		exit;
 
 	{If there aren't enough items to span more than one page, always start displaying from the first item}
-	if ListCount[TargetList] < MaxVisibleItems then
+	if ListLength[TargetList] < MaxVisibleItems then
 		NewStartPos := 1
 	else
 	begin
@@ -266,8 +333,8 @@ begin
 				Inc(NewStartPos, MaxVisibleItems);
 			until (NewStartPos <= NewSelection) and 
 				(NewStartPos + MaxVisibleItems - 1 >= NewSelection);
-			if NewStartPos > ListCount[TargetList] then
-				NewStartPos := ListCount[TargetList];
+			if NewStartPos > ListLength[TargetList] then
+				NewStartPos := ListLength[TargetList];
 		end;
 	end;
 
@@ -276,17 +343,17 @@ begin
 	begin
 		ListSelection[TargetList] := NewSelection;
 		ListStartPos[TargetList] := NewStartPos;
-		DrawFileList(TargetList, True, True);
+		DrawList(TargetList, True, True);
 	end
 	else
 	begin
 		{Remove current selection}
-		DrawFileList(TargetList, False, False);
+		DrawList(TargetList, False, False);
 		{Draw new selection}
 		ListSelection[TargetList] := NewSelection;
-		DrawFileList(TargetList, True, False);
+		DrawList(TargetList, True, False);
 	end;
-		
+
 	{Update Icon preview in case an Icon file is now selected}
 	DrawPreview;
 end;
@@ -294,6 +361,8 @@ end;
 function MouseSelection(TargetList: integer): boolean;
 var
 	ClickedX, ClickedY, ClickedItem: Integer;
+	ListItem: PFileNode;
+	I: Integer;
 begin
 	MousePoll;
 	ClickedX := MouseX - AreaList[TargetList].Left;
@@ -318,14 +387,14 @@ begin
 			begin
 				{Clicked inside list area, but in the small gap after the last item.
 				Draw current item with focus}
-				DrawFileList(TargetList, True, False);
+				DrawList(TargetList, True, False);
 				while MouseClicked > MbNone do;
 				MouseSelection := False;
 				Exit;
 			end;
 
 			ClickedItem := ClickedItem + ListStartPos[TargetList] - 1;
-			if ClickedItem <= ListCount[TargetList] then
+			if ClickedItem <= ListLength[TargetList] then
 			begin
 				if ClickedItem = ListSelection[TargetList] then
 				begin
@@ -333,20 +402,20 @@ begin
 					if Timer < ClickedDoubleTimer + DoubleClickDelay then
 						MouseSelection := True
 					else
-						DrawFileList(TargetList, True, False);
+						DrawList(TargetList, True, False);
 				end
 				else
 				begin
 					{Clicked item is not the current selection, move selection}
-					DrawFileList(TargetList, False, False);
+					DrawList(TargetList, False, False);
 					ListSelection[TargetList] := ClickedItem;
-					DrawFileList(TargetList, True, False);
+					DrawList(TargetList, True, False);
 				end;
 			end
 			else
 			begin
 				{Clicked in list, but below any items. Give focus to current selection}
-				DrawFileList(TargetList, True, False);
+				DrawList(TargetList, True, False);
 			end;
 		end;
 	end;
@@ -361,15 +430,14 @@ begin
 	if TargetList = ActiveList then
 		exit; {Already active}
 	
-	DrawFileList(ActiveList, False, False);
+	DrawList(ActiveList, False, False);
 	ActiveList := TargetList;
-	DrawFileList(ActiveList, True, False);
+	DrawList(ActiveList, True, False);
 end;
 
 function SetDrive(DriveLetter: Char): Boolean;
 var
 	CurrentDir: String;
-	TempLetter: String[1];
 begin
 	DriveLetter := UpCase(DriveLetter);
 	if (DriveLetter >= 'A') and (DriveLetter <= 'Z') then
@@ -383,8 +451,8 @@ begin
 		Drive := DriveLetter;
 		GetChildFiles(Path, Pattern);
 		GetChildDirs(Path);
-		DrawFileList(FileList, True, True);
-		DrawFileList(DirList, False, True);
+		DrawList(FileList, True, True);
+		DrawList(DirList, False, True);
 		SetDrive := True;
 		DrawPreview;
 		Exit;
@@ -406,12 +474,8 @@ begin
 		GetDir(0, Path);
 		GetChildFiles(Path, Pattern);
 		GetChildDirs(Path);
-		ListStartPos[FileList] := 1;
-		ListSelection[FileList] := 1;
-		ListStartPos[DirList] := 1;
-		ListSelection[DirList] := 1;
-		DrawFileList(FileList, False, True);
-		DrawFileList(DirList, True, True);
+		DrawList(FileList, False, True);
+		DrawList(DirList, True, True);
 	end;
 	DrawPreview;
 end;
@@ -424,12 +488,12 @@ var
 	BtnFilePrev, BtnFileNext: TButton;
 	BtnDirPrev, BtnDirNext: TButton;
 	OriginalPath: string;
-	Counter, I: Integer;
+	I: Integer;
 	X1, Y1, X2, Y2: Integer;
 	BackgroundSize: Word;
 	BackgroundP: Pointer;
 	Key: string;
-	ClickedX, ClickedY, ClickedItem, RedrawNeeded: Integer;
+	SelectedItemName: String[MaxNameLength];
 begin
 	WinFileSelect.Init(sizeCenter, sizeCenter, 468, 270);
 	TxtPattern.Init(101, WinFileSelect.Top + 28, 150, SizeDefault, CAP_PATTERN);
@@ -455,10 +519,6 @@ begin
 	Pattern := DefaultPattern;
 	TxtDrive.Text := Drive;
 	TxtPattern.Text := DefaultPattern;
-	ListStartPos[DirList] := 1;
-	ListStartPos[FileList] := 1;
-	ListSelection[FileList] := 1;
-	ListSelection[DirList] := 1;
 	ActiveList := FileList;
 
 	MouseHide;
@@ -494,8 +554,8 @@ begin
 	begin
 		GetChildFiles(Path, Pattern);
 		GetChildDirs(Path);
-		DrawFileList(FileList, True, True);
-		DrawFileList(DirList, False, True);
+		DrawList(FileList, True, True);
+		DrawList(DirList, False, True);
 	end;
 
 	repeat
@@ -515,18 +575,22 @@ begin
 
 		if BtnSelect.Clicked or (Key = KeyAltS) or (Key = KeyEnter) then
 		begin
-			if (ActiveList = FileList) and (SubFiles[ListSelection[FileList]] <> '') then
+			SelectedItemName := GetListItemName(ActiveList, ListSelection[ActiveList]);
+			if SelectedItemName <> '' then
 			begin
-				{Make sure path ends with a backslash}
-				if (Path[Length(Path)] <> '\') then
-					Path := Path + '\';
-				FileSelect := Path + SubFiles[ListSelection[FileList]];
-				Break;
-			end;
-			
-			if (ActiveList = DirList) and (SubDirs[ListSelection[DirList]] <> '') then
-			begin
-				SetDir(SubDirs[ListSelection[DirList]]);
+				if ActiveList = FileList then
+				begin
+					{Make sure path ends with a backslash}
+					if (Path[Length(Path)] <> '\') then
+						Path := Path + '\';
+					FileSelect := Path + SelectedItemName;
+					Break;
+				end;
+				
+				if ActiveList = DirList then
+				begin
+					SetDir(SelectedItemName);
+				end;
 			end;
 		end;
 
@@ -609,9 +673,7 @@ begin
 			begin
 				Pattern := TxtPattern.Text;
 				GetChildFiles(Path, Pattern);
-				ListStartPos[FileList] := 1;
-				ListSelection[FileList] := 1;
-				DrawFileList(FileList, True, True);
+				DrawList(FileList, True, True);
 				DrawPreview;
 			end;
 		end;
