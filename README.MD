@@ -47,7 +47,7 @@ to some extent with Microsoft QuickPascal as well - although this has not
 been tested. Free Pascal support has not been tested either at this point.
 
 > [!NOTE]
-> Previous version, up to and including 1.8.0, were written using Microsoft
+> Previous versions, up to and including 1.8.0, were written using Microsoft
 > Visual Basic for DOS. If you're looking for the BASIC code, switch to the
 > non-maintained "Archived_1xx" branch of this repository.
 

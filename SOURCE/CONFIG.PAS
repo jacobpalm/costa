@@ -98,7 +98,7 @@ begin
 	NewNode^.FileName := ThemeName;
 	NewNode^.Next := nil;
 
-	if NewThemeList = nil then
+	if not Assigned(NewThemeList) then
 		{This is the first node being added}
 		NewThemeList := NewNode
 	else
@@ -106,7 +106,7 @@ begin
 		{Previous nodes exists, so find last one and add pointer to new
 		 node to it}
 		LastNode := NewThemeList;
-		while LastNode^.Next <> nil do
+		while Assigned(LastNode^.Next) do
 			LastNode := LastNode^.Next;
 		LastNode^.Next := NewNode;
 	end;
@@ -126,7 +126,7 @@ begin
 	
 	Node := NewThemeList;
 	i := 1;
-	while (Node <> nil) and (i < SelectedTheme) do
+	while Assigned(Node) and (i < SelectedTheme) do
 	begin
 		Node := Node^.Next;
 		Inc(i);

@@ -113,7 +113,7 @@ var
 	TempNode: PLinkNode;
 begin
 	{Traverse linked list and free each node}
-	while Links <> nil do
+	while Assigned(Links) do
 	begin
 		TempNode := Links;
 		Links := Links^.Next;
@@ -200,7 +200,7 @@ begin
 	end;
 
 	{No links, close file}
-	if Links = nil then
+	if not Assigned(Links) then
 	begin
 		Close(F);
 		Exit;
@@ -208,7 +208,7 @@ begin
 
 	{Write all links to file}
 	TempNode := Links;
-	while TempNode <> nil do
+	while Assigned(TempNode) do
 	begin
 		BlockWrite(F, TempNode^.Link, SizeOf(TLink));
 		TempNode := TempNode^.Next;
@@ -227,13 +227,13 @@ begin
 	NewNode^.Next := nil;
 
 	{If no links already exist, this link will be head of the list}
-	if Links = nil then
+	if not Assigned(Links) then
 		Links := NewNode
 	else
 	begin
 		{Find the end of the list and append the new link}
 		TempNode := Links;
-		while TempNode^.Next <> nil do
+		while Assigned(TempNode^.Next) do
 			TempNode := TempNode^.Next;
 		TempNode^.Next := NewNode;
 	end;
@@ -244,7 +244,7 @@ var
 	TempNode, PrevNode: PLinkNode;
 	i: integer;
 begin
-	if TargetNode = nil then
+	if not Assigned(TargetNode) then
 		exit;
 
 	TempNode := Links;
@@ -252,7 +252,7 @@ begin
 	i := 1;
 
 	{Find the target node in the linked list, and keep track of the previous node}
-	while (TempNode <> nil) and (TempNode <> TargetNode) do
+	while Assigned(TempNode) and (TempNode <> TargetNode) do
 	begin
 		PrevNode := TempNode;
 		TempNode := TempNode^.Next;
@@ -260,11 +260,11 @@ begin
 	end;
 
 	{TargetNode not found, nothing to remove}
-	if TempNode = nil then
+	if not Assigned(TempNode) then
 		Exit;
 
 	{If no previous node, we are removing the head node}
-	if PrevNode = nil then
+	if not Assigned(PrevNode) then
 		Links := TempNode^.Next
 	else
 		PrevNode^.Next := TempNode^.Next;
@@ -284,7 +284,7 @@ var
 	CurrentNode, NextNode, PrevNode: PLinkNode;
 begin
 	{ Can't sort Links if there are no links }
-	if Links = nil then
+	if not Assigned(Links) then
 		Exit;
 
 	{Itererate through Links until no swaps are made}
@@ -293,7 +293,7 @@ begin
 		CurrentNode := Links;
 		PrevNode := nil;
  
-		while (CurrentNode <> nil) and (CurrentNode^.Next <> nil) do
+		while Assigned(CurrentNode) and Assigned(CurrentNode^.Next) do
 		begin
 			NextNode := CurrentNode^.Next;
 
@@ -306,7 +306,7 @@ begin
 				{Swap the two nodes in the Links linked list}
 				
 				{If PrevNode is nil, we are swapping the head node}
-				if PrevNode = nil then
+				if not Assigned(PrevNode) then
 					Links := NextNode
 				else
 					PrevNode^.Next := NextNode;
@@ -357,7 +357,7 @@ begin
 	Bar(0, 29, 639, 349);
 	
 	TempNode := Links;
-	while TempNode <> nil do
+	while Assigned(TempNode) do
 	begin
 		X := TempNode^.Link.Left;
 		Y := TempNode^.Link.Top;
@@ -395,11 +395,11 @@ var
 	LastNode, PrevNode: PLinkNode;
 begin
 	{Nothing to tab through, exit}
-	if Links = nil then
+	if not Assigned(Links) then
 		exit;
 
 	{Remove current selection, if any}
-	if (SelectedLink <> nil) and (Action <> Show) then
+	if Assigned(SelectedLink) and (Action <> Show) then
 	begin
 		MouseHide;
 		PutImage(SelectedLink^.Link.Left - 3, SelectedLink^.Link.Top - 3, TabBackgroundP^, NormalPut);
@@ -413,7 +413,7 @@ begin
 
 		Next:
 			{If no selection, or last node selected, wrap around to first node}
-			if (SelectedLink = nil) or (SelectedLink^.Next = nil) then
+			if not Assigned(SelectedLink) or not Assigned(SelectedLink^.Next) then
 				SelectedLink := Links
 			else
 				SelectedLink := SelectedLink^.Next;
@@ -421,20 +421,20 @@ begin
 		Previous:
 			begin
 				{If no previous selection, or first node selected, wrap around to last node}
-				if (SelectedLink = nil) or (SelectedLink = Links) then
+				if not Assigned(SelectedLink) or (SelectedLink = Links) then
 				begin
 					{Find the last node in Links by iterating until there is no Next node}
 					SelectedLink := Links;
-					while (SelectedLink^.Next <> nil) do
+					while Assigned(SelectedLink^.Next) do
 						SelectedLink := SelectedLink^.Next;
 				end
 				else
 				begin
 					{Find the previous node by iterating through the list}
 					PrevNode := Links;
-					while (PrevNode <> nil) and (PrevNode^.Next <> SelectedLink) do
+					while Assigned(PrevNode) and (PrevNode^.Next <> SelectedLink) do
 						PrevNode := PrevNode^.Next;
-					if PrevNode <> nil then
+					if Assigned(PrevNode) then
 						SelectedLink := PrevNode
 					else
 						SelectedLink := Links; {We didn't find the previous node, so wrap around to the head node}
@@ -469,10 +469,10 @@ begin
 	FillChar(RunLink, SizeOf(RunLink), 0);
 
 	WinRun.Init(sizeCenter, sizeCenter, 382, 137);
-	TxtFilename.Init(WinRun.Left + 12, WinRun.Top + 27, WinRun.Width - 68, SizeDefault, CAP_FILENAME);
+	TxtFilename.Init(WinRun.Left + 12, WinRun.Top + 27, WinRun.Width - 24, SizeDefault, CAP_FILENAME);
 	TxtParams.Init(TxtFilename.Left, TxtFilename.Top + 46, TxtFilename.Width, SizeDefault, CAP_PARAMETERS);
-	BtnOK.Init(WinRun.Left + WinRun.Width - 184, TxtParams.Top + 30, 80, SizeDefault, CAP_OK);
-	BtnCancel.Init(WinRun.Left + WinRun.Width - 94, BtnOK.Top, 80, SizeDefault, CAP_CANCEL);
+	BtnOK.Init(WinRun.Left + WinRun.Width - 182, TxtParams.Top + 30, 80, SizeDefault, CAP_OK);
+	BtnCancel.Init(WinRun.Left + WinRun.Width - 92, BtnOK.Top, 80, SizeDefault, CAP_CANCEL);
 		
 	MouseHide;
 	X1 := WinRun.Left;
@@ -825,7 +825,7 @@ var
 	FExt: ExtStr;
 begin
 	{Can't edit a non-existing link}
-	if TargetNode = nil then
+	if not Assigned(TargetNode) then
 		exit;
 
 	WinEdit.Init(210, 31, 220, 317);
@@ -1073,7 +1073,7 @@ begin
 		begin
 			{The mouse was clicked. Check if it was on a link icon}
 			TempNode := Links;
-			while TempNode <> nil do
+			while Assigned(TempNode) do
 			begin
 				if (MouseX >= TempNode^.Link.Left) and
 				   (MouseX <= TempNode^.Link.Left + 31) and
@@ -1099,7 +1099,7 @@ begin
 			{Find the newly added link in the linked list, it will
 			 be the last one with a nil Next pointer}
 			TempNode := Links;
-			while TempNode^.Next <> nil do
+			while Assigned(TempNode^.Next) do
 				TempNode := TempNode^.Next;
 			
 			{Edit the new link}
@@ -1147,11 +1147,11 @@ begin
 		if (Key = KeyShiftTab) then
 			SetSelection(Previous);
 				
-		if (Key = KeyEnter) and (SelectedLink <> nil) then
+		if (Key = KeyEnter) and Assigned(SelectedLink) then
 		begin
 			SetSelection(Hide); {Remove the indicator around the selected link}
 			LinkMenu(SelectedLink);
-			if SelectedLink <> nil then
+			if Assigned(SelectedLink) then
 				SetSelection(Show); {Redraw the indicator around the selected link}
 		end;
 	

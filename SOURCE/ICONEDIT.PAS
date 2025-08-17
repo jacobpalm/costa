@@ -231,7 +231,7 @@ var
 	var
 		TempNode: PNode;
 	begin
-		if Stack <> nil then
+		if Assigned(Stack) then
 		begin
 			X := Stack^.X;
 			Y := Stack^.Y;

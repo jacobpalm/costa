@@ -92,7 +92,7 @@ var
 		Temp: PNode;
 	begin
 		Pop := false;
-		if Stack = nil then
+		if not Assigned(Stack) then
 			exit;
 
 		Temp := Stack;

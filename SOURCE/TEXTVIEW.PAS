@@ -73,7 +73,7 @@ begin
 	HeapError := @CustomHeapError;
 	GetMem(Lines, Capacity * SizeOf(PLine));
 	HeapError := DefaultHeapError;
-	if Lines = nil then
+	if not Assigned(Lines) then
 		InitLines := false
 	else
 		InitLines := true;
@@ -85,7 +85,7 @@ var
 	i: Integer;
 begin
 	{Only resize if the lines array has been initialized}
-	if Lines = nil then
+	if not Assigned(Lines) then
 	begin
 		ResizeLines := False;
 		Exit;
@@ -96,7 +96,7 @@ begin
 	GetMem(NewLines, NewCap * SizeOf(PLine));
 	HeapError := DefaultHeapError;
 
-	if NewLines = nil then
+	if not Assigned(NewLines) then
 	begin
 		ResizeLines := False;
 		Exit;
