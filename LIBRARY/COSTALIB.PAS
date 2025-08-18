@@ -32,6 +32,7 @@ type
 	TTextboxState = (TsNormal, TsEditing);
 	TMsgBox       = (MsgInfo, MsgWarn, MsgQuest, MsgError);
 
+	PUIObject = ^TUIObject;
 	TUIObject = object
 		public
 			Left, Top, Width, Height: Integer;
