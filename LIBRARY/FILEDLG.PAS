@@ -36,6 +36,7 @@ var
 
 	Path, Pattern: String;
 	Drive:         String[1];
+	ReturnedFile:  String;
 
 procedure GetChildFiles(Path: String; FilePattern: String);
 var
@@ -111,27 +112,6 @@ begin
 	end;
 end;
 
-procedure SetActiveList(TargetList: Integer);
-begin
-	List[TargetList].SetState(LsActive);
-	List[not TargetList].SetState(LsInactive);
-	ActiveList := TargetList;
-end;
-
-procedure ListClicked(Sender: PUIObject); far;
-var
-	ClickedList: Integer;
-begin
-	if Sender = @List[FileList] then
-		ClickedList := FileList
-	else
-		ClickedList := DirList;
-	
-	{If the list is not active, make it active}
-	if ActiveList <> ClickedList then
-		SetActiveList(ClickedList);
-end;
-
 function SetDrive(DriveLetter: Char): Boolean;
 var
 	CurrentDir: String;
@@ -176,6 +156,56 @@ begin
 	end;
 	DrawPreview(nil);
 end;
+procedure SetActiveList(TargetList: Integer);
+begin
+	List[TargetList].SetState(LsActive);
+	List[not TargetList].SetState(LsInactive);
+	ActiveList := TargetList;
+end;
+
+procedure ListClicked(Sender: PUIObject); far;
+var
+	ClickedList: Integer;
+begin
+	if Sender = @List[FileList] then
+		ClickedList := FileList
+	else
+		ClickedList := DirList;
+	
+	{If the list is not active, make it active}
+	if ActiveList <> ClickedList then
+		SetActiveList(ClickedList);
+end;
+
+procedure ListDblClicked(Sender: PUIObject); far;
+var
+	TargetList: Integer;
+	SelectedItemName: String[MaxNameLength];
+begin
+	{If sender is one of the lists, use that list as target - otherwise
+	 use the currently active list}
+	if Sender = @List[FileList] then
+		TargetList := FileList
+	else if Sender = @List[DirList] then
+		TargetList := DirList
+	else
+		TargetList := ActiveList;
+	
+	SelectedItemName := List[TargetList].GetSelectedItem;
+	if SelectedItemName <> '' then
+	begin
+		if TargetList = FileList then
+		begin
+			{Make sure path ends with a backslash}
+			if (Path[Length(Path)] <> '\') then
+				Path := Path + '\';
+			ReturnedFile := Path + SelectedItemName;
+		end
+		else
+			SetDir(SelectedItemName);
+	end;
+end;
+
 
 function FileSelect(DefaultPattern, StartPath: string; IconSelect: boolean): string;
 var
@@ -190,7 +220,6 @@ var
 	BackgroundSize: Word;
 	BackgroundP: Pointer;
 	Key: string;
-	SelectedItemName: String[MaxNameLength];
 begin
 	WinFileSelect.Init(sizeCenter, sizeCenter, 468, 270);
 	TxtPattern.Init(101, WinFileSelect.Top + 28, 150, SizeDefault, CAP_PATTERN);
@@ -201,7 +230,9 @@ begin
 	List[DirList].Init(272, WinFileSelect.Top + 71, 150, 185);
 	List[FileList].OnChange := DrawPreview;
 	List[FileList].OnClick := ListClicked;
+	List[FileList].OnDoubleClick := ListDblClicked;
 	List[DirList].OnClick := ListClicked;
+	List[DirList].OnDoubleClick := ListDblClicked;
 	BtnSelect.Init(448, WinFileSelect.Top + 28, SizeDefault, SizeDefault, CAP_SELECT);
 	BtnCancel.Init(448, WinFileSelect.Top + 58, SizeDefault, SizeDefault, CAP_CANCEL);
 	BtnFilePrev.Init(253, List[FileList].Top, 14, 91, CharArrowUp);
@@ -220,6 +251,7 @@ begin
 	TxtDrive.Text := Drive;
 	TxtPattern.Text := DefaultPattern;
 	ActiveList := FileList;
+	ReturnedFile := '';
 
 	MouseHide;
 
@@ -259,26 +291,16 @@ begin
 		List[FileList].CheckEvent;
 		List[DirList].CheckEvent;
 
-		if BtnSelect.Clicked or (Key = KeyAltS) or (Key = KeyEnter) then
+		{The list double click event will handle selection, and place a filename in
+		 ReturnedFile if a file was selected}
+		if Length(ReturnedFile) > 0 then
 		begin
-			SelectedItemName := List[ActiveList].GetSelectedItem;
-			if SelectedItemName <> '' then
-			begin
-				if ActiveList = FileList then
-				begin
-					{Make sure path ends with a backslash}
-					if (Path[Length(Path)] <> '\') then
-						Path := Path + '\';
-					FileSelect := Path + SelectedItemName;
-					Break;
-				end;
-				
-				if ActiveList = DirList then
-				begin
-					SetDir(SelectedItemName);
-				end;
-			end;
+			FileSelect := ReturnedFile;
+			break;
 		end;
+
+		if BtnSelect.Clicked or (Key = KeyAltS) or (Key = KeyEnter) then
+			ListDblClicked(nil);
 
 		if BtnCancel.Clicked or (Key = KeyAltC) or (Key = KeyEscape) then
 		begin

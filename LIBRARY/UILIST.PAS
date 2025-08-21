@@ -123,9 +123,11 @@ begin
 			if ClickedItem = Selection then
 			begin
 				{Already selected and clicked again, check for double-click}
-				if Timer < DblClickTimer + DoubleClickDelay then
+
+				if (Timer - DblClickTimer) <= DoubleClickDelay then
 					if Assigned(OnDoubleClick) then
 					begin
+						while MouseClicked > MbNone do;
 						OnDoubleClick(@Self);
 						exit;
 					end
@@ -209,7 +211,9 @@ var
 	ItemText: String;
 begin
 	{Draw procedure of TArea draws the background and border}
+	MouseHide;
 	inherited Draw;
+	MouseShow;
 
 	if Head = nil then
 		exit;; {Nothing to draw}
@@ -353,7 +357,6 @@ begin
 	YOffset := (Selection - StartPos) * ListItemHeight;
 	Counter := 0;
 
-	MouseHide;
 	if ListState = LsActive then
 	begin
 		SelFGColor := Thm.SelText;
@@ -368,11 +371,12 @@ begin
 	ItemText := Self.GetItem(Selection);
 	if ItemText <> '' then
 	begin
+		MouseHide;
 		SetFillStyle(SolidFill, SelBGColor);
 		Bar(X1, Y1 + YOffset, X2, Y2 - 1 + YOffset);
 		Print(ItemText, X1 + 3, Y1 + 2 + YOffset, SelFGColor);
 	end;
-	MouseShow;
+		MouseShow;
 end;
 
 end.
