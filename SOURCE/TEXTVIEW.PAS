@@ -44,6 +44,7 @@ var
 	DefaultHeapError: Pointer; {We'll be taking care of heap errors ourselves}
 
 	BtnPageUp, BtnPageDown: TButton;
+	HkUp, HkDown, HkHome, HkEnd: THotkey;
 
 procedure DrawText; forward;
 procedure FreeLines; forward;
@@ -153,7 +154,7 @@ var
 begin
 	if FileName = '' then
 		Exit;
-
+	
 	if not FileExists(FileName) then
 	begin
 		MsgBox(MSG_OPEN_ERROR_TITLE, MSG_FILE_NOT_FOUND + FileName, MsgError);
@@ -301,6 +302,45 @@ begin
 		DrawText;
 end;
 
+procedure BtnAboutClick(Sender: PUIObject); far;
+begin
+	AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
+end;
+
+procedure BtnOpenClick(Sender: PUIObject); far;
+var
+	FileName: String;
+begin
+	FileName := FileSelect('*.TXT', '', False);
+	if FileName <> '' then
+		LoadFile(FileName);
+end;
+
+procedure PageScrollEvent(Sender: PUIObject); far;
+begin
+	if not FileOpened then
+		Exit;
+
+	if Sender = @BtnPageUp then
+		ScrollText(PageUp)
+	else if Sender = @BtnPageDown then
+		ScrollText(PageDown)
+	else if Sender = @HkUp then
+		ScrollText(LineUp)
+	else if Sender = @HkDown then
+		ScrollText(LineDown)
+	else if Sender = @HkHome then
+		ScrollText(Top)
+	else if Sender = @HkEnd then
+		ScrollText(Bottom);
+end;
+
+procedure BtnExitClick(Sender: PUIObject); far;
+begin
+	CloseGraph;
+	Halt(0);
+end;
+
 var
 	BtnOpen, BtnAbout, BtnExit: TButton;
 	FileName: String;
@@ -310,10 +350,33 @@ begin
 	DefaultHeapError := HeapError;
 
 	BtnOpen.Init(3, 2, SizeDefault, SizeDefault, CAP_OPEN);
+	BtnOpen.OnClick := BtnOpenClick;
+	BtnOpen.AddHotkey(KeyAltO);
 	BtnPageUp.Init(102, 2, SizeDefault, SizeDefault, CAP_PAGE_UP);
+	BtnPageUp.OnClick := PageScrollEvent;
+	BtnPageUp.AddHotkey(KeyAltU);
+	BtnPageUp.AddHotkey(KeyPageUp);
 	BtnPageDown.Init(201, 2, SizeDefault, SizeDefault, CAP_PAGE_DOWN);
+	BtnPageDown.OnClick := PageScrollEvent;
+	BtnPageDown.AddHotkey(KeyAltD);
+	BtnPageDown.AddHotkey(KeyPageDown);
 	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
+	BtnAbout.OnClick := BtnAboutClick;
+	BtnAbout.AddHotkey(KeyAltA);
 	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
+	BtnExit.OnClick := BtnExitClick;
+	BtnExit.AddHotkey(KeyAltX);
+	BtnExit.AddHotkey(KeyAltF4);
+	HkUp.Init(KeyUp);
+	HkUp.OnClick := PageScrollEvent;
+	HkDown.Init(KeyDown);
+	HkDown.OnClick := PageScrollEvent;
+	HkHome.Init(KeyHome);
+	HkHome.OnClick := PageScrollEvent;
+	HkEnd.Init(KeyEnd);
+	HkEnd.OnClick := PageScrollEvent;
+
+	{DEBUG - disable page nav buttons until a file is opened}
 
 	MouseHide;
 	MenuBar.Draw;
@@ -329,41 +392,21 @@ begin
 
 	repeat
 		Key := GetKey;
+		HotkeyPressed := Key; {DEBUG - move to event loop later}
 		
-		if BtnAbout.Clicked or (Key = KeyAltA) then
-			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
+		BtnAbout.CheckEvent;
+		BtnOpen.CheckEvent;
+		BtnExit.CheckEvent;
 
-		if BtnOpen.Clicked or (Key = KeyAltO) then
-		begin
-			FileName := FileSelect('*.TXT', '', False);
-			LoadFile(FileName);
-		end;
-		
-		if BtnExit.Clicked or (Key = KeyAltX) or (Key = KeyAltF4) then
-			break;
+		HkUp.CheckEvent;
+		HkDown.CheckEvent;
+		HkHome.CheckEvent;
+		HkEnd.CheckEvent;
 
-		if Key = KeyUp then
-			ScrollText(LineUp);
-
-		if Key = KeyDown then
-			ScrollText(LineDown);
-
-		If Key = KeyHome then
-			ScrollText(Top);
-
-		If Key = KeyEnd then
-			ScrollText(Bottom);
-
-		{Scroll buttons aren't visible if no file is opened}
 		if FileOpened then
 		begin
-			if BtnPageUp.Clicked or (Key = KeyPageUp) or (Key = KeyAltU) then
-				ScrollText(PageUp);
-
-			if BtnPageDown.Clicked or (Key = KeyPageDown) or (Key = KeyAltD) then
-				ScrollText(PageDown);
+			BtnPageUp.CheckEvent;
+			BtnPageDown.CheckEvent;
 		end;
 	until False;
-	
-	CloseGraph;
 end.

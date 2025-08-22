@@ -23,7 +23,6 @@ type
 	TList = object(TArea)
 		public
 			OnChange:      Procedure(Sender: PUIObject);
-			OnClick:       Procedure(Sender: PUIObject);
 			OnDoubleClick: Procedure(Sender: PUIObject);
 			constructor    Init(X, Y, W, H: Integer);
 			procedure      AddItem(const ItemText: string);

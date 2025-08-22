@@ -32,13 +32,24 @@ type
 	TTextboxState = (TsNormal, TsEditing);
 	TMsgBox       = (MsgInfo, MsgWarn, MsgQuest, MsgError);
 
+	PHotKeyNode = ^THotkeyNode;
+	THotkeyNode = record
+		HotKey: string; {Hotkey as returned by GetKey}
+		Next: PHotKeyNode; {Pointer to next node in linked list}
+	end;
+
 	PUIObject = ^TUIObject;
 	TUIObject = object
 		public
 			Left, Top, Width, Height: Integer;
+			OnClick: Procedure(Sender: PUIObject);
+			procedure AddHotkey(Key: string);
+			procedure CheckEvent;
+			procedure CheckHotkeys;
 			function IsMouseOver: Boolean;
 			function Clicked: Boolean;
 		private
+			Hotkey: PHotKeyNode; {Linked list of hotkeys for object, to allow multiple hotkeys}
 			procedure SetSize(X, Y, W, H, DefaultW, DefaultH: Integer);
 	end;
 
@@ -50,11 +61,11 @@ type
 	end;
 
 	TButton = object(TUIObject)
-		Caption,
-		Hotkey: string;
+		Caption: string;
 		Transparent: Boolean;
 		State: TButtonState;
 		constructor Init(X, Y, W, H: Integer; Cap: string);
+		procedure CheckEvent;
 		procedure Draw;
 		function Clicked: Boolean;
 	end;
@@ -74,6 +85,11 @@ type
 		Transparent: Boolean;
 		constructor Init(X, Y, W, H: Integer);
 		procedure Draw;
+	end;
+
+	THotkey = object(TUIObject)
+		constructor Init(Key: String);
+		procedure CheckEvent;
 	end;
 
 	TIcon = object(TUIObject)
@@ -133,6 +149,7 @@ var
 	MenuBar: TMenu;
 	Setting: TLibSetting;
 	Thm: TTheme;
+	HotkeyPressed: String; {Stores the last pressed hotkey, used in event loops}
 	MouseVisible: Boolean;
 	MouseSupport: Boolean;
 	MouseX, MouseY: Integer;
@@ -223,7 +240,71 @@ begin
 		Top := (GetMaxY - Height) div 2 
 	else
 		Top := Y;
+
+	Hotkey := nil;
 end;
+
+{Add a hotkey to an object - a linked list is used to allow multiple hotkeys}
+procedure TUIObject.AddHotkey(Key: string);
+var
+	CheckNode: PHotKeyNode;
+	NewNode: PHotKeyNode;
+begin
+	if (Length(Key) < 1) or (Length(Key) > 2) then
+		exit; {Invalid hotkey, do nothing}
+
+	New(NewNode);
+	NewNode^.HotKey := Key;
+	NewNode^.Next := Self.Hotkey;
+	Self.Hotkey := NewNode;
+end;
+
+
+{Check for events on object}
+procedure TUIObject.CheckEvent;
+var
+	CheckNode: PHotKeyNode;
+begin
+	{Check if mouse is clicked on the object}
+	if (MouseClicked = MbLeft) and Self.IsMouseOver then
+	begin
+		repeat;	until MouseClicked = MbNone;
+		{Check if mouse is still over the object after release}
+		if Self.IsMouseOver then
+		begin
+			{Trigger OnClick event, if assigned}
+			if Assigned(OnClick) then
+				OnClick(@Self);
+			exit;
+		end;
+	end;
+
+	Self.CheckHotkeys;
+end;
+
+{Check for hotkeys events assigned to the object}
+procedure TUIObject.CheckHotkeys;
+var
+	CheckNode: PHotKeyNode;
+begin
+	if (Length(HotkeyPressed) > 0) then
+	begin
+		CheckNode := Hotkey;
+		while Assigned(CheckNode) do
+		begin
+			if CheckNode^.HotKey = HotkeyPressed then
+			begin
+				HotkeyPressed := ''; {Reset hotkey}
+				{Trigger OnClick event, if assigned}
+				if Assigned(OnClick) then
+					OnClick(@Self);
+				exit;
+			end;
+			CheckNode := CheckNode^.Next; {Move to next node in linked list}
+		end;
+	end;
+end;
+
 
 {Detect mouse clicks on object}
 function TUIObject.Clicked: Boolean;
@@ -412,6 +493,60 @@ begin
 	end;
 end;
 
+procedure TButton.CheckEvent;
+var
+	CheckNode: PHotKeyNode;
+begin
+	{Check for left click, while drawing button pressed while mouse is down and over
+	 the button}
+	if (MouseClicked = MbLeft) and Self.IsMouseOver then
+	begin
+		MouseHide;
+		State := BsDown;
+		Self.Draw;
+		MouseShow;
+		repeat
+			if Self.IsMouseOver then
+			begin
+				if State = BsUp then
+				begin
+					State := BsDown;
+					MouseHide;
+					Self.Draw;
+					MouseShow;
+				end;
+			end
+			else
+			begin
+				if State = BsDown then
+				begin
+					State := BsUp;
+					MouseHide;
+					Self.Draw;
+					MouseShow;
+				end;
+			end;
+		until MouseClicked = MbNone;
+
+		if State = BsDown then
+		begin
+			State := BsUp;
+			MouseHide;
+			Self.Draw;
+			MouseShow;
+		end;
+		if Self.IsMouseOver then
+		begin
+			{Mouse was both clicked and released over the button, trigger OnClick event}
+			if Assigned(OnClick) then
+				OnClick(@Self);
+			exit;
+		end;
+	end;
+
+	Self.CheckHotkeys;
+end;
+
 constructor TCheckbox.Init(X, Y: Integer; Cap: String);
 const
 	DefaultW = 15;
@@ -503,6 +638,18 @@ begin
 	Rectangle(Left + 1, Top + 1, Left + Width - 1, Top + Height);
 	SetColor(DarkColor);
 	Rectangle(Left, Top, Left + Width - 1, Top + Height - 1);
+end;
+
+constructor THotkey.Init(Key: String);
+begin
+	Self.SetSize(0, 0, 0, 0, SizeDefault, SizeDefault);
+	Self.Hotkey := nil;
+	Self.AddHotkey(Key);
+end;
+
+procedure THotkey.CheckEvent;
+begin
+	Self.CheckHotkeys;
 end;
 
 constructor TIcon.Init(X, Y: Integer; Icon: string);
