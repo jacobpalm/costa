@@ -108,7 +108,10 @@ type
 			Caption,
 			Text: string;
 			MaxLen: Integer;
+			OnChange: Procedure(Sender: PUIObject);
 			constructor Init(X, Y, W, H: Integer; Cap: String);
+			procedure CheckEvent;
+			procedure CheckHotkeys;
 			procedure Edit;
 			procedure Draw;
 		private
@@ -262,8 +265,6 @@ end;
 
 {Check for events on object}
 procedure TUIObject.CheckEvent;
-var
-	CheckNode: PHotKeyNode;
 begin
 	{Check if mouse is clicked on the object}
 	if (MouseClicked = MbLeft) and Self.IsMouseOver then
@@ -494,8 +495,6 @@ begin
 end;
 
 procedure TButton.CheckEvent;
-var
-	CheckNode: PHotKeyNode;
 begin
 	{Check for left click, while drawing button pressed while mouse is down and over
 	 the button}
@@ -763,6 +762,48 @@ begin
 	Text := '';
 end;
 
+procedure TTextbox.CheckEvent;
+begin
+	{Check if mouse is clicked on the object}
+	if (MouseClicked = MbLeft) and Self.IsMouseOver then
+	begin
+		repeat;	until MouseClicked = MbNone;
+		{Check if mouse is still over the object after release}
+		if Self.IsMouseOver then
+		begin
+			{Trigger OnClick event, if assigned}
+			if Assigned(OnClick) then
+				OnClick(@Self);
+
+			{Allow user to edit the text}
+			Self.Edit;
+			exit;
+		end;
+	end;
+
+	Self.CheckHotkeys;
+end;
+
+procedure TTextbox.CheckHotkeys;
+var
+	CheckNode: PHotKeyNode;
+begin
+	if (Length(HotkeyPressed) > 0) then
+	begin
+		CheckNode := Hotkey;
+		while Assigned(CheckNode) do
+		begin
+			if CheckNode^.HotKey = HotkeyPressed then
+			begin
+				HotkeyPressed := ''; {Reset hotkey}
+				Self.Edit;
+				exit;
+			end;
+			CheckNode := CheckNode^.Next; {Move to next node in linked list}
+		end;
+	end;
+end;
+
 procedure TTextbox.Edit;
 var
 	OrigTxt, Key: string;
@@ -869,6 +910,10 @@ begin
 		Self.Draw;
 	MouseShow;
 	ClearInputBuffer;
+
+	If Text <> OrigTxt then
+		if Assigned(OnChange) then
+			OnChange(@Self);
 end;
 
 procedure TTextbox.Draw;

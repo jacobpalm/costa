@@ -69,7 +69,7 @@ var
 
 	{Objects used in mulitple procedures}
 	AreaColor: array[0..15] of TArea;
-	BtnObject: TButton;
+	BtnObject, BtnSave, BtnSaveAs: TButton;
 	TxtName, TxtAuthor: TTextbox;
 
 {Forward declarations}
@@ -125,6 +125,11 @@ begin
 		ThemeChanged := True;
 		UpdatePreview;
 	end;
+end;
+
+procedure SelectNextColor(Sender: PUIObject); far;
+begin
+	SelectColor(SelectedColor + 1, true);
 end;
 
 procedure UpdatePreview;
@@ -204,7 +209,11 @@ begin
 	Thm := SysTheme;
 end;
 
-procedure SelectObject;
+procedure BtnObjSelectClick(Sender: PUIObject); far;
+begin
+end;
+
+procedure SelectObject(Sender: PUIObject); far;
 var
 	WinSelectObject: TWindow;
 	BtnObjSelect: array[0..12] of TButton;
@@ -220,7 +229,10 @@ begin
 	ExitLoop := False;
 	WinSelectObject.Init(sizeCenter, sizeCenter, 226, 326);
 	for i := 0 to High(BtnObjSelect) do
+	begin
 		BtnObjSelect[I].Init(WinSelectObject.Left + 13, WinSelectObject.Top + (I * 23) + 15, 200, SizeDefault, CAP_OBJECT[i]);
+		BtnObjSelect[I].OnClick := BtnObjSelectClick;
+	end;
 
 	MouseHide;
 	X1 := WinSelectObject.Left;
@@ -236,9 +248,7 @@ begin
 	for i := 0 to High(BtnObjSelect) do
 	begin
 		if i = Ord(ActiveSelection) then
-			BtnObjSelect[i].State := BsDown
-		else
-			BtnObjSelect[i].State := BsUp;
+			BtnObjSelect[i].State := BsDown;
 		BtnObjSelect[i].Draw;
 	end;
 	MouseShow;
@@ -309,7 +319,7 @@ begin
 	end;
 end;
 
-procedure NewTheme;
+procedure NewTheme(Sender: PUIObject); far;
 var
 	DoSave: boolean;
 begin
@@ -332,7 +342,7 @@ begin
 	ThemeChanged := False;
 end;
 
-procedure LoadTheme;
+procedure LoadTheme(Sender: PUIObject); far;
 var
 	SelectedFile: string;
 	LoadName, LoadAuthor: string[20];
@@ -462,14 +472,56 @@ begin
 	RTrim := Copy(s, 1, endIdx);
 end;
 
+procedure AreaColorClick(Sender: PUIObject); far;
 var
-	BtnNew, BtnOpen, BtnSave, BtnSaveAs: TButton;
-	BtnAbout, BtnExit: TButton;
+	PAreaColor: ^TArea;
+begin
+	PAreaColor := Pointer(Sender);
+	SelectColor(PAreaColor^.BGColor, true);
+end;
+
+procedure BtnSaveClick(Sender: PUIObject); far;
+begin
+	{If sender was BtnSaveAs, true will be passed to the SaveAs parameter}
+	SaveTheme((Sender = @BtnSaveAs));
+end;
+
+procedure BtnAboutClick(Sender: PUIObject); far;
+begin
+	AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
+end;
+
+procedure BtnExitClick(Sender: PUIObject); far;
+var
+	DoSave: boolean;
+begin
+	if ThemeChanged = True then
+	begin
+		{Otherwise, ask to save}
+		DoSave := MsgBox(MSG_UNSAVED_CHANGES_TITLE, MSG_UNSAVED_CHANGES_PROMPT, MsgQuest);
+		if DoSave then
+			{User wants to save before exiting}
+			if not SaveTheme(false) then
+				{Save failed or was cancelled, do not exit - leave procedure}
+				exit;
+	end;
+
+	CloseGraph;
+	Halt(0);
+end;
+
+procedure TextboxChange(Sender: PUIObject); far;
+begin
+	ThemeChanged := True;
+end;
+
+var
+	BtnNew, BtnOpen, BtnAbout, BtnExit: TButton;
+	HkNextColor: THotkey;
 
 	i, YPos, XPos: integer;
 	OriginalText: string[20];
 	Key: string;
-	DoSave: boolean;
 begin
 	MouseHide;
 	MenuBar.Draw;
@@ -477,14 +529,35 @@ begin
 	Bar(0, 29, 639, 349);
 
 	BtnNew.Init(2, 2, SizeDefault, SizeDefault, CAP_NEW);
+	BtnNew.AddHotKey(KeyAltN);
+	BtnNew.OnClick := NewTheme;
 	BtnOpen.Init(101, 2, SizeDefault, SizeDefault, CAP_OPEN);
+	BtnOpen.AddHotKey(KeyAltO);
+	BtnOpen.OnClick := LoadTheme;
 	BtnSave.Init(200, 2, SizeDefault, SizeDefault, CAP_SAVE);
+	BtnSave.AddHotKey(KeyAltS);
+	BtnSave.OnClick := BtnSaveClick;
 	BtnSaveAs.Init(299, 2, SizeDefault, SizeDefault, CAP_SAVE_AS);
+	BtnSaveAs.AddHotKey(KeyAltV);
+	BtnSaveAs.OnClick := BtnSaveClick;
 	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
+	BtnAbout.AddHotkey(KeyAltA);
+	BtnAbout.OnClick := BtnAboutClick;
 	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
+	BtnExit.AddHotkey(KeyAltX);
+	BtnExit.AddHotkey(KeyEscape);
+	BtnExit.OnClick := BtnExitClick;
 	TxtName.Init(434, 59, 194, SizeDefault, CAP_NAME);
+	TxtName.AddHotkey(KeyAltM);
+	TxtName.OnChange := TextboxChange;
 	TxtAuthor.Init(434, TxtName.Top + 48, 194, SizeDefault, CAP_AUTHOR);
+	TxtAuthor.AddHotkey(KeyAltU);
+	TxtAuthor.OnChange := TextboxChange;
 	BtnObject.Init(434, TxtAuthor.Top + 48, 194, SizeDefault, CAP_OBJECT[0]);
+	BtnObject.AddHotkey(KeyAltB);
+	BtnObject.OnClick := SelectObject;
+	HkNextColor.Init(KeyAltC);
+	HkNextColor.OnClick := SelectNextColor;
 
 	TxtName.MaxLen := 20;
 	TxtAuthor.MaxLen := 20;
@@ -500,6 +573,7 @@ begin
 		end;
 		AreaColor[i].Init(TxtAuthor.Left + XPos, TxtAuthor.Top + 98 + YPos, 19, 19);
 		AreaColor[i].BGColor := i;
+		AreaColor[i].OnClick := AreaColorClick;
 		Inc(XPos, 25);
 	end;
 
@@ -521,68 +595,23 @@ begin
 	
 	{Save system theme}
 	SysTheme := Thm;
-	NewTheme;
+	NewTheme(nil);
 
 	repeat
 		Key := GetKey;
+		HotkeyPressed := Key; {DEBUG - move to event loop later}
 
 		for i := 0 to 15 do
-			if AreaColor[i].Clicked then
-				SelectColor(i, true);
-
-		if Key = KeyAltC then
-			SelectColor(SelectedColor + 1, true);
-
-		if BtnNew.Clicked or (Key = KeyAltN) then
-			NewTheme;
-
-		if BtnOpen.Clicked or (Key = KeyAltO) then
-			LoadTheme;
-		
-		if BtnSave.Clicked or (Key = KeyAltS) then
-			SaveTheme(false);
-
-		if BtnSaveAs.Clicked or (Key = KeyAltV) then
-			SaveTheme(true);
-
-		if BtnObject.Clicked or (Key = KeyAltB) then
-			SelectObject;
-
-		if TxtName.Clicked or (Key = KeyAltM) then
-		begin
-			OriginalText := TxtName.Text;
-			TxtName.Edit;
-			if not (TxtName.Text = OriginalText) then
-				ThemeChanged := True;
-		end;
-
-		if TxtAuthor.Clicked or (Key = KeyAltU) then
-		begin
-			OriginalText := TxtAuthor.Text;
-			TxtAuthor.Edit;
-			if not (TxtAuthor.Text = OriginalText) then
-				ThemeChanged := True;
-		end;
-
-		if BtnAbout.Clicked or (Key = KeyAltA) then
-			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
-
-		if BtnExit.Clicked or (Key = KeyAltX) or (Key = KeyEscape) then
-		begin
-			{No changes, just exit}
-			if ThemeChanged = False then
-				break;
-
-			{Otherwise, ask to save}
-			DoSave := MsgBox(MSG_UNSAVED_CHANGES_TITLE, MSG_UNSAVED_CHANGES_PROMPT, MsgQuest);
-			if not DoSave then
-				break;
-			
-			{User wants to save, do so and exit if successful}
-			if SaveTheme(false) then
-				break;
-		end;
-					
+			AreaColor[i].CheckEvent;
+		BtnNew.CheckEvent;
+		BtnOpen.CheckEvent;
+		BtnSave.CheckEvent;
+		BtnSaveAs.CheckEvent;
+		BtnObject.CheckEvent;
+		TxtName.CheckEvent;
+		TxtAuthor.CheckEvent;
+		BtnAbout.CheckEvent;
+		BtnExit.CheckEvent;
+		HkNextColor.CheckEvent;
 	until false;
-	CloseGraph;
 end.
