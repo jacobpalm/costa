@@ -30,7 +30,8 @@ const
 	                       'Tweak various aspects of Costa.';
 	CAP_THEMES           = 'Theme' + #13 +
 	                       'Choose colors for the UI.';
-
+	CAP_LOADING          = 'Loading...';
+	
 	MSG_NO_THEMES        = 'No themes found in \THEMES.';
 	MSG_LOAD_ERROR_TITLE = 'Error loading';
 	MSG_LOAD_ERROR_TEXT  = 'The theme file %s.BIN could not be loaded.' + #13 +
@@ -63,7 +64,13 @@ var
     FName: NameStr;
     FExt: ExtStr;
     ExpectedSize: integer;
+	BtnLoading: TButton;
 begin
+	MouseHide;
+	BtnLoading.Init(sizeCenter, sizeCenter, 110, 34, CAP_LOADING);
+	BtnLoading.Draw;
+	MouseShow;
+
     ThemeCount := 0;
     ExpectedSize := SizeOf(TTheme) + SizeOf(ThemeAuthor) + SizeOf(ThemeName);
 

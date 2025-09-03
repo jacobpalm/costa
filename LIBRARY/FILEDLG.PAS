@@ -3,7 +3,7 @@ unit FileDlg;
 interface
 
 uses
-	Costalib, UIList;
+	Costalib, UIWindow, UIButton, UITxtbox, UIList, UIIcon;
 
 function FileSelect(DefaultPattern, StartPath: string; IconSelect: boolean): string;
 
@@ -28,15 +28,24 @@ const
 	CAP_CANCEL      = #127 + 'Cancel';
 
 var
-	List:          array[-1..0] of TList;
-	ActiveList:    Integer;
+	WinFileSelect: TWindow;
+	TxtDrive, TxtPattern: TTextbox;
+	BtnSelect, BtnCancel: TButton;
+	BtnFilePrev, BtnFileNext: TButton;
+	BtnDirPrev, BtnDirNext: TButton;
+	HkUp, HkDown, HkPageUp, HkPageDown, HkHome, HkEnd, HkTab: THotkey;
+	
+	List:           array[-1..0] of TList;
+	ActiveList:     Integer;
 
-	PreviewShown:  boolean;
-	ImgPreview:    TIcon;
+	PreviewShown:   boolean;
+	ImgPreview:     TIcon;
 
-	Path, Pattern: String;
-	Drive:         String[1];
-	ReturnedFile:  String;
+	Path, Pattern:  String;
+	Drive:          String[1];
+	ReturnedFile:   String;
+
+	FileSelectDone: Boolean;
 
 procedure GetChildFiles(Path: String; FilePattern: String);
 var
@@ -200,20 +209,81 @@ begin
 			if (Path[Length(Path)] <> '\') then
 				Path := Path + '\';
 			ReturnedFile := Path + SelectedItemName;
+			FileSelectDone := True;
 		end
 		else
 			SetDir(SelectedItemName);
 	end;
 end;
 
+procedure BtnCancelClick(Sender: PUIObject); far;
+begin
+	FileSelectDone := True;
+end;
+
+procedure BtnDirectionClick(Sender: PUIObject); far;
+begin
+	{Activate the list to which the button belongs}
+	if (Sender = @BtnFilePrev) or (Sender = @BtnFileNext) then
+		SetActiveList(FileList)
+	else
+		SetActiveList(DirList);
+
+	{Scroll the active list in the appropriate direction}
+	if (Sender = @BtnFilePrev) or (Sender = @BtnDirPrev) then
+		List[ActiveList].MoveSelection(PageUp)
+	else
+		List[ActiveList].MoveSelection(PageDown);
+end;
+
+procedure TxtDriveChange(Sender: PUIObject); far;
+begin
+	if not SetDrive(TxtDrive.Text[1]) then
+	begin
+		TxtDrive.Text := Drive; {Restore original drive letter}
+		MouseHide;
+		TxtDrive.Draw;
+		MouseShow;
+	end;
+end;
+
+procedure TxtPatternChange(Sender: PUIObject); far;
+begin
+	Pattern := TxtPattern.Text;
+	GetChildFiles(Path, Pattern);
+	List[FileList].Draw;
+	DrawPreview(nil);
+end;
+
+Procedure HkDirectionPress(Sender: PUIObject); far;
+begin
+
+	if Sender = @HkUp then
+		List[ActiveList].MoveSelection(Up);
+
+	if Sender = @HkDown then
+		List[ActiveList].MoveSelection(Down);
+
+	if Sender = @HkHome then
+		List[ActiveList].MoveSelection(First);
+
+	if Sender = @HkEnd then
+		List[ActiveList].MoveSelection(Last);
+
+	if Sender = @HkPageUp then
+		List[ActiveList].MoveSelection(PageUp);
+
+	if Sender = @HkPageDown then
+		List[ActiveList].MoveSelection(PageDown);
+end;
+
+procedure HkTabPress(Sender: PUIObject); far;
+begin
+	SetActiveList(not ActiveList);
+end;
 
 function FileSelect(DefaultPattern, StartPath: string; IconSelect: boolean): string;
 var
-	WinFileSelect: TWindow;
-	TxtDrive, TxtPattern: TTextbox;
-	BtnSelect, BtnCancel: TButton;
-	BtnFilePrev, BtnFileNext: TButton;
-	BtnDirPrev, BtnDirNext: TButton;
 	OriginalPath: string;
 	I: Integer;
 	X1, Y1, X2, Y2: Integer;
@@ -221,27 +291,61 @@ var
 	BackgroundP: Pointer;
 	Key: string;
 begin
+	FileSelectDone := False;
+	ReturnedFile := '';
+	PreviewShown := false;
+
 	WinFileSelect.Init(sizeCenter, sizeCenter, 468, 270);
 	TxtPattern.Init(101, WinFileSelect.Top + 28, 150, SizeDefault, CAP_PATTERN);
-	TxtDrive.Init(272, WinFileSelect.Top + 28, 150, SizeDefault, CAP_DRIVE);
 	TxtPattern.Init(101, WinFileSelect.Top + 28, 150, SizeDefault, CAP_PATTERN);
+	TxtPattern.AddHotkey(KeyAltP);
+	TxtPattern.OnChange := TxtPatternChange;
+	TxtPattern.MaxLen := 12; {8.3 including the dot}
 	TxtDrive.Init(272, WinFileSelect.Top + 28, 150, SizeDefault, CAP_DRIVE);
+	TxtDrive.AddHotkey(KeyAltR);
+	TxtDrive.OnChange := TxtDriveChange;
+	TxtDrive.MaxLen := 1;
 	List[FileList].Init(101, WinFileSelect.Top + 71, 150, 185);
-	List[DirList].Init(272, WinFileSelect.Top + 71, 150, 185);
+	List[FileList].AddHotkey(KeyAltF);
 	List[FileList].OnChange := DrawPreview;
 	List[FileList].OnClick := ListClicked;
 	List[FileList].OnDoubleClick := ListDblClicked;
+	List[DirList].Init(272, WinFileSelect.Top + 71, 150, 185);
+	List[DirList].AddHotkey(KeyAltD);
 	List[DirList].OnClick := ListClicked;
 	List[DirList].OnDoubleClick := ListDblClicked;
 	BtnSelect.Init(448, WinFileSelect.Top + 28, SizeDefault, SizeDefault, CAP_SELECT);
+	BtnSelect.AddHotkey(KeyAltS);
+	BtnSelect.AddHotkey(KeyEnter);
+	BtnSelect.OnClick := ListDblClicked;
 	BtnCancel.Init(448, WinFileSelect.Top + 58, SizeDefault, SizeDefault, CAP_CANCEL);
+	BtnCancel.AddHotkey(KeyAltC);
+	BtnCancel.AddHotkey(KeyEscape);
+	BtnCancel.OnClick := BtnCancelClick;
 	BtnFilePrev.Init(253, List[FileList].Top, 14, 91, CharArrowUp);
+	BtnFilePrev.OnClick := BtnDirectionClick;
 	BtnFileNext.Init(253, List[FileList].Top + 94, 14, 91, CharArrowDown);
+	BtnFileNext.OnClick := BtnDirectionClick;
 	BtnDirPrev.Init(424, List[DirList].Top, 14, 91, CharArrowUp);
+	BtnDirPrev.OnClick := BtnDirectionClick;
 	BtnDirNext.Init(424, List[DirList].Top + 94, 14, 91, CharArrowDown);
-	TxtDrive.MaxLen := 1;
-	TxtPattern.MaxLen := 12; {8.3 including the dot}
+	BtnDirNext.OnClick := BtnDirectionClick;
 	ImgPreview.Init(BtnCancel.Left + 30, BtnCancel.Top + 50, '');
+	HkUp.Init(KeyUp);
+	HkUp.OnClick := HkDirectionPress;
+	HkDown.Init(KeyDown);
+	HkDown.OnClick := HkDirectionPress;
+	HkPageUp.Init(KeyPageUp);
+	HkPageUp.OnClick := HkDirectionPress;
+	HkPageDown.Init(KeyPageDown);
+	HkPageDown.OnClick := HkDirectionPress;
+	HkHome.Init(KeyHome);
+	HkHome.OnClick := HkDirectionPress;
+	HkEnd.Init(KeyEnd);
+	HkEnd.OnClick := HkDirectionPress;
+	HkTab.Init(KeyTab);
+	HkTab.AddHotkey(KeyShiftTab);
+	HkTab.OnClick := HkTabPress;
 	
 	GetDir(0, OriginalPath); {Save to restore later}
 	Path := OriginalPath;
@@ -251,6 +355,7 @@ begin
 	TxtDrive.Text := Drive;
 	TxtPattern.Text := DefaultPattern;
 	ActiveList := FileList;
+	List[FileList].SetState(LsActive);
 	ReturnedFile := '';
 
 	MouseHide;
@@ -287,106 +392,32 @@ begin
 
 	repeat
 		Key := GetKey;
+		HotkeyPressed := Key; {DEBUG - move to event loop later}
 
 		List[FileList].CheckEvent;
 		List[DirList].CheckEvent;
+		BtnSelect.CheckEvent;
+		BtnCancel.CheckEvent;
+		BtnFilePrev.CheckEvent;
+		BtnFileNext.CheckEvent;
+		BtnDirPrev.CheckEvent;
+		BtnDirNext.CheckEvent;
+		TxtPattern.CheckEvent;
+		TxtDrive.CheckEvent;
 
-		{The list double click event will handle selection, and place a filename in
-		 ReturnedFile if a file was selected}
-		if Length(ReturnedFile) > 0 then
-		begin
-			FileSelect := ReturnedFile;
-			break;
-		end;
+		HkUp.CheckEvent;
+		HkDown.CheckEvent;
+		HkPageUp.CheckEvent;
+		HkPageDown.CheckEvent;
+		HkHome.CheckEvent;
+		HkEnd.CheckEvent;
+		HkTab.CheckEvent;
 
-		if BtnSelect.Clicked or (Key = KeyAltS) or (Key = KeyEnter) then
-			ListDblClicked(nil);
+	until FileSelectDone;
 
-		if BtnCancel.Clicked or (Key = KeyAltC) or (Key = KeyEscape) then
-		begin
-			FileSelect := '';
-			Break;
-		end;
-
-		if TxtDrive.Clicked or (Key = KeyAltR) then
-		begin
-			TxtDrive.Edit;
-			if TxtDrive.Text <> Drive Then
-			begin
-				if not SetDrive(TxtDrive.Text[1]) then
-				begin
-					TxtDrive.Text := Drive; {Restore original drive letter}
-					MouseHide;
-					TxtDrive.Draw;
-					MouseShow;
-				end;
-			end;
-		end;
-
-		if BtnFilePrev.Clicked then
-		begin
-			SetActiveList(FileList);
-			Key := KeyPageUp; {Simulate key press for moving selection up}
-		end;
-
-		if BtnFileNext.Clicked then
-		begin
-			SetActiveList(FileList);
-			Key := KeyPageDown; {Simulate key press for moving selection down}
-		end;
-
-		if BtnDirPrev.Clicked then
-		begin
-			SetActiveList(DirList);
-			Key := KeyPageUp; {Simulate key press for moving view up}
-		end;
-
-		if BtnDirNext.Clicked then
-		begin
-			SetActiveList(DirList);
-			Key := KeyPageDown; {Simulate key press for moving view down}
-		end;
-
-		if Key = KeyUp then
-			List[ActiveList].MoveSelection(Up);
-
-		if Key = KeyDown then
-			List[ActiveList].MoveSelection(Down);
-
-		if Key = KeyHome then
-			List[ActiveList].MoveSelection(First);
-
-		if Key = KeyEnd then
-			List[ActiveList].MoveSelection(Last);
-
-		if Key = KeyPageUp then
-			List[ActiveList].MoveSelection(PageUp);
-
-		if Key = KeyPageDown then
-			List[ActiveList].MoveSelection(PageDown);
-
-		if (Key = KeyAltF) then
-			SetActiveList(FileList);
-
-		if (Key = KeyAltD) then
-			SetActiveList(DirList);
-
-		if (Key = KeyTab) or (Key = KeyShiftTab) then
-			SetActiveList(not ActiveList);
-
-		if TxtPattern.Clicked or (Key = KeyAltP) then
-		begin
-			TxtPattern.Edit;
-			if TxtPattern.Text <> Pattern then
-			begin
-				Pattern := TxtPattern.Text;
-				GetChildFiles(Path, Pattern);
-				List[FileList].Draw;
-				DrawPreview(nil);
-			end;
-		end;
-
-	until False;
+	FileSelect := ReturnedFile;
+	
+	{Restore background}
 	MouseHide;
 	PutImage(X1, Y1, BackgroundP^, NormalPut);
 	FreeMem(BackgroundP, BackgroundSize);

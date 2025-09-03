@@ -4,7 +4,7 @@ unit UIList;
 interface
 
 uses
-	Costalib, Graph;
+	Costalib, UIArea, Graph;
 
 const
 	MaxVisibleItems = 15;
@@ -93,7 +93,11 @@ var
 begin
 	MousePoll;
 	if (MouseClicked = MbNone) or (not Self.IsMouseOver) then
-		exit; {No mouse click, nothing to do}
+	begin
+		{No mouse click or click outside the object, check for hotkeys only}
+		Self.CheckHotkeys;
+		exit;
+	end;
 
 	{Make clicked coordinates relative to the list area}
 	ClickedX := MouseX - Left;

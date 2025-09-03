@@ -1,7 +1,7 @@
 program Textview;
 
 uses
-	Costalib, FileDlg, Strings, Graph, Crt;
+	Costalib, UIButton, UITxtbox, MsgDlg, AboutDlg, FileDlg, Strings, Graph, Crt;
 
 const
 	AppName              = 'Text Viewer';
@@ -18,6 +18,7 @@ const
 	CAP_PAGE_DOWN        = 'Page ' + #127 + 'down';
 	CAP_ABOUT            = #127 + 'About...';
 	CAP_EXIT             = 'E' + #127 + 'xit';
+	CAP_LOADING          = 'Loading...';
 
 	MSG_OPEN_ERROR_TITLE = 'Error opening file';
 	MSG_FILE_NOT_FOUND   = 'File not found: ' + #13;
@@ -43,7 +44,7 @@ var
 
 	DefaultHeapError: Pointer; {We'll be taking care of heap errors ourselves}
 
-	BtnPageUp, BtnPageDown: TButton;
+	BtnOpen, BtnPageUp, BtnPageDown, BtnAbout, BtnExit: TButton;
 	HkUp, HkDown, HkHome, HkEnd: THotkey;
 
 procedure DrawText; forward;
@@ -65,6 +66,16 @@ begin
 	MouseShow;
 	MsgBox(MSG_OPEN_ERROR_TITLE, MSG_MEMORY_TEXT, MsgError);
 	CustomHeapError := 1; {Make GetMem return a nil pointer}
+end;
+
+procedure ShowLoading;
+var
+	BtnLoading: TButton;
+begin
+	MouseHide;
+	BtnLoading.Init(sizeCenter, sizeCenter, 110, 34, CAP_LOADING);
+	BtnLoading.Draw;
+	MouseShow;
 end;
 
 function InitLines(InitialSize: Integer): Boolean;
@@ -341,14 +352,8 @@ begin
 	Halt(0);
 end;
 
-var
-	BtnOpen, BtnAbout, BtnExit: TButton;
-	FileName: String;
-	Key: String;
+procedure UIInit;
 begin
-	{Store default heap error handler for later restoration}
-	DefaultHeapError := HeapError;
-
 	BtnOpen.Init(3, 2, SizeDefault, SizeDefault, CAP_OPEN);
 	BtnOpen.OnClick := BtnOpenClick;
 	BtnOpen.AddHotkey(KeyAltO);
@@ -375,6 +380,16 @@ begin
 	HkHome.OnClick := PageScrollEvent;
 	HkEnd.Init(KeyEnd);
 	HkEnd.OnClick := PageScrollEvent;
+end;
+
+var
+	FileName: String;
+	Key: String;
+begin
+	{Store default heap error handler for later restoration}
+	DefaultHeapError := HeapError;
+
+	UIInit;
 
 	{DEBUG - disable page nav buttons until a file is opened}
 

@@ -1,4 +1,10 @@
-@echo off
-tpc -m library\costalib.pas -E. -ULIBRARY -ILIBRARY -OLIBRARY
-tpc -m library\filedlg.pas -E. -ULIBRARY -ILIBRARY -OLIBRARY
-tpc -m library\inputdlg.pas -E. -ULIBRARY -ILIBRARY -OLIBRARY
+@ECHO OFF
+
+REM Build base library
+C:\TP\BIN\TPC -B -$D- -$E- -$L- LIBRARY\COSTALIB.PAS -ULIBRARY -ILIBRARY -OLIBRARY -E.
+
+REM Build object units
+FOR %%F IN (LIBRARY\UI*.PAS) DO C:\TP\BIN\TPC -$D- -$E- -$L- %%F -ULIBRARY -ILIBRARY -OLIBRARY -E.
+
+REM Build dialog units
+FOR %%F IN (LIBRARY\*DLG.PAS) DO C:\TP\BIN\TPC -$D- -$E- -$L- %%F -ULIBRARY -ILIBRARY -OLIBRARY -E.

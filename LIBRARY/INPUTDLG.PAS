@@ -4,7 +4,7 @@ unit InputDlg;
 interface
 
 uses
-	Costalib, Strings, Graph, Crt;
+	Costalib, UIWindow, UIIcon, UIButton, UITxtbox, Strings, Graph, Crt;
 
 function InputBox(MsgTitle, MsgText, MsgIcon, MsgDefault: string): string;
 
@@ -15,18 +15,36 @@ const
 	CAP_CANCEL = #127 + 'Cancel';
 	CAP_INPUT  = 'I' + #127 + 'nput:';
 
-function InputBox(MsgTitle, MsgText, MsgIcon, MsgDefault: string): string;
 var
 	WinInputBox: TWindow;
 	TxtInput: TTextbox;
 	BtnOK, BtnCancel: TButton;
 	ImgIcon: TIcon;
+
+	ReturnValue: string;
+	InputBoxDone: Boolean;
+
+procedure BtnOkClick(Sender: PUIObject); far;
+begin
+	ReturnValue := TxtInput.Text;
+	InputBoxDone := True;
+end;
+
+procedure BtnCancelClick(Sender: PUIObject); far;
+begin
+	InputBoxDone := True;
+end;
+
+function InputBox(MsgTitle, MsgText, MsgIcon, MsgDefault: string): string;
+var
 	BoxW, BoxH: Integer;
 	X1, Y1, X2, Y2: Integer;
 	BackgroundSize: Word;
 	BackgroundP: Pointer;
 	Key: String;
 begin
+	InputBoxDone := False;
+	ReturnValue := '';
 	BoxW := PrintW(MsgText) + 76;
 	BoxH := PrintH(MsgText) + 120;
 	if BoxW < 194 then
@@ -39,9 +57,16 @@ begin
 
 	ImgIcon.Init(X1 + 13, Y1 + 15, MsgIcon);
 	BtnOK.Init(X2 - 207, Y2 - 36, SizeDefault, SizeDefault, CAP_OK);
+	BtnOK.AddHotkey(KeyAltO);
+	BtnOK.AddHotkey(KeyEnter);
+	BtnOK.OnClick := BtnOKClick;
 	BtnCancel.Init(X2 - 105, BtnOK.Top, SizeDefault, SizeDefault, CAP_CANCEL);
+	BtnCancel.AddHotkey(KeyAltC);
+	BtnCancel.AddHotkey(KeyEscape);
+	BtnCancel.OnClick := BtnCancelClick;
 	TxtInput.Init(X1 + 12, BtnOK.Top - 27, WinInputBox.Width - 25, SizeDefault, CAP_INPUT);
 	TxtInput.Text := MsgDefault;
+	TxtInput.AddHotkey(KeyAltN);
 
 	MouseHide;
 	BackgroundSize := ImageSize(X1, Y1, X2, Y2);
@@ -60,23 +85,14 @@ begin
 
 	repeat
 		Key := GetKey;
+		HotkeyPressed := Key; {DEBUG - move to event loop later}
 
-		if BtnOK.Clicked or (Key = KeyAltO) or (Key = KeyEnter) then
-		begin
-			InputBox := TxtInput.Text;
-			Break;
-		end;
+		BtnOK.CheckEvent;
+		BtnCancel.CheckEvent;
+		TxtInput.CheckEvent;
+	until InputboxDone;
 
-		if BtnCancel.Clicked or (Key = KeyAltC) or (Key = KeyEscape) then
-		begin
-			InputBox := '';
-			Break;
-		end;
-
-		if TxtInput.Clicked or (Key = KeyAltN) then
-			TxtInput.Edit;
-
-	until False;
+	InputBox := ReturnValue;
 
 	ClearInputBuffer;
 	MouseHide;
