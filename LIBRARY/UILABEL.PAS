@@ -9,7 +9,7 @@ type
 	TLabel = object(TUIObject)
 		Caption: String;
 		constructor Init(X, Y, W, H: Integer; Cap: String);
-		procedure Draw;
+		procedure Draw; virtual;
 	end;
 
 implementation

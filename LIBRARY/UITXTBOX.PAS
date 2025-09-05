@@ -13,12 +13,12 @@ type
 			Caption,
 			Text: string;
 			MaxLen: Integer;
-			OnChange: Procedure(Sender: PUIObject);
+			OnChange: TEventProc;
 			constructor Init(X, Y, W, H: Integer; Cap: String);
-			procedure CheckEvent;
-			procedure CheckHotkeys;
+			procedure CheckEvent; virtual;
+			procedure CheckHotkeys; virtual;
 			procedure Edit;
-			procedure Draw;
+			procedure Draw; virtual;
 		private
 			State: TTextboxState;
 	end;

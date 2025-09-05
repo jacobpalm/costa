@@ -10,7 +10,7 @@ type
 		Caption: string;
 		Checked: Boolean;
 		constructor Init(X, Y: Integer; Cap: String);
-		procedure Draw;
+		procedure Draw; virtual;
 		procedure Toggle;
 	end;
 

@@ -10,7 +10,7 @@ type
 		Transparent: Boolean;
 		BGColor: Integer;
 		constructor Init(X, Y, W, H: Integer);
-		procedure Draw;
+		procedure Draw; virtual;
 	end;
 
 implementation

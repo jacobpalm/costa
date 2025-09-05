@@ -9,12 +9,16 @@ type
 	TButtonState  = (BsUp, BsDown);
 	
 	TButton = object(TUIObject)
-		Caption: string;
-		Transparent: Boolean;
-		State: TButtonState;
-		constructor Init(X, Y, W, H: Integer; Cap: string);
-		procedure CheckEvent;
-		procedure Draw;
+		public
+			Enabled,
+			Transparent: Boolean;
+			State: TButtonState;
+			constructor Init(X, Y, W, H: Integer; Cap: string);
+			procedure CheckEvent; virtual;
+			procedure Draw; virtual;
+			procedure SetCaption(Cap: string);
+		private
+			Caption: string;
 	end;
 
 implementation
@@ -24,10 +28,11 @@ const
 	DefaultW = 92;
 	DefaultH = 22;
 begin
-	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
-	Self.Caption := Cap;
-	Self.State := BsUp;
-	Self.Transparent := False;
+	SetSize(X, Y, W, H, DefaultW, DefaultH);
+	Caption := Cap;
+	State := BsUp;
+	Enabled := True;
+	Transparent := False;
 end;
 
 procedure TButton.Draw;
@@ -145,6 +150,11 @@ begin
 	end;
 
 	Self.CheckHotkeys;
+end;
+
+procedure TButton.SetCaption(Cap: string);
+begin
+	Caption := Cap;
 end;
 
 end.

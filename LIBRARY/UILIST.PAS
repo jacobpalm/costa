@@ -22,15 +22,15 @@ type
 	
 	TList = object(TArea)
 		public
-			OnChange:      Procedure(Sender: PUIObject);
-			OnDoubleClick: Procedure(Sender: PUIObject);
+			OnChange:      TEventProc;
+			OnDoubleClick: TEventProc;
 			constructor    Init(X, Y, W, H: Integer);
 			procedure      AddItem(const ItemText: string);
-			procedure      CheckEvent;
+			procedure      CheckEvent; virtual;
 			procedure      ClearItems;
 			function       GetItem(Index: integer): string;
 			function       GetSelectedItem: string;
-			procedure      Draw;
+			procedure      Draw; virtual;
 			procedure      MoveSelection(Direction: TListDirection);
 			procedure      SetState(State: TListState);
 		private

@@ -9,7 +9,7 @@ type
 	TIcon = object(TUIObject)
 		IconFile: string[8];
 		constructor Init(X, Y: Integer; Icon: string);
-		procedure Draw;
+		procedure Draw; virtual;
 	end;
 
 implementation

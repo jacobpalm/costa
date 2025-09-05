@@ -8,7 +8,7 @@ uses
 type
 	TWindow = object(TUIObject)
 		constructor Init(X, Y, W, H: Integer);
-		procedure Draw;
+		procedure Draw; virtual;
 	end;
 
 implementation

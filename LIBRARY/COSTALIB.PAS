@@ -36,27 +36,31 @@ type
 	end;
 
 	PUIObject = ^TUIObject;
+	TEventProc = procedure(Sender: PUIObject);
+
 	TUIObject = object
 		public
 			Left, Top, Width, Height: Integer;
-			OnClick: Procedure(Sender: PUIObject);
+			OnClick,
+			OnDraw: TEventProc;
 			Hotkey: PHotKeyNode; {Linked list of hotkeys for object, to allow multiple hotkeys}
 			constructor Init;
 			procedure AddHotkey(Key: string);
-			procedure CheckEvent;
+			procedure CheckEvent; virtual;
 			procedure CheckHotkeys;
+			Procedure Draw; virtual;
 			function IsMouseOver: Boolean;
 			procedure SetSize(X, Y, W, H, DefaultW, DefaultH: Integer);
 	end;
 
 	THotkey = object(TUIObject)
 		constructor Init(Key: String);
-		procedure CheckEvent;
+		procedure CheckEvent; virtual;
 	end;
 
 	TMenu = object(TUIObject)
 		constructor Init;
-		procedure Draw;
+		procedure Draw; virtual;
 	end;
 
 	TLibSetting = record
@@ -227,6 +231,13 @@ begin
 			CheckNode := CheckNode^.Next; {Move to next node in linked list}
 		end;
 	end;
+end;
+
+{Dummy draw procedure - overridden in descendandt objects}
+procedure TUIObject.Draw;
+begin
+	if Assigned(OnDraw) then
+		OnDraw(@Self);
 end;
 
 {Check if mouse is over the object}
