@@ -88,7 +88,7 @@ begin
 	end;
 end;
 
-procedure DrawPreview(Sender: PUIObject); far;
+procedure DrawPreview(Sender: PBaseObject); far;
 var
 	SelectedFile: String;
 	FDir: DirStr;
@@ -101,10 +101,7 @@ begin
 		FSplit(SelectedFile, FDir, FName, FExt);
 		if (Length(FName) <> 0) and (FExt = '.BIN') then
 		begin
-			MouseHide;
-			ImgPreview.IconFile := FName;
-			ImgPreview.Draw;
-			MouseShow;
+			ImgPreview.SetIcon(FName);
 			PreviewShown := true;
 			exit;
 		end;
@@ -172,7 +169,7 @@ begin
 	ActiveList := TargetList;
 end;
 
-procedure ListClicked(Sender: PUIObject); far;
+procedure ListClicked(Sender: PBaseObject); far;
 var
 	ClickedList: Integer;
 begin
@@ -186,7 +183,7 @@ begin
 		SetActiveList(ClickedList);
 end;
 
-procedure ListDblClicked(Sender: PUIObject); far;
+procedure ListDblClicked(Sender: PBaseObject); far;
 var
 	TargetList: Integer;
 	SelectedItemName: String[MaxNameLength];
@@ -216,12 +213,12 @@ begin
 	end;
 end;
 
-procedure BtnCancelClick(Sender: PUIObject); far;
+procedure BtnCancelClick(Sender: PBaseObject); far;
 begin
 	FileSelectDone := True;
 end;
 
-procedure BtnDirectionClick(Sender: PUIObject); far;
+procedure BtnDirectionClick(Sender: PBaseObject); far;
 begin
 	{Activate the list to which the button belongs}
 	if (Sender = @BtnFilePrev) or (Sender = @BtnFileNext) then
@@ -236,7 +233,7 @@ begin
 		List[ActiveList].MoveSelection(PageDown);
 end;
 
-procedure TxtDriveChange(Sender: PUIObject); far;
+procedure TxtDriveChange(Sender: PBaseObject); far;
 begin
 	if not SetDrive(TxtDrive.Text[1]) then
 	begin
@@ -247,7 +244,7 @@ begin
 	end;
 end;
 
-procedure TxtPatternChange(Sender: PUIObject); far;
+procedure TxtPatternChange(Sender: PBaseObject); far;
 begin
 	Pattern := TxtPattern.Text;
 	GetChildFiles(Path, Pattern);
@@ -255,7 +252,7 @@ begin
 	DrawPreview(nil);
 end;
 
-Procedure HkDirectionPress(Sender: PUIObject); far;
+Procedure HkDirectionPress(Sender: PBaseObject); far;
 begin
 
 	if Sender = @HkUp then
@@ -277,7 +274,7 @@ begin
 		List[ActiveList].MoveSelection(PageDown);
 end;
 
-procedure HkTabPress(Sender: PUIObject); far;
+procedure HkTabPress(Sender: PBaseObject); far;
 begin
 	SetActiveList(not ActiveList);
 end;

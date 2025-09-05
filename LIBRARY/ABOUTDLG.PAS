@@ -30,7 +30,7 @@ var
 
 	AboutBoxDone: Boolean;
 
-procedure AboutBoxClose(Sender: PUIObject); far;
+procedure AboutBoxClose(Sender: PBaseObject); far;
 begin
 	AboutBoxDone := True;
 end;

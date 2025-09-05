@@ -313,12 +313,12 @@ begin
 		DrawText;
 end;
 
-procedure BtnAboutClick(Sender: PUIObject); far;
+procedure BtnAboutClick(Sender: PBaseObject); far;
 begin
 	AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 end;
 
-procedure BtnOpenClick(Sender: PUIObject); far;
+procedure BtnOpenClick(Sender: PBaseObject); far;
 var
 	FileName: String;
 begin
@@ -327,7 +327,7 @@ begin
 		LoadFile(FileName);
 end;
 
-procedure PageScrollEvent(Sender: PUIObject); far;
+procedure PageScrollEvent(Sender: PBaseObject); far;
 begin
 	if not FileOpened then
 		Exit;
@@ -346,7 +346,7 @@ begin
 		ScrollText(Bottom);
 end;
 
-procedure BtnExitClick(Sender: PUIObject); far;
+procedure BtnExitClick(Sender: PBaseObject); far;
 begin
 	CloseGraph;
 	Halt(0);

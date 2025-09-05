@@ -145,7 +145,7 @@ begin
 	end;
 end;
 
-procedure SelectNextColor(Sender: PUIObject); far;
+procedure SelectNextColor(Sender: PBaseObject); far;
 begin
 	SelectColor(SelectedColor + 1, true);
 end;
@@ -192,7 +192,7 @@ begin
 	Thm := SysTheme;
 end;
 
-procedure BtnObjSelectClick(Sender: PUIObject); far;
+procedure BtnObjSelectClick(Sender: PBaseObject); far;
 var
 	i: integer;
 begin
@@ -216,12 +216,12 @@ begin
 	end;
 end;
 
-procedure SelectObjectEscPressed(Sender: PUIObject); far;
+procedure SelectObjectEscPressed(Sender: PBaseObject); far;
 begin
 	SelectObjectDone := True;
 end;
 
-procedure SelectObjectArrowPressed(Sender: PUIObject); far;
+procedure SelectObjectArrowPressed(Sender: PBaseObject); far;
 var
 	NextSelection: integer;
 begin
@@ -244,7 +244,7 @@ begin
 	MouseShow;
 end;
 
-procedure SelectObject(Sender: PUIObject); far;
+procedure SelectObject(Sender: PBaseObject); far;
 var
 	i: integer;
 	Key: string;
@@ -313,7 +313,7 @@ begin
 	end;
 end;
 
-procedure NewTheme(Sender: PUIObject); far;
+procedure NewTheme(Sender: PBaseObject); far;
 var
 	DoSave: boolean;
 begin
@@ -336,7 +336,7 @@ begin
 	ThemeChanged := False;
 end;
 
-procedure LoadTheme(Sender: PUIObject); far;
+procedure LoadTheme(Sender: PBaseObject); far;
 var
 	SelectedFile: string;
 	LoadName, LoadAuthor: string[20];
@@ -466,7 +466,7 @@ begin
 	RTrim := Copy(s, 1, endIdx);
 end;
 
-procedure AreaColorClick(Sender: PUIObject); far;
+procedure AreaColorClick(Sender: PBaseObject); far;
 var
 	PAreaColor: ^TArea;
 begin
@@ -474,18 +474,18 @@ begin
 	SelectColor(PAreaColor^.BGColor, true);
 end;
 
-procedure BtnSaveClick(Sender: PUIObject); far;
+procedure BtnSaveClick(Sender: PBaseObject); far;
 begin
 	{If sender was BtnSaveAs, true will be passed to the SaveAs parameter}
 	SaveTheme((Sender = @BtnSaveAs));
 end;
 
-procedure BtnAboutClick(Sender: PUIObject); far;
+procedure BtnAboutClick(Sender: PBaseObject); far;
 begin
 	AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
 end;
 
-procedure BtnExitClick(Sender: PUIObject); far;
+procedure BtnExitClick(Sender: PBaseObject); far;
 var
 	DoSave: boolean;
 begin
@@ -504,7 +504,7 @@ begin
 	Halt(0);
 end;
 
-procedure TextboxChange(Sender: PUIObject); far;
+procedure TextboxChange(Sender: PBaseObject); far;
 begin
 	ThemeChanged := True;
 end;

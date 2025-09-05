@@ -10,15 +10,14 @@ type
 	
 	TButton = object(TUIObject)
 		public
-			Enabled,
 			Transparent: Boolean;
-			State: TButtonState;
-			constructor Init(X, Y, W, H: Integer; Cap: string);
-			procedure CheckEvent; virtual;
-			procedure Draw; virtual;
-			procedure SetCaption(Cap: string);
+			State:       TButtonState;
+			constructor  Init(X, Y, W, H: Integer; Cap: string);
+			procedure    CheckEvent; virtual;
+			procedure    Draw; virtual;
+			procedure    SetCaption(Cap: string);
 		private
-			Caption: string;
+			Caption:     string;
 	end;
 
 implementation
@@ -33,6 +32,61 @@ begin
 	State := BsUp;
 	Enabled := True;
 	Transparent := False;
+end;
+
+procedure TButton.CheckEvent;
+begin
+	if not Enabled then
+		exit;
+	
+	{Check for left click, while drawing button pressed while mouse is down and over
+	 the button}
+	if (MouseClicked = MbLeft) and Self.IsMouseOver then
+	begin
+		MouseHide;
+		State := BsDown;
+		Self.Draw;
+		MouseShow;
+		repeat
+			if Self.IsMouseOver then
+			begin
+				if State = BsUp then
+				begin
+					State := BsDown;
+					MouseHide;
+					Self.Draw;
+					MouseShow;
+				end;
+			end
+			else
+			begin
+				if State = BsDown then
+				begin
+					State := BsUp;
+					MouseHide;
+					Self.Draw;
+					MouseShow;
+				end;
+			end;
+		until MouseClicked = MbNone;
+
+		if State = BsDown then
+		begin
+			State := BsUp;
+			MouseHide;
+			Self.Draw;
+			MouseShow;
+		end;
+		if Self.IsMouseOver then
+		begin
+			{Mouse was both clicked and released over the button, trigger OnClick event}
+			if Assigned(OnClick) then
+				OnClick(@Self);
+			exit;
+		end;
+	end;
+
+	Self.CheckHotkeys;
 end;
 
 procedure TButton.Draw;
@@ -100,61 +154,10 @@ begin
 	end;
 end;
 
-procedure TButton.CheckEvent;
-begin
-	{Check for left click, while drawing button pressed while mouse is down and over
-	 the button}
-	if (MouseClicked = MbLeft) and Self.IsMouseOver then
-	begin
-		MouseHide;
-		State := BsDown;
-		Self.Draw;
-		MouseShow;
-		repeat
-			if Self.IsMouseOver then
-			begin
-				if State = BsUp then
-				begin
-					State := BsDown;
-					MouseHide;
-					Self.Draw;
-					MouseShow;
-				end;
-			end
-			else
-			begin
-				if State = BsDown then
-				begin
-					State := BsUp;
-					MouseHide;
-					Self.Draw;
-					MouseShow;
-				end;
-			end;
-		until MouseClicked = MbNone;
-
-		if State = BsDown then
-		begin
-			State := BsUp;
-			MouseHide;
-			Self.Draw;
-			MouseShow;
-		end;
-		if Self.IsMouseOver then
-		begin
-			{Mouse was both clicked and released over the button, trigger OnClick event}
-			if Assigned(OnClick) then
-				OnClick(@Self);
-			exit;
-		end;
-	end;
-
-	Self.CheckHotkeys;
-end;
-
 procedure TButton.SetCaption(Cap: string);
 begin
 	Caption := Cap;
+	Self.Draw;
 end;
 
 end.

@@ -7,23 +7,27 @@ uses
 
 type
 	TCheckbox = object(TUIObject)
-		Caption: string;
-		Checked: Boolean;
-		constructor Init(X, Y: Integer; Cap: String);
-		procedure Draw; virtual;
-		procedure Toggle;
+		public
+			Caption:    string;
+			OnChange:   TEventProc;
+			constructor Init(X, Y: Integer; Cap: String; Checked: Boolean);
+			function    GetChecked: boolean;
+			procedure   SetChecked(Checked: boolean);
+			procedure   Draw; virtual;
+		private
+			ChkState:   boolean;
 	end;
 
 implementation
 
-constructor TCheckbox.Init(X, Y: Integer; Cap: String);
+constructor TCheckbox.Init(X, Y: Integer; Cap: String; Checked: Boolean);
 const
 	DefaultW = 15;
 	DefaultH = 15;
 begin
 	Self.SetSize(X, Y, DefaultW, DefaultH, DefaultW, DefaultH);
 	Caption := Cap;
-	Checked := False;
+	ChkState := Checked;
 end;
 
 procedure TCheckbox.Draw;
@@ -55,7 +59,7 @@ begin
 	Line(X2 - 1, Y1 + 2, X2 - 1, Y2 - 1);
 	Line(X1 + 2, Y2 - 1, X2 - 2, Y2 - 1);
 
-	if Checked then
+	if ChkState then
 	begin
 		SetColor(Thm.TxtText);
 		Line(X1 + 5, Y1 + 8, X1 + 7, Y1 + 10);
@@ -73,12 +77,22 @@ begin
 		Print (Caption, X1 + 22, Y1 + 4, Thm.WinText);
 end;
 
-procedure TCheckbox.Toggle;
+function TCheckbox.GetChecked: boolean;
 begin
-	Checked := not Checked;
-	MouseHide;
-	Self.Draw;
-	MouseShow;
+	GetChecked := ChkState;
+end;
+
+procedure TCheckbox.SetChecked(Checked: boolean);
+begin
+	if ChkState <> Checked then
+	begin
+		ChkState := Checked;
+		MouseHide;
+		Self.Draw;
+		MouseShow;
+		if Assigned(OnChange) then
+			OnChange(@Self);
+	end;
 end;
 
 end.

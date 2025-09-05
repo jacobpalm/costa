@@ -7,9 +7,12 @@ uses
 
 type
 	TIcon = object(TUIObject)
-		IconFile: string[8];
-		constructor Init(X, Y: Integer; Icon: string);
-		procedure Draw; virtual;
+		public
+			constructor Init(X, Y: Integer; Icon: string);
+			procedure   Draw; virtual;
+			procedure   SetIcon(Icon: string);
+		private
+			IconFile:   string[8];
 	end;
 
 implementation
@@ -90,6 +93,14 @@ begin
 		Bar(X, Y, X + 31, Y + 31);
 		Print('IMG' + #13 + 'ERR', X + 5, Y + 6, White);
 	end;
+end;
+
+procedure TIcon.SetIcon(Icon: string);
+begin
+	IconFile := Icon;
+	MouseHide;
+	Self.Draw;
+	MouseShow;
 end;
 
 end.

@@ -22,13 +22,13 @@ var
 	MsgBoxType: TMsgBox;
 	ReturnValue: Boolean;
 
-procedure BtnFirstClick(Sender: PUIObject); far;
+procedure BtnFirstClick(Sender: PBaseObject); far;
 begin
 	ReturnValue := True;
 	MsgBoxDone := True;
 end;
 
-procedure BtnSecondClick(Sender: PUIObject); far;
+procedure BtnSecondClick(Sender: PBaseObject); far;
 begin
 	ReturnValue := False;
 	MsgBoxDone := True;
@@ -39,6 +39,7 @@ var
 	WinMsgBox: TWindow;
 	BtnFirst, BtnSecond: TButton;
 	ImgIcon: TIcon;
+	IconFile: string;
 	BoxW, BoxH: Integer;
 	X1, Y1, X2, Y2: Integer;
 	BackgroundSize: Word;
@@ -54,13 +55,14 @@ begin
 		BoxW := 270;
 
 	WinMsgBox.Init(sizeCenter, sizeCenter, BoxW, BoxH);
-	ImgIcon.Init(WinMsgBox.Left + 13, WinMsgBox.Top + 15, '');
 	case MsgType of
-		MsgInfo:  ImgIcon.IconFile := 'MSGINFO';
-		MsgWarn:  ImgIcon.IconFile := 'MSGWARN';
-		MsgQuest: ImgIcon.IconFile := 'MSGQUEST';
-		MsgError: ImgIcon.IconFile := 'MSGERROR';
+		MsgInfo:  IconFile := 'MSGINFO';
+		MsgWarn:  IconFile := 'MSGWARN';
+		MsgQuest: IconFile := 'MSGQUEST';
+		MsgError: IconFile := 'MSGERROR';
 	end;
+	ImgIcon.Init(WinMsgBox.Left + 13, WinMsgBox.Top + 15, IconFile);
+	
 	if MsgType = MsgQuest then
 	begin
 		BtnFirst.Init(224, WinMsgBox.Top + WinMsgBox.Height - 36, SizeDefault, SizeDefault, CAP_YES);

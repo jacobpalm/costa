@@ -11,16 +11,16 @@ type
 	TTextbox = object(TUIObject)
 		public
 			Caption,
-			Text: string;
-			MaxLen: Integer;
-			OnChange: TEventProc;
+			Text:       string;
+			MaxLen:     Integer;
+			OnChange:   TEventProc;
 			constructor Init(X, Y, W, H: Integer; Cap: String);
-			procedure CheckEvent; virtual;
-			procedure CheckHotkeys; virtual;
-			procedure Edit;
-			procedure Draw; virtual;
+			procedure   CheckEvent; virtual;
+			procedure   CheckHotkeys; virtual;
+			procedure   Edit;
+			procedure   Draw; virtual;
 		private
-			State: TTextboxState;
+			State:      TTextboxState;
 	end;
 
 implementation

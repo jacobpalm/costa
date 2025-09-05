@@ -10,14 +10,16 @@ const
 	LibVersion           = '2.0';
 	LibYear              = '2025';
 
-	SizeDefault          = -1; {Used to set default width/height on object init}
-	sizeCenter           = -2; {Used to center objects on screen}
-
-	DoubleClickDelay     = 0.5;
-	PrintLineH           = 12; {Font dimensions - line height}
-	PrintCharW           = 8;  {Width of a single character}
-
-	CharArrowUp:	Char = #24; {Arrows symbols for fonts}
+	SizeDefault          = -1;   {Used to set default width/height on object init}
+	SizeCenter           = -2;   {Used to center objects on screen}
+  
+	ColorDefault         = 255;    {Used to set default colors on objects}
+  
+	DoubleClickDelay     = 0.5;  
+	PrintLineH           = 12;   {Font dimensions - line height}
+	PrintCharW           = 8;    {Width of a single character}
+ 
+	CharArrowUp:	Char = #24;  {Arrows symbols for fonts}
 	CharArrowDown:  Char = #25;
 	CharArrowRight: Char = #26;
 	CharArrowLeft:  Char = #27;
@@ -32,22 +34,37 @@ type
 	PHotKeyNode = ^THotkeyNode;
 	THotkeyNode = record
 		HotKey: string; {Hotkey as returned by GetKey}
-		Next: PHotKeyNode; {Pointer to next node in linked list}
+		Next:   PHotKeyNode; {Pointer to next node in linked list}
 	end;
 
-	PUIObject = ^TUIObject;
-	TEventProc = procedure(Sender: PUIObject);
+	PBaseObject = ^TUIObject;
+	TEventProc = procedure(Sender: PBaseObject);
 
-	TUIObject = object
+	TBaseObject = object
+		public
+			Enabled:    Boolean;     {All events will be ignored if false}
+			Hotkey:     PHotKeyNode; {Linked list of hotkeys for object, to allow multiple hotkeys}
+			OnClick:    TEventProc;  {Event procedure for mouse click or hotkey press}
+			constructor Init;
+			Destructor  Done; virtual;
+			procedure   AddHotkey(Key: string);
+			procedure   CheckEvent; virtual;
+			procedure   CheckHotkeys;
+	end;
+
+	{Linked list of objects based on PBaseObject, can contain objects of any descendant type}
+	PObjectNode = ^TObjectNode;
+	TObjectNode = record
+		ObjectP: PBaseObject;
+		Next:    PObjectNode;
+	end;
+
+	TUIObject = object(TBaseObject)
 		public
 			Left, Top, Width, Height: Integer;
-			OnClick,
 			OnDraw: TEventProc;
-			Hotkey: PHotKeyNode; {Linked list of hotkeys for object, to allow multiple hotkeys}
 			constructor Init;
-			procedure AddHotkey(Key: string);
 			procedure CheckEvent; virtual;
-			procedure CheckHotkeys;
 			Procedure Draw; virtual;
 			function IsMouseOver: Boolean;
 			procedure SetSize(X, Y, W, H, DefaultW, DefaultH: Integer);
@@ -137,6 +154,74 @@ const
 	                               'Verify that the path exists and isn''t read-only.';
 	MSG_GRAPHICS_ERROR           = 'Graphics error:';
 
+
+constructor TBaseObject.Init;
+begin
+	Hotkey := nil;
+end;
+
+{Add a hotkey to an object - a linked list is used to allow multiple hotkeys}
+procedure TBaseObject.AddHotkey(Key: string);
+var
+	CheckNode: PHotKeyNode;
+	NewNode: PHotKeyNode;
+begin
+	if (Length(Key) < 1) or (Length(Key) > 2) then
+		exit; {Invalid hotkey, do nothing}
+
+	New(NewNode);
+	NewNode^.HotKey := Key;
+	NewNode^.Next := Self.Hotkey;
+	Self.Hotkey := NewNode;
+end;
+
+procedure TBaseObject.CheckEvent;
+begin
+	if not Enabled then
+		exit;
+		
+	Self.CheckHotkeys;
+end;
+
+{Check for hotkeys events assigned to the object}
+procedure TBaseObject.CheckHotkeys;
+var
+	CheckNode: PHotKeyNode;
+begin
+	if not Enabled then
+		exit;
+
+	if (Length(HotkeyPressed) > 0) then
+	begin
+		CheckNode := Hotkey;
+		while Assigned(CheckNode) do
+		begin
+			if CheckNode^.HotKey = HotkeyPressed then
+			begin
+				HotkeyPressed := ''; {Reset hotkey}
+				{Trigger OnClick event, if assigned}
+				if Assigned(OnClick) then
+					OnClick(@Self);
+				exit;
+			end;
+			CheckNode := CheckNode^.Next; {Move to next node in linked list}
+		end;
+	end;
+end;
+
+destructor TBaseObject.Done;
+var
+	NextNode: PHotKeyNode;
+begin
+	{Free all hotkey nodes in the linked list}
+	while Assigned(Hotkey) do
+	begin
+		NextNode := HotKey^.Next; {Store pointer to next node}
+		Dispose(Hotkey);          {Free current node}
+		Hotkey := NextNode;       {Move to next node}
+	end;
+end;
+
 constructor TUIObject.Init;
 begin
 	Self.SetSize(0, 0, 0, 0, SizeDefault, SizeDefault);
@@ -174,25 +259,12 @@ begin
 	OnClick := nil;
 end;
 
-{Add a hotkey to an object - a linked list is used to allow multiple hotkeys}
-procedure TUIObject.AddHotkey(Key: string);
-var
-	CheckNode: PHotKeyNode;
-	NewNode: PHotKeyNode;
-begin
-	if (Length(Key) < 1) or (Length(Key) > 2) then
-		exit; {Invalid hotkey, do nothing}
-
-	New(NewNode);
-	NewNode^.HotKey := Key;
-	NewNode^.Next := Self.Hotkey;
-	Self.Hotkey := NewNode;
-end;
-
-
 {Check for events on object}
 procedure TUIObject.CheckEvent;
 begin
+	if not Enabled then
+		exit;
+	
 	{Check if mouse is clicked on the object}
 	if (MouseClicked = MbLeft) and Self.IsMouseOver then
 	begin
@@ -208,29 +280,6 @@ begin
 	end;
 
 	Self.CheckHotkeys;
-end;
-
-{Check for hotkeys events assigned to the object}
-procedure TUIObject.CheckHotkeys;
-var
-	CheckNode: PHotKeyNode;
-begin
-	if (Length(HotkeyPressed) > 0) then
-	begin
-		CheckNode := Hotkey;
-		while Assigned(CheckNode) do
-		begin
-			if CheckNode^.HotKey = HotkeyPressed then
-			begin
-				HotkeyPressed := ''; {Reset hotkey}
-				{Trigger OnClick event, if assigned}
-				if Assigned(OnClick) then
-					OnClick(@Self);
-				exit;
-			end;
-			CheckNode := CheckNode^.Next; {Move to next node in linked list}
-		end;
-	end;
 end;
 
 {Dummy draw procedure - overridden in descendandt objects}

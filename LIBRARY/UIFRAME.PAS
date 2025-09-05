@@ -7,12 +7,13 @@ uses
 
 type
 	TFrame = object(TUIObject)
-		LightColor,
-		DarkColor,
-		BGColor: Integer;
-		Transparent: Boolean;
-		constructor Init(X, Y, W, H: Integer);
-		procedure Draw; virtual;
+		public
+			LightColor,
+			DarkColor,
+			BGColor:     Integer;
+			Transparent: Boolean;
+			constructor  Init(X, Y, W, H: Integer);
+			procedure    Draw; virtual;
 	end;
 
 implementation
