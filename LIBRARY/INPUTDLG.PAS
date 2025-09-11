@@ -4,7 +4,7 @@ unit InputDlg;
 interface
 
 uses
-	Costalib, UIWindow, UIIcon, UIButton, UITxtbox, Strings, Graph, Crt;
+	Costalib, UIIcon, UIButton, UITxtbox, Strings, Graph, Crt;
 
 function InputBox(MsgTitle, MsgText, MsgIcon, MsgDefault: string): string;
 

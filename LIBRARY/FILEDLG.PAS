@@ -3,7 +3,7 @@ unit FileDlg;
 interface
 
 uses
-	Costalib, UIWindow, UIButton, UITxtbox, UIList, UIIcon;
+	Costalib, UIButton, UITxtbox, UIList, UIIcon;
 
 function FileSelect(DefaultPattern, StartPath: string; IconSelect: boolean): string;
 

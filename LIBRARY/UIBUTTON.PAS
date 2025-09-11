@@ -27,6 +27,7 @@ const
 	DefaultW = 92;
 	DefaultH = 22;
 begin
+	TUIObject.Init;
 	SetSize(X, Y, W, H, DefaultW, DefaultH);
 	Caption := Cap;
 	State := BsUp;
@@ -152,6 +153,9 @@ begin
 		end;
 		Print(Caption, X1, Y1, Thm.WinText);
 	end;
+
+	if Assigned(OnDraw) then
+		OnDraw(@Self);
 end;
 
 procedure TButton.SetCaption(Cap: string);

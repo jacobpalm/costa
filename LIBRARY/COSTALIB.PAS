@@ -61,32 +61,79 @@ type
 
 	TUIObject = object(TBaseObject)
 		public
-			Left, Top, Width, Height: Integer;
-			OnDraw: TEventProc;
+			Left,
+			Top,
+			Width,
+			Height:     Integer;
+			OnDraw:     TEventProc;
 			constructor Init;
-			procedure CheckEvent; virtual;
-			Procedure Draw; virtual;
-			function IsMouseOver: Boolean;
-			procedure SetSize(X, Y, W, H, DefaultW, DefaultH: Integer);
+			procedure   CheckEvent; virtual;
+			Procedure   Draw; virtual;
+			function    IsMouseOver: Boolean;
+			procedure   SetSize(X, Y, W, H, DefaultW, DefaultH: Integer);
 	end;
 
+	PHotkey = ^THotkey;
 	THotkey = object(TUIObject)
 		constructor Init(Key: String);
-		procedure CheckEvent; virtual;
+		procedure   CheckEvent; virtual;
 	end;
 
+	PMenu = ^TMenu;
 	TMenu = object(TUIObject)
 		constructor Init;
-		procedure Draw; virtual;
+		procedure   Draw; virtual;
+	end;
+	
+	PWindow = ^TWindow;
+	TWindow = object(TUIObject)
+		public
+			Border:     Boolean;
+			OnRun:      TEventProc;
+			constructor Init(X, Y, W, H: Integer);
+			destructor  Done; virtual;
+			procedure   AddObject(Obj: PBaseObject);
+			{procedure   SetMenu(Menu: PMenu);}
+			procedure   Draw; virtual;
+			procedure   Run;
+			procedure   Close;
+		private
+			Objects:    PObjectNode;
+			MenuObj:    PMenu;
+			DoClose:    Boolean;
+	end;
+
+	PWindowNode = ^TWindowNode;
+	TWindowNode = record
+		ObjectP: PWindow;
+		Next:    PWindowNode;
+	end;
+
+	TApplication = object
+		public
+			Name,
+			Version,
+			Author,
+			Icon:       string;
+			OnRun:      TEventProc;
+			OnExit:     TEventProc;
+			constructor Init;
+			destructor  Done; virtual;
+			procedure   Run;
+			procedure   OpenWindow(Win: PWindow);
+			procedure   CloseWindow;
+			procedure   Exit;
+		private
+			Window:     PWindowNode;
 	end;
 
 	TLibSetting = record
-		DeskID: Integer;
-		LinkCapt: Boolean;
-		LinkTarget: Boolean;
-		ConfLinkDel: Boolean;
-		ConfExit: Boolean;
-		ThmFile: string[8];
+		DeskID:      Integer;
+		LinkCapt,
+		LinkTarget,
+		ConfLinkDel,
+		ConfExit:    Boolean;
+		ThmFile:     string[8];
 	end;
 
 	TTheme = record
@@ -106,12 +153,11 @@ type
 	end;
 
 var
-	MenuBar: TMenu;
-	Setting: TLibSetting;
-	Thm: TTheme;
-	HotkeyPressed: String; {Stores the last pressed hotkey, used in event loops}
-	MouseVisible: Boolean;
-	MouseSupport: Boolean;
+	Setting:        TLibSetting;
+	Thm:            TTheme;
+	HotkeyPressed:  String; {Stores the last pressed hotkey, used in event loops}
+	MouseVisible:   Boolean;
+	MouseSupport:   Boolean;
 	MouseX, MouseY: Integer;
 
 function  FileExists(const FileName: string): Boolean;
@@ -158,13 +204,14 @@ const
 constructor TBaseObject.Init;
 begin
 	Hotkey := nil;
+	Enabled := True;
+	OnClick := nil;
 end;
 
 {Add a hotkey to an object - a linked list is used to allow multiple hotkeys}
 procedure TBaseObject.AddHotkey(Key: string);
 var
-	CheckNode: PHotKeyNode;
-	NewNode: PHotKeyNode;
+	CheckNode, NewNode: PHotKeyNode;
 begin
 	if (Length(Key) < 1) or (Length(Key) > 2) then
 		exit; {Invalid hotkey, do nothing}
@@ -224,9 +271,9 @@ end;
 
 constructor TUIObject.Init;
 begin
+	TBaseObject.Init;
 	Self.SetSize(0, 0, 0, 0, SizeDefault, SizeDefault);
-	Hotkey := nil;
-	OnClick := nil;
+	OnDraw := nil;
 end;
 
 {Used by each descendandt object to set its size and positon on init - DefaultW and DefaultH are
@@ -254,9 +301,6 @@ begin
 		Top := (GetMaxY - Height) div 2 
 	else
 		Top := Y;
-
-	Hotkey := nil;
-	OnClick := nil;
 end;
 
 {Check for events on object}
@@ -304,6 +348,7 @@ end;
 
 constructor THotkey.Init(Key: String);
 begin
+	TBaseObject.Init;
 	Self.SetSize(0, 0, 0, 0, SizeDefault, SizeDefault);
 	Self.Hotkey := nil;
 	Self.AddHotkey(Key);
@@ -316,6 +361,7 @@ end;
 
 constructor TMenu.Init;
 begin
+	TUIObject.Init;
 	Left := 0;
 	Top := 0;
 	Width := GetMaxX;
@@ -335,11 +381,223 @@ begin
 	Line(Left, Top + Height, Left + Width, Top + Height);
 end;
 
+constructor TApplication.Init;
+begin
+	Name := '';
+	Version := '';
+	Author := '';
+	Icon := '';
+	Window := nil;
+	OnRun := nil;
+	OnExit := nil;
+end;
+
+destructor TApplication.Done;
+var
+	NextNode: PWindowNode;
+begin
+	{Free all object nodes in the linked list}
+	while Assigned(Window) do
+	begin
+		NextNode := Window^.Next; {Store pointer to next node}
+		
+		{Call the destructor of the window, which in turn calls destructor of each object in it}
+		Window^.ObjectP^.Done;
+
+		Dispose(Window^.ObjectP);
+		Dispose(Window);
+
+		{Move to next node}
+		Window := NextNode;
+	end;
+end;
+
+procedure TApplication.OpenWindow(Win: PWindow);
+var
+	NewNode: PWindowNode;
+begin
+	{Create a new node and add it to the start of the linked list, which
+	 allows multiple windows to be stacked}
+	New(NewNode);
+	NewNode^.ObjectP := Win;
+	NewNode^.Next := Self.Window;
+	Self.Window := NewNode;
+end;
+
+procedure TApplication.CloseWindow;
+var
+	RemoveNode: PWindowNode;
+begin
+	if not Assigned(Window) then
+		exit;
+
+	RemoveNode := Window;
+	Window := Window^.Next;
+
+	{Call the destructor of the window to free it's objects, then free the window itself and
+	 the linked list node}
+	RemoveNode^.ObjectP^.Done;
+	Dispose(RemoveNode^.ObjectP);
+	Dispose(RemoveNode);
+end;
+
+procedure TApplication.Exit;
+begin
+	If Assigned(OnExit) then
+		OnExit(@Self);
+
+	Self.Done; {Call destructor, in case any descendant objects have additional cleanup code}
+	
+	CloseGraph;
+	Halt(0);
+end;
+
+procedure TApplication.Run;
+begin
+	If Assigned(OnRun) then
+		OnRun(@Self);
+
+	{As long as the application has at least one window, run that window}
+	while Assigned(Window) do
+		Window^.ObjectP^.Run;
+
+	Self.Exit; {No more windows, exit the application}
+end;
+
+constructor TWindow.Init(X, Y, W, H: Integer);
+const
+	DefaultW = 320;
+	DefaultH = 175;
+begin
+	TUIObject.Init;
+	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
+	Border := True;
+	DoClose := False;
+	OnRun := nil;
+end;
+
+procedure TWindow.AddObject(Obj: PBaseObject);
+var
+	NewNode, LastNode: PObjectNode;
+begin
+	New(NewNode);
+	NewNode^.ObjectP := Obj;
+	NewNode^.Next := nil;
+
+	{If this is the first object, set it as head of the list,
+	 otherwise, find the end of the list and add it there}
+	if Objects = nil then
+		Objects := NewNode
+	else
+	begin
+		LastNode := Objects;
+		while LastNode^.Next <> nil do
+			LastNode := LastNode^.Next;
+		LastNode^.Next := NewNode;
+	end;
+end;
+
+procedure TWindow.Draw;
+var
+	X1, X2, Y1, Y2: Integer;
+begin
+	X1 := Left;
+	Y1 := Top;
+	X2 := X1 + Width;
+	Y2 := Y1 + Height;
+	if Border then
+	begin
+		SetFillStyle(SolidFill, Thm.Title);
+		Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 1);
+		SetFillStyle(SolidFill, Thm.Win);
+		Bar(X1 + 7, Y1 + 7, X2 - 7, Y2 - 7);
+		SetColor(15);
+		Line(X1, Y1, X2 - 1, Y1);
+		Line(X1, Y1 + 1, X1, Y2 - 1);
+		SetColor(0);
+		Line(X2, Y1, X2, Y2);
+		Line(X1, Y2, X2 - 1, Y2);
+		SetColor(Thm.Shadow);
+		Line(X2 - 1, Y1 + 1, X2 - 1, Y2 - 1);
+		Line(X1 + 1, Y2 - 1, X2 - 2, Y2 - 1);
+		SetColor(Thm.Light);
+		Line(X1 + 1, Y1 + 1, X2 - 2, Y1 + 1);
+		Line(X1 + 1, Y1 + 2, X1 + 1, Y2 - 2);
+		SetColor(Thm.Shadow);
+		Rectangle(X1 + 5, Y1 + 5, X2 - 5, Y2 - 5);
+		SetColor(Thm.Light);
+		Rectangle(X1 + 6, Y1 + 6, X2 - 6, Y2 - 6);
+	end
+	else
+	begin
+		SetFillStyle(SolidFill, Thm.Win);
+		Bar(X1, Y1, X2, Y2);
+	end;
+
+	if Assigned(OnDraw) then
+		OnDraw(@Self);
+end;
+
+procedure TWindow.Run;
+var
+	CurrObj: PObjectNode;
+begin
+	if not Assigned(Objects) then
+		exit;
+
+	Self.DoClose := False;
+
+	{Draw window and all objects in the window}
+	MouseHide;
+	Self.Draw;
+	CurrObj := Objects;
+	repeat
+		CurrObj^.ObjectP^.Draw;
+		CurrObj := CurrObj^.Next;
+	until CurrObj = nil;
+	MouseShow;
+
+	if Assigned(OnRun) then
+		OnRun(@Self);
+
+	while not Self.DoClose do
+	begin
+		HotkeyPressed := GetKey;
+		CurrObj := Objects;
+		while Assigned(CurrObj) do
+		begin
+			CurrObj^.ObjectP^.CheckEvent;
+			CurrObj := CurrObj^.Next;
+		end;
+	end;
+end;
+
+procedure TWindow.Close;
+begin
+	Self.DoClose := True;
+end;
+
+destructor TWindow.Done;
+var
+	NextNode: PObjectNode;
+begin
+	{Dispose of all objects in the linked list}
+	while Objects <> nil do
+	begin
+		NextNode := Objects^.Next;
+		Dispose(Objects);
+		Objects := NextNode;
+	end;
+
+	{Call ancestor destructor for properties that aren't specific to TWindow}
+	inherited Done;
+end;
+
 function FileExists(const FileName: string): Boolean;
 var
 	sResults: SearchRec;
 begin
-	FindFirst(FileName, Archive, sresults);
+	FindFirst(FileName, Archive, sResults);
 	FileExists := (DosError = 0);
 end;
 
@@ -744,9 +1002,6 @@ begin
 	{Load settings and theme}
 	SysLoadSettings;
 	LoadTheme(Setting.ThmFile);
-
-	{Initialize menu bar so app can use it right away}
-	MenuBar.Init;
 
 	{Check for mouse support}
 	Intr($33, regs);

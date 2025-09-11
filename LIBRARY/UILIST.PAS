@@ -219,7 +219,7 @@ begin
 	MouseShow;
 
 	if Head = nil then
-		exit;; {Nothing to draw}
+		exit; {Nothing to draw}
 
 	X1 := Left + 2;
 	Y1 := Top + 3;
@@ -256,6 +256,9 @@ begin
 		end;
 	end;
 	MouseShow;
+
+	if Assigned(OnDraw) then
+		OnDraw(@Self);
 end;
 
 procedure TList.MoveSelection(Direction: TListDirection);

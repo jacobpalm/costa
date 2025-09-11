@@ -27,6 +27,7 @@ const
 	DefaultW = 100;
 	DefaultH = PrintLineH;
 begin
+	TUIObject.Init;
 	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
 	Caption := Cap;
 	FgColor := ColorDefault;
@@ -44,7 +45,7 @@ var
 	TextColor, BackColor: Byte;
 begin
 	{If a background color is set, fill the label area with it}
-	if (BgColor >= 0) or (BgColor >= 15) then
+	if BgColor <= GetMaxColor then
 	begin
 		SetFillStyle(SolidFill, BgColor);
 		Bar(Left, Top, Left + Width, Top + Height);
@@ -57,6 +58,9 @@ begin
 		TextColor := FgColor;
 
 	Print(Caption, Left, Top, TextColor);
+
+	if Assigned(OnDraw) then
+		OnDraw(@Self);
 end;
 
 procedure TLabel.SetCaption(Cap: string);

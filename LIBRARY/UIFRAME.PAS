@@ -23,6 +23,7 @@ const
 	DefaultW = 100;
 	DefaultH = 100;
 begin
+	TUIObject.Init;
 	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
 	LightColor := Thm.Light;
 	DarkColor := Thm.Shadow;
@@ -44,6 +45,9 @@ begin
 	Rectangle(Left + 1, Top + 1, Left + Width - 1, Top + Height);
 	SetColor(DarkColor);
 	Rectangle(Left, Top, Left + Width - 1, Top + Height - 1);
+
+	if Assigned(OnDraw) then
+		OnDraw(@Self);
 end;
 
 end.

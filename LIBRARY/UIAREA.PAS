@@ -21,6 +21,7 @@ const
 	DefaultW = 50;
 	DefaultH = 50;
 begin
+	TUIObject.Init;
 	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
 	BGColor := ColorDefault;
 	Transparent := False;
@@ -40,7 +41,7 @@ begin
 	If Not Transparent Then
 	Begin
 		if BgColor > GetMaxColor then
-			BackColor := Thm.Win
+			BackColor := Thm.Txt
 		else
 			BackColor := BgColor;
 		SetFillStyle(SolidFill, BackColor);
@@ -62,6 +63,9 @@ begin
 	SetColor(Thm.Light);
 	Line(X2 - 1, Y1 + 2, X2 - 1, Y2 - 1);
 	Line(X1 + 2, Y2 - 1, X2 - 2, Y2 - 1);
+
+	if Assigned(OnDraw) then
+		OnDraw(@Self);
 end;
 
 end.

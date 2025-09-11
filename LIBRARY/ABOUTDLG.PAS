@@ -3,7 +3,7 @@ unit ABOUTDLG;
 interface
 
 uses
-	CostaLib, UIWindow, UIIcon, UIButton, Graph;
+	CostaLib, UIIcon, UIButton, Graph;
 	
 procedure AboutBox(const ProgramName, ProgramVersion, ProgramAuthor, IconFile: string);
 

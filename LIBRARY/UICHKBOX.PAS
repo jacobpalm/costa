@@ -25,6 +25,7 @@ const
 	DefaultW = 15;
 	DefaultH = 15;
 begin
+	TUIObject.Init;
 	Self.SetSize(X, Y, DefaultW, DefaultH, DefaultW, DefaultH);
 	Caption := Cap;
 	ChkState := Checked;
@@ -75,6 +76,9 @@ begin
 	end;
 	if Length(Caption) > 0 then
 		Print (Caption, X1 + 22, Y1 + 4, Thm.WinText);
+
+	if Assigned(OnDraw) then
+		OnDraw(@Self);
 end;
 
 function TCheckbox.GetChecked: boolean;

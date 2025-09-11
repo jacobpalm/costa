@@ -30,6 +30,7 @@ const
 	DefaultW = 120;
 	DefaultH = 19;
 begin
+	TUIObject.Init;
 	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
 	Caption := Cap;
 	MaxLen := 255;
@@ -240,6 +241,9 @@ begin
 		X1 := X1 + 7 + PrintW(S);
 		Line(X1, Y1 + 4, X1, Y1 + 15);
 	end;
+
+	if Assigned(OnDraw) then
+		OnDraw(@Self);
 end;
 
 end.

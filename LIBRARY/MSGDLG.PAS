@@ -3,7 +3,7 @@ unit MSGDLG;
 interface
 
 uses
-	Costalib, UIWindow, UIIcon, UIButton, Graph;
+	Costalib, UIIcon, UIButton, Graph;
 
 type
 	TMsgBox = (MsgInfo, MsgWarn, MsgQuest, MsgError);

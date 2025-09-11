@@ -44,6 +44,9 @@ var
 
 	DefaultHeapError: Pointer; {We'll be taking care of heap errors ourselves}
 
+	App: TApplication;
+	WinMain: TWindow;
+
 	BtnOpen, BtnPageUp, BtnPageDown, BtnAbout, BtnExit: TButton;
 	HkUp, HkDown, HkHome, HkEnd: THotkey;
 
@@ -246,10 +249,8 @@ begin
 	begin
 		{If a file wasn't previously opened, scroll buttons won't be visible}
 		FileOpened := True;
-		MouseHide;
-		BtnPageUp.Draw;
-		BtnPageDown.Draw;
-		MouseShow;
+		BtnPageUp.Enabled := True;
+		BtnPageDown.Enabled := True;
 	end;
 	DrawText;
 end;
@@ -352,76 +353,112 @@ begin
 	Halt(0);
 end;
 
-procedure UIInit;
+procedure WinMainDraw(Sender: PBaseObject); far;
 begin
-	BtnOpen.Init(3, 2, SizeDefault, SizeDefault, CAP_OPEN);
-	BtnOpen.OnClick := BtnOpenClick;
-	BtnOpen.AddHotkey(KeyAltO);
-	BtnPageUp.Init(102, 2, SizeDefault, SizeDefault, CAP_PAGE_UP);
-	BtnPageUp.OnClick := PageScrollEvent;
-	BtnPageUp.AddHotkey(KeyAltU);
-	BtnPageUp.AddHotkey(KeyPageUp);
-	BtnPageDown.Init(201, 2, SizeDefault, SizeDefault, CAP_PAGE_DOWN);
-	BtnPageDown.OnClick := PageScrollEvent;
-	BtnPageDown.AddHotkey(KeyAltD);
-	BtnPageDown.AddHotkey(KeyPageDown);
-	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
-	BtnAbout.OnClick := BtnAboutClick;
-	BtnAbout.AddHotkey(KeyAltA);
-	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
-	BtnExit.OnClick := BtnExitClick;
-	BtnExit.AddHotkey(KeyAltX);
-	BtnExit.AddHotkey(KeyAltF4);
-	HkUp.Init(KeyUp);
-	HkUp.OnClick := PageScrollEvent;
-	HkDown.Init(KeyDown);
-	HkDown.OnClick := PageScrollEvent;
-	HkHome.Init(KeyHome);
-	HkHome.OnClick := PageScrollEvent;
-	HkEnd.Init(KeyEnd);
-	HkEnd.OnClick := PageScrollEvent;
+	{Text area}
+	SetFillStyle(SolidFill, Thm.Txt);
+	Bar(0, 29, GetMaxX, GetMaxY);
 end;
 
-var
-	FileName: String;
-	Key: String;
+procedure WinMainRun(Sender: PBaseObject); far;
+begin
+	{Pass first command line argument as file name, LoadFile will ignore it if empty}
+	LoadFile(ParamStr(1));
+end;
+
 begin
 	{Store default heap error handler for later restoration}
 	DefaultHeapError := HeapError;
 
-	UIInit;
+	with App do
+	begin
+		Init;
+		Name := AppName;
+		Version := AppVersion;
+		Author := AppAuthor;
+		Icon := AppIcon;
+	end;
 
-	{DEBUG - disable page nav buttons until a file is opened}
+	with BtnOpen do
+	begin
+		Init(3, 2, SizeDefault, SizeDefault, CAP_OPEN);
+		OnClick := BtnOpenClick;
+		AddHotkey(KeyAltO);
+	end;
 
-	MouseHide;
-	MenuBar.Draw;
-	SetFillStyle(SolidFill, Thm.Txt);
-	Bar(0, 29, 639, 349);
-	BtnOpen.Draw;
-	BtnAbout.Draw;
-	BtnExit.Draw;
-	MouseShow;
-	
-	{Pass first command line argument as file name, LoadFile will ignore it if empty}
-	LoadFile(ParamStr(1));
+	with BtnPageUp do
+	begin
+		Init(102, 2, SizeDefault, SizeDefault, CAP_PAGE_UP);
+		OnClick := PageScrollEvent;
+		AddHotkey(KeyAltU);
+		AddHotkey(KeyPageUp);
+		Enabled := False; {Disabled until a file is opened}
+	end;
 
-	repeat
-		Key := GetKey;
-		HotkeyPressed := Key; {DEBUG - move to event loop later}
-		
-		BtnAbout.CheckEvent;
-		BtnOpen.CheckEvent;
-		BtnExit.CheckEvent;
+	with BtnPageDown do
+	begin
+		Init(201, 2, SizeDefault, SizeDefault, CAP_PAGE_DOWN);
+		OnClick := PageScrollEvent;
+		AddHotkey(KeyAltD);
+		AddHotkey(KeyPageDown);
+		Enabled := False;
+	end;
 
-		HkUp.CheckEvent;
-		HkDown.CheckEvent;
-		HkHome.CheckEvent;
-		HkEnd.CheckEvent;
+	with BtnAbout do
+	begin
+		Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
+		OnClick := BtnAboutClick;
+		AddHotkey(KeyAltA);
+	end;
 
-		if FileOpened then
-		begin
-			BtnPageUp.CheckEvent;
-			BtnPageDown.CheckEvent;
-		end;
-	until False;
+	with BtnExit do
+	begin
+		Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
+		OnClick := BtnExitClick;
+		AddHotkey(KeyAltX);
+		AddHotkey(KeyAltF4);
+	end;
+
+	{Hotkeys for scrolling}
+	with HkUp do
+	begin
+		Init(KeyUp);
+		OnClick := PageScrollEvent;
+	end;
+	with HkDown do
+	begin
+		Init(KeyDown);
+		OnClick := PageScrollEvent;
+	end;
+	with HkHome do
+	begin
+		Init(KeyHome);
+		OnClick := PageScrollEvent;
+	end;
+	with HkEnd do
+	begin
+		Init(KeyEnd);
+		OnClick := PageScrollEvent;
+	end;
+
+	{Main window}
+	with WinMain do
+	begin
+		Init(0, 0, GetMaxX, GetMaxY);
+		Border := False;
+		OnDraw := WinMainDraw;
+		OnRun := WinMainRun;
+		AddObject(@BtnOpen);
+		AddObject(@BtnPageUp);
+		AddObject(@BtnPageDown);
+		AddObject(@BtnAbout);
+		AddObject(@BtnExit);
+		AddObject(@HkUp);
+		AddObject(@HkDown);
+		AddObject(@HkHome);
+		AddObject(@HkEnd);
+	end;
+
+	App.OpenWindow(@WinMain);
+	App.Run;
 end.

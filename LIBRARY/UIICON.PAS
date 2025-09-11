@@ -22,6 +22,7 @@ const
 	DefaultW = 31;
 	DefaultH = 31;
 begin
+	TUIObject.Init;
 	Self.SetSize(X, Y, SizeDefault, SizeDefault, DefaultW, DefaultH);
 	IconFile := Icon;
 end;
@@ -93,6 +94,9 @@ begin
 		Bar(X, Y, X + 31, Y + 31);
 		Print('IMG' + #13 + 'ERR', X + 5, Y + 6, White);
 	end;
+
+	if Assigned(OnDraw) then
+		OnDraw(@Self);
 end;
 
 procedure TIcon.SetIcon(Icon: string);
