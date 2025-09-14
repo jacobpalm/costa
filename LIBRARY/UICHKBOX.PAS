@@ -91,9 +91,9 @@ begin
 	if ChkState <> Checked then
 	begin
 		ChkState := Checked;
-		MouseHide;
+		Mouse.Hide;
 		Self.Draw;
-		MouseShow;
+		Mouse.Show;
 		if Assigned(OnChange) then
 			OnChange(@Self);
 	end;

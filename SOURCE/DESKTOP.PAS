@@ -337,7 +337,7 @@ var
 	X, Y: integer;
 	DeskStr: string;
 begin
-	MouseHide;
+	Mouse.Hide;
 
 	if FullRedraw then
 	begin
@@ -374,7 +374,7 @@ begin
 		TempNode := TempNode^.Next;
 	end;
 	
-	MouseShow;
+	Mouse.Show;
 end;
 
 procedure SwitchDesk(DeskID: integer);
@@ -401,9 +401,9 @@ begin
 	{Remove current selection, if any}
 	if Assigned(SelectedLink) and (Action <> Show) then
 	begin
-		MouseHide;
+		Mouse.Hide;
 		PutImage(SelectedLink^.Link.Left - 3, SelectedLink^.Link.Top - 3, TabBackgroundP^, NormalPut);
-		MouseShow;
+		Mouse.Show;
 	end;
 
 	case Action of
@@ -443,7 +443,7 @@ begin
 	end;
 
 	{Draw the selected link, saving background first}
-	MouseHide;
+	Mouse.Hide;
 	{Save background of new selected link}
 	GetImage(SelectedLink^.Link.Left - 3, SelectedLink^.Link.Top - 3,
 	         SelectedLink^.Link.Left + 34, SelectedLink^.Link.Top + 34, TabBackgroundP^);
@@ -451,7 +451,7 @@ begin
 	BtnTab.Left := SelectedLink^.Link.Left - 3;
 	BtnTab.Top := SelectedLink^.Link.Top - 3;
 	BtnTab.Draw;
-	MouseShow;
+	Mouse.Show;
 end;
 
 procedure RunDlg;
@@ -474,7 +474,7 @@ begin
 	BtnOK.Init(WinRun.Left + WinRun.Width - 182, TxtParams.Top + 30, 80, SizeDefault, CAP_OK);
 	BtnCancel.Init(WinRun.Left + WinRun.Width - 92, BtnOK.Top, 80, SizeDefault, CAP_CANCEL);
 		
-	MouseHide;
+	Mouse.Hide;
 	X1 := WinRun.Left;
 	Y1 := WinRun.Top;
 	X2 := WinRun.Left + WinRun.Width;
@@ -488,7 +488,7 @@ begin
 	BtnCancel.Draw;
 	TxtFilename.Draw;
 	TxtParams.Draw;
-	MouseShow;
+	Mouse.Show;
 
 	repeat
 		Key := GetKey;
@@ -513,9 +513,9 @@ begin
 			if Length(SelectedFile) > 0 then
 			begin
 				TxtFilename.Text := SelectedFile;
-				MouseHide;
+				Mouse.Hide;
 				TxtFilename.Draw;
-				MouseShow;
+				Mouse.Show;
 			end;
 		end;
 
@@ -524,10 +524,10 @@ begin
 	until false;
 
 	{Restore background}
-	MouseHide;
+	Mouse.Hide;
 	PutImage(X1, Y1, BackgroundP^, NormalPut);
 	FreeMem(BackgroundP, BackgroundSize);
-	MouseShow;		
+	Mouse.Show;		
 end;
 
 procedure LinkMenu(TargetNode: PLinkNode);
@@ -562,7 +562,7 @@ begin
 	if Length(Parameters) > 36 then
 		Parameters := Copy(Parameters, 1, 33) + '...';
 
-	MouseHide;
+	Mouse.Hide;
 	X1 := WinLinkMenu.Left;
 	Y1 := WinLinkMenu.Top;
 	X2 := WinLinkMenu.Left + WinLinkMenu.Width;
@@ -585,7 +585,7 @@ begin
 	Print(MSG_PARAMETERS, X1 + 12, Y1 + 76, Thm.WinText);
 	Print(Path, X1 + 108, Y1 + 59, Thm.WinText);
 	Print(Parameters, X1 + 108, Y1 + 76, Thm.WinText);
-	MouseShow;
+	Mouse.Show;
 
 	{Clear buffers, sometimes needed on DOSBox}
 	ClearInputBuffer;
@@ -596,9 +596,9 @@ begin
 		{Cancel, or Escape key}
 		if BtnCancel.Clicked or (Key = KeyAltC) or (Key = KeyEscape) then
 		begin
-			MouseHide;
+			Mouse.Hide;
 			PutImage(X1, Y1, BackgroundP^, NormalPut);
-			MouseShow;
+			Mouse.Show;
 			FreeMem(BackgroundP, BackgroundSize);
 			break;
 		end;
@@ -616,9 +616,9 @@ begin
 		{Configure}
 		if BtnEdit.Clicked or (Key = KeyAltE) then
 		begin
-			MouseHide;
+			Mouse.Hide;
 			PutImage(X1, Y1, BackgroundP^, NormalPut);
-			MouseShow;
+			Mouse.Show;
 			FreeMem(BackgroundP, BackgroundSize);
 			LinkEdit(TargetNode);
 			break;
@@ -627,9 +627,9 @@ begin
 		{Move}
 		if BtnMove.Clicked or (Key = KeyAltM) then
 		begin
-			MouseHide;
+			Mouse.Hide;
 			PutImage(X1, Y1, BackgroundP^, NormalPut);
-			MouseShow;
+			Mouse.Show;
 			FreeMem(BackgroundP, BackgroundSize);
 			LinkMove(TargetNode);
 			break;
@@ -687,28 +687,28 @@ begin
 	BtnPrevious.Init(255, 2, 42, SizeDefault, CharArrowLeft);
 	BtnNext.Init(343, 2, 42, SizeDefault, CharArrowRight);
 
-	MouseHide;
+	Mouse.Hide;
 	IconSize := ImageSize(0, 0, 31, 31);
 	GetMem(LinkIconP, IconSize);
 	GetMem(BackdropP, IconSize);
 	GetImage(DrawX, DrawY, DrawX + 31, DrawY + 31, LinkIconP^);
 	GetImage(DrawX, DrawY, DrawX + 31, DrawY + 31, BackdropP^);
-	MouseShow;
+	Mouse.Show;
 
 	{Center mouse on icon}
-	MouseMove(DrawX + 16, DrawY + 16);
+	Mouse.Move(DrawX + 16, DrawY + 16);
 
-	if not MouseSupport then
+	if not Mouse.Support then
 	begin
 		{Set mouse pos variables manually to make the rest of the code work
 		 if no mouse is present}
-		MouseX := DrawX + 16;
-		MouseY := DrawY + 16;
+		Mouse.X := DrawX + 16;
+		Mouse.Y := DrawY + 16;
 	end;
 
-	MousePoll;
-	CurGridX := MouseX div GridSize;
-	CurGridY := MouseY div GridSize;
+	Mouse.Poll;
+	CurGridX := Mouse.X div GridSize;
+	CurGridY := Mouse.Y div GridSize;
 	ClearInputBuffer;
 	repeat
 		Key := GetKey;
@@ -726,34 +726,34 @@ begin
 		if Key = KeyEnter then
 			break;
 
-		MousePoll;
+		Mouse.Poll;
 
 		{Arrow keys - move mouse cursor in direction pressed}
-		if Key = KeyLeft then MouseX := MouseX - GridSize;
-		if Key = KeyRight then MouseX := MouseX + GridSize - 1;
-		if Key = KeyUp then MouseY := MouseY - GridSize;
-		if Key = KeyDown then MouseY := MouseY + GridSize - 1;
+		if Key = KeyLeft then Mouse.X := Mouse.X - GridSize;
+		if Key = KeyRight then Mouse.X := Mouse.X + GridSize - 1;
+		if Key = KeyUp then Mouse.Y := Mouse.Y - GridSize;
+		if Key = KeyDown then Mouse.Y := Mouse.Y + GridSize - 1;
 
-		if MouseX < 20 then MouseX := 20;
-		if MouseX > 620 then MouseX := 620;
-		if MouseY < 48 then MouseY := 48;
-		if MouseY > 333 then MouseY := 333;
+		if Mouse.X < 20 then Mouse.X := 20;
+		if Mouse.X > 620 then Mouse.X := 620;
+		if Mouse.Y < 48 then Mouse.Y := 48;
+		if Mouse.Y > 333 then Mouse.Y := 333;
 
 		{If icon is moved with arrow keys, set cursor position}
 		if Length(Key) = 2 then
-			MouseMove(MouseX, MouseY);
+			Mouse.Move(Mouse.X, Mouse.Y);
 
 		{Calculate grid position}
-		CurGridX := (MouseX - 16) div GridSize;
+		CurGridX := (Mouse.X - 16) div GridSize;
 		if CurGridX < 0 then
 			CurGridX := 0;
-		CurGridY := (MouseY - 16) div GridSize;
+		CurGridY := (Mouse.Y - 16) div GridSize;
 		if CurGridY < 4 then
 			CurGridY := 4;
 
 		if (CurGridX <> LastGridX) or (CurGridY <> LastGridY) then
 		begin
-			MouseHide;
+			Mouse.Hide;
 			{Restore backdrop}
 			PutImage(DrawX, DrawY, BackdropP^, NormalPut);
 			DrawX := CurGridX * GridSize;
@@ -764,7 +764,7 @@ begin
 			{Save backdrop, plot icon in its place}
 			GetImage(DrawX, DrawY, DrawX + 31, DrawY + 31, BackdropP^);
 			PutImage(DrawX, DrawY, LinkIconP^, NormalPut);
-			MouseShow;
+			Mouse.Show;
 			LastGridX := CurGridX;
 			LastGridY := CurGridY;
 
@@ -788,14 +788,14 @@ begin
 		{Redraw icon at current position if desktop has been switched}
 		if Setting.DeskID <> SwitchedDesktop then
 		begin
-			MouseHide;
+			Mouse.Hide;
 			GetImage(DrawX, DrawY, DrawX + 31, DrawY + 31, BackdropP^);
 			PutImage(DrawX, DrawY, LinkIconP^, NormalPut);
-			MouseShow;
+			Mouse.Show;
 			SwitchedDesktop := Setting.DeskID;
 		end;
 
-	until (MouseClicked <> MbNone) and (MouseY > 28);
+	until (Mouse.Clicked <> MbNone) and (Mouse.Y > 28);
 
 	IconToMove.Left := DrawX;
 	IconToMove.Top := DrawY;
@@ -852,7 +852,7 @@ begin
 	TxtCaption.Text := TargetNode^.Link.Caption;
 	ChkPauseOnExit.Checked := TargetNode^.Link.PauseOnExit;
 
-	MouseHide;
+	Mouse.Hide;
 	X1 := WinEdit.Left;
 	Y1 := WinEdit.Top;
 	X2 := WinEdit.Left + WinEdit.Width;
@@ -874,7 +874,7 @@ begin
 	Bar(BtnIcon.Left + 2, BtnIcon.Top + 2, BtnIcon.Left + BtnIcon.Width - 2, BtnIcon.Top + BtnIcon.Height - 2);
 	ImgIcon.Draw;
 	Print(CAP_ICON, 222, WinEdit.Top + 11, Thm.WinText);
-	MouseShow;
+	Mouse.Show;
 
 	SelectedFile := '';
 
@@ -922,12 +922,12 @@ begin
 				FSplit(SelectedFile, FDir, FName, FExt);
 				if (FDir = ProgramPath + 'ICONS\') and (FExt = '.BIN') then
 				begin
-					MouseHide;
+					Mouse.Hide;
 					SetFillStyle(SolidFill, Thm.Desk);
 					Bar(BtnIcon.Left + 2, BtnIcon.Top + 2, BtnIcon.Left + BtnIcon.Width - 2, BtnIcon.Top + BtnIcon.Height - 2);
 					ImgIcon.IconFile := FName;
 					ImgIcon.Draw;
-					MouseShow;
+					Mouse.Show;
 				end
 				else
 					MsgBox(MSG_INVALID_ICON_TITLE, MSG_INVALID_ICON, MsgError);
@@ -942,10 +942,10 @@ begin
 				FSplit(SelectedFile, FDir, FName, FExt);
 				TxtFileName.Text := FName + FExt;
 				TxtPath.Text := FDir;
-				MouseHide;
+				Mouse.Hide;
 				TxtFilename.Draw;
 				TxtPath.Draw;
-				MouseShow;
+				Mouse.Show;
 			end;
 		end;
 	
@@ -963,10 +963,10 @@ begin
 			
 	until false;
 
-	MouseHide;
+	Mouse.Hide;
 	PutImage(X1, Y1, BackgroundP^, NormalPut);
 	FreeMem(BackgroundP, BackgroundSize);
-	MouseShow;
+	Mouse.Show;
 end;
 
 procedure RunProg(TargetLink: TLink);
@@ -1068,17 +1068,17 @@ begin
 			DrawDesktop(false);
 		end;
 
-		MousePoll;
-		if (MouseClicked <> MbNone) and (MouseY > 32) then
+		Mouse.Poll;
+		if (Mouse.Clicked <> MbNone) and (Mouse.Y > 32) then
 		begin
 			{The mouse was clicked. Check if it was on a link icon}
 			TempNode := Links;
 			while Assigned(TempNode) do
 			begin
-				if (MouseX >= TempNode^.Link.Left) and
-				   (MouseX <= TempNode^.Link.Left + 31) and
-				   (MouseY >= TempNode^.Link.Top) and
-				   (MouseY <= TempNode^.Link.Top + 31) then
+				if (Mouse.X >= TempNode^.Link.Left) and
+				   (Mouse.X <= TempNode^.Link.Left + 31) and
+				   (Mouse.Y >= TempNode^.Link.Top) and
+				   (Mouse.Y <= TempNode^.Link.Top + 31) then
 				begin
 					LinkMenu(TempNode);
 					Break;

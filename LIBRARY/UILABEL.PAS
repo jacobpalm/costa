@@ -65,10 +65,10 @@ end;
 
 procedure TLabel.SetCaption(Cap: string);
 begin
-	MouseHide;
+	Mouse.Hide;
 	Caption := Cap;
 	Self.Draw;
-	MouseShow;
+	Mouse.Show;
 end;
 
 end.

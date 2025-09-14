@@ -66,10 +66,10 @@ var
     ExpectedSize: integer;
 	BtnLoading: TButton;
 begin
-	MouseHide;
+	Mouse.Hide;
 	BtnLoading.Init(sizeCenter, sizeCenter, 110, 34, CAP_LOADING);
 	BtnLoading.Draw;
-	MouseShow;
+	Mouse.Show;
 
     ThemeCount := 0;
     ExpectedSize := SizeOf(TTheme) + SizeOf(ThemeAuthor) + SizeOf(ThemeName);
@@ -196,7 +196,7 @@ begin
 	BtnPreview1.Init(WinPreview.Left + 12, WinPreview.Top + WinPreview.Height - 34, 86, SizeDefault, CAP_BUTTON);
 	BtnPreview2.Init(WinPreview.Left + WinPreview.Width - 12 - BtnPreview1.Width, BtnPreview1.Top, 86, SizeDefault, CAP_BUTTON);
 
-	MouseHide;
+	Mouse.Hide;
 	SetFillStyle(SolidFill, Thm.Desk);
 	Bar(FrmThemePreview.Left + 2, FrmThemePreview.Top + 2,
 		FrmThemePreview.Left + FrmThemePreview.Width - 2, FrmThemePreview.Top + FrmThemePreview.Height - 2);
@@ -219,7 +219,7 @@ begin
 
 	Print(ThemeName, ImgLogo.Left + 42, ImgLogo.Top + 5, Thm.WinText);
 	Print(ThemeAuthor, ImgLogo.Left + 42, ImgLogo.Top + 19, Thm.WinText);
-	MouseShow;
+	Mouse.Show;
 
 	Thm := OrigTheme; {Restore original theme}
 end;
@@ -258,7 +258,7 @@ begin
 	BtnPrevious.Init(FrmTheme.Left + 14, FrmTheme.Top + FrmTheme.Height - 34, SizeDefault, SizeDefault, CAP_PREVIOUS);
 	BtnNext.Init(FrmTheme.Left + FrmTheme.Width - 92 - 14, BtnPrevious.Top, SizeDefault, SizeDefault, CAP_NEXT);
 	
-	MouseHide;
+	Mouse.Hide;
 	MenuBar.Draw;
 	SetFillStyle(SolidFill, Thm.Win);
 	Bar(0, 29, 639, 349);
@@ -284,7 +284,7 @@ begin
 	end
 	else
 		Print(MSG_NO_THEMES, 387, 310, Thm.WinText);
-	MouseShow;
+	Mouse.Show;
 
 	ThemePreview;
 

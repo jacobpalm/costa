@@ -59,7 +59,7 @@ begin
 	BtnClose.AddHotkey(KeyEscape);
 	BtnClose.OnClick := AboutBoxClose;
 
-	MouseHide;
+	Mouse.Hide;
 
 	{Save background to restore when Window is closed}
 	BackgroundSize := ImageSize(X1, Y1, X2, Y2);
@@ -74,16 +74,16 @@ begin
 	
 	Print(Text, X1 + 15, Y1 + 53, Thm.WinText);
 	
-	MouseShow;
+	Mouse.Show;
 	repeat
 		Key := GetKey;
 		HotkeyPressed := Key; {DEBUG - move to event loop later}
 		
 		BtnClose.CheckEvent;
 	until AboutBoxDone;
-	MouseHide;
+	Mouse.Hide;
 	PutImage(X1, Y1, BackgroundP^, NormalPut);
-	MouseShow;
+	Mouse.Show;
 	FreeMem(BackgroundP, BackgroundSize);
 end;
 

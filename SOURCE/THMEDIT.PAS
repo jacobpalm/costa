@@ -97,14 +97,14 @@ var
 function  SaveTheme(SaveAs: boolean): boolean; forward;
 function  RTrim(s: string): string; forward;
 
-procedure UpdatePreview(Sender: PBaseObject); far;
+procedure FrmPreviewDraw(Sender: PBaseObject); far;
 var
 	X1, Y1, X2, Y2: Integer;
 begin
 	{Overwrite system theme with current theme}
 	Thm := ThemeData;
 
-	MouseHide;
+	Mouse.Hide;
 	SetFillStyle(SolidFill, Thm.Desk);
 	Bar(FrmPreview.Left + 2, FrmPreview.Top + 2, FrmPreview.Left + FrmPreview.Width - 2, FrmPreview.Top + FrmPreview.Height - 2);
 	MnuPreview.Draw;
@@ -133,7 +133,7 @@ begin
 	Print(CAP_LIST_ITEM, X1 + 5, Y1 + 5 + 24, Thm.TxtText);
 	Print(CAP_LIST_ITEM, X1 + 5, Y1 + 5 + 36, Thm.TxtText);
 	Print(CAP_LIST_ITEM, X1 + 5, Y1 + 5 + 48, Thm.TxtText);
-	MouseShow;
+	Mouse.Show;
 
 	{Restore system theme}
 	Thm := SysTheme;
@@ -150,10 +150,10 @@ begin
 	
 	PreviousColor := SelectedColor;
 	SelectedColor := Color;
-	MouseHide;
+	Mouse.Hide;
 	AreaColor[PreviousColor].Draw;
 	AreaColor[SelectedColor].Draw;
-	MouseShow;
+	Mouse.Show;
 
 	{Change the color of the currently selected object}
 	case SelectedObject of
@@ -218,7 +218,7 @@ procedure SelectObjectArrowPressed(Sender: PBaseObject); far;
 var
 	NextSelection: integer;
 begin
-	MouseHide;
+	Mouse.Hide;
 	BtnObjSelect[Ord(ActiveSelection)].State := BsUp;
 	BtnObjSelect[Ord(ActiveSelection)].Draw;
 	if Sender = @HkUp then
@@ -234,7 +234,7 @@ begin
 	ActiveSelection := TThemeObject(NextSelection);
 	BtnObjSelect[Ord(ActiveSelection)].State := BsDown;
 	BtnObjSelect[Ord(ActiveSelection)].Draw;
-	MouseShow;
+	Mouse.Show;
 end;
 
 procedure SelectObject(Sender: PBaseObject); far;
@@ -247,7 +247,7 @@ var
 begin
 	SelectObjectDone := False;
 
-	MouseHide;
+	Mouse.Hide;
 	X1 := WinSelectObject.Left;
 	Y1 := WinSelectObject.Top;
 	X2 := WinSelectObject.Left + WinSelectObject.Width;
@@ -266,7 +266,7 @@ begin
 			BtnObjSelect[i].State := BsUp;
 		BtnObjSelect[i].Draw;
 	end;
-	MouseShow;
+	Mouse.Show;
 
 	repeat
 		Key := GetKey;
@@ -281,12 +281,12 @@ begin
 		HkEscape.CheckEvent;
 	until SelectObjectDone;
 
-	MouseHide;
+	Mouse.Hide;
 	PutImage(X1, Y1, BackgroundP^, NormalPut);
 	FreeMem(BackgroundP, BackgroundSize);
 	BtnObject.SetCaption( CAP_OBJECT[Ord(SelectedObject)] );
 	BtnObject.Draw;
-	MouseShow;
+	Mouse.Show;
 
 	{Change the color of the currently selected object}
 	case SelectedObject of
@@ -325,7 +325,7 @@ begin
 	TxtAuthor.Text := '';
 	TxtName.Draw;
 	TxtAuthor.Draw;
-	SelectColor(ThemeData.Desk, true);
+	SelectColor(ThemeData.Desk, false);
 	ThemeChanged := False;
 end;
 
@@ -480,6 +480,8 @@ procedure AreaColorClick(Sender: PBaseObject); far;
 var
 	PAreaColor: ^TArea;
 begin
+	{Need to use a PAreaColor pointer here, since PBaseObject doesn't
+	 have a BGColor property}
 	PAreaColor := Pointer(Sender);
 	SelectColor(PAreaColor^.BGColor, true);
 end;
@@ -630,7 +632,7 @@ begin
 		begin
 			Init(12, 42, 410, 293);
 			Transparent := True;
-			OnDraw := UpdatePreview;
+			OnDraw := FrmPreviewDraw;
 		end;
 
 		with WinMain do
@@ -672,6 +674,16 @@ begin
 		HkEscape.Init(KeyEscape);
 		HkEscape.OnClick := SelectObjectEscPressed;
 
+		With WinSelectObject do
+		begin
+			AddObject(@HkUp);
+			AddObject(@HkDown);
+			AddObject(@HkEnter);
+			AddObject(@HkEscape);
+			for i := 0 to High(BtnObjSelect) do
+				AddObject(@BtnObjSelect[i]);
+		end;
+
 	{Preview frame contents}
 		X1 := FrmPreview.Left;
 		Y1 := FrmPreview.Top;
@@ -704,9 +716,6 @@ begin
 		end;
 end;
 
-var
-	i: Integer;
-	Key: string;
 begin
 
 	with App do
@@ -720,9 +729,13 @@ begin
 
 	InitUI;
 
-	{Save system theme so we can restore it whenever preview has been drawn}
+	{Save current theme so we can restore it whenever preview has been drawn,
+	 and set current theme as basis for editing}
 	SysTheme := Thm;
-	NewTheme(nil); {DEBUG - newtheme triggers draw of preview, causes double draw on startup}
+	ThemeData := Thm;
+	{Desktop is the default selected object, so use its color for default
+	 color selection}
+	SelectedColor := ThemeData.Desk;
 
 	App.Run;
 end.

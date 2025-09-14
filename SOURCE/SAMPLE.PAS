@@ -53,7 +53,7 @@ begin
 	ImgSample.Init(WinSample.Top + 34, WinSample.Left + 200, 'SAMPLE');
 	
 	{Remember to hide/show the mouse when drawing!}
-	MouseHide;
+	Mouse.Hide;
 
 	{Top menu - default for all Costa apps, holds buttons like about,
 	 exit etc.}
@@ -68,7 +68,7 @@ begin
 	BtnAbout.Draw;
 	BtnExit.Draw;
 	Print(MSG_SAMPLE_TEXT, WinSample.Left + 12, WinSample.Top + 70, Thm.WinText);
-	MouseShow;
+	Mouse.Show;
 
 	ImgSample.Draw;
 

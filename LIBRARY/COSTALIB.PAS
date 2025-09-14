@@ -3,7 +3,7 @@ unit CostaLib;
 interface
 
 uses
-	Crt, Dos, Graph, Strings;
+	UIMouse, Crt, Dos, Graph, Strings;
 
 const
 	LibName              = 'Costa UI Library';
@@ -29,21 +29,29 @@ const
 	{$I KEYCODES.INC}
 
 type
-	TMouseButton  = (MbNone, MbLeft, MbRight, MbBoth);
-		
+	{Linked list of hotkeys, to allow multiple hotkeys per object}
 	PHotKeyNode = ^THotkeyNode;
 	THotkeyNode = record
-		HotKey: string; {Hotkey as returned by GetKey}
+		HotKey: string;      {Hotkey as returned by GetKey}
 		Next:   PHotKeyNode; {Pointer to next node in linked list}
 	end;
 
-	PBaseObject = ^TUIObject;
-	TEventProc = procedure(Sender: PBaseObject);
+	PApplication = ^TApplication;
+	PBaseObject  = ^TUIObject;
+	PObjectNode  = ^TObjectNode;
+	PHotkey      = ^THotkey;
+	PMenu        = ^TMenu;
+	PWindow      = ^TWindow;
+	PWindowNode  = ^TWindowNode;
 
+	{Event procedure type, to ensure all event procedures have the same signature}
+	TEventProc  = procedure(Sender: PBaseObject);
+
+	{Base object which all objects, visual or not, are based on}
 	TBaseObject = object
 		public
 			Enabled:    Boolean;     {All events will be ignored if false}
-			Hotkey:     PHotKeyNode; {Linked list of hotkeys for object, to allow multiple hotkeys}
+			Hotkey:     PHotKeyNode; {Linked list of hotkeys}
 			OnClick:    TEventProc;  {Event procedure for mouse click or hotkey press}
 			constructor Init;
 			Destructor  Done; virtual;
@@ -53,12 +61,12 @@ type
 	end;
 
 	{Linked list of objects based on PBaseObject, can contain objects of any descendant type}
-	PObjectNode = ^TObjectNode;
 	TObjectNode = record
 		ObjectP: PBaseObject;
 		Next:    PObjectNode;
 	end;
 
+	{Base type for all visual objects}
 	TUIObject = object(TBaseObject)
 		public
 			Left,
@@ -73,23 +81,24 @@ type
 			procedure   SetSize(X, Y, W, H, DefaultW, DefaultH: Integer);
 	end;
 
-	PHotkey = ^THotkey;
+	{Non-visual object, used to assign hotkeys to actions without a UI object}
 	THotkey = object(TUIObject)
 		constructor Init(Key: String);
 		procedure   CheckEvent; virtual;
 	end;
 
-	PMenu = ^TMenu;
+	{Menu bar object, placed at the top of a window}
 	TMenu = object(TUIObject)
 		constructor Init;
 		procedure   Draw; virtual;
 	end;
 	
-	PWindow = ^TWindow;
+	{Window object, which can contain multiple other objects via a linked list}
 	TWindow = object(TUIObject)
 		public
 			Border:     Boolean;
 			OnRun:      TEventProc;
+			Parent:     PApplication;
 			constructor Init(X, Y, W, H: Integer);
 			destructor  Done; virtual;
 			procedure   AddObject(Obj: PBaseObject);
@@ -98,17 +107,18 @@ type
 			procedure   Run;
 			procedure   Close;
 		private
-			Objects:    PObjectNode;
-			MenuObj:    PMenu;
-			DoClose:    Boolean;
+			Objects:    PObjectNode; {Linked list of objects in the window}
+			MenuObj:    PMenu;	     {Menu bar object, if any}
+			DoClose:    Boolean;     {Set to true to close the window by exiting Run loop}
 	end;
 
-	PWindowNode = ^TWindowNode;
+	{Linked list of windows, to allow multiple windows to be added to an application}
 	TWindowNode = record
 		ObjectP: PWindow;
 		Next:    PWindowNode;
 	end;
 
+	{Main application object, to which windows can be added}
 	TApplication = object
 		public
 			Name,
@@ -122,11 +132,15 @@ type
 			procedure   Run;
 			procedure   OpenWindow(Win: PWindow);
 			procedure   CloseWindow;
+			procedure   LoadTheme(FileName: string);
+			procedure   LoadSettings;
+			procedure   SaveSettings;
 			procedure   Exit;
 		private
 			Window:     PWindowNode;
 	end;
 
+	{Settings for the library, saved to disk}
 	TLibSetting = record
 		DeskID:      Integer;
 		LinkCapt,
@@ -136,6 +150,7 @@ type
 		ThmFile:     string[8];
 	end;
 
+	{Theme colors}
 	TTheme = record
 		Desk,
 		DeskText,
@@ -153,12 +168,11 @@ type
 	end;
 
 var
+	Mouse:          TMouse;
 	Setting:        TLibSetting;
 	Thm:            TTheme;
-	HotkeyPressed:  String; {Stores the last pressed hotkey, used in event loops}
-	MouseVisible:   Boolean;
-	MouseSupport:   Boolean;
-	MouseX, MouseY: Integer;
+	ProgramPath:    DirStr;      {Path of the executable, used to load resources}
+	HotkeyPressed:  String;      {Stores the last pressed hotkey, used in event loops}
 
 function  FileExists(const FileName: string): Boolean;
 function  Valid8dot3(Filename: string): Boolean;
@@ -166,13 +180,6 @@ function  Valid8dot3(Filename: string): Boolean;
 procedure ClearInputBuffer;
 function  GetKey: string;
 
-function  MouseClicked: TMouseButton;
-procedure MouseHide;
-procedure MouseMove(X, Y: Integer);
-procedure MousePoll;
-procedure MouseShow;
-
-function  ProgramPath: DirStr;
 function  Timer: Real;
 
 procedure Print(Text: string; X, Y, Color: Integer);
@@ -184,9 +191,6 @@ function  Replace(Input, OldSubStr, NewSubStr: String): String;
 function  ReplaceMsg(const Msg, Value: String): String;
 
 procedure SoundNote(Frequency, Duration: Integer);
-
-procedure SysLoadSettings;
-procedure SysSaveSettings;
 
 implementation
 
@@ -203,8 +207,8 @@ const
 
 constructor TBaseObject.Init;
 begin
-	Hotkey := nil;
 	Enabled := True;
+	Hotkey  := nil;
 	OnClick := nil;
 end;
 
@@ -310,9 +314,9 @@ begin
 		exit;
 	
 	{Check if mouse is clicked on the object}
-	if (MouseClicked = MbLeft) and Self.IsMouseOver then
+	if (Mouse.Clicked = MbLeft) and Self.IsMouseOver then
 	begin
-		repeat;	until MouseClicked = MbNone;
+		repeat;	until Mouse.Clicked = MbNone;
 		{Check if mouse is still over the object after release}
 		if Self.IsMouseOver then
 		begin
@@ -338,12 +342,12 @@ function TUIObject.IsMouseOver: Boolean;
 var
 	X1, Y1, X2, Y2: Integer;
 begin
-	MousePoll;
+	Mouse.Poll;
 	X1 := Left;
 	Y1 := Top;
 	X2 := X1 + Width;
 	Y2 := Y1 + Height;
-	IsMouseOver := (MouseX >= X1) and (MouseX <= X2) and (MouseY >= Y1) and (MouseY <= Y2);
+	IsMouseOver := (Mouse.X >= X1) and (Mouse.X <= X2) and (Mouse.Y >= Y1) and (Mouse.Y <= Y2);
 end;
 
 constructor THotkey.Init(Key: String);
@@ -382,14 +386,42 @@ begin
 end;
 
 constructor TApplication.Init;
+var
+	FullPath: PathStr;
+	FPath: DirStr;
+	FName: NameStr;
+	FExt: ExtStr;
+	GraphDriver,
+	GraphMode,
+	ErrorCode: Integer;
 begin
-	Name := '';
+	Name    := '';
 	Version := '';
-	Author := '';
-	Icon := '';
-	Window := nil;
-	OnRun := nil;
-	OnExit := nil;
+	Author  := '';
+	Icon    := '';
+	Window  := nil;
+	OnRun   := nil;
+	OnExit  := nil;
+
+	{Initialize EGA 640x350 mode}
+	GraphDriver := EGA;
+	GraphMode := EGAHI;
+	InitGraph(GraphDriver, GraphMode, ProgramPath);
+	ErrorCode := GraphResult;
+	If ErrorCode <> GrOk Then
+	Begin
+		CloseGraph;
+		Writeln(MSG_GRAPHICS_ERROR, GraphErrorMsg(ErrorCode));
+		Halt(1);
+	End;
+
+	{Retrieve full path of the executable}
+	FullPath := ParamStr(0); 
+	FSplit(FullPath, FPath, FName, FExt); 
+	ProgramPath := FPath;
+
+	{Initialize mouse}
+	Mouse.Init;
 end;
 
 destructor TApplication.Done;
@@ -422,6 +454,9 @@ begin
 	NewNode^.ObjectP := Win;
 	NewNode^.Next := Self.Window;
 	Self.Window := NewNode;
+
+	{Set the window's parent to the application}
+	Win^.Parent := @Self;
 end;
 
 procedure TApplication.CloseWindow;
@@ -434,10 +469,8 @@ begin
 	RemoveNode := Window;
 	Window := Window^.Next;
 
-	{Call the destructor of the window to free it's objects, then free the window itself and
-	 the linked list node}
-	RemoveNode^.ObjectP^.Done;
-	Dispose(RemoveNode^.ObjectP);
+	{Remove the window from the linked list. The window is not disposed of, as 
+	 the application may want to reuse it later}
 	Dispose(RemoveNode);
 end;
 
@@ -454,6 +487,14 @@ end;
 
 procedure TApplication.Run;
 begin
+	{Load settings and theme}
+	Self.LoadSettings;
+	Self.LoadTheme(Setting.ThmFile);
+
+	ClearInputBuffer; {DOSBox tends to leave keys in the buffer, so clear it}
+	Mouse.Show;
+
+	{Trigger OnRun event, if assigned}
 	If Assigned(OnRun) then
 		OnRun(@Self);
 
@@ -464,6 +505,108 @@ begin
 	Self.Exit; {No more windows, exit the application}
 end;
 
+procedure TApplication.LoadTheme(Filename: String);
+var
+	F: file;
+	ExpectedSize: LongInt;
+begin
+	{Default colors - will be overwritten if theme file loads successfully}
+	Thm.Desk      := Cyan;
+	Thm.DeskText  := Black;
+	Thm.Win       := LightGray;
+	Thm.Btn       := LightGray;
+	Thm.Txt       := White;
+	Thm.TxtText   := Black;
+	Thm.WinText   := Black;
+	Thm.Title     := Blue;
+	Thm.TitleText := White;
+	Thm.Light     := LightGray;
+	Thm.Shadow    := DarkGray;
+	Thm.Sel       := Blue;
+	Thm.SelText   := White;
+
+	{The end of the file contains 21 bytes for theme name, and 21 for theme
+	 author, so the total size should be 42 bytes more than the theme type}
+	ExpectedSize := SizeOf(TTheme) + 42;
+
+	{If no filename specified, use default theme}
+	if Length(Filename) = 0 then
+		Filename := 'DEFAULT';
+
+	if not FileExists('THEMES\' + Filename + '.BIN') then
+		exit;
+
+	Assign(F, 'THEMES\' + Filename + '.BIN');
+	{$I-}
+	Reset(F, 1);
+	{$I+}
+	if IOResult <> 0 then
+	begin
+		Close(F);
+		Exit;
+	end;
+
+	if FileSize(F) = ExpectedSize then
+		BlockRead(F, Thm, SizeOf(TTheme));
+	Close(F);
+end;
+
+procedure TApplication.LoadSettings;
+var
+	F: file;
+	LoadError: Boolean;
+begin
+	LoadError := False;
+	
+	{Set defaults - will be overwritten if settings file loads successfully}
+	Setting.DeskID      := 1;
+	Setting.LinkCapt    := True;
+	Setting.LinkTarget  := False;
+	Setting.ConfLinkDel := True;
+	Setting.ConfExit    := False;
+	Setting.ThmFile     := 'DEFAULT';
+	
+	if not FileExists(ProgramPath + GlobalSettings) then
+		exit;
+	
+	Assign(F, ProgramPath + GlobalSettings);
+	{$I-}
+	Reset(F, 1);
+	{$I+}
+	if IOResult <> 0 then
+		LoadError := True
+	else if FileSize(F) <> SizeOf(TLibSetting) then
+		LoadError := True;
+
+	if LoadError then
+	begin
+		Close(F);
+		exit;
+	end;
+
+	BlockRead(F, Setting, SizeOf(TLibSetting));
+	Close(F);
+end;
+
+procedure TApplication.SaveSettings;
+var
+	F: file;
+begin
+	Assign(F, ProgramPath + GlobalSettings);
+	{$I-}
+	Rewrite(F, 1);
+	{$I+}
+	if IOResult <> 0 then
+	begin
+		{MsgBox(MSG_SAVE_SETTING_ERROR_TITLE, MSG_SAVE_SETTING_ERROR_TEXT, MsgError);}
+		{DEBUG - this must be handled alternatively, MsgBox can't be included in the library}
+		Close(F);
+		Exit;
+	end;
+	BlockWrite(F, Setting, SizeOf(TLibSetting));
+	Close(F);
+end;
+
 constructor TWindow.Init(X, Y, W, H: Integer);
 const
 	DefaultW = 320;
@@ -471,9 +614,9 @@ const
 begin
 	TUIObject.Init;
 	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
-	Border := True;
+	Border  := True;
 	DoClose := False;
-	OnRun := nil;
+	OnRun   := nil;
 end;
 
 procedure TWindow.AddObject(Obj: PBaseObject);
@@ -548,14 +691,14 @@ begin
 	Self.DoClose := False;
 
 	{Draw window and all objects in the window}
-	MouseHide;
+	Mouse.Hide;
 	Self.Draw;
 	CurrObj := Objects;
 	repeat
 		CurrObj^.ObjectP^.Draw;
 		CurrObj := CurrObj^.Next;
 	until CurrObj = nil;
-	MouseShow;
+	Mouse.Show;
 
 	if Assigned(OnRun) then
 		OnRun(@Self);
@@ -731,62 +874,6 @@ begin
 	end;
 end;
 
-function MouseClicked: TMouseButton;
-var
-	regs: registers;
-begin
-	if not MouseSupport then
-	begin
-		MouseClicked := MbNone;
-		exit;
-	end;
-	regs.ax := 3;
-	Intr($33, regs);
-	MouseClicked := TMouseButton(regs.bx);
-end;
-
-Procedure MouseHide;
-Var
-	Regs: Registers;
-Begin
-	If Not MouseSupport Or Not MouseVisible Then Exit; {Don't call interrupt if no mouse or already hidden}
-	Regs.ax := 2;
-	Intr($33, Regs);
-	MouseVisible := False;
-End;
-
-procedure MousePoll;
-var
-	regs: registers;
-begin
-	if not MouseSupport then Exit;
-	regs.ax := 3;
-	Intr($33, regs);
-	MouseX := regs.cx;
-	MouseY := regs.dx;
-end;
-
-procedure MouseMove(X, Y: Integer);
-var
-	regs: registers;
-begin
-	if not MouseSupport then Exit;
-	regs.ax := 4;
-	regs.cx := X;
-	regs.dx := Y;
-	Intr($33, regs);
-end;
-
-Procedure MouseShow;
-Var
-	Regs: Registers;
-Begin
-	If Not MouseSupport Then Exit; {Don't call interrupt if no mouse or already visible}
-	Regs.ax := 1;
-	Intr($33, Regs);
-	MouseVisible := True;
-End;
-
 procedure SoundNote(Frequency, Duration: Integer);
 begin
   Sound(Frequency);
@@ -822,116 +909,6 @@ begin
 		PosStart := Pos(OldSubStr, Input); {Find the next occurrence}
 	end;
 	Replace := Input;
-end;
-
-procedure SysLoadSettings;
-var
-	F: file;
-	LoadError: Boolean;
-begin
-	LoadError := False;
-	
-	{Set defaults - will be overwritten if settings file loads successfully}
-	Setting.DeskID := 1;
-	Setting.LinkCapt := True;
-	Setting.LinkTarget := False;
-	Setting.ConfLinkDel := True;
-	Setting.ConfExit := False;
-	Setting.ThmFile := 'DEFAULT';
-	
-	if not FileExists(ProgramPath + GlobalSettings) then
-		exit;
-	
-	Assign(F, ProgramPath + GlobalSettings);
-	{$I-}
-	Reset(F, 1);
-	{$I+}
-	if IOResult <> 0 then
-		LoadError := True
-	else if FileSize(F) <> SizeOf(TLibSetting) then
-		LoadError := True;
-
-	if LoadError then
-	begin
-		Close(F);
-		exit;
-	end;
-
-	BlockRead(F, Setting, SizeOf(TLibSetting));
-	Close(F);
-end;
-
-procedure LoadTheme(ThemeFile: String);
-var
-	F: file;
-	ExpectedSize: LongInt;
-begin
-	{Default colors - will be overwritten if theme file loads successfully}
-	Thm.Desk	  := Cyan;
-	Thm.DeskText  := Black;
-	Thm.Win	   := LightGray;
-	Thm.Btn	   := LightGray;
-	Thm.Txt	   := White;
-	Thm.TxtText   := Black;
-	Thm.WinText   := Black;
-	Thm.Title	 := Blue;
-	Thm.TitleText := White;
-	Thm.Light	 := LightGray;
-	Thm.Shadow	:= DarkGray;
-	Thm.Sel	   := Blue;
-	Thm.SelText   := White;
-
-	{The end of the file contains 21 bytes for theme name, and 21	 for theme
-	 author, so the total size should be 40 bytes more than the theme type}
-	ExpectedSize := SizeOf(TTheme) + 42;
-
-	if not FileExists('THEMES\' + ThemeFile + '.BIN') then
-		exit;
-
-	Assign(F, 'THEMES\' + ThemeFile + '.BIN');
-	{$I-}
-	Reset(F, 1);
-	{$I+}
-	if IOResult <> 0 then
-	begin
-		Close(F);
-		Exit;
-	end;
-
-	if FileSize(F) = ExpectedSize then
-		BlockRead(F, Thm, SizeOf(TTheme));
-	Close(F);
-end;
-
-function ProgramPath: DirStr;
-var
-	FullPath: PathStr;
-	FPath: DirStr;
-	FName: NameStr;
-	FExt: ExtStr;
-begin
-	FullPath := ParamStr(0); {Full path of the executable}
-	FSplit(FullPath, FPath, FName, FExt); 
-	ProgramPath := FPath;
-end;
-
-procedure SysSaveSettings;
-var
-	F: file;
-begin
-	Assign(F, ProgramPath + GlobalSettings);
-	{$I-}
-	Rewrite(F, 1);
-	{$I+}
-	if IOResult <> 0 then
-	begin
-		{MsgBox(MSG_SAVE_SETTING_ERROR_TITLE, MSG_SAVE_SETTING_ERROR_TEXT, MsgError);}
-		{DEBUG - this must be handled alternatively, MsgBox can't be included int the library}
-		Close(F);
-		Exit;
-	end;
-	BlockWrite(F, Setting, SizeOf(TLibSetting));
-	Close(F);
 end;
 
 function Timer: Real;
@@ -978,35 +955,7 @@ begin
 	repeat
 		if KeyPressed then
 			ReadKey;
-	until (MouseClicked = MbNone) and not KeyPressed; {Wait until mouse is released and no keys are pressed}
+	until (Mouse.Clicked = MbNone) and not KeyPressed; {Wait until mouse is released and no keys are pressed}
 end;
 
-var
-	regs: registers;
-	GraphDriver: Integer;
-	GraphMode: Integer;
-	ErrorCode: Integer;
-begin
-	{Initialize EGA 640x350 mode}
-	GraphDriver := EGA;
-	GraphMode := EGAHI;
-	InitGraph(GraphDriver, GraphMode, ProgramPath);
-	ErrorCode := GraphResult;
-	If ErrorCode <> GrOk Then
-	Begin
-		CloseGraph;
-		Writeln(MSG_GRAPHICS_ERROR, GraphErrorMsg(ErrorCode));
-		Halt(1);
-	End;
-
-	{Load settings and theme}
-	SysLoadSettings;
-	LoadTheme(Setting.ThmFile);
-
-	{Check for mouse support}
-	Intr($33, regs);
-	MouseSupport := Regs.ax > 0;
-
-	ClearInputBuffer; {DOSBox tends to leave keys in the buffer, so clear it}
-	MouseShow;
 end.

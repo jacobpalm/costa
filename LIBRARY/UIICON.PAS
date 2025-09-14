@@ -102,9 +102,9 @@ end;
 procedure TIcon.SetIcon(Icon: string);
 begin
 	IconFile := Icon;
-	MouseHide;
+	Mouse.Hide;
 	Self.Draw;
-	MouseShow;
+	Mouse.Show;
 end;
 
 end.

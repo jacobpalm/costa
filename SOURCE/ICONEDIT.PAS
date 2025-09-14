@@ -133,9 +133,9 @@ begin
 						{Plot the current pixel if color is different}
 						if IconData[CanvasX, CanvasY] <> DrawColor then
 						begin
-							MouseHide;
+							Mouse.Hide;
 							DrawPixel(CanvasX, CanvasY, DrawColor);
-							MouseShow;
+							Mouse.Show;
 						end;
 					end;
 
@@ -144,14 +144,14 @@ begin
 
 					GetCursorPos(CanvasX, CanvasY);
 
-				until MouseClicked = MbNone;
+				until Mouse.Clicked = MbNone;
 			end;
 
 		ToolFloodFill:
 			begin
-				MouseHide;
+				Mouse.Hide;
 				FloodFill(CanvasX, CanvasY, DrawColor);
-				MouseShow;
+				Mouse.Show;
 				{After flood fill, switch back to the pencil tool}
 				SetTool(ToolPencil);
 			end;
@@ -277,7 +277,7 @@ begin
 	end;
 
 	{Wait for mouse release to avoid unintended drawing}
-	repeat until MouseClicked = MbNone;
+	repeat until Mouse.Clicked = MbNone;
 end;
 
 {SetDrawColor changes the currently selected drawing color and moves the
@@ -293,7 +293,7 @@ begin
 		Col := 0;
 	
 	{Remove selection marker from previous color}
-	MouseHide;
+	Mouse.Hide;
 	AreaColor[DrawColor].Draw;
 
 	{Change color and draw new selection marker}
@@ -306,7 +306,7 @@ begin
 	Rectangle(X1, Y1, X2, Y2);
 	SetColor(White);
 	Rectangle(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
-	MouseShow;
+	Mouse.Show;
 end;
 
 {SetTools sets the current tool and updates button visuals accordingly}
@@ -327,11 +327,11 @@ begin
 		BtnPencil.State := BsUp;
 		BtnFloodFill.State := BsDown;
 	end;
-	MouseHide;
+	Mouse.Hide;
 	BtnPencil.Draw;
 	BtnFloodFill.Draw;
 	CurrentTool := Tool;
-	MouseShow;
+	Mouse.Show;
 end;
 
 {GetCursorPos retrieves the pixel in the canvas which the mouse is currently over.
@@ -341,9 +341,9 @@ procedure GetCursorPos(var X, Y: Integer);
 begin
 	if AreaCanvas.IsMouseOver then
 	begin
-		MousePoll;
-		X := (MouseX - OffsetX) div PixelSize;
-		Y := (MouseY - OffsetY) div PixelSize;
+		Mouse.Poll;
+		X := (Mouse.X - OffsetX) div PixelSize;
+		Y := (Mouse.Y - OffsetY) div PixelSize;
 
 		{Ensure X and Y are within bounds}
 		if X < 0 then X := 0;
@@ -372,10 +372,10 @@ begin
 		begin
 			CanvasX := OffsetX + (IndicatorX * PixelSize);
 			CanvasY := OffsetY + (IndicatorY * PixelSize);
-			MouseHide;
+			Mouse.Hide;
 			SetFillStyle(SolidFill, IconData[IndicatorX, IndicatorY]);
 			Bar(CanvasX, CanvasY, CanvasX + PixelSize - 2, CanvasY + PixelSize - 2);
-			MouseShow;
+			Mouse.Show;
 		end;
 	end;
 
@@ -404,12 +404,12 @@ begin
 	{Draw indicator}
 	CanvasX := OffsetX + (IndicatorX * PixelSize);
 	CanvasY := OffsetY + (IndicatorY * PixelSize);
-	MouseHide;
+	Mouse.Hide;
 	SetColor(DarkGray);
 	Rectangle(CanvasX + 1, CanvasY + 1, CanvasX + 6, CanvasY + 6);
 	SetColor(White);
 	Rectangle(CanvasX + 2, CanvasY + 2, CanvasX + 5, CanvasY + 5);
-	MouseShow;
+	Mouse.Show;
 end;
 
 {The canvas is divided into pixels by horizontal and vertical lines in a grid. These lines
@@ -480,10 +480,10 @@ begin
 	FillChar(IconData, SizeOf(IconData), White);
 	
 	{Clear drawing area}
-	MouseHide;
+	Mouse.Hide;
 	AreaCanvas.Draw;
 	DrawCanvasGrid;
-	MouseShow;
+	Mouse.Show;
 
 	if IndicatorVisible then
 		MoveIndicator(DirStay);
@@ -606,7 +606,7 @@ begin
 	IconFileName := FName;
 	ImgPreview.IconFile := Fname;
 	
-	MouseHide;
+	Mouse.Hide;
 	ImgPreview.Draw;
 	{Get color of each pixel from the preview icon and draw it on the canvas}
 	for X := 0 to IconSize do
@@ -617,7 +617,7 @@ begin
 			DrawPixel(X, Y, PixelCol);
 		end;
 	end;
-	MouseShow;
+	Mouse.Show;
 
 	{If keyboard indicator was visible before load, redraw it}
 	if IndicatorVisible then
@@ -671,7 +671,7 @@ begin
 	OffsetY := AreaCanvas.Top + 2;
 
 	{Draw the UI}
-	MouseHide;
+	Mouse.Hide;
 	MenuBar.Draw;
 	SetFillStyle(SolidFill, Thm.Win);
 	Bar(0, 29, 639, 349);
@@ -706,7 +706,7 @@ begin
 	Print(CAP_PREVIEW, AreaPreview.Left, AreaPreview.Top - 15, Thm.WinText);
 	Print(CAP_COLOR, AreaColor[0].Left, AreaCanvas.Top, Thm.WinText);
 	Print(CAP_TOOLS, AreaCanvas.Left + AreaCanvas.Width + 12, AreaCanvas.Top, Thm.WinText);
-	MouseShow;
+	Mouse.Show;
 
 	{Set default draw color and move keyboard indicator to center}
 	SetDrawColor(0);
@@ -768,7 +768,7 @@ begin
 			DoCanvasAction(KeyboardAction);
 
 		{Draw using mouse}
-		if (MouseClicked <> MbNone) and AreaCanvas.IsMouseOver then
+		if (Mouse.Clicked <> MbNone) and AreaCanvas.IsMouseOver then
 			DoCanvasAction(MouseAction);
 
 	until false;

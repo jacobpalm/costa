@@ -42,21 +42,21 @@ begin
 	
 	{Check for left click, while drawing button pressed while mouse is down and over
 	 the button}
-	if (MouseClicked = MbLeft) and Self.IsMouseOver then
+	if (Mouse.Clicked = MbLeft) and Self.IsMouseOver then
 	begin
-		MouseHide;
+		Mouse.Hide;
 		State := BsDown;
 		Self.Draw;
-		MouseShow;
+		Mouse.Show;
 		repeat
 			if Self.IsMouseOver then
 			begin
 				if State = BsUp then
 				begin
 					State := BsDown;
-					MouseHide;
+					Mouse.Hide;
 					Self.Draw;
-					MouseShow;
+					Mouse.Show;
 				end;
 			end
 			else
@@ -64,19 +64,19 @@ begin
 				if State = BsDown then
 				begin
 					State := BsUp;
-					MouseHide;
+					Mouse.Hide;
 					Self.Draw;
-					MouseShow;
+					Mouse.Show;
 				end;
 			end;
-		until MouseClicked = MbNone;
+		until Mouse.Clicked = MbNone;
 
 		if State = BsDown then
 		begin
 			State := BsUp;
-			MouseHide;
+			Mouse.Hide;
 			Self.Draw;
-			MouseShow;
+			Mouse.Show;
 		end;
 		if Self.IsMouseOver then
 		begin

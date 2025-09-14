@@ -91,8 +91,8 @@ var
 	ListItem: TListItem;
 	I: Integer;
 begin
-	MousePoll;
-	if (MouseClicked = MbNone) or (not Self.IsMouseOver) then
+	Mouse.Poll;
+	if (Mouse.Clicked = MbNone) or (not Self.IsMouseOver) then
 	begin
 		{No mouse click or click outside the object, check for hotkeys only}
 		Self.CheckHotkeys;
@@ -100,8 +100,8 @@ begin
 	end;
 
 	{Make clicked coordinates relative to the list area}
-	ClickedX := MouseX - Left;
-	ClickedY := MouseY - Top;
+	ClickedX := Mouse.X - Left;
+	ClickedY := Mouse.Y - Top;
 
 	{Validate click inside, not on border}
 	if (ClickedX > 1) and (ClickedX < Width - 2) and
@@ -116,7 +116,7 @@ begin
 			{Clicked inside list area, but in the small gap after the last item.
 			Draw current item with focus}
 			Self.SetState(LsActive);
-			while MouseClicked > MbNone do;
+			while Mouse.Clicked > MbNone do;
 			exit;
 		end;
 
@@ -130,7 +130,7 @@ begin
 				if (Timer - DblClickTimer) <= DoubleClickDelay then
 					if Assigned(OnDoubleClick) then
 					begin
-						while MouseClicked > MbNone do;
+						while Mouse.Clicked > MbNone do;
 						OnDoubleClick(@Self);
 						exit;
 					end
@@ -156,7 +156,7 @@ begin
 		end;
 
 		DblClickTimer := Timer;
-		while MouseClicked > MbNone do;
+		while Mouse.Clicked > MbNone do;
 	end;
 	
 	{Trigger click event if assigned}
@@ -214,9 +214,9 @@ var
 	ItemText: String;
 begin
 	{Draw procedure of TArea draws the background and border}
-	MouseHide;
+	Mouse.Hide;
 	inherited Draw;
-	MouseShow;
+	Mouse.Show;
 
 	if Head = nil then
 		exit; {Nothing to draw}
@@ -230,7 +230,7 @@ begin
 	if StartPos > Length then
 		StartPos := 1; {Reset start position if it exceeds item count}
 
-	MouseHide;
+	Mouse.Hide;
 	{Draw items from the start position}
 	for I := StartPos to StartPos + MaxVisibleItems - 1 do
 	begin
@@ -255,7 +255,7 @@ begin
 			Inc(Counter);
 		end;
 	end;
-	MouseShow;
+	Mouse.Show;
 
 	if Assigned(OnDraw) then
 		OnDraw(@Self);
@@ -377,12 +377,12 @@ begin
 	ItemText := Self.GetItem(Selection);
 	if ItemText <> '' then
 	begin
-		MouseHide;
+		Mouse.Hide;
 		SetFillStyle(SolidFill, SelBGColor);
 		Bar(X1, Y1 + YOffset, X2, Y2 - 1 + YOffset);
 		Print(ItemText, X1 + 3, Y1 + 2 + YOffset, SelFGColor);
 	end;
-		MouseShow;
+		Mouse.Show;
 end;
 
 end.

@@ -121,7 +121,7 @@ begin
 
 	TxtCalc.MaxLen := 25;
 
-	MouseHide;
+	Mouse.Hide;
 	MenuBar.Draw;
 	SetColor(Thm.Win); Bar(0, 29, 639, 349);
 
@@ -135,7 +135,7 @@ begin
 	BtnAbout.Draw;
 
 	AreaLog.Draw;
-	MouseShow;
+	Mouse.Show;
 
 	LogLinesWritten := -1;
 
@@ -145,7 +145,7 @@ begin
 
 		if BtnExit.Clicked or (Key = KeyAltX) or (Key = KeyAltF4) then
 		begin
-			MouseHide;
+			Mouse.Hide;
 			CloseGraph;
 			Halt;
 		end;
@@ -159,27 +159,27 @@ begin
 			if BtnNumb[i].Clicked or (Key = ch) then
 			begin
 				TxtCalc.Text := TxtCalc.Text + ch;
-				MouseHide;
+				Mouse.Hide;
 				TxtCalc.Draw;
-				MouseShow;
+				Mouse.Show;
 			end;
 		end;
 
 		if BtnC.Clicked or (Key = KeyAltC) then
 		begin
 			TxtCalc.Text := '';
-			MouseHide;
+			Mouse.Hide;
 			TxtCalc.Draw;
-			MouseShow;
+			Mouse.Show;
 		end;
 
 		if BtnCE.Clicked or (Key = KeyAltE) then
 		begin
 			TxtCalc.Text := '';
-			MouseHide;
+			Mouse.Hide;
 			TxtCalc.Draw;
 			LogLine('');
-			MouseShow;
+			Mouse.Show;
 			MathFunc := '';
 			NumOps := 0;
 			Op1 := 0;
@@ -198,10 +198,10 @@ begin
 				LastClick := 'NUMB';
 				if TxtCalc.Text = '' then TxtCalc.Text := '0';
 				TxtCalc.Text := TxtCalc.Text + '.';
-				MouseHide;
+				Mouse.Hide;
 				TxtCalc.Text := FormatNum(TxtCalc.Text);
 				TxtCalc.Draw;
-				MouseShow;
+				Mouse.Show;
 			end;
 		end;
 

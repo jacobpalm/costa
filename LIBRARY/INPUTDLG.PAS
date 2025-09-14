@@ -68,7 +68,7 @@ begin
 	TxtInput.Text := MsgDefault;
 	TxtInput.AddHotkey(KeyAltN);
 
-	MouseHide;
+	Mouse.Hide;
 	BackgroundSize := ImageSize(X1, Y1, X2, Y2);
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(X1, Y1, X2, Y2, BackgroundP^);
@@ -81,7 +81,7 @@ begin
 
 	Print(MsgTitle, X1 + 56, Y1 + 15, Thm.WinText);
 	Print(MsgText, X1 + 56, Y1 + 31, Thm.WinText);
-	MouseShow;
+	Mouse.Show;
 
 	repeat
 		Key := GetKey;
@@ -95,10 +95,10 @@ begin
 	InputBox := ReturnValue;
 
 	ClearInputBuffer;
-	MouseHide;
+	Mouse.Hide;
 	PutImage(X1, Y1, BackgroundP^, NormalPut);
 	FreeMem(BackgroundP, BackgroundSize);
-	MouseShow;
+	Mouse.Show;
 end;
 
 end.

@@ -42,9 +42,9 @@ end;
 procedure TTextbox.CheckEvent;
 begin
 	{Check if mouse is clicked on the object}
-	if (MouseClicked = MbLeft) and Self.IsMouseOver then
+	if (Mouse.Clicked = MbLeft) and Self.IsMouseOver then
 	begin
-		repeat;	until MouseClicked = MbNone;
+		repeat;	until Mouse.Clicked = MbNone;
 		{Check if mouse is still over the object after release}
 		if Self.IsMouseOver then
 		begin
@@ -93,24 +93,24 @@ begin
 	OrigTxt := Text;
 
 	{Redraw the textbox to show the editing state}
-	MouseHide;
+	Mouse.Hide;
 	State := TsEditing;
 	Self.Draw;
-	MouseShow;
+	Mouse.Show;
 
 	ClearInputBuffer;
 	repeat
 		Key := GetKey;
 
 		{If mouse is clicked outside the textbox, stop editing}
-		if (MouseClicked > MbNone) and not Self.IsMouseOver then
+		if (Mouse.Clicked > MbNone) and not Self.IsMouseOver then
 			break;
 		
 		if Key = KeyBackspace then
 		begin
 			if Length(Text) > 0 then
 			begin
-				MouseHide;
+				Mouse.Hide;
 				if PrintW(Text) + 2 < MaxShow then
 				begin
 					{Erase only the last char}
@@ -128,7 +128,7 @@ begin
 					Text := Copy(Text, 1, Length(Text) - 1);
 					Self.Draw;
 				end;
-				MouseShow;
+				Mouse.Show;
 			end;
 		end;
 
@@ -139,9 +139,9 @@ begin
 		begin
 			Text := OrigTxt;
 			State := TsNormal;
-			MouseHide;
+			Mouse.Hide;
 			Self.Draw;
-			MouseShow;
+			Mouse.Show;
 			exit;
 		end;
 
@@ -151,7 +151,7 @@ begin
 			if (Ord(Key[1]) < 32) or (Ord(Key[1]) > 126) then
 				continue;
 
-			MouseHide;
+			Mouse.Hide;
 			if PrintW(Text + Key) + 2 < MaxShow then
 			begin
 				CursorX := X1 + PrintW(Text) + 2;
@@ -168,13 +168,13 @@ begin
 				Text := Text + Key;
 				Self.Draw;
 			end;
-			MouseShow;
+			Mouse.Show;
 		end;
 
 	until False;
 
 	State := TsNormal;
-	MouseHide;
+	Mouse.Hide;
 	if PrintW(Text) + 2 < MaxShow then
 	begin
 		{Erase only the cursor}
@@ -185,7 +185,7 @@ begin
 	else
 		{There's more text than fits, so we'll have to redraw the entire textbox}
 		Self.Draw;
-	MouseShow;
+	Mouse.Show;
 	ClearInputBuffer;
 
 	If Text <> OrigTxt then

@@ -310,7 +310,7 @@ var
 	Row, Col: integer;
 	X1, Y1, X2, Y2: integer;
 begin
-	MouseHide;
+	Mouse.Hide;
 	for Row := 1 to 3 do
 	begin
 		for Col := 1 to 3 do
@@ -328,7 +328,7 @@ begin
 			Rectangle(X1 + 1, Y1 + 1, X2, Y2);
 		end;
 	end;
-	MouseShow;
+	Mouse.Show;
 end;
 
 procedure DrawXO(Row, Col: integer; Player: TPlayer);
@@ -338,7 +338,7 @@ begin
 	X := AreaPlayField[Row, Col].Left;
 	Y := AreaPlayField[Row, Col].Top;
 
-	MouseHide;
+	Mouse.Hide;
 	SetColor(Black);
 	if Player = PlayerX then
 	begin
@@ -378,7 +378,7 @@ begin
 		Line(X + 44, Y + 42, X + 42, Y + 44);
 		Line(X + 16, Y + 42, X + 18, Y + 44);
 	end;
-	MouseShow;
+	Mouse.Show;
 
 end;
 
@@ -445,11 +445,11 @@ begin
 	
 	Message := ReplaceMsg(Message, CurrentTurn);
 
-	MouseHide;
+	Mouse.Hide;
 	SetFillStyle(SolidFill, Green);
 	Bar(12, 49, 627, 65);
 	Print(Message, (640 - PrintW(Message)) div 2, 53, Black);
-	MouseShow;
+	Mouse.Show;
 end;
 
 procedure PrintStatus;
@@ -466,12 +466,12 @@ begin
 	else
 		SoundMsg := MSG_SOUND_OFF;
 
-	MouseHide;
+	Mouse.Hide;
 	SetFillStyle(SolidFill, Green);
 	Bar(162, 316, 477, 332);
 	Print(ModeMsg, 166, 320, Black);
 	Print(SoundMsg, 476 - PrintW(SoundMsg), 320, Black);
-	MouseShow;
+	Mouse.Show;
 end;
 
 
@@ -513,7 +513,7 @@ begin
 	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
 	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
 	
-	MouseHide;
+	Mouse.Hide;
 	MenuBar.Draw;
 	DrawBg;
 
@@ -523,7 +523,7 @@ begin
 	BtnSound.Draw;
 	BtnAbout.Draw;
 	BtnExit.Draw;
-	MouseShow;
+	Mouse.Show;
 
 	PlayerTurn := PlayerX;
 	PlayerStart := PlayerX;

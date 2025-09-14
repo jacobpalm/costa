@@ -110,10 +110,10 @@ begin
 	{Either there is no selection, or the preview should be hidden - so so if previously shown}
 	if (PreviewShown) then
 	begin
-		MouseHide;
+		Mouse.Hide;
 		SetFillStyle(SolidFill, Thm.Win);
 		Bar(ImgPreview.Left - 1, ImgPreview.Top - 1, ImgPreview.Left + 32, ImgPreview.Top + 32);
-		MouseShow;
+		Mouse.Show;
 		PreviewShown := false;
 	end;
 end;
@@ -238,9 +238,9 @@ begin
 	if not SetDrive(TxtDrive.Text[1]) then
 	begin
 		TxtDrive.Text := Drive; {Restore original drive letter}
-		MouseHide;
+		Mouse.Hide;
 		TxtDrive.Draw;
-		MouseShow;
+		Mouse.Show;
 	end;
 end;
 
@@ -355,7 +355,7 @@ begin
 	List[FileList].SetState(LsActive);
 	ReturnedFile := '';
 
-	MouseHide;
+	Mouse.Hide;
 
 	{Save background to restore when window is closed}
 	X1 := WinFileSelect.Left;
@@ -379,7 +379,7 @@ begin
 	BtnDirNext.Draw;
 	Print(CAP_FILES, 101, WinFileSelect.Top + 57, Thm.WinText);
 	Print(CAP_DIRS, 272, WinFileSelect.Top + 57, Thm.WinText);
-	MouseShow;
+	Mouse.Show;
 
 	{If path provided, use it - otherwise use current directory}
 	if Length(StartPath) > 0 then
@@ -415,10 +415,10 @@ begin
 	FileSelect := ReturnedFile;
 	
 	{Restore background}
-	MouseHide;
+	Mouse.Hide;
 	PutImage(X1, Y1, BackgroundP^, NormalPut);
 	FreeMem(BackgroundP, BackgroundSize);
-	MouseShow;
+	Mouse.Show;
 
 	{$I-}
 	ChDir(OriginalPath); {Restore original path}

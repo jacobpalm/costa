@@ -174,7 +174,7 @@ begin
 			{Clicked a mined field}
 			if Mined in Field[Row, Col] then
 			begin
-				MouseHide;
+				Mouse.Hide;
 				for Row := 0 to FieldH - 1 do
 				begin
 					for Col := 0 to FieldW - 1 do
@@ -186,7 +186,7 @@ begin
 						end;
 					end;
 				end;
-				MouseShow;
+				Mouse.Show;
 				PrintStatus(False, MSG_GAME_OVER);
 				PlaySound(SoundLoose);
 				GameOver := true;
@@ -194,14 +194,14 @@ begin
 			end;
 
 			{If we reach this point, clear the field and adjacent empty fields}
-			MouseHide;
+			Mouse.Hide;
 			ClearCell(Row, Col);
-			MouseHide;
+			Mouse.Hide;
 			if ClearedCount = (FieldH * FieldW) - MineCount then
 				WinGame
 			else
 				PlaySound(SoundClear);
-			MouseShow;
+			Mouse.Show;
 		end;
 			
 		MbRight:
@@ -219,10 +219,10 @@ begin
 				Exclude(Field[Row, Col], Flagged);
 				Dec(FlaggedCount);
 			end;
-			MouseHide;
+			Mouse.Hide;
 			DrawCell(Row, Col);
 			PrintStatus(true, '');
-			MouseShow;
+			Mouse.Show;
 			PlaySound(SoundFlag);
 		end;
 	end;
@@ -354,7 +354,7 @@ begin
 	X2 := AreaField.Left + AreaField.Width;
 	Y2 := AreaField.Top + AreaField.Height;
 
-	MouseHide;
+	Mouse.Hide;
 	SetFillStyle(SolidFill, Thm.Win);
 	Bar(0, 29, 639, 349);
 
@@ -396,7 +396,7 @@ begin
 	{Borders around playfield}
 	Rectangle(X1, Y1, X2, Y2);
 	
-	MouseShow;
+	Mouse.Show;
 
 end;
 
@@ -519,13 +519,13 @@ begin
 	
 	BtnResume.Init(3, 2, SizeDefault, SizeDefault, CAP_RESUME);
 
-	MouseHide;
+	Mouse.Hide;
 	SetFillStyle(SolidFill, Thm.Win);
 	Bar(0, 29, 639, 329);
 	MenuBar.Draw;
 	BtnResume.Draw;
 	BtnExit.Draw;
-	MouseShow;
+	Mouse.Show;
 
 	repeat
 		Key := GetKey;
@@ -544,7 +544,7 @@ begin
 		
 	until false;
 
-	MouseHide;
+	Mouse.Hide;
 	BtnNew.Draw;
 	BtnSize.Draw;
 	BtnSound.Draw;
@@ -558,7 +558,7 @@ begin
 			DrawCell(Row, Col);
 		end;
 	end;
-	MouseShow;
+	Mouse.Show;
 
 	PrintStatus(False, '');
 	if StartTime <> 0 then
@@ -621,16 +621,16 @@ begin
 	SetFillStyle(SolidFill, Thm.Win);
 
 	{Only hide mouse if it's near the timer, to avoid cursor flicker on old PCs}
-	MousePoll;
-	if MouseY > 310 then
-		MouseHide;
+	Mouse.Poll;
+	if Mouse.Y > 310 then
+		Mouse.Hide;
 	
 	if MineCountOnly then
 	begin
 		Bar(106, 330, 184, 343);
 		MessageText := FlaggedStr + '/' + CountStr;
 		Print(MessageText, 110, 332, Thm.WinText);
-		MouseShow;
+		Mouse.Show;
 		exit;
 	end;
 
@@ -652,7 +652,7 @@ begin
 		MessageText := MessageText + MSG_OFF;
 	
 	Print(MessageText, (630 - PrintW(MessageText)), 332, Thm.WinText);
-	MouseShow;
+	Mouse.Show;
 end;
 
 procedure PrintTime;
@@ -666,9 +666,9 @@ begin
 		exit;
 
 	{Only hide mouse if it's near the timer, to avoid cursor flicker on old PCs}
-	MousePoll;
-	if MouseY > 310 then
-		MouseHide;
+	Mouse.Poll;
+	if Mouse.Y > 310 then
+		Mouse.Hide;
 
 	{Clear timer only}
 	SetFillStyle(SolidFill, Thm.Win);
@@ -700,7 +700,7 @@ begin
 		Print(MessageText, (640 - PrintW(MessageText)) div 2, 332, Thm.WinText);
 	end;
 
-	MouseShow;
+	Mouse.Show;
 end;
 
 procedure RevealMines;
@@ -710,7 +710,7 @@ var
 begin
 
 	SetColor(Red);
-	MouseHide;
+	Mouse.Hide;
 	for Row := 0 to FieldH - 1 do
 	begin
 		for Col := 0 to FieldW - 1 do
@@ -725,7 +725,7 @@ begin
 			end;
 		end;
 	end;
-	MouseShow;
+	Mouse.Show;
 						
 end;
 
@@ -753,7 +753,7 @@ begin
 	BtnSize[2].Transparent := True;
 	BtnSize[3].Transparent := True;
 
-	MouseHide;
+	Mouse.Hide;
 	{Save background to restore when window is closed}
 	X1 := WinSetSize.Left;
 	Y1 := WinSetSize.Top;
@@ -807,7 +807,7 @@ begin
 	for Y := 0 to 5 do
 		Line(339, 195 + Y * 9, 411, 195 + Y * 9);
 	
-	MouseShow;
+	Mouse.Show;
 
 	SetFieldSize := true; {Only cancel button will set this to false}
 
@@ -850,10 +850,10 @@ begin
 
 	until false;
 
-	MouseHide;
+	Mouse.Hide;
 	PutImage(X1, Y1, BackgroundP^, NormalPut);
 	FreeMem(BackgroundP, BackgroundSize);
-	MouseShow;		
+	Mouse.Show;		
 end;
 
 procedure MoveIndicator(Direction: TDirection);
@@ -862,7 +862,7 @@ begin
 
 	{Hide current indicator before moving}
 	Exclude(Field[IndicatorRow, IndicatorCol], Selected);
-	MouseHide;
+	Mouse.Hide;
 	DrawCell(IndicatorRow, IndicatorCol);
 	case Direction of
 		DirUp:
@@ -879,7 +879,7 @@ begin
 				Inc(IndicatorCol);
 		DirHide:
 			begin
-				MouseShow;
+				Mouse.Show;
 				exit;
 			end;
 	end;
@@ -887,7 +887,7 @@ begin
 	{Add new indicator and draw it}
 	Include(Field[IndicatorRow, IndicatorCol], Selected);
 	DrawCell(IndicatorRow, IndicatorCol);
-	MouseShow;
+	Mouse.Show;
 end;
 
 procedure WinGame;
@@ -927,7 +927,7 @@ begin
 	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
 	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
 	
-	MouseHide;
+	Mouse.Hide;
 	MenuBar.Draw;
 	BtnNew.Draw;
 	BtnSize.Draw;
@@ -935,7 +935,7 @@ begin
 	BtnPause.Draw;
 	BtnAbout.Draw;
 	BtnExit.Draw;
-	MouseShow;
+	Mouse.Show;
 
 	{Default settings}
 	EnableSound := True;
@@ -1008,14 +1008,14 @@ begin
 				TimeCompare := Timer + 1;
 			end;
 		
-			if (MouseClicked <> MbNone) and AreaField.IsMouseOver then
+			if (Mouse.Clicked <> MbNone) and AreaField.IsMouseOver then
 			begin
-				MouseButton := MouseClicked;
-				MousePoll;
+				MouseButton := Mouse.Clicked;
+				Mouse.Poll;
 			
 				{Calculate which cell was clicked}
-				FieldCol := (MouseX - AreaField.Left) div CellSize;
-				FieldRow := (MouseY - AreaField.Top) div CellSize;
+				FieldCol := (Mouse.X - AreaField.Left) div CellSize;
+				FieldRow := (Mouse.Y - AreaField.Top) div CellSize;
 
 				{Play field is one pixel too wide for calculation above, dirty fix
 				 for this to prevent out of bounds clicks}

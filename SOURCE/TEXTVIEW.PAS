@@ -63,10 +63,10 @@ begin
 
 	FreeLines; {Free any previously allocated lines}
 	FileOpened := False;
-	MouseHide;
+	Mouse.Hide;
 	SetFillStyle(SolidFill, Thm.Txt);
 	Bar(0, 29, 639, 349);
-	MouseShow;
+	Mouse.Show;
 	MsgBox(MSG_OPEN_ERROR_TITLE, MSG_MEMORY_TEXT, MsgError);
 	CustomHeapError := 1; {Make GetMem return a nil pointer}
 end;
@@ -75,10 +75,10 @@ procedure ShowLoading;
 var
 	BtnLoading: TButton;
 begin
-	MouseHide;
+	Mouse.Hide;
 	BtnLoading.Init(sizeCenter, sizeCenter, 110, 34, CAP_LOADING);
 	BtnLoading.Draw;
-	MouseShow;
+	Mouse.Show;
 end;
 
 function InitLines(InitialSize: Integer): Boolean;
@@ -259,14 +259,14 @@ procedure DrawText;
 var
 	i, DrawnLines: Integer;
 begin
-	MouseHide;
+	Mouse.Hide;
 	SetFillStyle(SolidFill, Thm.Txt);
 
 	{If no file is opened, clear the entire text area}
 	if not FileOpened then
 	begin
 		Bar(0, 29, 639, 349);
-		MouseShow;
+		Mouse.Show;
 		Exit;
 	end;
 
@@ -283,7 +283,7 @@ begin
 			Print(Lines^[i]^, 9, (PrintLineH * (i - StartLine + 1)) + 24, Thm.TxtText);
 
 	end;
-	MouseShow;
+	Mouse.Show;
 end;
 
 procedure ScrollText(Direction: TDirection);
