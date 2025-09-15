@@ -8,6 +8,7 @@ uses
 type
 	TButtonState  = (BsUp, BsDown);
 	
+	PButton = ^TButton;
 	TButton = object(TUIObject)
 		public
 			Transparent: Boolean;
@@ -36,10 +37,13 @@ begin
 end;
 
 procedure TButton.CheckEvent;
+var
+	Clicked: boolean;
 begin
 	if not Enabled then
 		exit;
 	
+	Clicked := False;
 	{Check for left click, while drawing button pressed while mouse is down and over
 	 the button}
 	if (Mouse.Clicked = MbLeft) and Self.IsMouseOver then
@@ -81,13 +85,16 @@ begin
 		if Self.IsMouseOver then
 		begin
 			{Mouse was both clicked and released over the button, trigger OnClick event}
-			if Assigned(OnClick) then
-				OnClick(@Self);
-			exit;
+			Clicked := True;
 		end;
 	end;
 
-	Self.CheckHotkeys;
+	if Clicked or Self.HotkeyPressed then
+	begin
+		{Trigger OnClick event, if assigned}
+		if Assigned(OnClick) then
+				OnClick(@Self);
+	end;
 end;
 
 procedure TButton.Draw;

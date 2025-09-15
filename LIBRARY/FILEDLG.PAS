@@ -389,7 +389,7 @@ begin
 
 	repeat
 		Key := GetKey;
-		HotkeyPressed := Key; {DEBUG - move to event loop later}
+		HotkeyInput := Key; {DEBUG - move to event loop later}
 
 		List[FileList].CheckEvent;
 		List[DirList].CheckEvent;

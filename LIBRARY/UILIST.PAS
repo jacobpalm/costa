@@ -20,6 +20,7 @@ type
 		Next: PListItem;
 	end;
 	
+	PList = ^TList;
 	TList = object(TArea)
 		public
 			OnChange:      TEventProc;
@@ -95,7 +96,9 @@ begin
 	if (Mouse.Clicked = MbNone) or (not Self.IsMouseOver) then
 	begin
 		{No mouse click or click outside the object, check for hotkeys only}
-		Self.CheckHotkeys;
+		if Self.HotkeyPressed then
+			if Assigned(OnClick) then
+				OnClick(@Self);
 		exit;
 	end;
 

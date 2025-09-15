@@ -4,7 +4,7 @@ unit InputDlg;
 interface
 
 uses
-	Costalib, UIIcon, UIButton, UITxtbox, Strings, Graph, Crt;
+	Costalib, UIIcon, UIButton, UITxtbox, UILabel, Strings, Graph, Crt;
 
 function InputBox(MsgTitle, MsgText, MsgIcon, MsgDefault: string): string;
 
@@ -16,23 +16,23 @@ const
 	CAP_INPUT  = 'I' + #127 + 'nput:';
 
 var
-	WinInputBox: TWindow;
-	TxtInput: TTextbox;
-	BtnOK, BtnCancel: TButton;
-	ImgIcon: TIcon;
+	WinInputBox: PWindow;
+	TxtInput: PTextbox;
+	BtnOK, BtnCancel: PButton;
+	ImgIcon: PIcon;
+	LblTitle, lblText: PLabel;
 
 	ReturnValue: string;
-	InputBoxDone: Boolean;
 
 procedure BtnOkClick(Sender: PBaseObject); far;
 begin
-	ReturnValue := TxtInput.Text;
-	InputBoxDone := True;
+	ReturnValue := TxtInput^.Text;
+	WinInputBox^.Close;
 end;
 
 procedure BtnCancelClick(Sender: PBaseObject); far;
 begin
-	InputBoxDone := True;
+	WinInputBox^.Close;
 end;
 
 function InputBox(MsgTitle, MsgText, MsgIcon, MsgDefault: string): string;
@@ -41,64 +41,75 @@ var
 	X1, Y1, X2, Y2: Integer;
 	BackgroundSize: Word;
 	BackgroundP: Pointer;
-	Key: String;
 begin
-	InputBoxDone := False;
 	ReturnValue := '';
+
+	{Calculate size of the Window based on text size}
 	BoxW := PrintW(MsgText) + 76;
 	BoxH := PrintH(MsgText) + 120;
 	if BoxW < 194 then
 		BoxW := 194;
-	WinInputBox.Init(sizeCenter, sizeCenter, BoxW, BoxH);
-	X1 := WinInputBox.Left;
-	Y1 := WinInputBox.Top;
-	X2 := WinInputBox.Left + WinInputBox.Width;
-	Y2 := WinInputBox.Top + WinInputBox.Height;
 
-	ImgIcon.Init(X1 + 13, Y1 + 15, MsgIcon);
-	BtnOK.Init(X2 - 207, Y2 - 36, SizeDefault, SizeDefault, CAP_OK);
-	BtnOK.AddHotkey(KeyAltO);
-	BtnOK.AddHotkey(KeyEnter);
-	BtnOK.OnClick := BtnOKClick;
-	BtnCancel.Init(X2 - 105, BtnOK.Top, SizeDefault, SizeDefault, CAP_CANCEL);
-	BtnCancel.AddHotkey(KeyAltC);
-	BtnCancel.AddHotkey(KeyEscape);
-	BtnCancel.OnClick := BtnCancelClick;
-	TxtInput.Init(X1 + 12, BtnOK.Top - 27, WinInputBox.Width - 25, SizeDefault, CAP_INPUT);
-	TxtInput.Text := MsgDefault;
-	TxtInput.AddHotkey(KeyAltN);
+	{Create the Window and all child objects}
+	New(WinInputBox, Init(sizeCenter, sizeCenter, BoxW, BoxH));
+	X1 := WinInputBox^.Left;
+	Y1 := WinInputBox^.Top;
+	X2 := X1 + WinInputBox^.Width;
+	Y2 := Y1 + WinInputBox^.Height;
 
+	New(ImgIcon, Init(X1 + 13, Y1 + 15, MsgIcon));
+	New(BtnOK, Init(X2 - 207, Y2 - 36, SizeDefault, SizeDefault, CAP_OK));
+	New(BtnCancel, Init(X2 - 105, BtnOK^.Top, SizeDefault, SizeDefault, CAP_CANCEL));
+	New(TxtInput, Init(X1 + 12, BtnOK^.Top - 27, WinInputBox^.Width - 25, SizeDefault, CAP_INPUT));
+	New(LblTitle, Init(X1 + 56, Y1 + 15, SizeDefault, SizeDefault, MsgTitle));
+	New(LblText, Init(X1 + 56, Y1 + 31, SizeDefault, SizeDefault, MsgText));
+	With BtnOK^ do
+	begin
+		AddHotkey(KeyAltO);
+		AddHotkey(KeyEnter);
+		OnClick := BtnOkClick;
+	end;
+	With BtnCancel^ do
+	begin
+		AddHotkey(KeyAltC);
+		AddHotkey(KeyEscape);
+		OnClick := BtnCancelClick;
+	end;
+	with TxtInput^ do
+	begin
+		Text := MsgDefault;
+		AddHotkey(KeyAltN);
+	end;
+
+	{Add all objects to the Window}
+	WinInputBox^.AddObject(BtnOK);
+	WinInputBox^.AddObject(BtnCancel);
+	WinInputBox^.AddObject(TxtInput);
+	WinInputBox^.AddObject(ImgIcon);
+	WinInputBox^.AddObject(LblTitle);
+	WinInputBox^.AddObject(LblText);
+
+	{Save background to restore when Window is closed}
 	Mouse.Hide;
 	BackgroundSize := ImageSize(X1, Y1, X2, Y2);
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(X1, Y1, X2, Y2, BackgroundP^);
-
-	WinInputBox.Draw;
-	BtnOK.Draw;
-	BtnCancel.Draw;
-	TxtInput.Draw;
-	ImgIcon.Draw;
-
-	Print(MsgTitle, X1 + 56, Y1 + 15, Thm.WinText);
-	Print(MsgText, X1 + 56, Y1 + 31, Thm.WinText);
 	Mouse.Show;
 
-	repeat
-		Key := GetKey;
-		HotkeyPressed := Key; {DEBUG - move to event loop later}
-
-		BtnOK.CheckEvent;
-		BtnCancel.CheckEvent;
-		TxtInput.CheckEvent;
-	until InputboxDone;
-
+	{Run the Window. This will not return until the Window is closed}
+	WinInputBox^.Run;
 	InputBox := ReturnValue;
-
 	ClearInputBuffer;
+
+	{Restore background}
 	Mouse.Hide;
 	PutImage(X1, Y1, BackgroundP^, NormalPut);
-	FreeMem(BackgroundP, BackgroundSize);
 	Mouse.Show;
+
+	{Dispose of memory used by background and objects. Disposing of the Window
+	 object will also dispose of all child objects}
+	FreeMem(BackgroundP, BackgroundSize);
+	Dispose(WinInputBox, Done);
 end;
 
 end.

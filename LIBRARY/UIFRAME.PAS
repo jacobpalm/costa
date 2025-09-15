@@ -6,6 +6,7 @@ uses
 	Costalib, Graph;
 
 type
+	PFrame = ^TFrame;
 	TFrame = object(TUIObject)
 		public
 			LightColor,

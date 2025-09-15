@@ -270,7 +270,7 @@ begin
 
 	repeat
 		Key := GetKey;
-		HotkeyPressed := Key; {DEBUG - move to event loop later}
+		HotkeyInput := Key; {DEBUG - move to event loop later}
 
 		for i := 0 to High(BtnObjSelect) do
 			BtnObjSelect[i].CheckEvent;
@@ -353,14 +353,14 @@ begin
 		exit;
 
 	FSplit(SelectedFile, FDir, FName, FExt);
-	if not (FDir = ProgramPath + 'THEMES\') or not (FExt = '.BIN') then
+	if not (FDir = App.Path + 'THEMES\') or not (FExt = '.BIN') then
 	begin
 		MsgBox(MSG_ERROR_OPENING_TITLE, MSG_INVALID_THEME_FILE, MsgError);
 		exit;
 	end;
 
 	LoadError := False;
-	Assign(F, ProgramPath + 'THEMES\' + FName + '.BIN');
+	Assign(F, App.Path + 'THEMES\' + FName + '.BIN');
 	{$I-}
 	Reset(F, 1);
 	{$I+}
@@ -414,7 +414,7 @@ begin
 			exit;
 		end;
 
-		Filename := ProgramPath + 'THEMES\' + FileName + '.BIN';
+		Filename := App.Path + 'THEMES\' + FileName + '.BIN';
 	end
 	else
 		Filename := ThemeFile;
@@ -494,7 +494,7 @@ end;
 
 procedure BtnAboutClick(Sender: PBaseObject); far;
 begin
-	AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
+	AboutBox(@App);
 end;
 
 procedure BtnExitClick(Sender: PBaseObject); far;

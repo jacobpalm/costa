@@ -8,6 +8,7 @@ uses
 type
 	TLabelAlign = (LaLeft, LaCenter, LaRight);
 
+	PLabel = ^TLabel;
 	TLabel = object(TUIObject)
 		public
 			FgColor,

@@ -6,6 +6,7 @@ uses
 	Costalib, Graph;
 
 type
+	PArea = ^TArea;
 	TArea = object(TUIObject)
 		public
 			Transparent: Boolean;

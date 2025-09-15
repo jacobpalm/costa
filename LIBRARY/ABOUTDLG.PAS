@@ -3,9 +3,9 @@ unit ABOUTDLG;
 interface
 
 uses
-	CostaLib, UIIcon, UIButton, Graph;
+	CostaLib, UIIcon, UIButton, UILabel, Graph;
 	
-procedure AboutBox(const ProgramName, ProgramVersion, ProgramAuthor, IconFile: string);
+procedure AboutBox(AppP: PApplication);
 
 implementation
 
@@ -24,67 +24,70 @@ const
 	                 'https://costa.jacobpalm.dk';
 
 var
-	WinAboutBox: TWindow;
-	BtnClose: TButton;
-	ImgLogo: TIcon;
-
-	AboutBoxDone: Boolean;
+	WinAboutBox: PWindow;
+	BtnClose: PButton;
+	ImgLogo: PIcon;
+	LblInfo: array [0..2] of PLabel;
 
 procedure AboutBoxClose(Sender: PBaseObject); far;
 begin
-	AboutBoxDone := True;
+	WinAboutBox^.Close;
 end;
 
-procedure AboutBox(const ProgramName, ProgramVersion, ProgramAuthor, IconFile: string);
+procedure AboutBox(AppP: PApplication);
 var
 	X1, Y1, X2, Y2: Integer;
 	BackgroundSize: Word;
 	BackgroundP: Pointer;
-	Text, Key: String;
+	Text: String;
 begin
-	AboutBoxDone := False;
 	Text := ReplaceMsg(MSG_ABOUT_TEXT, LibName);
 	Text := ReplaceMsg(Text, LibVersion);
 	Text := ReplaceMsg(Text, LibYear);
 
-	WinAboutBox.Init(sizeCenter, sizeCenter, PrintW(Text) + 29, PrintH(Text) + 95);
-	X1 := WinAboutBox.Left;
-	Y1 := WinAboutBox.Top;
-	X2 := WinAboutBox.Left + WinAboutBox.Width;
-	Y2 := WinAboutBox.Top + WinAboutBox.Height;
-	ImgLogo.Init(X1 + 13, Y1 + 15, IconFile);
-	BtnClose.Init(SizeCenter, Y2 - 34, SizeDefault, SizeDefault, CAP_CLOSE);
-	BtnClose.AddHotkey(KeyAltC);
-	BtnClose.AddHotkey(KeyEnter);
-	BtnClose.AddHotkey(KeyEscape);
-	BtnClose.OnClick := AboutBoxClose;
-
-	Mouse.Hide;
+	New(WinAboutBox, Init(sizeCenter, sizeCenter, PrintW(Text) + 29, PrintH(Text) + 95));
+	X1 := WinAboutBox^.Left;
+	Y1 := WinAboutBox^.Top;
+	X2 := X1 + WinAboutBox^.Width;
+	Y2 := Y1 + WinAboutBox^.Height;
+	New(ImgLogo, Init(X1 + 13, Y1 + 15, AppP^.Icon));
+	New(BtnClose, Init(SizeCenter, Y2 - 34, SizeDefault, SizeDefault, CAP_CLOSE));
+	with BtnClose^ do
+	begin
+		AddHotkey(KeyAltC);
+		AddHotkey(KeyEnter);
+		AddHotkey(KeyEscape);
+		OnClick := AboutBoxClose;
+	end;
+	
+	New(LblInfo[0], Init(X1 + 56, Y1 + 21, SizeDefault, SizeDefault, AppP^.Name + ' ' + AppP^.Version));
+	New(LblInfo[1], Init(X1 + 56, Y1 + 33, SizeDefault, SizeDefault, ReplaceMsg(MSG_BY_TEXT, AppP^.Author)));
+	New(LblInfo[2], Init(X1 + 15, Y1 + 53, SizeDefault, SizeDefault, Text));
+	
+	WinAboutBox^.AddObject(BtnClose);
+	WinAboutBox^.AddObject(ImgLogo);
+	WinAboutBox^.AddObject(LblInfo[0]);
+	WinAboutBox^.AddObject(LblInfo[1]);
+	WinAboutBox^.AddObject(LblInfo[2]);
 
 	{Save background to restore when Window is closed}
+	Mouse.Hide;
 	BackgroundSize := ImageSize(X1, Y1, X2, Y2);
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(X1, Y1, X2, Y2, BackgroundP^);
-
-	WinAboutBox.Draw;
-	BtnClose.Draw;
-	ImgLogo.Draw;
-	Print(ProgramName + ' ' + ProgramVersion, X1 + 56, Y1 + 21, Thm.WinText);
-	Print(ReplaceMsg(MSG_BY_TEXT, ProgramAuthor), X1 + 56, Y1 + 33, Thm.WinText);
-	
-	Print(Text, X1 + 15, Y1 + 53, Thm.WinText);
-	
 	Mouse.Show;
-	repeat
-		Key := GetKey;
-		HotkeyPressed := Key; {DEBUG - move to event loop later}
-		
-		BtnClose.CheckEvent;
-	until AboutBoxDone;
+
+	WinAboutBox^.Run;
+
+	{Restore background}
 	Mouse.Hide;
 	PutImage(X1, Y1, BackgroundP^, NormalPut);
 	Mouse.Show;
+
+	{Dispose of memory used by background and objects. Disposing of the Window
+		object will also dispose of all child objects}
 	FreeMem(BackgroundP, BackgroundSize);
+	Dispose(WinAboutBox, Done);
 end;
 
 end.

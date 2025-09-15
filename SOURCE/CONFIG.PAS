@@ -1,7 +1,7 @@
 program Configuration;
 
 uses
-	CostaLib, Graph, DOS;
+	CostaLib, UIButton, UITxtbox, UIChkbox, UILabel, UIIcon, UIFrame, MsgDlg, AboutDlg, Graph, DOS;
 
 const
 	AppName              = 'Configuration Utility';
@@ -46,6 +46,22 @@ type
 	
 
 var
+	App:           TApplication;
+	WinMain:       TWindow;
+	BtnExit,
+	BtnAbout,
+	BtnPrevious,
+	BtnNext:       TButton;
+	FrmSettings,
+	FrmTheme:      TFrame;
+	FrmPreview:    TFrame;
+	ImgSetting,
+	ImgTheme:      TIcon;
+	LblSettings,
+	LblTheme,
+	LblNoThemes:   TLabel;
+	ChkSetting:    array[0..4] of TCheckbox;
+
 	NewThemeList:  PThemeList;
 	ThemeCount:    integer;
 	SelectedTheme: integer;
@@ -53,7 +69,6 @@ var
 	ThemeAuthor:   string[20];
 
 	{Objects that are used both in and outside of the main procedure}
-	FrmThemePreview: TFrame;
 
 procedure AddThemeToList(const ThemeName: string); forward;
 
@@ -64,12 +79,13 @@ var
     FName: NameStr;
     FExt: ExtStr;
     ExpectedSize: integer;
-	BtnLoading: TButton;
+	BtnLoading: PButton;
 begin
+	New(BtnLoading, Init(sizeCenter, sizeCenter, 110, 34, CAP_LOADING));
 	Mouse.Hide;
-	BtnLoading.Init(sizeCenter, sizeCenter, 110, 34, CAP_LOADING);
-	BtnLoading.Draw;
+	BtnLoading^.Draw;
 	Mouse.Show;
+	Dispose(BtnLoading, Done);
 
     ThemeCount := 0;
     ExpectedSize := SizeOf(TTheme) + SizeOf(ThemeAuthor) + SizeOf(ThemeName);
@@ -185,12 +201,12 @@ begin
 
 	Close(F);
 
-	ViewWidth := FrmThemePreview.Width - 4;
-	ViewHeight := FrmThemePreview.Height - 4;
+	ViewWidth := FrmPreview.Width - 4;
+	ViewHeight := FrmPreview.Height - 4;
 
-	WinPreview.Init(FrmThemePreview.Left + 14, FrmThemePreview.Top + 12, ViewWidth - 28, 123);
+	WinPreview.Init(FrmPreview.Left + 14, FrmPreview.Top + 12, ViewWidth - 28, 123);
 	ImgLogo.Init(WinPreview.Left + 12, WinPreview.Top + 12, 'LOGO');
-	ImgDeskLink.Init(WinPreview.Left, FrmThemePreview.Top + FrmThemePreview.Height - 42, 'PAINT');
+	ImgDeskLink.Init(WinPreview.Left, FrmPreview.Top + FrmPreview.Height - 42, 'PAINT');
 	TxtPreview.Init(ImgLogo.Left, ImgLogo.Top + 45, WinPreview.Width - 23, SizeDefault, '');
 	TxtPreview.Text := CAP_TEXTBOX;
 	BtnPreview1.Init(WinPreview.Left + 12, WinPreview.Top + WinPreview.Height - 34, 86, SizeDefault, CAP_BUTTON);
@@ -198,8 +214,8 @@ begin
 
 	Mouse.Hide;
 	SetFillStyle(SolidFill, Thm.Desk);
-	Bar(FrmThemePreview.Left + 2, FrmThemePreview.Top + 2,
-		FrmThemePreview.Left + FrmThemePreview.Width - 2, FrmThemePreview.Top + FrmThemePreview.Height - 2);
+	Bar(FrmPreview.Left + 2, FrmPreview.Top + 2,
+		FrmPreview.Left + FrmPreview.Width - 2, FrmPreview.Top + FrmPreview.Height - 2);
 	
 	if LoadError then
 	begin
@@ -224,113 +240,143 @@ begin
 	Thm := OrigTheme; {Restore original theme}
 end;
 
-var
-	BtnExit, BtnAbout: TButton;
-	BtnPrevious, BtnNext: TButton;
-	FrmSettings, FrmTheme: TFrame;
-	ImgSetting, ImgTheme: TIcon;
-	ChkSetting: array[0..4] of TCheckbox;
+procedure SwitchTheme(Sender: PBaseObject); far;
+begin
+	if Sender = @BtnPrevious then
+		Dec(SelectedTheme)
+	else if Sender = @BtnNext then
+		Inc(SelectedTheme);
+
+	FrmPreview.Draw;
+end;
+
+procedure FrmPreviewDraw(Sender: PBaseObject); far;
+begin
+	ThemePreview;
+end;
+
+procedure BtnExitClick(Sender: PBaseObject); far;
+begin
+	if ThemeCount > 0 then
+		Setting.ThmFile := SelectedFileName;
+
+	Setting.LinkCapt := ChkSetting[LinkDesc].GetChecked;
+	Setting.LinkTarget := ChkSetting[LinkTarget].GetChecked;
+	Setting.ConfLinkDel := ChkSetting[LinkDelete].GetChecked;
+	Setting.ConfExit := ChkSetting[ConfExit].GetChecked;
+	App.SaveSettings;
 	
+	WinMain.Close;
+	App.Exit; {Debug - should happen automatically when last window is closed}
+end;
+
+procedure BtnAboutClick(Sender: PBaseObject); far;
+begin
+	AboutBox(@App);
+end;
+
+var	
 	Key: string;
 begin
-	ShowLoading;
+	with App do
+	begin
+		Init;
+		Name := AppName;
+		Version := AppVersion;
+		Author := AppAuthor;
+		Icon := AppIcon;
+	end;
 
 	LoadThemeList;
 
-	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
-	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
+	with BtnAbout do
+	begin
+		Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
+		AddHotkey(KeyAltA);
+		OnClick := BtnAboutClick;
+	end;
+	with BtnExit do
+	begin
+		Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
+		AddHotkey(KeyAltX);
+		AddHotkey(KeyAltF4);
+		OnClick := BtnExitClick;
+	end;
 	
 	FrmSettings.Init(14, 43, 310, 293);
-	FrmTheme.Init(338, 43, 288, 293);
 	ImgSetting.Init(FrmSettings.Left + 14, FrmSettings.Top + 14, 'CONFIG');
-	
-	ChkSetting[LinkDesc].Init(FrmSettings.Left + 14, FrmSettings.Top + 56, CAP_LINKDESC);
-	ChkSetting[LinkTarget].Init(ChkSetting[LinkDesc].Left, ChkSetting[LinkDesc].Top + 22, CAP_LINKTARGET);
-	ChkSetting[LinkDelete].Init(ChkSetting[LinkDesc].Left, ChkSetting[LinkTarget].Top + 22, CAP_LINKDELETE);
-	ChkSetting[ConfExit].Init(ChkSetting[LinkDesc].Left, ChkSetting[LinkDelete].Top + 22, CAP_CONFEXIT);
-	ChkSetting[LinkDesc].Checked := Setting.LinkCapt;
-	ChkSetting[LinkTarget].Checked := Setting.LinkTarget;
-	ChkSetting[LinkDelete].Checked := Setting.ConfLinkDel;
-	ChkSetting[ConfExit].Checked := Setting.ConfExit;
-
-	FrmThemePreview.Init(FrmTheme.Left + 14, FrmTheme.Top + 55, FrmTheme.Width - 28, 192);
-	ImgTheme.Init(FrmTheme.Left + 14, FrmTheme.Top + 14, 'THEMES');
-	BtnPrevious.Init(FrmTheme.Left + 14, FrmTheme.Top + FrmTheme.Height - 34, SizeDefault, SizeDefault, CAP_PREVIOUS);
-	BtnNext.Init(FrmTheme.Left + FrmTheme.Width - 92 - 14, BtnPrevious.Top, SizeDefault, SizeDefault, CAP_NEXT);
-	
-	Mouse.Hide;
-	MenuBar.Draw;
-	SetFillStyle(SolidFill, Thm.Win);
-	Bar(0, 29, 639, 349);
-	
-	BtnExit.Draw;
-	BtnAbout.Draw;
-	FrmSettings.Draw;
-	FrmTheme.Draw;
-	FrmThemePreview.Draw;
-	ChkSetting[LinkDesc].Draw;
-	ChkSetting[LinkTarget].Draw;
-	ChkSetting[LinkDelete].Draw;
-	ChkSetting[ConfExit].Draw;
-	Print(CAP_SETTINGS, ImgSetting.Left + 42, ImgSetting.Top + 5, Thm.WinText);
-	Print(CAP_THEMES, ImgTheme.Left + 42, ImgTheme.Top + 5, Thm.WinText);
-	ImgSetting.Draw;
-	ImgTheme.Draw;
-
-	if ThemeCount <> 0 then
+	LblSettings.Init(ImgSetting.Left + 42, ImgSetting.Top + 5, SizeDefault, SizeDefault, CAP_SETTINGS);
+	with ChkSetting[LinkDesc] do
 	begin
-		BtnPrevious.Draw;
-		BtnNext.Draw;
-	end
-	else
-		Print(MSG_NO_THEMES, 387, 310, Thm.WinText);
-	Mouse.Show;
+		Init(FrmSettings.Left + 14, FrmSettings.Top + 56, CAP_LINKDESC, Setting.LinkCapt);
+		AddHotkey(KeyAltC);
+	end;
+	with ChkSetting[LinkTarget] do
+	begin
+		Init(ChkSetting[LinkDesc].Left, ChkSetting[LinkDesc].Top + 22, CAP_LINKTARGET, Setting.LinkTarget);
+		AddHotkey(KeyAltO);
+	end;
+	with ChkSetting[LinkDelete] do
+	begin
+		Init(ChkSetting[LinkDesc].Left, ChkSetting[LinkTarget].Top + 22, CAP_LINKDELETE, Setting.ConfLinkDel);
+		AddHotkey(KeyAltR);
+	end;
+	with ChkSetting[ConfExit] do
+	begin
+		Init(ChkSetting[LinkDesc].Left, ChkSetting[LinkDelete].Top + 22, CAP_CONFEXIT, Setting.ConfExit);
+		AddHotkey(KeyAltE);
+	end;
 
-	ThemePreview;
-
-	repeat
-		Key := GetKey;
-
-		if ThemeCount > 0 then
+	FrmTheme.Init(338, 43, 288, 293);
+	ImgTheme.Init(FrmTheme.Left + 14, FrmTheme.Top + 14, 'THEMES');
+	LblTheme.Init(ImgTheme.Left + 42, ImgTheme.Top + 5, SizeDefault, SizeDefault, CAP_THEMES);
+	with FrmPreview do
+	begin
+		Init(FrmTheme.Left + 14, FrmTheme.Top + 55, FrmTheme.Width - 28, 192);
+		OnDraw := FrmPreviewDraw;
+	end;
+	with BtnPrevious do
+	begin
+		Init(FrmTheme.Left + 14, FrmTheme.Top + FrmTheme.Height - 34, SizeDefault, SizeDefault, CAP_PREVIOUS);
+		AddHotkey(KeyAltP);
+		AddHotkey(KeyLeft);
+		OnClick := SwitchTheme;
+	end;
+	with BtnNext do
+	begin
+		Init(FrmTheme.Left + FrmTheme.Width - 92 - 14, BtnPrevious.Top, SizeDefault, SizeDefault, CAP_NEXT);
+		AddHotkey(KeyAltN);
+		AddHotkey(KeyRight);
+		OnClick := SwitchTheme;
+	end;
+	LblNoThemes.Init(387, 310, SizeDefault, SizeDefault, MSG_NO_THEMES);
+	
+	with WinMain do
+	begin
+		Init(0, 0, GetMaxX, GetMaxY);
+		Border := False;
+		AddObject(@BtnExit);
+		AddObject(@BtnAbout);
+		AddObject(@FrmSettings);
+		AddObject(@FrmTheme);
+		AddObject(@FrmPreview);
+		AddObject(@ImgSetting);
+		AddObject(@ImgTheme);
+		AddObject(@LblSettings);
+		AddObject(@LblTheme);
+		AddObject(@ChkSetting[LinkDesc]);
+		AddObject(@ChkSetting[LinkTarget]);
+		AddObject(@ChkSetting[LinkDelete]);
+		AddObject(@ChkSetting[ConfExit]);
+		if ThemeCount <> 0 then
 		begin
-			if BtnPrevious.Clicked or (Key = KeyAltP) or (Key = KeyLeft) then
-			 begin
-				Dec(SelectedTheme);
-				ThemePreview;
-			end;
+			AddObject(@BtnPrevious);
+			AddObject(@BtnNext);
+		end
+		else
+			AddObject(@LblNoThemes);
+	end;
 
-			if BtnNext.Clicked or (Key = KeyAltN) or (Key = KeyRight) then
-			begin
-				Inc(SelectedTheme);
-				ThemePreview;
-			end;
-		end;
-
-		if ChkSetting[LinkDesc].Clicked or (Key = KeyAltC) then
-			ChkSetting[LinkDesc].Toggle;
-		if ChkSetting[LinkTarget].Clicked or (Key = KeyAltO) then
-			ChkSetting[LinkTarget].Toggle;
-		if ChkSetting[LinkDelete].Clicked or (Key = KeyAltR) then
-			ChkSetting[LinkDelete].Toggle;
-		if ChkSetting[ConfExit].Clicked or (Key = KeyAltE) then
-			ChkSetting[ConfExit].Toggle;
-
-		if BtnAbout.Clicked or (Key = KeyAltA) then
-			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
-
-		if BtnExit.Clicked or (Key = KeyAltX) or (Key = KeyAltF4) then
-		begin
-			if ThemeCount > 0 then
-				Setting.ThmFile := SelectedFileName;
-			Setting.LinkCapt := ChkSetting[LinkDesc].Checked;
-			Setting.LinkTarget := ChkSetting[LinkTarget].Checked;
-			Setting.ConfLinkDel := ChkSetting[LinkDelete].Checked;
-			Setting.ConfExit := ChkSetting[ConfExit].Checked;
-			SysSaveSettings;
-			break;
-		end;
-
-	until false;
-
-	CloseGraph;
+	App.OpenWindow(@WinMain);
+	App.Run;
 end.

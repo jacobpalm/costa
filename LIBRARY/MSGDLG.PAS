@@ -105,7 +105,7 @@ begin
 
 	repeat
 		Key := GetKey;
-		HotkeyPressed := Key; {DEBUG - move to event loop later}
+		HotkeyInput := Key; {DEBUG - move to event loop later}
 		
 		BtnFirst.CheckEvent;
 		if MsgType = MsgQuest then

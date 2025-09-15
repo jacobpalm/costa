@@ -6,6 +6,7 @@ uses
 	Costalib, Graph;
 
 type
+	PIcon = ^TIcon;
 	TIcon = object(TUIObject)
 		public
 			constructor Init(X, Y: Integer; Icon: string);

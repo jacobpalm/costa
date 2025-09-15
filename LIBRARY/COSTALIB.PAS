@@ -3,7 +3,7 @@ unit CostaLib;
 interface
 
 uses
-	UIMouse, Crt, Dos, Graph, Strings;
+	Crt, Dos, Graph, Strings;
 
 const
 	LibName              = 'Costa UI Library';
@@ -57,7 +57,7 @@ type
 			Destructor  Done; virtual;
 			procedure   AddHotkey(Key: string);
 			procedure   CheckEvent; virtual;
-			procedure   CheckHotkeys;
+			function    HotkeyPressed: boolean;
 	end;
 
 	{Linked list of objects based on PBaseObject, can contain objects of any descendant type}
@@ -98,10 +98,12 @@ type
 		public
 			Border:     Boolean;
 			OnRun:      TEventProc;
+			OnClose:    TEventProc;
 			Parent:     PApplication;
 			constructor Init(X, Y, W, H: Integer);
 			destructor  Done; virtual;
 			procedure   AddObject(Obj: PBaseObject);
+			procedure   CheckEvent; virtual;
 			{procedure   SetMenu(Menu: PMenu);}
 			procedure   Draw; virtual;
 			procedure   Run;
@@ -132,12 +134,32 @@ type
 			procedure   Run;
 			procedure   OpenWindow(Win: PWindow);
 			procedure   CloseWindow;
+			function    Path: DirStr;
 			procedure   LoadTheme(FileName: string);
 			procedure   LoadSettings;
 			procedure   SaveSettings;
 			procedure   Exit;
 		private
 			Window:     PWindowNode;
+	end;
+
+	{Mouse support is implemnted via custom object}
+	TMouseButton  = (MbNone, MbLeft, MbRight, MbBoth);
+	TMouse = object
+		public
+			constructor Init;
+			procedure   Poll;
+			procedure   Move(Left, Top: Integer);
+			function    Clicked: TMouseButton;
+			function    Supported: Boolean;
+			function    X: Integer;
+			function    Y: Integer;
+			procedure   Hide;
+			procedure   Show;
+		private
+			Visible,
+			Support:    Boolean;
+			XPos, YPos: Integer;
 	end;
 
 	{Settings for the library, saved to disk}
@@ -168,11 +190,11 @@ type
 	end;
 
 var
-	Mouse:          TMouse;
-	Setting:        TLibSetting;
-	Thm:            TTheme;
+	Mouse:          TMouse;      {Global mouse object}
+	Setting:        TLibSetting; {Global settings for the library}
+	Thm:            TTheme;      {Colors for the interface}
 	ProgramPath:    DirStr;      {Path of the executable, used to load resources}
-	HotkeyPressed:  String;      {Stores the last pressed hotkey, used in event loops}
+	HotkeyInput:    String;      {Stores the last pressed hotkey, used in event loops}
 
 function  FileExists(const FileName: string): Boolean;
 function  Valid8dot3(Filename: string): Boolean;
@@ -231,32 +253,32 @@ begin
 	if not Enabled then
 		exit;
 		
-	Self.CheckHotkeys;
+	if Self.HotkeyPressed then
+		{Trigger OnClick event, if assigned}
+		if Assigned(OnClick) then
+			OnClick(@Self);
 end;
 
 {Check for hotkeys events assigned to the object}
-procedure TBaseObject.CheckHotkeys;
+function TBaseObject.HotkeyPressed: boolean;
 var
 	CheckNode: PHotKeyNode;
 begin
-	if not Enabled then
-		exit;
+	HotkeyPressed := False;
 
-	if (Length(HotkeyPressed) > 0) then
+	if (not Enabled) or (Length(HotkeyInput) = 0) then
+		exit;
+	
+	CheckNode := Hotkey;
+	while Assigned(CheckNode) do
 	begin
-		CheckNode := Hotkey;
-		while Assigned(CheckNode) do
+		if CheckNode^.HotKey = HotkeyInput then
 		begin
-			if CheckNode^.HotKey = HotkeyPressed then
-			begin
-				HotkeyPressed := ''; {Reset hotkey}
-				{Trigger OnClick event, if assigned}
-				if Assigned(OnClick) then
-					OnClick(@Self);
-				exit;
-			end;
-			CheckNode := CheckNode^.Next; {Move to next node in linked list}
+			HotkeyInput := ''; {Reset hotkey}
+			HotkeyPressed := True;
+			exit;
 		end;
+		CheckNode := CheckNode^.Next; {Move to next node in linked list}
 	end;
 end;
 
@@ -309,25 +331,26 @@ end;
 
 {Check for events on object}
 procedure TUIObject.CheckEvent;
+var
+	Clicked: boolean;
 begin
 	if not Enabled then
 		exit;
 	
+	Clicked := False;
 	{Check if mouse is clicked on the object}
 	if (Mouse.Clicked = MbLeft) and Self.IsMouseOver then
 	begin
 		repeat;	until Mouse.Clicked = MbNone;
 		{Check if mouse is still over the object after release}
 		if Self.IsMouseOver then
-		begin
-			{Trigger OnClick event, if assigned}
-			if Assigned(OnClick) then
-				OnClick(@Self);
-			exit;
-		end;
+			Clicked := True;
 	end;
 
-	Self.CheckHotkeys;
+	if Clicked or Self.HotkeyPressed then
+		{Trigger OnClick event, if assigned}
+		if Assigned(OnClick) then
+			OnClick(@Self);
 end;
 
 {Dummy draw procedure - overridden in descendandt objects}
@@ -360,7 +383,13 @@ end;
 
 procedure THotkey.CheckEvent;
 begin
-	Self.CheckHotkeys;
+	if not Enabled then
+		exit;
+	
+	if Self.HotkeyPressed then
+		{Trigger OnClick event, if assigned}
+		if Assigned(OnClick) then
+			OnClick(@Self);
 end;
 
 constructor TMenu.Init;
@@ -403,10 +432,15 @@ begin
 	OnRun   := nil;
 	OnExit  := nil;
 
+	{Retrieve full path of the executable}
+	FullPath := ParamStr(0); 
+	FSplit(FullPath, FPath, FName, FExt); 
+	ProgramPath := FPath;
+
 	{Initialize EGA 640x350 mode}
 	GraphDriver := EGA;
 	GraphMode := EGAHI;
-	InitGraph(GraphDriver, GraphMode, ProgramPath);
+	InitGraph(GraphDriver, GraphMode, Self.Path);
 	ErrorCode := GraphResult;
 	If ErrorCode <> GrOk Then
 	Begin
@@ -415,10 +449,9 @@ begin
 		Halt(1);
 	End;
 
-	{Retrieve full path of the executable}
-	FullPath := ParamStr(0); 
-	FSplit(FullPath, FPath, FName, FExt); 
-	ProgramPath := FPath;
+	{Load settings and theme}
+	Self.LoadSettings;
+	Self.LoadTheme(Setting.ThmFile);
 
 	{Initialize mouse}
 	Mouse.Init;
@@ -487,10 +520,6 @@ end;
 
 procedure TApplication.Run;
 begin
-	{Load settings and theme}
-	Self.LoadSettings;
-	Self.LoadTheme(Setting.ThmFile);
-
 	ClearInputBuffer; {DOSBox tends to leave keys in the buffer, so clear it}
 	Mouse.Show;
 
@@ -505,8 +534,14 @@ begin
 	Self.Exit; {No more windows, exit the application}
 end;
 
+function TApplication.Path: DirStr;
+begin
+	Path := ProgramPath;
+end;
+
 procedure TApplication.LoadTheme(Filename: String);
 var
+	ThemeFile: string;
 	F: file;
 	ExpectedSize: LongInt;
 begin
@@ -533,10 +568,12 @@ begin
 	if Length(Filename) = 0 then
 		Filename := 'DEFAULT';
 
-	if not FileExists('THEMES\' + Filename + '.BIN') then
+	ThemeFile := Self.Path + 'THEMES\' + Filename + '.BIN';
+
+	if not FileExists(ThemeFile) then
 		exit;
 
-	Assign(F, 'THEMES\' + Filename + '.BIN');
+	Assign(F, ThemeFile);
 	{$I-}
 	Reset(F, 1);
 	{$I+}
@@ -566,10 +603,10 @@ begin
 	Setting.ConfExit    := False;
 	Setting.ThmFile     := 'DEFAULT';
 	
-	if not FileExists(ProgramPath + GlobalSettings) then
+	if not FileExists(Self.Path + GlobalSettings) then
 		exit;
 	
-	Assign(F, ProgramPath + GlobalSettings);
+	Assign(F, Self.Path + GlobalSettings);
 	{$I-}
 	Reset(F, 1);
 	{$I+}
@@ -592,7 +629,7 @@ procedure TApplication.SaveSettings;
 var
 	F: file;
 begin
-	Assign(F, ProgramPath + GlobalSettings);
+	Assign(F, Self.Path + GlobalSettings);
 	{$I-}
 	Rewrite(F, 1);
 	{$I+}
@@ -617,6 +654,9 @@ begin
 	Border  := True;
 	DoClose := False;
 	OnRun   := nil;
+	Objects := nil;
+	MenuObj := nil;
+	Parent  := nil;
 end;
 
 procedure TWindow.AddObject(Obj: PBaseObject);
@@ -704,20 +744,36 @@ begin
 		OnRun(@Self);
 
 	while not Self.DoClose do
+		Self.CheckEvent;
+
+	if Assigned(OnClose) then
+		OnClose(@Self);
+end;
+
+procedure TWindow.CheckEvent;
+var
+	CurrObj: PObjectNode;
+begin
+	HotkeyInput := GetKey;
+	CurrObj := Objects;
+	while Assigned(CurrObj) do
 	begin
-		HotkeyPressed := GetKey;
-		CurrObj := Objects;
-		while Assigned(CurrObj) do
-		begin
-			CurrObj^.ObjectP^.CheckEvent;
-			CurrObj := CurrObj^.Next;
-		end;
+		CurrObj^.ObjectP^.CheckEvent;
+
+		{If the window was closed by an event, exit the loop}
+		if Self.DoClose then
+			exit;
+
+		CurrObj := CurrObj^.Next;
 	end;
 end;
 
 procedure TWindow.Close;
 begin
 	Self.DoClose := True;
+
+	{if Assigned(Parent) then
+		Parent^.CloseWindow;} {DEBUG}
 end;
 
 destructor TWindow.Done;
@@ -735,6 +791,104 @@ begin
 	{Call ancestor destructor for properties that aren't specific to TWindow}
 	inherited Done;
 end;
+
+constructor TMouse.Init;
+var
+	regs: registers;
+begin
+	Visible := False;
+
+	{Check for mouse support}
+	Intr($33, regs);
+	Support := Regs.ax > 0;
+
+	{Get initial mouse position}
+	Self.Poll;
+end;
+
+function TMouse.Clicked: TMouseButton;
+var
+	regs: registers;
+begin
+	if not Support then
+	begin
+		Clicked := MbNone;
+		exit;
+	end;
+
+	regs.ax := 3;
+	Intr($33, regs);
+	Clicked := TMouseButton(regs.bx);
+end;
+
+Procedure TMouse.Hide;
+Var
+	Regs: Registers;
+Begin
+	{Don't call interrupt if no mouse or already hidden}
+	If Not Support Or Not Visible Then
+		Exit;
+	Regs.ax := 2;
+	Intr($33, Regs);
+	Visible := False;
+End;
+
+procedure TMouse.Poll;
+var
+	regs: registers;
+begin
+	if not Support then
+		Exit;
+	regs.ax := 3;
+	Intr($33, regs);
+	XPos := regs.cx;
+	YPos := regs.dx;
+end;
+
+procedure TMouse.Move(Left, Top: Integer);
+var
+	regs: registers;
+begin
+	{Can't move mouse if no mouse support}
+	if not Support then
+		Exit;
+	
+	if (Left < 0) or (Left > GetMaxX) or 
+	   (Top < 0) or (Top > GetMaxY) then
+		Exit; {Out of bounds}
+
+	regs.ax := 4;
+	regs.cx := Left;
+	regs.dx := Top;
+	Intr($33, regs);
+end;
+
+Procedure TMouse.Show;
+Var
+	Regs: Registers;
+Begin
+	{Don't call interrupt if no mouse or already visible}
+	If Not Support Then
+		Exit;
+	Regs.ax := 1;
+	Intr($33, Regs);
+	Visible := True;
+End;
+
+Function TMouse.Supported: Boolean;
+Begin
+	Supported := Support;
+End;
+
+Function TMouse.X: Integer;
+Begin
+	X := XPos;
+End;
+
+Function TMouse.Y: Integer;
+Begin
+	Y := YPos;
+End;
 
 function FileExists(const FileName: string): Boolean;
 var

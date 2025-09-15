@@ -8,6 +8,7 @@ uses
 type
 	TTextboxState = (TsNormal, TsEditing);
 
+	PTextbox = ^TTextbox;
 	TTextbox = object(TUIObject)
 		public
 			Caption,
@@ -16,7 +17,6 @@ type
 			OnChange:   TEventProc;
 			constructor Init(X, Y, W, H: Integer; Cap: String);
 			procedure   CheckEvent; virtual;
-			procedure   CheckHotkeys; virtual;
 			procedure   Edit;
 			procedure   Draw; virtual;
 		private
@@ -40,7 +40,14 @@ begin
 end;
 
 procedure TTextbox.CheckEvent;
+var
+	Clicked: boolean;
 begin
+	If not Enabled then
+		exit;
+
+	Clicked := False;
+
 	{Check if mouse is clicked on the object}
 	if (Mouse.Clicked = MbLeft) and Self.IsMouseOver then
 	begin
@@ -48,36 +55,18 @@ begin
 		{Check if mouse is still over the object after release}
 		if Self.IsMouseOver then
 		begin
-			{Trigger OnClick event, if assigned}
-			if Assigned(OnClick) then
-				OnClick(@Self);
-
-			{Allow user to edit the text}
-			Self.Edit;
-			exit;
+			Clicked := True;
 		end;
 	end;
 
-	Self.CheckHotkeys;
-end;
-
-procedure TTextbox.CheckHotkeys;
-var
-	CheckNode: PHotKeyNode;
-begin
-	if (Length(HotkeyPressed) > 0) then
+	if Clicked or Self.HotkeyPressed then
 	begin
-		CheckNode := Hotkey;
-		while Assigned(CheckNode) do
-		begin
-			if CheckNode^.HotKey = HotkeyPressed then
-			begin
-				HotkeyPressed := ''; {Reset hotkey}
-				Self.Edit;
-				exit;
-			end;
-			CheckNode := CheckNode^.Next; {Move to next node in linked list}
-		end;
+		{Trigger OnClick event, if assigned}
+		if Assigned(OnClick) then
+			OnClick(@Self);
+
+		{Allow user to edit the text}
+		Self.Edit;
 	end;
 end;
 

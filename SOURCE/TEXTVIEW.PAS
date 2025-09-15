@@ -73,12 +73,13 @@ end;
 
 procedure ShowLoading;
 var
-	BtnLoading: TButton;
+	BtnLoading: PButton;
 begin
 	Mouse.Hide;
-	BtnLoading.Init(sizeCenter, sizeCenter, 110, 34, CAP_LOADING);
-	BtnLoading.Draw;
+	New(BtnLoading, Init(sizeCenter, sizeCenter, 110, 34, CAP_LOADING) );
+	BtnLoading^.Draw;
 	Mouse.Show;
+	Dispose(BtnLoading, Done);
 end;
 
 function InitLines(InitialSize: Integer): Boolean;
@@ -316,7 +317,7 @@ end;
 
 procedure BtnAboutClick(Sender: PBaseObject); far;
 begin
-	AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
+	AboutBox(@App);
 end;
 
 procedure BtnOpenClick(Sender: PBaseObject); far;

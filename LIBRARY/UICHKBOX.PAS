@@ -1,4 +1,4 @@
-unit UILABEL;
+unit UICHKBOX;
 
 interface
 
@@ -6,11 +6,13 @@ uses
 	Costalib, Graph;
 
 type
+	PCheckbox = ^TCheckbox;
 	TCheckbox = object(TUIObject)
 		public
 			Caption:    string;
 			OnChange:   TEventProc;
 			constructor Init(X, Y: Integer; Cap: String; Checked: Boolean);
+			procedure   CheckEvent; virtual;
 			function    GetChecked: boolean;
 			procedure   SetChecked(Checked: boolean);
 			procedure   Draw; virtual;
@@ -29,6 +31,7 @@ begin
 	Self.SetSize(X, Y, DefaultW, DefaultH, DefaultW, DefaultH);
 	Caption := Cap;
 	ChkState := Checked;
+	OnChange := nil;
 end;
 
 procedure TCheckbox.Draw;
@@ -79,6 +82,37 @@ begin
 
 	if Assigned(OnDraw) then
 		OnDraw(@Self);
+end;
+
+procedure TCheckbox.CheckEvent;
+var
+	Clicked: boolean;
+begin
+	if not Enabled then
+		exit;
+
+	Clicked := False;
+	
+	{Check if mouse is clicked on the object}
+	if (Mouse.Clicked = MbLeft) and Self.IsMouseOver then
+	begin
+		repeat;	until Mouse.Clicked = MbNone;
+		{If mouse was released over the object, toggle the checkbox state}
+		if Self.IsMouseOver then
+		begin
+			Clicked := True;
+		end;
+	end;
+
+	if Clicked or Self.HotkeyPressed then
+	begin
+		{Toggle checkbox state}
+		Self.SetChecked(not ChkState);
+
+		{Trigger OnClick event, if assigned}
+		if Assigned(OnClick) then
+			OnClick(@Self);
+	end;
 end;
 
 function TCheckbox.GetChecked: boolean;
