@@ -83,7 +83,7 @@ begin
 		BtnSecond.OnClick := BtnSecondClick;
 	end;
 
-	MouseHide;
+	Mouse.Hide;
 
 	{Save background to restore when Window is closed}
 	X1 := WinMsgBox.Left;
@@ -101,7 +101,7 @@ begin
 	ImgIcon.Draw;
 	Print(MsgTitle, WinMsgBox.Left+56, WinMsgBox.Top+15, Thm.WinText);
 	Print(MsgText, WinMsgBox.Left+56, WinMsgBox.Top+31, Thm.WinText);
-	MouseShow;
+	Mouse.Show;
 
 	repeat
 		Key := GetKey;
@@ -113,10 +113,10 @@ begin
 	until MsgboxDone;
 
 	MsgBox := ReturnValue;
-	MouseHide;
+	Mouse.Hide;
 	PutImage(X1, Y1, BackgroundP^, NormalPut);
 	FreeMem(BackgroundP, BackgroundSize);
-	MouseShow;
+	Mouse.Show;
 end;
 
 end.
