@@ -18,6 +18,7 @@ CONFIG/RUN.BIN
 
 #Backups
 *.BAK
+*.DRAWIO.bkp
 
 # Mac system files
 .DS_Store

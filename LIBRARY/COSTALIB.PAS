@@ -76,7 +76,7 @@ type
 			OnDraw:     TEventProc;
 			constructor Init;
 			procedure   CheckEvent; virtual;
-			Procedure   Draw; virtual;
+			procedure   Draw; virtual;
 			function    IsMouseOver: Boolean;
 			procedure   SetSize(X, Y, W, H, DefaultW, DefaultH: Integer);
 	end;
@@ -92,9 +92,18 @@ type
 		constructor Init;
 		procedure   Draw; virtual;
 	end;
+
+	{Container object, which can contain multiple other objects via a linked list}
+	TUIContainer = object(TUIObject)
+		public
+			constructor Init(X, Y, W, H: Integer);
+			procedure   AddObject(Obj: PBaseObject);
+		private
+			Objects:    PObjectNode; {Linked list of objects in the container}
+	end;
 	
-	{Window object, which can contain multiple other objects via a linked list}
-	TWindow = object(TUIObject)
+	{Window object}
+	TWindow = object(TUIContainer)
 		public
 			Border:     Boolean;
 			OnRun:      TEventProc;
@@ -102,14 +111,12 @@ type
 			Parent:     PApplication;
 			constructor Init(X, Y, W, H: Integer);
 			destructor  Done; virtual;
-			procedure   AddObject(Obj: PBaseObject);
 			procedure   CheckEvent; virtual;
 			{procedure   SetMenu(Menu: PMenu);}
 			procedure   Draw; virtual;
 			procedure   Run;
 			procedure   Close;
 		private
-			Objects:    PObjectNode; {Linked list of objects in the window}
 			MenuObj:    PMenu;	     {Menu bar object, if any}
 			DoClose:    Boolean;     {Set to true to close the window by exiting Run loop}
 	end;
@@ -644,22 +651,17 @@ begin
 	Close(F);
 end;
 
-constructor TWindow.Init(X, Y, W, H: Integer);
+constructor TUIContainer.Init(X, Y, W, H: Integer);
 const
 	DefaultW = 320;
 	DefaultH = 175;
 begin
 	TUIObject.Init;
 	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
-	Border  := True;
-	DoClose := False;
-	OnRun   := nil;
 	Objects := nil;
-	MenuObj := nil;
-	Parent  := nil;
 end;
 
-procedure TWindow.AddObject(Obj: PBaseObject);
+procedure TUIContainer.AddObject(Obj: PBaseObject);
 var
 	NewNode, LastNode: PObjectNode;
 begin
@@ -678,6 +680,21 @@ begin
 			LastNode := LastNode^.Next;
 		LastNode^.Next := NewNode;
 	end;
+end;
+
+constructor TWindow.Init(X, Y, W, H: Integer);
+const
+	DefaultW = 320;
+	DefaultH = 175;
+begin
+	TUIObject.Init;
+	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
+	Border  := True;
+	DoClose := False;
+	OnRun   := nil;
+	Objects := nil;
+	MenuObj := nil;
+	Parent  := nil;
 end;
 
 procedure TWindow.Draw;

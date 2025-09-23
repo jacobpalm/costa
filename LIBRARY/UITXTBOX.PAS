@@ -3,13 +3,13 @@ unit UITXTBOX;
 interface
 
 uses
-	Costalib, Graph, Strings;
+	Costalib, UIArea, Graph, Strings;
 
 type
 	TTextboxState = (TsNormal, TsEditing);
 
 	PTextbox = ^TTextbox;
-	TTextbox = object(TUIObject)
+	TTextbox = object(TArea)
 		public
 			Caption,
 			Text:       string;
@@ -32,11 +32,13 @@ const
 begin
 	TUIObject.Init;
 	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
-	Caption := Cap;
-	MaxLen := 255;
-	State := TsNormal;
-	Text := '';
-	OnChange := nil;
+	Caption     := Cap;
+	Text        := '';
+	MaxLen      := 255;
+	State       := TsNormal;
+	OnChange    := nil;
+	BGColor     := ColorDefault;
+	Transparent := False;
 end;
 
 procedure TTextbox.CheckEvent;
@@ -77,6 +79,7 @@ var
 begin
 	X1 := Left + 5;
 	Y1 := Top + 5;
+	Y1 := (Height - 7) div 2 + Top;
 	if MaxLen > 255 then MaxLen := 255;
 	MaxShow := Width - 10;
 	OrigTxt := Text;
@@ -107,9 +110,10 @@ begin
 					SetFillStyle(SolidFill, Thm.Txt);
 					Bar(CursorX + 2, Y1 - 2, CursorX - 8, Y1 + 11);
 					Text := Copy(Text, 1, Length(Text) - 1);
+					{Cursor}
 					CursorX := X1 + PrintW(Text) + 2;
 					SetColor(Thm.TxtText);
-					Line(CursorX, Y1 - 1, CursorX, Y1 + 10);
+					Line(CursorX, Y1 - 1, CursorX, Y1 + 8);
 				end
 				else
 				begin
@@ -148,9 +152,10 @@ begin
 				Line(CursorX, Y1 - 1, CursorX, Y1 + 10);
 				Text := Text + Key;
 				Print(Text, X1, Y1, Thm.TxtText);
+				{Cursor}
 				CursorX := X1 + PrintW(Text) + 2;
 				SetColor(Thm.TxtText);
-				Line(CursorX, Y1 - 1, CursorX, Y1 + 10);
+				Line(CursorX, Y1 - 1, CursorX, Y1 + 8);
 			end
 			else
 			begin
@@ -169,7 +174,7 @@ begin
 		{Erase only the cursor}
 		CursorX := X1 + PrintW(Text) + 2;
 		SetColor(Thm.Txt);
-		Line(CursorX, Y1 - 1, CursorX, Y1 + 10);
+		Line(CursorX, Y1 - 1, CursorX, Y1 + 8);
 	end
 	else
 		{There's more text than fits, so we'll have to redraw the entire textbox}
@@ -184,51 +189,35 @@ end;
 
 procedure TTextbox.Draw;
 var
-	X1, X2, Y1, Y2, MaxShow: Integer;
+	X1, Y1, MaxShow: Integer;
 	S: string;
 begin
-	X1 := Left;
-	Y1 := Top;
-	X2 := X1 + Width;
-	Y2 := Y1 + Height;
-
-	{Interior}
-	SetFillStyle(SolidFill, Thm.Txt);
-	Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
-
-	{Top + left border}
-	SetColor(Thm.Shadow);
-	Line(X1, Y1, X2, Y1);
-	Line(X1, Y1 + 1, X1, Y2);
-	SetColor(Black);
-	Line(X1 + 1, Y1 + 1, X2 - 1, Y1 + 1);
-	Line (X1 + 1, Y1 + 2, X1 + 1, Y2 - 1);
-
-	{Bottom + right border}
-	SetColor(White);
-	Line(X2, Y1 + 1, X2, Y2);
-	Line(X1 + 1, Y2, X2 - 1, Y2);
-	SetColor(Thm.Light);
-	Line(X2 - 1, Y1 + 2, X2 - 1, Y2 - 1);
-	Line(X1 + 2, Y2 - 1, X2 - 2, Y2 - 1);
+	{Draw the textbox border+interior inherited from TArea}
+	inherited Draw;
 
 	{Draw caption if set}
 	if Length(Caption) > 0 then
-	Print(Caption, X1, Y1 - 15, Thm.WinText);
+		Print(Caption, Left, Top - 15, Thm.WinText);
+
+	Y1 := (Height - 7) div 2 + Top;
 
 	{Draw text inside the textbox}
 	S := Text;
 	if S <> '' then
 	begin
+		{DEBUG - font is monospaced, so we could optimize this}
 		MaxShow := Width - 10;
 		while PrintW(S) >= MaxShow do
 			Delete(S, 1, 1);
-		Print(S, X1 + 5, Y1 + 5, Thm.TxtText);
+		Print(S, Left + 5, Y1, Thm.TxtText);
 	end;
+
 	if State = TsEditing then
 	begin
-		X1 := X1 + 7 + PrintW(S);
-		Line(X1, Y1 + 4, X1, Y1 + 15);
+		{Cursor}
+		X1 := Left + 7 + PrintW(S);
+		SetColor(Thm.TxtText);
+		Line(X1, Y1 - 1, X1, Y1 + 8);
 	end;
 
 	if Assigned(OnDraw) then
