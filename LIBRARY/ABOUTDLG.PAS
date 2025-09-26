@@ -29,7 +29,7 @@ var
 	ImgLogo: PIcon;
 	LblInfo: array [0..2] of PLabel;
 
-procedure AboutBoxClose(Sender: PBaseObject); far;
+procedure AboutBoxClose(Sender: PUIObject); far;
 begin
 	WinAboutBox^.Close;
 end;

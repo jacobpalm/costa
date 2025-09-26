@@ -12,8 +12,8 @@ const
 
 	SizeDefault          = -1;   {Used to set default width/height on object init}
 	SizeCenter           = -2;   {Used to center objects on screen}
-  
-	ColorDefault         = 255;    {Used to set default colors on objects}
+ 
+	ColorDefault         = 255;  {Used to set default colors on objects}
   
 	DoubleClickDelay     = 0.5;  
 	PrintLineH           = 12;   {Font dimensions - line height}
@@ -30,55 +30,59 @@ const
 
 type
 	{Linked list of hotkeys, to allow multiple hotkeys per object}
-	PHotKeyNode = ^THotkeyNode;
-	THotkeyNode = record
-		HotKey: string;      {Hotkey as returned by GetKey}
-		Next:   PHotKeyNode; {Pointer to next node in linked list}
-	end;
 
 	PApplication = ^TApplication;
-	PBaseObject  = ^TUIObject;
+	PUIObject    = ^TUIObject;
 	PObjectNode  = ^TObjectNode;
 	PHotkey      = ^THotkey;
-	PMenu        = ^TMenu;
+	PHotkeyNode  = ^THotkeyNode;
 	PWindow      = ^TWindow;
 	PWindowNode  = ^TWindowNode;
+	PContainer   = ^TContainer;
+	PMenu        = ^TMenu;
 
 	{Event procedure type, to ensure all event procedures have the same signature}
-	TEventProc  = procedure(Sender: PBaseObject);
+	TEventProc   = procedure(Sender: PUIObject);
+
+	TState       = (Enabled, Hidden, Active, Selected);
+	TStateSet    = set of TState;
+
+	{Linked list of hotkeys, to allow multiple hotkeys per object}
+	THotkeyNode = record
+		Hotkey: string;      {Hotkey as returned by GetKey}
+		Next:   PHotkeyNode; {Pointer to next node in linked list}
+	end;
 
 	{Base object which all objects, visual or not, are based on}
-	TBaseObject = object
-		public
-			Enabled:    Boolean;     {All events will be ignored if false}
-			Hotkey:     PHotKeyNode; {Linked list of hotkeys}
-			OnClick:    TEventProc;  {Event procedure for mouse click or hotkey press}
-			constructor Init;
-			Destructor  Done; virtual;
-			procedure   AddHotkey(Key: string);
-			procedure   CheckEvent; virtual;
-			function    HotkeyPressed: boolean;
-	end;
-
-	{Linked list of objects based on PBaseObject, can contain objects of any descendant type}
-	TObjectNode = record
-		ObjectP: PBaseObject;
-		Next:    PObjectNode;
-	end;
-
-	{Base type for all visual objects}
-	TUIObject = object(TBaseObject)
+	TUIObject = object
 		public
 			Left,
 			Top,
 			Width,
 			Height:     Integer;
+			Hotkey:     PHotKeyNode; {Linked list of hotkeys}
+			OnClick:    TEventProc;  {Event procedure for mouse click or hotkey press}
 			OnDraw:     TEventProc;
+			Parent:     PUIObject;   {Parent object, if any - should only use container types}
 			constructor Init;
+			Destructor  Done; virtual;
+			function    GetState(S: TState): Boolean;
+			function    HotkeyPressed: boolean;
+			function    IsMouseOver: Boolean;
+			procedure   AddHotkey(Key: string);
+			procedure   AddState(S: TState);
 			procedure   CheckEvent; virtual;
 			procedure   Draw; virtual;
-			function    IsMouseOver: Boolean;
+			procedure   RemoveState(S: TState);
 			procedure   SetSize(X, Y, W, H, DefaultW, DefaultH: Integer);
+		private
+			State:      TStateSet;   {State flags}
+	end;
+
+	{Linked list of objects based on PUIObject, can contain objects of any descendant type}
+	TObjectNode = record
+		ObjectP: PUIObject;
+		Next:    PObjectNode;
 	end;
 
 	{Non-visual object, used to assign hotkeys to actions without a UI object}
@@ -94,23 +98,22 @@ type
 	end;
 
 	{Container object, which can contain multiple other objects via a linked list}
-	TUIContainer = object(TUIObject)
+	TContainer = object(TUIObject)
 		public
 			constructor Init(X, Y, W, H: Integer);
-			procedure   AddObject(Obj: PBaseObject);
+			destructor  Done; virtual;
+			procedure   AddObject(Obj: PUIObject);
 		private
 			Objects:    PObjectNode; {Linked list of objects in the container}
 	end;
 	
 	{Window object}
-	TWindow = object(TUIContainer)
+	TWindow = object(TContainer)
 		public
 			Border:     Boolean;
 			OnRun:      TEventProc;
 			OnClose:    TEventProc;
-			Parent:     PApplication;
 			constructor Init(X, Y, W, H: Integer);
-			destructor  Done; virtual;
 			procedure   CheckEvent; virtual;
 			{procedure   SetMenu(Menu: PMenu);}
 			procedure   Draw; virtual;
@@ -138,14 +141,14 @@ type
 			OnExit:     TEventProc;
 			constructor Init;
 			destructor  Done; virtual;
-			procedure   Run;
-			procedure   OpenWindow(Win: PWindow);
-			procedure   CloseWindow;
 			function    Path: DirStr;
-			procedure   LoadTheme(FileName: string);
-			procedure   LoadSettings;
-			procedure   SaveSettings;
+			procedure   CloseWindow;
 			procedure   Exit;
+			procedure   LoadSettings;
+			procedure   LoadTheme(Filename: string);
+			procedure   OpenWindow(Win: PWindow);
+			procedure   Run;
+			procedure   SaveSettings;
 		private
 			Window:     PWindowNode;
 	end;
@@ -155,18 +158,19 @@ type
 	TMouse = object
 		public
 			constructor Init;
-			procedure   Poll;
-			procedure   Move(Left, Top: Integer);
 			function    Clicked: TMouseButton;
 			function    Supported: Boolean;
 			function    X: Integer;
 			function    Y: Integer;
 			procedure   Hide;
+			procedure   Move(Left, Top: Integer);
+			procedure   Poll;
 			procedure   Show;
 		private
 			Visible,
 			Support:    Boolean;
-			XPos, YPos: Integer;
+			XPos,
+			YPos:       Integer;
 	end;
 
 	{Settings for the library, saved to disk}
@@ -234,46 +238,49 @@ const
 	MSG_GRAPHICS_ERROR           = 'Graphics error:';
 
 
-constructor TBaseObject.Init;
+
+{----------------------------------------------------------------------------}
+{ Base UI object implementation }
+{----------------------------------------------------------------------------}
+
+constructor TUIObject.Init;
 begin
-	Enabled := True;
+	State   := [Enabled];
 	Hotkey  := nil;
 	OnClick := nil;
+	OnDraw  := nil;
+	Left    := 0;
+	Top     := 0;
+	Width   := 0;
+	Height  := 0;
 end;
 
-{Add a hotkey to an object - a linked list is used to allow multiple hotkeys}
-procedure TBaseObject.AddHotkey(Key: string);
+destructor TUIObject.Done;
 var
-	CheckNode, NewNode: PHotKeyNode;
+	NextNode: PHotKeyNode;
 begin
-	if (Length(Key) < 1) or (Length(Key) > 2) then
-		exit; {Invalid hotkey, do nothing}
-
-	New(NewNode);
-	NewNode^.HotKey := Key;
-	NewNode^.Next := Self.Hotkey;
-	Self.Hotkey := NewNode;
+	{Free all hotkey nodes in the linked list}
+	while Assigned(Hotkey) do
+	begin
+		NextNode := HotKey^.Next; {Store pointer to next node}
+		Dispose(Hotkey);          {Free current node}
+		Hotkey := NextNode;       {Move to next node}
+	end;
 end;
 
-procedure TBaseObject.CheckEvent;
+function TUIObject.GetState(S: TState): Boolean;
 begin
-	if not Enabled then
-		exit;
-		
-	if Self.HotkeyPressed then
-		{Trigger OnClick event, if assigned}
-		if Assigned(OnClick) then
-			OnClick(@Self);
+	GetState := (S in State);
 end;
 
 {Check for hotkeys events assigned to the object}
-function TBaseObject.HotkeyPressed: boolean;
+function TUIObject.HotkeyPressed: boolean;
 var
 	CheckNode: PHotKeyNode;
 begin
 	HotkeyPressed := False;
 
-	if (not Enabled) or (Length(HotkeyInput) = 0) then
+	if not (Enabled in State) or (Length(HotkeyInput) = 0) then
 		exit;
 	
 	CheckNode := Hotkey;
@@ -289,24 +296,70 @@ begin
 	end;
 end;
 
-destructor TBaseObject.Done;
+{Check if mouse is over the object}
+function TUIObject.IsMouseOver: Boolean;
 var
-	NextNode: PHotKeyNode;
+	X1, Y1, X2, Y2: Integer;
 begin
-	{Free all hotkey nodes in the linked list}
-	while Assigned(Hotkey) do
-	begin
-		NextNode := HotKey^.Next; {Store pointer to next node}
-		Dispose(Hotkey);          {Free current node}
-		Hotkey := NextNode;       {Move to next node}
-	end;
+	Mouse.Poll;
+	X1 := Left;
+	Y1 := Top;
+	X2 := X1 + Width;
+	Y2 := Y1 + Height;
+	IsMouseOver := (Mouse.X >= X1) and (Mouse.X <= X2) and (Mouse.Y >= Y1) and (Mouse.Y <= Y2);
 end;
 
-constructor TUIObject.Init;
+{Add a hotkey to an object - a linked list is used to allow multiple hotkeys}
+procedure TUIObject.AddHotkey(Key: string);
+var
+	CheckNode, NewNode: PHotKeyNode;
 begin
-	TBaseObject.Init;
-	Self.SetSize(0, 0, 0, 0, SizeDefault, SizeDefault);
-	OnDraw := nil;
+	if (Length(Key) < 1) or (Length(Key) > 2) then
+		exit; {Invalid hotkey, do nothing}
+
+	New(NewNode);
+	NewNode^.HotKey := Key;
+	NewNode^.Next := Self.Hotkey;
+	Self.Hotkey := NewNode;
+end;
+
+procedure TUIObject.AddState(S: TState);
+begin
+	Include(State, S);
+end;
+
+{Check for events on object}
+procedure TUIObject.CheckEvent;
+var
+	Clicked: boolean;
+begin
+	if not GetState(Enabled) then
+		exit;
+	
+	Clicked := False;
+	{Check if mouse is clicked on the object}
+	if (Mouse.Clicked = MbLeft) and Self.IsMouseOver then
+	begin
+		repeat;	until Mouse.Clicked = MbNone;
+		{Check if mouse is still over the object after release}
+		if Self.IsMouseOver then
+			Clicked := True;
+	end;
+
+	if Clicked or Self.HotkeyPressed then
+		{Trigger OnClick event, if assigned}
+		if Assigned(OnClick) then
+			OnClick(@Self);
+end;
+
+{Dummy procedure, descandants should implement their own versions}
+procedure TUIObject.Draw;
+begin
+end;
+
+procedure TUIObject.RemoveState(S: TState);
+begin
+	Exclude(State, S);
 end;
 
 {Used by each descendandt object to set its size and positon on init - DefaultW and DefaultH are
@@ -336,53 +389,13 @@ begin
 		Top := Y;
 end;
 
-{Check for events on object}
-procedure TUIObject.CheckEvent;
-var
-	Clicked: boolean;
-begin
-	if not Enabled then
-		exit;
-	
-	Clicked := False;
-	{Check if mouse is clicked on the object}
-	if (Mouse.Clicked = MbLeft) and Self.IsMouseOver then
-	begin
-		repeat;	until Mouse.Clicked = MbNone;
-		{Check if mouse is still over the object after release}
-		if Self.IsMouseOver then
-			Clicked := True;
-	end;
-
-	if Clicked or Self.HotkeyPressed then
-		{Trigger OnClick event, if assigned}
-		if Assigned(OnClick) then
-			OnClick(@Self);
-end;
-
-{Dummy draw procedure - overridden in descendandt objects}
-procedure TUIObject.Draw;
-begin
-	if Assigned(OnDraw) then
-		OnDraw(@Self);
-end;
-
-{Check if mouse is over the object}
-function TUIObject.IsMouseOver: Boolean;
-var
-	X1, Y1, X2, Y2: Integer;
-begin
-	Mouse.Poll;
-	X1 := Left;
-	Y1 := Top;
-	X2 := X1 + Width;
-	Y2 := Y1 + Height;
-	IsMouseOver := (Mouse.X >= X1) and (Mouse.X <= X2) and (Mouse.Y >= Y1) and (Mouse.Y <= Y2);
-end;
+{----------------------------------------------------------------------------}
+{ Hotkey object implementation }
+{----------------------------------------------------------------------------}
 
 constructor THotkey.Init(Key: String);
 begin
-	TBaseObject.Init;
+	Inherited Init;
 	Self.SetSize(0, 0, 0, 0, SizeDefault, SizeDefault);
 	Self.Hotkey := nil;
 	Self.AddHotkey(Key);
@@ -390,7 +403,7 @@ end;
 
 procedure THotkey.CheckEvent;
 begin
-	if not Enabled then
+	if not GetState(Enabled) then
 		exit;
 	
 	if Self.HotkeyPressed then
@@ -398,6 +411,10 @@ begin
 		if Assigned(OnClick) then
 			OnClick(@Self);
 end;
+
+{----------------------------------------------------------------------------}
+{ Menu object implementation }
+{----------------------------------------------------------------------------}
 
 constructor TMenu.Init;
 begin
@@ -421,6 +438,10 @@ begin
 	Line(Left, Top + Height, Left + Width, Top + Height);
 end;
 
+{----------------------------------------------------------------------------}
+{ Application object implementation }
+{----------------------------------------------------------------------------}
+
 constructor TApplication.Init;
 var
 	FullPath: PathStr;
@@ -438,7 +459,6 @@ begin
 	Window  := nil;
 	OnRun   := nil;
 	OnExit  := nil;
-
 	{Retrieve full path of the executable}
 	FullPath := ParamStr(0); 
 	FSplit(FullPath, FPath, FName, FExt); 
@@ -576,23 +596,22 @@ begin
 		Filename := 'DEFAULT';
 
 	ThemeFile := Self.Path + 'THEMES\' + Filename + '.BIN';
-
-	if not FileExists(ThemeFile) then
-		exit;
-
-	Assign(F, ThemeFile);
-	{$I-}
-	Reset(F, 1);
-	{$I+}
-	if IOResult <> 0 then
+	if FileExists(ThemeFile) then
 	begin
-		Close(F);
-		Exit;
-	end;
+		Assign(F, ThemeFile);
+		{$I-}
+		Reset(F, 1);
+		{$I+}
+		if IOResult <> 0 then
+		begin
+			Close(F);
+			Exit;
+		end;
 
-	if FileSize(F) = ExpectedSize then
-		BlockRead(F, Thm, SizeOf(TTheme));
-	Close(F);
+		if FileSize(F) = ExpectedSize then
+			BlockRead(F, Thm, SizeOf(TTheme));
+		Close(F);
+	end;
 end;
 
 procedure TApplication.LoadSettings;
@@ -651,7 +670,11 @@ begin
 	Close(F);
 end;
 
-constructor TUIContainer.Init(X, Y, W, H: Integer);
+{----------------------------------------------------------------------------}
+{ Container object implementation }
+{----------------------------------------------------------------------------}
+
+constructor TContainer.Init(X, Y, W, H: Integer);
 const
 	DefaultW = 320;
 	DefaultH = 175;
@@ -661,10 +684,12 @@ begin
 	Objects := nil;
 end;
 
-procedure TUIContainer.AddObject(Obj: PBaseObject);
+procedure TContainer.AddObject(Obj: PUIObject);
 var
 	NewNode, LastNode: PObjectNode;
 begin
+	Obj^.Parent := @Self; {Set the object's parent to this container}
+
 	New(NewNode);
 	NewNode^.ObjectP := Obj;
 	NewNode^.Next := nil;
@@ -681,6 +706,27 @@ begin
 		LastNode^.Next := NewNode;
 	end;
 end;
+
+destructor TContainer.Done;
+var
+	NextNode: PObjectNode;
+begin
+	{Dispose of all objects in the linked list}
+	while Objects <> nil do
+	begin
+		NextNode := Objects^.Next;
+		Dispose(Objects^.ObjectP, Done); {Call the destructor of the object}
+		Dispose(Objects);
+		Objects := NextNode;
+	end;
+
+	{Call ancestor destructor for properties that aren't specific to TWindow}
+	inherited Done;
+end;
+
+{----------------------------------------------------------------------------}
+{ Window object implementation }
+{----------------------------------------------------------------------------}
 
 constructor TWindow.Init(X, Y, W, H: Integer);
 const
@@ -793,21 +839,9 @@ begin
 		Parent^.CloseWindow;} {DEBUG}
 end;
 
-destructor TWindow.Done;
-var
-	NextNode: PObjectNode;
-begin
-	{Dispose of all objects in the linked list}
-	while Objects <> nil do
-	begin
-		NextNode := Objects^.Next;
-		Dispose(Objects);
-		Objects := NextNode;
-	end;
-
-	{Call ancestor destructor for properties that aren't specific to TWindow}
-	inherited Done;
-end;
+{----------------------------------------------------------------------------}
+{ Mouse object implementation }
+{----------------------------------------------------------------------------}
 
 constructor TMouse.Init;
 var
@@ -906,6 +940,10 @@ Function TMouse.Y: Integer;
 Begin
 	Y := YPos;
 End;
+
+{----------------------------------------------------------------------------}
+{ Generic functions/procedures that fall outside any object }
+{----------------------------------------------------------------------------}
 
 function FileExists(const FileName: string): Boolean;
 var

@@ -6,8 +6,6 @@ uses
 	Costalib, UIArea, Graph, Strings;
 
 type
-	TTextboxState = (TsNormal, TsEditing);
-
 	PTextbox = ^TTextbox;
 	TTextbox = object(TArea)
 		public
@@ -19,8 +17,6 @@ type
 			procedure   CheckEvent; virtual;
 			procedure   Edit;
 			procedure   Draw; virtual;
-		private
-			State:      TTextboxState;
 	end;
 
 implementation
@@ -35,7 +31,6 @@ begin
 	Caption     := Cap;
 	Text        := '';
 	MaxLen      := 255;
-	State       := TsNormal;
 	OnChange    := nil;
 	BGColor     := ColorDefault;
 	Transparent := False;
@@ -45,7 +40,7 @@ procedure TTextbox.CheckEvent;
 var
 	Clicked: boolean;
 begin
-	If not Enabled then
+	if not GetState(Enabled) then
 		exit;
 
 	Clicked := False;
@@ -86,7 +81,7 @@ begin
 
 	{Redraw the textbox to show the editing state}
 	Mouse.Hide;
-	State := TsEditing;
+	AddState(Active);
 	Self.Draw;
 	Mouse.Show;
 
@@ -131,7 +126,7 @@ begin
 		if Key = KeyEscape then
 		begin
 			Text := OrigTxt;
-			State := TsNormal;
+			RemoveState(Active);
 			Mouse.Hide;
 			Self.Draw;
 			Mouse.Show;
@@ -167,7 +162,7 @@ begin
 
 	until False;
 
-	State := TsNormal;
+	RemoveState(Active);
 	Mouse.Hide;
 	if PrintW(Text) + 2 < MaxShow then
 	begin
@@ -212,7 +207,7 @@ begin
 		Print(S, Left + 5, Y1, Thm.TxtText);
 	end;
 
-	if State = TsEditing then
+	if GetState(Active) then
 	begin
 		{Cursor}
 		X1 := Left + 7 + PrintW(S);

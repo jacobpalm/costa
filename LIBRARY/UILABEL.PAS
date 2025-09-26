@@ -6,8 +6,6 @@ uses
 	Costalib, Graph;
 
 type
-	TLabelAlign = (LaLeft, LaCenter, LaRight);
-
 	PLabel = ^TLabel;
 	TLabel = object(TUIObject)
 		public

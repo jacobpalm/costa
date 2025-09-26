@@ -250,8 +250,8 @@ begin
 	begin
 		{If a file wasn't previously opened, scroll buttons won't be visible}
 		FileOpened := True;
-		BtnPageUp.Enabled := True;
-		BtnPageDown.Enabled := True;
+		BtnPageUp.AddState(Enabled);
+		BtnPageDown.AddState(Enabled);
 	end;
 	DrawText;
 end;
@@ -315,12 +315,12 @@ begin
 		DrawText;
 end;
 
-procedure BtnAboutClick(Sender: PBaseObject); far;
+procedure BtnAboutClick(Sender: PUIObject); far;
 begin
 	AboutBox(@App);
 end;
 
-procedure BtnOpenClick(Sender: PBaseObject); far;
+procedure BtnOpenClick(Sender: PUIObject); far;
 var
 	FileName: String;
 begin
@@ -329,7 +329,7 @@ begin
 		LoadFile(FileName);
 end;
 
-procedure PageScrollEvent(Sender: PBaseObject); far;
+procedure PageScrollEvent(Sender: PUIObject); far;
 begin
 	if not FileOpened then
 		Exit;
@@ -348,20 +348,20 @@ begin
 		ScrollText(Bottom);
 end;
 
-procedure BtnExitClick(Sender: PBaseObject); far;
+procedure BtnExitClick(Sender: PUIObject); far;
 begin
 	CloseGraph;
 	Halt(0);
 end;
 
-procedure WinMainDraw(Sender: PBaseObject); far;
+procedure WinMainDraw(Sender: PUIObject); far;
 begin
 	{Text area}
 	SetFillStyle(SolidFill, Thm.Txt);
 	Bar(0, 29, GetMaxX, GetMaxY);
 end;
 
-procedure WinMainRun(Sender: PBaseObject); far;
+procedure WinMainRun(Sender: PUIObject); far;
 begin
 	{Pass first command line argument as file name, LoadFile will ignore it if empty}
 	LoadFile(ParamStr(1));
@@ -393,7 +393,7 @@ begin
 		OnClick := PageScrollEvent;
 		AddHotkey(KeyAltU);
 		AddHotkey(KeyPageUp);
-		Enabled := False; {Disabled until a file is opened}
+		RemoveState(Enabled); {Disabled until a file is opened}
 	end;
 
 	with BtnPageDown do
@@ -402,7 +402,7 @@ begin
 		OnClick := PageScrollEvent;
 		AddHotkey(KeyAltD);
 		AddHotkey(KeyPageDown);
-		Enabled := False;
+		RemoveState(Enabled);
 	end;
 
 	with BtnAbout do

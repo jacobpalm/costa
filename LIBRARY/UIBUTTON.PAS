@@ -6,13 +6,10 @@ uses
 	Costalib, Graph;
 
 type
-	TButtonState  = (BsUp, BsDown);
-	
 	PButton = ^TButton;
 	TButton = object(TUIObject)
 		public
 			Transparent: Boolean;
-			State:       TButtonState;
 			constructor  Init(X, Y, W, H: Integer; Cap: string);
 			procedure    CheckEvent; virtual;
 			procedure    Draw; virtual;
@@ -31,8 +28,6 @@ begin
 	TUIObject.Init;
 	SetSize(X, Y, W, H, DefaultW, DefaultH);
 	Caption := Cap;
-	State := BsUp;
-	Enabled := True;
 	Transparent := False;
 end;
 
@@ -40,7 +35,7 @@ procedure TButton.CheckEvent;
 var
 	Clicked: boolean;
 begin
-	if not Enabled then
+	if not GetState(Enabled) then
 		exit;
 	
 	Clicked := False;
@@ -49,15 +44,16 @@ begin
 	if (Mouse.Clicked = MbLeft) and Self.IsMouseOver then
 	begin
 		Mouse.Hide;
-		State := BsDown;
+		AddState(Active);
 		Self.Draw;
 		Mouse.Show;
 		repeat
 			if Self.IsMouseOver then
 			begin
-				if State = BsUp then
+				{Mouse over button, show pressed state if not already shown}
+				if not GetState(Active) then
 				begin
-					State := BsDown;
+					AddState(Active);
 					Mouse.Hide;
 					Self.Draw;
 					Mouse.Show;
@@ -65,9 +61,10 @@ begin
 			end
 			else
 			begin
-				if State = BsDown then
+				{Mouse not over button, show unpressed state if not already shown}
+				if GetState(Active) then
 				begin
-					State := BsUp;
+					RemoveState(Active);
 					Mouse.Hide;
 					Self.Draw;
 					Mouse.Show;
@@ -75,9 +72,9 @@ begin
 			end;
 		until Mouse.Clicked = MbNone;
 
-		if State = BsDown then
+		if GetState(Active) then
 		begin
-			State := BsUp;
+			RemoveState(Active);
 			Mouse.Hide;
 			Self.Draw;
 			Mouse.Show;
@@ -115,8 +112,9 @@ begin
 	End;
 	
 	{Invert border colors if pressed down}
-	if State = BsUp then
+	if not GetState(Active) then
 	begin
+		{Button is up}
 		TLColor1 := White;
 		TLColor2 := Thm.Light;
 		BRColor1 := Black;
@@ -124,6 +122,7 @@ begin
 	end
 	else
 	begin
+		{Button is down}
 		TLColor1 := Black;
 		TLColor2 := Thm.Shadow;
 		BRColor1 := White;
@@ -153,7 +152,9 @@ begin
 		X1 := (X2 - X1) div 2 + X1;
 		X1 := X1 - PrintW(Caption) div 2;
 		Y1 := (Y2 - Y1) div 2 + Y1 - 4; {4 is the offset to center text vertically}
-		if State = BsDown then
+		
+		{If button is pressed, move text 1 pixel down and right}
+		if GetState(Active) then
 		begin
 			Inc(X1);
 			Inc(Y1);

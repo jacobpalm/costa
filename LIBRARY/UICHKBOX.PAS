@@ -16,8 +16,6 @@ type
 			function    GetChecked: boolean;
 			procedure   SetChecked(Checked: boolean);
 			procedure   Draw; virtual;
-		private
-			ChkState:   boolean;
 	end;
 
 implementation
@@ -30,7 +28,6 @@ begin
 	TUIObject.Init;
 	Self.SetSize(X, Y, DefaultW, DefaultH, DefaultW, DefaultH);
 	Caption := Cap;
-	ChkState := Checked;
 	OnChange := nil;
 end;
 
@@ -63,7 +60,7 @@ begin
 	Line(X2 - 1, Y1 + 2, X2 - 1, Y2 - 1);
 	Line(X1 + 2, Y2 - 1, X2 - 2, Y2 - 1);
 
-	if ChkState then
+	if GetState(Selected) then
 	begin
 		SetColor(Thm.TxtText);
 		Line(X1 + 5, Y1 + 8, X1 + 7, Y1 + 10);
@@ -88,7 +85,7 @@ procedure TCheckbox.CheckEvent;
 var
 	Clicked: boolean;
 begin
-	if not Enabled then
+	if not GetState(Enabled) then
 		exit;
 
 	Clicked := False;
@@ -107,7 +104,7 @@ begin
 	if Clicked or Self.HotkeyPressed then
 	begin
 		{Toggle checkbox state}
-		Self.SetChecked(not ChkState);
+		Self.SetChecked(not GetState(Selected));
 
 		{Trigger OnClick event, if assigned}
 		if Assigned(OnClick) then
@@ -117,20 +114,24 @@ end;
 
 function TCheckbox.GetChecked: boolean;
 begin
-	GetChecked := ChkState;
+	GetChecked := GetState(Selected);
 end;
 
 procedure TCheckbox.SetChecked(Checked: boolean);
 begin
-	if ChkState <> Checked then
-	begin
-		ChkState := Checked;
-		Mouse.Hide;
-		Self.Draw;
-		Mouse.Show;
-		if Assigned(OnChange) then
-			OnChange(@Self);
-	end;
+	if Checked = GetState(Selected) then
+		exit;
+
+	if Checked then
+		AddState(Selected)
+	else
+		RemoveState(Selected);
+
+	Mouse.Hide;
+	Self.Draw;
+	Mouse.Show;
+	if Assigned(OnChange) then
+		OnChange(@Self);
 end;
 
 end.

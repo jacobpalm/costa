@@ -240,7 +240,7 @@ begin
 	Thm := OrigTheme; {Restore original theme}
 end;
 
-procedure SwitchTheme(Sender: PBaseObject); far;
+procedure SwitchTheme(Sender: PUIObject); far;
 begin
 	if Sender = @BtnPrevious then
 		Dec(SelectedTheme)
@@ -250,12 +250,12 @@ begin
 	FrmPreview.Draw;
 end;
 
-procedure FrmPreviewDraw(Sender: PBaseObject); far;
+procedure FrmPreviewDraw(Sender: PUIObject); far;
 begin
 	ThemePreview;
 end;
 
-procedure BtnExitClick(Sender: PBaseObject); far;
+procedure BtnExitClick(Sender: PUIObject); far;
 begin
 	if ThemeCount > 0 then
 		Setting.ThmFile := SelectedFileName;
@@ -270,7 +270,7 @@ begin
 	App.Exit; {Debug - should happen automatically when last window is closed}
 end;
 
-procedure BtnAboutClick(Sender: PBaseObject); far;
+procedure BtnAboutClick(Sender: PUIObject); far;
 begin
 	AboutBox(@App);
 end;

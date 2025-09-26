@@ -97,7 +97,7 @@ var
 function  SaveTheme(SaveAs: boolean): boolean; forward;
 function  RTrim(s: string): string; forward;
 
-procedure FrmPreviewDraw(Sender: PBaseObject); far;
+procedure FrmPreviewDraw(Sender: PUIObject); far;
 var
 	X1, Y1, X2, Y2: Integer;
 begin
@@ -180,12 +180,12 @@ begin
 	end;
 end;
 
-procedure SelectNextColor(Sender: PBaseObject); far;
+procedure SelectNextColor(Sender: PUIObject); far;
 begin
 	SelectColor(SelectedColor + 1, true);
 end;
 
-procedure BtnObjSelectClick(Sender: PBaseObject); far;
+procedure BtnObjSelectClick(Sender: PUIObject); far;
 var
 	i: integer;
 begin
@@ -209,12 +209,12 @@ begin
 	end;
 end;
 
-procedure SelectObjectEscPressed(Sender: PBaseObject); far;
+procedure SelectObjectEscPressed(Sender: PUIObject); far;
 begin
 	SelectObjectDone := True;
 end;
 
-procedure SelectObjectArrowPressed(Sender: PBaseObject); far;
+procedure SelectObjectArrowPressed(Sender: PUIObject); far;
 var
 	NextSelection: integer;
 begin
@@ -237,7 +237,7 @@ begin
 	Mouse.Show;
 end;
 
-procedure SelectObject(Sender: PBaseObject); far;
+procedure SelectObject(Sender: PUIObject); far;
 var
 	i: integer;
 	Key: string;
@@ -306,7 +306,7 @@ begin
 	end;
 end;
 
-procedure NewTheme(Sender: PBaseObject); far;
+procedure NewTheme(Sender: PUIObject); far;
 var
 	DoSave: boolean;
 begin
@@ -329,7 +329,7 @@ begin
 	ThemeChanged := False;
 end;
 
-procedure LoadTheme(Sender: PBaseObject); far;
+procedure LoadTheme(Sender: PUIObject); far;
 var
 	SelectedFile: string;
 	LoadName, LoadAuthor: string[20];
@@ -459,7 +459,7 @@ begin
 	RTrim := Copy(s, 1, endIdx);
 end;
 
-procedure AreaColorDraw(Sender: PBaseObject); far;
+procedure AreaColorDraw(Sender: PUIObject); far;
 var
 	X1, Y1, X2, Y2: integer;
 begin
@@ -476,28 +476,28 @@ begin
 	end;
 end;
 
-procedure AreaColorClick(Sender: PBaseObject); far;
+procedure AreaColorClick(Sender: PUIObject); far;
 var
 	PAreaColor: ^TArea;
 begin
-	{Need to use a PAreaColor pointer here, since PBaseObject doesn't
+	{Need to use a PAreaColor pointer here, since PUIObject doesn't
 	 have a BGColor property}
 	PAreaColor := Pointer(Sender);
 	SelectColor(PAreaColor^.BGColor, true);
 end;
 
-procedure BtnSaveClick(Sender: PBaseObject); far;
+procedure BtnSaveClick(Sender: PUIObject); far;
 begin
 	{If sender was BtnSaveAs, true will be passed to the SaveAs parameter}
 	SaveTheme((Sender = @BtnSaveAs));
 end;
 
-procedure BtnAboutClick(Sender: PBaseObject); far;
+procedure BtnAboutClick(Sender: PUIObject); far;
 begin
 	AboutBox(@App);
 end;
 
-procedure BtnExitClick(Sender: PBaseObject); far;
+procedure BtnExitClick(Sender: PUIObject); far;
 var
 	DoSave: boolean;
 begin
@@ -516,7 +516,7 @@ begin
 	Halt(0);
 end;
 
-procedure TextboxChange(Sender: PBaseObject); far;
+procedure TextboxChange(Sender: PUIObject); far;
 begin
 	ThemeChanged := True;
 end;

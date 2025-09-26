@@ -24,13 +24,13 @@ var
 
 	ReturnValue: string;
 
-procedure BtnOkClick(Sender: PBaseObject); far;
+procedure BtnOkClick(Sender: PUIObject); far;
 begin
 	ReturnValue := TxtInput^.Text;
 	WinInputBox^.Close;
 end;
 
-procedure BtnCancelClick(Sender: PBaseObject); far;
+procedure BtnCancelClick(Sender: PUIObject); far;
 begin
 	WinInputBox^.Close;
 end;

@@ -7,7 +7,7 @@ uses
 
 type
 	PFrame = ^TFrame;
-	TFrame = object(TUIContainer)
+	TFrame = object(TContainer)
 		public
 			LightColor,
 			DarkColor,

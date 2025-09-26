@@ -22,13 +22,13 @@ var
 	MsgBoxType: TMsgBox;
 	ReturnValue: Boolean;
 
-procedure BtnFirstClick(Sender: PBaseObject); far;
+procedure BtnFirstClick(Sender: PUIObject); far;
 begin
 	ReturnValue := True;
 	MsgBoxDone := True;
 end;
 
-procedure BtnSecondClick(Sender: PBaseObject); far;
+procedure BtnSecondClick(Sender: PUIObject); far;
 begin
 	ReturnValue := False;
 	MsgBoxDone := True;

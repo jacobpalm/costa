@@ -88,7 +88,7 @@ begin
 	end;
 end;
 
-procedure DrawPreview(Sender: PBaseObject); far;
+procedure DrawPreview(Sender: PUIObject); far;
 var
 	SelectedFile: String;
 	FDir: DirStr;
@@ -164,12 +164,12 @@ begin
 end;
 procedure SetActiveList(TargetList: Integer);
 begin
-	List[TargetList].SetState(LsActive);
-	List[not TargetList].SetState(LsInactive);
+	List[TargetList].SetListActive(True);
+	List[not TargetList].SetListActive(False);
 	ActiveList := TargetList;
 end;
 
-procedure ListClicked(Sender: PBaseObject); far;
+procedure ListClicked(Sender: PUIObject); far;
 var
 	ClickedList: Integer;
 begin
@@ -183,7 +183,7 @@ begin
 		SetActiveList(ClickedList);
 end;
 
-procedure ListDblClicked(Sender: PBaseObject); far;
+procedure ListDblClicked(Sender: PUIObject); far;
 var
 	TargetList: Integer;
 	SelectedItemName: String[MaxNameLength];
@@ -213,12 +213,12 @@ begin
 	end;
 end;
 
-procedure BtnCancelClick(Sender: PBaseObject); far;
+procedure BtnCancelClick(Sender: PUIObject); far;
 begin
 	FileSelectDone := True;
 end;
 
-procedure BtnDirectionClick(Sender: PBaseObject); far;
+procedure BtnDirectionClick(Sender: PUIObject); far;
 begin
 	{Activate the list to which the button belongs}
 	if (Sender = @BtnFilePrev) or (Sender = @BtnFileNext) then
@@ -233,7 +233,7 @@ begin
 		List[ActiveList].MoveSelection(PageDown);
 end;
 
-procedure TxtDriveChange(Sender: PBaseObject); far;
+procedure TxtDriveChange(Sender: PUIObject); far;
 begin
 	if not SetDrive(TxtDrive.Text[1]) then
 	begin
@@ -244,7 +244,7 @@ begin
 	end;
 end;
 
-procedure TxtPatternChange(Sender: PBaseObject); far;
+procedure TxtPatternChange(Sender: PUIObject); far;
 begin
 	Pattern := TxtPattern.Text;
 	GetChildFiles(Path, Pattern);
@@ -252,7 +252,7 @@ begin
 	DrawPreview(nil);
 end;
 
-Procedure HkDirectionPress(Sender: PBaseObject); far;
+Procedure HkDirectionPress(Sender: PUIObject); far;
 begin
 
 	if Sender = @HkUp then
@@ -274,7 +274,7 @@ begin
 		List[ActiveList].MoveSelection(PageDown);
 end;
 
-procedure HkTabPress(Sender: PBaseObject); far;
+procedure HkTabPress(Sender: PUIObject); far;
 begin
 	SetActiveList(not ActiveList);
 end;
@@ -352,7 +352,7 @@ begin
 	TxtDrive.Text := Drive;
 	TxtPattern.Text := DefaultPattern;
 	ActiveList := FileList;
-	List[FileList].SetState(LsActive);
+	List[FileList].SetListActive(True);
 	ReturnedFile := '';
 
 	Mouse.Hide;

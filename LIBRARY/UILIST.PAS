@@ -7,13 +7,13 @@ uses
 	Costalib, UIArea, Graph;
 
 const
+	{DEBUG - adapt to allow variable size lists}
 	MaxVisibleItems = 15;
 	ListItemHeight  = 12;
 
 type
 	TListDirection = (Up, Down, First, Last, PageUp, PageDown);
-	TListState     = (LsActive, LsInactive);
-
+	
 	PListItem = ^TListItem;
 	TListItem = record
 		Text: string;
@@ -26,6 +26,7 @@ type
 			OnChange:      TEventProc;
 			OnDoubleClick: TEventProc;
 			constructor    Init(X, Y, W, H: Integer);
+			destructor     Done; virtual;
 			procedure      AddItem(const ItemText: string);
 			procedure      CheckEvent; virtual;
 			procedure      ClearItems;
@@ -33,9 +34,8 @@ type
 			function       GetSelectedItem: string;
 			procedure      Draw; virtual;
 			procedure      MoveSelection(Direction: TListDirection);
-			procedure      SetState(State: TListState);
+			procedure      SetListActive(IsActive: boolean);
 		private
-			ListState:     TListState;
 			Head:          PListItem;
 			Selection:     Integer;
 			StartPos:      Integer;
@@ -48,13 +48,10 @@ implementation
 constructor TList.Init(X, Y, W, H: Integer);
 begin
 	inherited Init(X, Y, W, H);
-	ListState := LsInactive;
-	Head := nil;
-	Selection := 1;
-	StartPos := 1;
-	Length := 0;
-	Transparent := false;
-	BGColor := Thm.Txt;
+	Head          := nil;
+	Selection     := 1;
+	StartPos      := 1;
+	Length        := 0;
 	DblClickTimer := 0.0;
 end;
 
@@ -118,7 +115,7 @@ begin
 		begin
 			{Clicked inside list area, but in the small gap after the last item.
 			Draw current item with focus}
-			Self.SetState(LsActive);
+			Self.SetListActive(True);
 			while Mouse.Clicked > MbNone do;
 			exit;
 		end;
@@ -139,14 +136,14 @@ begin
 					end
 				else
 					{Make sure the list is active and the selected item is highlighted}
-					Self.SetState(LsActive);
+					Self.SetListActive(True);
 			end
 			else
 			begin
 				{Clicked item is not the current selection, move selection}
-				Self.SetState(LsInactive);
+				Self.SetListActive(False);
 				Selection := ClickedItem;
-				Self.SetState(LsActive);
+				Self.SetListActive(True);
 				{Trigger change event if assigned}
 				if Assigned(OnChange) then
 					OnChange(@Self);
@@ -155,7 +152,7 @@ begin
 		else
 		begin
 			{Clicked in list, but below any items. Give focus to current selection}
-			Self.SetState(LsActive);
+			Self.SetListActive(True);
 		end;
 
 		DblClickTimer := Timer;
@@ -242,7 +239,7 @@ begin
 			ItemText := Self.GetItem(I);
 
 			{Highlight selected item if list is active}
-			if (I = Selection) and (ListState = LsActive) then
+			if (I = Selection) and GetState(Active) then
 			begin
 				SetFillStyle(SolidFill, Thm.Sel);
 				Bar(X1, Y1 + (Counter * ListItemHeight), X2, Y2 - 1 + (Counter * ListItemHeight));
@@ -321,9 +318,9 @@ begin
 	end;
 
 	{If list has scrolled, we need a full redraw}
-	if (NewStartPos <> StartPos) or (ListState = LsInactive) then
+	if (NewStartPos <> StartPos) or not GetState(Active) then
 	begin
-		ListState := LsActive;
+		AddState(Active);
 		Selection := NewSelection;
 		StartPos := NewStartPos;
 		Self.Draw;
@@ -331,17 +328,17 @@ begin
 	else
 	begin
 		{Redraw without selection, redrawing just the selected item}
-		Self.SetState(LsInactive);
+		Self.SetListActive(False);
 		{Move selection and redraw only that item}
 		Selection := NewSelection;
-		Self.SetState(LsActive);
+		Self.SetListActive(True);
 	end;
 
 	if Assigned(OnChange) then
 		OnChange(@Self);
 end;
 
-procedure TList.SetState(State: TListState);
+procedure TList.SetListActive(IsActive: boolean);
 var
 	X1, Y1, X2, Y2: Integer;
 	YOffset: Integer;
@@ -349,11 +346,14 @@ var
 	ItemText: String;
 	Counter: Integer;
 begin
-	if State = ListState then
+	if GetState(Active) = IsActive then
 		exit;
 
-	ListState := State;
-
+	if IsActive then
+		AddState(Active)
+	else
+		RemoveState(Active);
+	
 	{If there's no valid selection, we won't draw anything}
 	if (Selection < 1) or (Selection > Length) then
 		exit;
@@ -366,7 +366,7 @@ begin
 	YOffset := (Selection - StartPos) * ListItemHeight;
 	Counter := 0;
 
-	if ListState = LsActive then
+	if GetState(Active) then
 	begin
 		SelFGColor := Thm.SelText;
 		SelBGColor := Thm.Sel;
@@ -384,8 +384,16 @@ begin
 		SetFillStyle(SolidFill, SelBGColor);
 		Bar(X1, Y1 + YOffset, X2, Y2 - 1 + YOffset);
 		Print(ItemText, X1 + 3, Y1 + 2 + YOffset, SelFGColor);
-	end;
 		Mouse.Show;
+	end;
+end;
+
+destructor TList.Done;
+begin
+	{Free all list items and call ancestor destructor to free up
+	 hotkeys and other generic memory}
+	Self.ClearItems;
+	inherited Done;
 end;
 
 end.
