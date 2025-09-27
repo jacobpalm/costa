@@ -26,19 +26,24 @@ const
 	DefaultH = 15;
 begin
 	TUIObject.Init;
-	Self.SetSize(X, Y, DefaultW, DefaultH, DefaultW, DefaultH);
 	Caption := Cap;
 	OnChange := nil;
+	If Checked then
+		AddState(Selected);
+
+	SetSize(DefaultW, DefaultH);
+	SetPos(X, Y);
 end;
 
 procedure TCheckbox.Draw;
 var
 	X1, X2, Y1, Y2, ChkColor: Integer;
 begin
-	X1 := Left;
-	Y1 := Top;
-	X2 := X1 + 15;
-	Y2 := Y1 + 15;
+	{Get absolute position and size of the object}
+	GetPos(X1, Y1, True);
+	GetSize(X2, Y2);
+	Inc(X2, X1);
+	Inc(Y2, Y1);
 
 	{Interior}
 	SetFillStyle(SolidFill, Thm.Txt);

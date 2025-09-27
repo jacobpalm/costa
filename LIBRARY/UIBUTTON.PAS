@@ -26,9 +26,16 @@ const
 	DefaultH = 22;
 begin
 	TUIObject.Init;
-	SetSize(X, Y, W, H, DefaultW, DefaultH);
 	Caption := Cap;
 	Transparent := False;
+
+	if W = SizeDefault then
+		W := DefaultW;
+	if H = SizeDefault then
+		H := DefaultH;
+
+	SetSize(W, H);
+	SetPos(X, Y);
 end;
 
 procedure TButton.CheckEvent;
@@ -99,10 +106,11 @@ var
 	X1, X2, Y1, Y2: Integer;
 	TLColor1, TLColor2, BRColor1, BRColor2: Byte; {TL = top+left, BR = bottom+right}
 begin
-	X1 := Left;
-	Y1 := Top;
-	X2 := X1 + Width;
-	Y2 := Y1 + Height;
+	{Get absolute position and size of the object}
+	GetPos(X1, Y1, True);
+	GetSize(X2, Y2);
+	Inc(X2, X1);
+	Inc(Y2, Y1);
 
 	{Interior}
 	If Not Transparent Then

@@ -23,9 +23,15 @@ const
 	DefaultH = 50;
 begin
 	TUIObject.Init;
-	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
 	BGColor := ColorDefault;
 	Transparent := False;
+
+	if W = SizeDefault then
+		W := DefaultW;
+	if H = SizeDefault then
+		H := DefaultH;
+	SetPos(X, Y);
+	SetSize(W, H);
 end;
 
 procedure TArea.Draw;
@@ -33,10 +39,11 @@ var
 	X1, X2, Y1, Y2: Integer;
 	BorderTLColor, BorderBRColor, BackColor: Byte; {TL = top+left, BR = bottom+right}
 begin
-	X1 := Left;
-	Y1 := Top;
-	X2 := X1 + Width;
-	Y2 := Y1 + Height;
+	{Get absolute position and size of the object}
+	Self.GetPos(X1, Y1, True);
+	Self.GetSize(X2, Y2);
+	Inc(X2, X1);
+	Inc(Y2, Y1);
 
 	{Interior}
 	If Not Transparent Then

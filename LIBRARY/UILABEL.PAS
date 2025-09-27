@@ -27,27 +27,39 @@ const
 	DefaultH = PrintLineH;
 begin
 	TUIObject.Init;
-	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
 	Caption := Cap;
 	FgColor := ColorDefault;
 	BgColor := ColorDefault;
+	
+	if W = SizeDefault then
+		W := DefaultW;
+	if H = SizeDefault then
+		H := DefaultH;
+	SetPos(X, Y);
+	SetSize(W, H);
 end;
 
 procedure TLabel.AutoSize;
 begin
-	Width := PrintW(Caption);
-	Height := PrintH(Caption);
+	SetSize(PrintW(Caption), PrintH(Caption));
 end;
 
 procedure TLabel.Draw;
 var
+	X1, Y1, X2, Y2: Integer;
 	TextColor, BackColor: Byte;
 begin
+	{Get absolute position and size of the object}
+	GetPos(X1, Y1, True);
+	GetSize(X2, Y2);
+	Inc(X2, X1);
+	Inc(Y2, Y1);
+
 	{If a background color is set, fill the label area with it}
 	if BgColor <= GetMaxColor then
 	begin
 		SetFillStyle(SolidFill, BgColor);
-		Bar(Left, Top, Left + Width, Top + Height);
+		Bar(X1, Y1, X2, Y2);
 	end;
 	
 	{Use FgColor for text if set, otherwise use window color}
@@ -56,7 +68,7 @@ begin
 	else
 		TextColor := FgColor;
 
-	Print(Caption, Left, Top, TextColor);
+	Print(Caption, X1, Y1, TextColor);
 
 	if Assigned(OnDraw) then
 		OnDraw(@Self);

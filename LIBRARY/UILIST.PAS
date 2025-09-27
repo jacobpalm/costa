@@ -53,6 +53,8 @@ begin
 	StartPos      := 1;
 	Length        := 0;
 	DblClickTimer := 0.0;
+	OnChange      := nil;
+	OnDoubleClick := nil;
 end;
 
 procedure TList.AddItem(const ItemText: string);
@@ -85,10 +87,18 @@ end;
 
 procedure TList.CheckEvent;
 var
+	X1, Y1, Width, Height: Integer;
 	ClickedX, ClickedY, ClickedItem: Integer;
 	ListItem: TListItem;
 	I: Integer;
 begin
+	if not GetState(Enabled) then
+		exit;
+	
+	{Get absolute position and size of the object}
+	GetPos(X1, Y1, True);
+	GetSize(Width, Height);
+
 	Mouse.Poll;
 	if (Mouse.Clicked = MbNone) or (not Self.IsMouseOver) then
 	begin
@@ -100,8 +110,8 @@ begin
 	end;
 
 	{Make clicked coordinates relative to the list area}
-	ClickedX := Mouse.X - Left;
-	ClickedY := Mouse.Y - Top;
+	ClickedX := Mouse.X - X1;
+	ClickedY := Mouse.Y - Y1;
 
 	{Validate click inside, not on border}
 	if (ClickedX > 1) and (ClickedX < Width - 2) and
@@ -221,10 +231,16 @@ begin
 	if Head = nil then
 		exit; {Nothing to draw}
 
-	X1 := Left + 2;
-	Y1 := Top + 3;
-	X2 := Left + Width - 2;
-	Y2 := Top + 15;
+	{Get absolute position and size of the object}
+	GetPos(X1, Y1, True);
+	GetSize(X2, Y2);
+	Inc(X2, X1);
+
+	{Set X coordinates to internal area inside border, and Y coordinates to the first item position}
+	Inc(X1, 2);
+	Dec(X2, 2);
+	Inc(Y1, 3);
+	Y2 := Y1 + 15;
 	Counter := 0;
 
 	if StartPos > Length then
@@ -358,11 +374,17 @@ begin
 	if (Selection < 1) or (Selection > Length) then
 		exit;
 	
+	{Get absolute position and size of the object}
+	GetPos(X1, Y1, True);
+	GetSize(X2, Y2);
+	Inc(X2, X1);
+	Inc(Y2, Y1);
+
 	{Calculate selection position and update it to reflect the new state}
-	X1 := Left + 2;
-	Y1 := Top + 3;
-	X2 := Left + Width - 2;
-	Y2 := Top + 15;
+	Inc(X1, 2);
+	Dec(X2, 2);
+	Inc(Y1, 3);
+	Y2 := Y1 + 15;
 	YOffset := (Selection - StartPos) * ListItemHeight;
 	Counter := 0;
 

@@ -25,27 +25,41 @@ const
 	DefaultH = 100;
 begin
 	TUIObject.Init;
-	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
 	LightColor := Thm.Light;
 	DarkColor := Thm.Shadow;
 	BGColor := Thm.Win;
 	Transparent := True;
+
+	if W = SizeDefault then
+		W := DefaultW;
+	if H = SizeDefault then
+		H := DefaultH;
+	SetPos(X, Y);
+	SetSize(W, H);
 end;
 
 procedure TFrame.Draw;
+var
+	X1, X2, Y1, Y2: Integer;
 begin
+	{Get absolute position and size of the object}
+	Self.GetPos(X1, Y1, True);
+	Self.GetSize(X2, Y2);
+	Inc(X2, X1);
+	Inc(Y2, Y1);
+
 	{Interior}
 	if not Transparent then
 	begin
 		SetFillStyle(SolidFill, BGColor);
-		Bar(Left + 2, Top + 2, Left + Width - 2, Top + Height - 2);
+		Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 2);
 	end;
 
 	{Borders}
 	SetColor(LightColor);
-	Rectangle(Left + 1, Top + 1, Left + Width - 1, Top + Height);
+	Rectangle(X1 + 1, Y1 + 1, X2 - 1, Y2);
 	SetColor(DarkColor);
-	Rectangle(Left, Top, Left + Width - 1, Top + Height - 1);
+	Rectangle(X1, Y1, X2 - 1, Y2 - 1);
 
 	if Assigned(OnDraw) then
 		OnDraw(@Self);

@@ -27,13 +27,19 @@ const
 	DefaultH = 19;
 begin
 	TUIObject.Init;
-	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
 	Caption     := Cap;
 	Text        := '';
 	MaxLen      := 255;
 	OnChange    := nil;
 	BGColor     := ColorDefault;
 	Transparent := False;
+	
+	if W = SizeDefault then
+		W := DefaultW;
+	if H = SizeDefault then
+		H := DefaultH;
+	SetPos(X, Y);
+	SetSize(W, H);
 end;
 
 procedure TTextbox.CheckEvent;
@@ -70,11 +76,15 @@ end;
 procedure TTextbox.Edit;
 var
 	OrigTxt, Key: string;
-	X1, Y1, CursorX, MaxShow: integer;
+	X1, Y1, Width, Height, CursorX, MaxShow: integer;
 begin
-	X1 := Left + 5;
-	Y1 := Top + 5;
-	Y1 := (Height - 7) div 2 + Top;
+	{Get absolute position of the object}
+	GetPos(X1, Y1, True);
+	GetSize(Width, Height);
+
+	Inc(X1, 5);
+	Inc(Y1, 5);
+	Y1 := (Height - 7) div 2 + Y1;
 	if MaxLen > 255 then MaxLen := 255;
 	MaxShow := Width - 10;
 	OrigTxt := Text;
@@ -184,17 +194,21 @@ end;
 
 procedure TTextbox.Draw;
 var
-	X1, Y1, MaxShow: Integer;
+	X1, Y1, Width, Height, MaxShow: Integer;
 	S: string;
 begin
 	{Draw the textbox border+interior inherited from TArea}
 	inherited Draw;
 
+	{Get absolute position and size of the object}
+	GetPos(X1, Y1, True);
+	GetSize(Width, Height);
+
 	{Draw caption if set}
 	if Length(Caption) > 0 then
-		Print(Caption, Left, Top - 15, Thm.WinText);
+		Print(Caption, X1, Y1 - 15, Thm.WinText);
 
-	Y1 := (Height - 7) div 2 + Top;
+	Y1 := (Height - 7) div 2 + Y1;
 
 	{Draw text inside the textbox}
 	S := Text;
@@ -204,13 +218,13 @@ begin
 		MaxShow := Width - 10;
 		while PrintW(S) >= MaxShow do
 			Delete(S, 1, 1);
-		Print(S, Left + 5, Y1, Thm.TxtText);
+		Print(S, X1 + 5, Y1, Thm.TxtText);
 	end;
 
 	if GetState(Active) then
 	begin
 		{Cursor}
-		X1 := Left + 7 + PrintW(S);
+		X1 := X1 + 7 + PrintW(S);
 		SetColor(Thm.TxtText);
 		Line(X1, Y1 - 1, X1, Y1 + 8);
 	end;

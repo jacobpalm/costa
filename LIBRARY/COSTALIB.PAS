@@ -56,27 +56,42 @@ type
 	{Base object which all objects, visual or not, are based on}
 	TUIObject = object
 		public
+			OnClick:    TEventProc;  {Event procedure for mouse click or hotkey press}
+			OnDraw:     TEventProc;
+			constructor Init;
+			Destructor  Done; virtual;
+
+			function    HotkeyPressed: boolean;
+			function    IsMouseOver: Boolean;
+			procedure   CheckEvent; virtual;
+
+			procedure   AddHotkey(Key: string);
+			function    GetHotkey: PHotkeyNode;
+			procedure   RemoveHotkey(Key: string);
+
+			procedure   SetParent(Obj: PUIObject);
+			function    GetParent: PUIObject;
+
+			procedure   AddState(S: TState);
+			function    GetState(S: TState): Boolean;
+			procedure   RemoveState(S: TState);
+
+			procedure   Draw; virtual;
+
+			procedure   SetSize(W, H: Integer);
+			procedure   GetSize(var W, H: Integer);
+
+			procedure   SetPos(X, Y: Integer);
+			procedure   GetPos(var X, Y: Integer; Absolute: Boolean);
+		private
 			Left,
 			Top,
 			Width,
 			Height:     Integer;
-			Hotkey:     PHotKeyNode; {Linked list of hotkeys}
-			OnClick:    TEventProc;  {Event procedure for mouse click or hotkey press}
-			OnDraw:     TEventProc;
 			Parent:     PUIObject;   {Parent object, if any - should only use container types}
-			constructor Init;
-			Destructor  Done; virtual;
-			function    GetState(S: TState): Boolean;
-			function    HotkeyPressed: boolean;
-			function    IsMouseOver: Boolean;
-			procedure   AddHotkey(Key: string);
-			procedure   AddState(S: TState);
-			procedure   CheckEvent; virtual;
-			procedure   Draw; virtual;
-			procedure   RemoveState(S: TState);
-			procedure   SetSize(X, Y, W, H, DefaultW, DefaultH: Integer);
-		private
+			Hotkey:     PHotKeyNode; {Linked list of hotkeys}
 			State:      TStateSet;   {State flags}
+
 	end;
 
 	{Linked list of objects based on PUIObject, can contain objects of any descendant type}
@@ -228,7 +243,7 @@ procedure SoundNote(Frequency, Duration: Integer);
 implementation
 
 const
-	GlobalSettings = 'CONFIG\SETTINGS.BIN';
+	GlobalSettings               = 'CONFIG\SETTINGS.BIN';
 
 	{Message strings}
 	MSG_SAVE_SETTING_ERROR_TITLE = 'Error saving settings';
@@ -249,6 +264,7 @@ begin
 	Hotkey  := nil;
 	OnClick := nil;
 	OnDraw  := nil;
+	Parent  := nil;
 	Left    := 0;
 	Top     := 0;
 	Width   := 0;
@@ -301,11 +317,13 @@ function TUIObject.IsMouseOver: Boolean;
 var
 	X1, Y1, X2, Y2: Integer;
 begin
+	{Get absolute position and size of the object}
+	Self.GetPos(X1, Y1, True);
+	Self.GetSize(X2, Y2);
+	Inc(X2, X1);
+	Inc(Y2, Y1);
+
 	Mouse.Poll;
-	X1 := Left;
-	Y1 := Top;
-	X2 := X1 + Width;
-	Y2 := Y1 + Height;
 	IsMouseOver := (Mouse.X >= X1) and (Mouse.X <= X2) and (Mouse.Y >= Y1) and (Mouse.Y <= Y2);
 end;
 
@@ -323,10 +341,55 @@ begin
 	Self.Hotkey := NewNode;
 end;
 
+function TUIObject.GetHotkey: PHotkeyNode;
+begin
+	GetHotkey := Hotkey;
+end;
+
+procedure TUIObject.RemoveHotkey(Key: string);
+var
+	PrevNode, CheckNode: PHotKeyNode;
+begin
+	if not Assigned(Hotkey) then
+		exit; {No hotkeys assigned}
+	
+	CheckNode := Hotkey;
+	PrevNode := nil;
+
+	{Check if the first node is the one to remove}
+	if Hotkey^.HotKey = Key then
+	begin
+		CheckNode := Hotkey;
+		Hotkey := Hotkey^.Next;
+		Dispose(CheckNode);
+		exit;
+	end;
+
+	{Search the linked list for the key to remove}
+	while Assigned(CheckNode) do
+	begin
+		if CheckNode^.HotKey = Key then
+		begin
+			PrevNode^.Next := CheckNode^.Next;
+			Dispose(CheckNode);
+			exit;
+		end;
+		PrevNode := CheckNode;
+		CheckNode := CheckNode^.Next;
+	end;
+end;
+
+
 procedure TUIObject.AddState(S: TState);
 begin
 	Include(State, S);
 end;
+
+procedure TUIObject.RemoveState(S: TState);
+begin
+	Exclude(State, S);
+end;
+
 
 {Check for events on object}
 procedure TUIObject.CheckEvent;
@@ -357,37 +420,80 @@ procedure TUIObject.Draw;
 begin
 end;
 
-procedure TUIObject.RemoveState(S: TState);
+procedure TUIObject.SetPos(X, Y: Integer);
+var
+	RelX, RelY: Integer;
 begin
-	Exclude(State, S);
+	if not Assigned(Parent) then
+	begin
+		Left := X;
+		Top := Y;
+		exit;
+	end;
+
+	{If object has a parent, position is relative to the parent. Setting position to 0,0 and getting
+	 position with Relative=True will return the position relative to the parent, being the top left
+	 corner of the parent. Then add the new X,Y coordinates to that, and we have to absolute
+	 coordinates to set the object position}
+	Left := 0;
+	Top := 0;
+	Self.GetPos(RelX, RelY, True);
+
+	Left := RelX + X;
+	Top := RelY + Y;
 end;
 
-{Used by each descendandt object to set its size and positon on init - DefaultW and DefaultH are
- constants from the object's Init method, used to set the default width and height if W or H is
- SizeDefault}
-procedure TUIObject.SetSize(X, Y, W, H, DefaultW, DefaultH: Integer);
+procedure TUIObject.GetPos(var X, Y: Integer; Absolute: Boolean);
+var
+	RelX, RelY: Integer;
+	ParentObj: PUIObject;
 begin
-	if W = SizeDefault then
-		Width := DefaultW
-	else
+	X := Left;
+	Y := Top;
+
+
+	if Absolute and Assigned(Parent) then
+	begin
+		ParentObj := Parent;
+		RelX := 0;
+		RelY := 0;
+
+		{Loop through parents until top of the chain, adding up relative positions}
+		while Assigned(ParentObj) do
+		begin
+			ParentObj^.GetPos(RelX, RelY, False);
+			X := X + RelX;
+			Y := Y + RelY;
+			ParentObj := ParentObj^.GetParent;
+		end;
+	end;
+end;
+
+procedure TUIObject.SetParent(Obj: PUIObject);
+begin
+	Parent := Obj;
+end;
+
+function TUIObject.GetParent: PUIObject;
+begin
+	GetParent := Parent;
+end;
+
+procedure TUIObject.SetSize(W, H: Integer);
+begin
+	if W > -1 then
 		Width := W;
 
-	if H = SizeDefault then
-		Height := DefaultH
-	else
+	if H > -1 then
 		Height := H;
-
-	{Check if object needs to be centered horizontally or vertically}
-	if X = sizeCenter then
-		Left := (GetMaxX - Width) div 2
-	else
-		Left := X;
-
-	if Y = sizeCenter then
-		Top := (GetMaxY - Height) div 2 
-	else
-		Top := Y;
 end;
+
+procedure TUIObject.GetSize(var W, H: Integer);
+begin
+	W := Width;
+	H := Height;
+end;
+
 
 {----------------------------------------------------------------------------}
 { Hotkey object implementation }
@@ -396,8 +502,6 @@ end;
 constructor THotkey.Init(Key: String);
 begin
 	Inherited Init;
-	Self.SetSize(0, 0, 0, 0, SizeDefault, SizeDefault);
-	Self.Hotkey := nil;
 	Self.AddHotkey(Key);
 end;
 
@@ -419,10 +523,7 @@ end;
 constructor TMenu.Init;
 begin
 	TUIObject.Init;
-	Left := 0;
-	Top := 0;
-	Width := GetMaxX;
-	Height := 28;
+	SetSize(GetMaxX, 28);
 end;
 
 procedure TMenu.Draw;
@@ -680,15 +781,22 @@ const
 	DefaultH = 175;
 begin
 	TUIObject.Init;
-	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
 	Objects := nil;
+	
+	If W = SizeDefault then
+		W := DefaultW;
+	If H = SizeDefault then
+		H := DefaultH;
+
+	Self.SetSize(W, H);
+	Self.SetPos(X, Y);
 end;
 
 procedure TContainer.AddObject(Obj: PUIObject);
 var
 	NewNode, LastNode: PObjectNode;
 begin
-	Obj^.Parent := @Self; {Set the object's parent to this container}
+	Obj^.SetParent(@Self); {Set the object's parent to this container}
 
 	New(NewNode);
 	NewNode^.ObjectP := Obj;
@@ -733,24 +841,24 @@ const
 	DefaultW = 320;
 	DefaultH = 175;
 begin
-	TUIObject.Init;
-	Self.SetSize(X, Y, W, H, DefaultW, DefaultH);
+	Inherited Init(X, Y, W, H);
 	Border  := True;
 	DoClose := False;
 	OnRun   := nil;
-	Objects := nil;
+	OnClose := nil;
 	MenuObj := nil;
-	Parent  := nil;
 end;
 
 procedure TWindow.Draw;
 var
 	X1, X2, Y1, Y2: Integer;
 begin
-	X1 := Left;
-	Y1 := Top;
-	X2 := X1 + Width;
-	Y2 := Y1 + Height;
+	{Get absolute position and size of the window}
+	Self.GetPos(X1, Y1, True);
+	Self.GetSize(X2, Y2);
+	Inc(X2, X1);
+	Inc(Y2, Y1);
+
 	if Border then
 	begin
 		SetFillStyle(SolidFill, Thm.Title);

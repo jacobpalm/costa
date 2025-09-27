@@ -24,8 +24,13 @@ const
 	DefaultH = 31;
 begin
 	TUIObject.Init;
-	Self.SetSize(X, Y, SizeDefault, SizeDefault, DefaultW, DefaultH);
-	IconFile := Icon;
+	if Length(IconFile) <= 8 then
+		IconFile := Icon
+	else
+		IconFile := '';
+
+	SetPos(X, Y);
+	SetSize(DefaultW, DefaultH);
 end;
 
 procedure TIcon.Draw;
@@ -45,9 +50,9 @@ begin
 
 	Size := ImageSize(0, 0, 31, 31); {Coords don't matter, just size}
 	
-	X := Left;
-	Y := Top;
-
+	{Get absolute position of the object}
+	GetPos(X, Y, True);
+	
 	{Icon border}
 	SetColor(Thm.Light);
 	Line(X - 1, Y - 1, X + 32, Y - 1);
