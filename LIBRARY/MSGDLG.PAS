@@ -54,30 +54,37 @@ begin
 	if BoxW < 270 then
 		BoxW := 270;
 
-	WinMsgBox.Init(sizeCenter, sizeCenter, BoxW, BoxH);
+	WinMsgBox.Init(0, 0, NoParent);
+	WinMsgBox.SetSize(BoxW, BoxH);
+	WinMsgBox.Center(OrBoth);
+	winMsgBox.GetPos(X1, Y1, True);
+	winMsgBox.GetSize(X2, Y2);
+	Inc(X2, X1);
+	Inc(Y2, Y1);
+
 	case MsgType of
 		MsgInfo:  IconFile := 'MSGINFO';
 		MsgWarn:  IconFile := 'MSGWARN';
 		MsgQuest: IconFile := 'MSGQUEST';
 		MsgError: IconFile := 'MSGERROR';
 	end;
-	ImgIcon.Init(WinMsgBox.Left + 13, WinMsgBox.Top + 15, IconFile);
+	ImgIcon.Init(X1 + 13, Y1 + 15, IconFile, @WinMsgBox);
 	
 	if MsgType = MsgQuest then
 	begin
-		BtnFirst.Init(224, WinMsgBox.Top + WinMsgBox.Height - 36, SizeDefault, SizeDefault, CAP_YES);
+		BtnFirst.Init(224, Y2 - 36, CAP_YES, @WinMsgBox);
 		BtnFirst.AddHotkey(KeyAltY);
 	end
 	else
 	begin
-		BtnFirst.Init(sizeCenter, WinMsgBox.Top + WinMsgBox.Height - 36, SizeDefault, SizeDefault, CAP_OK);
+		BtnFirst.Init(sizeCenter, Y2 - 36, CAP_OK, @WinMsgBox);
 		BtnFirst.AddHotkey(KeyAltO);
 	end;
 	BtnFirst.AddHotkey(KeyEnter);
 	BtnFirst.OnClick := BtnFirstClick;
 	if MsgType = MsgQuest then
 	begin
-		BtnSecond.Init(324, BtnFirst.Top, SizeDefault, SizeDefault, CAP_NO);
+		BtnSecond.Init(324, Y2 - 36, CAP_NO, @WinMsgBox);
 		BtnSecond.AddHotkey(KeyAltN);
 		BtnSecond.AddHotkey(KeyEscape);
 		BtnSecond.OnClick := BtnSecondClick;
@@ -86,10 +93,6 @@ begin
 	Mouse.Hide;
 
 	{Save background to restore when Window is closed}
-	X1 := WinMsgBox.Left;
-	Y1 := WinMsgBox.Top;
-	X2 := WinMsgBox.Left + WinMsgBox.Width;
-	Y2 := WinMsgBox.Top + WinMsgBox.Height;
 	BackgroundSize := ImageSize(X1, Y1, X2, Y2);
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(X1, Y1, X2, Y2, BackgroundP^);
@@ -99,8 +102,9 @@ begin
 	if MsgType = MsgQuest then
 		BtnSecond.Draw;
 	ImgIcon.Draw;
-	Print(MsgTitle, WinMsgBox.Left+56, WinMsgBox.Top+15, Thm.WinText);
-	Print(MsgText, WinMsgBox.Left+56, WinMsgBox.Top+31, Thm.WinText);
+	{DEBUG - uses label below instead of printing directly}
+	Print(MsgTitle, X1 + 56, Y1 + 15, Thm.WinText);
+	Print(MsgText, X1 + Y1 + 56, Y1 + 31, Thm.WinText);
 	Mouse.Show;
 
 	repeat

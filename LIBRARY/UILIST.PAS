@@ -25,7 +25,7 @@ type
 		public
 			OnChange:      TEventProc;
 			OnDoubleClick: TEventProc;
-			constructor    Init(X, Y, W, H: Integer);
+			constructor    Init(X, Y: Integer; Parent: PContainer);
 			destructor     Done; virtual;
 			procedure      AddItem(const ItemText: string);
 			procedure      CheckEvent; virtual;
@@ -45,9 +45,9 @@ type
 
 implementation
 
-constructor TList.Init(X, Y, W, H: Integer);
+constructor TList.Init(X, Y: Integer; Parent: PContainer);
 begin
-	inherited Init(X, Y, W, H);
+	inherited Init(X, Y, Parent);
 	Head          := nil;
 	Selection     := 1;
 	StartPos      := 1;

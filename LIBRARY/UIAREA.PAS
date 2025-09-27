@@ -11,27 +11,24 @@ type
 		public
 			Transparent: Boolean;
 			BGColor:     Integer;
-			constructor  Init(X, Y, W, H: Integer);
+			constructor  Init(X, Y: Integer; Parent: PContainer);
 			procedure    Draw; virtual;
 	end;
 
 implementation
 
-constructor TArea.Init(X, Y, W, H: Integer);
+constructor TArea.Init(X, Y: Integer; Parent: PContainer);
 const
-	DefaultW = 50;
-	DefaultH = 50;
+	DefaultW = 100;
+	DefaultH = 100;
 begin
 	TUIObject.Init;
 	BGColor := ColorDefault;
 	Transparent := False;
 
-	if W = SizeDefault then
-		W := DefaultW;
-	if H = SizeDefault then
-		H := DefaultH;
+	SetParent(Parent);
 	SetPos(X, Y);
-	SetSize(W, H);
+	SetSize(DefaultW, DefaultH);
 end;
 
 procedure TArea.Draw;

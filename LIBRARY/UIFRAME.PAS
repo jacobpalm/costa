@@ -13,13 +13,13 @@ type
 			DarkColor,
 			BGColor:     Integer;
 			Transparent: Boolean;
-			constructor  Init(X, Y, W, H: Integer);
+			constructor  Init(X, Y: Integer; Parent: PContainer);
 			procedure    Draw; virtual;
 	end;
 
 implementation
 
-constructor TFrame.Init(X, Y, W, H: Integer);
+constructor TFrame.Init(X, Y: Integer; Parent: PContainer);
 const
 	DefaultW = 100;
 	DefaultH = 100;
@@ -29,13 +29,9 @@ begin
 	DarkColor := Thm.Shadow;
 	BGColor := Thm.Win;
 	Transparent := True;
-
-	if W = SizeDefault then
-		W := DefaultW;
-	if H = SizeDefault then
-		H := DefaultH;
+	SetParent(Parent);
 	SetPos(X, Y);
-	SetSize(W, H);
+	SetSize(DefaultW, DefaultH);
 end;
 
 procedure TFrame.Draw;
@@ -60,6 +56,8 @@ begin
 	Rectangle(X1 + 1, Y1 + 1, X2 - 1, Y2);
 	SetColor(DarkColor);
 	Rectangle(X1, Y1, X2 - 1, Y2 - 1);
+
+	DrawChildren;
 
 	if Assigned(OnDraw) then
 		OnDraw(@Self);

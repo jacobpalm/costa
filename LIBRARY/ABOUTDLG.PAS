@@ -45,13 +45,19 @@ begin
 	Text := ReplaceMsg(Text, LibVersion);
 	Text := ReplaceMsg(Text, LibYear);
 
-	New(WinAboutBox, Init(sizeCenter, sizeCenter, PrintW(Text) + 29, PrintH(Text) + 95));
-	X1 := WinAboutBox^.Left;
-	Y1 := WinAboutBox^.Top;
-	X2 := X1 + WinAboutBox^.Width;
-	Y2 := Y1 + WinAboutBox^.Height;
-	New(ImgLogo, Init(X1 + 13, Y1 + 15, AppP^.Icon));
-	New(BtnClose, Init(SizeCenter, Y2 - 34, SizeDefault, SizeDefault, CAP_CLOSE));
+	New(WinAboutBox, Init(0, 0, nil));
+	with WinAboutBox^ do
+	begin
+		SetSize(PrintW(Text) + 29, PrintH(Text) + 95);
+		Center(OrBoth);
+		GetPos(X1, Y1, True);
+		GetSize(X2, Y2);
+	end;
+	Inc(X2, X1);
+	Inc(Y2, Y1);
+
+	New(ImgLogo, Init(X1 + 13, Y1 + 15, AppP^.Icon, WinAboutBox));
+	New(BtnClose, Init(SizeCenter, Y2 - 34, CAP_CLOSE, WinAboutBox));
 	with BtnClose^ do
 	begin
 		AddHotkey(KeyAltC);
@@ -60,15 +66,9 @@ begin
 		OnClick := AboutBoxClose;
 	end;
 	
-	New(LblInfo[0], Init(X1 + 56, Y1 + 21, SizeDefault, SizeDefault, AppP^.Name + ' ' + AppP^.Version));
-	New(LblInfo[1], Init(X1 + 56, Y1 + 33, SizeDefault, SizeDefault, ReplaceMsg(MSG_BY_TEXT, AppP^.Author)));
-	New(LblInfo[2], Init(X1 + 15, Y1 + 53, SizeDefault, SizeDefault, Text));
-	
-	WinAboutBox^.AddObject(BtnClose);
-	WinAboutBox^.AddObject(ImgLogo);
-	WinAboutBox^.AddObject(LblInfo[0]);
-	WinAboutBox^.AddObject(LblInfo[1]);
-	WinAboutBox^.AddObject(LblInfo[2]);
+	New(LblInfo[0], Init(X1 + 56, Y1 + 21, AppP^.Name + ' ' + AppP^.Version, WinAboutBox));
+	New(LblInfo[1], Init(X1 + 56, Y1 + 33, ReplaceMsg(MSG_BY_TEXT, AppP^.Author), WinAboutBox));
+	New(LblInfo[2], Init(X1 + 15, Y1 + 53, Text, WinAboutBox));
 
 	{Save background to restore when Window is closed}
 	Mouse.Hide;

@@ -11,6 +11,7 @@ const
 	LibYear              = '2025';
 
 	SizeDefault          = -1;   {Used to set default width/height on object init}
+	SizeRetain           = -255; {Used to retain current width/height on object resize}
 	SizeCenter           = -2;   {Used to center objects on screen}
  
 	ColorDefault         = 255;  {Used to set default colors on objects}
@@ -47,6 +48,8 @@ type
 	TState       = (Enabled, Hidden, Active, Selected);
 	TStateSet    = set of TState;
 
+	TOrientation = (OrHorizontal, OrVertical, OrBoth);
+
 	{Linked list of hotkeys, to allow multiple hotkeys per object}
 	THotkeyNode = record
 		Hotkey: string;      {Hotkey as returned by GetKey}
@@ -69,8 +72,8 @@ type
 			function    GetHotkey: PHotkeyNode;
 			procedure   RemoveHotkey(Key: string);
 
-			procedure   SetParent(Obj: PUIObject);
-			function    GetParent: PUIObject;
+			procedure   SetParent(Parent: PContainer);
+			function    GetParent: PContainer;
 
 			procedure   AddState(S: TState);
 			function    GetState(S: TState): Boolean;
@@ -83,12 +86,13 @@ type
 
 			procedure   SetPos(X, Y: Integer);
 			procedure   GetPos(var X, Y: Integer; Absolute: Boolean);
+			procedure   Center(Orientation: TOrientation);
 		private
 			Left,
 			Top,
 			Width,
 			Height:     Integer;
-			Parent:     PUIObject;   {Parent object, if any - should only use container types}
+			ParentObj:  PContainer;   {Parent object, if any - should only use container types}
 			Hotkey:     PHotKeyNode; {Linked list of hotkeys}
 			State:      TStateSet;   {State flags}
 
@@ -102,22 +106,23 @@ type
 
 	{Non-visual object, used to assign hotkeys to actions without a UI object}
 	THotkey = object(TUIObject)
-		constructor Init(Key: String);
+		constructor Init(Key: String; Parent: PContainer);
 		procedure   CheckEvent; virtual;
 	end;
 
 	{Menu bar object, placed at the top of a window}
 	TMenu = object(TUIObject)
-		constructor Init;
+		constructor Init(Parent: PContainer);
 		procedure   Draw; virtual;
 	end;
 
 	{Container object, which can contain multiple other objects via a linked list}
 	TContainer = object(TUIObject)
 		public
-			constructor Init(X, Y, W, H: Integer);
+			constructor Init(X, Y: Integer; Parent: PContainer);
 			destructor  Done; virtual;
 			procedure   AddObject(Obj: PUIObject);
+			procedure   DrawChildren;
 		private
 			Objects:    PObjectNode; {Linked list of objects in the container}
 	end;
@@ -128,7 +133,7 @@ type
 			Border:     Boolean;
 			OnRun:      TEventProc;
 			OnClose:    TEventProc;
-			constructor Init(X, Y, W, H: Integer);
+			constructor Init(X, Y: Integer; Parent: PContainer);
 			procedure   CheckEvent; virtual;
 			{procedure   SetMenu(Menu: PMenu);}
 			procedure   Draw; virtual;
@@ -221,6 +226,7 @@ var
 	Thm:            TTheme;      {Colors for the interface}
 	ProgramPath:    DirStr;      {Path of the executable, used to load resources}
 	HotkeyInput:    String;      {Stores the last pressed hotkey, used in event loops}
+	NoParent:       PContainer;  {Null parent pointer, used when creating top-level windows}
 
 function  FileExists(const FileName: string): Boolean;
 function  Valid8dot3(Filename: string): Boolean;
@@ -260,15 +266,15 @@ const
 
 constructor TUIObject.Init;
 begin
-	State   := [Enabled];
-	Hotkey  := nil;
-	OnClick := nil;
-	OnDraw  := nil;
-	Parent  := nil;
-	Left    := 0;
-	Top     := 0;
-	Width   := 0;
-	Height  := 0;
+	State     := [Enabled];
+	Hotkey    := nil;
+	OnClick   := nil;
+	OnDraw    := nil;
+	ParentObj := nil;
+	Left      := 0;
+	Top       := 0;
+	Width     := 0;
+	Height    := 0;
 end;
 
 destructor TUIObject.Done;
@@ -421,70 +427,73 @@ begin
 end;
 
 procedure TUIObject.SetPos(X, Y: Integer);
-var
-	RelX, RelY: Integer;
 begin
-	if not Assigned(Parent) then
-	begin
-		Left := X;
-		Top := Y;
-		exit;
-	end;
-
-	{If object has a parent, position is relative to the parent. Setting position to 0,0 and getting
-	 position with Relative=True will return the position relative to the parent, being the top left
-	 corner of the parent. Then add the new X,Y coordinates to that, and we have to absolute
-	 coordinates to set the object position}
-	Left := 0;
-	Top := 0;
-	Self.GetPos(RelX, RelY, True);
-
-	Left := RelX + X;
-	Top := RelY + Y;
+	Left := X;
+	Top := Y;
 end;
 
 procedure TUIObject.GetPos(var X, Y: Integer; Absolute: Boolean);
 var
 	RelX, RelY: Integer;
-	ParentObj: PUIObject;
 begin
 	X := Left;
 	Y := Top;
 
-
-	if Absolute and Assigned(Parent) then
+	if Absolute and Assigned(ParentObj) then
 	begin
-		ParentObj := Parent;
-		RelX := 0;
-		RelY := 0;
-
-		{Loop through parents until top of the chain, adding up relative positions}
-		while Assigned(ParentObj) do
-		begin
-			ParentObj^.GetPos(RelX, RelY, False);
-			X := X + RelX;
-			Y := Y + RelY;
-			ParentObj := ParentObj^.GetParent;
-		end;
+		ParentObj^.GetPos(RelX, RelY, True);
+		X := X + RelX;
+		Y := Y + RelY;
 	end;
 end;
 
-procedure TUIObject.SetParent(Obj: PUIObject);
+procedure TUIObject.Center(Orientation: TOrientation);
+var
+	ParentW, ParentH, ParentX, ParentY: Integer;
 begin
-	Parent := Obj;
+	if not Assigned(ParentObj) then
+	begin
+		{If no parent, use full screen dimensions}
+		ParentW := GetMaxX;
+		ParentH := GetMaxY;
+	end
+	else
+	begin
+		{Get parent dimensions and absolute position}
+		ParentObj^.GetSize(ParentW, ParentH);
+	end;
+
+	{To center, the size of the object is subtracted from the size of the parent.
+	 The remaining space is the additional width the parent has, and dividing this by
+	 2 will give the left/top position to center the object}
+	if (Orientation = OrHorizontal) or (Orientation = OrBoth) then
+		Left := (ParentW - Width) div 2;
+	if (Orientation = OrVertical) or (Orientation = OrBoth) then
+		Top := (ParentH - Height) div 2;
 end;
 
-function TUIObject.GetParent: PUIObject;
+procedure TUIObject.SetParent(Parent: PContainer);
 begin
-	GetParent := Parent;
+	{Debug - test when RemoveObject has been inmplemented}
+	{if Assigned(Parent) then
+		Parent^.RemoveObject(@Self);}
+
+	ParentObj := Parent;
+	if Assigned(ParentObj) then
+		ParentObj^.AddObject(@Self);
+end;
+
+function TUIObject.GetParent: PContainer;
+begin
+	GetParent := ParentObj;
 end;
 
 procedure TUIObject.SetSize(W, H: Integer);
 begin
-	if W > -1 then
+	if W <> SizeRetain then
 		Width := W;
 
-	if H > -1 then
+	if H <> SizeRetain then
 		Height := H;
 end;
 
@@ -499,9 +508,10 @@ end;
 { Hotkey object implementation }
 {----------------------------------------------------------------------------}
 
-constructor THotkey.Init(Key: String);
+constructor THotkey.Init(Key: String; Parent: PContainer);
 begin
 	Inherited Init;
+	SetParent(Parent);
 	Self.AddHotkey(Key);
 end;
 
@@ -520,10 +530,13 @@ end;
 { Menu object implementation }
 {----------------------------------------------------------------------------}
 
-constructor TMenu.Init;
+constructor TMenu.Init(Parent: PContainer);
 begin
 	TUIObject.Init;
+	SetParent(Parent);
 	SetSize(GetMaxX, 28);
+
+	{DEBUG - set position automatically to top of parent}
 end;
 
 procedure TMenu.Draw;
@@ -615,9 +628,6 @@ begin
 	NewNode^.ObjectP := Win;
 	NewNode^.Next := Self.Window;
 	Self.Window := NewNode;
-
-	{Set the window's parent to the application}
-	Win^.Parent := @Self;
 end;
 
 procedure TApplication.CloseWindow;
@@ -775,29 +785,22 @@ end;
 { Container object implementation }
 {----------------------------------------------------------------------------}
 
-constructor TContainer.Init(X, Y, W, H: Integer);
+constructor TContainer.Init(X, Y: Integer; Parent: PContainer);
 const
 	DefaultW = 320;
 	DefaultH = 175;
 begin
 	TUIObject.Init;
 	Objects := nil;
-	
-	If W = SizeDefault then
-		W := DefaultW;
-	If H = SizeDefault then
-		H := DefaultH;
-
-	Self.SetSize(W, H);
+	SetParent(Parent);
 	Self.SetPos(X, Y);
+	Self.SetSize(DefaultW, DefaultH);
 end;
 
 procedure TContainer.AddObject(Obj: PUIObject);
 var
 	NewNode, LastNode: PObjectNode;
 begin
-	Obj^.SetParent(@Self); {Set the object's parent to this container}
-
 	New(NewNode);
 	NewNode^.ObjectP := Obj;
 	NewNode^.Next := nil;
@@ -813,6 +816,26 @@ begin
 			LastNode := LastNode^.Next;
 		LastNode^.Next := NewNode;
 	end;
+end;
+
+procedure TContainer.DrawChildren;
+var
+	CurrObj: PObjectNode;
+begin
+	If not Assigned(Objects) then
+		exit;
+
+	{Draw all objects in the linked list}
+	CurrObj := Objects;
+	CurrObj^.ObjectP^.Draw;
+	while Assigned(CurrObj^.Next) do
+	begin
+		CurrObj := CurrObj^.Next;
+		CurrObj^.ObjectP^.Draw;
+	end;
+
+	{OnDraw is not triggered by the container, as it is not a visual object - 
+	 descendants should implement their own Draw method and trigger OnDraw there}
 end;
 
 destructor TContainer.Done;
@@ -836,12 +859,13 @@ end;
 { Window object implementation }
 {----------------------------------------------------------------------------}
 
-constructor TWindow.Init(X, Y, W, H: Integer);
+constructor TWindow.Init(X, Y: Integer; Parent: PContainer);
 const
 	DefaultW = 320;
 	DefaultH = 175;
 begin
-	Inherited Init(X, Y, W, H);
+	Inherited Init(X, Y, Parent);
+	SetSize(DefaultW, DefaultH);
 	Border  := True;
 	DoClose := False;
 	OnRun   := nil;
@@ -888,6 +912,8 @@ begin
 		Bar(X1, Y1, X2, Y2);
 	end;
 
+	DrawChildren;
+
 	if Assigned(OnDraw) then
 		OnDraw(@Self);
 end;
@@ -896,25 +922,17 @@ procedure TWindow.Run;
 var
 	CurrObj: PObjectNode;
 begin
-	if not Assigned(Objects) then
-		exit;
-
 	Self.DoClose := False;
 
 	{Draw window and all objects in the window}
 	Mouse.Hide;
 	Self.Draw;
-	CurrObj := Objects;
-	repeat
-		CurrObj^.ObjectP^.Draw;
-		CurrObj := CurrObj^.Next;
-	until CurrObj = nil;
 	Mouse.Show;
 
 	if Assigned(OnRun) then
 		OnRun(@Self);
 
-	while not Self.DoClose do
+	while not Self.DoClose and Assigned(Objects) do
 		Self.CheckEvent;
 
 	if Assigned(OnClose) then

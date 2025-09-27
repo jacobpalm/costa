@@ -45,24 +45,29 @@ begin
 	ReturnValue := '';
 
 	{Calculate size of the Window based on text size}
-	BoxW := PrintW(MsgText) + 76;
-	BoxH := PrintH(MsgText) + 120;
-	if BoxW < 194 then
-		BoxW := 194;
+	X2 := PrintW(MsgText) + 76;
+	Y2 := PrintH(MsgText) + 120;
+	if X2 < 194 then
+		X2 := 194;
 
 	{Create the Window and all child objects}
-	New(WinInputBox, Init(sizeCenter, sizeCenter, BoxW, BoxH));
-	X1 := WinInputBox^.Left;
-	Y1 := WinInputBox^.Top;
-	X2 := X1 + WinInputBox^.Width;
-	Y2 := Y1 + WinInputBox^.Height;
+	New(WinInputBox, Init(0, 0, NoParent));
+	with WinInputBox^ do
+	begin
+		SetSize(X2, Y2);
+		Center(OrBoth);
+		GetPos(X1, Y1, True);
+	end;
+	Inc(X2, X1);
+	Inc(Y2, Y1);
 
-	New(ImgIcon, Init(X1 + 13, Y1 + 15, MsgIcon));
-	New(BtnOK, Init(X2 - 207, Y2 - 36, SizeDefault, SizeDefault, CAP_OK));
-	New(BtnCancel, Init(X2 - 105, BtnOK^.Top, SizeDefault, SizeDefault, CAP_CANCEL));
-	New(TxtInput, Init(X1 + 12, BtnOK^.Top - 27, WinInputBox^.Width - 25, SizeDefault, CAP_INPUT));
-	New(LblTitle, Init(X1 + 56, Y1 + 15, SizeDefault, SizeDefault, MsgTitle));
-	New(LblText, Init(X1 + 56, Y1 + 31, SizeDefault, SizeDefault, MsgText));
+	New(ImgIcon, Init(X1 + 13, Y1 + 15, MsgIcon, WinInputBox));
+	New(BtnOK, Init(X2 - 207, Y2 - 36, CAP_OK, WinInputBox));
+	New(BtnCancel, Init(X2 - 105, Y2 - 36, CAP_CANCEL, WinInputBox));
+	New(TxtInput, Init(X1 + 12, Y2 - 63, CAP_INPUT, WinInputBox));
+	TxtInput^.SetSize(X2 - X1 - 24, SizeRetain);
+	New(LblTitle, Init(X1 + 56, Y1 + 15, MsgTitle, WinInputBox));
+	New(LblText, Init(X1 + 56, Y1 + 31, MsgText, WinInputBox));
 	With BtnOK^ do
 	begin
 		AddHotkey(KeyAltO);

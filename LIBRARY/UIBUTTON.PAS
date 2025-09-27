@@ -10,7 +10,7 @@ type
 	TButton = object(TUIObject)
 		public
 			Transparent: Boolean;
-			constructor  Init(X, Y, W, H: Integer; Cap: string);
+			constructor  Init(X, Y: Integer; Cap: string; Parent: PContainer);
 			procedure    CheckEvent; virtual;
 			procedure    Draw; virtual;
 			procedure    SetCaption(Cap: string);
@@ -20,7 +20,7 @@ type
 
 implementation
 
-constructor TButton.Init(X, Y, W, H: Integer; Cap: string);
+constructor TButton.Init(X, Y: Integer; Cap: string; Parent: PContainer);
 const
 	DefaultW = 92;
 	DefaultH = 22;
@@ -28,13 +28,9 @@ begin
 	TUIObject.Init;
 	Caption := Cap;
 	Transparent := False;
-
-	if W = SizeDefault then
-		W := DefaultW;
-	if H = SizeDefault then
-		H := DefaultH;
-
-	SetSize(W, H);
+	
+	SetParent(Parent);
+	SetSize(DefaultW, DefaultH);
 	SetPos(X, Y);
 end;
 

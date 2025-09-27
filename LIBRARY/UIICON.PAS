@@ -9,7 +9,7 @@ type
 	PIcon = ^TIcon;
 	TIcon = object(TUIObject)
 		public
-			constructor Init(X, Y: Integer; Icon: string);
+			constructor Init(X, Y: Integer; Icon: string; Parent: PContainer);
 			procedure   Draw; virtual;
 			procedure   SetIcon(Icon: string);
 		private
@@ -18,7 +18,7 @@ type
 
 implementation
 
-constructor TIcon.Init(X, Y: Integer; Icon: string);
+constructor TIcon.Init(X, Y: Integer; Icon: string; Parent: PContainer);
 const
 	DefaultW = 31;
 	DefaultH = 31;
@@ -29,6 +29,7 @@ begin
 	else
 		IconFile := '';
 
+	SetParent(Parent);
 	SetPos(X, Y);
 	SetSize(DefaultW, DefaultH);
 end;

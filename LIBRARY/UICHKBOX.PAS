@@ -11,7 +11,7 @@ type
 		public
 			Caption:    string;
 			OnChange:   TEventProc;
-			constructor Init(X, Y: Integer; Cap: String; Checked: Boolean);
+			constructor Init(X, Y: Integer; Cap: String; Checked: Boolean; Parent: PContainer);
 			procedure   CheckEvent; virtual;
 			function    GetChecked: boolean;
 			procedure   SetChecked(Checked: boolean);
@@ -20,7 +20,7 @@ type
 
 implementation
 
-constructor TCheckbox.Init(X, Y: Integer; Cap: String; Checked: Boolean);
+constructor TCheckbox.Init(X, Y: Integer; Cap: String; Checked: Boolean; Parent: PContainer);
 const
 	DefaultW = 15;
 	DefaultH = 15;
@@ -31,6 +31,7 @@ begin
 	If Checked then
 		AddState(Selected);
 
+	SetParent(Parent);
 	SetSize(DefaultW, DefaultH);
 	SetPos(X, Y);
 end;

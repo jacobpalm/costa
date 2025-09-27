@@ -11,7 +11,7 @@ type
 		public
 			FgColor,
 			BgColor:    Byte;
-			constructor Init(X, Y, W, H: Integer; Cap: String);
+			constructor Init(X, Y: Integer; Cap: String; Parent: PContainer);
 			procedure   AutoSize;
 			procedure   Draw; virtual;
 			procedure   SetCaption(Cap: string);
@@ -21,7 +21,7 @@ type
 
 implementation
 
-constructor TLabel.Init(X, Y, W, H: Integer; Cap: String);
+constructor TLabel.Init(X, Y: Integer; Cap: String; Parent: PContainer);
 const
 	DefaultW = 100;
 	DefaultH = PrintLineH;
@@ -31,12 +31,9 @@ begin
 	FgColor := ColorDefault;
 	BgColor := ColorDefault;
 	
-	if W = SizeDefault then
-		W := DefaultW;
-	if H = SizeDefault then
-		H := DefaultH;
+	SetParent(Parent);
 	SetPos(X, Y);
-	SetSize(W, H);
+	SetSize(DefaultW, DefaultH);
 end;
 
 procedure TLabel.AutoSize;

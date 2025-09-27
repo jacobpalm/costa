@@ -13,7 +13,7 @@ type
 			Text:       string;
 			MaxLen:     Integer;
 			OnChange:   TEventProc;
-			constructor Init(X, Y, W, H: Integer; Cap: String);
+			constructor Init(X, Y: Integer; Cap: String; Parent: PContainer);
 			procedure   CheckEvent; virtual;
 			procedure   Edit;
 			procedure   Draw; virtual;
@@ -21,7 +21,7 @@ type
 
 implementation
 
-constructor TTextbox.Init(X, Y, W, H: Integer; Cap: String);
+constructor TTextbox.Init(X, Y: Integer; Cap: String; Parent: PContainer);
 const
 	DefaultW = 120;
 	DefaultH = 19;
@@ -34,12 +34,9 @@ begin
 	BGColor     := ColorDefault;
 	Transparent := False;
 	
-	if W = SizeDefault then
-		W := DefaultW;
-	if H = SizeDefault then
-		H := DefaultH;
+	SetParent(Parent);
 	SetPos(X, Y);
-	SetSize(W, H);
+	SetSize(DefaultW, DefaultH);
 end;
 
 procedure TTextbox.CheckEvent;
