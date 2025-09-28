@@ -67,8 +67,7 @@ begin
 
 	Print(Caption, X1, Y1, TextColor);
 
-	if Assigned(OnDraw) then
-		OnDraw(@Self);
+	TUIObject.Draw;
 end;
 
 procedure TLabel.SetCaption(Cap: string);

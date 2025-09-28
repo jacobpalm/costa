@@ -83,8 +83,7 @@ begin
 	if Length(Caption) > 0 then
 		Print (Caption, X1 + 22, Y1 + 4, Thm.WinText);
 
-	if Assigned(OnDraw) then
-		OnDraw(@Self);
+	TUIObject.Draw;
 end;
 
 procedure TCheckbox.CheckEvent;
@@ -113,8 +112,7 @@ begin
 		Self.SetChecked(not GetState(Selected));
 
 		{Trigger OnClick event, if assigned}
-		if Assigned(OnClick) then
-			OnClick(@Self);
+		Self.Click;
 	end;
 end;
 

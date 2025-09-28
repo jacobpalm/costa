@@ -52,22 +52,22 @@ begin
 	With Btn1^ do
 	begin
 		AddHotkey(KeyAltA);
-		OnClick := Btn1Click;
+		SetOnClick(Btn1Click);
 	end;
 	New(Btn2, Init(120, 20, #127 + 'Open...', WinMain));
 	With Btn2^ do
 	begin
 		AddHotkey(KeyAltO);
-		OnClick := Btn2Click;
+		SetOnClick(Btn2Click);
 	end;
 	New(Btn3, Init(220, 20, 'E' + #127 + 'xit', WinMain));
 	With Btn3^ do
 	begin
 		AddHotkey(KeyAltX);
-		OnClick := Btn3Click;
+		SetOnClick(Btn3Click);
 	end;
 	New(HkEsc, Init(KeyEscape, WinMain));
-	HkEsc^.OnClick := Btn3Click;
+	HkEsc^.SetOnClick(Btn3Click);
 
 	New(Frm1, Init(20, 50, NoParent));
 	New(Txt1, Init(10, 10, 'Name:', WinMain));

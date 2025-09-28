@@ -69,8 +69,7 @@ begin
 	Line(X2 - 1, Y1 + 2, X2 - 1, Y2 - 1);
 	Line(X1 + 2, Y2 - 1, X2 - 2, Y2 - 1);
 
-	if Assigned(OnDraw) then
-		OnDraw(@Self);
+	TUIObject.Draw;
 end;
 
 end.

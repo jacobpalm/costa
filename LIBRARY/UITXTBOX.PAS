@@ -62,8 +62,7 @@ begin
 	if Clicked or Self.HotkeyPressed then
 	begin
 		{Trigger OnClick event, if assigned}
-		if Assigned(OnClick) then
-			OnClick(@Self);
+		Self.Click;
 
 		{Allow user to edit the text}
 		Self.Edit;
@@ -226,8 +225,7 @@ begin
 		Line(X1, Y1 - 1, X1, Y1 + 8);
 	end;
 
-	if Assigned(OnDraw) then
-		OnDraw(@Self);
+	TUIObject.Draw;
 end;
 
 end.

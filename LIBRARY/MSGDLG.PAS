@@ -77,17 +77,18 @@ begin
 	end
 	else
 	begin
-		BtnFirst.Init(sizeCenter, Y2 - 36, CAP_OK, @WinMsgBox);
+		BtnFirst.Init(0, Y2 - 36, CAP_OK, @WinMsgBox);
+		BtnFirst.Center(OrHorizontal);
 		BtnFirst.AddHotkey(KeyAltO);
 	end;
 	BtnFirst.AddHotkey(KeyEnter);
-	BtnFirst.OnClick := BtnFirstClick;
+	BtnFirst.SetOnClick(BtnFirstClick);
 	if MsgType = MsgQuest then
 	begin
 		BtnSecond.Init(324, Y2 - 36, CAP_NO, @WinMsgBox);
 		BtnSecond.AddHotkey(KeyAltN);
 		BtnSecond.AddHotkey(KeyEscape);
-		BtnSecond.OnClick := BtnSecondClick;
+		BtnSecond.SetOnClick(BtnSecondClick);
 	end;
 
 	Mouse.Hide;

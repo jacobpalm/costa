@@ -59,8 +59,7 @@ begin
 
 	DrawChildren;
 
-	if Assigned(OnDraw) then
-		OnDraw(@Self);
+	TUIObject.Draw;
 end;
 
 end.

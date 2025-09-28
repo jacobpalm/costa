@@ -104,8 +104,7 @@ begin
 	begin
 		{No mouse click or click outside the object, check for hotkeys only}
 		if Self.HotkeyPressed then
-			if Assigned(OnClick) then
-				OnClick(@Self);
+			Self.Click;
 		exit;
 	end;
 
@@ -170,8 +169,7 @@ begin
 	end;
 	
 	{Trigger click event if assigned}
-	if Assigned(OnClick) then
-		OnClick(@Self);
+	Self.Click;
 end;
 
 procedure TList.ClearItems;
@@ -273,8 +271,7 @@ begin
 	end;
 	Mouse.Show;
 
-	if Assigned(OnDraw) then
-		OnDraw(@Self);
+	TUIObject.Draw;
 end;
 
 procedure TList.MoveSelection(Direction: TListDirection);

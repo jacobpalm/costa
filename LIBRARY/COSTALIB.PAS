@@ -10,10 +10,8 @@ const
 	LibVersion           = '2.0';
 	LibYear              = '2025';
 
-	SizeDefault          = -1;   {Used to set default width/height on object init}
 	SizeRetain           = -255; {Used to retain current width/height on object resize}
-	SizeCenter           = -2;   {Used to center objects on screen}
- 
+	
 	ColorDefault         = 255;  {Used to set default colors on objects}
   
 	DoubleClickDelay     = 0.5;  
@@ -45,9 +43,12 @@ type
 	{Event procedure type, to ensure all event procedures have the same signature}
 	TEventProc   = procedure(Sender: PUIObject);
 
+	{Object states - implemented as a set to be able to store multiple values in one
+	 byte, and to allow one Get/Set method to handle multiple boolean properties}
 	TState       = (Enabled, Hidden, Active, Selected);
 	TStateSet    = set of TState;
 
+	{Orientation for centering objects}
 	TOrientation = (OrHorizontal, OrVertical, OrBoth);
 
 	{Linked list of hotkeys, to allow multiple hotkeys per object}
@@ -59,8 +60,6 @@ type
 	{Base object which all objects, visual or not, are based on}
 	TUIObject = object
 		public
-			OnClick:    TEventProc;  {Event procedure for mouse click or hotkey press}
-			OnDraw:     TEventProc;
 			constructor Init;
 			Destructor  Done; virtual;
 
@@ -79,6 +78,7 @@ type
 			function    GetState(S: TState): Boolean;
 			procedure   RemoveState(S: TState);
 
+			procedure   Click;	
 			procedure   Draw; virtual;
 
 			procedure   SetSize(W, H: Integer);
@@ -87,15 +87,19 @@ type
 			procedure   SetPos(X, Y: Integer);
 			procedure   GetPos(var X, Y: Integer; Absolute: Boolean);
 			procedure   Center(Orientation: TOrientation);
+
+			procedure   SetOnClick(Event: TEventProc);
+			procedure   SetOnDraw(Event: TEventProc);
 		private
 			Left,
 			Top,
 			Width,
-			Height:     Integer;
-			ParentObj:  PContainer;   {Parent object, if any - should only use container types}
+			Height:     Integer;     {Position relative to parent, and size}
+			ParentObj:  PContainer;  {Parent object, if any - should only use container types}
 			Hotkey:     PHotKeyNode; {Linked list of hotkeys}
 			State:      TStateSet;   {State flags}
-
+			OnClick:    TEventProc;  {Event procedure for mouse click or hotkey press}
+			OnDraw:     TEventProc;  {Event procedure called at the end of Draw method, to allow custom drawing etc.}
 	end;
 
 	{Linked list of objects based on PUIObject, can contain objects of any descendant type}
@@ -417,13 +421,22 @@ begin
 
 	if Clicked or Self.HotkeyPressed then
 		{Trigger OnClick event, if assigned}
-		if Assigned(OnClick) then
-			OnClick(@Self);
+		Self.Click;
 end;
 
-{Dummy procedure, descandants should implement their own versions}
+{Descendants can call this method to trigger OnClick event}
+procedure TUIObject.Click;
+begin
+	if Assigned(OnClick) then
+		OnClick(@Self);
+end;
+
+{Descandants should implement their own versions with drawing code, but can call
+ this version at the end to trigger any custom drawing code assigned to OnDraw}
 procedure TUIObject.Draw;
 begin
+	if Assigned(OnDraw) then
+		OnDraw(@Self);
 end;
 
 procedure TUIObject.SetPos(X, Y: Integer);
@@ -474,7 +487,7 @@ end;
 
 procedure TUIObject.SetParent(Parent: PContainer);
 begin
-	{Debug - test when RemoveObject has been inmplemented}
+	{Debug - test when RemoveObject has been implemented}
 	{if Assigned(Parent) then
 		Parent^.RemoveObject(@Self);}
 
@@ -504,6 +517,17 @@ begin
 end;
 
 
+procedure TUIObject.SetOnClick(Event: TEventProc);
+begin
+	OnClick := Event;
+end;
+
+procedure TUIObject.SetOnDraw(Event: TEventProc);
+begin
+	OnDraw := Event;
+end;
+
+
 {----------------------------------------------------------------------------}
 { Hotkey object implementation }
 {----------------------------------------------------------------------------}
@@ -522,8 +546,7 @@ begin
 	
 	if Self.HotkeyPressed then
 		{Trigger OnClick event, if assigned}
-		if Assigned(OnClick) then
-			OnClick(@Self);
+		Self.Click;
 end;
 
 {----------------------------------------------------------------------------}
@@ -914,8 +937,7 @@ begin
 
 	DrawChildren;
 
-	if Assigned(OnDraw) then
-		OnDraw(@Self);
+	TUIObject.Draw;
 end;
 
 procedure TWindow.Run;

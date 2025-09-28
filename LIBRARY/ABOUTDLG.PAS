@@ -57,13 +57,14 @@ begin
 	Inc(Y2, Y1);
 
 	New(ImgLogo, Init(X1 + 13, Y1 + 15, AppP^.Icon, WinAboutBox));
-	New(BtnClose, Init(SizeCenter, Y2 - 34, CAP_CLOSE, WinAboutBox));
+	New(BtnClose, Init(0, Y2 - 34, CAP_CLOSE, WinAboutBox));
 	with BtnClose^ do
 	begin
+		Center(OrHorizontal);
 		AddHotkey(KeyAltC);
 		AddHotkey(KeyEnter);
 		AddHotkey(KeyEscape);
-		OnClick := AboutBoxClose;
+		SetOnClick(AboutBoxClose);
 	end;
 	
 	New(LblInfo[0], Init(X1 + 56, Y1 + 21, AppP^.Name + ' ' + AppP^.Version, WinAboutBox));

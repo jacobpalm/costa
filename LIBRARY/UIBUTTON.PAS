@@ -90,11 +90,8 @@ begin
 	end;
 
 	if Clicked or Self.HotkeyPressed then
-	begin
 		{Trigger OnClick event, if assigned}
-		if Assigned(OnClick) then
-				OnClick(@Self);
-	end;
+		Self.Click;
 end;
 
 procedure TButton.Draw;
@@ -166,8 +163,7 @@ begin
 		Print(Caption, X1, Y1, Thm.WinText);
 	end;
 
-	if Assigned(OnDraw) then
-		OnDraw(@Self);
+	TUIObject.Draw;
 end;
 
 procedure TButton.SetCaption(Cap: string);

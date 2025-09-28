@@ -3,7 +3,7 @@ unit FileDlg;
 interface
 
 uses
-	Costalib, UIButton, UITxtbox, UIList, UIIcon;
+	Costalib, UIButton, UITxtbox, UILabel, UIList, UIIcon;
 
 function FileSelect(DefaultPattern, StartPath: string; IconSelect: boolean): string;
 
@@ -34,6 +34,7 @@ var
 	BtnFilePrev, BtnFileNext: TButton;
 	BtnDirPrev, BtnDirNext: TButton;
 	HkUp, HkDown, HkPageUp, HkPageDown, HkHome, HkEnd, HkTab: THotkey;
+	LblFiles, LblDirs: TLabel;
 	
 	List:           array[-1..0] of TList;
 	ActiveList:     Integer;
@@ -297,68 +298,71 @@ begin
 	{Init window and save coordinates for later use}
 	WinFileSelect.Init(0, 0, NoParent);
 	WinFileSelect.SetSize(468, 270);
+	WinFileSelect.Center(OrBoth);
 	WinFileSelect.GetPos(X1, Y1, True);
 	WinFileSelect.GetSize(X2, Y2);
 	Inc(X2, X1);
 	Inc(Y2, Y1);
 
-	TxtPattern.Init(101, Y1 + 28, CAP_PATTERN, @WinFileSelect);
+	TxtPattern.Init(15, 28, CAP_PATTERN, @WinFileSelect);
 	TxtPattern.SetSize(150, SizeRetain);
 	TxtPattern.AddHotkey(KeyAltP);
 	TxtPattern.OnChange := TxtPatternChange;
 	TxtPattern.MaxLen := 12; {8.3 including the dot}
-	TxtDrive.Init(272, Y1 + 28, CAP_DRIVE, @WinFileSelect);
+	TxtDrive.Init(187, 28, CAP_DRIVE, @WinFileSelect);
 	TxtDrive.SetSize(150, SizeRetain);
 	TxtDrive.AddHotkey(KeyAltR);
 	TxtDrive.OnChange := TxtDriveChange;
 	TxtDrive.MaxLen := 1;
-	List[FileList].Init(101, Y1 + 71, @WinFileSelect);
+	LblFiles.Init(16, 57, CAP_FILES, @WinFileSelect);
+	LblDirs.Init(187, 57, CAP_DIRS, @WinFileSelect);
+	List[FileList].Init(16, 71, @WinFileSelect);
 	List[FileList].SetSize(150, 185);
 	List[FileList].AddHotkey(KeyAltF);
 	List[FileList].OnChange := DrawPreview;
-	List[FileList].OnClick := ListClicked;
+	List[FileList].SetOnClick(ListClicked);
 	List[FileList].OnDoubleClick := ListDblClicked;
-	List[DirList].Init(272, Y1 + 71, @WinFileSelect);
+	List[DirList].Init(187, 71, @WinFileSelect);
 	List[DirList].SetSize(150, 185);
 	List[DirList].AddHotkey(KeyAltD);
-	List[DirList].OnClick := ListClicked;
+	List[DirList].SetOnClick(ListClicked);
 	List[DirList].OnDoubleClick := ListDblClicked;
-	BtnSelect.Init(448, Y1 + 28, CAP_SELECT, @WinFileSelect);
+	BtnSelect.Init(363, 28, CAP_SELECT, @WinFileSelect);
 	BtnSelect.AddHotkey(KeyAltS);
 	BtnSelect.AddHotkey(KeyEnter);
-	BtnSelect.OnClick := ListDblClicked;
-	BtnCancel.Init(448, Y1 + 58, CAP_CANCEL, @WinFileSelect);
+	BtnSelect.SetOnClick(ListDblClicked);
+	BtnCancel.Init(363, 58, CAP_CANCEL, @WinFileSelect);
 	BtnCancel.AddHotkey(KeyAltC);
 	BtnCancel.AddHotkey(KeyEscape);
-	BtnCancel.OnClick := BtnCancelClick;
-	BtnFilePrev.Init(253, Y1 + 71, CharArrowUp, @WinFileSelect);
+	BtnCancel.SetOnClick(BtnCancelClick);
+	BtnFilePrev.Init(168, 71, CharArrowUp, @WinFileSelect);
 	BtnFilePrev.SetSize(14, 91);
-	BtnFilePrev.OnClick := BtnDirectionClick;
-	BtnFileNext.Init(253, Y1 + 71 + 94, CharArrowDown, @WinFileSelect);
+	BtnFilePrev.SetOnClick(BtnDirectionClick);
+	BtnFileNext.Init(168, 71 + 94, CharArrowDown, @WinFileSelect);
 	BtnFileNext.SetSize(14, 91);
-	BtnFileNext.OnClick := BtnDirectionClick;
-	BtnDirPrev.Init(424, Y1 + 71, CharArrowUp, @WinFileSelect);
+	BtnFileNext.SetOnClick(BtnDirectionClick);
+	BtnDirPrev.Init(339, 71, CharArrowUp, @WinFileSelect);
 	BtnDirPrev.SetSize(14, 91);
-	BtnDirPrev.OnClick := BtnDirectionClick;
-	BtnDirNext.Init(424, Y1 + 71 + 94, CharArrowDown, @WinFileSelect);
+	BtnDirPrev.SetOnClick(BtnDirectionClick);
+	BtnDirNext.Init(339, 71 + 94, CharArrowDown, @WinFileSelect);
 	BtnDirNext.SetSize(14, 91);
-	BtnDirNext.OnClick := BtnDirectionClick;
-	ImgPreview.Init(448, Y1 + 108, '', @WinFileSelect);
+	BtnDirNext.SetOnClick(BtnDirectionClick);
+	ImgPreview.Init(393, 108, '', @WinFileSelect);
 	HkUp.Init(KeyUp, @WinFileSelect);
-	HkUp.OnClick := HkDirectionPress;
+	HkUp.SetOnClick(HkDirectionPress);
 	HkDown.Init(KeyDown, @WinFileSelect);
-	HkDown.OnClick := HkDirectionPress;
+	HkDown.SetOnClick(HkDirectionPress);
 	HkPageUp.Init(KeyPageUp, @WinFileSelect);
-	HkPageUp.OnClick := HkDirectionPress;
+	HkPageUp.SetOnClick(HkDirectionPress);
 	HkPageDown.Init(KeyPageDown, @WinFileSelect);
-	HkPageDown.OnClick := HkDirectionPress;
+	HkPageDown.SetOnClick(HkDirectionPress);
 	HkHome.Init(KeyHome, @WinFileSelect);
-	HkHome.OnClick := HkDirectionPress;
+	HkHome.SetOnClick(HkDirectionPress);
 	HkEnd.Init(KeyEnd, @WinFileSelect);
-	HkEnd.OnClick := HkDirectionPress;
+	HkEnd.SetOnClick(HkDirectionPress);
 	HkTab.Init(KeyTab, @WinFileSelect);
 	HkTab.AddHotkey(KeyShiftTab);
-	HkTab.OnClick := HkTabPress;
+	HkTab.SetOnClick(HkTabPress);
 	
 	GetDir(0, OriginalPath); {Save to restore later}
 	Path := OriginalPath;
@@ -372,26 +376,12 @@ begin
 	ReturnedFile := '';
 
 	Mouse.Hide;
-
 	{Save background to restore when window is closed}
 	BackgroundSize := ImageSize(X1, Y1, X2, Y2);
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(X1, Y1, X2, Y2, BackgroundP^);
 
-	WinFileSelect.Draw;
-	{TxtPattern.Draw;
-	TxtDrive.Draw;
-	List[FileList].Draw;
-	List[DirList].Draw;
-	BtnSelect.Draw;
-	BtnCancel.Draw;
-	BtnFilePrev.Draw;
-	BtnFileNext.Draw;
-	BtnDirPrev.Draw;
-	BtnDirNext.Draw;}
-	{DEBUG - use captions instead of printing}
-	Print(CAP_FILES, 101, Y1 + 57, Thm.WinText);
-	Print(CAP_DIRS, 272, Y1 + 57, Thm.WinText);
+	WinFileSelect.Draw;	
 	Mouse.Show;
 
 	{If path provided, use it - otherwise use current directory}

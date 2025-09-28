@@ -102,8 +102,7 @@ begin
 		Print('IMG' + #13 + 'ERR', X + 5, Y + 6, White);
 	end;
 
-	if Assigned(OnDraw) then
-		OnDraw(@Self);
+	TUIObject.Draw;
 end;
 
 procedure TIcon.SetIcon(Icon: string);

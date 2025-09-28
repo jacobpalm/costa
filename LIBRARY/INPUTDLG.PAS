@@ -72,27 +72,19 @@ begin
 	begin
 		AddHotkey(KeyAltO);
 		AddHotkey(KeyEnter);
-		OnClick := BtnOkClick;
+		SetOnClick(BtnOkClick);
 	end;
 	With BtnCancel^ do
 	begin
 		AddHotkey(KeyAltC);
 		AddHotkey(KeyEscape);
-		OnClick := BtnCancelClick;
+		SetOnClick(BtnCancelClick);
 	end;
 	with TxtInput^ do
 	begin
 		Text := MsgDefault;
 		AddHotkey(KeyAltN);
 	end;
-
-	{Add all objects to the Window}
-	WinInputBox^.AddObject(BtnOK);
-	WinInputBox^.AddObject(BtnCancel);
-	WinInputBox^.AddObject(TxtInput);
-	WinInputBox^.AddObject(ImgIcon);
-	WinInputBox^.AddObject(LblTitle);
-	WinInputBox^.AddObject(LblText);
 
 	{Save background to restore when Window is closed}
 	Mouse.Hide;
