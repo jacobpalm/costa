@@ -492,6 +492,8 @@ begin
 		Parent^.RemoveObject(@Self);}
 
 	ParentObj := Parent;
+
+	{Add object to its parent, unless Parent passed is nil}
 	if Assigned(ParentObj) then
 		ParentObj^.AddObject(@Self);
 end;
@@ -866,10 +868,12 @@ var
 	NextNode: PObjectNode;
 begin
 	{Dispose of all objects in the linked list}
-	while Objects <> nil do
+	while Assigned(Objects) do
 	begin
 		NextNode := Objects^.Next;
-		Dispose(Objects^.ObjectP, Done); {Call the destructor of the object}
+		if Assigned(Objects^.ObjectP) then
+			{Call the destructor of the object}
+			Dispose(Objects^.ObjectP, Done);
 		Dispose(Objects);
 		Objects := NextNode;
 	end;

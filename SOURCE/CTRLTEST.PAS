@@ -21,7 +21,7 @@ var
 
 procedure Btn1Click(Sender: PUIObject); far;
 begin
-	{AboutBox(App);}
+	AboutBox(App);
 end;
 
 procedure Btn2Click(Sender: PUIObject); far;

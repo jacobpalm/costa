@@ -56,8 +56,8 @@ begin
 	Inc(X2, X1);
 	Inc(Y2, Y1);
 
-	New(ImgLogo, Init(X1 + 13, Y1 + 15, AppP^.Icon, WinAboutBox));
-	New(BtnClose, Init(0, Y2 - 34, CAP_CLOSE, WinAboutBox));
+	New(ImgLogo, Init(13, 15, AppP^.Icon, WinAboutBox));
+	New(BtnClose, Init(0, Y2 - Y1 - 34, CAP_CLOSE, WinAboutBox));
 	with BtnClose^ do
 	begin
 		Center(OrHorizontal);
@@ -67,9 +67,9 @@ begin
 		SetOnClick(AboutBoxClose);
 	end;
 	
-	New(LblInfo[0], Init(X1 + 56, Y1 + 21, AppP^.Name + ' ' + AppP^.Version, WinAboutBox));
-	New(LblInfo[1], Init(X1 + 56, Y1 + 33, ReplaceMsg(MSG_BY_TEXT, AppP^.Author), WinAboutBox));
-	New(LblInfo[2], Init(X1 + 15, Y1 + 53, Text, WinAboutBox));
+	New(LblInfo[0], Init(56, 21, AppP^.Name + ' ' + AppP^.Version, WinAboutBox));
+	New(LblInfo[1], Init(56, 33, ReplaceMsg(MSG_BY_TEXT, AppP^.Author), WinAboutBox));
+	New(LblInfo[2], Init(15, 53, Text, WinAboutBox));
 
 	{Save background to restore when Window is closed}
 	Mouse.Hide;
@@ -86,7 +86,7 @@ begin
 	Mouse.Show;
 
 	{Dispose of memory used by background and objects. Disposing of the Window
-		object will also dispose of all child objects}
+	 object will also dispose of all child objects}
 	FreeMem(BackgroundP, BackgroundSize);
 	Dispose(WinAboutBox, Done);
 end;

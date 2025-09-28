@@ -24,7 +24,7 @@ const
 	DefaultH = 31;
 begin
 	TUIObject.Init;
-	if Length(IconFile) <= 8 then
+	if Length(Icon) <= 8 then
 		IconFile := Icon
 	else
 		IconFile := '';
