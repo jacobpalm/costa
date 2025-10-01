@@ -220,6 +220,7 @@ var
 	I, Counter: Integer;
 	X1, Y1, X2, Y2, YOffset: Integer;
 	ItemText: String;
+	FgColor, BgColor: Byte;
 begin
 	{Draw procedure of TArea draws the background and border}
 	Mouse.Hide;
@@ -238,8 +239,16 @@ begin
 	Inc(X1, 2);
 	Dec(X2, 2);
 	Inc(Y1, 3);
-	Y2 := Y1 + 15;
+	Y2 := Y1 + 12;
 	Counter := 0;
+
+	{Get colors}
+	FgColor := GetFgColor;
+	BgColor := GetBgColor;
+	if FgColor = ColorDefault then
+		FgColor := Thm.TxtText;
+	if BgColor = ColorDefault then
+		BgColor := Thm.Txt;
 
 	if StartPos > Length then
 		StartPos := 1; {Reset start position if it exceeds item count}
@@ -262,7 +271,7 @@ begin
 			else
 			begin
 				{Draw normal, unselected item}
-				Print(ItemText, X1 + 3, Y1 + 2 + (Counter * ListItemHeight), Thm.TxtText);
+				Print(ItemText, X1 + 3, Y1 + 2 + (Counter * ListItemHeight), FgColor);
 			end;
 
 			{Increment counter, it's used to calculate Y position}
@@ -355,9 +364,9 @@ procedure TList.SetListActive(IsActive: boolean);
 var
 	X1, Y1, X2, Y2: Integer;
 	YOffset: Integer;
-	SelFGColor, SelBGColor: Integer;
 	ItemText: String;
 	Counter: Integer;
+	FgColor, BgColor: Byte;
 begin
 	if GetState(Active) = IsActive then
 		exit;
@@ -375,34 +384,40 @@ begin
 	GetPos(X1, Y1, True);
 	GetSize(X2, Y2);
 	Inc(X2, X1);
-	Inc(Y2, Y1);
 
 	{Calculate selection position and update it to reflect the new state}
 	Inc(X1, 2);
 	Dec(X2, 2);
 	Inc(Y1, 3);
-	Y2 := Y1 + 15;
+	Y2 := Y1 + 12;
 	YOffset := (Selection - StartPos) * ListItemHeight;
 	Counter := 0;
 
+	{If list is active, use selection colors, otherwise use normal colors defined on object}
 	if GetState(Active) then
 	begin
-		SelFGColor := Thm.SelText;
-		SelBGColor := Thm.Sel;
+		FgColor := Thm.SelText;
+		BgColor := Thm.Sel;
 	end
 	else
 	begin
-		SelFGColor := Thm.TxtText;
-		SelBGColor := Thm.Txt;
+		{Get colors}
+		FgColor := GetFgColor;
+		BgColor := GetBgColor;
+		if FgColor = ColorDefault then
+			FgColor := Thm.TxtText;
+		if BgColor = ColorDefault then
+			BgColor := Thm.Txt;
 	end;
 
+	{Redraw only the selected item}
 	ItemText := Self.GetItem(Selection);
 	if ItemText <> '' then
 	begin
 		Mouse.Hide;
-		SetFillStyle(SolidFill, SelBGColor);
+		SetFillStyle(SolidFill, BgColor);
 		Bar(X1, Y1 + YOffset, X2, Y2 - 1 + YOffset);
-		Print(ItemText, X1 + 3, Y1 + 2 + YOffset, SelFGColor);
+		Print(ItemText, X1 + 3, Y1 + 2 + YOffset, FgColor);
 		Mouse.Show;
 	end;
 end;

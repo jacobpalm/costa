@@ -9,11 +9,11 @@ type
 	PButton = ^TButton;
 	TButton = object(TUIObject)
 		public
-			Transparent: Boolean;
 			constructor  Init(X, Y: Integer; Cap: string; Parent: PContainer);
 			procedure    CheckEvent; virtual;
 			procedure    Draw; virtual;
 			procedure    SetCaption(Cap: string);
+			function     GetCaption: string;
 		private
 			Caption:     string;
 	end;
@@ -27,7 +27,6 @@ const
 begin
 	TUIObject.Init;
 	Caption := Cap;
-	Transparent := False;
 	
 	SetParent(Parent);
 	SetSize(DefaultW, DefaultH);
@@ -97,6 +96,7 @@ end;
 procedure TButton.Draw;
 var
 	X1, X2, Y1, Y2: Integer;
+	FgColor, BgColor: Byte;
 	TLColor1, TLColor2, BRColor1, BRColor2: Byte; {TL = top+left, BR = bottom+right}
 begin
 	{Get absolute position and size of the object}
@@ -105,10 +105,16 @@ begin
 	Inc(X2, X1);
 	Inc(Y2, Y1);
 
+	{Get colors}
+	FgColor := GetFGColor;
+	BgColor := GetBGColor;
+
 	{Interior}
-	If Not Transparent Then
+	If Not GetState(Transparent) Then
 	Begin
-		SetFillStyle(SolidFill, Thm.Btn);
+		if BgColor = ColorDefault then
+			BgColor := Thm.Btn;
+		SetFillStyle(SolidFill, BgColor);
 		Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
 	End;
 	
@@ -153,6 +159,9 @@ begin
 		X1 := (X2 - X1) div 2 + X1;
 		X1 := X1 - PrintW(Caption) div 2;
 		Y1 := (Y2 - Y1) div 2 + Y1 - 4; {4 is the offset to center text vertically}
+
+		if FgColor = ColorDefault then
+			FgColor := Thm.WinText;
 		
 		{If button is pressed, move text 1 pixel down and right}
 		if GetState(Active) then
@@ -160,7 +169,7 @@ begin
 			Inc(X1);
 			Inc(Y1);
 		end;
-		Print(Caption, X1, Y1, Thm.WinText);
+		Print(Caption, X1, Y1, FgColor);
 	end;
 
 	TUIObject.Draw;
@@ -170,6 +179,11 @@ procedure TButton.SetCaption(Cap: string);
 begin
 	Caption := Cap;
 	Self.Draw;
+end;
+
+function TButton.GetCaption: string;
+begin
+	GetCaption := Caption;
 end;
 
 end.

@@ -11,7 +11,7 @@ type
 		public
 			Caption,
 			Text:       string;
-			MaxLen:     Integer;
+			MaxLen:     Byte;
 			OnChange:   TEventProc;
 			constructor Init(X, Y: Integer; Cap: String; Parent: PContainer);
 			procedure   CheckEvent; virtual;
@@ -31,8 +31,6 @@ begin
 	Text        := '';
 	MaxLen      := 255;
 	OnChange    := nil;
-	BGColor     := ColorDefault;
-	Transparent := False;
 	
 	SetParent(Parent);
 	SetPos(X, Y);
@@ -73,6 +71,7 @@ procedure TTextbox.Edit;
 var
 	OrigTxt, Key: string;
 	X1, Y1, Width, Height, CursorX, MaxShow: integer;
+	BgColor, FgColor: Byte;
 begin
 	{Get absolute position of the object}
 	GetPos(X1, Y1, True);
@@ -81,7 +80,14 @@ begin
 	Inc(X1, 5);
 	Inc(Y1, 5);
 	Y1 := (Height - 7) div 2 + Y1;
-	if MaxLen > 255 then MaxLen := 255;
+
+	FgColor := GetFgColor;
+	if FGColor = ColorDefault then
+		FGColor := Thm.TxtText;
+	BgColor := GetBgColor;
+	if BgColor = ColorDefault then
+		BgColor := Thm.Txt;
+	
 	MaxShow := Width - 10;
 	OrigTxt := Text;
 
@@ -108,12 +114,12 @@ begin
 				begin
 					{Erase only the last char}
 					CursorX := X1 + PrintW(Text);
-					SetFillStyle(SolidFill, Thm.Txt);
+					SetFillStyle(SolidFill, BgColor);
 					Bar(CursorX + 2, Y1 - 2, CursorX - 8, Y1 + 11);
 					Text := Copy(Text, 1, Length(Text) - 1);
 					{Cursor}
 					CursorX := X1 + PrintW(Text) + 2;
-					SetColor(Thm.TxtText);
+					SetColor(FgColor);
 					Line(CursorX, Y1 - 1, CursorX, Y1 + 8);
 				end
 				else
@@ -149,13 +155,13 @@ begin
 			if PrintW(Text + Key) + 2 < MaxShow then
 			begin
 				CursorX := X1 + PrintW(Text) + 2;
-				SetColor(Thm.Txt);
+				SetColor(BgColor);
 				Line(CursorX, Y1 - 1, CursorX, Y1 + 10);
 				Text := Text + Key;
-				Print(Text, X1, Y1, Thm.TxtText);
+				Print(Text, X1, Y1, FgColor);
 				{Cursor}
 				CursorX := X1 + PrintW(Text) + 2;
-				SetColor(Thm.TxtText);
+				SetColor(FgColor);
 				Line(CursorX, Y1 - 1, CursorX, Y1 + 8);
 			end
 			else
@@ -174,7 +180,7 @@ begin
 	begin
 		{Erase only the cursor}
 		CursorX := X1 + PrintW(Text) + 2;
-		SetColor(Thm.Txt);
+		SetColor(BgColor);
 		Line(CursorX, Y1 - 1, CursorX, Y1 + 8);
 	end
 	else
@@ -192,6 +198,7 @@ procedure TTextbox.Draw;
 var
 	X1, Y1, Width, Height, MaxShow: Integer;
 	S: string;
+	FgColor: Byte;
 begin
 	{Draw the textbox border+interior inherited from TArea}
 	inherited Draw;
@@ -206,6 +213,10 @@ begin
 
 	Y1 := (Height - 7) div 2 + Y1;
 
+	FGColor := GetFgColor;
+	if FGColor = ColorDefault then
+		FGColor := Thm.TxtText;
+
 	{Draw text inside the textbox}
 	S := Text;
 	if S <> '' then
@@ -214,14 +225,14 @@ begin
 		MaxShow := Width - 10;
 		while PrintW(S) >= MaxShow do
 			Delete(S, 1, 1);
-		Print(S, X1 + 5, Y1, Thm.TxtText);
+		Print(S, X1 + 5, Y1, FGColor);
 	end;
 
 	if GetState(Active) then
 	begin
 		{Cursor}
 		X1 := X1 + 7 + PrintW(S);
-		SetColor(Thm.TxtText);
+		SetColor(FGColor);
 		Line(X1, Y1 - 1, X1, Y1 + 8);
 	end;
 

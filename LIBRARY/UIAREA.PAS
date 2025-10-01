@@ -9,8 +9,6 @@ type
 	PArea = ^TArea;
 	TArea = object(TUIObject)
 		public
-			Transparent: Boolean;
-			BGColor:     Integer;
 			constructor  Init(X, Y: Integer; Parent: PContainer);
 			procedure    Draw; virtual;
 	end;
@@ -23,9 +21,6 @@ const
 	DefaultH = 100;
 begin
 	TUIObject.Init;
-	BGColor := ColorDefault;
-	Transparent := False;
-
 	SetParent(Parent);
 	SetPos(X, Y);
 	SetSize(DefaultW, DefaultH);
@@ -34,7 +29,7 @@ end;
 procedure TArea.Draw;
 var
 	X1, X2, Y1, Y2: Integer;
-	BorderTLColor, BorderBRColor, BackColor: Byte; {TL = top+left, BR = bottom+right}
+	BgColor: Byte;
 begin
 	{Get absolute position and size of the object}
 	Self.GetPos(X1, Y1, True);
@@ -43,13 +38,12 @@ begin
 	Inc(Y2, Y1);
 
 	{Interior}
-	If Not Transparent Then
+	If Not GetState(Transparent) Then
 	Begin
-		if BgColor > GetMaxColor then
-			BackColor := Thm.Txt
-		else
-			BackColor := BgColor;
-		SetFillStyle(SolidFill, BackColor);
+		BgColor := GetBGColor;
+		if BgColor = ColorDefault then
+			BgColor := Thm.Txt;
+		SetFillStyle(SolidFill, BgColor);
 		Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
 	End;
 

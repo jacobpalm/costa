@@ -9,8 +9,6 @@ type
 	PLabel = ^TLabel;
 	TLabel = object(TUIObject)
 		public
-			FgColor,
-			BgColor:    Byte;
 			constructor Init(X, Y: Integer; Cap: String; Parent: PContainer);
 			procedure   AutoSize;
 			procedure   Draw; virtual;
@@ -28,9 +26,8 @@ const
 begin
 	TUIObject.Init;
 	Caption := Cap;
-	FgColor := ColorDefault;
-	BgColor := ColorDefault;
 	
+	AddState(Transparent);
 	SetParent(Parent);
 	SetPos(X, Y);
 	SetSize(DefaultW, DefaultH);
@@ -44,7 +41,7 @@ end;
 procedure TLabel.Draw;
 var
 	X1, Y1, X2, Y2: Integer;
-	TextColor, BackColor: Byte;
+	FGColor, BgColor: Byte;
 begin
 	{Get absolute position and size of the object}
 	GetPos(X1, Y1, True);
@@ -52,20 +49,22 @@ begin
 	Inc(X2, X1);
 	Inc(Y2, Y1);
 
+	FGColor := GetFGColor;
+	BgColor := GetBGColor;
+
 	{If a background color is set, fill the label area with it}
-	if BgColor <= GetMaxColor then
+	if not GetState(Transparent) then
 	begin
+		if BgColor = ColorDefault then
+			BgColor := Thm.Win;
 		SetFillStyle(SolidFill, BgColor);
 		Bar(X1, Y1, X2, Y2);
 	end;
 	
 	{Use FgColor for text if set, otherwise use window color}
-	if FGColor > GetMaxColor then
-		TextColor := Thm.WinText
-	else
-		TextColor := FgColor;
-
-	Print(Caption, X1, Y1, TextColor);
+	if FGColor = ColorDefault then
+		FGColor := Thm.WinText;
+	Print(Caption, X1, Y1, FgColor);
 
 	TUIObject.Draw;
 end;

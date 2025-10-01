@@ -42,6 +42,7 @@ var
 	F: File;
 	IconError: Boolean;
 	Filename: String;
+	BgColor: Byte;
 begin
 	IconError := False;
 	
@@ -65,7 +66,10 @@ begin
 	{If no Icon file, draw an empty box}
 	if Length(IconFile) = 0 then
 	begin
-		SetFillStyle(SolidFill, White);
+		BgColor := GetBkColor;
+		If BgColor = ColorDefault then
+			BgColor := Thm.Txt;
+		SetFillStyle(SolidFill, BgColor);
 		Bar(X, Y, X + 31, Y + 31);
 		Exit;
 	end;

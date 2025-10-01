@@ -39,6 +39,7 @@ end;
 procedure TCheckbox.Draw;
 var
 	X1, X2, Y1, Y2, ChkColor: Integer;
+	FgColor, BgColor: Byte;
 begin
 	{Get absolute position and size of the object}
 	GetPos(X1, Y1, True);
@@ -46,8 +47,17 @@ begin
 	Inc(X2, X1);
 	Inc(Y2, Y1);
 
+	{Get colors}
+	FgColor := GetFgColor;
+	BgColor := GetBgColor;
+
+	if FgColor = ColorDefault then
+		FgColor := Thm.TxtText;
+	if BgColor = ColorDefault then
+		BgColor := Thm.Txt;
+
 	{Interior}
-	SetFillStyle(SolidFill, Thm.Txt);
+	SetFillStyle(SolidFill, BgColor);
 	Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
 
 	{Top + left border}
@@ -68,7 +78,7 @@ begin
 
 	if GetState(Selected) then
 	begin
-		SetColor(Thm.TxtText);
+		SetColor(FgColor);
 		Line(X1 + 5, Y1 + 8, X1 + 7, Y1 + 10);
 		Line(X1 + 5, Y1 + 9, X1 + 7, Y1 + 11);
 		Line(X1 + 8, Y1 + 9, X1 + 11, Y1 + 6);
@@ -81,7 +91,7 @@ begin
 		Line(X1 + 8, Y1 + 11, X1 + 11, Y1 + 8);
 	end;
 	if Length(Caption) > 0 then
-		Print (Caption, X1 + 22, Y1 + 4, Thm.WinText);
+		Print (Caption, X1 + 22, Y1 + 4, FgColor);
 
 	TUIObject.Draw;
 end;

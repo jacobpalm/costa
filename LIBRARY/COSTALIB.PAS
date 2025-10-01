@@ -45,7 +45,7 @@ type
 
 	{Object states - implemented as a set to be able to store multiple values in one
 	 byte, and to allow one Get/Set method to handle multiple boolean properties}
-	TState       = (Enabled, Hidden, Active, Selected);
+	TState       = (Enabled, Hidden, Active, Selected, Transparent);
 	TStateSet    = set of TState;
 
 	{Orientation for centering objects}
@@ -88,6 +88,11 @@ type
 			procedure   GetPos(var X, Y: Integer; Absolute: Boolean);
 			procedure   Center(Orientation: TOrientation);
 
+			procedure   SetFGColor(Color: Byte);
+			function    GetFGColor: Byte;
+			procedure   SetBGColor(Color: Byte);
+			function    GetBGColor: Byte;
+
 			procedure   SetOnClick(Event: TEventProc);
 			procedure   SetOnDraw(Event: TEventProc);
 		private
@@ -95,6 +100,7 @@ type
 			Top,
 			Width,
 			Height:     Integer;     {Position relative to parent, and size}
+			Colors:     Word;        {High byte = foreground, low byte = background}
 			ParentObj:  PContainer;  {Parent object, if any - should only use container types}
 			Hotkey:     PHotKeyNode; {Linked list of hotkeys}
 			State:      TStateSet;   {State flags}
@@ -279,6 +285,8 @@ begin
 	Top       := 0;
 	Width     := 0;
 	Height    := 0;
+	SetFgColor(ColorDefault);
+	SetBgColor(ColorDefault);
 end;
 
 destructor TUIObject.Done;
@@ -435,6 +443,10 @@ end;
  this version at the end to trigger any custom drawing code assigned to OnDraw}
 procedure TUIObject.Draw;
 begin
+	{Don't draw or trigger event if object is hidden}
+	if GetState(Hidden) then
+		exit;
+
 	if Assigned(OnDraw) then
 		OnDraw(@Self);
 end;
@@ -516,6 +528,37 @@ procedure TUIObject.GetSize(var W, H: Integer);
 begin
 	W := Width;
 	H := Height;
+end;
+
+
+procedure TUIObject.SetFGColor(Color: Byte);
+begin
+	if (Color < 0) or (Color > GetMaxColor) then
+		Color := ColorDefault; {Invalid color, use default}
+	
+	{Set the high byte of Colors to the foreground color}
+	Colors := (Colors and $00FF) or (Color shl 8);
+end;
+
+procedure TUIObject.SetBGColor(Color: Byte);
+begin
+	if (Color < 0) or (Color > GetMaxColor) then
+		Color := ColorDefault; {Invalid color, use default}
+	
+	{Set the low byte of Colors to the background color}
+	Colors := (Colors and $FF00) or Color;
+end;
+
+function TUIObject.GetFGColor: Byte;
+begin
+	{Return the high byte of Colors}
+	GetFGColor := (Colors and $FF00) shr 8;
+end;
+
+function TUIObject.GetBGColor: Byte;
+begin
+	{Return the low byte of Colors}
+	GetBGColor := Colors and $00FF;
 end;
 
 
@@ -826,6 +869,13 @@ procedure TContainer.AddObject(Obj: PUIObject);
 var
 	NewNode, LastNode: PObjectNode;
 begin
+	if not Assigned(Obj) then
+	begin
+		CloseGraph;
+		Writeln('Error: Attempt to add nil object to container');
+		Halt(1);
+	end;
+
 	New(NewNode);
 	NewNode^.ObjectP := Obj;
 	NewNode^.Next := nil;
@@ -847,7 +897,8 @@ procedure TContainer.DrawChildren;
 var
 	CurrObj: PObjectNode;
 begin
-	If not Assigned(Objects) then
+	{Don't draw if container is hidden or has no objects}
+	if GetState(Hidden) or not Assigned(Objects) then
 		exit;
 
 	{Draw all objects in the linked list}
@@ -904,6 +955,10 @@ procedure TWindow.Draw;
 var
 	X1, X2, Y1, Y2: Integer;
 begin
+	{Don't draw or trigger event if window is hidden}
+	if GetState(Hidden) then
+		exit;
+
 	{Get absolute position and size of the window}
 	Self.GetPos(X1, Y1, True);
 	Self.GetSize(X2, Y2);
