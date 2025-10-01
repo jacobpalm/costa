@@ -92,7 +92,8 @@ var
 	ListItem: TListItem;
 	I: Integer;
 begin
-	if not GetState(Enabled) then
+	{Don't check for events if object is disabled or hidden}
+	if not GetState(SEnabled) or GetState(SHidden) then
 		exit;
 	
 	{Get absolute position and size of the object}
@@ -262,7 +263,7 @@ begin
 			ItemText := Self.GetItem(I);
 
 			{Highlight selected item if list is active}
-			if (I = Selection) and GetState(Active) then
+			if (I = Selection) and GetState(SActive) then
 			begin
 				SetFillStyle(SolidFill, Thm.Sel);
 				Bar(X1, Y1 + (Counter * ListItemHeight), X2, Y2 - 1 + (Counter * ListItemHeight));
@@ -340,9 +341,9 @@ begin
 	end;
 
 	{If list has scrolled, we need a full redraw}
-	if (NewStartPos <> StartPos) or not GetState(Active) then
+	if (NewStartPos <> StartPos) or not GetState(SActive) then
 	begin
-		AddState(Active);
+		AddState(SActive);
 		Selection := NewSelection;
 		StartPos := NewStartPos;
 		Self.Draw;
@@ -368,18 +369,22 @@ var
 	Counter: Integer;
 	FgColor, BgColor: Byte;
 begin
-	if GetState(Active) = IsActive then
+	if (GetState(SActive) = IsActive) then
 		exit;
 
 	if IsActive then
-		AddState(Active)
+		AddState(SActive)
 	else
-		RemoveState(Active);
+		RemoveState(SActive);
 	
 	{If there's no valid selection, we won't draw anything}
 	if (Selection < 1) or (Selection > Length) then
 		exit;
-	
+
+	{If list is not visible, we won't draw anything}
+	if GetState(SHidden) then
+		exit;
+
 	{Get absolute position and size of the object}
 	GetPos(X1, Y1, True);
 	GetSize(X2, Y2);
@@ -394,7 +399,7 @@ begin
 	Counter := 0;
 
 	{If list is active, use selection colors, otherwise use normal colors defined on object}
-	if GetState(Active) then
+	if GetState(SActive) then
 	begin
 		FgColor := Thm.SelText;
 		BgColor := Thm.Sel;

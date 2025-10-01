@@ -37,7 +37,8 @@ procedure TButton.CheckEvent;
 var
 	Clicked: boolean;
 begin
-	if not GetState(Enabled) then
+	{Don't check for events if object is disabled or hidden}
+	if not GetState(SEnabled) or GetState(SHidden) then
 		exit;
 	
 	Clicked := False;
@@ -46,16 +47,16 @@ begin
 	if (Mouse.Clicked = MbLeft) and Self.IsMouseOver then
 	begin
 		Mouse.Hide;
-		AddState(Active);
+		AddState(SActive);
 		Self.Draw;
 		Mouse.Show;
 		repeat
 			if Self.IsMouseOver then
 			begin
 				{Mouse over button, show pressed state if not already shown}
-				if not GetState(Active) then
+				if not GetState(SActive) then
 				begin
-					AddState(Active);
+					AddState(SActive);
 					Mouse.Hide;
 					Self.Draw;
 					Mouse.Show;
@@ -64,9 +65,9 @@ begin
 			else
 			begin
 				{Mouse not over button, show unpressed state if not already shown}
-				if GetState(Active) then
+				if GetState(SActive) then
 				begin
-					RemoveState(Active);
+					RemoveState(SActive);
 					Mouse.Hide;
 					Self.Draw;
 					Mouse.Show;
@@ -74,9 +75,9 @@ begin
 			end;
 		until Mouse.Clicked = MbNone;
 
-		if GetState(Active) then
+		if GetState(SActive) then
 		begin
-			RemoveState(Active);
+			RemoveState(SActive);
 			Mouse.Hide;
 			Self.Draw;
 			Mouse.Show;
@@ -99,6 +100,9 @@ var
 	FgColor, BgColor: Byte;
 	TLColor1, TLColor2, BRColor1, BRColor2: Byte; {TL = top+left, BR = bottom+right}
 begin
+	if GetState(SHidden) then
+		exit;
+
 	{Get absolute position and size of the object}
 	GetPos(X1, Y1, True);
 	GetSize(X2, Y2);
@@ -110,7 +114,7 @@ begin
 	BgColor := GetBGColor;
 
 	{Interior}
-	If Not GetState(Transparent) Then
+	If Not GetState(STransparent) Then
 	Begin
 		if BgColor = ColorDefault then
 			BgColor := Thm.Btn;
@@ -119,7 +123,7 @@ begin
 	End;
 	
 	{Invert border colors if pressed down}
-	if not GetState(Active) then
+	if not GetState(SActive) then
 	begin
 		{Button is up}
 		TLColor1 := White;
@@ -164,7 +168,7 @@ begin
 			FgColor := Thm.WinText;
 		
 		{If button is pressed, move text 1 pixel down and right}
-		if GetState(Active) then
+		if GetState(SActive) then
 		begin
 			Inc(X1);
 			Inc(Y1);

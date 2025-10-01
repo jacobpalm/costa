@@ -26,7 +26,7 @@ end;
 
 procedure Btn2Click(Sender: PUIObject); far;
 begin
-	FileSelect('*.*', '', False);
+	FileSelect('*.*', '');
 end;
 
 procedure Btn3Click(Sender: PUIObject); far;

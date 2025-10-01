@@ -5,7 +5,7 @@ interface
 uses
 	Costalib, UIButton, UITxtbox, UILabel, UIList, UIIcon;
 
-function FileSelect(DefaultPattern, StartPath: string; IconSelect: boolean): string;
+function FileSelect(DefaultPattern, StartPath: string): string;
 
 {Only the FileSelect function is exported, the rest are internal}
 
@@ -35,12 +35,10 @@ var
 	BtnDirPrev, BtnDirNext: TButton;
 	HkUp, HkDown, HkPageUp, HkPageDown, HkHome, HkEnd, HkTab: THotkey;
 	LblFiles, LblDirs: TLabel;
+	ImgPreview:     TIcon;
 	
 	List:           array[-1..0] of TList;
 	ActiveList:     Integer;
-
-	PreviewShown:   boolean;
-	ImgPreview:     TIcon;
 
 	Path, Pattern:  String;
 	Drive:          String[1];
@@ -103,21 +101,21 @@ begin
 		FSplit(SelectedFile, FDir, FName, FExt);
 		if (Length(FName) <> 0) and (FExt = '.BIN') then
 		begin
+			ImgPreview.RemoveState(SHidden);
 			ImgPreview.SetIcon(FName);
-			PreviewShown := true;
 			exit;
 		end;
 	end;
 	
-	{Either there is no selection, or the preview should be hidden - so so if previously shown}
-	if (PreviewShown) then
+	{Either there is no selection, or the preview should be hidden - do so if previously shown}
+	if not ImgPreview.GetState(SHidden) then
 	begin
 		Mouse.Hide;
 		SetFillStyle(SolidFill, Thm.Win);
 		ImgPreview.GetPos(X1, Y1, True);
 		Bar(X1 - 1, Y1 - 1, X1 + 32, Y1 + 32);
 		Mouse.Show;
-		PreviewShown := false;
+		ImgPreview.AddState(SHidden);
 	end;
 end;
 
@@ -282,7 +280,7 @@ begin
 	SetActiveList(not ActiveList);
 end;
 
-function FileSelect(DefaultPattern, StartPath: string; IconSelect: boolean): string;
+function FileSelect(DefaultPattern, StartPath: string): string;
 var
 	OriginalPath: string;
 	I: Integer;
@@ -293,7 +291,6 @@ var
 begin
 	FileSelectDone := False;
 	ReturnedFile := '';
-	PreviewShown := false;
 
 	{Init window and save coordinates for later use}
 	WinFileSelect.Init(0, 0, NoParent);
@@ -348,6 +345,7 @@ begin
 	BtnDirNext.SetSize(14, 91);
 	BtnDirNext.SetOnClick(BtnDirectionClick);
 	ImgPreview.Init(393, 108, '', @WinFileSelect);
+	ImgPreview.AddState(SHidden);
 	HkUp.Init(KeyUp, @WinFileSelect);
 	HkUp.SetOnClick(HkDirectionPress);
 	HkDown.Init(KeyDown, @WinFileSelect);

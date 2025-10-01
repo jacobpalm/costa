@@ -45,7 +45,7 @@ type
 
 	{Object states - implemented as a set to be able to store multiple values in one
 	 byte, and to allow one Get/Set method to handle multiple boolean properties}
-	TState       = (Enabled, Hidden, Active, Selected, Transparent);
+	TState       = (SEnabled, SHidden, SActive, SSelected, STransparent);
 	TStateSet    = set of TState;
 
 	{Orientation for centering objects}
@@ -276,7 +276,7 @@ const
 
 constructor TUIObject.Init;
 begin
-	State     := [Enabled];
+	State     := [SEnabled];
 	Hotkey    := nil;
 	OnClick   := nil;
 	OnDraw    := nil;
@@ -314,7 +314,7 @@ var
 begin
 	HotkeyPressed := False;
 
-	if not (Enabled in State) or (Length(HotkeyInput) = 0) then
+	if not (SEnabled in State) or (Length(HotkeyInput) = 0) then
 		exit;
 	
 	CheckNode := Hotkey;
@@ -414,7 +414,8 @@ procedure TUIObject.CheckEvent;
 var
 	Clicked: boolean;
 begin
-	if not GetState(Enabled) then
+	{Don't check for events if object is disabled or hidden}
+	if not GetState(SEnabled) or GetState(SHidden) then
 		exit;
 	
 	Clicked := False;
@@ -444,7 +445,7 @@ end;
 procedure TUIObject.Draw;
 begin
 	{Don't draw or trigger event if object is hidden}
-	if GetState(Hidden) then
+	if GetState(SHidden) then
 		exit;
 
 	if Assigned(OnDraw) then
@@ -586,7 +587,7 @@ end;
 
 procedure THotkey.CheckEvent;
 begin
-	if not GetState(Enabled) then
+	if not GetState(SEnabled) then
 		exit;
 	
 	if Self.HotkeyPressed then
@@ -898,7 +899,7 @@ var
 	CurrObj: PObjectNode;
 begin
 	{Don't draw if container is hidden or has no objects}
-	if GetState(Hidden) or not Assigned(Objects) then
+	if GetState(SHidden) or not Assigned(Objects) then
 		exit;
 
 	{Draw all objects in the linked list}
@@ -956,7 +957,7 @@ var
 	X1, X2, Y1, Y2: Integer;
 begin
 	{Don't draw or trigger event if window is hidden}
-	if GetState(Hidden) then
+	if GetState(SHidden) then
 		exit;
 
 	{Get absolute position and size of the window}

@@ -29,7 +29,7 @@ begin
 	Caption := Cap;
 	OnChange := nil;
 	If Checked then
-		AddState(Selected);
+		AddState(SSelected);
 
 	SetParent(Parent);
 	SetSize(DefaultW, DefaultH);
@@ -41,6 +41,9 @@ var
 	X1, X2, Y1, Y2, ChkColor: Integer;
 	FgColor, BgColor: Byte;
 begin
+	if GetState(SHidden) then
+		exit;
+
 	{Get absolute position and size of the object}
 	GetPos(X1, Y1, True);
 	GetSize(X2, Y2);
@@ -76,7 +79,7 @@ begin
 	Line(X2 - 1, Y1 + 2, X2 - 1, Y2 - 1);
 	Line(X1 + 2, Y2 - 1, X2 - 2, Y2 - 1);
 
-	if GetState(Selected) then
+	if GetState(SSelected) then
 	begin
 		SetColor(FgColor);
 		Line(X1 + 5, Y1 + 8, X1 + 7, Y1 + 10);
@@ -100,7 +103,8 @@ procedure TCheckbox.CheckEvent;
 var
 	Clicked: boolean;
 begin
-	if not GetState(Enabled) then
+	{Don't check for events if object is disabled or hidden}
+	if not GetState(SEnabled) or GetState(SHidden) then
 		exit;
 
 	Clicked := False;
@@ -119,7 +123,7 @@ begin
 	if Clicked or Self.HotkeyPressed then
 	begin
 		{Toggle checkbox state}
-		Self.SetChecked(not GetState(Selected));
+		Self.SetChecked(not GetState(SSelected));
 
 		{Trigger OnClick event, if assigned}
 		Self.Click;
@@ -128,18 +132,18 @@ end;
 
 function TCheckbox.GetChecked: boolean;
 begin
-	GetChecked := GetState(Selected);
+	GetChecked := GetState(SSelected);
 end;
 
 procedure TCheckbox.SetChecked(Checked: boolean);
 begin
-	if Checked = GetState(Selected) then
+	if Checked = GetState(SSelected) then
 		exit;
 
 	if Checked then
-		AddState(Selected)
+		AddState(SSelected)
 	else
-		RemoveState(Selected);
+		RemoveState(SSelected);
 
 	Mouse.Hide;
 	Self.Draw;

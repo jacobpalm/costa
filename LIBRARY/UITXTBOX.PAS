@@ -41,7 +41,8 @@ procedure TTextbox.CheckEvent;
 var
 	Clicked: boolean;
 begin
-	if not GetState(Enabled) then
+	{Don't check for events if object is disabled or hidden}
+	if not GetState(SEnabled) or GetState(SHidden) then
 		exit;
 
 	Clicked := False;
@@ -93,7 +94,7 @@ begin
 
 	{Redraw the textbox to show the editing state}
 	Mouse.Hide;
-	AddState(Active);
+	AddState(SActive);
 	Self.Draw;
 	Mouse.Show;
 
@@ -138,7 +139,7 @@ begin
 		if Key = KeyEscape then
 		begin
 			Text := OrigTxt;
-			RemoveState(Active);
+			RemoveState(SActive);
 			Mouse.Hide;
 			Self.Draw;
 			Mouse.Show;
@@ -174,7 +175,7 @@ begin
 
 	until False;
 
-	RemoveState(Active);
+	RemoveState(SActive);
 	Mouse.Hide;
 	if PrintW(Text) + 2 < MaxShow then
 	begin
@@ -200,6 +201,9 @@ var
 	S: string;
 	FgColor: Byte;
 begin
+	if GetState(SHidden) then
+		exit;
+
 	{Draw the textbox border+interior inherited from TArea}
 	inherited Draw;
 
@@ -228,7 +232,7 @@ begin
 		Print(S, X1 + 5, Y1, FGColor);
 	end;
 
-	if GetState(Active) then
+	if GetState(SActive) then
 	begin
 		{Cursor}
 		X1 := X1 + 7 + PrintW(S);

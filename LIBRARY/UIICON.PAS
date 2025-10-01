@@ -44,8 +44,10 @@ var
 	Filename: String;
 	BgColor: Byte;
 begin
+	if GetState(SHidden) then
+		exit;
+
 	IconError := False;
-	
 	Filename := ProgramPath + 'ICONS\' + IconFile + '.BIN';
 	if not FileExists(Filename) then
 		IconError := True;
@@ -66,7 +68,7 @@ begin
 	{If no Icon file, draw an empty box}
 	if Length(IconFile) = 0 then
 	begin
-		BgColor := GetBkColor;
+		BgColor := GetBgColor;
 		If BgColor = ColorDefault then
 			BgColor := Thm.Txt;
 		SetFillStyle(SolidFill, BgColor);

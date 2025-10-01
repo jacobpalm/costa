@@ -27,7 +27,7 @@ begin
 	TUIObject.Init;
 	Caption := Cap;
 	
-	AddState(Transparent);
+	AddState(STransparent);
 	SetParent(Parent);
 	SetPos(X, Y);
 	SetSize(DefaultW, DefaultH);
@@ -43,6 +43,9 @@ var
 	X1, Y1, X2, Y2: Integer;
 	FGColor, BgColor: Byte;
 begin
+	if GetState(SHidden) then
+		exit;
+
 	{Get absolute position and size of the object}
 	GetPos(X1, Y1, True);
 	GetSize(X2, Y2);
@@ -53,7 +56,7 @@ begin
 	BgColor := GetBGColor;
 
 	{If a background color is set, fill the label area with it}
-	if not GetState(Transparent) then
+	if not GetState(STransparent) then
 	begin
 		if BgColor = ColorDefault then
 			BgColor := Thm.Win;

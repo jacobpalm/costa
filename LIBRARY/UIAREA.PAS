@@ -31,6 +31,9 @@ var
 	X1, X2, Y1, Y2: Integer;
 	BgColor: Byte;
 begin
+	if GetState(SHidden) then
+		exit;
+
 	{Get absolute position and size of the object}
 	Self.GetPos(X1, Y1, True);
 	Self.GetSize(X2, Y2);
@@ -38,7 +41,7 @@ begin
 	Inc(Y2, Y1);
 
 	{Interior}
-	If Not GetState(Transparent) Then
+	If Not GetState(STransparent) Then
 	Begin
 		BgColor := GetBGColor;
 		if BgColor = ColorDefault then
