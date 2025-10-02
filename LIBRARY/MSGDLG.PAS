@@ -3,7 +3,7 @@ unit MSGDLG;
 interface
 
 uses
-	Costalib, UIIcon, UIButton, Graph;
+	Costalib, UIIcon, UIButton, UILabel, Graph;
 
 type
 	TMsgBox = (MsgInfo, MsgWarn, MsgQuest, MsgError);
@@ -18,49 +18,46 @@ const
 	CAP_NO      = #127 + 'No';
 
 var
-	MsgBoxDone: Boolean;
-	MsgBoxType: TMsgBox;
+	WinMsgBox: PWindow;
+	BtnFirst, BtnSecond: PButton;
+	ImgIcon: PIcon;
+	LblTitle, LblText: PLabel;
+
 	ReturnValue: Boolean;
 
 procedure BtnFirstClick(Sender: PUIObject); far;
 begin
 	ReturnValue := True;
-	MsgBoxDone := True;
+	WinMsgBox^.Close;
 end;
 
 procedure BtnSecondClick(Sender: PUIObject); far;
 begin
 	ReturnValue := False;
-	MsgBoxDone := True;
+	WinMsgBox^.Close;
 end;
 
 function MsgBox(const MsgTitle, MsgText: string; MsgType: TMsgBox): Boolean;
 var
-	WinMsgBox: TWindow;
-	BtnFirst, BtnSecond: TButton;
-	ImgIcon: TIcon;
 	IconFile: string;
-	BoxW, BoxH: Integer;
 	X1, Y1, X2, Y2: Integer;
 	BackgroundSize: Word;
 	BackgroundP: Pointer;
 	Key: String;
 begin
-	MsgBoxDone := False;
-	MsgBoxType := MsgType;
+	{Calculate size of message box based on text dimensions}
+	X2 := PrintW(MsgText) + 68;
+	Y2 := PrintH(MsgText) + 78;
+	if X2 < 270 then
+		X2 := 270;
 
-	BoxW := PrintW(MsgText) + 68;
-	BoxH := PrintH(MsgText) + 78;
-	if BoxW < 270 then
-		BoxW := 270;
-
-	WinMsgBox.Init(0, 0, NoParent);
-	WinMsgBox.SetSize(BoxW, BoxH);
-	WinMsgBox.Center(OrBoth);
-	winMsgBox.GetPos(X1, Y1, True);
-	winMsgBox.GetSize(X2, Y2);
-	Inc(X2, X1);
-	Inc(Y2, Y1);
+	New(WinMsgBox, Init(0, 0, NoParent));
+	With WinMsgBox^ do
+	begin
+		SetSize(X2, Y2);
+		Center(OrBoth);
+		GetPos(X1, Y1, True);
+	end;
 
 	case MsgType of
 		MsgInfo:  IconFile := 'MSGINFO';
@@ -68,56 +65,46 @@ begin
 		MsgQuest: IconFile := 'MSGQUEST';
 		MsgError: IconFile := 'MSGERROR';
 	end;
-	ImgIcon.Init(X1 + 13, Y1 + 15, IconFile, @WinMsgBox);
+	New(ImgIcon, Init(13, 15, IconFile, WinMsgBox));
 	
 	if MsgType = MsgQuest then
 	begin
-		BtnFirst.Init(224, Y2 - 36, CAP_YES, @WinMsgBox);
-		BtnFirst.AddHotkey(KeyAltY);
+		New(BtnFirst, Init((X2 div 2) - 98, Y2 - 36, CAP_YES, WinMsgBox));
+		BtnFirst^.AddHotkey(KeyAltY);
 	end
 	else
 	begin
-		BtnFirst.Init(0, Y2 - 36, CAP_OK, @WinMsgBox);
-		BtnFirst.Center(OrHorizontal);
-		BtnFirst.AddHotkey(KeyAltO);
+		New(BtnFirst, Init(0, Y2 - 36, CAP_OK, WinMsgBox));
+		BtnFirst^.Center(OrHorizontal);
+		BtnFirst^.AddHotkey(KeyAltO);
 	end;
-	BtnFirst.AddHotkey(KeyEnter);
-	BtnFirst.SetOnClick(BtnFirstClick);
+	BtnFirst^.AddHotkey(KeyEnter);
+	BtnFirst^.SetOnClick(BtnFirstClick);
 	if MsgType = MsgQuest then
 	begin
-		BtnSecond.Init(324, Y2 - 36, CAP_NO, @WinMsgBox);
-		BtnSecond.AddHotkey(KeyAltN);
-		BtnSecond.AddHotkey(KeyEscape);
-		BtnSecond.SetOnClick(BtnSecondClick);
+		New(BtnSecond, Init((X2 div 2) + 6, Y2 - 36, CAP_NO, WinMsgBox));
+		With BtnSecond^ do
+		begin
+			AddHotkey(KeyAltN);
+			AddHotkey(KeyEscape);
+			SetOnClick(BtnSecondClick);
+		end;
 	end;
-
-	Mouse.Hide;
-
+	New(LblTitle, Init(56, 15, MsgTitle, WinMsgBox));
+	New(LblText, Init(56, 31, MsgText, WinMsgBox));
+	
 	{Save background to restore when Window is closed}
+	Inc(X2, X1); {X2/Y2 contain width and height, add X1/Y1 to get actual coordinates}
+	Inc(Y2, Y1);
+	Mouse.Hide;
 	BackgroundSize := ImageSize(X1, Y1, X2, Y2);
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(X1, Y1, X2, Y2, BackgroundP^);
-
-	WinMsgBox.Draw;
-	BtnFirst.Draw;
-	if MsgType = MsgQuest then
-		BtnSecond.Draw;
-	ImgIcon.Draw;
-	{DEBUG - uses label below instead of printing directly}
-	Print(MsgTitle, X1 + 56, Y1 + 15, Thm.WinText);
-	Print(MsgText, X1 + Y1 + 56, Y1 + 31, Thm.WinText);
 	Mouse.Show;
 
-	repeat
-		Key := GetKey;
-		HotkeyInput := Key; {DEBUG - move to event loop later}
-		
-		BtnFirst.CheckEvent;
-		if MsgType = MsgQuest then
-			BtnSecond.CheckEvent;
-	until MsgboxDone;
-
+	WinMsgBox^.Run;
 	MsgBox := ReturnValue;
+
 	Mouse.Hide;
 	PutImage(X1, Y1, BackgroundP^, NormalPut);
 	FreeMem(BackgroundP, BackgroundSize);

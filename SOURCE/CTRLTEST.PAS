@@ -30,9 +30,17 @@ begin
 end;
 
 procedure Btn3Click(Sender: PUIObject); far;
+var
+	Result: Boolean;
 begin
-	CloseGraph;
-	Halt(0);
+	Result := MsgBox('Confirm Exit', 'Do you really want to exit ' + #13 + AppName + '?', MsgQuest);
+	if Result then
+		WinMain^.Close;
+end;
+
+procedure Txt1Change(Sender: PUIObject); far;
+begin
+	MsgBox('Text Changed', 'The text has been changed to:' + #13 + Txt1^.Text, MsgInfo);
 end;
 
 begin
@@ -69,10 +77,12 @@ begin
 	New(HkEsc, Init(KeyEscape, WinMain));
 	HkEsc^.SetOnClick(Btn3Click);
 
-	New(Frm1, Init(20, 50, NoParent));
-	New(Txt1, Init(10, 10, 'Name:', WinMain));
+	New(Frm1, Init(20, 50, WinMain));
+	Frm1^.SetSize(200, 100);
+	New(Txt1, Init(10, 20, 'Name:', Frm1));
 	Txt1^.Text := 'John Doe';
 	Txt1^.Center(OrHorizontal);
+	Txt1^.OnChange := Txt1Change;
 
 	WinMain^.Run;
 	Dispose(WinMain, Done);

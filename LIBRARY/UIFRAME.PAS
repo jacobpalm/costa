@@ -11,7 +11,6 @@ type
 		public
 			LightColor,
 			DarkColor:   Integer;
-			Transparent: Boolean;
 			constructor  Init(X, Y: Integer; Parent: PContainer);
 			procedure    Draw; virtual;
 	end;
@@ -23,13 +22,10 @@ const
 	DefaultW = 100;
 	DefaultH = 100;
 begin
-	TUIObject.Init;
+	Inherited Init(X, Y, Parent);
+	SetSize(DefaultW, DefaultH);
 	LightColor := Thm.Light;
 	DarkColor := Thm.Shadow;
-	Transparent := True;
-	SetParent(Parent);
-	SetPos(X, Y);
-	SetSize(DefaultW, DefaultH);
 end;
 
 procedure TFrame.Draw;
@@ -48,7 +44,7 @@ begin
 
 	{Interior}
 	BgColor := GetBGColor;
-	if not Transparent then
+	if not GetState(STransparent) then
 	begin
 		if BgColor = ColorDefault then
 			BgColor := Thm.Win;
