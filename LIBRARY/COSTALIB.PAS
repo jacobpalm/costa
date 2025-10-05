@@ -145,14 +145,22 @@ type
 			OnRun:      TEventProc;
 			OnClose:    TEventProc;
 			constructor Init(X, Y: Integer; Parent: PContainer);
+			destructor  Done; virtual;
+			
 			procedure   CheckEvent; virtual;
-			{procedure   SetMenu(Menu: PMenu);}
 			procedure   Draw; virtual;
+			
 			procedure   Run;
 			procedure   Close;
+
+			procedure   SaveBackdrop;
+			procedure   RestoreBackdrop;
+			{procedure   SetMenu(Menu: PMenu);}
 		private
 			MenuObj:    PMenu;	     {Menu bar object, if any}
 			DoClose:    Boolean;     {Set to true to close the window by exiting Run loop}
+			BackdropP:  Pointer;     {Stores background image to restore when window is closed}
+			BackdropS:  Word;        {Size of memory block used by BackdropP}
 	end;
 
 	{Linked list of windows, to allow multiple windows to be added to an application}
@@ -962,11 +970,13 @@ const
 begin
 	Inherited Init(X, Y, Parent);
 	SetSize(DefaultW, DefaultH);
-	Border  := True;
-	DoClose := False;
-	OnRun   := nil;
-	OnClose := nil;
-	MenuObj := nil;
+	Border    := True;
+	DoClose   := False;
+	OnRun     := nil;
+	OnClose   := nil;
+	MenuObj   := nil;
+	BackdropP := nil;
+	BackdropS := 0;
 end;
 
 procedure TWindow.Draw;
@@ -1039,6 +1049,9 @@ begin
 
 	if Assigned(OnClose) then
 		OnClose(@Self);
+	
+	{Restore background behind window, if it was saved}
+	Self.RestoreBackdrop;
 end;
 
 procedure TWindow.CheckEvent;
@@ -1062,9 +1075,62 @@ begin
 	end;
 end;
 
+procedure TWindow.RestoreBackdrop;
+var
+	X1, Y1: Integer;
+begin
+	if not Assigned(BackdropP) then
+		exit;
+
+	{DEBUG - out of bounds check}
+	{Get absolute position of the window}
+	Self.GetPos(X1, Y1, True);
+
+	{Restore background}
+	Mouse.Hide;
+	PutImage(X1, Y1, BackdropP^, NormalPut);
+	Mouse.Show;
+
+	{Free memory used to store background image}
+	FreeMem(BackdropP, BackdropS);
+	BackdropS := 0;
+end;
+
+procedure TWindow.SaveBackdrop;
+var
+	X1, Y1, X2, Y2: Integer;
+begin
+	{DEBUG - out of bounds check}
+	{Get absolute position and size of the window}
+	Self.GetPos(X1, Y1, True);
+	Self.GetSize(X2, Y2);
+	Inc(X2, X1);
+	Inc(Y2, Y1);
+	
+	{Calculate size of memory block required to store background image}
+	BackdropS := ImageSize(X1, Y1, X2, Y2);
+
+	{Allocate memory required to store the background image}
+	GetMem(BackdropP, BackdropS);
+
+	{Capture background image}
+	Mouse.Hide;
+	GetImage(X1, Y1, X2, Y2, BackdropP^);
+	Mouse.Show;
+end;
+
 procedure TWindow.Close;
 begin
 	Self.DoClose := True;
+end;
+
+destructor TWindow.Done;
+begin
+	if Assigned(BackdropP) then
+		FreeMem(BackdropP, BackdropS);
+
+	{Call ancestor destructor for properties that aren't specific to TWindow}
+	inherited Done;
 end;
 
 {----------------------------------------------------------------------------}

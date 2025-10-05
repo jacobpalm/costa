@@ -17,10 +17,12 @@ const
 
 var
 	WinInputBox: PWindow;
-	TxtInput: PTextbox;
-	BtnOK, BtnCancel: PButton;
-	ImgIcon: PIcon;
-	LblTitle, lblText: PLabel;
+	TxtInput:    PTextbox;
+	BtnOK,
+	BtnCancel:   PButton;
+	ImgIcon:     PIcon;
+	LblTitle,
+	lblText:     PLabel;
 
 	ReturnValue: string;
 
@@ -56,6 +58,7 @@ begin
 	begin
 		SetSize(X2, Y2);
 		Center(OrBoth);
+		SaveBackdrop;
 		GetPos(X1, Y1, True);
 	end;
 	Inc(X2, X1);
@@ -86,27 +89,12 @@ begin
 		AddHotkey(KeyAltN);
 	end;
 
-	{Save background to restore when Window is closed}
-	Mouse.Hide;
-	BackgroundSize := ImageSize(X1, Y1, X2, Y2);
-	GetMem(BackgroundP, BackgroundSize);
-	GetImage(X1, Y1, X2, Y2, BackgroundP^);
-	Mouse.Show;
-
 	{Run the Window. This will not return until the Window is closed}
 	WinInputBox^.Run;
+	Dispose(WinInputBox, Done);
+
 	InputBox := ReturnValue;
 	ClearInputBuffer;
-
-	{Restore background}
-	Mouse.Hide;
-	PutImage(X1, Y1, BackgroundP^, NormalPut);
-	Mouse.Show;
-
-	{Dispose of memory used by background and objects. Disposing of the Window
-	 object will also dispose of all child objects}
-	FreeMem(BackgroundP, BackgroundSize);
-	Dispose(WinInputBox, Done);
 end;
 
 end.

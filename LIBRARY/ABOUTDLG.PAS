@@ -25,9 +25,9 @@ const
 
 var
 	WinAboutBox: PWindow;
-	BtnClose: PButton;
-	ImgLogo: PIcon;
-	LblInfo: array [0..2] of PLabel;
+	BtnClose:    PButton;
+	ImgLogo:     PIcon;
+	LblInfo:     array [0..2] of PLabel;
 
 procedure AboutBoxClose(Sender: PUIObject); far;
 begin
@@ -37,8 +37,6 @@ end;
 procedure AboutBox(AppP: PApplication);
 var
 	X1, Y1, X2, Y2: Integer;
-	BackgroundSize: Word;
-	BackgroundP: Pointer;
 	Text: String;
 begin
 	Text := ReplaceMsg(MSG_ABOUT_TEXT, LibName);
@@ -50,6 +48,7 @@ begin
 	begin
 		SetSize(PrintW(Text) + 29, PrintH(Text) + 99);
 		Center(OrBoth);
+		SaveBackdrop;
 		GetPos(X1, Y1, True);
 		GetSize(X2, Y2);
 	end;
@@ -71,23 +70,7 @@ begin
 	New(LblInfo[1], Init(56, 33, ReplaceMsg(MSG_BY_TEXT, AppP^.Author), WinAboutBox));
 	New(LblInfo[2], Init(15, 57, Text, WinAboutBox));
 
-	{Save background to restore when Window is closed}
-	Mouse.Hide;
-	BackgroundSize := ImageSize(X1, Y1, X2, Y2);
-	GetMem(BackgroundP, BackgroundSize);
-	GetImage(X1, Y1, X2, Y2, BackgroundP^);
-	Mouse.Show;
-
 	WinAboutBox^.Run;
-
-	{Restore background}
-	Mouse.Hide;
-	PutImage(X1, Y1, BackgroundP^, NormalPut);
-	Mouse.Show;
-
-	{Dispose of memory used by background and objects. Disposing of the Window
-	 object will also dispose of all child objects}
-	FreeMem(BackgroundP, BackgroundSize);
 	Dispose(WinAboutBox, Done);
 end;
 

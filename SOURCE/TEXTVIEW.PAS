@@ -36,16 +36,16 @@ type
 	TDirection = (LineUp, LineDown, PageUp, PageDown, Top, Bottom);
 
 var
-	Lines: PLineArray;
+	Lines:      PLineArray;
 	StartLine,
 	Capacity,
-	LineCount: Integer;
+	LineCount:  Integer;
 	FileOpened: Boolean;
 
-	DefaultHeapError: Pointer; {We'll be taking care of heap errors ourselves}
+	StdHeapErr: Pointer; {We'll be taking care of heap errors ourselves}
 
-	App: PApplication;
-	WinMain: PWindow;
+	App:        PApplication;
+	WinMain:    PWindow;
 
 	BtnOpen, BtnPageUp, BtnPageDown, BtnAbout, BtnExit: PButton;
 	HkUp, HkDown, HkHome, HkEnd: PHotkey;
@@ -89,7 +89,7 @@ begin
 	LineCount := 0;
 	HeapError := @CustomHeapError;
 	GetMem(Lines, Capacity * SizeOf(PLine));
-	HeapError := DefaultHeapError;
+	HeapError := StdHeapErr;
 	if not Assigned(Lines) then
 		InitLines := false
 	else
@@ -111,7 +111,7 @@ begin
 	{Allocate new memory for the resized array}
 	HeapError := @CustomHeapError;
 	GetMem(NewLines, NewCap * SizeOf(PLine));
-	HeapError := DefaultHeapError;
+	HeapError := StdHeapErr;
 
 	if not Assigned(NewLines) then
 	begin
@@ -285,7 +285,6 @@ begin
 		if (DrawnLines < MaxLinesShown) and (i <= LineCount) then
 			{Dereference the line pointer and print the text}
 			Print(Lines^[i]^, 9, (PrintLineH * (i - StartLine + 1)) + 24, Thm.TxtText);
-
 	end;
 	Mouse.Show;
 end;
@@ -372,15 +371,15 @@ end;
 
 begin
 	{Store default heap error handler for later restoration}
-	DefaultHeapError := HeapError;
+	StdHeapErr := HeapError;
 
 	New(App, Init);
 	with App^ do
 	begin
-		Name := AppName;
+		Name    := AppName;
 		Version := AppVersion;
-		Author := AppAuthor;
-		Icon := AppIcon;
+		Author  := AppAuthor;
+		Icon    := AppIcon;
 	end;
 
 	{Main window}

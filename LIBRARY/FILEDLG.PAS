@@ -285,8 +285,6 @@ var
 	OriginalPath: string;
 	I: Integer;
 	X1, Y1, X2, Y2: Integer;
-	BackgroundSize: Word;
-	BackgroundP: Pointer;
 	Key: string;
 begin
 	FileSelectDone := False;
@@ -374,11 +372,8 @@ begin
 	ReturnedFile := '';
 
 	Mouse.Hide;
-	{Save background to restore when window is closed}
-	BackgroundSize := ImageSize(X1, Y1, X2, Y2);
-	GetMem(BackgroundP, BackgroundSize);
-	GetImage(X1, Y1, X2, Y2, BackgroundP^);
 
+	WinFileSelect.SaveBackdrop;
 	WinFileSelect.Draw;	
 	Mouse.Show;
 
@@ -416,10 +411,7 @@ begin
 	FileSelect := ReturnedFile;
 	
 	{Restore background}
-	Mouse.Hide;
-	PutImage(X1, Y1, BackgroundP^, NormalPut);
-	FreeMem(BackgroundP, BackgroundSize);
-	Mouse.Show;
+	WinFileSelect.RestoreBackdrop;
 
 	{$I-}
 	ChDir(OriginalPath); {Restore original path}

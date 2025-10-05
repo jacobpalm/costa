@@ -18,10 +18,12 @@ const
 	CAP_NO      = #127 + 'No';
 
 var
-	WinMsgBox: PWindow;
-	BtnFirst, BtnSecond: PButton;
-	ImgIcon: PIcon;
-	LblTitle, LblText: PLabel;
+	WinMsgBox:   PWindow;
+	BtnFirst,
+	BtnSecond:   PButton;
+	ImgIcon:     PIcon;
+	LblTitle,
+	LblText:     PLabel;
 
 	ReturnValue: Boolean;
 
@@ -41,8 +43,6 @@ function MsgBox(const MsgTitle, MsgText: string; MsgType: TMsgBox): Boolean;
 var
 	IconFile: string;
 	X1, Y1, X2, Y2: Integer;
-	BackgroundSize: Word;
-	BackgroundP: Pointer;
 	Key: String;
 begin
 	{Calculate size of message box based on text dimensions}
@@ -56,6 +56,7 @@ begin
 	begin
 		SetSize(X2, Y2);
 		Center(OrBoth);
+		SaveBackdrop;
 		GetPos(X1, Y1, True);
 	end;
 
@@ -93,22 +94,10 @@ begin
 	New(LblTitle, Init(56, 15, MsgTitle, WinMsgBox));
 	New(LblText, Init(56, 31, MsgText, WinMsgBox));
 	
-	{Save background to restore when Window is closed}
-	Inc(X2, X1); {X2/Y2 contain width and height, add X1/Y1 to get actual coordinates}
-	Inc(Y2, Y1);
-	Mouse.Hide;
-	BackgroundSize := ImageSize(X1, Y1, X2, Y2);
-	GetMem(BackgroundP, BackgroundSize);
-	GetImage(X1, Y1, X2, Y2, BackgroundP^);
-	Mouse.Show;
-
 	WinMsgBox^.Run;
-	MsgBox := ReturnValue;
+	Dispose(WinMsgBox, Done);
 
-	Mouse.Hide;
-	PutImage(X1, Y1, BackgroundP^, NormalPut);
-	FreeMem(BackgroundP, BackgroundSize);
-	Mouse.Show;
+	MsgBox := ReturnValue;
 end;
 
 end.
