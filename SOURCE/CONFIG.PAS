@@ -24,6 +24,7 @@ const
 	CAP_CONFEXIT         = 'Confirm before ' + #127 + 'exiting Costa';
 	CAP_BUTTON           = 'Button';
 	CAP_TEXTBOX          = 'Textbox';
+	CAP_CURR_THEME       = 'This is your current' + #13 + 'theme.';
 	CAP_PREVIEW_LINK     = 'Preview link';
 	CAP_PREVIEW_EXE      = 'preview.exe';
 	CAP_SETTINGS         = 'Settings' + #13 +
@@ -46,29 +47,39 @@ type
 	
 
 var
-	App:           TApplication;
-	WinMain:       TWindow;
+	{Main window}
+	App:            PApplication;
+	WinMain:        PWindow;
 	BtnExit,
 	BtnAbout,
 	BtnPrevious,
-	BtnNext:       TButton;
+	BtnNext:        PButton;
 	FrmSettings,
-	FrmTheme:      TFrame;
-	FrmPreview:    TFrame;
+	FrmTheme,
+	FrmPreview:     PFrame;
 	ImgSetting,
-	ImgTheme:      TIcon;
+	ImgTheme:       PIcon;
 	LblSettings,
 	LblTheme,
-	LblNoThemes:   TLabel;
-	ChkSetting:    array[0..4] of TCheckbox;
+	LblNoThemes:    PLabel;
+	ChkSetting:     array[0..4] of PCheckbox;
 
-	NewThemeList:  PThemeList;
-	ThemeCount:    integer;
-	SelectedTheme: integer;
-	ThemeName:     string[20];
-	ThemeAuthor:   string[20];
+	{Preview window and its contents}
+	WinPreview:     PWindow;
+	ImgPreview1,
+	ImgPreview2:    PIcon;
+	TxtPreview:     PTextbox;
+	BtnPreview1,
+	BtnPreview2:    PButton;
+	LblPreviewInfo: PLabel;
+	LblPreviewLink: PLabel;
 
-	{Objects that are used both in and outside of the main procedure}
+	{Shared variables}
+	NewThemeList:   PThemeList;
+	ThemeCount:     integer;
+	SelectedTheme:  integer;
+	ThemeName:      string[20];
+	ThemeAuthor:    string[20];
 
 procedure AddThemeToList(const ThemeName: string); forward;
 
@@ -81,7 +92,8 @@ var
     ExpectedSize: integer;
 	BtnLoading: PButton;
 begin
-	New(BtnLoading, Init(sizeCenter, sizeCenter, 110, 34, CAP_LOADING));
+	New(BtnLoading, Init(110, 34, CAP_LOADING, nil));
+	BtnLoading^.Center(OrBoth);
 	Mouse.Hide;
 	BtnLoading^.Draw;
 	Mouse.Show;
@@ -163,17 +175,10 @@ end;
 
 procedure ThemePreview;
 var
-	WinPreview: TWindow;
-	ImgLogo, ImgDeskLink: TIcon;
-	TxtPreview: TTextbox;
-	BtnPreview1, BtnPreview2: TButton;
 	F: file;
 	OrigTheme: TTheme;
-	LoadError: boolean;
-	ViewWidth, ViewHeight: integer;
 	FileName: string;
 begin
-	LoadError := False;
 	OrigTheme := Thm; {Save original theme to restore later}
 	
 	FileName := SelectedFileName;
@@ -193,65 +198,29 @@ begin
 	end
 	else
 	begin
-		{We don't exit here, because we want to clear the preview window
-		 if theme couldn't be loaded}
-		Thm := OrigTheme;
-		LoadError := True;
-	end;
-
-	Close(F);
-
-	ViewWidth := FrmPreview.Width - 4;
-	ViewHeight := FrmPreview.Height - 4;
-
-	WinPreview.Init(FrmPreview.Left + 14, FrmPreview.Top + 12, ViewWidth - 28, 123);
-	ImgLogo.Init(WinPreview.Left + 12, WinPreview.Top + 12, 'LOGO');
-	ImgDeskLink.Init(WinPreview.Left, FrmPreview.Top + FrmPreview.Height - 42, 'PAINT');
-	TxtPreview.Init(ImgLogo.Left, ImgLogo.Top + 45, WinPreview.Width - 23, SizeDefault, '');
-	TxtPreview.Text := CAP_TEXTBOX;
-	BtnPreview1.Init(WinPreview.Left + 12, WinPreview.Top + WinPreview.Height - 34, 86, SizeDefault, CAP_BUTTON);
-	BtnPreview2.Init(WinPreview.Left + WinPreview.Width - 12 - BtnPreview1.Width, BtnPreview1.Top, 86, SizeDefault, CAP_BUTTON);
-
-	Mouse.Hide;
-	SetFillStyle(SolidFill, Thm.Desk);
-	Bar(FrmPreview.Left + 2, FrmPreview.Top + 2,
-		FrmPreview.Left + FrmPreview.Width - 2, FrmPreview.Top + FrmPreview.Height - 2);
-	
-	if LoadError then
-	begin
+		Thm := OrigTheme; {Restore original theme}
 		MsgBox(MSG_LOAD_ERROR_TITLE, ReplaceMsg(MSG_LOAD_ERROR_TEXT, FileName), MsgError);
 		Exit;
 	end;
+	Close(F);
 
-	WinPreview.Draw;
-	ImgLogo.Draw;
-	ImgDeskLink.Draw;
-	BtnPreview1.Draw;
-	BtnPreview2.Draw;
-	TxtPreview.Draw;
-	
-	Print(CAP_PREVIEW_LINK, ImgDeskLink.Left + 38, ImgDeskLink.Top + 4, Thm.DeskText);
-	Print(CAP_PREVIEW_EXE, ImgDeskLink.Left + 38, ImgDeskLink.Top + 18, Thm.DeskText);
-
-	Print(ThemeName, ImgLogo.Left + 42, ImgLogo.Top + 5, Thm.WinText);
-	Print(ThemeAuthor, ImgLogo.Left + 42, ImgLogo.Top + 19, Thm.WinText);
+	{Update preview objects with new theme colors}
+	Mouse.Hide;
+	LblPreviewInfo^.SetCaption(ThemeName + #13 + ThemeAuthor);
+	FrmPreview^.SetBgColor(Thm.Desk);
+	FrmPreview^.Draw;
 	Mouse.Show;
 
-	Thm := OrigTheme; {Restore original theme}
+	Thm := OrigTheme; {Restore original theme so objects outside preview are not affected}
 end;
 
 procedure SwitchTheme(Sender: PUIObject); far;
 begin
-	if Sender = @BtnPrevious then
+	if PButton(Sender) = BtnPrevious then
 		Dec(SelectedTheme)
-	else if Sender = @BtnNext then
+	else if PButton(Sender) = BtnNext then
 		Inc(SelectedTheme);
 
-	FrmPreview.Draw;
-end;
-
-procedure FrmPreviewDraw(Sender: PUIObject); far;
-begin
 	ThemePreview;
 end;
 
@@ -260,123 +229,129 @@ begin
 	if ThemeCount > 0 then
 		Setting.ThmFile := SelectedFileName;
 
-	Setting.LinkCapt := ChkSetting[LinkDesc].GetChecked;
-	Setting.LinkTarget := ChkSetting[LinkTarget].GetChecked;
-	Setting.ConfLinkDel := ChkSetting[LinkDelete].GetChecked;
-	Setting.ConfExit := ChkSetting[ConfExit].GetChecked;
-	App.SaveSettings;
+	Setting.LinkCapt := ChkSetting[LinkDesc]^.GetChecked;
+	Setting.LinkTarget := ChkSetting[LinkTarget]^.GetChecked;
+	Setting.ConfLinkDel := ChkSetting[LinkDelete]^.GetChecked;
+	Setting.ConfExit := ChkSetting[ConfExit]^.GetChecked;
+	App^.SaveSettings;
 	
-	WinMain.Close;
-	App.Exit; {Debug - should happen automatically when last window is closed}
+	WinMain^.Close;
+	App^.Exit; {Debug - should happen automatically when last window is closed}
 end;
 
 procedure BtnAboutClick(Sender: PUIObject); far;
 begin
-	AboutBox(@App);
+	AboutBox(App);
 end;
 
-var	
-	Key: string;
+var
+	W, H: Integer;
 begin
-	with App do
+	New(App, Init);
+	with App^ do
 	begin
-		Init;
 		Name := AppName;
 		Version := AppVersion;
 		Author := AppAuthor;
 		Icon := AppIcon;
 	end;
 
+	New(WinMain, Init(0, 0, nil));
+	with WinMain^ do
+	begin
+		SetSize(GetMaxX, GetMaxY);
+		Border := False;
+		Draw;
+	end;
+
 	LoadThemeList;
 
-	with BtnAbout do
+	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
+	with BtnAbout^ do
 	begin
-		Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
 		AddHotkey(KeyAltA);
-		OnClick := BtnAboutClick;
+		SetOnClick(BtnAboutClick);
 	end;
-	with BtnExit do
+	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
+	with BtnExit^ do
 	begin
-		Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
 		AddHotkey(KeyAltX);
 		AddHotkey(KeyAltF4);
-		OnClick := BtnExitClick;
+		SetOnClick(BtnExitClick);
 	end;
 	
-	FrmSettings.Init(14, 43, 310, 293);
-	ImgSetting.Init(FrmSettings.Left + 14, FrmSettings.Top + 14, 'CONFIG');
-	LblSettings.Init(ImgSetting.Left + 42, ImgSetting.Top + 5, SizeDefault, SizeDefault, CAP_SETTINGS);
-	with ChkSetting[LinkDesc] do
+	{Settings frame and its contents}
+	New(FrmSettings, Init(14, 43, WinMain));
+	FrmSettings^.SetSize(310, 293);
+	New(ImgSetting, Init(14, 14, 'CONFIG', FrmSettings));
+	New(LblSettings, Init(56, 19, CAP_SETTINGS, FrmSettings));
+	New(ChkSetting[LinkDesc], Init(14, 56, CAP_LINKDESC, Setting.LinkCapt, FrmSettings));
+	ChkSetting[LinkDesc]^.AddHotkey(KeyAltC);
+	New(ChkSetting[LinkTarget], Init(14, 78, CAP_LINKTARGET, Setting.LinkTarget, FrmSettings));
+	ChkSetting[LinkTarget]^.AddHotkey(KeyAltO);
+	New(ChkSetting[LinkDelete], Init(14, 100, CAP_LINKDELETE, Setting.ConfLinkDel, FrmSettings));
+	ChkSetting[LinkDelete]^.AddHotkey(KeyAltR);
+	New(ChkSetting[ConfExit], Init(14, 122, CAP_CONFEXIT, Setting.ConfExit, FrmSettings));
+	ChkSetting[ConfExit]^.AddHotkey(KeyAltE);
+
+	{Theme frame and its contents}
+	W := 288;
+	H := 293;
+	New(FrmTheme, Init(338, 43, WinMain));
+	FrmTheme^.SetSize(W, H);
+	New(ImgTheme, Init(14, 14, 'THEMES', FrmTheme));
+	New(LblTheme, Init(56, 19, CAP_THEMES, FrmTheme));
+	New(FrmPreview, Init(14, 55, FrmTheme));
+	with FrmPreview^ do
 	begin
-		Init(FrmSettings.Left + 14, FrmSettings.Top + 56, CAP_LINKDESC, Setting.LinkCapt);
-		AddHotkey(KeyAltC);
-	end;
-	with ChkSetting[LinkTarget] do
-	begin
-		Init(ChkSetting[LinkDesc].Left, ChkSetting[LinkDesc].Top + 22, CAP_LINKTARGET, Setting.LinkTarget);
-		AddHotkey(KeyAltO);
-	end;
-	with ChkSetting[LinkDelete] do
-	begin
-		Init(ChkSetting[LinkDesc].Left, ChkSetting[LinkTarget].Top + 22, CAP_LINKDELETE, Setting.ConfLinkDel);
-		AddHotkey(KeyAltR);
-	end;
-	with ChkSetting[ConfExit] do
-	begin
-		Init(ChkSetting[LinkDesc].Left, ChkSetting[LinkDelete].Top + 22, CAP_CONFEXIT, Setting.ConfExit);
-		AddHotkey(KeyAltE);
+		SetSize(W - 28, 192);
+		SetBgColor(Thm.Desk);
+		RemoveState(SEnabled);
 	end;
 
-	FrmTheme.Init(338, 43, 288, 293);
-	ImgTheme.Init(FrmTheme.Left + 14, FrmTheme.Top + 14, 'THEMES');
-	LblTheme.Init(ImgTheme.Left + 42, ImgTheme.Top + 5, SizeDefault, SizeDefault, CAP_THEMES);
-	with FrmPreview do
+	{Only create theme switch buttons if there are themes available, otherwise
+	 create label saying that no themes were found}
+	if ThemeCount <> 0 then
 	begin
-		Init(FrmTheme.Left + 14, FrmTheme.Top + 55, FrmTheme.Width - 28, 192);
-		OnDraw := FrmPreviewDraw;
-	end;
-	with BtnPrevious do
-	begin
-		Init(FrmTheme.Left + 14, FrmTheme.Top + FrmTheme.Height - 34, SizeDefault, SizeDefault, CAP_PREVIOUS);
-		AddHotkey(KeyAltP);
-		AddHotkey(KeyLeft);
-		OnClick := SwitchTheme;
-	end;
-	with BtnNext do
-	begin
-		Init(FrmTheme.Left + FrmTheme.Width - 92 - 14, BtnPrevious.Top, SizeDefault, SizeDefault, CAP_NEXT);
-		AddHotkey(KeyAltN);
-		AddHotkey(KeyRight);
-		OnClick := SwitchTheme;
-	end;
-	LblNoThemes.Init(387, 310, SizeDefault, SizeDefault, MSG_NO_THEMES);
-	
-	with WinMain do
-	begin
-		Init(0, 0, GetMaxX, GetMaxY);
-		Border := False;
-		AddObject(@BtnExit);
-		AddObject(@BtnAbout);
-		AddObject(@FrmSettings);
-		AddObject(@FrmTheme);
-		AddObject(@FrmPreview);
-		AddObject(@ImgSetting);
-		AddObject(@ImgTheme);
-		AddObject(@LblSettings);
-		AddObject(@LblTheme);
-		AddObject(@ChkSetting[LinkDesc]);
-		AddObject(@ChkSetting[LinkTarget]);
-		AddObject(@ChkSetting[LinkDelete]);
-		AddObject(@ChkSetting[ConfExit]);
-		if ThemeCount <> 0 then
+		New(BtnPrevious, Init(14, H - 34, CAP_PREVIOUS, FrmTheme));
+		with BtnPrevious^ do
 		begin
-			AddObject(@BtnPrevious);
-			AddObject(@BtnNext);
-		end
-		else
-			AddObject(@LblNoThemes);
-	end;
+			AddHotkey(KeyAltP);
+			AddHotkey(KeyLeft);
+			SetOnClick(SwitchTheme);
+		end;
+		New(BtnNext, Init(W - 92 - 14, H - 34, CAP_NEXT, FrmTheme));
+		with BtnNext^ do
+		begin
+			AddHotkey(KeyAltN);
+			AddHotkey(KeyRight);
+			SetOnClick(SwitchTheme);
+		end;
+	end
+	else
+		New(LblNoThemes, Init(387, 310, MSG_NO_THEMES, FrmTheme));
 
-	App.OpenWindow(@WinMain);
-	App.Run;
+	{Initialize objects in preview frame}
+	FrmPreview^.GetSize(W, H);
+	{Preivew desktop icon and label}
+	New(ImgPreview2, Init(14, H - 42, 'PAINT', FrmPreview));
+	New(LblPreviewLink, Init(52, H - 38, CAP_PREVIEW_LINK + #13 + CAP_PREVIEW_EXE, FrmPreview));
+	{Preview window and its contents}
+	New(WinPreview, Init(14, 12, FrmPreview));
+	WinPreview^.SetSize(W - 28, 123);
+	New(ImgPreview1, Init(12, 12, 'LOGO', WinPreview));
+	New(LblPreviewInfo, Init(54, 16, CAP_CURR_THEME, WinPreview));
+	WinPreview^.GetSize(W, H);
+	New(TxtPreview, Init(12, 57, '', WinPreview));
+	with TxtPreview^ do
+	begin
+		SetSize(W - 23, SizeRetain);
+		Text := CAP_TEXTBOX;
+	end;
+	New(BtnPreview1, Init(12, H - 34, CAP_BUTTON, WinPreview));
+	New(BtnPreview2, Init(W - 104, H - 34, CAP_BUTTON, WinPreview));
+	BtnPreview2^.AddState(SActive);
+
+	App^.OpenWindow(WinMain);
+	App^.Run;
 end.

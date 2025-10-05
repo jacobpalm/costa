@@ -48,7 +48,7 @@ begin
 	New(WinAboutBox, Init(0, 0, nil));
 	with WinAboutBox^ do
 	begin
-		SetSize(PrintW(Text) + 29, PrintH(Text) + 95);
+		SetSize(PrintW(Text) + 29, PrintH(Text) + 99);
 		Center(OrBoth);
 		GetPos(X1, Y1, True);
 		GetSize(X2, Y2);
@@ -69,7 +69,7 @@ begin
 	
 	New(LblInfo[0], Init(56, 21, AppP^.Name + ' ' + AppP^.Version, WinAboutBox));
 	New(LblInfo[1], Init(56, 33, ReplaceMsg(MSG_BY_TEXT, AppP^.Author), WinAboutBox));
-	New(LblInfo[2], Init(15, 53, Text, WinAboutBox));
+	New(LblInfo[2], Init(15, 57, Text, WinAboutBox));
 
 	{Save background to restore when Window is closed}
 	Mouse.Hide;

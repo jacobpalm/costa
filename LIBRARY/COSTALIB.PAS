@@ -132,6 +132,7 @@ type
 			constructor Init(X, Y: Integer; Parent: PContainer);
 			destructor  Done; virtual;
 			procedure   AddObject(Obj: PUIObject);
+			procedure   CheckEvent; virtual;
 			procedure   DrawChildren;
 		private
 			Objects:    PObjectNode; {Linked list of objects in the container}
@@ -894,6 +895,22 @@ begin
 	end;
 end;
 
+procedure TContainer.CheckEvent;
+var
+	CurrObj: PObjectNode;
+begin
+	{Don't check for events if container is disabled or hidden}
+	if not GetState(SEnabled) or GetState(SHidden) then
+		exit;
+
+	CurrObj := Objects;
+	while Assigned(CurrObj) do
+	begin
+		CurrObj^.ObjectP^.CheckEvent;
+		CurrObj := CurrObj^.Next;
+	end;
+end;
+
 procedure TContainer.DrawChildren;
 var
 	CurrObj: PObjectNode;
@@ -1015,7 +1032,10 @@ begin
 		OnRun(@Self);
 
 	while not Self.DoClose and Assigned(Objects) do
+	begin
+		HotkeyInput := GetKey;
 		Self.CheckEvent;
+	end;
 
 	if Assigned(OnClose) then
 		OnClose(@Self);
@@ -1025,7 +1045,10 @@ procedure TWindow.CheckEvent;
 var
 	CurrObj: PObjectNode;
 begin
-	HotkeyInput := GetKey;
+	{Don't check for events if window is disabled or hidden}
+	if not GetState(SEnabled) or GetState(SHidden) then
+		exit;
+
 	CurrObj := Objects;
 	while Assigned(CurrObj) do
 	begin
@@ -1042,9 +1065,6 @@ end;
 procedure TWindow.Close;
 begin
 	Self.DoClose := True;
-
-	{if Assigned(Parent) then
-		Parent^.CloseWindow;} {DEBUG}
 end;
 
 {----------------------------------------------------------------------------}

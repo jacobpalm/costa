@@ -78,8 +78,8 @@ begin
 	GetPos(X1, Y1, True);
 	GetSize(Width, Height);
 
+	{Text is located 5 pixels from the left border, and vertically centered}
 	Inc(X1, 5);
-	Inc(Y1, 5);
 	Y1 := (Height - 7) div 2 + Y1;
 
 	FgColor := GetFgColor;
@@ -155,9 +155,11 @@ begin
 			Mouse.Hide;
 			if PrintW(Text + Key) + 2 < MaxShow then
 			begin
+				{Erase only the cursor}
 				CursorX := X1 + PrintW(Text) + 2;
 				SetColor(BgColor);
-				Line(CursorX, Y1 - 1, CursorX, Y1 + 10);
+				Line(CursorX, Y1 - 1, CursorX, Y1 + 8);
+				{Print new text}
 				Text := Text + Key;
 				Print(Text, X1, Y1, FgColor);
 				{Cursor}

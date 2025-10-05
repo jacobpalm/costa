@@ -44,11 +44,11 @@ var
 
 	DefaultHeapError: Pointer; {We'll be taking care of heap errors ourselves}
 
-	App: TApplication;
-	WinMain: TWindow;
+	App: PApplication;
+	WinMain: PWindow;
 
-	BtnOpen, BtnPageUp, BtnPageDown, BtnAbout, BtnExit: TButton;
-	HkUp, HkDown, HkHome, HkEnd: THotkey;
+	BtnOpen, BtnPageUp, BtnPageDown, BtnAbout, BtnExit: PButton;
+	HkUp, HkDown, HkHome, HkEnd: PHotkey;
 
 procedure DrawText; forward;
 procedure FreeLines; forward;
@@ -76,7 +76,8 @@ var
 	BtnLoading: PButton;
 begin
 	Mouse.Hide;
-	New(BtnLoading, Init(sizeCenter, sizeCenter, 110, 34, CAP_LOADING) );
+	New(BtnLoading, Init(110, 34, CAP_LOADING, nil));
+	BtnLoading^.Center(OrBoth);
 	BtnLoading^.Draw;
 	Mouse.Show;
 	Dispose(BtnLoading, Done);
@@ -250,8 +251,10 @@ begin
 	begin
 		{If a file wasn't previously opened, scroll buttons won't be visible}
 		FileOpened := True;
-		BtnPageUp.AddState(Enabled);
-		BtnPageDown.AddState(Enabled);
+		BtnPageUp^.RemoveState(SHidden);
+		BtnPageUp^.Draw;
+		BtnPageDown^.RemoveState(SHidden);
+		BtnPageDown^.Draw;
 	end;
 	DrawText;
 end;
@@ -317,14 +320,14 @@ end;
 
 procedure BtnAboutClick(Sender: PUIObject); far;
 begin
-	AboutBox(@App);
+	AboutBox(App);
 end;
 
 procedure BtnOpenClick(Sender: PUIObject); far;
 var
 	FileName: String;
 begin
-	FileName := FileSelect('*.TXT', '', False);
+	FileName := FileSelect('*.TXT', '');
 	if FileName <> '' then
 		LoadFile(FileName);
 end;
@@ -334,17 +337,17 @@ begin
 	if not FileOpened then
 		Exit;
 
-	if Sender = @BtnPageUp then
+	if PButton(Sender) = BtnPageUp then
 		ScrollText(PageUp)
-	else if Sender = @BtnPageDown then
+	else if PButton(Sender) = BtnPageDown then
 		ScrollText(PageDown)
-	else if Sender = @HkUp then
+	else if PHotkey(Sender) = HkUp then
 		ScrollText(LineUp)
-	else if Sender = @HkDown then
+	else if PHotkey(Sender) = HkDown then
 		ScrollText(LineDown)
-	else if Sender = @HkHome then
+	else if PHotkey(Sender) = HkHome then
 		ScrollText(Top)
-	else if Sender = @HkEnd then
+	else if PHotkey(Sender) = HkEnd then
 		ScrollText(Bottom);
 end;
 
@@ -371,95 +374,75 @@ begin
 	{Store default heap error handler for later restoration}
 	DefaultHeapError := HeapError;
 
-	with App do
+	New(App, Init);
+	with App^ do
 	begin
-		Init;
 		Name := AppName;
 		Version := AppVersion;
 		Author := AppAuthor;
 		Icon := AppIcon;
 	end;
 
-	with BtnOpen do
+	{Main window}
+	New(WinMain, Init(0, 0, nil));
+	with WinMain^ do
 	begin
-		Init(3, 2, SizeDefault, SizeDefault, CAP_OPEN);
-		OnClick := BtnOpenClick;
+		SetSize(GetMaxX, GetMaxY);
+		Border := False;
+		SetOnDraw(WinMainDraw);
+		OnRun := WinMainRun;
+	end;
+
+	New(BtnOpen, Init(3, 2, CAP_OPEN, WinMain));
+	with BtnOpen^ do
+	begin
+		SetOnClick(BtnOpenClick);
 		AddHotkey(KeyAltO);
 	end;
 
-	with BtnPageUp do
+	New(BtnPageUp, Init(102, 2, CAP_PAGE_UP, WinMain));
+	with BtnPageUp^ do
 	begin
-		Init(102, 2, SizeDefault, SizeDefault, CAP_PAGE_UP);
-		OnClick := PageScrollEvent;
+		SetOnClick(PageScrollEvent);
 		AddHotkey(KeyAltU);
 		AddHotkey(KeyPageUp);
-		RemoveState(Enabled); {Disabled until a file is opened}
+		AddState(SHidden); {Hidden until a file is opened}
 	end;
 
-	with BtnPageDown do
+	New(BtnPageDown, Init(201, 2, CAP_PAGE_DOWN, WinMain));
+	with BtnPageDown^ do
 	begin
-		Init(201, 2, SizeDefault, SizeDefault, CAP_PAGE_DOWN);
-		OnClick := PageScrollEvent;
+		SetOnClick(PageScrollEvent);
 		AddHotkey(KeyAltD);
 		AddHotkey(KeyPageDown);
-		RemoveState(Enabled);
+		AddState(SHidden);
 	end;
 
-	with BtnAbout do
+	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
+	with BtnAbout^ do
 	begin
-		Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
-		OnClick := BtnAboutClick;
+		SetOnClick(BtnAboutClick);
 		AddHotkey(KeyAltA);
 	end;
 
-	with BtnExit do
+	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
+	with BtnExit^ do
 	begin
-		Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
-		OnClick := BtnExitClick;
+		SetOnClick(BtnExitClick);
 		AddHotkey(KeyAltX);
 		AddHotkey(KeyAltF4);
 	end;
 
 	{Hotkeys for scrolling}
-	with HkUp do
-	begin
-		Init(KeyUp);
-		OnClick := PageScrollEvent;
-	end;
-	with HkDown do
-	begin
-		Init(KeyDown);
-		OnClick := PageScrollEvent;
-	end;
-	with HkHome do
-	begin
-		Init(KeyHome);
-		OnClick := PageScrollEvent;
-	end;
-	with HkEnd do
-	begin
-		Init(KeyEnd);
-		OnClick := PageScrollEvent;
-	end;
+	New(HkUp, Init(KeyUp, WinMain));
+	HkUp^.SetOnClick(PageScrollEvent);
+	New(HkDown, Init(KeyDown, WinMain));
+	HkDown^.SetOnClick(PageScrollEvent);
+	New(HkHome, Init(KeyHome, WinMain));
+	HkHome^.SetOnClick(PageScrollEvent);
+	New(HkEnd, Init(KeyEnd, WinMain));
+	HkEnd^.SetOnClick(PageScrollEvent);
 
-	{Main window}
-	with WinMain do
-	begin
-		Init(0, 0, GetMaxX, GetMaxY);
-		Border := False;
-		OnDraw := WinMainDraw;
-		OnRun := WinMainRun;
-		AddObject(@BtnOpen);
-		AddObject(@BtnPageUp);
-		AddObject(@BtnPageDown);
-		AddObject(@BtnAbout);
-		AddObject(@BtnExit);
-		AddObject(@HkUp);
-		AddObject(@HkDown);
-		AddObject(@HkHome);
-		AddObject(@HkEnd);
-	end;
-
-	App.OpenWindow(@WinMain);
-	App.Run;
+	App^.OpenWindow(WinMain);
+	App^.Run;
 end.
