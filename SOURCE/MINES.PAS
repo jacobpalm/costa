@@ -17,7 +17,6 @@ const
 	CAP_SOUND         = #127 + 'Sound';
 	CAP_ABOUT         = #127 + 'About...';
 	CAP_EXIT          = 'E' + #127 + 'xit';
-	CAP_RESUME        = #127 + 'Resume';
 	CAP_CANCEL        = #127 + 'Cancel';
 	CAP_9X9           = #127 + '9x9';
 	CAP_16X16         = #127 + '16x16';
@@ -30,6 +29,9 @@ const
 	MSG_SOUND         = 'Sound:';
 	MSG_ON            = 'On';
 	MSG_OFF           = 'Off';
+	MSG_PAUSE_TITLE   = 'Game paused.';
+	MSG_PAUSE_TEXT    = 'Click OK or press Enter to resume game.';
+
 type
 	TSound     = (SoundNew, SoundIllegalMove, SoundWin, SoundLoose, SoundClear, SoundFlag);
 	TFlag      = (Mined, Flagged, Cleared, Exploded, Selected);
@@ -63,8 +65,18 @@ var
 	WinSetSize: PWindow;
 	BtnSize: array[0..3] of PButton;
 	BtnCancel: PButton;
-	
 
+{Forward declarations}
+procedure DrawCell(Row, Col: byte); forward;
+procedure HelpFirstMove(Row, Col: byte); forward;
+procedure PlaySound(SoundType: TSound); forward;
+procedure PrintStatus(MineCountOnly: boolean; StatusMessage: string); forward;
+procedure PrintTime; forward;
+procedure WinGame; forward;
+function  GetNeighborCount(Row, Col: byte): byte; forward;
+
+{Clears the clicked cell, and if it has no neighboring mines,
+  recursively clears all adjacent empty cells as well.}
 procedure ClearCell(Row, Col: byte);
 var
 	Stack: PNode;
@@ -229,9 +241,10 @@ var
 	TextColor, Neighbors: byte;
 	NeighborStr: string;
 begin
-	
-	X1 := AreaField.Left + 1 + Col * CellSize;
-	Y1 := AreaField.Top + 1 + Row * CellSize;
+	{Calculate absolute position of cell within area}
+	AreaField^.GetPos(X1, Y1, True);
+	X1 := X1 + 1 + Col * CellSize;
+	Y1 := Y1 + 1 + Row * CellSize;
 	X2 := X1 + CellSize - 2;
 	Y2 := Y1 + CellSize - 2;
 
@@ -353,6 +366,7 @@ begin
 	Inc(Y2, Y1);
 
 	Mouse.Hide;
+	{Clear background before drawing field}
 	SetFillStyle(SolidFill, Thm.Win);
 	Bar(0, 29, 639, 349);
 
@@ -507,46 +521,19 @@ end;
 
 procedure Pause;
 var
-	BtnResume: TButton;
 	Row, Col: byte;
 	PauseTime: real;
-	Key: string;
 begin
 	PauseTime := Timer;
 	
-	BtnResume.Init(3, 2, SizeDefault, SizeDefault, CAP_RESUME);
-
 	Mouse.Hide;
 	SetFillStyle(SolidFill, Thm.Win);
 	Bar(0, 29, 639, 329);
-	MenuBar.Draw;
-	BtnResume.Draw;
-	BtnExit.Draw;
 	Mouse.Show;
 
-	repeat
-		Key := GetKey;
-
-		if (Key = KeySpace) or (Key = KeyEnter) or (Key = KeyEscape) then
-			break;
-
-		if BtnResume.Clicked or (Key = KeyAltR) then
-			break;
-
-		if BtnExit.Clicked then
-		begin
-			CloseGraph;
-			Halt(0);
-		end;
-		
-	until false;
+	MsgBox(MSG_PAUSE_TITLE, MSG_PAUSE_TEXT, MsgInfo);
 
 	Mouse.Hide;
-	BtnNew.Draw;
-	BtnSetSize.Draw;
-	BtnSound.Draw;
-	BtnPause.Draw;
-	BtnAbout.Draw;
 	DrawField;
 	for Row := 0 to FieldH - 1 do
 	begin
@@ -561,7 +548,6 @@ begin
 	if StartTime <> 0 then
 		StartTime := StartTime + (Timer - PauseTime);
 	PrintTime;
-
 end;
 
 procedure PlaySound(SoundType: TSound);
@@ -700,62 +686,64 @@ begin
 	Mouse.Show;
 end;
 
-procedure BtnSizeClick(Sender: PObject); far;
+procedure BtnSizeClick(Sender: PUIObject); far;
 begin
-	case PButton(Sender) of
-		BtnSize[0]: {9x9}
-			begin
-				FieldH := 9;
-				FieldW := 9;
-			end;
-		BtnSize[1]: {16x16}
-			begin
-				FieldH := 16;
-				FieldW := 16;
-			end;
-		BtnSize[2]: {22x18}
-			begin
-				FieldH := 18;
-				FieldW := 22;
-			end;
-		BtnSize[3]: {39x18}
-			begin
-				FieldH := 18;
-				FieldW := 39;
-			end;
+	if PButton(Sender) = BtnSize[0] then
+	begin
+		FieldH := 9;
+		FieldW := 9;
+	end;
+	if PButton(Sender) = BtnSize[1] then
+	begin
+		FieldH := 16;
+		FieldW := 16;
+	end;
+	if PButton(Sender) = BtnSize[2] then
+	begin
+		FieldH := 18;
+		FieldW := 22;
+	end;
+	if PButton(Sender) = BtnSize[3] then
+	begin
+		FieldH := 18;
+		FieldW := 39;
 	end;
 	
 	WinSetSize^.Close;
 	NewGame;
 end;
 
-procedure DirectionKeyClick(Sender: PObject); far;
+procedure BtnCancelClick(Sender: PUIObject); far;
+begin
+	WinSetSize^.Close;
+end;
+
+procedure DirectionKeyClick(Sender: PUIObject); far;
 begin
 	IndicatorOn := true;
 
 	{Hide current indicator before moving}
-	Exclude(Field[IndicatorRow, IndicatorCol], Selected);
-	Mouse.Hide;
-	DrawCell(IndicatorRow, IndicatorCol);
-	case PHotkey(Sender) of
-		DirUp:
-			if IndicatorRow > 0 then
-				Dec(IndicatorRow);
-		DirDown:
-			if IndicatorRow < FieldH - 1 then
-				Inc(IndicatorRow);
-		DirLeft:
-			if IndicatorCol > 0 then
-				Dec(IndicatorCol);
-		DirRight:
-			if IndicatorCol < FieldW - 1 then
-				Inc(IndicatorCol);
-		Else
-			begin
-				Mouse.Show;
-				exit;
-			end;
+	if Selected in Field[IndicatorRow, IndicatorCol] then
+	begin
+		Exclude(Field[IndicatorRow, IndicatorCol], Selected);
+		Mouse.Hide;
+		DrawCell(IndicatorRow, IndicatorCol);
+		Mouse.Show;
 	end;
+
+	{If an arrow key was pressed, move the indicator in that direction.
+	 If Sender is nil, it means we are just hiding the indicator. Any other
+	 value in Sender will make the indicator appear at the current position.}
+	if (PHotkey(Sender) = HkUp) and (IndicatorRow > 0) then
+		Dec(IndicatorRow)
+	else if (PHotkey(Sender) = HkDown) and (IndicatorRow < FieldH - 1) then
+		Inc(IndicatorRow)
+	else if (PHotkey(Sender) = HkLeft) and (IndicatorCol > 0) then
+		Dec(IndicatorCol)
+	else if (PHotkey(Sender) = HkRight) and (IndicatorCol < FieldW - 1) then
+		Inc(IndicatorCol)
+	else if Sender = nil then
+		exit;
 
 	{Add new indicator and draw it}
 	Include(Field[IndicatorRow, IndicatorCol], Selected);
@@ -788,38 +776,38 @@ begin
 	GameOver := True;
 end;
 
-procedure BtnNewClick(Sender: PObject); far;
+procedure BtnNewClick(Sender: PUIObject); far;
 begin
 	NewGame;
 end;
 
-procedure BtnPauseClick(Sender: PObject); far;
+procedure BtnPauseClick(Sender: PUIObject); far;
 begin
 	Pause;
 end;
 
-procedure BtnSetSizeClick(Sender: PObject); far;
+procedure BtnSetSizeClick(Sender: PUIObject); far;
 begin
 	WinSetSize^.Run;
 end;
 
-procedure BtnSoundClick(Sender: PObject); far;
+procedure BtnSoundClick(Sender: PUIObject); far;
 begin
 	EnableSound := not EnableSound;
 	PrintStatus(False, '');
 end;
 
-procedure BtnAboutClick(Sender: PObject); far;
+procedure BtnAboutClick(Sender: PUIObject); far;
 begin
 	AboutBox(App);
 end;
 
-procedure BtnExitClick(Sender: PObject); far;
+procedure BtnExitClick(Sender: PUIObject); far;
 begin
-	WinMain^.Close;
+	App^.Exit;
 end;
 
-procedure AreaFieldClick(Sender: PObject); far;
+procedure AreaFieldClick(Sender: PUIObject); far;
 var
 	FieldRow, FieldCol: byte;
 	X1, Y1: integer;
@@ -838,7 +826,7 @@ begin
 		ClickCell(IndicatorRow, IndicatorCol, MbRight);
 	if (PHotkey(Sender) = HkEnter) or (PHotkey(Sender) = HkSpace) then
 	begin
-		MoveIndicator(DirShow)
+		DirectionKeyClick(HkEnter);
 		ClearInputBuffer;
 		exit;
 	end;
@@ -860,7 +848,7 @@ begin
 
 	{If keyboard indicator is on, hide it since mouse was used}
 	if IndicatorOn then
-		MoveIndicator(DirHide);
+		DirectionKeyClick(nil);
 	
 	ClickCell(FieldRow, FieldCol, MouseButton);
 	IndicatorRow := FieldRow;
@@ -872,9 +860,11 @@ end;
 
 procedure HkCheatClick(Sender: PUIObject); far;
 var
-	X1, Y1, X2, Y2: integer;
+	X1, Y1, X2, Y2, OffX, OffY: integer;
 	Row, Col: byte;
 begin
+	AreaField^.GetPos(OffX, OffY, True);
+
 	SetColor(Red);
 	Mouse.Hide;
 	for Row := 0 to FieldH - 1 do
@@ -883,8 +873,8 @@ begin
 		begin
 			if Mined in Field[Row, Col] then
 			begin
-				X1 := AreaField.Left + 1 + Col * CellSize;
-				Y1 := AreaField.Top + 1 + Row * CellSize;
+				X1 := OffX + 1 + Col * CellSize;
+				Y1 := OffY + 1 + Row * CellSize;
 				X2 := X1 + CellSize - 2;
 				Y2 := Y1 + CellSize - 2;
 				Rectangle(X1, Y1, X2, Y2);
@@ -894,7 +884,7 @@ begin
 	Mouse.Show;				
 end;
 
-procedure WinMainRun(Sender: PObject); far;
+procedure WinMainRun(Sender: PUIObject); far;
 begin
 	{Default settings}
 	EnableSound := True;
@@ -906,26 +896,26 @@ begin
 	TimeCompare := Timer + 1;
 end;
 
-procedure WinSetSizeDraw(Sender: PObject); far;
+procedure WinSetSizeDraw(Sender: PUIObject); far;
 var
 	X, Y, W, H, TextOffset: integer;
 begin
 	Mouse.Hide;
 
-	BtnSize[0]^.GetPos(X, Y);
+	BtnSize[0]^.GetPos(X, Y, True);
 	BtnSize[0]^.GetSize(W, H); {Only need to get once, all buttons are same size}
 	TextOffset := ((W - PrintW(CAP_9X9)) div 2);
 	Print(CAP_9X9, X + TextOffset, Y + 79, Thm.WinText);
 
-	BtnSize[1]^.GetPos(X, Y);
+	BtnSize[1]^.GetPos(X, Y, True);
 	TextOffset := ((W - PrintW(CAP_16X16)) div 2);
 	Print(CAP_16X16, X + TextOffset, Y + 79, Thm.WinText);
 
-	BtnSize[2]^.GetPos(X, Y);
+	BtnSize[2]^.GetPos(X, Y, True);
 	TextOffset := ((W - PrintW(CAP_22X18)) div 2);
 	Print(CAP_22X18, X + TextOffset, Y + 79, Thm.WinText);
 
-	BtnSize[3]^.GetPos(X, Y);
+	BtnSize[3]^.GetPos(X, Y, True);
 	TextOffset := ((W- PrintW(CAP_39X18)) div 2);
 	Print(CAP_39X18, X + TextOffset, Y + 79, Thm.WinText);
 	
@@ -970,7 +960,12 @@ begin
 
 	{Main window and controls}
 	New(WinMain, Init(0, 0, nil));
-	WinMain.SetSize(GetMaxX, GetMaxY)
+	with WinMain^ do
+	begin
+		SetSize(GetMaxX, GetMaxY);
+		Border := False;
+	end;
+
 	New(BtnNew, Init(3, 2, CAP_NEW_GAME, WinMain));
 	With BtnNew^ do
 	begin
@@ -1010,22 +1005,22 @@ begin
 	end;
 	New(AreaField, Init(0, 0, WinMain));
 	
-	New(HkCheat, Init(KeyQuestion, WinMain));
-	HkCheat^.OnClick := HkCheatClick;
+	New(HkCheat, Init('?', WinMain));
+	HkCheat^.SetOnClick(HkCheatClick);
 
 	New(HkEnter, Init(KeyEnter, WinMain));
-	HkEnter^.OnClick := AreaFieldClick;
+	HkEnter^.SetOnClick(AreaFieldClick);
 	New(HkSpace, Init(KeySpace, WinMain));
-	HkSpace^.OnClick := AreaFieldClick;
+	HkSpace^.SetOnClick(AreaFieldClick);
 
 	New(HkUp, Init(KeyUp, WinMain));
-	HkUp^.OnClick := DirectionKeyClick;
+	HkUp^.SetOnClick(DirectionKeyClick);
 	New(HkDown, Init(KeyDown, WinMain));
-	HkDown^.OnClick := DirectionKeyClick;
+	HkDown^.SetOnClick(DirectionKeyClick);
 	New(HkLeft, Init(KeyLeft, WinMain));
-	HkLeft^.OnClick := DirectionKeyClick;
+	HkLeft^.SetOnClick(DirectionKeyClick);
 	New(HkRight, Init(KeyRight, WinMain));
-	HkRight^.OnClick := DirectionKeyClick;
+	HkRight^.SetOnClick(DirectionKeyClick);
 
 	{Size dialog window and controls}
 	New(WinSetSize, Init(0, 0, nil));
@@ -1071,6 +1066,7 @@ begin
 		AddHotkey(KeyAltC);
 		AddHotkey(KeyEscape);
 		SetSize(210, SizeRetain);
+		SetOnClick(BtnCancelClick)
 	End;
 
 
