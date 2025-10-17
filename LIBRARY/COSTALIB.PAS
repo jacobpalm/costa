@@ -463,8 +463,10 @@ end;
 
 procedure TUIObject.SetPos(X, Y: Integer);
 begin
-	Left := X;
-	Top := Y;
+	if X <> SizeRetain then
+		Left := X;
+	if Y <> SizeRetain then
+		Top := Y;
 end;
 
 procedure TUIObject.GetPos(var X, Y: Integer; Absolute: Boolean);
@@ -1022,9 +1024,9 @@ begin
 		Bar(X1, Y1, X2, Y2);
 	end;
 
-	DrawChildren;
-
 	TUIObject.Draw;
+
+	DrawChildren;
 end;
 
 procedure TWindow.Run;
@@ -1033,13 +1035,14 @@ var
 begin
 	Self.DoClose := False;
 
+	{OnRun can be used for initialization code before the window is drawn}
+	if Assigned(OnRun) then
+		OnRun(@Self);
+
 	{Draw window and all objects in the window}
 	Mouse.Hide;
 	Self.Draw;
 	Mouse.Show;
-
-	if Assigned(OnRun) then
-		OnRun(@Self);
 
 	while not Self.DoClose and Assigned(Objects) do
 	begin
