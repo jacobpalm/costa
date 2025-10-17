@@ -99,6 +99,7 @@ begin
 		Close(F);
 		PutImage(X, Y, IconPointer^, CopyPut);
 		FreeMem(IconPointer, Size);
+		IconPointer := nil;
 	end;
 
 	if IconError then

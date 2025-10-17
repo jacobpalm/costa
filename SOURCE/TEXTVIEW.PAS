@@ -139,6 +139,7 @@ begin
 
 	{Free the memory allocated for the array itself}
 	FreeMem(Lines, Capacity * SizeOf(PLine));
+	Lines := nil;
 
 	Capacity := 0;
 	LineCount := 0;

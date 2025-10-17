@@ -3,10 +3,11 @@ unit UIMINEFL;
 interface
 
 uses
-	Costalib, MsgDlg, Graph;
+	Costalib, UILabel, Graph;
 
 type
 	TSound         = (SNew, SInvalid, SWin, SLoose, SClear, SFlag);
+	TDirection     = (DUp, DDown, DLeft, DRight, DShow, DHide);
 
 	TMinefieldSize = (SSmall, SMedium, SLarge, SUltra);
 	TMineGameState = (GNew, GPlaying, GPaused, GWon, GLost);
@@ -23,6 +24,7 @@ type
 
 			procedure     NewGame;
 			procedure     PauseGame;
+			procedure     ResumeGame;
 			procedure     Cheat;
 
 			procedure     SetFieldSize(Size: TMinefieldSize);
@@ -47,16 +49,16 @@ type
 
 			IndicatorRow,
 			IndicatorCol: byte;    {Keyboard indicator position}
-			IndicatorOn:  boolean; {Is keyboard indicator shown?}
 
 			StartTime:    real;    {Time when game was started}
+			PauseTime:    real;    {Time when game was paused}
 			SoundOn:      boolean; {Is sound enabled?}
 			GameState:    TMineGameState;
-
+			
 			function      GetNeighborCount(Row, Col: byte): byte;
 			procedure     ClearCell(Row, Col: byte);
 			procedure     ClickCell(Row, Col: byte; MouseButton: TMouseButton);
-			procedure     DirectionKeyClick(Sender: PUIObject);
+			procedure     MoveIndicator(Direction: TDirection);
 			procedure     DrawCell(Row, Col: byte);
 			procedure     HelpFirstMove(Row, Col: byte);
 			procedure     PlaySound(SoundType: TSound);
@@ -66,8 +68,7 @@ type
 implementation
 
 const
-	MSG_PAUSE_TITLE   = 'Game paused.';
-	MSG_PAUSE_TEXT    = 'Click OK or press Enter to resume game.';
+	MSG_PAUSE  = 'Game paused';
 
 	CellSize   = 16; {Size of each clickable field in pixels}
 
@@ -76,17 +77,18 @@ begin
 	TUIObject.Init;
 	SetFieldSize(SMedium);
 	SetParent(Parent);
-	Mines     := 0;
 	Cleared   := 0;
 	Flagged   := 0;
 	SoundOn   := true;
 	GameState := GNew;
 	StartTime := 0;
+	PauseTime := 0;
+
+	FillChar(Cell, SizeOf(Cell), 0);
 	
 	{Center keyboard indicator and turn it off by default}
 	IndicatorRow := Rows div 2;
 	IndicatorCol := Cols div 2;
-	IndicatorOn  := false;
 end;
 
 procedure TMineField.Draw;
@@ -243,7 +245,7 @@ begin
 	end
 	else if FSelected in Cell[Row, Col] then
 	begin
-		{UnFCleared, not FFlagged, not FExploded, but FSelected with keyboard}
+		{Uncleared, not FFlagged, not FExploded, but FSelected with keyboard}
 		SetFillStyle(SolidFill, White);
 		Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
 	end
@@ -260,74 +262,103 @@ end;
 
 procedure TMineField.CheckEvent;
 var
-	FieldRow, FieldCol: byte;
+	R, C: byte;
 	X1, Y1: integer;
 	MouseButton: TMouseButton;
+	KeyPressed: boolean;
 begin
 	{Don't check for events if object is disabled or hidden}
 	if not GetState(SEnabled) or GetState(SHidden) then
 		exit;
 	
-	{If the game has been won or lost, ignore further input}
-	if GameState in [GWon, GLost] then
-	begin
-		PlaySound(SInvalid);
+	{If the game has been paused, won or lost, ignore input events}
+	if GameState in [GPaused, GWon, GLost] then
 		exit;
+	
+	{Check for mouse click}
+	if IsMouseOver and (Mouse.Clicked <> MbNone) then
+	begin
+		{Capture mouse state}
+		MouseButton := Mouse.Clicked;
+		Mouse.Poll;
+
+		{Since mouse was clicked, hide the keyboard indicator if visible}
+		MoveIndicator(DHide);
+
+		{Calculate mouse position in field, then convert to cell coordinates}
+		GetPos(X1, Y1, True);
+		C := (Mouse.X - X1) div CellSize;
+		R := (Mouse.Y - Y1) div CellSize;
+
+		{Play field is one pixel too wide for calculation above, dirty fix
+		for this to prevent out of bounds clicks}
+		if C = Cols then
+			Dec(C);
+		if R = Rows then
+			Dec(R);
+
+		ClickCell(R, C, MouseButton);
+
+		{Prevent sound from running wild if mouse is held down}
+		repeat; until Mouse.Clicked = MbNone;
+
+		{Trigger OnClick event, if assigned}
+		Self.Click;
 	end;
 
-	{If no mouse button is clicked, or mouse is not over the object, then no event has been triggered}
-	If (Mouse.Clicked = MbNone) or (not IsMouseOver) then
+	{Check for keyboard input}
+	if Length(HotkeyInput) = 0 then
 		exit;
-	
-	{Capture mouse state}
-	MouseButton := Mouse.Clicked;
-	Mouse.Poll;
 
-	{Keyboard handling}
-	{if HotkeyInput = HkEnter then
-		ClickCell(IndicatorRow, IndicatorCol, MbLeft);
-	if HotkeyInput = HkSpace then
-		ClickCell(IndicatorRow, IndicatorCol, MbRight);
-	if (HotkeyInput = HkEnter) or (HotkeyInput = HkSpace) then
+	KeyPressed := false;	
+	if HotkeyInput = KeyUp then
 	begin
-		HotkeyInput := nil;
-		DirectionKeyClick(HkEnter);
-		ClearInputBuffer;
-		exit;
-	end;}
-
-	{Mouse handling}
-
-	{Calculate which cell was clicked}
-	GetPos(X1, Y1, True);
-	{Calculate mouse position in field, then convert to cell coordinates}
-	FieldCol := (Mouse.X - X1) div CellSize;
-	FieldRow := (Mouse.Y - Y1) div CellSize;
-
-	{Play field is one pixel too wide for calculation above, dirty fix
-	 for this to prevent out of bounds clicks}
-	if FieldCol = Cols then
-		Dec(FieldCol);
-	if FieldRow = Rows then
-		Dec(FieldRow);
-
-	{If keyboard indicator is on, hide it since mouse was used}
-	if IndicatorOn then
-		DirectionKeyClick(nil);
+		KeyPressed := true;
+		MoveIndicator(DUp);
+	end;
+	if HotkeyInput = KeyDown then
+	begin
+		KeyPressed := true;
+		MoveIndicator(DDown);
+	end;
+	if HotkeyInput = KeyLeft then
+	begin
+		KeyPressed := true;
+		MoveIndicator(DLeft);
+	end;
+	if HotkeyInput = KeyRight then
+	begin
+		KeyPressed := true;
+		MoveIndicator(DRight);
+	end;
 	
-	ClickCell(FieldRow, FieldCol, MouseButton);
-	IndicatorRow := FieldRow;
-	IndicatorCol := FieldCol;
+	{Enter to clear a cell, Space to toggle flag}
+	if HotkeyInput = KeyEnter then
+	begin
+		KeyPressed := true;
+		ClickCell(IndicatorRow, IndicatorCol, MbLeft);
+		MoveIndicator(DShow);
+	end;
+	if HotkeyInput = KeySpace then
+	begin
+		KeyPressed := true;
+		ClickCell(IndicatorRow, IndicatorCol, MbRight);
+		MoveIndicator(DShow);
+	end;
+	
+	if KeyPressed then
+	begin
+		{If a key was pressed, clear it so other objects won't catch it}
+		HotkeyInput := '';
 
-	{Prevent sound from running wild if mouse/key is held down}
-	ClearInputBuffer;
+		{Trigger OnClick event, if assigned}
+		Self.Click;
+	end;
 end;
 
 procedure TMinefield.PauseGame;
 var
-	R, C: byte;
-	X1, Y1, X2, Y2: integer;
-	PauseTime: real;
+	X1, Y1, X2, Y2, W, H: integer;
 begin
 	{If game not playing, ignore pause request}
 	if GameState <> GPlaying then
@@ -336,19 +367,35 @@ begin
 	PauseTime := Timer;
 
 	GetPos(X1, Y1, True);
-	GetSize(X2, Y2);
-	Inc(X2, X1);
-	Inc(Y2, Y1);
+	GetSize(W, H);
+	X2 := X1 + W;
+	Y2 := Y1 + H;
 	
-	{Clear screen - no peeking at field while timer is stopped!}
+	{Clear field - no peeking at field while timer is stopped!}
 	Mouse.Hide;
 	SetFillStyle(SolidFill, LightGray);
 	Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
+
+	{Center pause text in field}
+	X1 := X1 + ((W - PrintW(MSG_PAUSE)) div 2);
+	Y1 := Y1 + ((H - PrintH(MSG_PAUSE)) div 2);
+	Print(MSG_PAUSE, X1, Y1, Black);
 	Mouse.Show;
 
-	MsgBox(MSG_PAUSE_TITLE, MSG_PAUSE_TEXT, MsgInfo);
+	GameState := GPaused;
+	exit;
+end;
 
-	{Redraw field and status}
+procedure TMineField.ResumeGame;
+var
+	R, C: byte;
+	X1, Y1, X2, Y2: integer;
+begin
+	{Can't resume if not paused}
+	if GameState <> GPaused then
+		exit;
+
+	{Redraw field, which was hidden on pause}
 	Mouse.Hide;
 	Draw;
 	for R := 0 to Rows - 1 do
@@ -360,8 +407,10 @@ begin
 	end;
 	Mouse.Show;
 
-	if StartTime <> 0 then
-		StartTime := StartTime + (Timer - PauseTime);
+	GameState := GPlaying;
+
+	{Adjust start time to account for paused duration}
+	StartTime := StartTime + (Timer - PauseTime);
 end;
 
 procedure TMinefield.SetSound(On: boolean);
@@ -423,14 +472,12 @@ begin
 	Mouse.Show;
 end;
 
-procedure TMinefield.DirectionKeyClick(Sender: PUIObject);
+procedure TMinefield.MoveIndicator(Direction: TDirection);
 begin
 	if not (GameState in [GNew, GPlaying]) then
 		exit;
 
-	IndicatorOn := true;
-
-	{Hide current indicator before moving}
+	{Hide current indicator}
 	if FSelected in Cell[IndicatorRow, IndicatorCol] then
 	begin
 		Exclude(Cell[IndicatorRow, IndicatorCol], FSelected);
@@ -439,21 +486,28 @@ begin
 		Mouse.Show;
 	end;
 
-	{If an arrow key was pressed, move the indicator in that direction.
-	 If Sender is nil, it means we are just hiding the indicator. Any other
-	 value in Sender will make the indicator appear at the current position.}
-	{if (PHotkey(Sender) = HkUp) and (IndicatorRow > 0) then
-		Dec(IndicatorRow)
-	else if (PHotkey(Sender) = HkDown) and (IndicatorRow < Rows - 1) then
-		Inc(IndicatorRow)
-	else if (PHotkey(Sender) = HkLeft) and (IndicatorCol > 0) then
-		Dec(IndicatorCol)
-	else if (PHotkey(Sender) = HkRight) and (IndicatorCol < Cols - 1) then
-		Inc(IndicatorCol)
-	else if Sender = nil then
-		exit;}
+	{If direction is DHide, just exit now as we've already hidden the indicator}
+	if Direction = DHide then
+		exit;
 
-	{Add new indicator and draw it}
+	case Direction of
+		DUp:
+			if IndicatorRow > 0 then
+				Dec(IndicatorRow);
+		DDown:
+			if IndicatorRow < Rows - 1 then
+				Inc(IndicatorRow);
+		DLeft:
+			if IndicatorCol > 0 then
+				Dec(IndicatorCol);
+		DRight:
+			if IndicatorCol < Cols - 1 then
+				Inc(IndicatorCol);
+	end;
+
+	{We don't need to handle DSHow, as the indicator position is already set}
+
+	{Set new indicator and draw it}
 	Include(Cell[IndicatorRow, IndicatorCol], FSelected);
 	Mouse.Hide;
 	DrawCell(IndicatorRow, IndicatorCol);
@@ -462,28 +516,33 @@ end;
 
 procedure TMineField.NewGame;
 var
-	R, C, MinePlace: byte;
+	R, C, MinesPlaced: byte;
 begin
 	{Clear mine array}	
 	FillChar(Cell, SizeOf(Cell), 0);
-	RemoveState(SHidden);
-
+		
 	{Randomly place mines}
 	Randomize;
-	MinePlace := 0;
+	MinesPlaced := 0;
 	repeat
 		R := Random(Rows);
 		C := Random(Cols);
 		if not (FMined in Cell[R, C]) then
 		begin
 			Include(Cell[R, C], FMined);
-			Inc(MinePlace);
+			Inc(MinesPlaced);
 		end;
-	until MinePlace = Mines;
+	until MinesPlaced = Mines;
+
+	{Draw the field}
+	Draw;
+
+	{Don't play a new game sound if we were already in a new game, to avoid delay
+	 while starting the first game on app launch}
+	if GameState <> GNew then
+		PlaySound(SNew);
 
 	{Reset game state}
-	Draw;
-	PlaySound(SNew);
 	GameState := GNew;
 	Cleared := 0;
 	Flagged := 0;
@@ -492,7 +551,6 @@ begin
 	{Center keyboard indicator and turn it off by default}
 	IndicatorRow := Rows div 2;
 	IndicatorCol := Cols div 2;
-	IndicatorOn  := false;
 end;
 
 procedure TMinefield.WinGame;
@@ -522,21 +580,20 @@ end;
 function TMinefield.GetNeighborCount(Row, Col: byte): byte;
 var
 	Neighbors: byte;
-	CheckRow, CheckCol: byte;
+	R, C: Integer;
 begin
 	Neighbors := 0;
-	for CheckRow := Row - 1 to Row + 1 do
+	for R := Row - 1 to Row + 1 do
 	begin
-		for CheckCol := Col - 1 to Col + 1 do
+		for C := Col - 1 to Col + 1 do
 		begin
+			{Skip out of bounds cells}
+			if (R < 0) or (R > Rows - 1) or
+			   (C < 0) or (C > Cols - 1) then
+				continue;
 
-			if (CheckRow >= 0) and (CheckCol >= 0) and
-			   (CheckRow < Rows) and (CheckCol < Cols) then
-			begin
-				if FMined in Cell[CheckRow, CheckCol] then
-					Inc(Neighbors);
-			end;
-
+			if FMined in Cell[R, C] then
+				Inc(Neighbors);
 		end;
 	end;
 
@@ -557,7 +614,7 @@ type
 
 var
 	Stack: PNode;
-	NeighborRow, NeighborCol: byte;
+	NeighborRow, NeighborCol: integer;
 
 	{Help functions for stack handling}
 	procedure Push(Row, Col: byte);
@@ -629,7 +686,26 @@ begin
 end;
 
 procedure TMinefield.ClickCell(Row, Col: byte; MouseButton: TMouseButton);
+var
+	IndicatorOn: boolean;
 begin
+	{Sanity check}
+	if (Row < 0) or (Row >= Rows) or
+	   (Col < 0) or (Col >= Cols) then
+		exit;
+	
+	{Move keyboard indicator if needed}
+	if (IndicatorRow <> Row) or (IndicatorCol <> Col) then
+	begin
+		IndicatorOn := FSelected in Cell[IndicatorRow, IndicatorCol];
+		if IndicatorOn then
+			MoveIndicator(DHide);
+		IndicatorRow := Row;
+		IndicatorCol := Col;
+
+		if IndicatorOn then
+			MoveIndicator(DShow);
+	end;
 
 	if FCleared in Cell[Row, Col] then
 	begin
@@ -637,12 +713,14 @@ begin
 		exit;
 	end;
 
-	if Cleared = 0 then
+	{If first move, make sure there isn't a mine under or immediately next to cursor
+	 and start timer}
+	if GameState = GNew then
 	begin
-		StartTime := Timer;
-
-		{If first move, make sure there are no mines where there was clicked}
 		HelpFirstMove(Row, Col);
+
+		GameState := GPlaying;
+		StartTime := Timer;
 	end;
 
 	case MouseButton of
@@ -680,17 +758,19 @@ begin
 			Mouse.Hide;
 			ClearCell(Row, Col);
 			Mouse.Hide;
+
+			{Check for win condition}
 			if Cleared = (Rows * Cols) - Mines then
 				WinGame
 			else
 				PlaySound(SClear);
 			Mouse.Show;
+
 		end;
 			
 		MbRight:
 		begin
-
-			{If right-clicked a cell, flag it}
+			{If right-clicked a cell, flag it if it isn't already}
 			if not (FFlagged in Cell[Row, Col]) then
 			begin
 				Include(Cell[Row, Col], FFlagged);
@@ -698,7 +778,7 @@ begin
 			end
 			else
 			begin
-				{If already FFlagged, unflag}
+				{If already FFlagged, unflag it}
 				Exclude(Cell[Row, Col], FFlagged);
 				Dec(Flagged);
 			end;
@@ -713,40 +793,40 @@ end;
 
 procedure TMinefield.HelpFirstMove(Row, Col: byte);
 var
-	CheckRow, CheckCol, MinesMoved, MinePlace: byte;
+	R, C, MinesMoved, MinesPlaced: byte;
 begin
 	{Called on first click in field. Checks clicked and all adjacent cells, and
 	 moves any mines away from them to prevent loosing right away.}
 	MinesMoved := 0;
-	MinePlace := 0;
+	MinesPlaced := 0;
 	repeat
 		if MinesMoved <> 0 then
 		begin
 			{Mines were moved, randomly place them elsewhere}
 			Randomize;
 			repeat
-				CheckRow := Random(Rows);
-				CheckCol := Random(Cols);
-				if not (FMined in Cell[CheckRow, CheckCol]) then
+				R := Random(Rows);
+				C := Random(Cols);
+				if not (FMined in Cell[R, C]) then
 				begin
-					Include(Cell[CheckRow, CheckCol], FMined);
-					Inc(MinePlace);
+					Include(Cell[R, C], FMined);
+					Inc(MinesPlaced);
 				end;
-			until MinePlace = MinesMoved;
-			MinePlace := 0;
+			until MinesPlaced = MinesMoved;
+			MinesPlaced := 0;
 			MinesMoved := 0;
 		end;
 
-		for CheckRow := Row - 1 to Row + 1 do
+		for R := Row - 1 to Row + 1 do
 		begin
-			for CheckCol := Col - 1 to Col + 1 do
+			for C := Col - 1 to Col + 1 do
 			begin
-				if (CheckRow >= 0) and (CheckCol >= 0) and
-				   (CheckRow < Rows) and (CheckCol < Cols) then
+				if (R >= 0) and (C >= 0) and
+				   (R < Rows) and (C < Cols) then
 				begin
-					if FMined in Cell[CheckRow, CheckCol] then
+					if FMined in Cell[R, C] then
 					begin
-						Exclude(Cell[CheckRow, CheckCol], FMined);
+						Exclude(Cell[R, C], FMined);
 						Inc(MinesMoved);
 					end;
 				end;
@@ -792,7 +872,6 @@ begin
 	
 	{Set size of minefield object on screen as well, and center it on parent}
 	SetSize(PixelW, PixelH);
-	SetPos(0, 180 - (PixelW div 2));
 	Center(OrBoth);
 end;
 

@@ -550,12 +550,14 @@ begin
 		{The file could not be opened for writing, show an error}
 		MsgBox(MSG_SAVE_ERROR_TITLE, MSG_SAVE_ERROR_TEXT + Filename, MsgError);
 		FreeMem(p, Size);
+		p := nil;
 		exit;
 	end;
 	{Output the icon data, p^, to the file}
 	BlockWrite(F, p^, Size);
 	Close(F);
 	FreeMem(p, Size);
+	p := nil;
 
 	{If save was successful, update the icon file name and mark it as not changed}
 	IconFileName := Filename;

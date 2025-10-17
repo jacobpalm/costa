@@ -409,9 +409,6 @@ begin
 	until FileSelectDone;
 
 	FileSelect := ReturnedFile;
-	
-	{Restore background}
-	WinFileSelect.RestoreBackdrop;
 
 	{$I-}
 	ChDir(OriginalPath); {Restore original path}

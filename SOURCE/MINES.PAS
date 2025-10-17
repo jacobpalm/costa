@@ -1,7 +1,7 @@
 program Minesweeper;
 
 uses
-	CostaLib, UIMineFl, UIButton, UILabel, AboutDlg, Graph, Crt;
+	CostaLib, UIMineFl, UIButton, UILabel, UITimer, AboutDlg, Graph, Crt;
 
 const
 	AppName           = 'Minesweeper';
@@ -16,10 +16,10 @@ const
 	CAP_ABOUT         = #127 + 'About...';
 	CAP_EXIT          = 'E' + #127 + 'xit';
 	CAP_CANCEL        = #127 + 'Cancel';
-	CAP_9X9           = #127 + '9x9';
-	CAP_16X16         = #127 + '16x16';
-	CAP_22X18         = #127 + '22x18';
-	CAP_39X18         = #127 + '39x18';
+	CAP_SMALL         = #127 + '9x9';
+	CAP_MEDIUM        = #127 + '16x16';
+	CAP_LARGE         = #127 + '22x18';
+	CAP_ULTRA         = #127 + '39x18';
 
 	MSG_GAME_OVER     = 'Kaboom! Game over.';
 	MSG_FLAGGED_COUNT = 'Flagged mines:';
@@ -32,84 +32,97 @@ var
 	App: PApplication;
 
 	{Main window}
-	WinMain: PWindow;
-	MineField: PMinefield;
-	BtnNew, BtnSetSize, BtnSound, BtnPause, BtnAbout, BtnExit: PButton;
-	HkCheat: PHotkey;
+	WinMain:     PWindow;
+	MineField:   PMinefield;
+	BtnNew,
+	BtnSetSize,
+	BtnSound,
+	BtnPause,
+	BtnAbout,
+	BtnExit:     PButton;
+	HkCheat:     PHotkey;
+	TiStatus:    PTimer;
+	LblStatus,
+	LblTime,
+	LblSound:    PLabel;
 
 	{Size dialog window}
-	WinSetSize: PWindow;
-	BtnSize: array[0..3] of PButton;
-	BtnCancel: PButton;
+	WinSetSize:  PWindow;
+	BtnSize:     array[0..3] of PButton;
+	BtnCancel:   PButton;
+
+	Flagged:     integer;
+	SizeChanged: boolean; {Size dialog changed field size}
 
 
-procedure PrintStatus(MineCountOnly: boolean; StatusMessage: string);
+procedure UpdateStatus(Msg: string);
 var
 	MessageText: String;
 	FlaggedStr, MineCountStr: string;
 begin
-	
-	Str(Minefield^.GetFlagged, FlaggedStr);
-	Str(Minefield^.GetMineCount, MineCountStr);
-	SetFillStyle(SolidFill, Thm.Win);
-
-	{Only hide mouse if it's near the timer, to avoid cursor flicker on old PCs}
+	{Only hide mouse if it's near the text, to avoid cursor flicker on old PCs}
 	Mouse.Poll;
 	if Mouse.Y > 310 then
 		Mouse.Hide;
-	
-	if MineCountOnly then
+
+	if Length(Msg) = 0 then
 	begin
-		Bar(106, 330, 184, 343);
-		MessageText := FlaggedStr + '/' + MineCountStr;
-		Print(MessageText, 110, 332, Thm.WinText);
-		Mouse.Show;
-		exit;
+		Str(Minefield^.GetFlagged, FlaggedStr);
+		Str(Minefield^.GetMineCount, MineCountStr);
+		Msg := MSG_FLAGGED_COUNT + ' ' + FlaggedStr + '/' + MineCountStr;
 	end;
-
-	{Clear both sides of timer}
-	Bar(6, 330, 277, 343);
-	Bar(361, 330, 632, 343);
-
-	if Length(StatusMessage) > 0 then
-		MessageText := StatusMessage
-	else
-		MessageText := MSG_FLAGGED_COUNT + ' ' + FlaggedStr + '/' + MineCountStr;
 	
-	Print(MessageText, 8, 332, Thm.WinText);
+	LblStatus^.SetCaption(Msg);
+	LblStatus^.Draw;
 
-	MessageText := MSG_SOUND + ' ';
-	if MineField^.GetSound then
-		MessageText := MessageText + MSG_ON
-	else
-		MessageText := MessageText + MSG_OFF;
-	
-	Print(MessageText, (630 - PrintW(MessageText)), 332, Thm.WinText);
 	Mouse.Show;
 end;
 
-procedure PrintTime;
+
+procedure DrawBackground;
 var
-	MessageText: String;
-	Hours, Minutes, Seconds: byte;
-	TempStr: string;
+	X: integer;
 begin
-	{Only draw time if we are still playing}
-	{if GameOver or (MineField^.StartTime = 0) then
-		exit;}
+	{Background}
+	SetFillStyle(SolidFill, DarkGray);
+	Bar(0, 29, 639, 349);
 
-	{Only hide mouse if it's near the timer, to avoid cursor flicker on old PCs}
-	{Mouse.Poll;
-	if Mouse.Y > 310 then
-		Mouse.Hide;}
-
-	{Clear timer only}
-	{SetFillStyle(SolidFill, Thm.Win);
-	{Bar(278, 330, 360, 343);}
-
-	{if MineField^.StartTime <> 0 then
+	{Dot pattern}
+	SetLineStyle(UserBitLn, $1111, 1);
+	SetColor(LightGray);
+	for X := 0 to 639 do
 	begin
-		Seconds := Trunc(Timer - MineField^.StartTime);
+		if X mod 6 = 0 then
+			Line(X, 29, X, 349);
+	end;
+	for X := 3 to 639 do
+	begin
+		if (X - 3) mod 6 = 0 then
+			Line(X, 31, X, 349);
+	end;
+	SetLineStyle(SolidLn, 0, 1);
+
+	{Status area at bottom of screen}
+	SetFillStyle(SolidFill, LightGray);
+	Bar(6, 330, 632, 343);
+	LblSound^.Draw;
+end;
+
+procedure TiStatusClick(Sender: PUIObject); far;
+var
+	MessageText, TempStr: string;
+	ElapsedTime: real;
+	Hours, Minutes, Seconds: byte;
+begin
+	if MineField^.GetGameState = GPaused then
+		exit;	
+
+	{Triggered once per second while game is active to draw timer at bottom of screen}
+	ElapsedTime := MineField^.GetElapsedTime;
+	if ElapsedTime <> 0 then
+	begin
+		{Calculate hours, minutes, seconds from elapsed time}
+		Seconds := Trunc(ElapsedTime);
 		Hours := Seconds div 3600;
 		Minutes := (Seconds - (3600 * Hours)) div 60;
 		Seconds := (Seconds - (3600 * Hours)) - (Minutes * 60);
@@ -129,40 +142,49 @@ begin
 			MessageText := MessageText + '0';
 		Str(Seconds, TempStr);
 		MessageText := MessageText + TempStr;
+	end
+	else
+		MessageText := '00:00:00';
 
-		Print(MessageText, (640 - PrintW(MessageText)) div 2, 332, Thm.WinText);
-	end;}
-
+	LblTime^.SetCaption(MessageText);
+	{Hide mouse if it's near the timer, to avoid cursor flicker on old PCs}
+	Mouse.Poll;
+	if Mouse.Y > 310 then
+		Mouse.Hide;
+	LblTime^.Draw;
 	Mouse.Show;
-end;
-
-procedure DrawBackground;
-var
-	X: integer;
-begin
-	SetFillStyle(SolidFill, DarkGray);
-	Bar(0, 29, 639, 349);
-
-	SetLineStyle(UserBitLn, $1111, 1);
-	SetColor(LightGray);
-	for X := 0 to 639 do
-	begin
-		if X mod 6 = 0 then
-			Line(X, 29, X, 349);
-	end;
-
-	for X := 3 to 639 do
-	begin
-		if (X - 3) mod 6 = 0 then
-			Line(X, 31, X, 349);
-	end;
-	SetLineStyle(SolidLn, 0, 1);	
 end;
 
 procedure MineFieldClick(Sender: PUIObject); far;
 begin
-	{Check if won or lost and update status}
-	{DEBUG}
+	if not TiStatus^.IsRunning then
+		TiStatus^.Start;
+	
+	{If flagged count changed, update status}
+	if Flagged <> MineField^.GetFlagged then
+	begin
+		Flagged := MineField^.GetFlagged;
+		UpdateStatus('');
+	end;
+
+	if (MineField^.GetGameState = GWon) then
+	begin
+		{Player saved the day, print win message and stop timer}
+		UpdateStatus(MSG_WIN);
+		TiStatus^.Stop;
+	end
+	else if (MineField^.GetGameState = GLost) then
+	begin
+		{Player blew up}
+		UpdateStatus(MSG_GAME_OVER);
+		TiStatus^.Stop;
+	end
+	else if (MineField^.GetGameState in [GNew, GPlaying]) and not TiStatus^.IsRunning then
+	begin
+		{Game is active but timer not running, start it}
+		TiStatus^.Start;
+		TiStatusClick(nil);  {Update time display immediately}
+	end;
 end;
 
 {Size dialog - field size buttons}
@@ -177,9 +199,8 @@ begin
 	if PButton(Sender) = BtnSize[3] then
 		MineField^.SetFieldSize(SUltra);
 	
+	SizeChanged := True;
 	WinSetSize^.Close;
-	DrawBackground;
-	MineField^.NewGame;
 end;
 
 {Size dialog - cancel button}
@@ -190,30 +211,51 @@ end;
 
 procedure BtnNewClick(Sender: PUIObject); far;
 begin
-	DrawBackground;
+	Mouse.Hide;
 	MineField^.NewGame;
-	PrintStatus(False, '');
+	Mouse.Show;
+	UpdateStatus('');
+	TiStatusClick(nil);
 end;
 
 procedure BtnPauseClick(Sender: PUIObject); far;
-var
-	Row, Col: byte;
-	PauseTime: real;
 begin
-	MineField^.PauseGame;
-	PrintStatus(False, '');
-	PrintTime;
+	if MineField^.GetGameState = GPlaying then
+		MineField^.PauseGame
+	else if MineField^.GetGameState = GPaused then
+		MineField^.ResumeGame;
 end;
 
 procedure BtnSetSizeClick(Sender: PUIObject); far;
 begin
 	WinSetSize^.Run;
+
+	{If size was changed, start new game with new size}
+	if SizeChanged then
+	begin
+		SizeChanged := False;
+		Mouse.Hide;
+		DrawBackground;
+		MineField^.NewGame;
+		Mouse.Show;
+		UpdateStatus('');
+		TiStatusClick(nil); {Update time display immediately}
+	end;
 end;
 
 procedure BtnSoundClick(Sender: PUIObject); far;
 begin
 	MineField^.SetSound(not MineField^.GetSound);
-	PrintStatus(False, '');
+	
+	{Update status display}
+	if MineField^.GetSound then
+		LblSound^.SetCaption(MSG_SOUND + ' ' + MSG_ON)
+	else
+		LblSound^.SetCaption(MSG_SOUND + ' ' + MSG_OFF);
+	
+	Mouse.Hide;
+	LblSound^.Draw;
+	Mouse.Show;
 end;
 
 procedure BtnAboutClick(Sender: PUIObject); far;
@@ -231,16 +273,17 @@ begin
 	MineField^.Cheat;			
 end;
 
-procedure WinMainRun(Sender: PUIObject); far;
-begin
-	{Default settings}
-	MineField^.NewGame;
-	PrintStatus(False, '');
-end;
-
 procedure WinMainDraw(Sender: PUIObject); far;
 begin
 	DrawBackground;
+	
+	{Main window is only drawn on launch, so we'll use this to trigger a new game as well}
+	MineField^.RemoveState(SHidden);
+	MineField^.NewGame;
+
+	{Draw status at bottom of screen}
+	UpdateStatus('');
+	TiStatusClick(nil);
 end;
 
 {Size dialog - custom icons on buttons with text below}
@@ -252,20 +295,20 @@ begin
 
 	BtnSize[0]^.GetPos(X, Y, True);
 	BtnSize[0]^.GetSize(W, H); {Only need to get once, all buttons are same size}
-	TextOffset := ((W - PrintW(CAP_9X9)) div 2);
-	Print(CAP_9X9, X + TextOffset, Y + 79, Thm.WinText);
+	TextOffset := ((W - PrintW(CAP_SMALL)) div 2);
+	Print(CAP_SMALL, X + TextOffset, Y + 79, Thm.WinText);
 
 	BtnSize[1]^.GetPos(X, Y, True);
-	TextOffset := ((W - PrintW(CAP_16X16)) div 2);
-	Print(CAP_16X16, X + TextOffset, Y + 79, Thm.WinText);
+	TextOffset := ((W - PrintW(CAP_MEDIUM)) div 2);
+	Print(CAP_MEDIUM, X + TextOffset, Y + 79, Thm.WinText);
 
 	BtnSize[2]^.GetPos(X, Y, True);
-	TextOffset := ((W - PrintW(CAP_22X18)) div 2);
-	Print(CAP_22X18, X + TextOffset, Y + 79, Thm.WinText);
+	TextOffset := ((W - PrintW(CAP_LARGE)) div 2);
+	Print(CAP_LARGE, X + TextOffset, Y + 79, Thm.WinText);
 
 	BtnSize[3]^.GetPos(X, Y, True);
-	TextOffset := ((W- PrintW(CAP_39X18)) div 2);
-	Print(CAP_39X18, X + TextOffset, Y + 79, Thm.WinText);
+	TextOffset := ((W- PrintW(CAP_ULTRA)) div 2);
+	Print(CAP_ULTRA, X + TextOffset, Y + 79, Thm.WinText);
 	
 	SetColor(Thm.WinText);
 	{9x9}
@@ -311,8 +354,8 @@ begin
 	with WinMain^ do
 	begin
 		SetSize(GetMaxX, GetMaxY);
+		SetOnDraw(WinMainDraw);
 		Border := False;
-		OnRun := WinMainRun;
 	end;
 
 	New(BtnNew, Init(3, 2, CAP_NEW_GAME, WinMain));
@@ -352,16 +395,50 @@ begin
 		AddHotKey(KeyAltX);
 		AddHotKey(KeyAltF4);
 	end;
+
+	New(LblStatus, Init(8, 333, '', WinMain));
+	with LblStatus^ do
+	begin
+		RemoveState(STransparent);
+		SetSize(200, 8);
+		SetFgColor(Black);
+		SetBgColor(LightGray);
+	end;
+	New(LblTime, Init(0, 333, '', WinMain));
+	with LblTime^ do
+	begin
+		RemoveState(STransparent);
+		SetSize(64, 8);
+		Center(OrHorizontal);
+		SetFgColor(Black);
+		SetBgColor(LightGray);
+	end;
+	New(LblSound, Init(551, 333, '', WinMain));
+	with LblSound^ do
+	begin
+		SetCaption(MSG_SOUND + ' ' + MSG_ON);
+		RemoveState(STransparent);
+		SetSize(80, 8);
+		SetFgColor(Black);
+		SetBgColor(LightGray);
+	end;
 	
 	New(MineField, Init(WinMain));
 	With MineField^ do
 	begin
-		AddState(SHidden); {Hidden until new game starts}
+		AddState(SHidden);
 		SetOnClick(MineFieldClick);
 	end;
 	
 	New(HkCheat, Init('?', WinMain));
 	HkCheat^.SetOnClick(HkCheatClick);
+
+	New(TiStatus, Init(WinMain));
+	With TiStatus^ do
+	begin
+		SetInterval(1.0);
+		SetOnClick(TiStatusClick);
+	end;
 
 	{Size dialog window and controls}
 	New(WinSetSize, Init(0, 0, nil));
@@ -414,20 +491,8 @@ begin
 		SetOnClick(BtnCancelClick)
 	End;
 
-
+	{Start application}
 	App^.OpenWindow(WinMain);
 	App^.Run;
 	App^.Exit;
-
-	{DEBUG - need a timer object to handle this}
-	{if (MineField^.StartTime <> 0) and (MineField^.TimeCompare < Timer) then
-	begin
-		PrintTime;
-		MineField^.TimeCompare := Timer + 1;
-	end;}
-
-	{DEBUG - use timer to update status when game won/lost}
-	{PrintStatus(False, MSG_WIN);
-	PrintStatus(False, MSG_GAME_OVER);
-	PrintStatus(true, '');}
 end.

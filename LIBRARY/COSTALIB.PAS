@@ -154,13 +154,14 @@ type
 			procedure   Close;
 
 			procedure   SaveBackdrop;
-			procedure   RestoreBackdrop;
 			{procedure   SetMenu(Menu: PMenu);}
 		private
-			MenuObj:    PMenu;	     {Menu bar object, if any}
-			DoClose:    Boolean;     {Set to true to close the window by exiting Run loop}
-			BackdropP:  Pointer;     {Stores background image to restore when window is closed}
-			BackdropS:  Word;        {Size of memory block used by BackdropP}
+			MenuObj:          PMenu;	       {Menu bar object, if any}
+			DoClose:          Boolean;         {Set to true to close the window by exiting Run loop}
+			PreserveBackdrop: Boolean;         {If true, backdrop is preserved when window is drawn and restored when closed}
+			BackdropP:        Pointer;         {Stores background image to restore when window is closed}
+			BackdropS:        Word;            {Size of memory block used by BackdropP}
+			procedure         RestoreBackdrop;
 	end;
 
 	{Linked list of windows, to allow multiple windows to be added to an application}
@@ -886,6 +887,7 @@ begin
 		CloseGraph;
 		Writeln('Error: Attempt to add nil object to container');
 		Halt(1);
+		{DEBUG}
 	end;
 
 	New(NewNode);
@@ -979,6 +981,7 @@ begin
 	MenuObj   := nil;
 	BackdropP := nil;
 	BackdropS := 0;
+	PreserveBackdrop := False;
 end;
 
 procedure TWindow.Draw;
@@ -988,15 +991,31 @@ begin
 	{Don't draw or trigger event if window is hidden}
 	if GetState(SHidden) then
 		exit;
-
+	
 	{Get absolute position and size of the window}
 	Self.GetPos(X1, Y1, True);
 	Self.GetSize(X2, Y2);
 	Inc(X2, X1);
 	Inc(Y2, Y1);
 
+	{If background preservation is enabled, and background hasn't been
+	 captured yet, capture it now before drawing anything}
+	if PreserveBackdrop and not Assigned(BackdropP) then
+	begin
+		{DEBUG - out of bounds check}
+		{Calculate size of memory block required to store background image}
+		BackdropS := ImageSize(X1, Y1, X2, Y2);
+
+		{Allocate memory required to store the background image}
+		GetMem(BackdropP, BackdropS);
+
+		{Capture background image}
+		GetImage(X1, Y1, X2, Y2, BackdropP^);
+	end;
+
 	if Border then
 	begin
+		{Draw the window border and interior}
 		SetFillStyle(SolidFill, Thm.Title);
 		Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 1);
 		SetFillStyle(SolidFill, Thm.Win);
@@ -1020,12 +1039,18 @@ begin
 	end
 	else
 	begin
+		{Draw window interior without border}
 		SetFillStyle(SolidFill, Thm.Win);
 		Bar(X1, Y1, X2, Y2);
 	end;
 
+	{Trigger ondraw event, allowing to draw custom background etc. before
+	 drawing child objects}
 	TUIObject.Draw;
 
+	{Make sure mouse is hidden while drawing children, as it might have been
+	 shown in OnDraw event}
+	Mouse.Hide;
 	DrawChildren;
 end;
 
@@ -1096,30 +1121,13 @@ begin
 
 	{Free memory used to store background image}
 	FreeMem(BackdropP, BackdropS);
+	BackdropP := nil;
 	BackdropS := 0;
 end;
 
 procedure TWindow.SaveBackdrop;
-var
-	X1, Y1, X2, Y2: Integer;
 begin
-	{DEBUG - out of bounds check}
-	{Get absolute position and size of the window}
-	Self.GetPos(X1, Y1, True);
-	Self.GetSize(X2, Y2);
-	Inc(X2, X1);
-	Inc(Y2, Y1);
-	
-	{Calculate size of memory block required to store background image}
-	BackdropS := ImageSize(X1, Y1, X2, Y2);
-
-	{Allocate memory required to store the background image}
-	GetMem(BackdropP, BackdropS);
-
-	{Capture background image}
-	Mouse.Hide;
-	GetImage(X1, Y1, X2, Y2, BackdropP^);
-	Mouse.Show;
+	PreserveBackdrop := True;
 end;
 
 procedure TWindow.Close;
