@@ -94,7 +94,7 @@ begin
 		Line(X1 + 8, Y1 + 11, X1 + 11, Y1 + 8);
 	end;
 	if Length(Caption) > 0 then
-		Print (Caption, X1 + 22, Y1 + 4, FgColor);
+		Print (Caption, X1 + 22, Y1 + 4, Thm.WinText);
 
 	TUIObject.Draw;
 end;

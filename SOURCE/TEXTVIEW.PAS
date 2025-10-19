@@ -27,22 +27,26 @@ const
 	MSG_END_OF_FILE      = '* end of file *';
 
 type
-	PLine = ^LineStr;
-	LineStr = String[MaxLineLength];
+	{String type for storing lines of text}
+	PLine      = ^LineStr;
+	LineStr    = String[MaxLineLength];
 
+	{Flexible array to simulate dynamic sizing}
 	PLineArray = ^LineArray;
-	LineArray = Array[1..1] of PLine; {Flexible array to simulate dynamic sizing}
+	LineArray  = Array[1..1] of PLine;
 
+	{Scrolling directions}
 	TDirection = (LineUp, LineDown, PageUp, PageDown, Top, Bottom);
 
 var
-	Lines:      PLineArray;
-	StartLine,
-	Capacity,
-	LineCount:  Integer;
+	Lines:      PLineArray;    {Array of pointers to lines of text}
+
+	StartLine,                 {Index of first line currently shown on screen}
+	Capacity,                  {Current capacity of the Lines array}
+	LineCount:  Integer;       {Number of lines currently stored in Lines array}
 	FileOpened: Boolean;
 
-	StdHeapErr: Pointer; {We'll be taking care of heap errors ourselves}
+	StdHeapErr: Pointer;       {We'll be taking care of heap errors ourselves}
 
 	App:        PApplication;
 	WinMain:    PWindow;
@@ -55,6 +59,9 @@ procedure FreeLines; forward;
 
 function CustomHeapError(Size: Word): Integer; far;
 begin
+	{Custom heap error handler to deal with out of memory situations without
+	 crashing the program. If GetMem fails, free any previously allocated
+	 lines and show an error message.}
 	if Size = 0 then
 	begin
 		CustomHeapError := 0;
@@ -75,6 +82,7 @@ procedure ShowLoading;
 var
 	BtnLoading: PButton;
 begin
+	{Show a loading indicator centered on the screen while loading a file}
 	Mouse.Hide;
 	New(BtnLoading, Init(110, 34, CAP_LOADING, nil));
 	BtnLoading^.Center(OrBoth);
@@ -85,6 +93,7 @@ end;
 
 function InitLines(InitialSize: Integer): Boolean;
 begin
+	{Initialize the lines array with a given initial capacity}
 	Capacity := InitialSize;
 	LineCount := 0;
 	HeapError := @CustomHeapError;
@@ -101,6 +110,9 @@ var
 	NewLines: PLineArray;
 	i: Integer;
 begin
+	{Resize the lines array to a new capacity, by creating a new array,
+	 copying existing lines to it, and freeing the old array.}
+
 	{Only resize if the lines array has been initialized}
 	if not Assigned(Lines) then
 	begin
@@ -133,6 +145,8 @@ procedure FreeLines;
 var
 	i: Integer;
 begin
+	{Free all allocated lines and the lines array itself}
+
 	{Dispose all lines in the array}
 	for i := 1 to LineCount do
 		Dispose(Lines^[i]);
@@ -150,6 +164,8 @@ procedure AddLine(S: String);
 var
 	NewLine: PLine;
 begin
+	{Add a new line to the lines array, resizing it if necessary}
+
 	if LineCount >= Capacity then
 	begin
 		{Reallocate space for more lines, exit if it fails}
@@ -169,15 +185,19 @@ var
 	F: Text;
 	ReadData, Truncated: String;
 begin
+	{Load a text file into the lines array, splitting long lines as necessary}
+
 	if FileName = '' then
 		Exit;
 	
+	{Check if file exists}
 	if not FileExists(FileName) then
 	begin
 		MsgBox(MSG_OPEN_ERROR_TITLE, MSG_FILE_NOT_FOUND + FileName, MsgError);
 		Exit;
 	end;
 
+	{Open the file for reading}
 	Assign(F, FileName);
 	{$I-}
 	Reset(F);
@@ -193,7 +213,7 @@ begin
 	if FileOpened then
 		FreeLines; {Free previously loaded lines}
 	 
-	{Initialize with default capacity, exit if failed} 
+	{Initialize Lines array with default capacity, exit if failed} 
 	if not InitLines(InitialCap) then
 	begin
 		FileOpened := False;
@@ -201,11 +221,12 @@ begin
 		Exit;
 	end;
 
+	{Read lines from the file}
 	while not Eof(F) do
 	begin
 		ReadLn(F, ReadData);
 
-		{Blank lines won't work for loop below, so add and continue}
+		{Blank lines won't work for loop below, so add it and skip the loop}
 		if Length(ReadData) = 0 then
 		begin
 			AddLine('');
@@ -215,7 +236,8 @@ begin
 		{Replace TAB with two spaces}
 		ReadData := Replace(ReadData, #9, '  '); 
 
-		{Add each line to the array, truncate at MaxLineLength if necessary}
+		{Add each line to the array, truncate at MaxLineLength if necessary by
+		 splitting into multiple lines}
 		while Length(ReadData) > 0 do
 		begin
 			if Length(ReadData) > MaxLineLength then
@@ -275,6 +297,7 @@ begin
 		Exit;
 	end;
 
+	{Draw MaxLinesShown lines, starting from StartLine}
 	DrawnLines := 0;
 	for i := StartLine to StartLine + MaxLinesShown do
 	begin
@@ -283,6 +306,7 @@ begin
 		{Clear line}
 		Bar(7, (PrintLineH * (i - StartLine + 1)) + 22, 633, PrintLineH * (i - StartLine + 1) + 36);
 
+		{Draw line unless we've drawn the maximum number of lines or reached the end of the file}
 		if (DrawnLines < MaxLinesShown) and (i <= LineCount) then
 			{Dereference the line pointer and print the text}
 			Print(Lines^[i]^, 9, (PrintLineH * (i - StartLine + 1)) + 24, Thm.TxtText);
@@ -294,6 +318,8 @@ procedure ScrollText(Direction: TDirection);
 var
 	PrevStartLine: Integer;
 begin
+	{Scroll the text in the given direction - doesn't draw the text, only updates StartLine}
+
 	if not FileOpened then
 		Exit;
 
@@ -359,7 +385,7 @@ end;
 
 procedure WinMainDraw(Sender: PUIObject); far;
 begin
-	{Text area}
+	{Draw text area when main window is redrawn}
 	SetFillStyle(SolidFill, Thm.Txt);
 	Bar(0, 29, GetMaxX, GetMaxY);
 end;
@@ -370,19 +396,8 @@ begin
 	LoadFile(ParamStr(1));
 end;
 
+procedure InitUI;
 begin
-	{Store default heap error handler for later restoration}
-	StdHeapErr := HeapError;
-
-	New(App, Init);
-	with App^ do
-	begin
-		Name    := AppName;
-		Version := AppVersion;
-		Author  := AppAuthor;
-		Icon    := AppIcon;
-	end;
-
 	{Main window}
 	New(WinMain, Init(0, 0, nil));
 	with WinMain^ do
@@ -442,6 +457,22 @@ begin
 	HkHome^.SetOnClick(PageScrollEvent);
 	New(HkEnd, Init(KeyEnd, WinMain));
 	HkEnd^.SetOnClick(PageScrollEvent);
+end;
+
+begin
+	{Store default heap error handler for later restoration}
+	StdHeapErr := HeapError;
+
+	New(App, Init);
+	with App^ do
+	begin
+		Name    := AppName;
+		Version := AppVersion;
+		Author  := AppAuthor;
+		Icon    := AppIcon;
+	end;
+
+	InitUI;
 
 	App^.OpenWindow(WinMain);
 	App^.Run;

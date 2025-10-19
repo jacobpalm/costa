@@ -48,6 +48,7 @@ var
 	LblStatus,
 	LblTime,
 	LblSound:    PLabel;
+	CFieldAlign: PContainer;
 
 	{Size dialog window}
 	WinSetSize:  PWindow;
@@ -74,7 +75,7 @@ begin
 		Str(Minefield^.GetMineCount, MineCountStr);
 		Msg := MSG_FLAGGED_COUNT + ' ' + FlaggedStr + '/' + MineCountStr;
 	end;
-	
+
 	LblStatus^.SetCaption(Msg);
 	LblStatus^.Draw;
 
@@ -107,7 +108,7 @@ begin
 
 	{Status area at bottom of screen}
 	SetFillStyle(SolidFill, LightGray);
-	Bar(6, 330, 632, 343);
+	Bar(7, 330, 631, 343);
 	LblSound^.Draw;
 end;
 
@@ -118,7 +119,7 @@ var
 	Hours, Minutes, Seconds: byte;
 begin
 	if MineField^.GetGameState = GPaused then
-		exit;	
+		exit;
 
 	{Triggered once per second while game is active to draw timer at bottom of screen}
 	ElapsedTime := MineField^.GetElapsedTime;
@@ -159,7 +160,7 @@ begin
 end;
 
 procedure MineFieldClick(Sender: PUIObject); far;
-begin	
+begin
 	{If flagged count changed, update status}
 	if Flagged <> MineField^.GetFlagged then
 	begin
@@ -198,7 +199,7 @@ begin
 		MineField^.SetFieldSize(SLarge);
 	if PButton(Sender) = BtnSize[3] then
 		MineField^.SetFieldSize(SUltra);
-	
+
 	SizeChanged := True;
 	WinSetSize^.Close;
 end;
@@ -265,14 +266,14 @@ var
 begin
 	{Toggle sound setting}
 	MineField^.SetSound(not MineField^.GetSound);
-	
+
 	{Update status display}
 	if MineField^.GetSound then
 		MessageText := MSG_ON
 	else
 		MessageText := MSG_OFF;
 	MessageText := MSG_SOUND + ' ' + MessageText;
-	
+
 	Mouse.Hide;
 	LblSound^.SetCaption(MessageText);
 	LblSound^.Draw;
@@ -291,13 +292,13 @@ end;
 
 procedure HkCheatClick(Sender: PUIObject); far;
 begin
-	MineField^.Cheat;			
+	MineField^.Cheat;
 end;
 
 procedure WinMainDraw(Sender: PUIObject); far;
 begin
 	DrawBackground;
-	
+
 	{Main window is only drawn on launch, so we'll use this to trigger a new game as well}
 	MineField^.RemoveState(SHidden);
 	MineField^.NewGame;
@@ -330,32 +331,32 @@ begin
 	BtnSize[3]^.GetPos(X, Y, True);
 	TextOffset := ((W- PrintW(CAP_ULTRA)) div 2);
 	Print(CAP_ULTRA, X + TextOffset, Y + 79, Thm.WinText);
-	
+
 	SetColor(Thm.WinText);
 	{9x9}
 	for X := 0 to 3 do
 		Line(252 + X * 9, 94, 252 + X * 9, 121);
 	for Y := 0 to 3 do
 		Line(252, 94 + Y * 9, 279, 94 + Y * 9);
-	
+
 	{16x16}
 	for X := 0 to 4 do
 		Line(357 + X * 9, 90, 357 + X * 9, 126);
 	for Y := 0 to 4 do
 		Line(357, 90 + Y * 9, 393, 90 + Y * 9);
-	
+
 	{22x18}
 	for X := 0 to 6 do
 		Line(238 + X * 9, 195, 238 + X * 9, 240);
 	for Y := 0 to 5 do
 		Line(238, 195 + Y * 9, 292, 195 + Y * 9);
-	
+
 	{39x18}
 	for X := 0 to 8 do
 		Line(339 + X * 9, 195, 339 + X * 9, 240);
 	for Y := 0 to 5 do
 		Line(339, 195 + Y * 9, 411, 195 + Y * 9);
-	
+
 	Mouse.Show;
 end;
 
@@ -408,7 +409,8 @@ begin
 		AddHotKey(KeyAltF4);
 	end;
 
-	New(LblStatus, Init(8, 333, '', WinMain));
+	{Status labels at bottom of screen}
+	New(LblStatus, Init(9, 333, '', WinMain));
 	with LblStatus^ do
 	begin
 		RemoveState(STransparent);
@@ -425,7 +427,7 @@ begin
 		SetFgColor(Black);
 		SetBgColor(LightGray);
 	end;
-	New(LblSound, Init(551, 333, '', WinMain));
+	New(LblSound, Init(550, 333, '', WinMain));
 	with LblSound^ do
 	begin
 		SetCaption(MSG_SOUND + ' ' + MSG_ON);
@@ -434,17 +436,27 @@ begin
 		SetFgColor(Black);
 		SetBgColor(LightGray);
 	end;
-	
-	New(MineField, Init(WinMain));
+
+	{CFieldAlign container is used solely to contaion minefield, so that minefield can be centered
+	 on its parent when resized, while taking into account the menu and status bars}
+	New(CFieldAlign, Init(0, 29, WinMain));
+	With CFieldAlign^ do
+	begin
+		SetSize(639, 301);
+	end;
+
+	New(MineField, Init(CFieldAlign));
 	With MineField^ do
 	begin
 		AddState(SHidden);
 		SetOnClick(MineFieldClick);
 	end;
-	
+
+	{Cheat hotkey (question mark) to reveal mines}
 	New(HkCheat, Init('?', WinMain));
 	HkCheat^.SetOnClick(HkCheatClick);
 
+	{Timer for updating elapsed time display}
 	New(TiStatus, Init(WinMain));
 	With TiStatus^ do
 	begin
@@ -452,7 +464,7 @@ begin
 		SetOnClick(TiStatusClick);
 	end;
 
-	{Size dialog window and controls}
+	{Size dialog window and controls therein}
 	New(WinSetSize, Init(0, 0, nil));
 	With WinSetSize^ do
 	begin
@@ -461,7 +473,7 @@ begin
 		SaveBackdrop;
 		SetOnDraw(WinSetSizeDraw);
 	end;
-	
+
 	New(BtnSize[0], Init(13, 11, '', WinSetSize));
 	With BtnSize[0]^ do
 	begin

@@ -1,6 +1,6 @@
 unit UIMINEFL;
 
-{Custom Minesweeper minefield UI object based on TUIObject from Costalib.
+{Minesweeper minefield UI object based on TUIObject from Costalib.
  Used in Costa minesweeper game only, but made as separate unit for modularity
  and seperation of application and game logic.}
 
@@ -81,8 +81,8 @@ const
 constructor TMineField.Init(Parent: PContainer);
 begin
 	TUIObject.Init;
-	SetFieldSize(SMedium);
 	SetParent(Parent);
+	SetFieldSize(SMedium);
 	Cleared   := 0;
 	Flagged   := 0;
 	SoundOn   := true;

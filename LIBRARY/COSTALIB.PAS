@@ -11,13 +11,13 @@ const
 	LibYear              = '2025';
 
 	SizeRetain           = -255; {Used to retain current width/height on object resize}
-	
+
 	ColorDefault         = 255;  {Used to set default colors on objects}
-  
-	DoubleClickDelay     = 0.5;  
+
+	DoubleClickDelay     = 0.5;
 	PrintLineH           = 12;   {Font dimensions - line height}
 	PrintCharW           = 8;    {Width of a single character}
- 
+
 	CharArrowUp:	Char = #24;  {Arrows symbols for fonts}
 	CharArrowDown:  Char = #25;
 	CharArrowRight: Char = #26;
@@ -78,7 +78,7 @@ type
 			function    GetState(S: TState): Boolean;
 			procedure   RemoveState(S: TState);
 
-			procedure   Click;	
+			procedure   Click;
 			procedure   Draw; virtual;
 
 			procedure   SetSize(W, H: Integer);
@@ -137,7 +137,7 @@ type
 		private
 			Objects:    PObjectNode; {Linked list of objects in the container}
 	end;
-	
+
 	{Window object}
 	TWindow = object(TContainer)
 		public
@@ -146,10 +146,10 @@ type
 			OnClose:    TEventProc;
 			constructor Init(X, Y: Integer; Parent: PContainer);
 			destructor  Done; virtual;
-			
+
 			procedure   CheckEvent; virtual;
 			procedure   Draw; virtual;
-			
+
 			procedure   Run;
 			procedure   Close;
 
@@ -214,6 +214,7 @@ type
 	end;
 
 	{Settings for the library, saved to disk}
+	PLibSetting = ^TLibSetting;
 	TLibSetting = record
 		DeskID:      Integer;
 		LinkCapt,
@@ -224,6 +225,7 @@ type
 	end;
 
 	{Theme colors}
+	PTheme = ^TTheme;
 	TTheme = record
 		Desk,
 		DeskText,
@@ -273,7 +275,7 @@ const
 
 	{Message strings}
 	MSG_SAVE_SETTING_ERROR_TITLE = 'Error saving settings';
-	MSG_SAVE_SETTING_ERROR_TEXT  = 'Could not write to the settings file' + #13 + 
+	MSG_SAVE_SETTING_ERROR_TEXT  = 'Could not write to the settings file' + #13 +
 	                               '%s.' + #13 +
 	                               'Verify that the path exists and isn''t read-only.';
 	MSG_GRAPHICS_ERROR           = 'Graphics error:';
@@ -326,7 +328,7 @@ begin
 
 	if not (SEnabled in State) or (Length(HotkeyInput) = 0) then
 		exit;
-	
+
 	CheckNode := Hotkey;
 	while Assigned(CheckNode) do
 	begin
@@ -380,7 +382,7 @@ var
 begin
 	if not Assigned(Hotkey) then
 		exit; {No hotkeys assigned}
-	
+
 	CheckNode := Hotkey;
 	PrevNode := nil;
 
@@ -427,7 +429,7 @@ begin
 	{Don't check for events if object is disabled or hidden}
 	if not GetState(SEnabled) or GetState(SHidden) then
 		exit;
-	
+
 	Clicked := False;
 	{Check if mouse is clicked on the object}
 	if (Mouse.Clicked = MbLeft) and Self.IsMouseOver then
@@ -487,7 +489,7 @@ end;
 
 procedure TUIObject.Center(Orientation: TOrientation);
 var
-	ParentW, ParentH, ParentX, ParentY: Integer;
+	ParentW, ParentH: Integer;
 begin
 	if not Assigned(ParentObj) then
 	begin
@@ -496,17 +498,16 @@ begin
 		ParentH := GetMaxY;
 	end
 	else
-	begin
-		{Get parent dimensions and absolute position}
+		{Get parent dimensions}
 		ParentObj^.GetSize(ParentW, ParentH);
-	end;
 
 	{To center, the size of the object is subtracted from the size of the parent.
 	 The remaining space is the additional width the parent has, and dividing this by
-	 2 will give the left/top position to center the object}
-	if (Orientation = OrHorizontal) or (Orientation = OrBoth) then
+	 2 will give the left/top position to center the object. Position is relative to
+	 the parent so we don't need to add the parent's position here.}
+	if Orientation in [OrHorizontal, OrBoth] then
 		Left := (ParentW - Width) div 2;
-	if (Orientation = OrVertical) or (Orientation = OrBoth) then
+	if Orientation in [OrVertical, OrBoth] then
 		Top := (ParentH - Height) div 2;
 end;
 
@@ -548,7 +549,7 @@ procedure TUIObject.SetFGColor(Color: Byte);
 begin
 	if (Color < 0) or (Color > GetMaxColor) then
 		Color := ColorDefault; {Invalid color, use default}
-	
+
 	{Set the high byte of Colors to the foreground color}
 	Colors := (Colors and $00FF) or (Color shl 8);
 end;
@@ -557,7 +558,7 @@ procedure TUIObject.SetBGColor(Color: Byte);
 begin
 	if (Color < 0) or (Color > GetMaxColor) then
 		Color := ColorDefault; {Invalid color, use default}
-	
+
 	{Set the low byte of Colors to the background color}
 	Colors := (Colors and $FF00) or Color;
 end;
@@ -601,7 +602,7 @@ procedure THotkey.CheckEvent;
 begin
 	if not GetState(SEnabled) then
 		exit;
-	
+
 	if Self.HotkeyPressed then
 		{Trigger OnClick event, if assigned}
 		Self.Click;
@@ -655,8 +656,8 @@ begin
 	OnRun   := nil;
 	OnExit  := nil;
 	{Retrieve full path of the executable}
-	FullPath := ParamStr(0); 
-	FSplit(FullPath, FPath, FName, FExt); 
+	FullPath := ParamStr(0);
+	FSplit(FullPath, FPath, FName, FExt);
 	ProgramPath := FPath;
 
 	{Initialize EGA 640x350 mode}
@@ -687,11 +688,11 @@ begin
 	while Assigned(Window) do
 	begin
 		NextNode := Window^.Next; {Store pointer to next node}
-		
-		{Call the destructor of the window, which in turn calls destructor of each object in it}
-		Window^.ObjectP^.Done;
 
-		Dispose(Window^.ObjectP);
+		{Call the destructor of the window, which in turn calls destructor of each object in it}
+		if Assigned(Window^.ObjectP) then
+			Dispose(Window^.ObjectP, Done);
+		{Free current node}
 		Dispose(Window);
 
 		{Move to next node}
@@ -721,7 +722,7 @@ begin
 	RemoveNode := Window;
 	Window := Window^.Next;
 
-	{Remove the window from the linked list. The window is not disposed of, as 
+	{Remove the window from the linked list. The window is not disposed of, as
 	 the application may want to reuse it later}
 	Dispose(RemoveNode);
 end;
@@ -732,7 +733,7 @@ begin
 		OnExit(@Self);
 
 	Self.Done; {Call destructor, in case any descendant objects have additional cleanup code}
-	
+
 	CloseGraph;
 	Halt(0);
 end;
@@ -812,7 +813,7 @@ var
 	LoadError: Boolean;
 begin
 	LoadError := False;
-	
+
 	{Set defaults - will be overwritten if settings file loads successfully}
 	Setting.DeskID      := 1;
 	Setting.LinkCapt    := True;
@@ -820,10 +821,10 @@ begin
 	Setting.ConfLinkDel := True;
 	Setting.ConfExit    := False;
 	Setting.ThmFile     := 'DEFAULT';
-	
+
 	if not FileExists(Self.Path + GlobalSettings) then
 		exit;
-	
+
 	Assign(F, Self.Path + GlobalSettings);
 	{$I-}
 	Reset(F, 1);
@@ -940,26 +941,28 @@ begin
 		CurrObj^.ObjectP^.Draw;
 	end;
 
-	{OnDraw is not triggered by the container, as it is not a visual object - 
+	{OnDraw is not triggered by the container, as it is not a visual object -
 	 descendants should implement their own Draw method and trigger OnDraw there}
 end;
 
 destructor TContainer.Done;
 var
 	NextNode: PObjectNode;
+	PrevNode, LastNode: PObjectNode;
 begin
 	{Dispose of all objects in the linked list}
 	while Assigned(Objects) do
 	begin
 		NextNode := Objects^.Next;
+		{Call the destructor of the object}
 		if Assigned(Objects^.ObjectP) then
-			{Call the destructor of the object}
 			Dispose(Objects^.ObjectP, Done);
+		{Dispose of the node}
 		Dispose(Objects);
 		Objects := NextNode;
 	end;
 
-	{Call ancestor destructor for properties that aren't specific to TWindow}
+	{Call ancestor destructor for properties that aren't specific to TContainer}
 	inherited Done;
 end;
 
@@ -991,7 +994,7 @@ begin
 	{Don't draw or trigger event if window is hidden}
 	if GetState(SHidden) then
 		exit;
-	
+
 	{Get absolute position and size of the window}
 	Self.GetPos(X1, Y1, True);
 	Self.GetSize(X2, Y2);
@@ -1077,7 +1080,7 @@ begin
 
 	if Assigned(OnClose) then
 		OnClose(@Self);
-	
+
 	{Restore background behind window, if it was saved}
 	Self.RestoreBackdrop;
 end;
@@ -1208,8 +1211,8 @@ begin
 	{Can't move mouse if no mouse support}
 	if not Support then
 		Exit;
-	
-	if (Left < 0) or (Left > GetMaxX) or 
+
+	if (Left < 0) or (Left > GetMaxX) or
 	   (Top < 0) or (Top > GetMaxY) then
 		Exit; {Out of bounds}
 
