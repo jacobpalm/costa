@@ -1,5 +1,7 @@
 program Minesweeper;
 
+{Minesweeper for Costa by Jacob Palm}
+
 uses
 	CostaLib, UIMineFl, UIButton, UILabel, UITimer, AboutDlg, Graph, Crt;
 
@@ -11,6 +13,7 @@ const
 
 	CAP_NEW_GAME      = #127 + 'New game';
 	CAP_PAUSE         = #127 + 'Pause';
+	CAP_RESUME        = #127 + 'Resume';
 	CAP_SIZE          = 'Si' + #127 + 'ze...';
 	CAP_SOUND         = #127 + 'Sound';
 	CAP_ABOUT         = #127 + 'About...';
@@ -156,10 +159,7 @@ begin
 end;
 
 procedure MineFieldClick(Sender: PUIObject); far;
-begin
-	if not TiStatus^.IsRunning then
-		TiStatus^.Start;
-	
+begin	
 	{If flagged count changed, update status}
 	if Flagged <> MineField^.GetFlagged then
 	begin
@@ -220,14 +220,30 @@ end;
 
 procedure BtnPauseClick(Sender: PUIObject); far;
 begin
+	{Toggle pause/resume and update pause/resume button caption and hotkey
+	 accordingly}
 	if MineField^.GetGameState = GPlaying then
-		MineField^.PauseGame
+	begin
+		MineField^.PauseGame;
+		BtnPause^.SetCaption(CAP_RESUME);
+		BtnPause^.RemoveHotKey(KeyAltP);
+		BtnPause^.AddHotKey(KeyAltR);
+	end
 	else if MineField^.GetGameState = GPaused then
+	begin
 		MineField^.ResumeGame;
+		BtnPause^.SetCaption(CAP_PAUSE);
+		BtnPause^.RemoveHotKey(KeyAltR);
+		BtnPause^.AddHotKey(KeyAltP);
+	end;
+	Mouse.Hide;
+	BtnPause^.Draw;
+	Mouse.Show;
 end;
 
 procedure BtnSetSizeClick(Sender: PUIObject); far;
 begin
+	{Show size dialog}
 	WinSetSize^.Run;
 
 	{If size was changed, start new game with new size}
@@ -244,16 +260,21 @@ begin
 end;
 
 procedure BtnSoundClick(Sender: PUIObject); far;
+var
+	MessageText: string;
 begin
+	{Toggle sound setting}
 	MineField^.SetSound(not MineField^.GetSound);
 	
 	{Update status display}
 	if MineField^.GetSound then
-		LblSound^.SetCaption(MSG_SOUND + ' ' + MSG_ON)
+		MessageText := MSG_ON
 	else
-		LblSound^.SetCaption(MSG_SOUND + ' ' + MSG_OFF);
+		MessageText := MSG_OFF;
+	MessageText := MSG_SOUND + ' ' + MessageText;
 	
 	Mouse.Hide;
+	LblSound^.SetCaption(MessageText);
 	LblSound^.Draw;
 	Mouse.Show;
 end;
@@ -338,18 +359,9 @@ begin
 	Mouse.Show;
 end;
 
-{Main program}
+procedure InitUI;
 begin
-	New(App, Init);
-	With App^ do
-	begin
-		Name    := AppName;
-		Version := AppVersion;
-		Author  := AppAuthor;
-		Icon    := AppIcon;
-	end;
-
-	{Main window and controls}
+{Main window and controls}
 	New(WinMain, Init(0, 0, nil));
 	with WinMain^ do
 	begin
@@ -490,6 +502,20 @@ begin
 		SetSize(210, SizeRetain);
 		SetOnClick(BtnCancelClick)
 	End;
+end;
+
+{Main program}
+begin
+	New(App, Init);
+	With App^ do
+	begin
+		Name    := AppName;
+		Version := AppVersion;
+		Author  := AppAuthor;
+		Icon    := AppIcon;
+	end;
+
+	InitUI;
 
 	{Start application}
 	App^.OpenWindow(WinMain);
