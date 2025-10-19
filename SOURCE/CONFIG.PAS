@@ -1,7 +1,7 @@
 program Configuration;
 
 uses
-	CostaLib, UIButton, UITxtbox, UIChkbox, UILabel, UIIcon, UIFrame, MsgDlg, AboutDlg, Graph, DOS;
+	CostaLib, UIButton, UITxtbox, UIChkbox, UILabel, UIIcon, UIFrame, UIThmPrw, MsgDlg, AboutDlg, Graph, DOS;
 
 const
 	AppName              = 'Configuration Utility';
@@ -34,9 +34,6 @@ const
 	CAP_LOADING          = 'Loading...';
 	
 	MSG_NO_THEMES        = 'No themes found in \THEMES.';
-	MSG_LOAD_ERROR_TITLE = 'Error loading';
-	MSG_LOAD_ERROR_TEXT  = 'The theme file %s.BIN could not be loaded.' + #13 +
-	                       'Please check that the file is accessible and not corrupted.';
 
 type
 	PThemeList = ^TThemeList;
@@ -44,7 +41,6 @@ type
 		FileName: string;
 		Next: PThemeList;
 	end;
-	
 
 var
 	{Main window}
@@ -55,8 +51,8 @@ var
 	BtnPrevious,
 	BtnNext:        PButton;
 	FrmSettings,
-	FrmTheme,
-	FrmPreview:     PFrame;
+	FrmTheme:       PFrame;
+	PrwTheme:       PThemePreview;
 	ImgSetting,
 	ImgTheme:       PIcon;
 	LblSettings,
@@ -64,65 +60,10 @@ var
 	LblNoThemes:    PLabel;
 	ChkSetting:     array[0..4] of PCheckbox;
 
-	{Preview window and its contents}
-	WinPreview:     PWindow;
-	ImgPreview1,
-	ImgPreview2:    PIcon;
-	TxtPreview:     PTextbox;
-	BtnPreview1,
-	BtnPreview2:    PButton;
-	LblPreviewInfo: PLabel;
-	LblPreviewLink: PLabel;
-
 	{Shared variables}
 	NewThemeList:   PThemeList;
 	ThemeCount:     integer;
 	SelectedTheme:  integer;
-	ThemeName:      string[20];
-	ThemeAuthor:    string[20];
-
-procedure AddThemeToList(const ThemeName: string); forward;
-
-procedure LoadThemeList;
-var
-    FileInfo: SearchRec;
-    FPath: DirStr;
-    FName: NameStr;
-    FExt: ExtStr;
-    ExpectedSize: integer;
-	BtnLoading: PButton;
-begin
-	New(BtnLoading, Init(110, 34, CAP_LOADING, nil));
-	BtnLoading^.Center(OrBoth);
-	Mouse.Hide;
-	BtnLoading^.Draw;
-	Mouse.Show;
-	Dispose(BtnLoading, Done);
-
-    ThemeCount := 0;
-    ExpectedSize := SizeOf(TTheme) + SizeOf(ThemeAuthor) + SizeOf(ThemeName);
-
-    {Load theme filenames into array}
-    FindFirst(ProgramPath + 'THEMES\*.BIN', Archive, FileInfo);
-    while DosError = 0 do
-    begin
-
-        {Load only if size matches expected size}
-        if FileInfo.Size = ExpectedSize then
-        begin
-            FSplit(FileInfo.Name, FPath, FName, FExt);
-			AddThemeToList(FName);
-			
-			if FName = Setting.ThmFile then
-                SelectedTheme := ThemeCount;
-        end;
-		
-        FindNext(FileInfo);
-    end;
-
-    if SelectedTheme = 0 then
-        SelectedTheme := 1;
-end;
 
 procedure AddThemeToList(const ThemeName: string);
 var
@@ -147,6 +88,52 @@ begin
 	end;
 	
 	Inc(ThemeCount);
+end;
+
+procedure LoadThemeList;
+var
+    FileInfo: SearchRec;
+    FPath: DirStr;
+    FName: NameStr;
+    FExt: ExtStr;
+    ExpectedSize: integer;
+	BtnLoading: PButton;
+begin
+	New(BtnLoading, Init(110, 34, CAP_LOADING, nil));
+	BtnLoading^.Center(OrBoth);
+	Mouse.Hide;
+	BtnLoading^.Draw;
+	Mouse.Show;
+	Dispose(BtnLoading, Done);
+
+    ThemeCount := 0;
+    ExpectedSize := SizeOf(TTheme) + 42; {Theme data + two 20-byte strings + 2 bytes for lengths}
+
+    {Load theme filenames into array}
+    FindFirst(ProgramPath + 'THEMES\*.BIN', Archive, FileInfo);
+    while DosError = 0 do
+    begin
+
+        {Load only if size matches expected size}
+        if FileInfo.Size = ExpectedSize then
+        begin
+            FSplit(FileInfo.Name, FPath, FName, FExt);
+			AddThemeToList(FName);
+			
+			{If this is the currently selected theme, load it into the preview and set it
+			 as the selected theme index}
+			if FName = Setting.ThmFile then
+			begin
+				PrwTheme^.LoadFile(FName);
+                SelectedTheme := ThemeCount;
+			end;
+        end;
+		
+        FindNext(FileInfo);
+    end;
+
+    if SelectedTheme = 0 then
+        SelectedTheme := 1;
 end;
 
 function SelectedFileName: string;
@@ -175,43 +162,10 @@ end;
 
 procedure ThemePreview;
 var
-	F: file;
-	OrigTheme: TTheme;
 	FileName: string;
 begin
-	OrigTheme := Thm; {Save original theme to restore later}
-	
-	FileName := SelectedFileName;
-	if FileName = '' then
-		exit;
-
-	{Load the selected theme file}
-	Assign(F, ProgramPath + 'THEMES\' + FileName + '.BIN');
-	{$I-}
-	Reset(F, 1);
-	{$I+}
-	if IOResult = 0 then
-	begin
-		BlockRead(F, Thm, SizeOf(TTheme));
-		BlockRead(F, ThemeName, SizeOf(ThemeName));
-		BlockRead(F, ThemeAuthor, SizeOf(ThemeAuthor));
-	end
-	else
-	begin
-		Thm := OrigTheme; {Restore original theme}
-		MsgBox(MSG_LOAD_ERROR_TITLE, ReplaceMsg(MSG_LOAD_ERROR_TEXT, FileName), MsgError);
-		Exit;
-	end;
-	Close(F);
-
-	{Update preview objects with new theme colors}
-	Mouse.Hide;
-	LblPreviewInfo^.SetCaption(ThemeName + #13 + ThemeAuthor);
-	FrmPreview^.SetBgColor(Thm.Desk);
-	FrmPreview^.Draw;
-	Mouse.Show;
-
-	Thm := OrigTheme; {Restore original theme so objects outside preview are not affected}
+	PrwTheme^.LoadFile(SelectedFileName);
+	PrwTheme^.Preview;
 end;
 
 procedure SwitchTheme(Sender: PUIObject); far;
@@ -233,10 +187,9 @@ begin
 	Setting.LinkTarget := ChkSetting[LinkTarget]^.GetChecked;
 	Setting.ConfLinkDel := ChkSetting[LinkDelete]^.GetChecked;
 	Setting.ConfExit := ChkSetting[ConfExit]^.GetChecked;
+
 	App^.SaveSettings;
-	
-	WinMain^.Close;
-	App^.Exit; {Debug - should happen automatically when last window is closed}
+	App^.Exit;
 end;
 
 procedure BtnAboutClick(Sender: PUIObject); far;
@@ -244,27 +197,33 @@ begin
 	AboutBox(App);
 end;
 
+procedure WinMainRun(Sender: PUIObject); far;
+begin
+	LoadThemeList;
+
+	{Only show theme switch buttons if there are themes available, otherwise
+	 show label saying that no themes were found}
+	if ThemeCount <> 0 then
+	begin
+		BtnPrevious^.RemoveState(SHidden);
+		BtnNext^.RemoveState(SHidden);
+	end
+	else
+		LblNoThemes^.RemoveState(SHidden);
+end;
+
+procedure InitUI;
 var
 	W, H: Integer;
 begin
-	New(App, Init);
-	with App^ do
-	begin
-		Name := AppName;
-		Version := AppVersion;
-		Author := AppAuthor;
-		Icon := AppIcon;
-	end;
-
 	New(WinMain, Init(0, 0, nil));
 	with WinMain^ do
 	begin
 		SetSize(GetMaxX, GetMaxY);
+		OnRun := WinMainRun;
 		Border := False;
 		Draw;
 	end;
-
-	LoadThemeList;
 
 	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
 	with BtnAbout^ do
@@ -301,57 +260,54 @@ begin
 	FrmTheme^.SetSize(W, H);
 	New(ImgTheme, Init(14, 14, 'THEMES', FrmTheme));
 	New(LblTheme, Init(56, 19, CAP_THEMES, FrmTheme));
-	New(FrmPreview, Init(14, 55, FrmTheme));
-	with FrmPreview^ do
+	New(PrwTheme, Init(14, 55, FrmTheme));
+	with PrwTheme^ do
 	begin
 		SetSize(W - 28, 192);
-		SetBgColor(Thm.Desk);
 		RemoveState(SEnabled);
+		LightColor := Thm.Light;
+		DarkColor := Thm.Shadow;
 	end;
 
-	{Only create theme switch buttons if there are themes available, otherwise
-	 create label saying that no themes were found}
-	if ThemeCount <> 0 then
+	{Theme navigation buttons and no-themes label}
+	New(BtnPrevious, Init(14, H - 34, CAP_PREVIOUS, FrmTheme));
+	with BtnPrevious^ do
 	begin
-		New(BtnPrevious, Init(14, H - 34, CAP_PREVIOUS, FrmTheme));
-		with BtnPrevious^ do
-		begin
-			AddHotkey(KeyAltP);
-			AddHotkey(KeyLeft);
-			SetOnClick(SwitchTheme);
-		end;
-		New(BtnNext, Init(W - 92 - 14, H - 34, CAP_NEXT, FrmTheme));
-		with BtnNext^ do
-		begin
-			AddHotkey(KeyAltN);
-			AddHotkey(KeyRight);
-			SetOnClick(SwitchTheme);
-		end;
-	end
-	else
-		New(LblNoThemes, Init(387, 310, MSG_NO_THEMES, FrmTheme));
-
-	{Initialize objects in preview frame}
-	FrmPreview^.GetSize(W, H);
-	{Preivew desktop icon and label}
-	New(ImgPreview2, Init(14, H - 42, 'PAINT', FrmPreview));
-	New(LblPreviewLink, Init(52, H - 38, CAP_PREVIEW_LINK + #13 + CAP_PREVIEW_EXE, FrmPreview));
-	{Preview window and its contents}
-	New(WinPreview, Init(14, 12, FrmPreview));
-	WinPreview^.SetSize(W - 28, 123);
-	New(ImgPreview1, Init(12, 12, 'LOGO', WinPreview));
-	New(LblPreviewInfo, Init(54, 16, CAP_CURR_THEME, WinPreview));
-	WinPreview^.GetSize(W, H);
-	New(TxtPreview, Init(12, 57, '', WinPreview));
-	with TxtPreview^ do
-	begin
-		SetSize(W - 23, SizeRetain);
-		Text := CAP_TEXTBOX;
+		AddHotkey(KeyAltP);
+		AddHotkey(KeyLeft);
+		SetOnClick(SwitchTheme);
+		AddState(SHidden);
 	end;
-	New(BtnPreview1, Init(12, H - 34, CAP_BUTTON, WinPreview));
-	New(BtnPreview2, Init(W - 104, H - 34, CAP_BUTTON, WinPreview));
-	BtnPreview2^.AddState(SActive);
+	New(BtnNext, Init(W - 92 - 14, H - 34, CAP_NEXT, FrmTheme));
+	with BtnNext^ do
+	begin
+		AddHotkey(KeyAltN);
+		AddHotkey(KeyRight);
+		SetOnClick(SwitchTheme);
+		AddState(SHidden);
+	end;
+	New(LblNoThemes, Init(0, H - 28, MSG_NO_THEMES, FrmTheme));
+	with LblNoThemes^ do
+	begin
+		AutoSize;
+		Center(OrHorizontal);
+		AddState(SHidden);
+	end;
+end;
+
+begin
+	New(App, Init);
+	with App^ do
+	begin
+		Name := AppName;
+		Version := AppVersion;
+		Author := AppAuthor;
+		Icon := AppIcon;
+	end;
+
+	InitUI;
 
 	App^.OpenWindow(WinMain);
 	App^.Run;
+	App^.Exit;
 end.
