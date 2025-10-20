@@ -4,9 +4,9 @@ unit InputDlg;
 interface
 
 uses
-	Costalib, UIIcon, UIButton, UITxtbox, UILabel, Strings, Graph, Crt;
+	Costalib, UIIcon, UIButton, UITxtbox, UILabel;
 
-function InputBox(MsgTitle, MsgText, MsgIcon, MsgDefault: string): string;
+function InputBox(Title, Prompt, IconFile, DefaultValue: string): string;
 
 implementation
 
@@ -22,7 +22,7 @@ var
 	BtnCancel:   PButton;
 	ImgIcon:     PIcon;
 	LblTitle,
-	lblText:     PLabel;
+	LblText:     PLabel;
 
 	ReturnValue: string;
 
@@ -37,40 +37,34 @@ begin
 	WinInputBox^.Close;
 end;
 
-function InputBox(MsgTitle, MsgText, MsgIcon, MsgDefault: string): string;
+function InputBox(Title, Prompt, IconFile, DefaultValue: string): string;
 var
-	BoxW, BoxH: Integer;
-	X1, Y1, X2, Y2: Integer;
-	BackgroundSize: Word;
-	BackgroundP: Pointer;
+	W, H: Integer;
 begin
 	ReturnValue := '';
 
 	{Calculate size of the Window based on text size}
-	X2 := PrintW(MsgText) + 76;
-	Y2 := PrintH(MsgText) + 120;
-	if X2 < 194 then
-		X2 := 194;
+	W := PrintW(Prompt) + 76;
+	H := PrintH(Prompt) + 120;
+	if W < 194 then
+		W := 194;
 
 	{Create the Window and all child objects}
 	New(WinInputBox, Init(0, 0, NoParent));
 	with WinInputBox^ do
 	begin
-		SetSize(X2, Y2);
+		SetSize(W, H);
 		Center(OrBoth);
 		SaveBackdrop;
-		GetPos(X1, Y1, True);
 	end;
-	Inc(X2, X1);
-	Inc(Y2, Y1);
 
-	New(ImgIcon, Init(X1 + 13, Y1 + 15, MsgIcon, WinInputBox));
-	New(BtnOK, Init(X2 - 207, Y2 - 36, CAP_OK, WinInputBox));
-	New(BtnCancel, Init(X2 - 105, Y2 - 36, CAP_CANCEL, WinInputBox));
-	New(TxtInput, Init(X1 + 12, Y2 - 63, CAP_INPUT, WinInputBox));
-	TxtInput^.SetSize(X2 - X1 - 24, SizeRetain);
-	New(LblTitle, Init(X1 + 56, Y1 + 15, MsgTitle, WinInputBox));
-	New(LblText, Init(X1 + 56, Y1 + 31, MsgText, WinInputBox));
+	New(ImgIcon, Init(13, 15, IconFile, WinInputBox));
+	New(BtnOK, Init(W - 207, H - 36, CAP_OK, WinInputBox));
+	New(BtnCancel, Init(W - 105, H - 36, CAP_CANCEL, WinInputBox));
+	New(TxtInput, Init(12, H - 63, CAP_INPUT, WinInputBox));
+	TxtInput^.SetSize(W - 24, SizeRetain);
+	New(LblTitle, Init(56, 15, Title, WinInputBox));
+	New(LblText, Init(56, 31, Prompt, WinInputBox));
 	With BtnOK^ do
 	begin
 		AddHotkey(KeyAltO);
@@ -85,7 +79,7 @@ begin
 	end;
 	with TxtInput^ do
 	begin
-		Text := MsgDefault;
+		Text := DefaultValue;
 		AddHotkey(KeyAltN);
 	end;
 

@@ -222,13 +222,13 @@ begin
 		SetSize(GetMaxX, GetMaxY);
 		OnRun := WinMainRun;
 		Border := False;
-		Draw;
 	end;
 
 	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
 	with BtnAbout^ do
 	begin
 		AddHotkey(KeyAltA);
+		AddHotkey(KeyF1);
 		SetOnClick(BtnAboutClick);
 	end;
 	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
