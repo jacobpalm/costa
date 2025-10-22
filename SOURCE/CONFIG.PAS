@@ -220,8 +220,8 @@ begin
 	with WinMain^ do
 	begin
 		SetSize(GetMaxX, GetMaxY);
-		OnRun := WinMainRun;
-		Border := False;
+		RemoveState(SBordered);
+		SetOnRun(WinMainRun);
 	end;
 
 	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
@@ -265,8 +265,8 @@ begin
 	begin
 		SetSize(W - 28, 192);
 		RemoveState(SEnabled);
-		LightColor := Thm.Light;
-		DarkColor := Thm.Shadow;
+		SetLightColor(Thm.Light);
+		SetDarkColor(Thm.Shadow);
 	end;
 
 	{Theme navigation buttons and no-themes label}
@@ -297,13 +297,7 @@ end;
 
 begin
 	New(App, Init);
-	with App^ do
-	begin
-		Name := AppName;
-		Version := AppVersion;
-		Author := AppAuthor;
-		Icon := AppIcon;
-	end;
+	App^.SetInfo(AppName, AppVersion, AppAuthor, AppIcon);
 
 	InitUI;
 

@@ -73,7 +73,7 @@ begin
 	New(ImgPreview, Init(0, 0, 'LOGO', WinPreview));
 	New(LblPreviewInfo, Init(0, 0, CAP_PREVIEW, WinPreview));
 	New(TxtPreview, Init(0, 0, '', WinPreview));
-	TxtPreview^.Text := CAP_TEXTBOX;
+	TxtPreview^.SetText(CAP_TEXTBOX);
 	New(BtnPreview1, Init(0, 0, CAP_BUTTON, WinPreview));
 	New(BtnPreview2, Init(0, 0, CAP_BUTTON, WinPreview));
 	BtnPreview2^.AddState(SActive);

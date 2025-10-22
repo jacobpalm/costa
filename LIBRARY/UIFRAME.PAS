@@ -9,10 +9,17 @@ type
 	PFrame = ^TFrame;
 	TFrame = object(TContainer)
 		public
-			LightColor,
-			DarkColor:   Integer;
 			constructor  Init(X, Y: Integer; Parent: PContainer);
 			procedure    Draw; virtual;
+
+			procedure    SetLightColor(Color: Byte);
+			function	 GetLightColor: Byte;
+			
+			procedure    SetDarkColor(Color: Byte);
+			function	 GetDarkColor: Byte;
+		private
+			LightColor,
+			DarkColor:   Byte;
 	end;
 
 implementation
@@ -61,6 +68,30 @@ begin
 	DrawChildren;
 
 	TUIObject.Draw;
+end;
+
+procedure TFrame.SetLightColor(Color: Byte);
+begin
+	if ((Color >= 0) and (Color <= GetMaxColor)) or
+	   (Color = ColorDefault) then
+		LightColor := Color;
+end;
+
+function TFrame.GetLightColor: Byte;
+begin
+	GetLightColor := LightColor;
+end;
+
+procedure TFrame.SetDarkColor(Color: Byte);
+begin
+	if ((Color >= 0) and (Color <= GetMaxColor)) or
+	   (Color = ColorDefault) then
+		DarkColor := Color;
+end;
+
+function TFrame.GetDarkColor: Byte;
+begin
+	GetDarkColor := DarkColor;
 end;
 
 end.

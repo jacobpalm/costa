@@ -23,24 +23,31 @@ type
 	PList = ^TList;
 	TList = object(TArea)
 		public
-			OnChange:      TEventProc;
-			OnDoubleClick: TEventProc;
 			constructor    Init(X, Y: Integer; Parent: PContainer);
 			destructor     Done; virtual;
-			procedure      AddItem(const ItemText: string);
 			procedure      CheckEvent; virtual;
-			procedure      ClearItems;
+			procedure      Draw; virtual;
+
+			procedure      AddItem(const ItemText: string);
 			function       GetItem(Index: integer): string;
 			function       GetSelectedItem: string;
-			procedure      Draw; virtual;
+			procedure      ClearItems;
+			
 			procedure      MoveSelection(Direction: TListDirection);
+			
 			procedure      SetListActive(IsActive: boolean);
+			function       GetListActive: boolean;
+
+			procedure      SetOnChange(Proc: TEventProc);
+			procedure      SetOnDoubleClick(Proc: TEventProc);
 		private
 			Head:          PListItem;
 			Selection:     Integer;
 			StartPos:      Integer;
 			Length:        Integer;
 			DblClickTimer: Real;
+			OnChange:      TEventProc;
+			OnDoubleClick: TEventProc;
 	end;
 
 implementation
@@ -425,6 +432,21 @@ begin
 		Print(ItemText, X1 + 3, Y1 + 2 + YOffset, FgColor);
 		Mouse.Show;
 	end;
+end;
+
+function TList.GetListActive: boolean;
+begin
+	GetListActive := GetState(SActive);
+end;
+
+procedure TList.SetOnChange(Proc: TEventProc);
+begin
+	OnChange := Proc;
+end;
+
+procedure TList.SetOnDoubleClick(Proc: TEventProc);
+begin
+	OnDoubleClick := Proc;
 end;
 
 destructor TList.Done;

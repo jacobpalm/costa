@@ -292,7 +292,7 @@ begin
 	With WinMain^ do
 	begin
 		SetSize(640, 350);
-		Border := false;
+		RemoveState(SBordered);
 	end;
 
 	New(Canvas, Init(172, 44, WinMain));
@@ -408,13 +408,7 @@ end;
 {Main program start}
 begin
 	New(App, Init);
-	With App^ do
-	begin
-		Name := AppName;
-		Version := AppVersion;
-		Author := AppAuthor;
-		Icon := AppIcon;
-	end;
+	App^.SetInfo(AppName, AppVersion, AppAuthor, AppIcon);
 
 	InitUI;
 

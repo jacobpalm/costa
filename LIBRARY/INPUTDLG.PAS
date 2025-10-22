@@ -28,7 +28,7 @@ var
 
 procedure BtnOkClick(Sender: PUIObject); far;
 begin
-	ReturnValue := TxtInput^.Text;
+	ReturnValue := TxtInput^.GetText;
 	WinInputBox^.Close;
 end;
 
@@ -79,7 +79,7 @@ begin
 	end;
 	with TxtInput^ do
 	begin
-		Text := DefaultValue;
+		SetText(DefaultValue);
 		AddHotkey(KeyAltN);
 	end;
 

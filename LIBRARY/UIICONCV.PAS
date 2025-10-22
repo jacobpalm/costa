@@ -39,6 +39,7 @@ type
 			function     IsChanged: Boolean;
 
 			procedure    SetPreviewPos(RelativeX, RelativeY: Integer);
+			procedure    GetPreviewPos(var RelativeX, RelativeY: Integer);
 		private
 			IndicatorX,
 			IndicatorY:  Integer;   {Current position of keyboard indicator}
@@ -312,6 +313,16 @@ begin
 	Inc(X, RelativeX);
 	Inc(Y, RelativeY);
 	ImgPreview^.SetPos(X, Y);
+end;
+
+procedure TIconCanvas.GetPreviewPos(var RelativeX, RelativeY: Integer);
+var
+	X, Y: Integer;
+begin
+	ImgPreview^.GetPos(RelativeX, RelativeX, True);
+	Self.GetPos(X, Y, True);
+	RelativeX := RelativeX - X;
+	RelativeY := RelativeY - Y;
 end;
 
 

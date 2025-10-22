@@ -368,7 +368,7 @@ begin
 	begin
 		SetSize(GetMaxX, GetMaxY);
 		SetOnDraw(WinMainDraw);
-		Border := False;
+		RemoveState(SBordered);
 	end;
 
 	New(BtnNew, Init(3, 2, CAP_NEW_GAME, WinMain));
@@ -519,13 +519,7 @@ end;
 {Main program}
 begin
 	New(App, Init);
-	With App^ do
-	begin
-		Name    := AppName;
-		Version := AppVersion;
-		Author  := AppAuthor;
-		Icon    := AppIcon;
-	end;
+	App^.SetInfo(AppName, AppVersion, AppAuthor, AppIcon);
 
 	InitUI;
 

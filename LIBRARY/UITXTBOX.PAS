@@ -9,14 +9,27 @@ type
 	PTextbox = ^TTextbox;
 	TTextbox = object(TArea)
 		public
+			constructor Init(X, Y: Integer; Cap: String; Parent: PContainer);
+			procedure   CheckEvent; virtual;
+			procedure   Draw; virtual;
+
+			procedure   Edit;
+
+			procedure   SetCaption(Cap: string);
+			function	GetCaption: string;
+
+			procedure   SetText(Txt: string);
+			function    GetText: string;
+
+			procedure   SetMaxLength(Len: Byte);
+			function    GetMaxLength: Byte;
+
+			procedure   SetOnChange(Proc: TEventProc);
+		private
 			Caption,
 			Text:       string;
 			MaxLen:     Byte;
 			OnChange:   TEventProc;
-			constructor Init(X, Y: Integer; Cap: String; Parent: PContainer);
-			procedure   CheckEvent; virtual;
-			procedure   Edit;
-			procedure   Draw; virtual;
 	end;
 
 implementation
@@ -243,6 +256,41 @@ begin
 	end;
 
 	TUIObject.Draw;
+end;
+
+procedure TTextbox.SetCaption(Cap: string);
+begin
+	Caption := Cap;
+end;
+
+function TTextbox.GetCaption: string;
+begin
+	GetCaption := Caption;
+end;
+
+procedure TTextbox.SetText(Txt: string);
+begin
+	Text := Txt;
+end;
+
+function TTextbox.GetText: string;
+begin
+	GetText := Text;
+end;
+
+procedure TTextbox.SetMaxLength(Len: Byte);
+begin
+	MaxLen := Len;
+end;
+
+function TTextbox.GetMaxLength: Byte;
+begin
+	GetMaxLength := MaxLen;
+end;
+
+procedure TTextbox.SetOnChange(Proc: TEventProc);
+begin
+	OnChange := Proc;
 end;
 
 end.

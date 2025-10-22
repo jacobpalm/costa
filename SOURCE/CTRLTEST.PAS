@@ -40,18 +40,12 @@ end;
 
 procedure Txt1Change(Sender: PUIObject); far;
 begin
-	MsgBox('Text Changed', 'The text has been changed to:' + #13 + Txt1^.Text, MsgInfo);
+	MsgBox('Text Changed', 'The text has been changed to:' + #13 + Txt1^.GetText, MsgInfo);
 end;
 
 begin
 	New(App, Init);
-	with App^ do
-	begin
-		Name := AppName;
-		Version := AppVersion;
-		Author := AppAuthor;
-		Icon := AppIcon;
-	end;
+	App^.SetInfo(AppName, AppVersion, AppAuthor, AppIcon);
 
 	New(WinMain, Init(50, 50, NoParent));
 	WinMain^.Center(OrBoth);
@@ -80,9 +74,12 @@ begin
 	New(Frm1, Init(20, 50, WinMain));
 	Frm1^.SetSize(200, 100);
 	New(Txt1, Init(10, 20, 'Name:', Frm1));
-	Txt1^.Text := 'John Doe';
-	Txt1^.Center(OrHorizontal);
-	Txt1^.OnChange := Txt1Change;
+	With Txt1^ do
+	begin
+		SetText('John Doe');
+		Center(OrHorizontal);
+		SetOnChange(Txt1Change);
+	end;
 
 	WinMain^.Run;
 	Dispose(WinMain, Done);

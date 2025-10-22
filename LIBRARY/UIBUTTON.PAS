@@ -12,6 +12,7 @@ type
 			constructor  Init(X, Y: Integer; Cap: string; Parent: PContainer);
 			procedure    CheckEvent; virtual;
 			procedure    Draw; virtual;
+			
 			procedure    SetCaption(Cap: string);
 			function     GetCaption: string;
 		private

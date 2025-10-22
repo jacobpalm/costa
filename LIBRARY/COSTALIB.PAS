@@ -45,7 +45,7 @@ type
 
 	{Object states - implemented as a set to be able to store multiple values in one
 	 byte, and to allow one Get/Set method to handle multiple boolean properties}
-	TState       = (SEnabled, SHidden, SActive, SSelected, STransparent);
+	TState       = (SEnabled, SHidden, SActive, SSelected, STransparent, SBordered);
 	TStateSet    = set of TState;
 
 	{Orientation for centering objects}
@@ -141,9 +141,6 @@ type
 	{Window object}
 	TWindow = object(TContainer)
 		public
-			Border:     Boolean;
-			OnRun:      TEventProc;
-			OnClose:    TEventProc;
 			constructor Init(X, Y: Integer; Parent: PContainer);
 			destructor  Done; virtual;
 
@@ -154,6 +151,9 @@ type
 			procedure   Close;
 
 			procedure   SaveBackdrop;
+
+			procedure   SetOnRun(Proc: TEventProc);
+			procedure   SetOnClose(Proc: TEventProc);
 			{procedure   SetMenu(Menu: PMenu);}
 		private
 			MenuObj:          PMenu;	       {Menu bar object, if any}
@@ -161,6 +161,8 @@ type
 			PreserveBackdrop: Boolean;         {If true, backdrop is preserved when window is drawn and restored when closed}
 			BackdropP:        Pointer;         {Stores background image to restore when window is closed}
 			BackdropS:        Word;            {Size of memory block used by BackdropP}
+			OnRun:            TEventProc;
+			OnClose:          TEventProc;
 			procedure         RestoreBackdrop;
 	end;
 
@@ -173,23 +175,34 @@ type
 	{Main application object, to which windows can be added}
 	TApplication = object
 		public
+			constructor Init;
+			destructor  Done; virtual;
+
+			procedure   SetInfo(AppName, AppVersion, AppAuthor, AppIcon: string);
+			procedure   GetInfo(var AppName, AppVersion, AppAuthor, AppIcon: string);
+
+			function    Path: DirStr;
+			
+			procedure   LoadSettings;
+			procedure   SaveSettings;
+			
+			procedure   LoadTheme(Filename: string);
+			
+			procedure   OpenWindow(Win: PWindow);
+			procedure   CloseWindow;
+
+			procedure   SetOnRun(Proc: TEventProc);
+			procedure   SetOnExit(Proc: TEventProc);
+
+			procedure   Run;
+			procedure   Exit;
+		private
 			Name,
 			Version,
 			Author,
 			Icon:       string;
 			OnRun:      TEventProc;
 			OnExit:     TEventProc;
-			constructor Init;
-			destructor  Done; virtual;
-			function    Path: DirStr;
-			procedure   CloseWindow;
-			procedure   Exit;
-			procedure   LoadSettings;
-			procedure   LoadTheme(Filename: string);
-			procedure   OpenWindow(Win: PWindow);
-			procedure   Run;
-			procedure   SaveSettings;
-		private
 			Window:     PWindowNode;
 	end;
 
@@ -863,6 +876,32 @@ begin
 	Close(F);
 end;
 
+procedure TApplication.SetInfo(AppName, AppVersion, AppAuthor, AppIcon: string);
+begin
+	Name    := AppName;
+	Version := AppVersion;
+	Author  := AppAuthor;
+	Icon    := AppIcon;
+end;
+
+procedure TApplication.GetInfo(var AppName, AppVersion, AppAuthor, AppIcon: string);
+begin
+	AppName    := Name;
+	AppVersion := Version;
+	AppAuthor  := Author;
+	AppIcon    := Icon;
+end;
+
+procedure TApplication.SetOnRun(Proc: TEventProc);
+begin
+	OnRun := Proc;
+end;
+
+procedure TApplication.SetOnExit(Proc: TEventProc);
+begin
+	OnExit := Proc;
+end;
+
 {----------------------------------------------------------------------------}
 { Container object implementation }
 {----------------------------------------------------------------------------}
@@ -977,7 +1016,7 @@ const
 begin
 	Inherited Init(X, Y, Parent);
 	SetSize(DefaultW, DefaultH);
-	Border    := True;
+	AddState(SBordered);
 	DoClose   := False;
 	OnRun     := nil;
 	OnClose   := nil;
@@ -1016,7 +1055,7 @@ begin
 		GetImage(X1, Y1, X2, Y2, BackdropP^);
 	end;
 
-	if Border then
+	if SBordered in State then
 	begin
 		{Draw the window border and interior}
 		SetFillStyle(SolidFill, Thm.Title);
@@ -1131,6 +1170,16 @@ end;
 procedure TWindow.SaveBackdrop;
 begin
 	PreserveBackdrop := True;
+end;
+
+procedure TWindow.SetOnRun(Proc: TEventProc);
+begin
+	OnRun := Proc;
+end;
+
+procedure TWindow.SetOnClose(Proc: TEventProc);
+begin
+	OnClose := Proc;
 end;
 
 procedure TWindow.Close;

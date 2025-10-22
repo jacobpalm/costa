@@ -718,14 +718,7 @@ end;
 
 begin
 
-	with App do
-	begin
-		Init;
-		Name := AppName;
-		Version := AppVersion;
-		Author := AppAuthor;
-		Icon := AppIcon;
-	end;
+	App^.SetInfo(AppName, AppVersion, AppAuthor, AppIcon);
 
 	InitUI;
 

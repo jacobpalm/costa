@@ -245,10 +245,13 @@ begin
 end;
 
 procedure TxtDriveChange(Sender: PUIObject); far;
+var
+	NewDrive: String[1];
 begin
-	if not SetDrive(TxtDrive^.Text[1]) then
+	NewDrive := TxtDrive^.GetText;
+	if not SetDrive(NewDrive[1]) then
 	begin
-		TxtDrive^.Text := Drive; {Restore original drive letter}
+		TxtDrive^.SetText(Drive); {Restore original drive letter}
 		Mouse.Hide;
 		TxtDrive^.Draw;
 		Mouse.Show;
@@ -257,7 +260,7 @@ end;
 
 procedure TxtPatternChange(Sender: PUIObject); far;
 begin
-	Pattern := TxtPattern^.Text;
+	Pattern := TxtPattern^.GetText;
 	GetChildFiles(Path, Pattern);
 	List[FileList]^.Draw;
 	DrawPreview(nil);
@@ -339,9 +342,9 @@ begin
 	begin
 		SetSize(150, SizeRetain);
 		AddHotkey(KeyAltP);
-		Text := DefaultPattern;
-		OnChange := TxtPatternChange;
-		MaxLen := 12; {8.3 including the dot}
+		SetText(DefaultPattern);
+		SetOnChange(TxtPatternChange);
+		SetMaxLength(12); {8.3 including the dot}
 	end;
 
 	New(TxtDrive, Init(187, 28, CAP_DRIVE, WinFileSelect));
@@ -349,9 +352,9 @@ begin
 	begin
 		SetSize(150, SizeRetain);
 		AddHotkey(KeyAltR);
-		Text := Drive;
-		OnChange := TxtDriveChange;
-		MaxLen := 1;
+		SetText(Drive);
+		SetOnChange(TxtDriveChange);
+		SetMaxLength(1);
 	end;
 
 	New(LblFiles, Init(16, 57, CAP_FILES, WinFileSelect));
@@ -362,9 +365,9 @@ begin
 	begin
 		SetSize(150, 185);
 		AddHotkey(KeyAltF);
-		OnChange := DrawPreview;
+		SetOnChange(DrawPreview);
 		SetOnClick(ListClicked);
-		OnDoubleClick := ListDblClicked;
+		SetOnDoubleClick(ListDblClicked);
 	end;
 
 	New(List[DirList], Init(187, 71, WinFileSelect));
@@ -373,7 +376,7 @@ begin
 		SetSize(150, 185);
 		AddHotkey(KeyAltD);
 		SetOnClick(ListClicked);
-		OnDoubleClick := ListDblClicked;
+		SetOnDoubleClick(ListDblClicked);
 	end;
 
 	New(BtnSelect, Init(363, 28, CAP_SELECT, WinFileSelect));

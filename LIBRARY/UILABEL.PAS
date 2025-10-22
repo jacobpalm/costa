@@ -10,9 +10,11 @@ type
 	TLabel = object(TUIObject)
 		public
 			constructor Init(X, Y: Integer; Cap: String; Parent: PContainer);
-			procedure   AutoSize;
 			procedure   Draw; virtual;
+			procedure   AutoSize;
+			
 			procedure   SetCaption(Cap: string);
+			function    GetCaption: string;
 		private
 			Caption:    String;
 	end;
@@ -78,6 +80,11 @@ begin
 	Caption := Cap;
 	Self.Draw;
 	Mouse.Show;
+end;
+
+function TLabel.GetCaption: string;
+begin
+	GetCaption := Caption;
 end;
 
 end.

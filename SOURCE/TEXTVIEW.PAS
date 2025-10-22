@@ -403,9 +403,9 @@ begin
 	with WinMain^ do
 	begin
 		SetSize(GetMaxX, GetMaxY);
-		Border := False;
+		RemoveState(SBordered);
 		SetOnDraw(WinMainDraw);
-		OnRun := WinMainRun;
+		SetOnRun(WinMainRun);
 	end;
 
 	New(BtnOpen, Init(3, 2, CAP_OPEN, WinMain));
@@ -464,13 +464,7 @@ begin
 	StdHeapErr := HeapError;
 
 	New(App, Init);
-	with App^ do
-	begin
-		Name    := AppName;
-		Version := AppVersion;
-		Author  := AppAuthor;
-		Icon    := AppIcon;
-	end;
+	App^.SetInfo(AppName, AppVersion, AppAuthor, AppIcon);
 
 	InitUI;
 

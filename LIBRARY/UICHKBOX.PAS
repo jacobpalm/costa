@@ -9,13 +9,20 @@ type
 	PCheckbox = ^TCheckbox;
 	TCheckbox = object(TUIObject)
 		public
-			Caption:    string;
-			OnChange:   TEventProc;
 			constructor Init(X, Y: Integer; Cap: String; Checked: Boolean; Parent: PContainer);
 			procedure   CheckEvent; virtual;
+			procedure   Draw; virtual;
+
+			procedure   SetCaption(Cap: string);
+			function    GetCaption: string;
+
 			function    GetChecked: boolean;
 			procedure   SetChecked(Checked: boolean);
-			procedure   Draw; virtual;
+
+			procedure   SetOnChange(Proc: TEventProc);
+		private
+			Caption:    string;
+			OnChange:   TEventProc;
 	end;
 
 implementation
@@ -130,6 +137,17 @@ begin
 	end;
 end;
 
+procedure TCheckbox.SetCaption(Cap: string);
+begin
+	Caption := Cap;
+	Self.Draw;
+end;
+
+function TCheckbox.GetCaption: string;
+begin
+	GetCaption := Caption;
+end;
+
 function TCheckbox.GetChecked: boolean;
 begin
 	GetChecked := GetState(SSelected);
@@ -150,6 +168,11 @@ begin
 	Mouse.Show;
 	if Assigned(OnChange) then
 		OnChange(@Self);
+end;
+
+procedure TCheckbox.SetOnChange(Proc: TEventProc);
+begin
+	OnChange := Proc;
 end;
 
 end.

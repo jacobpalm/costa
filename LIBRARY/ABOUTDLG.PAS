@@ -37,11 +37,15 @@ end;
 procedure AboutBox(AppP: PApplication);
 var
 	X1, Y1, X2, Y2: Integer;
+	Name, Version, Author, Icon: String;
 	Text: String;
 begin
 	Text := ReplaceMsg(MSG_ABOUT_TEXT, LibName);
 	Text := ReplaceMsg(Text, LibVersion);
 	Text := ReplaceMsg(Text, LibYear);
+
+	{Get app info}
+	AppP^.GetInfo(Name, Version, Author, Icon);
 
 	New(WinAboutBox, Init(0, 0, nil));
 	with WinAboutBox^ do
@@ -55,7 +59,7 @@ begin
 	Inc(X2, X1);
 	Inc(Y2, Y1);
 
-	New(ImgLogo, Init(13, 15, AppP^.Icon, WinAboutBox));
+	New(ImgLogo, Init(13, 15, Icon, WinAboutBox));
 	New(BtnClose, Init(0, Y2 - Y1 - 34, CAP_CLOSE, WinAboutBox));
 	with BtnClose^ do
 	begin
@@ -66,8 +70,8 @@ begin
 		SetOnClick(AboutBoxClose);
 	end;
 	
-	New(LblInfo[0], Init(56, 21, AppP^.Name + ' ' + AppP^.Version, WinAboutBox));
-	New(LblInfo[1], Init(56, 33, ReplaceMsg(MSG_BY_TEXT, AppP^.Author), WinAboutBox));
+	New(LblInfo[0], Init(56, 21, Name + ' ' + Version, WinAboutBox));
+	New(LblInfo[1], Init(56, 33, ReplaceMsg(MSG_BY_TEXT, Author), WinAboutBox));
 	New(LblInfo[2], Init(15, 57, Text, WinAboutBox));
 
 	WinAboutBox^.Run;

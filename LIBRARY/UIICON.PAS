@@ -11,7 +11,9 @@ type
 		public
 			constructor Init(X, Y: Integer; Icon: string; Parent: PContainer);
 			procedure   Draw; virtual;
+
 			procedure   SetIcon(Icon: string);
+			function	GetIcon: string;
 		private
 			IconFile:   string[8];
 	end;
@@ -118,6 +120,11 @@ begin
 	Mouse.Hide;
 	Self.Draw;
 	Mouse.Show;
+end;
+
+function TIcon.GetIcon: string;
+begin
+	GetIcon := IconFile;
 end;
 
 end.
