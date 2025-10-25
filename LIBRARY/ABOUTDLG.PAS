@@ -29,7 +29,7 @@ var
 	ImgLogo:     PIcon;
 	LblInfo:     array [0..2] of PLabel;
 
-procedure AboutBoxClose(Sender: PUIObject); far;
+procedure BtnCloseClick(Sender: PUIObject); far;
 begin
 	WinAboutBox^.Close;
 end;
@@ -67,7 +67,7 @@ begin
 		AddHotkey(KeyAltC);
 		AddHotkey(KeyEnter);
 		AddHotkey(KeyEscape);
-		SetOnClick(AboutBoxClose);
+		SetOnClick(BtnCloseClick);
 	end;
 	
 	New(LblInfo[0], Init(56, 21, Name + ' ' + Version, WinAboutBox));

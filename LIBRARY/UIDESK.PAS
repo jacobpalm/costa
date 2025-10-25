@@ -323,7 +323,7 @@ begin
 			Dispose(TempNode);
 
 			Dec(LinkCount);
-			Exit;
+			break;
 		end;
 		PrevNode := TempNode;
 		TempNode := TempNode^.Next;
@@ -519,7 +519,8 @@ begin
 	LoadLinks := false;
 	DoTabAction(TabClear);
 
-	{Make sure Links is empty before loading new links}
+	{Make sure Links is empty before loading new links - ClearLinks also
+	 draws the desktop to remove any existing links visually}
 	Self.ClearLinks;
 	SelectedLink := nil;
 
@@ -533,18 +534,23 @@ begin
 	{$I+}
 	if IOResult <> 0 then
 	begin
+		{File could not be opened}
 		Close(F);
 		Exit;
 	end;
 
+	{Read links from file until EOF}
 	while not EOF(F) do
 	begin
+		{Clear record to avoid garbage data, and load from file}
 		FillChar(ReadLink, SizeOf(ReadLink), 0);
 		BlockRead(F, ReadLink, SizeOf(ReadLink), ReadBytes);
+		{If size of read data matches link record size, add it to desktop}
 		if ReadBytes = SizeOf(ReadLink) then
 			Self.AddLink(@ReadLink)
 		else
 		begin
+			{If size doesn't matter, the file is corrupted - clear any loaded links and exit}
 			Close(F);
 			Self.ClearLinks;
 			Exit;
@@ -552,6 +558,8 @@ begin
 	end;
 	
 	Close(F);
+
+	{Make sure links are sorted by position after loading, to enable tab navigation}
 	Self.SortLinks;
 	LoadLinks := true;
 
