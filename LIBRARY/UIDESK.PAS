@@ -1,7 +1,7 @@
 unit UIDesk;
 
 {Desktop control with links for applications and functionality to add/remove
- iclinksons, as well as move them around. Also able to load/save links from files.}
+ links, as well as move them around. Also able to load/save links from files.}
 
 interface
 
@@ -22,7 +22,7 @@ type
 	PLink = ^TLink;
 	TLink = record
 		Caption:     String[LinkCaptMax];
-		FileName:    PathStr;
+		FileName:    String[12]; {8 char filename + dot + 3 char extension}
 		Path:        DirStr;
 		Parameters:  ComStr;
 		IconFile:    String[8]; {8 char filename w/o extension}
@@ -208,6 +208,9 @@ begin
 			TempNode := TempNode^.Next;
 		end;
 
+		{Wait for mouse button release before calling event handler to avoid multiple clicks}
+		repeat; until Mouse.Clicked = MbNone;
+
 		{Trigger click or right-click event - if a link was clicked, SelectedLink
 		 will be set to it, otherwise it will be nil. Application can check that
 		 using GetActiveLink}
@@ -218,8 +221,6 @@ begin
 				if Assigned(OnRightClick) then
 					OnRightClick(@Self);
 		end;
-
-		repeat; until Mouse.Clicked = MbNone;
 	end;
 
 	{Check for keyboard input}
@@ -619,26 +620,68 @@ var
 
 	{Helper procedure to hide the tab indicator if visible}
 	procedure HideTabIndicator;
+	var
+		x1, y1: Integer;
 	begin
 		if not TabVisible or not Assigned(SelectedLink) then
 			exit;
 		
 		{Restore saved background}
-		Mouse.Hide;
 		if Assigned(TabBgImg) then
-			PutImage(SelectedLink^.Left - 3, SelectedLink^.Top - 3, TabBgImg^, NormalPut);
-		Mouse.Show;
+		begin
+			Mouse.Hide;
+			{Get absolute position of desktop, and set icon position relative to it}
+			GetPos(x1, y1, True);
+			Inc(x1, SelectedLink^.Left);
+			Inc(y1, SelectedLink^.Top);
+			PutImage(x1 - 3, y1 - 3, TabBgImg^, NormalPut);
+			Mouse.Show;
+		end;
 		TabVisible := false;
 	end;
 
 	{Helper procedure to draw the tab indicator at SelectedLink}
 	procedure DrawTabIndicator;
+	var
+		x1, y1, x2, y2: Integer;
 	begin
 		if not Assigned(SelectedLink) then
 			exit;
 		
 		Mouse.Hide;
-		GetImage(SelectedLink^.Left - 3, SelectedLink^.Top - 3, SelectedLink^.Left + 34, SelectedLink^.Top + 34, TabBgImg^);
+		{Get absolute position of desktop, and set icon position relative to it}
+		GetPos(x1, y1, True);
+		Inc(x1, SelectedLink^.Left);
+		Inc(y1, SelectedLink^.Top);
+		x1 := x1 - 3;
+		y1 := y1 - 3;
+		x2 := x1 + 37;
+		y2 := y1 + 37;
+		GetImage(x1, y1, x2, y2, TabBgImg^);
+
+		SetFillStyle(SolidFill, Thm.Btn);
+		Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
+	
+		{Top + left outer border}
+		SetColor(White);
+		Line(X1, Y1, X2, Y1);
+		Line(X1, Y1 + 1, X1, Y2);
+		{Inner border}
+		SetColor(Thm.Shadow);
+		Line(X1 + 1, Y1 + 1, X2 - 1, Y1 + 1);
+		Line (X1 + 1, Y1 + 2, X1 + 1, Y2 - 1);
+
+		{Bottom + right outer border}
+		SetColor(Black);
+		Line(X2, Y1 + 1, X2, Y2);
+		Line(X1 + 1, Y2, X2 - 1, Y2);
+		{Inner border}
+		SetColor(Thm.Light);
+		Line(X2 - 1, Y1 + 2, X2 - 1, Y2 - 1);
+		Line(X1 + 2, Y2 - 1, X2 - 2, Y2 - 1);
+
+		DrawLink(SelectedLink);
+
 		Mouse.Show;
 
 		TabVisible := true;
