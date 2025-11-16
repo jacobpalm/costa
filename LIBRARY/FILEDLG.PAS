@@ -453,6 +453,7 @@ begin
 	
 	WinFileSelect^.Run;
 	Dispose(WinFileSelect, Done);
+	WinFileSelect := nil;
 
 	FileSelect := ReturnedFile;
 

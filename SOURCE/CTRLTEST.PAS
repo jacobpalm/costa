@@ -83,6 +83,7 @@ begin
 
 	WinMain^.Run;
 	Dispose(WinMain, Done);
+	WinMain := nil;
 	{App^.OpenWindow(WinMain);
 	App^.Run;}
 	App^.Exit;

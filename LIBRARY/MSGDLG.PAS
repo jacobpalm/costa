@@ -96,7 +96,7 @@ begin
 	
 	WinMsgBox^.Run;
 	Dispose(WinMsgBox, Done);
-
+	WinMsgBox := nil;
 	MsgBox := ReturnValue;
 end;
 

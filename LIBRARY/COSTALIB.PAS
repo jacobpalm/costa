@@ -194,6 +194,8 @@ type
 			procedure   SetOnRun(Proc: TEventProc);
 			procedure   SetOnExit(Proc: TEventProc);
 
+			procedure   SetExitCode(Code: byte);
+
 			procedure   Run;
 			procedure   Exit;
 		private
@@ -201,6 +203,7 @@ type
 			Version,
 			Author,
 			Icon:       string;
+			ExitCode:   byte;
 			OnRun:      TEventProc;
 			OnExit:     TEventProc;
 			Window:     PWindowNode;
@@ -661,13 +664,14 @@ var
 	GraphMode,
 	ErrorCode: Integer;
 begin
-	Name    := '';
-	Version := '';
-	Author  := '';
-	Icon    := '';
-	Window  := nil;
-	OnRun   := nil;
-	OnExit  := nil;
+	Name     := '';
+	Version  := '';
+	Author   := '';
+	Icon     := '';
+	ExitCode := 0;
+	Window   := nil;
+	OnRun    := nil;
+	OnExit   := nil;
 	{Retrieve full path of the executable}
 	FullPath := ParamStr(0);
 	FSplit(FullPath, FPath, FName, FExt);
@@ -748,7 +752,7 @@ begin
 	Self.Done; {Call destructor, in case any descendant objects have additional cleanup code}
 
 	CloseGraph;
-	Halt(0);
+	Halt(ExitCode);
 end;
 
 procedure TApplication.Run;
@@ -890,6 +894,11 @@ begin
 	AppVersion := Version;
 	AppAuthor  := Author;
 	AppIcon    := Icon;
+end;
+
+procedure TApplication.SetExitCode(Code: byte);
+begin
+	ExitCode := Code;
 end;
 
 procedure TApplication.SetOnRun(Proc: TEventProc);

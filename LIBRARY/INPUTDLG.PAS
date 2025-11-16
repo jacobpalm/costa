@@ -86,6 +86,7 @@ begin
 	{Run the Window. This will not return until the Window is closed}
 	WinInputBox^.Run;
 	Dispose(WinInputBox, Done);
+	WinInputBox := nil;
 
 	InputBox := ReturnValue;
 	ClearInputBuffer;

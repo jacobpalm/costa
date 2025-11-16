@@ -76,6 +76,7 @@ begin
 
 	WinAboutBox^.Run;
 	Dispose(WinAboutBox, Done);
+	WinAboutBox := nil;
 end;
 
 end.

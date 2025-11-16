@@ -126,6 +126,7 @@ begin
 	InitUI;
 	WinRun^.Run;
 	Dispose(WinRun, Done);
+	WinRun := nil;
 	RunDialog := RunLink;
 end;
 
