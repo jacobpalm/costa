@@ -22,7 +22,7 @@ type
 	PLink = ^TLink;
 	TLink = record
 		Caption:     String[LinkCaptMax];
-		FileName:    String[12]; {8 char filename + dot + 3 char extension}
+		FileName:    PathStr;
 		Path:        DirStr;
 		Parameters:  ComStr;
 		IconFile:    String[8]; {8 char filename w/o extension}
@@ -132,6 +132,9 @@ var
 	ImgIcon: PIcon;
 	X, Y: Integer;
 	Color: byte;
+	FDir:         DirStr;
+	FName:        NameStr;
+	FExt:         ExtStr;
 begin
 	if Link = nil then
 		Exit;
@@ -155,7 +158,10 @@ begin
 	begin
 		Print(Link^.Caption, X + 38, Y + 4, Color);
 		if Setting.LinkTarget then
-			Print(Link^.FileName, X + 38, Y + 18, Color);
+		begin
+			FSplit(Link^.FileName, FDir, FName, FExt);
+			Print(FName + FExt, X + 38, Y + 18, Color);
+		end;
 	end;
 end;
 

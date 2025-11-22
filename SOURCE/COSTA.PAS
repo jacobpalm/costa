@@ -3,8 +3,7 @@ program CostaLauncher;
 {The Costa GUI launcher
  Runs DESKTOP.EXE and any external programs requested by the desktop.
  This allows the desktop to exit and memory to be freed while external
- programs are run.
-}
+ programs are run.}
 
 {Set stack to minimal size}
 {$M 1536, 0, 0}
@@ -16,22 +15,25 @@ const
 	CostaExe        = 'COSTA.EXE';
 	DesktopExe      = 'DESKTOP.EXE';
 	RunFile         = 'CONFIG\RUN.BIN';
+
+	LinkCaptMax   = 20;  {Maximum length for link captions}
 	
 	MSG_CONTINUE    = 'Press Enter to continue...';
-	MSG_LOWMEM      = 'Out of memory.';
+	MSG_LOWMEM      = 'Out of memory';
 	MSG_PATH_ERROR  = 'Error changing path to ';
 	MSG_DOS_TOO_OLD = 'Costa requires DOS 4.0 or later.';
 	MSG_NOT_FOUND   = ' not found.';
 
 type
 	TLink = record
-		Caption: String[20];
-		FileName: PathStr;
-		Path: DirStr;
-		Parameters: ComStr;
-		IconFile: String[8];
+		Caption:     String[LinkCaptMax];
+		FileName:    PathStr;
+		Path:        DirStr;
+		Parameters:  ComStr;
+		IconFile:    String[8]; {8 char filename w/o extension}
 		PauseOnExit: Boolean;
-		Left, Top: Integer;
+		Left,
+		Top:         Integer;
 	end;
 
 var
@@ -42,26 +44,41 @@ var
 procedure RunProgram;
 var
 	PauseOnExit: Boolean;
+	FDir:        DirStr;
+	FName:       NameStr;
+	FExt:        ExtStr;
 begin
+	{Change to the path specified in the link, if any}
+	if Length(RunLink.Path) > 0 then
+		FDir := RunLink.Path
+	else
+		{If no path specified, get path from filename}
+		FSplit(RunLink.FileName, FDir, FName, FExt);
+
+	{If still no path, use Costa path}
+	if Length(FDir) = 0 then
+		FDir := CostaPath;
+	
+	{Remove trailing backslash if present}
+	if FDir[Length(FDir)] = '\' then
+		Delete(FDir, Length(FDir), 1);
+
 	{$IFDEF DEBUG}
-		Writeln('Changing path to ', RunLink.Path);
-		Writeln('Running program ', RunLink.FileName);
-		Writeln('With parameters ', RunLink.Parameters);
+		Writeln('Changing path to -', RunLink.Path, '-');
+		Writeln('Running program  -', RunLink.FileName, '-');
+		Writeln('With parameters  -', RunLink.Parameters, '-');
 		Write(MSG_CONTINUE);
 		Readln;
 	{$ENDIF}
 
-	{Change to the path specified in the link, if any}
 	{$I-}
-	if Length(RunLink.Path) > 0 then
-		ChDir(RunLink.Path)
-	else
-		ChDir(CostaPath);
+	ChDir(FDir);
 	{$I+}
+
 	if IOResult <> 0 then
 	begin
-		Writeln(MSG_PATH_ERROR, RunLink.Path);
-		if Length(RunLink.Path) = 0 then
+		Writeln(MSG_PATH_ERROR, FDir);
+		if FDir = CostaPath then
 			Halt; {Can't change to Costa path, so exit to avoid infinite loop}
 		Writeln(MSG_CONTINUE);
 		Readln;
@@ -154,8 +171,8 @@ begin
 		if (IOResult <> 0) or (FileSize(F) <> SizeOf(RunLink)) then
 		begin
 			{$IFDEF DEBUG}
-				Writeln('Error reading run file: ', RunFile);
-				Writeln('File size: ', FileSize(F), ' bytes, expected: ', SizeOf(RunLink), ' bytes.');
+				Writeln('Error reading ', RunFile);
+				Writeln('Size ', FileSize(F), ' bytes, expected ', SizeOf(RunLink));
 			{$ENDIF}
 			Close(F);
 			Continue;

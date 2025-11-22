@@ -1,15 +1,17 @@
-program DESKTEST;
+program DESKTOP;
 
 {$M 32768, 0, 655360} {Require at least 32 KB stack}
 
 uses
-	Costalib, UIButton, UIDesk, MsgDlg, RunDlg, AboutDlg, FileDlg, InputDlg, Strings, Graph, Crt, DeskEdit, DeskMenu;
+	Costalib, UIButton, UIDesk, MsgDlg, RunDlg, AboutDlg, FileDlg, InputDlg, Strings, Graph, Crt, DeskEdit, DeskMenu, Dos;
 
 const
 	AppName                   = 'Desktop';
 	AppVersion                = '2.0';
 	AppAuthor                 = 'Jacob Palm';
 	AppIcon                   = 'LOGO';
+
+	RunFile                   = 'CONFIG\RUN.BIN';
 
 	CAP_ADD                   = 'A' + #127 + 'dd...';
 	CAP_RUN                   = #127 + 'Run...';
@@ -19,6 +21,16 @@ const
 	MSG_REMOVE_LINK_TITLE     = 'Remove desktop link';
 	MSG_REMOVE_LINK           = 'This will permanently delete this' + #13 + 
 	                            'desktop link. Are you sure?';
+	MSG_EXIT                  = 'Exit';
+	MSG_EXIT_PROMPT           = 'This will exit Costa and return you to the DOS' + #13 +
+	                            'prompt. Are you sure?';
+	MSG_SAVE_ERROR_TITLE      = 'Error writing to file';
+	MSG_SAVE_ERROR            = 'Could not open file for writing. The' + #13 + 
+	                            'file may be read-only or inaccesible:' + #13;
+	MSG_LOAD_ERROR_TITLE      = 'Error loading desktop links';
+	MSG_LOAD_ERROR            = 'Could not open file for reading. The' + #13 + 
+	                            'file may corrupt or inaccesible:' + #13;
+	MSG_OUT_OF_MEMORY         = 'Out of memory.';
 	MSG_NOT_A_PROGRAM_TITLE   = 'Not a program';
 	MSG_NOT_A_PROGRAM         = 'The file you are trying to run is not a program.' + #13 +
 	                            'Only .EXE, .COM and .BAT files can be executed.';
@@ -27,9 +39,6 @@ const
 	MSG_COMSPEC_TITLE         = 'COMSPEC not set';
 	MSG_COMSPEC               = 'The COMSPEC environment variable is not set.' + #13 +
 	                            'This is required to run batch files.';
-	MSG_EXIT                  = 'Exit';
-	MSG_EXIT_PROMPT           = 'This will exit Costa and return you to the DOS' + #13 +
-	                            'prompt. Are you sure?';
 
 var
 	App:      PApplication;
@@ -40,7 +49,76 @@ var
 	BtnAbout,
 	BtnExit:  PButton;
 
-	Filename: string;
+	DesktopFile: PathStr;
+
+procedure RunExternal(Target: PLink);
+var
+	F:          file;
+	FPath:      DirStr;
+	FName:      NameStr;
+	FExt:       ExtStr;
+	ComSpec:    String;
+	OutLink:    TLink;
+begin
+	if not Assigned(Target) then
+		exit;
+
+	{Make copy of link so we can modify it}
+	OutLink := Target^;
+
+	{If file not found, try adding the path from the link}
+	if not FileExists(OutLink.Filename) then
+		OutLink.Filename := OutLink.Path + '\' + OutLink.FileName;
+
+	{If still not found, don't run it}
+	if not FileExists(OutLink.Filename) then
+	begin
+		MsgBox(MSG_FILE_NOT_FOUND_TITLE, MSG_PROGRAM_NOT_FOUND + OutLink.Filename, MsgError);
+		exit;
+	end;
+
+	FSplit(OutLink.Filename, FPath, FName, FExt);
+	if (FExt <> '.EXE') and (FExt <> '.COM') and (FExt <> '.BAT') then
+	begin
+		MsgBox(MSG_NOT_A_PROGRAM_TITLE, MSG_NOT_A_PROGRAM, MsgError);
+		exit;
+	end;
+
+	{Batch files cannot be run directly, use COMSPEC to find command.com and
+	 run the batch file with it}
+	if FExt = '.BAT' then
+	begin
+		ComSpec := GetEnv('COMSPEC');
+		if Length(ComSpec) = 0 then
+		begin
+			MsgBox(MSG_COMSPEC_TITLE,
+				MSG_COMSPEC,
+				MsgError);
+			exit;
+		end;
+		{Move batch filename and parameters to parameters}
+		OutLink.Parameters := '/C ' + OutLink.Filename + ' ' + OutLink.Parameters;
+		{Replace filename with command.com}
+		OutLink.FileName := ComSpec;
+	end;
+
+	Assign(F, ProgramPath + RunFile);
+	{$I-}
+	Rewrite(F, 1);
+	{$I+}
+	if IOResult <> 0 then
+	begin
+		Close(F);
+		MsgBox(MSG_SAVE_ERROR_TITLE, MSG_SAVE_ERROR + RunFile, MsgError);
+		exit;
+	end;
+
+	BlockWrite(F, OutLink, SizeOf(OutLink));
+	Close(F);
+	
+	App^.SetExitCode(0);
+	WinMain^.Close;
+end;
 
 procedure BtnAddClick(Sender: PUIObject); far;
 var
@@ -64,8 +142,8 @@ begin
 	if EditLink(NewLink) then
 		Desk^.AddLink(NewLink);
 
-	{Regardless of whether the user pressed OK or Cancel, dispose of the link
-	 (if it was added to the desktop, the desktop now has its own copy)}
+	{Regardless of whether the user pressed OK or Cancel, dispose of the link.
+	 If it was added to the desktop, the desktop object now has its own copy.}
 	Dispose(NewLink);
 end;
 
@@ -95,61 +173,62 @@ begin
 	
 	if DoExit then
 	begin
-		Desk^.SaveLinks(App^.Path + 'CONFIG\TEST.BIN');
 		App^.SetExitCode(1); {Error code 1 makes COSTA.EXE terminate and return to DOS prompt}
-		App^.Exit;
+		WinMain^.Close;
 	end;
 end;
 
 procedure DeskClick(Sender: PUIObject); far;
 var
 	ClickedLink: PLink;
-	LinkAction: TLinkAction;
+	LinkAction:  TLinkAction;
+	result:      boolean;
 begin
 	ClickedLink := Desk^.GetActiveLink;
-	if Assigned(ClickedLink) then
-	begin
-		{MsgBox('Link Clicked', 'You clicked the link: ' + ClickedLink^.Caption + #13 + 'Right-click to move link.', MsgInfo);}
-		{if EditLink(ClickedLink) then
-		begin
-			Mouse.Hide;
-			Desk^.Draw;
-			Mouse.Show;
-		end;}
-		LinkAction := LinkMenu(ClickedLink);
+	if not Assigned(ClickedLink) then
+		exit;
+	
+	LinkAction := LinkMenu(ClickedLink);
+	case LinkAction of
 
-		case LinkAction of
-			laOpen:
+		{Open/run}
+		laOpen:
+		begin
+			{Desk^.OpenLink(ClickedLink);}
+			RunExternal(ClickedLink);
+		end;
+
+		{Edit properties}
+		laEdit:
+		begin
+			if EditLink(ClickedLink) then
 			begin
-				{Desk^.OpenLink(ClickedLink);}
-			end;
-			laEdit:
-			begin
-				if EditLink(ClickedLink) then
-				begin
-					Mouse.Hide;
-					Desk^.Draw;
-					Mouse.Show;
-				end;
-			end;
-			laMove:
-			begin
-				Desk^.MoveLink(ClickedLink);
-			end;
-			laRemove:
-			begin
-				if MsgBox(MSG_REMOVE_LINK_TITLE, MSG_REMOVE_LINK, MsgQuest) then
-				begin
-					Desk^.RemoveLink(ClickedLink);
-					Mouse.Hide;
-					Desk^.Draw;
-					Mouse.Show;
-				end;
+				Mouse.Hide;
+				Desk^.Draw;
+				Mouse.Show;
 			end;
 		end;
-	end
-	else
-		MsgBox('Desktop Clicked', 'You clicked on the desktop background.', MsgInfo);
+
+		{Move link on current desktop}
+		laMove:
+		begin
+			Desk^.MoveLink(ClickedLink);
+		end;
+
+		{Remove/delete link}
+		laRemove:
+		begin
+			if Setting.ConfLinkDel then
+				{Link delete confirmation enabled, prompt user}
+				result := MsgBox(MSG_REMOVE_LINK_TITLE, MSG_REMOVE_LINK, MsgQuest)
+			else
+				{Link delete confirmation disabled, just proceed}
+				result := true;
+			
+			if result then
+				Desk^.RemoveLink(ClickedLink);
+		end;
+	end;
 end;
 
 procedure DeskRightClick(Sender: PUIObject); far;
@@ -158,19 +237,24 @@ var
 begin
 	ClickedLink := Desk^.GetActiveLink;
 	if Assigned(ClickedLink) then
-	begin
 		Desk^.MoveLink(ClickedLink);
-	end
-	else
-		MsgBox('Desktop Right-Clicked', 'You right-clicked on the desktop background.', MsgInfo);
 end;
 
 procedure WinMainRun(Sender: PUIObject); far;
 var
-	LinkFile: string;
+	result:   boolean;
 begin
-	LinkFile := App^.Path + 'CONFIG\TEST.BIN';
-	Desk^.LoadLinks(LinkFile);
+	DesktopFile := App^.Path + 'CONFIG\TEST.BIN';
+	result := Desk^.LoadLinks(DesktopFile);
+
+	if not result then
+		MsgBox(MSG_LOAD_ERROR_TITLE, MSG_LOAD_ERROR + DesktopFile, MsgError);
+end;
+
+procedure WinMainClose(Sender: PUIObject); far;
+begin
+	{When the window is closed, the desktop will exit. Save data before closing}
+	Desk^.SaveLinks(DesktopFile);
 end;
 
 procedure InitUI;
@@ -230,4 +314,5 @@ begin
 	WinMain^.Run;
 	Dispose(WinMain, Done);
 	WinMain := nil;
+	App^.Exit;
 end.

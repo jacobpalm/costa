@@ -82,19 +82,13 @@ end;
 procedure BtnBrowse_Click(Sender: PUIObject); far;
 var
 	SelectedFile: string;
-	FDir:         DirStr;
-	FName:        NameStr;
-	FExt:         ExtStr;
 begin
 	SelectedFile := FileSelect('*.EXE', '');
 	if Length(SelectedFile) <> 0 then
 	begin
-		FSplit(SelectedFile, FDir, FName, FExt);
-		TxtFileName^.SetText(FName + FExt);
-		TxtPath^.SetText(FDir);
+		TxtFileName^.SetText(SelectedFile);
 		Mouse.Hide;
 		TxtFilename^.Draw;
-		TxtPath^.Draw;
 		Mouse.Show;
 	end;
 end;
@@ -195,6 +189,7 @@ begin
 	end;
 
 	New(ImgIcon, Init(261, 157, TargetLink^.IconFile, WinEdit));
+	ImgIcon^.SetOnClick(BtnIcon_Click);
 end;
 
 function EditLink(Link: PLink): boolean;
