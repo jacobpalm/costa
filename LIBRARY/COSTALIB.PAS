@@ -3,7 +3,7 @@ unit CostaLib;
 interface
 
 uses
-	Crt, Dos, Graph, Strings;
+	Crt, Dos, Graph, Strings, EGADriv;
 
 const
 	LibName              = 'Costa UI Library';
@@ -678,9 +678,10 @@ begin
 	ProgramPath := FPath;
 
 	{Initialize EGA 640x350 mode}
+	RegisterBGIdriver(@EGAVGADriverProc);
 	GraphDriver := EGA;
 	GraphMode := EGAHI;
-	InitGraph(GraphDriver, GraphMode, Self.Path);
+	InitGraph(GraphDriver, GraphMode, '');
 	ErrorCode := GraphResult;
 	If ErrorCode <> GrOk Then
 	Begin
