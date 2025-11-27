@@ -46,7 +46,8 @@ begin
 	if Length(TxtFilename^.GetText) > 0 then
 	begin
 		New(RunLink);
-		RunLink^.FileName := TxtFilename^.GetText;
+		FillChar(RunLink^, SizeOf(TLink), 0);
+		RunLink^.FileName := UpperCase(TxtFilename^.GetText);
 		RunLink^.Parameters := TxtParams^.GetText;
 		WinRun^.Close;
 	end;

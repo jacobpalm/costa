@@ -148,8 +148,17 @@ begin
 end;
 
 procedure BtnRunClick(Sender: PUIObject); far;
+var
+	RunLink: PLink;
 begin
-	RunDialog;
+	RunLink := nil;
+	RunLink := RunDialog;
+	if Assigned(RunLink) then
+	begin
+		RunExternal(RunLink);
+		{Dispose in case RunExternal fails}
+		Dispose(RunLink);
+	end;
 end;
 
 procedure BtnAboutClick(Sender: PUIObject); far;
@@ -265,7 +274,8 @@ begin
 	begin
 		SetSize(640, 350);
 		RemoveState(SBordered);
-		SetOnRun(WinMainRun)
+		SetOnRun(WinMainRun);
+		SetOnClose(WinMainClose);
 	end;
 
 	New(Desk, Init(0, 29, WinMain));

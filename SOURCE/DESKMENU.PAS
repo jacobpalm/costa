@@ -3,7 +3,7 @@ unit DeskMenu;
 interface
 
 uses
-	UIDesk;
+	UIDesk, DOS;
 
 type
 	TLinkAction = (laNone, laOpen, laEdit, laMove, laRemove);
@@ -62,25 +62,45 @@ begin
 end;
 
 procedure WinLinkMenu_Draw(Sender: PUIObject); far;
+const
+	MaxSLength = 43; {Filename label max length}
+	MaxLLength = 36; {Path + parameters max length}
 var
-	Path,
+	Filename,
 	Parameters: string;
+	Path: DirStr;
+	FName: NameStr;
+	FExt: ExtStr;
 begin
+	Filename := TargetLink^.FileName;
 	Path := TargetLink^.Path;
 	Parameters := TargetLink^.Parameters;
 
 	{If path or parameters are empty, show "Unspecified" or "None" respectively}
 	if Length(Path) = 0 then
-		Path := CAP_UNSPECIFIED;
+	begin
+		{Try getting path from filename}
+		FSplit(Filename, Path, FName, FExt);
+		{If still empty, show "Unspecified"}
+		if Length(Path) = 0 then
+			Path := CAP_UNSPECIFIED
+		else
+			{If we took path from filename, just show filename and extension without path}
+			Filename := FName + FExt;
+	end;
+
 	if Length(Parameters) = 0 then
 		Parameters := CAP_NONE;
 
 	{Truncate if too long}
-	if Length(Path) > 36 then
-		Path := Copy(Path, 1, 33) + '...';
-	if Length(Parameters) > 36 then
-		Parameters := Copy(Parameters, 1, 33) + '...';
+	if Length(FileName) > MaxSLength then
+		FileName := '...' + Copy(FileName, Length(FileName) - (MaxSLength - 3) + 1, MaxSLength - 3);
+	if Length(Path) > MaxLLength then
+		Path := Copy(Path, 1, MaxLLength - 3) + '...';
+	if Length(Parameters) > MaxLLength then
+		Parameters := Copy(Parameters, 1, MaxLLength - 3) + '...';
 	
+	LblLinkInfo^.SetCaption(TargetLink^.Caption + #13 + Filename);
 	LblPathValue^.SetCaption(Path);
 	LblParametersValue^.SetCaption(Parameters);
 end;
@@ -130,7 +150,7 @@ begin
 	end;
 	New(ImgIcon, Init(12, 11, TargetLink^.IconFile, WinLinkMenu));
 
-	New(LblLinkInfo, Init(54, 17, TargetLink^.Caption + #13 + TargetLink^.Filename, WinLinkMenu));
+	New(LblLinkInfo, Init(54, 17, '', WinLinkMenu));
 	New(LblPath, Init(12, 59, CAP_PATH, WinLinkMenu));
 	New(LblPathValue, Init(108, 59, '', WinLinkMenu));
 	New(LblParameters, Init(12, 76, CAP_PARAMETERS, WinLinkMenu));
