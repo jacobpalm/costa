@@ -385,15 +385,13 @@ end;
 
 procedure WinMainDraw(Sender: PUIObject); far;
 begin
-	{Draw text area when main window is redrawn}
+	{Draw empty text area when main window is first drawn}
 	SetFillStyle(SolidFill, Thm.Txt);
 	Bar(0, 29, GetMaxX, GetMaxY);
-end;
-
-procedure WinMainRun(Sender: PUIObject); far;
-begin
-	{Pass first command line argument as file name, LoadFile will ignore it if empty}
-	LoadFile(ParamStr(1));
+	
+	if not FileOpened then
+		{Pass first command line argument as file name, LoadFile will ignore it if empty}
+		LoadFile(ParamStr(1));
 end;
 
 procedure InitUI;
@@ -405,7 +403,6 @@ begin
 		SetSize(GetMaxX, GetMaxY);
 		RemoveState(SBordered);
 		SetOnDraw(WinMainDraw);
-		SetOnRun(WinMainRun);
 	end;
 
 	New(BtnOpen, Init(3, 2, CAP_OPEN, WinMain));

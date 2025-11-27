@@ -14,8 +14,9 @@ const
 
 	RunFile                   = 'CONFIG\RUN.BIN';
 	DeskFilePattern           = 'CONFIG\DESK%s.BIN'; {%s = placeholder for active desktop ID}
-	DesktopDefault            = 'CONFIG\DESKTOP.BIN';
+	DesktopDefault            = 'CONFIG\DESKDEF.BIN';
 	MaxDesktops               = 5;
+	KeyAltNoBase              = 120; {Key code for Alt+1, used to set hotkeys for desktops in loop}
 
 	CAP_ADD                   = 'A' + #127 + 'dd...';
 	CAP_RUN                   = #127 + 'Run...';
@@ -55,6 +56,7 @@ var
 	BtnPrevious,
 	BtnNext:     PButton;
 	LblDesktop:  PLabel;
+	HkDesktop:   array[1..MaxDesktops] of PHotkey;
 
 	DesktopFile: PathStr;
 
@@ -74,7 +76,7 @@ begin
 	OutLink := Target^;
 
 	{If file not found, try adding the path from the link}
-	if not FileExists(OutLink.Filename) then
+	if not FileExists(OutLink.Filename) and (Length(OutLink.Path) > 0) then
 		OutLink.Filename := OutLink.Path + '\' + OutLink.FileName;
 
 	{If still not found, don't run it}
@@ -127,13 +129,21 @@ begin
 	WinMain^.Close;
 end;
 
-procedure SwitchDesktop(DeskID: Byte);
+procedure SwitchDesktop(DeskID: Byte; ForceSwitch: Boolean);
 var
 	sDeskID,
 	sMaxDesktops: string;
 	result:       boolean;
 begin
 	result := false;
+
+	{Don't switch if the requested desktop is already active}
+	if (DeskID = Setting.DeskID) and not ForceSwitch then
+		exit;
+	
+	{Make sure current desktop is saved before clearing}
+	Desk^.SaveLinks(DesktopFile);
+	Desk^.ClearLinks;
 
 	{Make sure we stay within bounds}
 	if (DeskID < 1) then
@@ -163,7 +173,11 @@ begin
 
 	{If loading failed or file wasn't found, try to load default desktop links}
 	if FileExists(DesktopDefault) and (Setting.DeskID = 1) then
+	begin
 		Desk^.LoadLinks(DesktopDefault);
+		If Setting.DeskId > 1 then SoundNote(440, 200); {Beep to indicate failure when not loading desktop 1}
+	end;
+
 
 	{Wether we loaded default links or not, save the links so that the file now exists}
 	Desk^.SaveLinks(DesktopFile);	
@@ -300,26 +314,46 @@ end;
 
 procedure BtnPreviousClick(Sender: PUIObject); far;
 begin
-	SwitchDesktop(Setting.DeskID - 1);
+	SwitchDesktop(Setting.DeskID - 1, false);
 end;
 
 procedure BtnNextClick(Sender: PUIObject); far;
 begin
-	SwitchDesktop(Setting.DeskID + 1);
+	SwitchDesktop(Setting.DeskID + 1, false);
+end;
+
+procedure HkDesktopClick(Sender: PUIObject); far;
+var
+	i: integer;
+begin
+	{Check which desktop hotkey was pressed}
+	for i := 1 to MaxDesktops do
+	begin
+		if Sender = PUIObject(HkDesktop[i]) then
+		begin
+			{Switch to that desktop if it's not the current one}
+			if i <> Setting.DeskID then
+				SwitchDesktop(i, false);
+			exit;
+		end;
+	end;
 end;
 
 procedure WinMainRun(Sender: PUIObject); far;
 begin
-	SwitchDesktop(Setting.DeskID);
+	SwitchDesktop(Setting.DeskID, true);
 end;
 
 procedure WinMainClose(Sender: PUIObject); far;
 begin
 	{When the window is closed, the desktop will exit. Save data before closing}
 	Desk^.SaveLinks(DesktopFile);
+	App^.SaveSettings;
 end;
 
 procedure InitUI;
+var
+	i: integer;
 begin
 {Initialize UI objects}
 	New(WinMain, Init(0, 0, nil));
@@ -387,6 +421,13 @@ begin
 		SetSize(42, SizeRetain);
 		AddHotkey(KeyRight);
 		SetOnClick(BtnNextClick);
+	end;
+
+	for i := 1 to MaxDesktops do
+	begin
+		New(HkDesktop[i], Init(#0 + Chr(KeyAltNoBase + i - 1), WinMain)); {Alt+1, Alt+2, ...}
+		HkDesktop[i]^.AddHotkey(Chr(48 + i)); {Also add '1', '2', ... as hotkeys}
+		HkDesktop[i]^.SetOnClick(HkDesktopClick);
 	end;
 end;
 
