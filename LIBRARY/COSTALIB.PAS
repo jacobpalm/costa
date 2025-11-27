@@ -833,6 +833,7 @@ begin
 	LoadError := False;
 
 	{Set defaults - will be overwritten if settings file loads successfully}
+	FillChar(Setting, SizeOf(TLibSetting), 0);
 	Setting.DeskID      := 1;
 	Setting.LinkCapt    := True;
 	Setting.LinkTarget  := False;
@@ -841,6 +842,7 @@ begin
 	Setting.ThmFile     := 'DEFAULT';
 
 	if not FileExists(Self.Path + GlobalSettings) then
+		{Self.SaveSettings;} {Create default settings file if it doesn't exist}
 		exit;
 
 	Assign(F, Self.Path + GlobalSettings);

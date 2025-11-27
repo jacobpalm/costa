@@ -3,7 +3,8 @@ program DESKTOP;
 {$M 32768, 0, 655360} {Require at least 32 KB stack}
 
 uses
-	Costalib, UIButton, UIDesk, MsgDlg, RunDlg, AboutDlg, FileDlg, InputDlg, Strings, Graph, Crt, DeskEdit, DeskMenu, Dos;
+	Costalib, UIButton, UIDesk, UILabel, MsgDlg, RunDlg, AboutDlg, FileDlg, InputDlg,
+	Strings, Graph, Crt, DeskEdit, DeskMenu, Dos;
 
 const
 	AppName                   = 'Desktop';
@@ -12,6 +13,9 @@ const
 	AppIcon                   = 'LOGO';
 
 	RunFile                   = 'CONFIG\RUN.BIN';
+	DeskFilePattern           = 'CONFIG\DESK%s.BIN'; {%s = placeholder for active desktop ID}
+	DesktopDefault            = 'CONFIG\DESKTOP.BIN';
+	MaxDesktops               = 5;
 
 	CAP_ADD                   = 'A' + #127 + 'dd...';
 	CAP_RUN                   = #127 + 'Run...';
@@ -41,13 +45,16 @@ const
 	                            'This is required to run batch files.';
 
 var
-	App:      PApplication;
-	WinMain:  PWindow;
-	Desk:     PDesktop;
+	App:         PApplication;
+	WinMain:     PWindow;
+	Desk:        PDesktop;
 	BtnAdd,
 	BtnRun,
 	BtnAbout,
-	BtnExit:  PButton;
+	BtnExit,
+	BtnPrevious,
+	BtnNext:     PButton;
+	LblDesktop:  PLabel;
 
 	DesktopFile: PathStr;
 
@@ -118,6 +125,48 @@ begin
 	
 	App^.SetExitCode(0);
 	WinMain^.Close;
+end;
+
+procedure SwitchDesktop(DeskID: Byte);
+var
+	sDeskID,
+	sMaxDesktops: string;
+	result:       boolean;
+begin
+	result := false;
+
+	{Make sure we stay within bounds}
+	if (DeskID < 1) then
+		Setting.DeskID := MaxDesktops
+	else if (DeskID > MaxDesktops) then
+		Setting.DeskID := 1
+	else
+		Setting.DeskID := DeskID;
+
+	{Replace the placeholder char}
+	Str(Setting.DeskID, sDeskID);
+	DesktopFile := App^.Path + ReplaceMsg(DeskFilePattern, sDeskID);
+	Str(MaxDesktops, sMaxDesktops);
+	LblDesktop^.SetCaption(sDeskID + '/' + sMaxDesktops);
+
+	{Load the links, and exit if successful}
+	if FileExists(DesktopFile) then
+	begin
+		result := Desk^.LoadLinks(DesktopFile);
+
+		if result then
+			exit;
+		
+		{If we reach here, loading failed - show error message}
+		MsgBox(MSG_LOAD_ERROR_TITLE, MSG_LOAD_ERROR + DesktopFile, MsgError);
+	end;
+
+	{If loading failed or file wasn't found, try to load default desktop links}
+	if FileExists(DesktopDefault) and (Setting.DeskID = 1) then
+		Desk^.LoadLinks(DesktopDefault);
+
+	{Wether we loaded default links or not, save the links so that the file now exists}
+	Desk^.SaveLinks(DesktopFile);	
 end;
 
 procedure BtnAddClick(Sender: PUIObject); far;
@@ -249,15 +298,19 @@ begin
 		Desk^.MoveLink(ClickedLink);
 end;
 
-procedure WinMainRun(Sender: PUIObject); far;
-var
-	result:   boolean;
+procedure BtnPreviousClick(Sender: PUIObject); far;
 begin
-	DesktopFile := App^.Path + 'CONFIG\TEST.BIN';
-	result := Desk^.LoadLinks(DesktopFile);
+	SwitchDesktop(Setting.DeskID - 1);
+end;
 
-	if not result then
-		MsgBox(MSG_LOAD_ERROR_TITLE, MSG_LOAD_ERROR + DesktopFile, MsgError);
+procedure BtnNextClick(Sender: PUIObject); far;
+begin
+	SwitchDesktop(Setting.DeskID + 1);
+end;
+
+procedure WinMainRun(Sender: PUIObject); far;
+begin
+	SwitchDesktop(Setting.DeskID);
 end;
 
 procedure WinMainClose(Sender: PUIObject); far;
@@ -312,6 +365,28 @@ begin
 		AddHotkey(KeyAltX);
 		AddHotkey(KeyAltF4);
 		SetOnClick(BtnExitClick);
+	end;
+
+	New(LblDesktop, Init(10, 10, ' / ', WinMain));
+	With LblDesktop^ do
+	begin
+		AutoSize;
+		Center(OrHorizontal);
+		RemoveState(STransparent);
+	end;
+	New(BtnPrevious, Init(255, 2, HotkeyChr + CharArrowLeft, WinMain));
+	With BtnPrevious^ do
+	begin
+		SetSize(42, SizeRetain);
+		AddHotkey(KeyLeft);
+		SetOnClick(BtnPreviousClick);
+	end;
+	New(BtnNext, Init(343, 2, HotkeyChr + CharArrowRight, WinMain));
+	With BtnNext^ do
+	begin
+		SetSize(42, SizeRetain);
+		AddHotkey(KeyRight);
+		SetOnClick(BtnNextClick);
 	end;
 end;
 
