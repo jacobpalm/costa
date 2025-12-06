@@ -100,6 +100,9 @@ var
 	TempNode: PLinkNode;
 	BgColor: byte;
 begin
+	if GetState(SHidden) then
+		Exit;
+
 	{Get absolute position and size}
 	Self.GetPos(x1, y1, True);
 	Self.GetSize(x2, y2);
@@ -136,7 +139,7 @@ var
 	FName:        NameStr;
 	FExt:         ExtStr;
 begin
-	if Link = nil then
+	if (Link = nil) or (GetState(SHidden)) then
 		Exit;
 
 	{Get absolute position of desktop, and set icon position relative to it}

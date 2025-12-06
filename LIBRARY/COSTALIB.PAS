@@ -18,6 +18,8 @@ const
 	PrintLineH           = 12;   {Font dimensions - line height}
 	PrintCharW           = 8;    {Width of a single character}
 
+	MenuItemHeight       = 16;   {Height of a menu item in pixels}
+
 	CharArrowUp:	Char = #24;  {Arrows symbols for fonts}
 	CharArrowDown:  Char = #25;
 	CharArrowRight: Char = #26;
@@ -39,6 +41,7 @@ type
 	PWindowNode  = ^TWindowNode;
 	PContainer   = ^TContainer;
 	PMenu        = ^TMenu;
+	PMenuItem    = ^TMenuItem;
 
 	{Event procedure type, to ensure all event procedures have the same signature}
 	TEventProc   = procedure(Sender: PUIObject);
@@ -50,6 +53,9 @@ type
 
 	{Orientation for centering objects}
 	TOrientation = (OrHorizontal, OrVertical, OrBoth);
+
+	{Menu types}
+	TMenuStyle   = (MsPopup, MsMenuBar);
 
 	{Linked list of hotkeys, to allow multiple hotkeys per object}
 	THotkeyNode = record
@@ -120,12 +126,6 @@ type
 		procedure   CheckEvent; virtual;
 	end;
 
-	{Menu bar object, placed at the top of a window}
-	TMenu = object(TUIObject)
-		constructor Init(Parent: PContainer);
-		procedure   Draw; virtual;
-	end;
-
 	{Container object, which can contain multiple other objects via a linked list}
 	TContainer = object(TUIObject)
 		public
@@ -154,9 +154,9 @@ type
 
 			procedure   SetOnRun(Proc: TEventProc);
 			procedure   SetOnClose(Proc: TEventProc);
-			{procedure   SetMenu(Menu: PMenu);}
+			{procedure   SetMenuBar(MenuBar: PMenu);}
 		private
-			MenuObj:          PMenu;	       {Menu bar object, if any}
+			MenuObj:          PMenu;           {Menu bar object, if any}
 			DoClose:          Boolean;         {Set to true to close the window by exiting Run loop}
 			PreserveBackdrop: Boolean;         {If true, backdrop is preserved when window is drawn and restored when closed}
 			BackdropP:        Pointer;         {Stores background image to restore when window is closed}
@@ -170,6 +170,29 @@ type
 	TWindowNode = record
 		ObjectP: PWindow;
 		Next:    PWindowNode;
+	end;
+
+	{Menu object, placed at the top of a window or displayed as a popup menu}
+	TMenu = object(TContainer)
+		public
+			constructor Init(Style: TMenuStyle; Parent: PContainer);
+			destructor  Done; virtual;
+			procedure   Draw; virtual;
+			procedure   AddMenuItem(Item: PMenuItem);
+		private
+			MenuStyle:  TMenuStyle;
+	end;
+
+	{Menu item object, to be added to a menu}
+	TMenuItem = object(TUIObject)
+		public
+			constructor Init(Cap: string; AsSeperator: Boolean; Parent: PMenu);
+			destructor  Done; virtual;
+			procedure   CheckEvent; virtual;
+			procedure   Draw; virtual;
+		private
+			Caption:   string;
+			Seperator: Boolean;
 	end;
 
 	{Main application object, to which windows can be added}
@@ -628,26 +651,217 @@ end;
 { Menu object implementation }
 {----------------------------------------------------------------------------}
 
-constructor TMenu.Init(Parent: PContainer);
+constructor TMenu.Init(Style: TMenuStyle; Parent: PContainer);
 begin
-	TUIObject.Init;
-	SetParent(Parent);
-	SetSize(GetMaxX, 28);
-
-	{DEBUG - set position automatically to top of parent}
+	Inherited Init(0, 0, Parent);
+	SetSize(10, 10); {Will be resized when menu items are added or when added to a window}
+	MenuStyle := Style;
 end;
 
 procedure TMenu.Draw;
+var
+	X1, Y1, X2, Y2: Integer;
+	BgColor: Byte;
 begin
-	{Background}
-	SetFillStyle(SolidFill, Thm.Win);
-	Bar(Left, Top, Left + Width, Top + Height - 1);
+	{Don't draw or trigger event if menu is hidden}
+	if GetState(SHidden) then
+		exit;
 
-	{3D border below}
-	SetColor(Thm.Shadow);
-	Line(Left, Top + Height - 1, Left + Width, Top + Height - 1);
-	SetColor(Black);
-	Line(Left, Top + Height, Left + Width, Top + Height);
+	{Get colors}
+	BgColor := GetBGColor;
+	if BgColor = ColorDefault then
+		BgColor := Thm.Win;
+
+	if MenuStyle = MsPopup then
+	begin
+		{Interior}
+		SetFillStyle(SolidFill, BgColor);
+		Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 2);
+		{Top + left outer border}
+		SetColor(White);
+		Line(X1, Y1, X2, Y1);
+		Line(X1, Y1 + 1, X1, Y2);
+		{Inner border}
+		SetColor(Thm.Light);
+		Line(X1 + 1, Y1 + 1, X2 - 1, Y1 + 1);
+		Line (X1 + 1, Y1 + 2, X1 + 1, Y2 - 1);
+		{Bottom + right outer border}
+		SetColor(Black);
+		Line(X2, Y1 + 1, X2, Y2);
+		Line(X1 + 1, Y2, X2 - 1, Y2);
+		{Inner border}
+		SetColor(Thm.Shadow);
+		Line(X2 - 1, Y1 + 2, X2 - 1, Y2 - 1);
+		Line(X1 + 2, Y2 - 1, X2 - 2, Y2 - 1);
+	end
+	else
+	begin
+		{Get absolute position and size of the object}
+		GetPos(X1, Y1, True);
+		GetSize(X2, Y2);
+		Inc(X2, X1);
+		Inc(Y2, Y1);
+
+		{Interior}
+		SetFillStyle(SolidFill, BgColor);
+		Bar(X1, Y1, X2, Y2 - 2);
+
+		{3D border below}
+		SetColor(Thm.Shadow);
+		Line(X1, Y2 - 1, X2, Y2 - 1);
+		SetColor(Black);
+		Line(X1, Y2, X2, Y2);
+	end;
+
+	DrawChildren; {Draw all menu items}
+end;
+
+procedure TMenu.AddMenuItem(Item: PMenuItem);
+var
+	X, Y, W, H: Integer;
+	OffsetX, OffsetY, OffsetW, OffsetH: Integer;
+	OffsetNode: PObjectNode;
+begin
+	OffsetX := 0;
+	OffsetY := 0;
+	OffsetW := 0;
+	OffsetH := 0;
+
+	{Item will be placed after the last existing item, and since items are added
+	 to the start of the linked list, the first item in the list is the last added item}
+	if Assigned(Objects) then
+	begin
+		OffsetNode := Objects;
+		while Assigned(OffsetNode^.Next) do
+			OffsetNode := OffsetNode^.Next;
+		OffsetNode^.ObjectP^.GetPos(OffsetX, OffsetY, False);
+		OffsetNode^.ObjectP^.GetSize(OffsetW, OffsetH);
+		OffsetX := OffsetX + OffsetW + 1;
+		OffsetY := OffsetY + OffsetH + 1;
+	end;
+
+	if MenuStyle = MsPopup then
+	begin
+		X := 2;
+		Y := OffsetY;
+		W := 10; {Width will be set later when menu is show}
+	end
+	else
+	begin
+		{Menu bar}
+		X := OffsetX;
+		Y := 0;
+		W := PrintW(Item^.Caption) + 9; {Width based on caption length, plus spacing}
+	end;
+	H := MenuItemHeight;
+
+	{Set position and size of the new menu item}
+	Item^.SetPos(X, Y);
+	Item^.SetSize(W, H);
+
+	{Add item to the menu's linked list of objects}
+	Item^.SetParent(@Self);
+end;
+
+destructor TMenu.Done;
+begin
+	Inherited Done;
+end;
+
+{----------------------------------------------------------------------------}
+{ Menu item object implementation }
+{----------------------------------------------------------------------------}
+
+constructor TMenuItem.Init(Cap: string; AsSeperator: Boolean; Parent: PMenu);
+begin
+	Inherited Init;
+	Caption   := Cap;
+	Seperator := AsSeperator;
+	if Assigned(Parent) then
+		Parent^.AddMenuItem(@Self);
+end;
+
+procedure TMenuItem.CheckEvent;
+begin
+	{Don't check for events if item is disabled or hidden}
+	if not GetState(SEnabled) or GetState(SHidden) then
+		exit;
+
+	{Todo - if menu is a popup menu, only allow interaction when visible}
+
+	if IsMouseOver then
+	begin
+		{Make sure item is highlighted when mouse is over}
+		if not GetState(SActive) then
+		begin
+			AddState(SActive);
+			Mouse.Hide;
+			Self.Draw;
+			Mouse.Show;
+		end;
+
+		if Mouse.Clicked = MbLeft then
+		begin
+			repeat;	until Mouse.Clicked = MbNone;
+			{Check if mouse is still over the item after release}
+			if Self.IsMouseOver then
+			begin
+				RemoveState(SActive);
+				Self.Click;
+			end;
+		end;
+	end
+	else
+	begin
+		{If mouse is not over the item, remove highlight}
+		if GetState(SActive) then
+		begin
+			RemoveState(SActive);
+			Mouse.Hide;
+			Self.Draw;
+			Mouse.Show;
+		end;
+	end;
+
+end;
+
+procedure TMenuItem.Draw;
+var
+	X1, Y1, X2, Y2: Integer;
+	FgColor, BgColor: Byte;
+begin
+	{Get absolute position and size of the object}
+	GetPos(X1, Y1, True);
+	GetSize(X2, Y2);
+	Inc(X2, X1);
+	Inc(Y2, Y1);
+
+	if GetState(SActive) then
+	begin
+		FGColor := Thm.SelText;
+		BgColor := Thm.Sel;
+	end
+	else
+	begin
+		{Get colors}
+		FgColor := GetFGColor;
+		BgColor := GetBGColor;
+		{Set default colors if needed}
+		if BgColor = ColorDefault then
+			BgColor := Thm.Win;
+		if FgColor = ColorDefault then
+			FgColor := Thm.WinText;
+	end;
+
+	{Interior}
+	SetFillStyle(SolidFill, BgColor);
+	Bar(X1, Y1, X2, Y2 - 2);
+	Print(Caption, X1 + 5, Y1 + 3, FgColor);
+end;
+
+destructor TMenuItem.Done;
+begin
+	Inherited Done;
 end;
 
 {----------------------------------------------------------------------------}

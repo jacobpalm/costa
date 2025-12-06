@@ -26,9 +26,9 @@ const
 	MSG_REMOVE_LINK_TITLE     = 'Remove desktop link';
 	MSG_REMOVE_LINK           = 'This will permanently delete this' + #13 + 
 	                            'desktop link. Are you sure?';
-	MSG_EXIT                  = 'Exit';
+	MSG_EXIT                  = 'Exit Costa';
 	MSG_EXIT_PROMPT           = 'This will exit Costa and return you to the DOS' + #13 +
-	                            'prompt. Are you sure?';
+	                            'prompt. Continue?';
 	MSG_SAVE_ERROR_TITLE      = 'Error writing to file';
 	MSG_SAVE_ERROR            = 'Could not open file for writing. The' + #13 + 
 	                            'file may be read-only or inaccesible:' + #13;
@@ -77,7 +77,7 @@ begin
 
 	{If file not found, try adding the path from the link}
 	if not FileExists(OutLink.Filename) and (Length(OutLink.Path) > 0) then
-		OutLink.Filename := OutLink.Path + '\' + OutLink.FileName;
+		OutLink.Filename := Concat(OutLink.Path, '\', OutLink.FileName);
 
 	{If still not found, don't run it}
 	if not FileExists(OutLink.Filename) then
@@ -100,13 +100,11 @@ begin
 		ComSpec := GetEnv('COMSPEC');
 		if Length(ComSpec) = 0 then
 		begin
-			MsgBox(MSG_COMSPEC_TITLE,
-				MSG_COMSPEC,
-				MsgError);
+			MsgBox(MSG_COMSPEC_TITLE, MSG_COMSPEC, MsgError);
 			exit;
 		end;
 		{Move batch filename and parameters to parameters}
-		OutLink.Parameters := '/C ' + OutLink.Filename + ' ' + OutLink.Parameters;
+		OutLink.Parameters := Concat('/C ', OutLink.Filename, ' ', OutLink.Parameters);
 		{Replace filename with command.com}
 		OutLink.FileName := ComSpec;
 	end;
@@ -142,8 +140,11 @@ begin
 		exit;
 	
 	{Make sure current desktop is saved before clearing}
-	Desk^.SaveLinks(DesktopFile);
-	Desk^.ClearLinks;
+	if Length(DesktopFile) > 0 then
+	begin
+		Desk^.SaveLinks(DesktopFile);
+		Desk^.ClearLinks;
+	end;
 
 	{Make sure we stay within bounds}
 	if (DeskID < 1) then
@@ -157,7 +158,7 @@ begin
 	Str(Setting.DeskID, sDeskID);
 	DesktopFile := App^.Path + ReplaceMsg(DeskFilePattern, sDeskID);
 	Str(MaxDesktops, sMaxDesktops);
-	LblDesktop^.SetCaption(sDeskID + '/' + sMaxDesktops);
+	LblDesktop^.SetCaption( Concat(sDeskID, '/', sMaxDesktops) );
 
 	{Load the links, and exit if successful}
 	if FileExists(DesktopFile) then
@@ -173,11 +174,7 @@ begin
 
 	{If loading failed or file wasn't found, try to load default desktop links}
 	if FileExists(DesktopDefault) and (Setting.DeskID = 1) then
-	begin
 		Desk^.LoadLinks(DesktopDefault);
-		If Setting.DeskId > 1 then SoundNote(440, 200); {Beep to indicate failure when not loading desktop 1}
-	end;
-
 
 	{Wether we loaded default links or not, save the links so that the file now exists}
 	Desk^.SaveLinks(DesktopFile);	
@@ -240,7 +237,7 @@ begin
 		DoExit := true
 	else
 		{Otherwise, ask for confirmation}
-		if MsgBox(MSG_EXIT + ' ' + appName, MSG_EXIT_PROMPT, MsgQuest) then
+		if MsgBox(MSG_EXIT, MSG_EXIT_PROMPT, MsgQuest) then
 			DoExit := true;
 	
 	if DoExit then
@@ -339,9 +336,15 @@ begin
 	end;
 end;
 
-procedure WinMainRun(Sender: PUIObject); far;
+procedure WinMainDraw(Sender: PUIObject); far;
 begin
-	SwitchDesktop(Setting.DeskID, true);
+	{First time the main window is drawn, load the desktop links}
+	if Length(DesktopFile) = 0 then
+	begin
+		SwitchDesktop(Setting.DeskID, true);
+		{Show the desktop now that links are loaded}
+		Desk^.RemoveState(SHidden);
+	end;
 end;
 
 procedure WinMainClose(Sender: PUIObject); far;
@@ -361,16 +364,8 @@ begin
 	begin
 		SetSize(640, 350);
 		RemoveState(SBordered);
-		SetOnRun(WinMainRun);
+		SetOnDraw(WinMainDraw);
 		SetOnClose(WinMainClose);
-	end;
-
-	New(Desk, Init(0, 29, WinMain));
-	With Desk^ do
-	begin
-		SetSize(640, 321);
-		SetOnClick(DeskClick);
-		SetOnRightClick(DeskRightClick);
 	end;
 
 	New(BtnAdd, Init(2, 2, CAP_ADD, WinMain));
@@ -421,6 +416,15 @@ begin
 		SetSize(42, SizeRetain);
 		AddHotkey(KeyRight);
 		SetOnClick(BtnNextClick);
+	end;
+
+	New(Desk, Init(0, 29, WinMain));
+	With Desk^ do
+	begin
+		SetSize(640, 321);
+		SetOnClick(DeskClick);
+		SetOnRightClick(DeskRightClick);
+		AddState(SHidden); {Start hidden, will be shown when links are loaded}
 	end;
 
 	for i := 1 to MaxDesktops do

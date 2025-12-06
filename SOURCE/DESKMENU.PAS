@@ -45,7 +45,7 @@ var
 	LinkAction:         TLinkAction;
 
 
-procedure Button_Click(Sender: PUIObject); far;
+procedure ButtonClick(Sender: PUIObject); far;
 begin
 	if Sender = PUIObject(BtnOpen) then
 		LinkAction := laOpen
@@ -61,7 +61,7 @@ begin
 	WinLinkMenu^.Close;
 end;
 
-procedure WinLinkMenu_Draw(Sender: PUIObject); far;
+procedure WinLinkMenuDraw(Sender: PUIObject); far;
 const
 	MaxSLength = 43; {Filename label max length}
 	MaxLLength = 36; {Path + parameters max length}
@@ -112,7 +112,7 @@ begin
 	begin
 		SetSize(413, 165);
 		Center(OrBoth);
-		SetOnDraw(WinLinkMenu_Draw);
+		SetOnDraw(WinLinkMenuDraw);
 		SaveBackdrop;
 	end;
 	New(BtnOpen, Init(12, 101, CAP_OPEN, WinLinkMenu));
@@ -121,32 +121,32 @@ begin
 		SetSize(389, SizeRetain);
 		AddHotkey(KeyAltO);
 		AddHotkey(KeyEnter);
-		SetOnClick(Button_Click);
+		SetOnClick(ButtonClick);
 	end;
 	New(BtnEdit, Init(12, 131, CAP_EDIT, WinLinkMenu));
 	with BtnEdit^ do
 	begin
 		AddHotkey(KeyAltE);
-		SetOnClick(Button_Click);
+		SetOnClick(ButtonClick);
 	end;
 	New(BtnMove, Init(111, 131, CAP_MOVE, WinLinkMenu));
 	with BtnMove^ do
 	begin
 		AddHotkey(KeyAltM);
-		SetOnClick(Button_Click);
+		SetOnClick(ButtonClick);
 	end;
 	New(BtnRemove, Init(210, 131, CAP_REMOVE, WinLinkMenu));
 	with BtnRemove^ do
 	begin
 		AddHotkey(KeyAltR);
-		SetOnClick(Button_Click);
+		SetOnClick(ButtonClick);
 	end;
 	New(BtnCancel, Init(309, 131, CAP_CANCEL, WinLinkMenu));
 	with BtnCancel^ do
 	begin
 		AddHotkey(KeyAltC);
 		AddHotkey(KeyEscape);
-		SetOnClick(Button_Click);
+		SetOnClick(ButtonClick);
 	end;
 	New(ImgIcon, Init(12, 11, TargetLink^.IconFile, WinLinkMenu));
 

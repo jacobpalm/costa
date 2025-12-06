@@ -120,7 +120,7 @@ begin
 		if BgColor = ColorDefault then
 			BgColor := Thm.Btn;
 		SetFillStyle(SolidFill, BgColor);
-		Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
+		Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 2);
 	End;
 	
 	{Invert border colors if pressed down}
