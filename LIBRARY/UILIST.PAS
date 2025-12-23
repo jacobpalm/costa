@@ -231,10 +231,8 @@ var
 	FgColor, BgColor: Byte;
 begin
 	{Draw procedure of TArea draws the background and border}
-	Mouse.Hide;
 	inherited Draw;
-	Mouse.Show;
-
+	
 	if Head = nil then
 		exit; {Nothing to draw}
 
@@ -261,7 +259,6 @@ begin
 	if StartPos > Length then
 		StartPos := 1; {Reset start position if it exceeds item count}
 
-	Mouse.Hide;
 	{Draw items from the start position}
 	for I := StartPos to StartPos + MaxVisibleItems - 1 do
 	begin
@@ -286,7 +283,6 @@ begin
 			Inc(Counter);
 		end;
 	end;
-	Mouse.Show;
 
 	TUIObject.Draw;
 end;
