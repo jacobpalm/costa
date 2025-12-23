@@ -244,6 +244,7 @@ end;
 
 procedure BtnSetSizeClick(Sender: PUIObject); far;
 begin
+	MineField^.PauseGame;
 	{Show size dialog}
 	WinSetSize^.Run;
 
@@ -257,7 +258,9 @@ begin
 		Mouse.Show;
 		UpdateStatus('');
 		TiStatusClick(nil); {Update time display immediately}
-	end;
+	end
+	else
+		MineField^.ResumeGame;
 end;
 
 procedure BtnSoundClick(Sender: PUIObject); far;
@@ -282,7 +285,9 @@ end;
 
 procedure BtnAboutClick(Sender: PUIObject); far;
 begin
+	MineField^.PauseGame;
 	AboutBox(App);
+	MineField^.ResumeGame;
 end;
 
 procedure BtnExitClick(Sender: PUIObject); far;
