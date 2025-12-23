@@ -18,11 +18,31 @@ COSTADIR   = C:\COSTA
 LIBDIR     = $(COSTADIR)\LIBRARY
 SOURCEDIR  = $(COSTADIR)\SOURCE
 
-# Compiler settings and paths
+# Paths for compilers/linkers - recommended to set these in your PATH, but can be set here
 TPC = TPC
-SWITCHES = -M -$D- -$E- -$L- 
-TPCCMD = $(TPC) $(SWITCHES)
-BINOBJCMD = BINOBJ
+TASM = TASM
+TLINK = TLINK
+BINOBJ = BINOBJ
+
+
+# Settings for compilers/linkers
+
+# -M   = Make modified units
+# -$D- = Disable debug info
+# -$E- = Disable 80x87 emulation
+# -$L- = Disable local debug symbols
+TPCSWITCHES = -M -$D- -$E- -$L- 
+TPCCMD = $(TPC) $(TPCSWITCHES)
+
+# TASM/TLINK options for COSTA.EXE
+# /ZN = Debug info disabled
+TASMSWITCHES = /zn
+TASMCMD = $(TASM) $(TASMSWITCHES)
+TLINKSWITCHES = /x
+TLINKCMD = $(TLINK) $(TLINKSWITCHES)
+
+# BINOBJ options for building binary object files, used for graphics drivers
+BINOBJCMD = $(BINOBJ)
 
 # Compiler paths for library and application source files
 LIBPATHS = -U$(LIBDIR) -I$(LIBDIR) -O$(LIBDIR) -E$(COSTADIR)
@@ -36,11 +56,14 @@ ALL: COSTA.EXE DESKTOP.EXE ICONEDIT.EXE MINES.EXE TEXTVIEW.EXE CONFIG.EXE
 
 # Launcher ##################################################################
 
-COSTA.EXE: $(SOURCEDIR)\COSTA.PAS
-	$(TPCCMD) $(SOURCEDIR)\COSTA.PAS $(APPPATHS)
+COSTA.EXE: COSTA.OBJ
+	$(TLINKCMD) COSTA.OBJ
+
+COSTA.OBJ: $(SOURCEDIR)\COSTA.ASM
+	$(TASMCMD) $(SOURCEDIR)\COSTA.ASM
 
 # Desktop ###################################################################
-
+			 
 DESKTOP.EXE: $(SOURCEDIR)\DESKTOP.PAS COSTALIB.TPU UIBUTTON.TPU UIDESK.TPU MSGDLG.TPU RUNDLG.TPU ABOUTDLG.TPU FILEDLG.TPU INPUTDLG.TPU DESKEDIT.TPU DESKMENU.TPU
 	$(TPCCMD) $(SOURCEDIR)\DESKTOP.PAS $(APPPATHS)
 
@@ -74,17 +97,17 @@ TEXTVIEW.EXE: $(SOURCEDIR)\TEXTVIEW.PAS COSTALIB.TPU UIBUTTON.TPU UITXTBOX.TPU M
 # Theme Editor ##############################################################
 
 #THMEDIT.EXE: $(SOURCEDIR)\THMEDIT.PAS COSTALIB.TPU UIBUTTON.TPU UILABEL.TPU UITXTBOX.TPU UIAREA.TPU UIFRAME.TPU UIICON.TPU ABOUTDLG.TPU MSGDLG.TPU INPUTDLG.TPU FILEDLG.TPU
-#	$(TPCCMD) $(SOURCEDIR)\THMEDIT.PAS $(APPPATHS)
+#   $(TPCCMD) $(SOURCEDIR)\THMEDIT.PAS $(APPPATHS)
 
 # Calculator ################################################################
 
 #CALC.EXE: $(SOURCEDIR)\CALC.PAS COSTALIB.TPU UIBUTTON.TPU UIFRAME.TPU UITXTBOX.TPU
-#	$(TPCCMD) $(SOURCEDIR)\CALC.PAS $(APPPATHS)
+#   $(TPCCMD) $(SOURCEDIR)\CALC.PAS $(APPPATHS)
 
 # Tic Tac Toe ###############################################################
 
 #TICTAC.EXE: $(SOURCEDIR)\TICTAC.PAS COSTALIB.TPU UIBUTTON.TPU UIAREA.TPU UIFRAME.TPU
-#	$(TPCCMD) $(SOURCEDIR)\TICTAC.PAS $(APPPATHS)
+#   $(TPCCMD) $(SOURCEDIR)\TICTAC.PAS $(APPPATHS)
 
 # Configuration Utility #####################################################
 
@@ -158,3 +181,12 @@ MSGDLG.TPU: $(LIBDIR)\MSGDLG.PAS COSTALIB.TPU UIBUTTON.TPU UILABEL.TPU UIICON.TP
 
 RUNDLG.TPU: $(LIBDIR)\RUNDLG.PAS COSTALIB.TPU UIDESK.TPU UIBUTTON.TPU UITXTBOX.TPU FILEDLG.TPU
 	$(TPCCMD) $(LIBDIR)\RUNDLG.PAS $(LIBPATHS)
+
+# Clean up ##################################################################
+
+CLEAN:
+	del $(COSTADIR)\*.TPU
+	del $(COSTADIR)\*.OBJ
+	del $(COSTADIR)\*.MAP
+	@echo.
+	@echo Cleaned up build files.
