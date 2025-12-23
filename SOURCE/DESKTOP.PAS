@@ -44,6 +44,11 @@ const
 	MSG_COMSPEC_TITLE         = 'COMSPEC not set';
 	MSG_COMSPEC               = 'The COMSPEC environment variable is not set.' + #13 +
 	                            'This is required to run batch files.';
+	MSG_RUN_COSTA             = 'This program is intended to be run from within Costa.' + #10 + #13 +
+	                            'Please run COSTA.EXE to start Costa and the desktop.';	
+
+type
+	{$I RUNLINK.INC}
 
 var
 	App:         PApplication;
@@ -62,18 +67,25 @@ var
 
 procedure RunExternal(Target: PLink);
 var
-	F:          file;
-	FPath:      DirStr;
-	FName:      NameStr;
-	FExt:       ExtStr;
-	ComSpec:    String;
-	OutLink:    TLink;
+	F:           file;
+	FPath:       DirStr;
+	FName:       NameStr;
+	FExt:        ExtStr;
+	ComSpec:     String;
+	OutLink:     TLink;
+	ZFileName:   array[0..80] of Char;
+	ZPath:       array[0..68] of Char;
+	ZParameters: array[0..128] of Char;
 begin
 	if not Assigned(Target) then
 		exit;
 
 	{Make copy of link so we can modify it}
 	OutLink := Target^;
+
+	{Remove trailing backslash if present, to avoid problems with path change}
+	if OutLink.Path[Length(OutLink.Path)] = '\' then
+		Dec(OutLink.Path[0]);
 
 	{If file not found, try adding the path from the link}
 	if not FileExists(OutLink.Filename) and (Length(OutLink.Path) > 0) then
@@ -109,6 +121,14 @@ begin
 		OutLink.FileName := ComSpec;
 	end;
 
+	{Convert strings to ASCIIZ}
+	Move(OutLink.Filename[1], ZFileName, Length(OutLink.Filename));
+  	ZFileName[Length(OutLink.Filename)] := #0;
+	Move(OutLink.Parameters[1], ZParameters, Length(OutLink.Parameters));
+	ZParameters[Length(OutLink.Parameters)] := #0;
+	Move(OutLink.Path[1], ZPath, Length(OutLink.Path));
+  	ZPath[Length(OutLink.Path)] := #0;
+
 	Assign(F, ProgramPath + RunFile);
 	{$I-}
 	Rewrite(F, 1);
@@ -120,7 +140,11 @@ begin
 		exit;
 	end;
 
-	BlockWrite(F, OutLink, SizeOf(OutLink));
+	{BlockWrite(F, OutLink, SizeOf(OutLink));}
+	BlockWrite(F, ZFileName, SizeOf(ZFileName));
+	BlockWrite(F, ZPath, SizeOf(ZPath));
+	BlockWrite(F, ZParameters, SizeOf(ZParameters));
+	BlockWrite(F, OutLink.PauseOnExit, SizeOf(OutLink.PauseOnExit));
 	Close(F);
 	
 	App^.SetExitCode(0);
@@ -371,7 +395,7 @@ begin
 	New(BtnAdd, Init(2, 2, CAP_ADD, WinMain));
 	With BtnAdd^ do
 	begin
-		AddHotkey(KeyAltA);
+		AddHotkey(KeyAltD);
 		SetOnClick(BtnAddClick);
 	end;	
 	New(BtnRun, Init(101, 2, CAP_RUN, WinMain));
@@ -385,7 +409,6 @@ begin
 	With BtnAbout^ do
 	begin
 		AddHotkey(KeyAltA);
-		AddHotkey(KeyF1);
 		SetOnClick(BtnAboutClick);
 	end;
 	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
@@ -436,6 +459,14 @@ begin
 end;
 
 begin
+	{Desktop won't work if run outside Costa, so make sure the right parameter is passed from COSTA.EXE}
+	if not (ParamStr(1) = '/RUN') then
+	begin
+		Writeln(MSG_RUN_COSTA);
+		Writeln(Paramstr(1)); {DEBUG}
+		Exit;
+	end;
+
 	New(App, Init);
 	App^.SetInfo(AppName, AppVersion, AppAuthor, AppIcon);
 
