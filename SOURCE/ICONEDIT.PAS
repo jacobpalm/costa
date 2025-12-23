@@ -331,7 +331,6 @@ begin
 	With BtnAbout^ do
 	begin
 		AddHotkey(KeyAltA);
-		AddHotkey(KeyF1);
 		SetOnClick(BtnAboutClick);
 	end;
 	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));

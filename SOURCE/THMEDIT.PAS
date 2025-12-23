@@ -512,8 +512,7 @@ begin
 				exit;
 	end;
 
-	CloseGraph;
-	Halt(0);
+	App^.Exit;
 end;
 
 procedure TextboxChange(Sender: PUIObject); far;

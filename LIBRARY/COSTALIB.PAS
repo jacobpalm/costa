@@ -807,6 +807,9 @@ begin
 			if Self.IsMouseOver then
 			begin
 				RemoveState(SActive);
+				Mouse.Hide;
+				Self.Draw;
+				Mouse.Show;
 				Self.Click;
 			end;
 		end;
@@ -823,6 +826,9 @@ begin
 		end;
 	end;
 
+	if Self.HotkeyPressed then
+		{Trigger OnClick event, if assigned}
+		Self.Click;
 end;
 
 procedure TMenuItem.Draw;

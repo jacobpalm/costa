@@ -379,8 +379,7 @@ end;
 
 procedure BtnExitClick(Sender: PUIObject); far;
 begin
-	CloseGraph;
-	Halt(0);
+	App^.Exit;
 end;
 
 procedure WinMainDraw(Sender: PUIObject); far;
