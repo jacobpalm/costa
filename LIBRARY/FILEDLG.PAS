@@ -145,8 +145,10 @@ begin
 		Drive := DriveLetter;
 		GetChildFiles(Path, Pattern);
 		GetChildDirs(Path);
+		Mouse.Hide;
 		List[FileList]^.Draw;
 		List[DirList]^.Draw;
+		Mouse.Show;
 		SetDrive := True;
 		DrawPreview(nil);
 		Exit;
@@ -168,8 +170,14 @@ begin
 		GetDir(0, Path);
 		GetChildFiles(Path, Pattern);
 		GetChildDirs(Path);
+		Drive := Copy(Path, 1, 1);
+		TxtDrive^.SetText(Drive);
+		Mouse.Hide;
 		List[FileList]^.Draw;
 		List[DirList]^.Draw;
+		TxtDrive^.Draw;
+		Mouse.Show;
+		Drive := Copy(Path, 1, 1);
 	end;
 	DrawPreview(nil);
 end;
@@ -261,8 +269,12 @@ end;
 procedure TxtPatternChange(Sender: PUIObject); far;
 begin
 	Pattern := TxtPattern^.GetText;
+	if Length(Pattern) = 0 then
+		Pattern := '*.*';
 	GetChildFiles(Path, Pattern);
+	Mouse.Hide;
 	List[FileList]^.Draw;
+	Mouse.Show;
 	DrawPreview(nil);
 end;
 
@@ -297,33 +309,15 @@ procedure WinFileSelectDraw(Sender: PUIObject); far;
 begin
 	{When window is first drawn, set active directory to load list contents}
 	List[ActiveList]^.SetListActive(True);
+	Mouse.Hide;
 	SetDir(Path);
 end;
 
-function FileSelect(DefaultPattern, StartPath: string): string;
+procedure InitUI;
 var
-	OriginalPath: string;
-	I: Integer;
 	X1, Y1, X2, Y2: Integer;
-	Key: string;
 begin
-	ReturnedFile := '';
-
-	GetDir(0, OriginalPath); {Save to restore later}
-	
-	{If path provided, use it - otherwise use current directory}
-	if Length(StartPath) > 0 then
-		Path := StartPath
-	else
-		Path := OriginalPath;
-	
-	{Extract drive letter from path}
-	Drive := Copy(Path, 1, 1);
-	
-	Pattern := DefaultPattern;
-	ActiveList := FileList;
-
-	{Init window and save coordinates for later use}
+{Init window and save coordinates for later use}
 	New(WinFileSelect, Init(0, 0, NoParent));
 	with WinFileSelect^ do
 	begin
@@ -342,7 +336,7 @@ begin
 	begin
 		SetSize(150, SizeRetain);
 		AddHotkey(KeyAltP);
-		SetText(DefaultPattern);
+		SetText(Pattern);
 		SetOnChange(TxtPatternChange);
 		SetMaxLength(12); {8.3 including the dot}
 	end;
@@ -450,6 +444,25 @@ begin
 		AddHotkey(KeyShiftTab);
 		SetOnClick(HkTabPress);
 	end;
+end;
+
+function FileSelect(DefaultPattern, StartPath: string): string;
+var
+	OriginalPath: string;
+begin
+	ReturnedFile := '';
+	Pattern := DefaultPattern;
+	ActiveList := FileList;
+
+	GetDir(0, OriginalPath); {Save to restore later}
+	
+	{If path provided, use it - otherwise use current directory}
+	if Length(StartPath) > 0 then
+		Path := StartPath
+	else
+		Path := OriginalPath;
+	
+	InitUI;
 	
 	WinFileSelect^.Run;
 	Dispose(WinFileSelect, Done);
