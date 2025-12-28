@@ -121,7 +121,8 @@ begin
 		OutLink.FileName := ComSpec;
 	end;
 
-	{Convert strings to ASCIIZ}
+	{Convert strings to ASCIIZ - COSTA.EXE expects this format and we use fixed size
+	 records for simplicity in loading data in COSTA.EXE}
 	Move(OutLink.Filename[1], ZFileName, Length(OutLink.Filename));
   	ZFileName[Length(OutLink.Filename)] := #0;
 	Move(OutLink.Parameters[1], ZParameters, Length(OutLink.Parameters));
