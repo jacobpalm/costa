@@ -24,8 +24,9 @@ DESKTOP_EXIT_CODE    EQU 1    ; Exit code from desktop that signals to exit
 ;----------------------------------------------------------------------------
 ; Assembler instructions
 ; ---------------------------------------------------------------------------
-.MODEL SMALL
-.STACK STACK_SIZE
+IDEAL
+MODEL SMALL
+STACK STACK_SIZE
 
 
 ; ---------------------------------------------------------------------------
@@ -33,15 +34,15 @@ DESKTOP_EXIT_CODE    EQU 1    ; Exit code from desktop that signals to exit
 ; ---------------------------------------------------------------------------
 
 ; Print msg to screen using DOS API
-PrintStr MACRO msgString
-	lea dx, msgString    ; Load the address of the message string into DX
-	mov ah, 09h          ; DOS function to print string
+MACRO PrintStr msgString
+	lea dx, msgString       ; Load address of msgString into DX
+	mov ah, 09h             ; DOS function to print string
 	int 21h
 ENDM PrintStr
 
-WaitForKey MACRO
-	PrintStr MSG_CONTINUE ; Prompt for key press
-	mov ah, 07h           ; Read character without echo
+MACRO WaitForKey
+	PrintStr [MSG_CONTINUE] ; Prompt for key press
+	mov ah, 07h             ; Read character without echo
 	int 21h
 ENDM WaitForKey
 
@@ -50,7 +51,7 @@ ENDM WaitForKey
 ; Structure definitions
 ; ---------------------------------------------------------------------------
 
-ExecPB STRUC                  ; MS-DOS INT 21H EXEC parameter block
+STRUC ExecPB                  ; MS-DOS INT 21H EXEC parameter block
 	EnvSeg      dw 0          ; Environment segment - 0 = inherit from parent
 	ParamOff    dw 0          ; Pointer to parameters (command tail)
 	ParamSeg    dw 0
@@ -58,13 +59,13 @@ ExecPB STRUC                  ; MS-DOS INT 21H EXEC parameter block
 	FCB1PtrSeg  dw 0
 	FCB2PtrOff  dw 0          ; Pointer to FCB2 - 0 = none
 	FCB2PtrSeg  dw 0
-ExecPB ENDS
+ENDS ExecPB
 
 
 ; ---------------------------------------------------------------------------
 ; Data segment
 ; ---------------------------------------------------------------------------
-.DATA
+DATASEG
 
 COSTAEXE        db 'COSTA.EXE', 0      ; File name of this program
 DESKTOPEXE      db 'DESKTOP.EXE', 0    ; File name of desktop program
@@ -94,21 +95,21 @@ MSG_DOS_TOO_OLD db 'DOS 4 or newer required', 13, 10, '$', 0
 MSG_NOT_FOUND   db 'Desktop not found', 13, 10, '$', 0
 MSG_PATH_FAIL   db 'Invalid path', 13, 10, '$', 0
 
-SavedSS         dw 0 ; Stack Segment + pointer saved before EXEC
+SavedSS         dw 0     ; Stack Segment + pointer saved before EXEC
 SavedSP         dw 0
 
-; EXEC status
-ExecErrorCode   dw 0 ; DOS error code saved here if EXEC fails
+ExecErrorCode   dw 0     ; DOS error code saved here if EXEC fails
 
-EndOfData LABEL BYTE ; Marks end of the data segment, used for memory resize
+LABEL EndOfData BYTE     ; Marks end of the data segment, used for memory resize
+
 
 ; ---------------------------------------------------------------------------
 ; Code segment
 ; ---------------------------------------------------------------------------
-.CODE
+CODESEG
 
 start:
-	mov ax, @data    ; Initialize data segment registers
+	mov ax, @data     ; Initialize data segment registers
 	mov ds, ax
 	mov es, ax
 
@@ -126,36 +127,36 @@ GetCostaPath:
 	mov es, bx        ; ES = PSP
 
 	; Get environment segment pointer from PSP:2Ch
-	mov bx, es:[2Ch]  ; ES:2C contains WORD pointer to environment segment
+	mov bx, [es:2Ch]  ; ES:2C contains WORD pointer to environment segment
 	mov es, bx        ; ES = environment segment
 	xor si, si        ; SI = offset in environment segment, start at 0
 
 	; Scan for double null terminator (end of environment block)
 FindEnvEnd:
-	mov al, es:[si]
+	mov al, [es:si]
 	inc si
 	or al, al
 	jne FindEnvEnd    ; byte not null, keep scanning
-	mov al, es:[si]   ; byte null, check next byte
+	mov al, [es:si]   ; byte null, check next byte
 	inc si
 	or al, al
 	jne FindEnvEnd    ; second byte not null, keep scanning
 
-	; Skip word gap between environment and exe path
-	add si, 2
+	
+	add si, 2 ; Skip word gap between environment and exe path
 
 	; Copy executable path + name into CostaPath, track last backslash
-	lea di, CostaPath      ; DI = destination in DS
+	lea di, [CostaPath]    ; DI = destination in DS
 	xor bx, bx             ; BX = pointer to last backslash in CostaPath
 
 CopyPathLoop:
-	mov al, es:[si]        ; read byte from environment
+	mov al, [es:si]        ; read byte from environment
 	inc si
-	mov byte ptr [di], al  ; store byte into CostaPath
+	mov [di], al           ; store byte into CostaPath
 	cmp al, 5Ch            ; is byte a backslash?
-	jne NoSlash
+	jne NotSlash
 	mov bx, di             ; move counter into bx to track last backslash
-NoSlash:
+NotSlash:
 	inc di
 	cmp al, 0              ; null terminator?
 	jne CopyPathLoop       ; if not, keep copying
@@ -163,28 +164,29 @@ NoSlash:
     ; Remove filename: replace last backslash with null
 	test bx, bx
 	jz DoneCopy            ; if no backslash found, skip ahead
-	mov byte ptr [bx], 0   ; Replace last backslash with null
+	xor al, al             ; AL = 0
+	mov [bx], al           ; Replace last backslash with null
 DoneCopy:
 	mov ax, @data          ; Reset data segment
 	mov es, ax
 
 RunDesktop:
 	; Copy desktop variables to working variables
-	lea si, DESKTOPEXE    ; Copy desktop exe to filename
-	lea di, Filename
+	lea si, [DESKTOPEXE]    ; Copy desktop exe to filename
+	lea di, [Filename]
 	call CopyStr
-	lea si, DESKTOPPARAMS ; Copy desktop parameters to parameters
-	lea di, Parameters
+	lea si, [DESKTOPPARAMS] ; Copy desktop parameters to parameters
+	lea di, [Parameters]
 	call CopyStr
-	lea si, CostaPath    ; Copy Costa path to working path
-	lea di, Path
+	lea si, [CostaPath]    ; Copy Costa path to working path
+	lea di, [Path]
 	call CopyStr
-	mov PauseOnExit, 0    ; 0 = false
-	mov RunningDesktop, 1 ; We are running the desktop now
+	mov [PauseOnExit], 0    ; 0 = false
+	mov [RunningDesktop], 1 ; We are running the desktop now
 
 RunProgram:
 	mov ah, 3Bh           ; Change directory function
-	lea dx, Path
+	lea dx, [Path]	      ; DS:DX = path to change to
 	int 21h
 	jnc PathOK 	          ; Jump if successful
 	jmp PathError         ; Jump if error
@@ -210,26 +212,26 @@ PathOK:
 	jnc CallExec         ; No errors
 
 	; Error during memory resize
-	PrintStr MSG_MEM_ERR
+	PrintStr [MSG_MEM_ERR]
 	jmp ProgramEnd
 
 CallExec:
 	; Set up the EXEC parameter block
 	mov ax, @data
 	mov es, ax
-	mov ParamBlock.EnvSeg, 0       ; 0 = inherit parent environment
-	mov ParamBlock.ParamOff, offset Parameters
-	mov ParamBlock.ParamSeg, ds
-	mov ParamBlock.FCB1PtrSeg, 0   ; 0 = inherit FCBs
-	mov ParamBlock.FCB1PtrOff, 0
-	mov ParamBlock.FCB2PtrSeg, 0
-	mov ParamBlock.FCB2PtrOff, 0
+	mov [ParamBlock.EnvSeg], 0       ; 0 = inherit parent environment
+	mov [ParamBlock.ParamOff], offset Parameters
+	mov [ParamBlock.ParamSeg], ds
+	mov [ParamBlock.FCB1PtrSeg], 0   ; 0 = inherit FCBs
+	mov [ParamBlock.FCB1PtrOff], 0
+	mov [ParamBlock.FCB2PtrSeg], 0
+	mov [ParamBlock.FCB2PtrOff], 0
 
 	; Call EXEC to run the program
-	mov SavedSS, ss      ; Save stack segment and pointer before EXEC
-	mov SavedSP, sp
-	lea dx, Filename     ; DS-DX = ASCIIZ filename of program to execute
-	lea bx, ParamBlock   ; ES:BX = pointer to EXEC parameter block
+	mov [SavedSS], ss    ; Save stack segment and pointer before EXEC
+	mov [SavedSP], sp
+	lea dx, [Filename]   ; DS-DX = ASCIIZ filename of program to execute
+	lea bx, [ParamBlock] ; ES:BX = pointer to EXEC parameter block
 	mov ah, 4Bh          ; EXEC function
 	mov al, 00h          ; Load and run
 	int 21h
@@ -238,31 +240,31 @@ CallExec:
 	mov ds, ax
 	mov es, ax
 	cli                  ; Disable interrupts due to bug on some CPUs
-	mov ss, SavedSS      ; Restore stack
-	mov sp, SavedSP
+	mov ss, [SavedSS]    ; Restore stack
+	mov sp, [SavedSP]
 	sti                  ; Re-enable interrupts
 
 	; Check for errors from EXEC - CF not affected by DS/ES or stack restore
 	jnc ExecOK           ; Jump if no error
 
 	; EXEC failed, save error info from ax
-	mov ExecErrorCode, ax
+	mov [ExecErrorCode], ax
 	jmp ExecDone
 
 ExecOK:
 	; No error - set manually since AX is not guaranteed to be zero on success
-	mov ExecErrorCode, 0  ; Exec OK, AX can be anything so set explicitly
+	mov [ExecErrorCode], 0  ; Exec OK, AX can be anything so set explicitly
 
-	cmp PauseOnExit, 0
-	je ExecDone           ; If no pause on exit requested, continue
-	WaitForKey;
+	cmp [PauseOnExit], 0
+	je ExecDone             ; If no pause on exit requested, continue
+	WaitForKey
 
 ExecDone:
-	cmp RunningDesktop, 1
+	cmp [RunningDesktop], 1
 	jne ProgramEnd       ; If not running desktop, run next program
 
 	; Check for errors from trying to EXEC desktop
-	mov ax, ExecErrorCode
+	mov ax, [ExecErrorCode]
 	cmp ax, 02h		     ; 2 = file not found
 	je DeskNotFound
 	cmp ax, 08h		     ; 8 = out of memory
@@ -274,35 +276,35 @@ ExecDone:
 	cmp al, DESKTOP_EXIT_CODE ; Did desktop signal to exit Costa?
 	je ProgramEnd
 
-	mov RunningDesktop, 0 ; We are still here, which means we are about to
+	mov [RunningDesktop], 0 ; We are still here, which means we are about to
 						  ; run another program, not the desktop
 	jmp RunDesktop        ; DEBUG - load program from RUN.BIN and jump to RunProgram
 
 DeskNotFound:
 	; Fatal error - desktop program not found
-	PrintStr MSG_NOT_FOUND
+	PrintStr [MSG_NOT_FOUND]
 	jmp ProgramEnd
 
 DeskOutOfMem:
 	; Fatal error - not enough memory to run desktop
-	PrintStr MSG_LOW_MEM
+	PrintStr [MSG_LOW_MEM]
 	jmp ProgramEnd
 
 PathError:
 	; Couldn't change path - only fatal if we are trying to run desktop
-	PrintStr MSG_PATH_FAIL  ; Show path error message
-	cmp RunningDesktop, 1
-	jne PathErrorIgnore     ; If not running desktop, we will ignore error
-	jmp ProgramEnd          ; Couldn't change to desktop path, exit
+	PrintStr [MSG_PATH_FAIL] ; Show path error message
+	cmp [RunningDesktop], 1
+	jne PathErrorIgnore      ; If not running desktop, we will ignore error
+	jmp ProgramEnd           ; Couldn't change to desktop path, exit
 
 PathErrorIgnore:
 	; We weren't running the desktop, so ignore path error and run desktop
-	WaitForKey;
+	WaitForKey
 	jmp RunDesktop
 
 DosTooOld:
 	; Fatal error - DOS version too old
-	PrintStr MSG_DOS_TOO_OLD
+	PrintStr [MSG_DOS_TOO_OLD]
 
 ProgramEnd:
 	mov ah, 4Ch          ; Terminate program
@@ -324,13 +326,13 @@ ProgramEnd:
 ;
 ; Destroys: AL, SI, DI, Flags
 ;
-CopyStr PROC NEAR
+PROC CopyStr NEAR
 CopyByte:
 	lodsb                ; Load byte from [SI] into AL, SI++
 	stosb                ; Save byte from AL into [DI], DI++
 	test al, al          ; Test if al is null (end of string)
 	jnz CopyByte         ; Jump while not null = not end of string
 	ret
-CopyStr ENDP
+ENDP CopyStr
 
 END start                ; Mark the program's entry point
