@@ -9,6 +9,8 @@
 ; Written in assembly language for x86 real mode DOS environment. Not in
 ; Pascal like the rest of Costa, to keep size as smalll as possible since this
 ; part stays in memory at all times, including when running other programs.
+;
+; Tested using TASM version 4.1 and TLINK 7.1
 
 ; ---------------------------------------------------------------------------
 ; Constants
@@ -19,39 +21,16 @@ DOS_REQUIRED_VERSION EQU 4    ; Minimum required DOS major version
 DESKTOP_EXIT_CODE    EQU 1    ; Exit code from desktop that signals to exit
 
 
+;----------------------------------------------------------------------------
+; Assembler instructions
 ; ---------------------------------------------------------------------------
-; Structure definitions
-; ---------------------------------------------------------------------------
-
-; EXEC parameter block
-ExecPB STRUC
-	EnvSeg      dw 0          ; Environment segment - 0 = inherit from parent
-	ParamOff    dw 0          ; Pointer to parameters (command tail)
-	ParamSeg    dw 0
-	FCB1PtrOff  dw 0          ; Pointer to FCB1 - 0 = none
-	FCB1PtrSeg  dw 0
-	FCB2PtrOff  dw 0          ; Pointer to FCB2 - 0 = none
-	FCB2PtrSeg  dw 0
-ExecPB ENDS
+.MODEL SMALL
+.STACK STACK_SIZE
 
 
 ; ---------------------------------------------------------------------------
 ; Macros
 ; ---------------------------------------------------------------------------
-
-; Copy ASCIIZ string from src to dest - no length checking, make sure dest is
-; large enough! Assumes ES and DS are set to data segment.
-CopyStr MACRO srcString, destString
-	LOCAL CopyByte
-	lea si, srcString    ; Load the address of the source string into SI
-	lea di, destString   ; Load the address of the dest variable into DI
-CopyByte:
-	; PUSH/POP values and convert to PROC?
-	LODSB                ; AL = [SI], SI++
-	STOSB                ; [DI] = AL, DI++
-	cmp AL, 0            ; End of string (null) comparison
-	jne CopyByte         ; Jump while not null = not end of string
-ENDM CopyStr
 
 ; Print msg to screen using DOS API
 PrintStr MACRO msgString
@@ -67,11 +46,19 @@ WaitForKey MACRO
 ENDM WaitForKey
 
 
-;----------------------------------------------------------------------------
-; Assembler instructions
 ; ---------------------------------------------------------------------------
-.MODEL SMALL
-.STACK STACK_SIZE
+; Structure definitions
+; ---------------------------------------------------------------------------
+
+ExecPB STRUC                  ; MS-DOS INT 21H EXEC parameter block
+	EnvSeg      dw 0          ; Environment segment - 0 = inherit from parent
+	ParamOff    dw 0          ; Pointer to parameters (command tail)
+	ParamSeg    dw 0
+	FCB1PtrOff  dw 0          ; Pointer to FCB1 - 0 = none
+	FCB1PtrSeg  dw 0
+	FCB2PtrOff  dw 0          ; Pointer to FCB2 - 0 = none
+	FCB2PtrSeg  dw 0
+ExecPB ENDS
 
 
 ; ---------------------------------------------------------------------------
@@ -107,11 +94,11 @@ MSG_DOS_TOO_OLD db 'DOS 4 or newer required', 13, 10, '$', 0
 MSG_NOT_FOUND   db 'Desktop not found', 13, 10, '$', 0
 MSG_PATH_FAIL   db 'Invalid path', 13, 10, '$', 0
 
-SavedSS         dw 0 ; Stack Segment + Pointer saved before EXEC
+SavedSS         dw 0 ; Stack Segment + pointer saved before EXEC
 SavedSP         dw 0
 
 ; EXEC status
-ExecErrorCode   dw 0 ; DOS error code if ExecErrorFlag is non-zero
+ExecErrorCode   dw 0 ; DOS error code saved here if EXEC fails
 
 EndOfData LABEL BYTE ; Marks end of the data segment, used for memory resize
 
@@ -133,17 +120,17 @@ start:
 	jmp DosTooOld     ; Jump if less than required version
 
 GetCostaPath:
-; Setup segments
+	; Path is stored in environment block, which is pointed to by PSP
 	mov ah, 62h       ; DOS: Get PSP segment
 	int 21h
 	mov es, bx        ; ES = PSP
 
-; Get environment segment pointer from PSP:2Ch
+	; Get environment segment pointer from PSP:2Ch
 	mov bx, es:[2Ch]  ; ES:2C contains WORD pointer to environment segment
 	mov es, bx        ; ES = environment segment
 	xor si, si        ; SI = offset in environment segment, start at 0
 
-; Scan for double null terminator (end of environment block)
+	; Scan for double null terminator (end of environment block)
 FindEnvEnd:
 	mov al, es:[si]
 	inc si
@@ -154,10 +141,10 @@ FindEnvEnd:
 	or al, al
 	jne FindEnvEnd    ; second byte not null, keep scanning
 
-; Skip word gap between environment and exe path
+	; Skip word gap between environment and exe path
 	add si, 2
 
-; Copy executable path + name into CostaPath, track last backslash
+	; Copy executable path + name into CostaPath, track last backslash
 	lea di, CostaPath      ; DI = destination in DS
 	xor bx, bx             ; BX = pointer to last backslash in CostaPath
 
@@ -183,9 +170,15 @@ DoneCopy:
 
 RunDesktop:
 	; Copy desktop variables to working variables
-	CopyStr DESKTOPEXE, Filename
-	CopyStr DESKTOPPARAMS, Parameters
-	CopyStr CostaPath, Path
+	lea si, DESKTOPEXE    ; Copy desktop exe to filename
+	lea di, Filename
+	call CopyStr
+	lea si, DESKTOPPARAMS ; Copy desktop parameters to parameters
+	lea di, Parameters
+	call CopyStr
+	lea si, CostaPath    ; Copy Costa path to working path
+	lea di, Path
+	call CopyStr
 	mov PauseOnExit, 0    ; 0 = false
 	mov RunningDesktop, 1 ; We are running the desktop now
 
@@ -316,4 +309,28 @@ ProgramEnd:
 	mov al, 0            ; Exitcode = 0
 	int 21h              ; Bye
 
-END start            ; Mark the program's entry point
+
+; ---------------------------------------------------------------------------
+; Procedures
+; ---------------------------------------------------------------------------
+
+; CopyStr - Copy ASCIIZ string. No length limit, copies until null terminator
+;           found. Make sure destination buffer is big enough.
+;
+; Inputs:   DS:SI = source string
+;           ES:DI = destination string
+;
+; Outputs:  DS:SI and ES:DI point to byte after null terminator
+;
+; Destroys: AL, SI, DI, Flags
+;
+CopyStr PROC NEAR
+CopyByte:
+	lodsb                ; Load byte from [SI] into AL, SI++
+	stosb                ; Save byte from AL into [DI], DI++
+	test al, al          ; Test if al is null (end of string)
+	jnz CopyByte         ; Jump while not null = not end of string
+	ret
+CopyStr ENDP
+
+END start                ; Mark the program's entry point
