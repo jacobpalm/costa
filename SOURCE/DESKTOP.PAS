@@ -18,6 +18,12 @@ const
 	MaxDesktops               = 5;
 	KeyAltNoBase              = 120; {Key code for Alt+1, used to set hotkeys for desktops in loop}
 
+	RunBinSize                = 277; {Size of RUN.BIN in bytes}
+	RunBinOffsetFileName      = 0;   {Offsets within RUN.BIN where each variable is stored}
+	RunBinOffsetPath          = 80;
+	RunBinOffsetParameters    = 148;
+	RunBinOffsetPause         = 276;
+
 	CAP_ADD                   = 'A' + #127 + 'dd...';
 	CAP_RUN                   = #127 + 'Run...';
 	CAP_ABOUT                 = #127 + 'About...';
@@ -45,10 +51,7 @@ const
 	MSG_COMSPEC               = 'The COMSPEC environment variable is not set.' + #13 +
 	                            'This is required to run batch files.';
 	MSG_RUN_COSTA             = 'This program is intended to be run from within Costa.' + #10 + #13 +
-	                            'Please run COSTA.EXE to start Costa and the desktop.';	
-
-type
-	{$I RUNLINK.INC}
+	                            'Please run COSTA.EXE to start Costa and the desktop.';
 
 var
 	App:         PApplication;
@@ -73,9 +76,7 @@ var
 	FExt:        ExtStr;
 	ComSpec:     String;
 	OutLink:     TLink;
-	ZFileName:   array[0..80] of Char;
-	ZPath:       array[0..68] of Char;
-	ZParameters: array[0..128] of Char;
+	RunData:     array[0..RunBinSize - 1] of Char;
 begin
 	if not Assigned(Target) then
 		exit;
@@ -121,15 +122,28 @@ begin
 		OutLink.FileName := ComSpec;
 	end;
 
+	if Length(OutLink.Parameters) > 0 then
+		OutLink.Parameters := #32 + OutLink.Parameters; {If parameters exist, ensure they start with space}
+	OutLink.Parameters := Char(Length(OutLink.Parameters)) + OutLink.Parameters + #13;
+		{Ensure parameters end with CR, req. by cmd tail}
+
 	{Convert strings to ASCIIZ - COSTA.EXE expects this format and we use fixed size
 	 records for simplicity in loading data in COSTA.EXE}
-	Move(OutLink.Filename[1], ZFileName, Length(OutLink.Filename));
-  	ZFileName[Length(OutLink.Filename)] := #0;
-	Move(OutLink.Parameters[1], ZParameters, Length(OutLink.Parameters));
-	ZParameters[Length(OutLink.Parameters)] := #0;
-	Move(OutLink.Path[1], ZPath, Length(OutLink.Path));
-  	ZPath[Length(OutLink.Path)] := #0;
+	FillChar(RunData, SizeOf(RunData), 4);
 
+	Move(OutLink.Filename[1], RunData[RunBinOffsetFilename], Length(OutLink.Filename));
+	RunData[RunBinOffsetFilename + Length(OutLink.Filename)] := #0; {Add ASCIIZ terminator}
+
+  	Move(OutLink.Path[1], RunData[RunBinOffsetPath], Length(OutLink.Path) );
+	RunData[RunBinOffsetPath + Length(OutLink.Path)] := #0; {Add ASCIIZ terminator}
+
+	Move(OutLink.Parameters[1], RunData[RunBinOffsetParameters], Length(OutLink.Parameters));
+	RunData[RunBinOffsetParameters + Length(OutLink.Parameters)] := #0; {ASCIIZ terminator}
+
+	RunData[RunBinOffSetPause] := Char(OutLink.PauseOnExit);
+	{FillChar(RunLink.FileName, SizeOf(RunLink.FileName), 1);
+	FillChar(RunLink.Path, SizeOf(RunLink.Path), 2);
+	FillChar(RunLink.PauseOnExit, 1, 3);}
 	Assign(F, ProgramPath + RunFile);
 	{$I-}
 	Rewrite(F, 1);
@@ -141,11 +155,7 @@ begin
 		exit;
 	end;
 
-	{BlockWrite(F, OutLink, SizeOf(OutLink));}
-	BlockWrite(F, ZFileName, SizeOf(ZFileName));
-	BlockWrite(F, ZPath, SizeOf(ZPath));
-	BlockWrite(F, ZParameters, SizeOf(ZParameters));
-	BlockWrite(F, OutLink.PauseOnExit, SizeOf(OutLink.PauseOnExit));
+	BlockWrite(F, RunData, SizeOf(RunData));
 	Close(F);
 	
 	App^.SetExitCode(0);
@@ -464,7 +474,6 @@ begin
 	if not (ParamStr(1) = '/RUN') then
 	begin
 		Writeln(MSG_RUN_COSTA);
-		Writeln(Paramstr(1)); {DEBUG}
 		Exit;
 	end;
 

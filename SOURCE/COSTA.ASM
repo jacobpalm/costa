@@ -32,6 +32,11 @@ GET_PSP_FUNCTION       EQU 62h     ; DOS get PSP segment function number
 CHDIR_FUNCTION         EQU 3Bh     ; DOS change directory function number
 RESIZE_MEM_FUNCTION    EQU 4Ah     ; DOS resize memory block function number
 GET_EXIT_CODE_FUNCTION EQU 4Dh     ; DOS get exit code of child process
+OPEN_FILE_FUNCTION     EQU 3Dh     ; DOS open file function number
+OPEN_READ_ONLY         EQU 00h     ; Open file read-only mode
+CLOSE_FILE_FUNCTION    EQU 3Eh     ; DOS close file function number
+READ_FILE_FUNCTION     EQU 3Fh     ; DOS read file function number
+DELETE_FILE_FUNCTION   EQU 41h     ; DOS delete file function number
 
 ERR_UNKNOWN			   EQU 0       ; Index in MsgTable for unknown error
 ERR_MEMORY             EQU 8       ; Index for memory error
@@ -103,7 +108,7 @@ ENDS RunProgStruc
 DATASEG
 
 DESKTOPEXE      db 'DESKTOP.EXE', 0        ; File name of desktop program
-DESKTOPPARAMS   db SPACE_CHAR, ' /RUN', CR_CHAR, 0  ; Format: Length, space,
+DESKTOPPARAMS   db 5, ' /RUN', CR_CHAR, 0  ; Format: Length, space,
                                            ; string, CR, null (null is not
                                            ; req. by DOS but is used by
                                            ; CopyStr procedure here)
@@ -111,6 +116,7 @@ RUNFILE         db 'CONFIG\RUN.BIN', 0     ; File where desktop writes program
                                            ; to run and its parameters to
 
 CostaPath       db 68 dup(0)       ; 63 char + null - path to self
+RunFileHandle   dw 0               ; File handle for RUN.BIN
 
 RunningDesktop  db 0               ; Bool - are we running desktop?
 ExecErrorCode   db 0               ; DOS error code saved here if EXEC fails
@@ -173,16 +179,71 @@ start:
 	; Check required DOS version (4.0 or higher)
 	mov ah, GET_DOS_VER_FUNCTION
 	int 21h
-	cmp al, DOS_REQUIRED_VERSION
+	cmp al, DOS_REQUIRED_VERSION   ; al = major version, must be >= required
 	jnc DosVersionOk               ; Jump if version is sufficient
 	
-	mov al, ERR_DOS_VERSION
+	mov al, ERR_DOS_VERSION        ; DOS version error, will terminate
 	mov ah, FATAL_ERROR_FLAG
-	call HandleError               ; DOS version error, will terminate
+	call HandleError
 
 DosVersionOk:
 	; Get path to this executable (Costa launcher)
 	call GetPathToSelf
+
+LoadRunData:
+	mov ax, @data
+	mov ds, ax
+	mov ah, CHDIR_FUNCTION		   ; Change directory to Costa's path
+	lea dx, [CostaPath]
+	int 21h
+	jnc OpenRunFile                ; Jump if successful
+	
+	mov al, [RunningDesktop]       ; AL already contains error code from int 21
+	call HandleError               ; Handle path change error
+	jmp RunDesktop                 ; Still here? Then try to run desktop
+
+OpenRunFile:
+    ; Load program to run data from RUN.BIN
+	mov ax, @data
+	mov ds, ax
+	mov ah, OPEN_FILE_FUNCTION
+	mov al, OPEN_READ_ONLY
+	lea dx, [RUNFILE]              ; DS:DX = filename to open
+	int 21h
+	jnc ReadRunFile                ; Jump if open successful
+
+	jmp RunDesktop                 ; If error, assume no RUN.BIN, and run desktop
+
+ReadRunFile:
+	mov [RunFileHandle], ax        ; Save file handle
+	mov ax, @data
+	mov ds, ax
+	mov ah, READ_FILE_FUNCTION
+	mov bx, [RunFileHandle]        ; BX = file handle
+	mov cx, SIZE RunProgStruc      ; Number of bytes to read
+	lea dx, [RunProg.Filename]     ; DS:DX = buffer to read into, first field of struct
+	int 21h
+	jnc CloseRunFile               ; Jump if read successful
+
+	mov ah, 0                      ; Non-fatal error, error code already in AL
+	call HandleError               ; Handle read error
+
+	mov ah, CLOSE_FILE_FUNCTION    ; Make sure file is closed
+	mov bx, [RunFileHandle]
+	int 21h                        ; Close file
+	jmp RunDesktop                 ; After showing error, run the desktop
+	
+CloseRunFile:
+	mov ah, CLOSE_FILE_FUNCTION
+	mov bx, [RunFileHandle]
+	int 21h                        ; Close file
+	
+	; Delete RUN.BIN after reading it
+	mov ah, DELETE_FILE_FUNCTION
+	lea dx, [RUNFILE]
+	int 21h                        ; Delete file
+	
+	jmp RunProgram                 ; All is good, run the program
 
 RunDesktop:
 	; Copy desktop variables to working variables
@@ -200,6 +261,10 @@ RunDesktop:
 	mov [RunningDesktop], 1        ; We are running the desktop now
 
 RunProgram:
+	mov al, [RunProg.Path]		   ; Check if path is non-empty
+	cmp al, 0
+	je ShrinkMemory                ; If empty, skip changing directory
+
 	mov ah, CHDIR_FUNCTION         ; Change directory function
 	lea dx, [RunProg.Path]         ; DS:DX = path to change to
 	int 21h
@@ -207,7 +272,6 @@ RunProgram:
 
 	mov ah, [RunningDesktop]       ; AL already contains error code from int 21
 	call HandleError               ; Handle path change error
-	
 	jmp RunDesktop                 ; Try to run desktop again
 
 ShrinkMemory:
@@ -285,7 +349,7 @@ EvaluateExecOutcome:
 	; Error occurred during EXEC, evaluate
 	mov ah, [RunningDesktop]       ; If running desktop, any error is fatal
 	call HandleError               ; AH will already contain error code from int 21
-	jmp RunDesktop                 ; If we returned from HandleError, try to run desktop again
+	jmp RunDesktop                 ; If we returned from HandleError, run desktop
 
 EvaluateExitCode:
 	; Desktop executed without error, check exit code
@@ -296,7 +360,7 @@ EvaluateExitCode:
 
 	mov [RunningDesktop], 0        ; We are still here, which means we are about to
 	                               ; run another program, not the desktop
-	jmp RunDesktop                 ; DEBUG - load program from RUN.BIN and jump to RunProgram
+	jmp LoadRunData                ; Load RUN.BIN data again and run program
 
 ProgramEnd:
 	mov ah, TERMINATE_FUNCTION
@@ -403,7 +467,7 @@ PROC HandleError NEAR
 
 	mov bl, al                     ; Copy error code to BL
 	xor bh, bh		               ; Clear upper byte
-	shl bx, WORD_SIZE              ; Multiply error code by size of word (2 bytes)
+	shl bx, 1                      ; Multiply error code by 2, size of word, for lookup in MsgTable
 	mov dx, [MsgTable + bx]        ; Get address of error msg based on offset
 	
 	mov ah, PRINT_STR_FUNCTION
