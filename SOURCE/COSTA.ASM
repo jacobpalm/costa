@@ -66,16 +66,13 @@ STACK STACK_SIZE
 ; Macros
 ; ---------------------------------------------------------------------------
 
-; Print msg to screen using DOS API
-MACRO PRINTSTR msgString
-	lea dx, msgString              ; Load address of msgString into DX
-	mov ah, PRINT_STR_FUNCTION
-	int 21h
-ENDM PRINTSTR
-
+; Print "Press any key to continue..." and wait for key press
 MACRO WAITFORKEY
-	PRINTSTR [MSG_CONTINUE]        ; Prompt for key press
-	mov ah, READ_CHAR_FUNCTION     ; Read character without echo
+	lea dx, [MSG_CONTINUE]        ; Load address of message into DX
+	mov ah, PRINT_STR_FUNCTION     ; Print string using DOS function
+	int 21h
+
+	mov ah, READ_CHAR_FUNCTION     ; Wait for keypress without printing it
 	int 21h
 ENDM WAITFORKEY
 
@@ -97,7 +94,7 @@ ENDS ExecPB
 STRUC RunProgStruc
 	Filename        db 80 dup(0)   ; 79 char + null - filename, maybe path
 	Path            db 68 dup(0)   ; 67 char + null - working directory
-	Parameters      db 128 dup(0)  ; 127 char + null - command tail
+	Parameters      db 128 dup(0)  ; 127 char + cr - command tail
 	PauseOnExit     db 0           ; Boolean - pause after EXEC
 ENDS RunProgStruc
 
@@ -107,13 +104,9 @@ ENDS RunProgStruc
 ; ---------------------------------------------------------------------------
 DATASEG
 
-DESKTOPEXE      db 'DESKTOP.EXE', 0        ; File name of desktop program
-DESKTOPPARAMS   db 5, ' /RUN', CR_CHAR, 0  ; Format: Length, space,
-                                           ; string, CR, null (null is not
-                                           ; req. by DOS but is used by
-                                           ; CopyStr procedure here)
-RUNFILE         db 'CONFIG\RUN.BIN', 0     ; File where desktop writes program
-                                           ; to run and its parameters to
+DESKTOPEXE      db 'DESKTOP.EXE', 0     ; File name of desktop program
+DESKTOPPARAMS   db 5, ' /RUN', CR_CHAR  ; Format: Length, space, string, CR
+RUNFILE         db 'CONFIG\RUN.BIN', 0  ; File where desktop writes info about program to run to
 
 CostaPath       db 68 dup(0)       ; 63 char + null - path to self
 RunFileHandle   dw 0               ; File handle for RUN.BIN
@@ -127,24 +120,28 @@ SavedSP         dw 0
 ParamBlock      ExecPB <>          ; EXEC parameter block
 RunProg         RunProgStruc <>    ; Data about program to run
 
+FilenamePtr     dw 0               ; Pointer to filename for EXEC, either DESKTOPEXE or RunProg.Filename
+ParametersPtr   dw 0               ; Pointer to parameters for EXEC, either DESKTOPPARAMS or RunProg.Parameters
+PathPtr         dw 0               ; Pointer to path for CHDIR, either CostaPath or RunProg.Path
+
 ; Messages, both regular and error 
-MSG_CONTINUE        db 'Press any key to continue...$', 0
-MSG_UNKNOWN_ERR     db 'Unknown error', CR_CHAR, LF_CHAR, '$', 0
-MSG_DOS_VER_ERR     db 'DOS 4 or newer required', CR_CHAR, LF_CHAR, '$', 0
+MSG_CONTINUE        db 'Press any key to continue...$'
+MSG_UNKNOWN_ERR     db 'Unknown error', CR_CHAR, LF_CHAR, '$'
+MSG_DOS_VER_ERR     db 'DOS 4 or newer required', CR_CHAR, LF_CHAR, '$'
 
 ; Standard DOS error messages
-MSG_INVALID_FUNC    db 'Invalid function', CR_CHAR, LF_CHAR, '$', 0
-MSG_FILE_NOT_FOUND  db 'File not found', CR_CHAR, LF_CHAR, '$', 0
-MSG_PATH_NOT_FOUND  db 'Path not found', CR_CHAR, LF_CHAR, '$', 0
-MSG_TOO_MANY_OPEN   db 'Too many open files', CR_CHAR, LF_CHAR, '$', 0
-MSG_ACCESS_DENIED   db 'Access denied', CR_CHAR, LF_CHAR, '$', 0
-MSG_INVALID_HANDLE  db 'Invalid handle', CR_CHAR, LF_CHAR, '$', 0
-MSG_MEM_CB_DESTR    db 'Memory control block destroyed', CR_CHAR, LF_CHAR, '$', 0
-MSG_INSUFF_MEM      db 'Insufficient memory', CR_CHAR, LF_CHAR, '$', 0
-MSG_INVALID_MEM_ADD db 'Invalid memory address', CR_CHAR, LF_CHAR, '$', 0
-MSG_INVALID_ENV     db 'Invalid environment', CR_CHAR, LF_CHAR, '$', 0
-MSG_INVALID_FORMAT  db 'Invalid format', CR_CHAR, LF_CHAR, '$', 0
-MSG_INVALID_ACCESS  db 'Invalid access mode', CR_CHAR, LF_CHAR, '$', 0
+MSG_INVALID_FUNC    db 'Invalid function', CR_CHAR, LF_CHAR, '$'
+MSG_FILE_NOT_FOUND  db 'File not found', CR_CHAR, LF_CHAR, '$'
+MSG_PATH_NOT_FOUND  db 'Path not found', CR_CHAR, LF_CHAR, '$'
+MSG_TOO_MANY_OPEN   db 'Too many open files', CR_CHAR, LF_CHAR, '$'
+MSG_ACCESS_DENIED   db 'Access denied', CR_CHAR, LF_CHAR, '$'
+MSG_INVALID_HANDLE  db 'Invalid handle', CR_CHAR, LF_CHAR, '$'
+MSG_MEM_CB_DESTR    db 'Memory control block destroyed', CR_CHAR, LF_CHAR, '$'
+MSG_INSUFF_MEM      db 'Insufficient memory', CR_CHAR, LF_CHAR, '$'
+MSG_INVALID_MEM_ADD db 'Invalid memory address', CR_CHAR, LF_CHAR, '$'
+MSG_INVALID_ENV     db 'Invalid environment', CR_CHAR, LF_CHAR, '$'
+MSG_INVALID_FORMAT  db 'Invalid format', CR_CHAR, LF_CHAR, '$'
+MSG_INVALID_ACCESS  db 'Invalid access mode', CR_CHAR, LF_CHAR, '$'
 
 ; Offset table for error messages - 1-12 are standard DOS error codes, 0 and
 ; 13+ are custom errors
@@ -243,30 +240,35 @@ CloseRunFile:
 	lea dx, [RUNFILE]
 	int 21h                        ; Delete file
 	
+	; Move pointers to RunProg variables loaded from RUN.BIN
+	mov ax, offset RunProg.Filename
+	mov [FilenamePtr], ax
+	mov ax, offset RunProg.Parameters
+	mov [ParametersPtr], ax
+	mov ax, offset RunProg.Path
+	mov [PathPtr], ax
+	
 	jmp RunProgram                 ; All is good, run the program
 
 RunDesktop:
-	; Copy desktop variables to working variables
-	; CopyStr procedure expects DS:SI = source, ES:DI = dest
-	lea si, [DESKTOPEXE]
-	lea di, [RunProg.Filename]
-	call CopyStr
-	lea si, [DESKTOPPARAMS]
-	lea di, [RunProg.Parameters]
-	call CopyStr
-	lea si, [CostaPath]
-	lea di, [RunProg.Path]
-	call CopyStr
-	mov [RunProg.PauseOnExit], 0   ; 0 = false
+	; The desktop is to be run, so move all pointers to desktop variables	
+	mov ax, offset DESKTOPEXE      ; Get offset of desktop filename
+	mov [FilenamePtr], ax          ; Set filename pointer to that offset
+	mov ax, offset DESKTOPPARAMS   ; Same for parameters
+	mov [ParametersPtr], ax
+	mov ax, offset CostaPath       ; Desktop is in the same path as this program, so use own path
+	mov [PathPtr], ax
+	mov [RunProg.PauseOnExit], 0   ; Don't pause after desktop exit
 	mov [RunningDesktop], 1        ; We are running the desktop now
 
 RunProgram:
-	mov al, [RunProg.Path]		   ; Check if path is non-empty
+	mov si, [PathPtr]		       ; Check if path is non-empty
+	mov al, [si]
 	cmp al, 0
 	je ShrinkMemory                ; If empty, skip changing directory
 
 	mov ah, CHDIR_FUNCTION         ; Change directory function
-	lea dx, [RunProg.Path]         ; DS:DX = path to change to
+	mov dx, [PathPtr]              ; DS:DX = path to change to
 	int 21h
 	jnc ShrinkMemory               ; Jump if successful
 
@@ -304,8 +306,9 @@ CallExecFunction:
 	mov ax, @data
 	mov es, ax
 	mov [ParamBlock.EnvSeg], 0     ; 0 = inherit parent environment
-	mov [ParamBlock.ParamOff], offset RunProg.Parameters
-	mov [ParamBlock.ParamSeg], ds
+	mov ax, [ParametersPtr]        ; Load adress stored in ParametersPtr
+	mov [ParamBlock.ParamOff], ax  ; Offset of command tail
+	mov [ParamBlock.ParamSeg], ds  ; Segment of command tail, always DS in this case
 	mov [ParamBlock.FCB1PtrSeg], 0 ; 0 = inherit FCBs
 	mov [ParamBlock.FCB1PtrOff], 0
 	mov [ParamBlock.FCB2PtrSeg], 0
@@ -314,7 +317,7 @@ CallExecFunction:
 	; Call EXEC to run the program
 	mov [SavedSS], ss              ; Save stack segment and pointer before EXEC, they will
 	mov [SavedSP], sp              ; likely be changed by EXEC
-	lea dx, [RunProg.Filename]     ; DS-DX = ASCIIZ filename of program to execute
+	mov dx, [FilenamePtr]          ; Load adress stored in FilenamePtr
 	lea bx, [ParamBlock]           ; ES:BX = pointer to EXEC parameter block
 	mov ah, EXEC_FUNCTION          ; EXEC function
 	mov al, EXEC_LOAD_RUN          ; Load and run
@@ -371,26 +374,6 @@ ProgramEnd:
 ; ---------------------------------------------------------------------------
 ; Procedures
 ; ---------------------------------------------------------------------------
-
-; CopyStr - Copy ASCIIZ string. No length limit, copies until null terminator
-;           found. Make sure destination buffer is big enough.
-;
-; Inputs:   DS:SI = source string
-;           ES:DI = destination string
-;
-; Outputs:  DS:SI and ES:DI point to byte after null terminator
-;
-; Destroys: AL, SI, DI, Flags
-;
-PROC CopyStr NEAR
-CopyByte:
-	lodsb                          ; Load byte from [SI] into AL, SI++
-	stosb                          ; Save byte from AL into [DI], DI++
-	test al, al                    ; Test if al is null (end of string)
-	jnz CopyByte                   ; Jump while not null = not end of string
-	ret
-ENDP CopyStr
-
 
 ; GetPathToSelf - Get path to this executable
 ;
@@ -458,6 +441,8 @@ ENDP GetPathToSelf
 ;
 ; Outputs: None
 ;
+; Destroys: CF
+;
 PROC HandleError NEAR
 	push bx                        ; Preserve registers
 	push cx
@@ -467,7 +452,7 @@ PROC HandleError NEAR
 
 	mov bl, al                     ; Copy error code to BL
 	xor bh, bh		               ; Clear upper byte
-	shl bx, 1                      ; Multiply error code by 2, size of word, for lookup in MsgTable
+	shl bx, 1                      ; Multiply error code by 2, size of word, for offset lookup in MsgTable
 	mov dx, [MsgTable + bx]        ; Get address of error msg based on offset
 	
 	mov ah, PRINT_STR_FUNCTION
