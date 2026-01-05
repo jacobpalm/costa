@@ -16,7 +16,7 @@
 ; Constants
 ; ---------------------------------------------------------------------------
 
-STACK_SIZE             EQU 400h    ; 1 kilobyte stack
+STACK_SIZE             EQU 400h    ; 1 kilobyte stack size
 PARAGRAPH_SIZE         EQU 16      ; Size of a memory paragraph in bytes
 WORD_SIZE              EQU 2       ; Size of a word in bytes
 DOS_REQUIRED_VERSION   EQU 4       ; Minimum required DOS major version
@@ -38,7 +38,7 @@ CLOSE_FILE_FUNCTION    EQU 3Eh     ; DOS close file function number
 READ_FILE_FUNCTION     EQU 3Fh     ; DOS read file function number
 DELETE_FILE_FUNCTION   EQU 41h     ; DOS delete file function number
 
-ERR_UNKNOWN			   EQU 0       ; Index in MsgTable for unknown error
+ERR_UNKNOWN            EQU 0       ; Index in MsgTable for unknown error
 ERR_MEMORY             EQU 8       ; Index for memory error
 ERR_DOS_VERSION        EQU 13      ; Index for unsupported DOS version error
 
@@ -68,7 +68,7 @@ STACK STACK_SIZE
 
 ; Print "Press any key to continue..." and wait for key press
 MACRO WAITFORKEY
-	lea dx, [MSG_CONTINUE]        ; Load address of message into DX
+	lea dx, [MSG_CONTINUE]         ; Load address of message into DX
 	mov ah, PRINT_STR_FUNCTION     ; Print string using DOS function
 	int 21h
 
@@ -104,27 +104,27 @@ ENDS RunProgStruc
 ; ---------------------------------------------------------------------------
 DATASEG
 
-DESKTOPEXE      db 'DESKTOP.EXE', 0     ; File name of desktop program
-DESKTOPPARAMS   db 5, ' /RUN', CR_CHAR  ; Format: Length, space, string, CR
-RUNFILE         db 'CONFIG\RUN.BIN', 0  ; File where desktop writes info about program to run to
+DESKTOPEXE     db 'DESKTOP.EXE', 0     ; File name of desktop program
+DESKTOPPARAMS  db 5, ' /RUN', CR_CHAR  ; Format: Length, space, string, CR
+RUNFILE        db 'CONFIG\RUN.BIN', 0  ; File where desktop writes info about program to run to
 
-CostaPath       db 68 dup(0)       ; 63 char + null - path to self
-RunFileHandle   dw 0               ; File handle for RUN.BIN
+CostaPath      db 68 dup(0)        ; 63 char + null - path to self
+RunFileHandle  dw 0                ; File handle for RUN.BIN
 
-RunningDesktop  db 0               ; Bool - are we running desktop?
-ExecErrorCode   db 0               ; DOS error code saved here if EXEC fails
+RunningDesktop db 0                ; Bool - are we running desktop?
+ExecErrorCode  db 0                ; DOS error code saved here if EXEC fails
 
-SavedSS         dw 0               ; Stack Segment + pointer saved before EXEC
-SavedSP         dw 0
+SavedSS        dw 0                ; Stack Segment + pointer saved before EXEC
+SavedSP        dw 0
 
-ParamBlock      ExecPB <>          ; EXEC parameter block
-RunProg         RunProgStruc <>    ; Data about program to run
+ParamBlock     ExecPB <>           ; EXEC parameter block
+RunProg        RunProgStruc <>     ; Data about program to run
 
-FilenamePtr     dw 0               ; Pointer to filename for EXEC, either DESKTOPEXE or RunProg.Filename
-ParametersPtr   dw 0               ; Pointer to parameters for EXEC, either DESKTOPPARAMS or RunProg.Parameters
-PathPtr         dw 0               ; Pointer to path for CHDIR, either CostaPath or RunProg.Path
+FilenamePtr    dw 0                ; Pointer to filename for EXEC, either DESKTOPEXE or RunProg.Filename
+ParametersPtr  dw 0                ; Pointer to parameters for EXEC, either DESKTOPPARAMS or RunProg.Parameters
+PathPtr        dw 0                ; Pointer to path for CHDIR, either CostaPath or RunProg.Path
 
-; Messages, both regular and error 
+; Messages, both regular and error
 MSG_CONTINUE        db 'Press any key to continue...$'
 MSG_UNKNOWN_ERR     db 'Unknown error', CR_CHAR, LF_CHAR, '$'
 MSG_DOS_VER_ERR     db 'DOS 4 or newer required', CR_CHAR, LF_CHAR, '$'
@@ -145,20 +145,20 @@ MSG_INVALID_ACCESS  db 'Invalid access mode', CR_CHAR, LF_CHAR, '$'
 
 ; Offset table for error messages - 1-12 are standard DOS error codes, 0 and
 ; 13+ are custom errors
-MsgTable   dw MSG_UNKNOWN_ERR      ; 0
-           dw MSG_INVALID_FUNC     ; 1
-		   dw MSG_FILE_NOT_FOUND   ; 2
-		   dw MSG_PATH_NOT_FOUND   ; 3
-		   dw MSG_TOO_MANY_OPEN    ; 4
-		   dw MSG_ACCESS_DENIED    ; 5
-		   dw MSG_INVALID_HANDLE   ; 6
-		   dw MSG_MEM_CB_DESTR     ; 7
-		   dw MSG_INSUFF_MEM       ; 8
-		   dw MSG_INVALID_MEM_ADD  ; 9
-		   dw MSG_INVALID_ENV      ; 10
-		   dw MSG_INVALID_FORMAT   ; 11
-		   dw MSG_INVALID_ACCESS   ; 12
-		   dw MSG_DOS_VER_ERR      ; 13
+MsgTable dw MSG_UNKNOWN_ERR        ; 0
+         dw MSG_INVALID_FUNC       ; 1
+		 dw MSG_FILE_NOT_FOUND     ; 2
+		 dw MSG_PATH_NOT_FOUND     ; 3
+		 dw MSG_TOO_MANY_OPEN      ; 4
+		 dw MSG_ACCESS_DENIED      ; 5
+		 dw MSG_INVALID_HANDLE     ; 6
+		 dw MSG_MEM_CB_DESTR       ; 7
+		 dw MSG_INSUFF_MEM         ; 8
+		 dw MSG_INVALID_MEM_ADD    ; 9
+		 dw MSG_INVALID_ENV        ; 10
+		 dw MSG_INVALID_FORMAT     ; 11
+		 dw MSG_INVALID_ACCESS     ; 12
+		 dw MSG_DOS_VER_ERR        ; 13
 
 LABEL EndOfData BYTE               ; Marks end of the data segment, used for memory resize
 
@@ -178,7 +178,7 @@ start:
 	int 21h
 	cmp al, DOS_REQUIRED_VERSION   ; al = major version, must be >= required
 	jnc DosVersionOk               ; Jump if version is sufficient
-	
+
 	mov al, ERR_DOS_VERSION        ; DOS version error, will terminate
 	mov ah, FATAL_ERROR_FLAG
 	call HandleError
@@ -188,14 +188,17 @@ DosVersionOk:
 	call GetPathToSelf
 
 LoadRunData:
+	mov [RunningDesktop], 0		   ; Clear running desktop flag
+
+	; Change directory to Costa's path before loading file
 	mov ax, @data
 	mov ds, ax
-	mov ah, CHDIR_FUNCTION		   ; Change directory to Costa's path
+	mov ah, CHDIR_FUNCTION         ; Change directory to Costa's path
 	lea dx, [CostaPath]
 	int 21h
 	jnc OpenRunFile                ; Jump if successful
-	
-	mov al, [RunningDesktop]       ; AL already contains error code from int 21
+
+	mov ah, FATAL_ERROR_FLAG       ; If we can't change to Costa's path, fatal error
 	call HandleError               ; Handle path change error
 	jmp RunDesktop                 ; Still here? Then try to run desktop
 
@@ -229,17 +232,17 @@ ReadRunFile:
 	mov bx, [RunFileHandle]
 	int 21h                        ; Close file
 	jmp RunDesktop                 ; After showing error, run the desktop
-	
+
 CloseRunFile:
 	mov ah, CLOSE_FILE_FUNCTION
 	mov bx, [RunFileHandle]
 	int 21h                        ; Close file
-	
+
 	; Delete RUN.BIN after reading it
 	mov ah, DELETE_FILE_FUNCTION
 	lea dx, [RUNFILE]
 	int 21h                        ; Delete file
-	
+
 	; Move pointers to RunProg variables loaded from RUN.BIN
 	mov ax, offset RunProg.Filename
 	mov [FilenamePtr], ax
@@ -247,11 +250,11 @@ CloseRunFile:
 	mov [ParametersPtr], ax
 	mov ax, offset RunProg.Path
 	mov [PathPtr], ax
-	
-	jmp RunProgram                 ; All is good, run the program
+
+	jmp SetPath                    ; All is good, move ahead
 
 RunDesktop:
-	; The desktop is to be run, so move all pointers to desktop variables	
+	; The desktop is to be run, so move all pointers to desktop variables
 	mov ax, offset DESKTOPEXE      ; Get offset of desktop filename
 	mov [FilenamePtr], ax          ; Set filename pointer to that offset
 	mov ax, offset DESKTOPPARAMS   ; Same for parameters
@@ -261,8 +264,8 @@ RunDesktop:
 	mov [RunProg.PauseOnExit], 0   ; Don't pause after desktop exit
 	mov [RunningDesktop], 1        ; We are running the desktop now
 
-RunProgram:
-	mov si, [PathPtr]		       ; Check if path is non-empty
+SetPath:
+	mov si, [PathPtr]              ; Check if path is non-empty
 	mov al, [si]
 	cmp al, 0
 	je ShrinkMemory                ; If empty, skip changing directory
@@ -280,18 +283,15 @@ ShrinkMemory:
 	; Shrink memory before running external program
 	mov ah, GET_PSP_FUNCTION
 	int 21h
-	mov es, bx                     ; bx = PSP segment, store in ES
-	; Memory layout of EXE:
-	;   Code segment
-	;   Data segment
-	;   Stack
-	; Label EndOfData marks the end of the data segment, so we can calculate
-	; how much memory we need to keep by adding STACK_SIZE to that address
-	mov ax, offset EndOfData
+	mov es, bx                     ; set ES = PSP segment
+	
+	; Calculate required memory size for COSTA.EXE to keep
+	mov ax, offset EndOfData       ; Label EndOfData marks the end of the data segment
 	add ax, STACK_SIZE             ; Include stack size
 	add ax, PARAGRAPH_SIZE - 1     ; Make sure divison rounds up to next paragraph
-	shr ax, 4                      ; AX = byte cound, divide by 16 to get paragraph count
-	mov bx, ax                     ;  (4 bits shift right = divide by 16)
+	shr ax, 4                      ; AX = byte count, divide by 16 to get paragraph count
+	add ax, 30h				       ; Add 16 paragraphs for PSP and 32 for overhead (768 bytes)
+	mov bx, ax                     ; BX = new size in paragraphs
 	mov ah, RESIZE_MEM_FUNCTION
 	int 21h
 
@@ -302,6 +302,9 @@ ShrinkMemory:
 	call HandleError               ; Handle memory release error, will terminate
 
 CallExecFunction:
+
+	; DEBUG - verify that file exists before EXEC, some versions of DOS will hang if not
+
 	; Set up the EXEC parameter block
 	mov ax, @data
 	mov es, ax
@@ -334,36 +337,33 @@ CallExecFunction:
 
 	; Check for errors from EXEC - CF not affected by DS/ES or stack restore
 	jnc ExecSucceeded              ; Jump if no error
-	jmp EvaluateExecOutcome
+	jmp ExecFailed
 
 ExecSucceeded:
-	; EXEC ran the program successfully
-	mov [ExecErrorCode], 0         ; If no error AL will have returned garbage, not zero
-
+	; EXEC succeeded, now check if we need to pause on exit
 	cmp [RunProg.PauseOnExit], 0
-	je EvaluateExecOutcome         ; If no pause on exit requested, skip ahead
+	je NoPause                     ; If no pause on exit requested, skip ahead
 	WAITFORKEY
 
-EvaluateExecOutcome:
-	mov al, [ExecErrorCode]        ; Check for errors from EXEC
-	cmp al, 0
-	je EvaluateExitCode            ; No error, continue to check exit code
-
-	; Error occurred during EXEC, evaluate
-	mov ah, [RunningDesktop]       ; If running desktop, any error is fatal
-	call HandleError               ; AH will already contain error code from int 21
-	jmp RunDesktop                 ; If we returned from HandleError, run desktop
+NoPause:
+	cmp [RunningDesktop], 1        ; Were we running the desktop?
+	je EvaluateExitCode            ; If so, check exit code to see if we should exit
+	jmp LoadRunData                ; Otherwise, jump to top and load RUN.BIN again
 
 EvaluateExitCode:
-	; Desktop executed without error, check exit code
+	; Desktop was exited, check exit code to see if we should exit Costa or not
 	mov ah, GET_EXIT_CODE_FUNCTION
 	int 21h
 	cmp al, DESKTOP_EXIT_CODE      ; Did desktop signal to exit Costa?
-	je ProgramEnd
+	je ProgramEnd                  ; If so, exit program
+	jmp LoadRunData                ; Otherwise, reload RUN.BIN and continue
 
-	mov [RunningDesktop], 0        ; We are still here, which means we are about to
-	                               ; run another program, not the desktop
-	jmp LoadRunData                ; Load RUN.BIN data again and run program
+ExecFailed:
+	; Error occurred during EXEC, evaluate
+	mov al, [ExecErrorCode]
+	mov ah, [RunningDesktop]       ; If running desktop, any error is fatal
+	call HandleError               ; AH will already contain error code from int 21
+	jmp RunDesktop                 ; If we returned from HandleError, run desktop
 
 ProgramEnd:
 	mov ah, TERMINATE_FUNCTION
@@ -447,17 +447,17 @@ PROC HandleError NEAR
 	push bx                        ; Preserve registers
 	push cx
 	push dx
-	
+
 	mov cl, ah                     ; Save fatal flag in CL
 
 	mov bl, al                     ; Copy error code to BL
-	xor bh, bh		               ; Clear upper byte
+	xor bh, bh                     ; Clear upper byte
 	shl bx, 1                      ; Multiply error code by 2, size of word, for offset lookup in MsgTable
 	mov dx, [MsgTable + bx]        ; Get address of error msg based on offset
-	
+
 	mov ah, PRINT_STR_FUNCTION
 	int 21h                        ; Print error message
-	
+
 	cmp cl, FATAL_ERROR_FLAG
 	je FatalError                  ; If fatal, terminate program
 

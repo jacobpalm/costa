@@ -1,0 +1,12 @@
+Begin3
+Title:           The Costa GUI
+Version:         2.0.0
+Entered-date:    2026-01-03
+Description:     Small, lightweight graphical user interface.
+Keywords:        gui,shell,launcher
+Author:          Jacob Palm
+Hwreq:           ega
+Original-site:   https://costa.jacobpalm.dk
+Platforms:       DOS
+Copying-policy:  Free (with sources)
+End

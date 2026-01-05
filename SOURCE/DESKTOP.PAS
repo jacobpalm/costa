@@ -124,12 +124,12 @@ begin
 
 	if Length(OutLink.Parameters) > 0 then
 		OutLink.Parameters := #32 + OutLink.Parameters; {If parameters exist, ensure they start with space}
-	OutLink.Parameters := Char(Length(OutLink.Parameters)) + OutLink.Parameters + #13;
+	OutLink.Parameters := Char(Length(OutLink.Parameters)) + OutLink.Parameters;
 		{Ensure parameters end with CR, req. by cmd tail}
 
 	{Convert strings to ASCIIZ - COSTA.EXE expects this format and we use fixed size
 	 records for simplicity in loading data in COSTA.EXE}
-	FillChar(RunData, SizeOf(RunData), 4);
+	FillChar(RunData, SizeOf(RunData), 0); {Clear buffer}
 
 	Move(OutLink.Filename[1], RunData[RunBinOffsetFilename], Length(OutLink.Filename));
 	RunData[RunBinOffsetFilename + Length(OutLink.Filename)] := #0; {Add ASCIIZ terminator}
@@ -138,12 +138,10 @@ begin
 	RunData[RunBinOffsetPath + Length(OutLink.Path)] := #0; {Add ASCIIZ terminator}
 
 	Move(OutLink.Parameters[1], RunData[RunBinOffsetParameters], Length(OutLink.Parameters));
-	RunData[RunBinOffsetParameters + Length(OutLink.Parameters)] := #0; {ASCIIZ terminator}
+	RunData[RunBinOffsetParameters + Length(OutLink.Parameters)] := #13; {CR terminator used for cmd tail}
 
 	RunData[RunBinOffSetPause] := Char(OutLink.PauseOnExit);
-	{FillChar(RunLink.FileName, SizeOf(RunLink.FileName), 1);
-	FillChar(RunLink.Path, SizeOf(RunLink.Path), 2);
-	FillChar(RunLink.PauseOnExit, 1, 3);}
+	
 	Assign(F, ProgramPath + RunFile);
 	{$I-}
 	Rewrite(F, 1);

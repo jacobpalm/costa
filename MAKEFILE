@@ -1,7 +1,7 @@
 # Main Costa makefile
 # Copyright 2004-2025 Jacob Palm
 # Licensed under the MIT License. See LICENSE file for details.
-
+#
 # Make sure "make" utility is available in your PATH before running.
 # Built and tested with Borland Make 3.6
 #
@@ -12,18 +12,27 @@
 #   make COSTA.EXE
 #   make DESKTOP.EXE
 #   etc.
+#
+# To build package for SvarDOS, run:
+#   make SVARDOS
 
 # Paths for Costa and its source files
 COSTADIR   = C:\COSTA
 LIBDIR     = $(COSTADIR)\LIBRARY
 SOURCEDIR  = $(COSTADIR)\SOURCE
 
-# Paths for compilers/linkers - recommended to set these in your PATH, but can be set here
+# Output path for SvarDOS build
+SVARDIR    = $(COSTADIR)\SVARDOS
+SVARAPPDIR = $(SVARDIR)\PROGS\COSTA
+
+# Paths for compilers/linkers - recommended to add these in your PATH, but can be set here
 TPC = TPC
 TASM = TASM
 TLINK = TLINK
 BINOBJ = BINOBJ
 
+# Zip command for SvarDOS packaging
+ZIPCMD = ZIP -9rkDX
 
 # Settings for compilers/linkers
 
@@ -181,6 +190,44 @@ MSGDLG.TPU: $(LIBDIR)\MSGDLG.PAS COSTALIB.TPU UIBUTTON.TPU UILABEL.TPU UIICON.TP
 
 RUNDLG.TPU: $(LIBDIR)\RUNDLG.PAS COSTALIB.TPU UIDESK.TPU UIBUTTON.TPU UITXTBOX.TPU FILEDLG.TPU
 	$(TPCCMD) $(LIBDIR)\RUNDLG.PAS $(LIBPATHS)
+
+
+# SvarDOS build #############################################################
+
+SVARDOS: ALL
+	DELTREE /Y $(SVARDIR)\PROGS
+	MKDIR $(SVARDIR)\PROGS
+	MKDIR $(SVARDIR)\PROGS\COSTA
+	MKDIR $(SVARDIR)\PROGS\COSTA\CONFIG
+	MKDIR $(SVARDIR)\PROGS\COSTA\ICONS
+	MKDIR $(SVARDIR)\PROGS\COSTA\THEMES
+	COPY $(COSTADIR)\*.EXE $(SVARAPPDIR) /Y
+	COPY $(COSTADIR)\*.TXT $(SVARAPPDIR) /Y
+	COPY $(COSTADIR)\LICENSE $(SVARAPPDIR)/Y
+	XCOPY $(COSTADIR)\CONFIG $(SVARAPPDIR)\CONFIG /Y
+	XCOPY $(COSTADIR)\ICONS $(SVARAPPDIR)\ICONS /Y
+	XCOPY $(COSTADIR)\THEMES $(SVARAPPDIR)\THEMES /Y
+
+	# Delete user config files, to provide fresh defaults
+	DEL $(SVARAPPDIR)\CONFIG\DESK?.BIN
+
+	# Delete MacOS junk files, if any
+	DEL $(SVARDIR)\DS_STO~1
+	DEL $(SVARDIR)\APPINFO\DS_STO~1
+	DEL $(SVARDIR)\PROGS\DS_STO~1
+	DEL $(SVARAPPDIR)\DS_STO~1
+	DEL $(SVARAPPDIR)\CONFIG\DS_STO~1
+	DEL $(SVARAPPDIR)\ICONS\DS_STO~1
+	DEL $(SVARAPPDIR)\THEMES\DS_STO~1
+
+	# Development files start with underscore, delete them
+	DEL $(SVARAPPDIR)\_*.*
+
+	# Create zip package - SVP extension required by SvarDOS
+	CD $(SVARDIR)
+	$(ZIPCMD) COSTA.SVP . | MORE
+	MOVE COSTA.SVP $(COSTADIR) /Y
+	CD $(COSTADIR)
 
 # Clean up ##################################################################
 

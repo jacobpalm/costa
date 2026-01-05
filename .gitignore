@@ -21,5 +21,12 @@ CONFIG/RUN.BIN
 *.BAK
 *.DRAWIO.bkp
 
-# Mac system files
+# OS temp/metadata files
 .DS_Store
+Thumbs.db
+desktop.ini
+
+# Distribution files
+SVARDOS/PROGS
+*.SVP
+*.ZIP
