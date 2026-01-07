@@ -37,8 +37,11 @@ OPEN_READ_ONLY         EQU 00h     ; Open file read-only mode
 CLOSE_FILE_FUNCTION    EQU 3Eh     ; DOS close file function number
 READ_FILE_FUNCTION     EQU 3Fh     ; DOS read file function number
 DELETE_FILE_FUNCTION   EQU 41h     ; DOS delete file function number
+SET_DRIVE_FUNCTION     EQU 0Eh     ; DOS set current drive function number
+GET_DRIVE_FUNCTION     EQU 19h     ; DOS get current drive function number
 
 ERR_UNKNOWN            EQU 0       ; Index in MsgTable for unknown error
+ERR_PATH_NOT_FOUND     EQU 3       ; Index for path not found error
 ERR_MEMORY             EQU 8       ; Index for memory error
 ERR_DOS_VERSION        EQU 13      ; Index for unsupported DOS version error
 
@@ -189,18 +192,13 @@ DosVersionOk:
 
 LoadRunData:
 	mov [RunningDesktop], 0		   ; Clear running desktop flag
-
-	; Change directory to Costa's path before loading file
-	mov ax, @data
-	mov ds, ax
-	mov ah, CHDIR_FUNCTION         ; Change directory to Costa's path
-	lea dx, [CostaPath]
-	int 21h
+	
+	lea dx, [CostaPath]            ; Change to Costa's drive+path before loading file
+	call ChDir
 	jnc OpenRunFile                ; Jump if successful
 
 	mov ah, FATAL_ERROR_FLAG       ; If we can't change to Costa's path, fatal error
 	call HandleError               ; Handle path change error
-	jmp RunDesktop                 ; Still here? Then try to run desktop
 
 OpenRunFile:
     ; Load program to run data from RUN.BIN
@@ -251,7 +249,7 @@ CloseRunFile:
 	mov ax, offset RunProg.Path
 	mov [PathPtr], ax
 
-	jmp SetPath                    ; All is good, move ahead
+	jmp ChangePath                 ; All is good, move ahead
 
 RunDesktop:
 	; The desktop is to be run, so move all pointers to desktop variables
@@ -264,20 +262,14 @@ RunDesktop:
 	mov [RunProg.PauseOnExit], 0   ; Don't pause after desktop exit
 	mov [RunningDesktop], 1        ; We are running the desktop now
 
-SetPath:
-	mov si, [PathPtr]              ; Check if path is non-empty
-	mov al, [si]
-	cmp al, 0
-	je ShrinkMemory                ; If empty, skip changing directory
-
-	mov ah, CHDIR_FUNCTION         ; Change directory function
-	mov dx, [PathPtr]              ; DS:DX = path to change to
-	int 21h
+ChangePath:
+	mov dx, [PathPtr]              ; Load pointer to path into DX
+	call ChDir                     ; Change directory to desired path
 	jnc ShrinkMemory               ; Jump if successful
 
 	mov ah, [RunningDesktop]       ; AL already contains error code from int 21
 	call HandleError               ; Handle path change error
-	jmp RunDesktop                 ; Try to run desktop again
+	jmp RunDesktop                 ; Try to run desktop
 
 ShrinkMemory:
 	; Shrink memory before running external program
@@ -290,7 +282,7 @@ ShrinkMemory:
 	add ax, STACK_SIZE             ; Include stack size
 	add ax, PARAGRAPH_SIZE - 1     ; Make sure divison rounds up to next paragraph
 	shr ax, 4                      ; AX = byte count, divide by 16 to get paragraph count
-	add ax, 30h				       ; Add 16 paragraphs for PSP and 32 for overhead (768 bytes)
+	add ax, 40h				       ; Add 16 paragraphs for PSP and 32 for overhead (768 bytes)
 	mov bx, ax                     ; BX = new size in paragraphs
 	mov ah, RESIZE_MEM_FUNCTION
 	int 21h
@@ -302,6 +294,8 @@ ShrinkMemory:
 	call HandleError               ; Handle memory release error, will terminate
 
 CallExecFunction:
+	; Note that we are NOT saving registers and SS/SP here - DOS 3+ handles this, and we
+	; only target newer versions of DOS.
 
 	; DEBUG - verify that file exists before EXEC, some versions of DOS will hang if not
 
@@ -318,22 +312,12 @@ CallExecFunction:
 	mov [ParamBlock.FCB2PtrOff], 0
 
 	; Call EXEC to run the program
-	mov [SavedSS], ss              ; Save stack segment and pointer before EXEC, they will
-	mov [SavedSP], sp              ; likely be changed by EXEC
 	mov dx, [FilenamePtr]          ; Load adress stored in FilenamePtr
 	lea bx, [ParamBlock]           ; ES:BX = pointer to EXEC parameter block
 	mov ah, EXEC_FUNCTION          ; EXEC function
 	mov al, EXEC_LOAD_RUN          ; Load and run
 	int 21h
 	mov [ExecErrorCode], al        ; Save error code from EXEC, if any
-
-	mov ax, @data                  ; Re-initialize data segment registers, will likely
-	mov ds, ax                     ; have been changed by EXEC
-	mov es, ax
-	cli                            ; Disable interrupts due to bug on some CPUs
-	mov ss, [SavedSS]              ; Restore stack
-	mov sp, [SavedSP]
-	sti                            ; Re-enable interrupts
 
 	; Check for errors from EXEC - CF not affected by DS/ES or stack restore
 	jnc ExecSucceeded              ; Jump if no error
@@ -472,5 +456,46 @@ FatalError:
 	mov al, 1                      ; Exitcode = 1 for error
 	int 21h                        ; Terminate program
 ENDP HandleError
+
+
+; ChDir - Change drive and directory
+;
+; Inputs:  DX = pointer to null-terminated path string
+;
+; Outputs: AL = DOS error code if CF flag set, otherwise undefined
+;
+; Destroys: CF, AX, SI
+;
+PROC ChDir NEAR
+
+	mov si, dx                     ; Load path pointer
+	mov al, [si]                   ; Check if first character is non-null
+	or al, al
+	jz Done                        ; If null, nothing to do
+
+SetDrive:
+	push dx                        ; Preserve DX
+
+	; Check if path specifies a drive
+	inc si                         ; Move to second character
+	mov ah, [si]                   ; Store for comparison
+	cmp ah, ':'                    ; Is it a colon?
+	jne SetDir                     ; PathPtr doesn't specify drive, skip drive change
+	
+	and al, 0DFh                   ; force uppercase drive letter just in case
+	sub al, 'A'                    ; Substracting 'A' gives 0 for A, 1 for B, etc.
+	
+	mov ah, SET_DRIVE_FUNCTION     ; DOS set current drive function
+	mov dl, al                     ; DL = drive number
+	int 21h                        ; No error checking, chdir will fail if drive invalid
+
+SetDir:
+	mov ah, CHDIR_FUNCTION         ; Change directory function
+	pop dx                         ; Restore DX
+	int 21h
+
+Done:
+	ret
+ENDP ChDir
 
 END start                          ; Mark the program's entry point
