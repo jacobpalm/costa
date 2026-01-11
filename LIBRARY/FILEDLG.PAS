@@ -3,7 +3,7 @@ unit FileDlg;
 interface
 
 uses
-	Costalib, UIButton, UITxtbox, UILabel, UIList, UIIcon;
+	Costalib, UIButton, UITxtbox, UILabel, UIList, UIIcon, MsgDlg;
 
 function FileSelect(DefaultPattern, StartPath: string): string;
 
@@ -26,6 +26,11 @@ const
 	CAP_DIRS        = #127 + 'Directories';
 	CAP_SELECT      = #127 + 'Select';
 	CAP_CANCEL      = #127 + 'Cancel';
+
+	MSG_ERROR_TITLE = 'Error';
+	MSG_DOS_ERROR   = '%s while trying to read' + #13 + '%s';
+	MSG_DRIVE_ERROR = 'Drive %s: not ready. Make sure there is a' + #13 +
+	                  'disk in the drive.';
 
 var
 	WinFileSelect:  PWindow;
@@ -56,6 +61,15 @@ var
 	Drive:          String[1];
 	ReturnedFile:   String;
 
+procedure HandleDosError(ErrorCode: Integer; Path: String);
+var
+	ErrMsg: String;
+begin
+	ErrMsg := ReplaceMsg(MSG_DOS_ERROR, GetDosErrorMsg(ErrorCode));
+	ErrMsg := ReplaceMsg(ErrMsg, Path);
+	MsgBox(MSG_ERROR_TITLE, ErrMsg, MsgError);
+end;
+
 procedure GetChildFiles(Path: String; FilePattern: String);
 var
 	FileInfo: SearchRec;
@@ -63,7 +77,17 @@ begin
 	{Clear previous file list}
 	List[FileList]^.ClearItems;
 
-	FindFirst(Path + '\' + FilePattern, Archive, FileInfo);
+	{Add backslash if missing}
+	if (Path[Length(Path)] <> '\') then
+		Path := Path + '\';
+
+	FindFirst(Path + FilePattern, Archive, FileInfo);
+	{If an error other than 18 (no files found) occurred, show message}
+	if (DosError > 0) and (DosError <> 18) then
+	begin
+		HandleDosError(DosError, Path);
+		exit;
+	end;
 	while DosError = 0 do
 	begin
 		if (FileInfo.Attr and Directory) = 0 then
@@ -87,7 +111,17 @@ begin
 	if Length(Path) > 3 then
 		List[DirList]^.AddItem('..');
 	
-	FindFirst(Path + '\*.*', Directory, DirInfo);
+	{Add backslash if missing}
+	if (Path[Length(Path)] <> '\') then
+		Path := Path + '\';
+	
+	FindFirst(Path + '*.*', Directory, DirInfo);
+	{If an error other than 18 (no files found) occurred, show message}
+	if (DosError > 0) and (DosError <> 18) then
+	begin
+		HandleDosError(DosError, Path);
+		exit;
+	end;
 	while DosError = 0 do
 	begin
 		if ((DirInfo.Attr and Directory) <> 0) and (DirInfo.Name <> '.') and (DirInfo.Name <> '..') then
@@ -131,15 +165,19 @@ end;
 
 function SetDrive(DriveLetter: Char): Boolean;
 var
-	CurrentDir: String;
+	ErrorCode: Integer;
+	Int24Old: Pointer;
 begin
+	SetDrive := false;
 	DriveLetter := UpCase(DriveLetter);
-	if (DriveLetter >= 'A') and (DriveLetter <= 'Z') then
-	begin
+	if (DriveLetter < 'A') or (DriveLetter > 'Z') then
+		exit;
+
 	{$I-}
 	ChDir(DriveLetter + ':\');
 	{$I+}
-	if IOResult = 0 then
+	ErrorCode := IOResult;
+	if ErrorCode = 0 then
 	begin
 		GetDir(0, Path);
 		Drive := DriveLetter;
@@ -151,13 +189,12 @@ begin
 		Mouse.Show;
 		SetDrive := True;
 		DrawPreview(nil);
-		Exit;
 	end
 	else
-	 ChDir(Path); {Restore original path if drive change fails}
+	begin
+		ChDir(Path); {Restore original path if drive change fails}
+		HandleDosError(ErrorCode, DriveLetter + ':\');
 	end;
-
-	SetDrive := False;
 end;
 
 procedure SetDir(DirName: String);
@@ -178,6 +215,10 @@ begin
 		TxtDrive^.Draw;
 		Mouse.Show;
 		Drive := Copy(Path, 1, 1);
+	end
+	else
+	begin
+		HandleDosError(DosError, Path);
 	end;
 	DrawPreview(nil);
 end;

@@ -14,12 +14,12 @@ procedure HkExitClick(Sender: PUIObject); far;
 var
 	X, Y: Integer;
 begin
-	App^.Exit;
+	App^.Terminate;
 end;
 
 procedure Item3Click(Sender: PUIObject); far;
 begin
-	App^.Exit;
+	App^.Terminate;
 end;
 
 begin
@@ -50,5 +50,5 @@ begin
 
 	App^.OpenWindow(Win);
 	App^.Run;
-	App^.Exit;
+	App^.Terminate;
 end.

@@ -231,7 +231,7 @@ begin
 	if UnsavedChangesToKeep then
 		exit;
 
-	App^.Exit;
+	App^.Terminate;
 end;
 
 procedure AreaColorClick(Sender: PUIObject); far;
@@ -413,6 +413,6 @@ begin
 
 	App^.OpenWindow(WinMain);
 	App^.Run;
-	App^.Exit;
+	App^.Terminate;
 	
 end.

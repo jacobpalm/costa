@@ -36,8 +36,7 @@ const
 	MSG_EXIT_PROMPT           = 'This will exit Costa and return you to the DOS' + #13 +
 	                            'prompt. Continue?';
 	MSG_SAVE_ERROR_TITLE      = 'Error writing to file';
-	MSG_SAVE_ERROR            = 'Could not open file for writing. The' + #13 + 
-	                            'file may be read-only or inaccesible:' + #13;
+	MSG_SAVE_ERROR            = '%s. Could not write to' + #13;
 	MSG_LOAD_ERROR_TITLE      = 'Error loading desktop links';
 	MSG_LOAD_ERROR            = 'Could not open file for reading. The' + #13 + 
 	                            'file may corrupt or inaccesible:' + #13;
@@ -77,6 +76,7 @@ var
 	ComSpec:     String;
 	OutLink:     TLink;
 	RunData:     array[0..RunBinSize - 1] of Char;
+	ErrorCode:   integer;
 begin
 	if not Assigned(Target) then
 		exit;
@@ -100,6 +100,7 @@ begin
 	end;
 
 	FSplit(OutLink.Filename, FPath, FName, FExt);
+	FExt := UpperCase(FExt);
 	if (FExt <> '.EXE') and (FExt <> '.COM') and (FExt <> '.BAT') then
 	begin
 		MsgBox(MSG_NOT_A_PROGRAM_TITLE, MSG_NOT_A_PROGRAM, MsgError);
@@ -146,10 +147,10 @@ begin
 	{$I-}
 	Rewrite(F, 1);
 	{$I+}
-	if IOResult <> 0 then
+	ErrorCode := IOResult;
+	if ErrorCode <> 0 then
 	begin
-		Close(F);
-		MsgBox(MSG_SAVE_ERROR_TITLE, MSG_SAVE_ERROR + RunFile, MsgError);
+		MsgBox(MSG_SAVE_ERROR_TITLE, ReplaceMsg(MSG_SAVE_ERROR, GetDosErrorMsg(ErrorCode)) + RunFile, MsgError);
 		exit;
 	end;
 
@@ -483,5 +484,5 @@ begin
 	WinMain^.Run;
 	Dispose(WinMain, Done);
 	WinMain := nil;
-	App^.Exit;
+	App^.Terminate;
 end.

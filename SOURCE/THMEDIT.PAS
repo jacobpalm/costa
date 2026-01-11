@@ -512,7 +512,7 @@ begin
 				exit;
 	end;
 
-	App^.Exit;
+	App^.Terminate;
 end;
 
 procedure TextboxChange(Sender: PUIObject); far;

@@ -292,7 +292,7 @@ end;
 
 procedure BtnExitClick(Sender: PUIObject); far;
 begin
-	App^.Exit;
+	App^.Terminate;
 end;
 
 procedure HkCheatClick(Sender: PUIObject); far;
@@ -531,5 +531,5 @@ begin
 	{Start application}
 	App^.OpenWindow(WinMain);
 	App^.Run;
-	App^.Exit;
+	App^.Terminate;
 end.

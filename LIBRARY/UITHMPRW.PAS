@@ -48,8 +48,8 @@ const
 	CAP_PREVIEW_EXE      = 'preview.exe';
 
 	MSG_LOAD_ERROR_TITLE = 'Error loading';
-	MSG_LOAD_ERROR_TEXT  = 'The theme file %s.BIN could not be loaded.' + #13 +
-	                       'Please check that the file is accessible and not corrupted.';
+	MSG_LOAD_ERROR_TEXT  = '%s. The theme file %s.BIN' + #13 +
+	                       'could not be loaded.';
 
 constructor TThemePreview.Init(X, Y: Integer; Parent: PContainer);
 const
@@ -121,6 +121,8 @@ end;
 procedure TThemePreview.LoadFile(Filename: string);
 var
 	F: File;
+	ErrorCode: Integer;
+	ErrorText: string;
 begin
 	{Load the specified theme file}
 
@@ -130,22 +132,25 @@ begin
 	{$I-}
 	Reset(F, 1);
 	{$I+}
-	if IOResult = 0 then
+	ErrorCode := IOResult;
+	if ErrorCode = 0 then
 	begin
+		{DEBUG - verify file size before loading}
 		BlockRead(F, ThemeData, SizeOf(ThemeData));
 		BlockRead(F, ThemeName, SizeOf(ThemeName));
 		BlockRead(F, ThemeAuthor, SizeOf(ThemeAuthor));
+		ThemeLoaded := true;
+		Close(F);
 	end
 	else
 	begin
 		ThemeData := OrigTheme; {Restore original theme}
 		ThemeAuthor := '';
 		ThemeName := '';
-		MsgBox(MSG_LOAD_ERROR_TITLE, ReplaceMsg(MSG_LOAD_ERROR_TEXT, FileName), MsgError);
-		Exit;
+		ErrorText := ReplaceMsg(MSG_LOAD_ERROR_TEXT, GetDosErrorMsg(ErrorCode));
+		ErrorText := ReplaceMsg(ErrorText, FileName);
+		MsgBox(MSG_LOAD_ERROR_TITLE, ErrorText, MsgError);
 	end;
-	Close(F);
-	ThemeLoaded := true;
 
 	{Update preview info label to show theme name and author}
 	LblPreviewInfo^.SetCaption(ThemeName + #13 + ThemeAuthor);

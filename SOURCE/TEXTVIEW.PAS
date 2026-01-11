@@ -22,7 +22,7 @@ const
 
 	MSG_OPEN_ERROR_TITLE = 'Error opening file';
 	MSG_FILE_NOT_FOUND   = 'File not found: ' + #13;
-	MSG_READ_ERROR       = 'Error reading file, make sure it is accessible: ' + #13;
+	MSG_READ_ERROR       = '%s. Cannot open ' + #13;
 	MSG_MEMORY_TEXT      = 'Not enough memory to open this file.';
 	MSG_END_OF_FILE      = '* end of file *';
 
@@ -184,6 +184,7 @@ procedure LoadFile(FileName: String);
 var
 	F: Text;
 	ReadData, Truncated: String;
+	ErrorCode: Integer;
 begin
 	{Load a text file into the lines array, splitting long lines as necessary}
 
@@ -202,9 +203,10 @@ begin
 	{$I-}
 	Reset(F);
 	{$I+}
-	if IOResult <> 0 then
+	ErrorCode := IOResult;
+	if ErrorCode <> 0 then
 	begin
-		MsgBox(MSG_OPEN_ERROR_TITLE, MSG_READ_ERROR + FileName, MsgError);
+		MsgBox(MSG_OPEN_ERROR_TITLE, ReplaceMsg(MSG_READ_ERROR, GetDosErrorMsg(ErrorCode)) + FileName, MsgError);
 		Exit;
 	end;
 
@@ -379,7 +381,7 @@ end;
 
 procedure BtnExitClick(Sender: PUIObject); far;
 begin
-	App^.Exit;
+	App^.Terminate;
 end;
 
 procedure WinMainDraw(Sender: PUIObject); far;

@@ -189,7 +189,7 @@ begin
 	Setting.ConfExit := ChkSetting[ConfExit]^.GetChecked;
 
 	App^.SaveSettings;
-	App^.Exit;
+	App^.Terminate;
 end;
 
 procedure BtnAboutClick(Sender: PUIObject); far;
@@ -302,5 +302,5 @@ begin
 
 	App^.OpenWindow(WinMain);
 	App^.Run;
-	App^.Exit;
+	App^.Terminate;
 end.

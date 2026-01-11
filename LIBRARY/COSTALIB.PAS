@@ -27,6 +27,19 @@ const
 	NewLine:        Char = #13;  {Wrap lines in Print, MsgBox, InputBox etc.}
 	HotkeyChr:      Char = #127; {Marks hotkeys in object captions}
 
+	{Standard DOS error messages used by Turbo Pascal}
+	MSG_DOSERROR_1       = 'Invalid function';
+	MSG_DOSERROR_2       = 'File not found';
+	MSG_DOSERROR_3       = 'Path not found';
+	MSG_DOSERROR_4       = 'Too many open files';
+	MSG_DOSERROR_5       = 'Access denied';
+	MSG_DOSERROR_6       = 'Invalid handle';
+	MSG_DOSERROR_12      = 'Invalid access mode';
+	MSG_DOSERROR_15      = 'Invalid drive number';
+	MSG_DOSERROR_16      = 'Cannot remove current directory';
+	MSG_DOSERROR_17      = 'Cannot rename across drives';
+	MSG_DOSERROR_UNKNOWN = 'Unknown error (code %s)';
+
 	{$I KEYCODES.INC}
 
 type
@@ -220,7 +233,7 @@ type
 			procedure   SetExitCode(Code: byte);
 
 			procedure   Run;
-			procedure   Exit;
+			procedure   Terminate;
 		private
 			Name,
 			Version,
@@ -300,6 +313,8 @@ function  Timer: Real;
 procedure Print(Text: string; X, Y, Color: Integer);
 function  PrintW(Text: String): Integer;
 function  PrintH(Text: string): Integer;
+
+function  GetDosErrorMsg(ErrorCode: Integer): String;
 
 function  UpperCase(s: string): string;
 function  Replace(Input, OldSubStr, NewSubStr: String): String;
@@ -965,7 +980,7 @@ begin
 	Dispose(RemoveNode);
 end;
 
-procedure TApplication.Exit;
+procedure TApplication.Terminate;
 begin
 	If Assigned(OnExit) then
 		OnExit(@Self);
@@ -989,7 +1004,7 @@ begin
 	while Assigned(Window) do
 		Window^.ObjectP^.Run;
 
-	Self.Exit; {No more windows, exit the application}
+	Self.Terminate; {No more windows, exit the application}
 end;
 
 function TApplication.Path: DirStr;
@@ -1048,9 +1063,7 @@ end;
 procedure TApplication.LoadSettings;
 var
 	F: file;
-	LoadError: Boolean;
 begin
-	LoadError := False;
 
 	{Set defaults - will be overwritten if settings file loads successfully}
 	FillChar(Setting, SizeOf(TLibSetting), 0);
@@ -1062,7 +1075,6 @@ begin
 	Setting.ThmFile     := 'DEFAULT';
 
 	if not FileExists(Self.Path + GlobalSettings) then
-		{Self.SaveSettings;} {Create default settings file if it doesn't exist}
 		exit;
 
 	Assign(F, Self.Path + GlobalSettings);
@@ -1070,11 +1082,9 @@ begin
 	Reset(F, 1);
 	{$I+}
 	if IOResult <> 0 then
-		LoadError := True
-	else if FileSize(F) <> SizeOf(TLibSetting) then
-		LoadError := True;
-
-	if LoadError then
+		exit;
+	
+	if FileSize(F) <> SizeOf(TLibSetting) then
 	begin
 		Close(F);
 		exit;
@@ -1096,7 +1106,6 @@ begin
 	begin
 		{MsgBox(MSG_SAVE_SETTING_ERROR_TITLE, MSG_SAVE_SETTING_ERROR_TEXT, MsgError);}
 		{DEBUG - this must be handled alternatively, MsgBox can't be included in the library}
-		Close(F);
 		Exit;
 	end;
 	BlockWrite(F, Setting, SizeOf(TLibSetting));
@@ -1754,6 +1763,31 @@ begin
 		if KeyPressed then
 			ReadKey;
 	until (Mouse.Clicked = MbNone) and not KeyPressed; {Wait until mouse is released and no keys are pressed}
+end;
+
+function GetDosErrorMsg(ErrorCode: Integer): String;
+var
+	ErrorCodeStr: String;
+begin
+	case ErrorCode of
+		1:   GetDosErrorMsg := MSG_DOSERROR_1;
+		2:   GetDosErrorMsg := MSG_DOSERROR_2;
+		3:   GetDosErrorMsg := MSG_DOSERROR_3;
+		4:   GetDosErrorMsg := MSG_DOSERROR_4;
+		5:   GetDosErrorMsg := MSG_DOSERROR_5;
+		6:   GetDosErrorMsg := MSG_DOSERROR_6;
+		12:  GetDosErrorMsg := MSG_DOSERROR_12;
+		15:  GetDosErrorMsg := MSG_DOSERROR_15;
+		16:  GetDosErrorMsg := MSG_DOSERROR_16;
+		17:  GetDosErrorMsg := MSG_DOSERROR_17;
+		
+		
+		else
+		begin
+			Str(ErrorCode, ErrorCodeStr);
+			GetDosErrorMsg := ReplaceMsg(MSG_DOSERROR_UNKNOWN, ErrorCodeStr);
+		end;
+	end;
 end;
 
 end.

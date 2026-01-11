@@ -86,6 +86,6 @@ begin
 	WinMain := nil;
 	{App^.OpenWindow(WinMain);
 	App^.Run;}
-	App^.Exit;
+	App^.Terminate;
 	SoundNote(440, 200);
 end.
