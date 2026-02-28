@@ -1,7 +1,7 @@
 program Calculator;
 
 uses
-	CostaLib, Crt, Strings, Graph;
+	CostaLib, UIButton, UIArea, UITxtBox, UIFrame, MsgDlg, AboutDlg, Crt, Strings, Graph;
 
 const
 	AppName              = 'Calculator';
@@ -9,25 +9,52 @@ const
 	AppAuthor            = 'Jacob Palm';
 	AppIcon	             = 'CALC';
 
+	DecimalSign          = '.';
+
 	CAP_ABOUT            = #127 + 'About...';
 	CAP_EXIT             = 'E' + #127 + 'xit';
 	CAP_CLEAR            = #127 + 'C';
 	CAP_CLEAR_EVERYTHING = 'C' + #127 + 'E';
 	MSG_DIV_ZERO         = 'Division by zero';
 
+type
+	TOperand             = (opNone, opAdd, opSubtract, opMultiply, opDivide);
+
 var
-	LogLinesWritten: Integer;
-	AreaLog: TArea;
+	App:                 PApplication;
+	WinMain:             PWindow;
+	FrmCalc:             PFrame;
+	TxtCalc:             PTextbox;
+	BtnNumb:             array[0..9] of PButton;
+	BtnDecimal:          PButton;
+	AreaLog:             PArea;
+	BtnC,
+	BtnCE:               PButton;
+	BtnAdd,
+	BtnSubstract,
+	BtnMultiply,
+	BtnDivide:           PButton;
+	BtnEquals:           PButton;
+	BtnExit,
+	BtnAbout:            PButton;
+
+	HkBackspace:         PHotKey;
+	HkEscape:            PHotKey;
+
+	Operand:	         TOperand; {Current operand selected}
+	FirstNumber,
+	SecondNumber:        Real;    {Numbers involved in calculation}
 	
 
-function FormatNum(TargetStr: string): string;
+function FormatNumber(TargetStr: string): string;
 var
-	IntPart, DecPart, TempStr, SignStr: string;
+	IntPart, DecPart, ResultStr: string;
+	IsNegative: Boolean;
 	i, Len, Count: integer;
 	DotPos: integer;
 begin
-	SignStr := '';
-	TempStr := '';
+	IsNegative := False;
+	ResultStr := '';
 	
 	{Remove decimals if any, and add again later}
 	DotPos := Pos('.', TargetStr);
@@ -45,7 +72,7 @@ begin
 	{If first sign is a minus, remove it and add again later}
 	if (Length(IntPart) > 0) and (IntPart[1] = '-') then
 	begin
-		SignStr := IntPart[1];
+		IsNegative := True;
 		Delete(IntPart, 1, 1);
 	end;
 
@@ -54,13 +81,16 @@ begin
 	Count := 0;
 	for i := Length(IntPart) downto 1 do
 	begin
-		TempStr := IntPart[i] + TempStr;
+		ResultStr := IntPart[i] + ResultStr;
 		Inc(Count);
 		if (Count mod 3 = 0) and (i > 1) then
-			TempStr := ',' + TempStr;
+			ResultStr := ',' + ResultStr;
 	end;
 
-	FormatNum := SignStr + TempStr + DecPart;
+	if IsNegative then
+		ResultStr := '-' + ResultStr;
+
+	FormatNumber := ResultStr + DecPart;
 end;
 
 procedure LogLine(Text: string);
@@ -68,153 +98,255 @@ const
 	MaxLogLines = 18;
 	TopOffset = 52;
 begin
-	Inc(LogLinesWritten);
+	{Inc(LogLinesWritten);
 	if LogLinesWritten > MaxLogLines then
 	begin
 		LogLinesWritten := 0;
 		AreaLog.Draw;
 	end;
-	Print(Text, 624 - Length(Text) * 8, TopOffset + (LogLinesWritten * 15), Thm.WinText);
+	Print(Text, 624 - Length(Text) * 8, TopOffset + (LogLinesWritten * 15), Thm.WinText);}
 end;
 
-var
-	FrmCalc: TFrame;
-	TxtCalc: TTextbox;
-	BtnNumb: array[0..9] of TButton;
-	BtnC, BtnCE, BtnDivide, BtnMulti, BtnMinus, BtnPlus: TButton;
-	BtnEquals, BtnDot, BtnExit, BtnAbout: TButton;
-	i: Integer;
-	MathFunc: string[1];
-	TotalSum, Op1: Integer;
-	NumOps: Integer;
-	Key, LastClick: string;
-	ch: string[1];
-	CalcErr: Boolean;
+procedure Calculate;
 begin
-	LogLinesWritten := 0;
-	
-	FrmCalc.Init(12, 42, 218, 208);
-	TxtCalc.Init(25, FrmCalc.Top + 12, 191, SizeDefault, '');
-	BtnNumb[0].Init(26, FrmCalc.Top + 172, 90, SizeDefault, '0');
-	BtnNumb[1].Init(26, FrmCalc.Top + 139, 40, SizeDefault, '1');
-	BtnNumb[2].Init(76, FrmCalc.Top + 139, 40, SizeDefault, '2');
-	BtnNumb[3].Init(126, FrmCalc.Top + 139, 40, SizeDefault, '3');
-	BtnNumb[4].Init(26, FrmCalc.Top + 106, 40, SizeDefault, '4');
-	BtnNumb[5].Init(76, FrmCalc.Top + 106, 40, SizeDefault, '5');
-	BtnNumb[6].Init(126, FrmCalc.Top + 106, 40, SizeDefault, '6');
-	BtnNumb[7].Init(26, FrmCalc.Top + 73, 40, SizeDefault, '7');
-	BtnNumb[8].Init(76, FrmCalc.Top + 73, 40, SizeDefault, '8');
-	BtnNumb[9].Init(126, FrmCalc.Top + 73, 40, SizeDefault, '9');
-	BtnC.Init(26, FrmCalc.Top + 40, 40, SizeDefault, CAP_CLEAR);
-	BtnCE.Init(76, FrmCalc.Top + 40, 40, SizeDefault, CAP_CLEAR_EVERYTHING);
-	BtnDivide.Init(126, FrmCalc.Top + 40, 40, SizeDefault, '/');
-	BtnDot.Init(126, FrmCalc.Top + 172, 40, SizeDefault, '.');
-	BtnMulti.Init(176, FrmCalc.Top + 40, 40, SizeDefault, '*');
-	BtnMinus.Init(176, FrmCalc.Top + 73, 40, SizeDefault, '-');
-	BtnPlus.Init(176, FrmCalc.Top + 106, 40, SizeDefault, '+');
-	BtnEquals.Init(176, FrmCalc.Top + 139, 40, 55, '=');
+	{DEBUG - perform calculation based on Operand and update TxtCalc}
+end;
 
-	AreaLog.Init(FrmCalc.Left + FrmCalc.Width + 12, FrmCalc.Top, 385, 295);
-
-	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
-	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
-
-	TxtCalc.MaxLen := 25;
-
+procedure BtnNumbClick(Sender: PUIObject); far;
+begin
+	TxtCalc^.SetText(TxtCalc^.GetText + PButton(Sender)^.GetCaption);
 	Mouse.Hide;
-	MenuBar.Draw;
-	SetColor(Thm.Win); Bar(0, 29, 639, 349);
-
-	FrmCalc.Draw;
-	TxtCalc.Draw;
-	for i := 0 to 9 do
-		BtnNumb[i].Draw;
-	BtnC.Draw; BtnCE.Draw; BtnDivide.Draw;
-	BtnMulti.Draw; BtnMinus.Draw; BtnPlus.Draw;
-	BtnEquals.Draw; BtnDot.Draw; BtnExit.Draw;
-	BtnAbout.Draw;
-
-	AreaLog.Draw;
+	TxtCalc^.Draw;
 	Mouse.Show;
+end;
 
-	LogLinesWritten := -1;
+procedure BtnDecimalClick(Sender: PUIObject); far;
+var
+	NewText: string;
+begin
+	{DEBUG - check length}
+	{If there is not already a decimal sign, add one}
+	if Pos(DecimalSign, TxtCalc^.GetText) = 0 then
+	begin
+		NewText := TxtCalc^.GetText + DecimalSign;
+		{If the text is empty, add a leading zero}
+		if Length(NewText) = 1 then
+			NewText := '0' + NewText;
+		TxtCalc^.SetText(NewText);
+		Mouse.Hide;
+		TxtCalc^.Draw;
+		Mouse.Show;
+	end;
+end;
 
-	{ Main calculator loop }
-	repeat
-		Key := GetKey;
+procedure BtnOperatorClick(Sender: PUIObject); far;
+var
+	ClickedBtn: PButton;
+begin
+	{DEBUG - handle already stored operand, if any}
+	ClickedBtn := PButton(Sender);
 
-		if BtnExit.Clicked or (Key = KeyAltX) or (Key = KeyAltF4) then
-		begin
-			Mouse.Hide;
-			CloseGraph;
-			Halt;
-		end;
+	if ClickedBtn = BtnAdd then
+		Operand := opAdd
+	else if ClickedBtn = BtnSubstract then
+		Operand := opSubtract
+	else if ClickedBtn = BtnMultiply then
+		Operand := opMultiply
+	else if ClickedBtn = BtnDivide then
+		Operand := opDivide
+	else
+		Operand := opNone;
+end;
 
-		if BtnAbout.Clicked or (Key = KeyAltA) then
-			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
+procedure BtnEqualsClick(Sender: PUIObject); far;
+begin
+end;
 
-		for i := 0 to 9 do
-		begin
-			Str(i, ch);
-			if BtnNumb[i].Clicked or (Key = ch) then
-			begin
-				TxtCalc.Text := TxtCalc.Text + ch;
-				Mouse.Hide;
-				TxtCalc.Draw;
-				Mouse.Show;
-			end;
-		end;
+procedure BtnCClick(Sender: PUIObject); far;
+begin
+	TxtCalc^.SetText('');
+end;
 
-		if BtnC.Clicked or (Key = KeyAltC) then
-		begin
-			TxtCalc.Text := '';
-			Mouse.Hide;
-			TxtCalc.Draw;
-			Mouse.Show;
-		end;
+procedure BtnCEClick(Sender: PUIObject); far;
+begin
+	{DEBUG - clear everything}
+end;
 
-		if BtnCE.Clicked or (Key = KeyAltE) then
-		begin
-			TxtCalc.Text := '';
-			Mouse.Hide;
-			TxtCalc.Draw;
-			LogLine('');
-			Mouse.Show;
-			MathFunc := '';
-			NumOps := 0;
-			Op1 := 0;
-			LastClick := '';
-		end;
+procedure HkBackSpaceClick(Sender: PUIObject); far;
+begin
+	{Remove last character from the textbox}
+	if Length(TxtCalc^.GetText) > 0 then
+	begin
+		TxtCalc^.SetText(Copy(TxtCalc^.GetText, 1, Length(TxtCalc^.GetText) - 1));
+		Mouse.Hide;
+		TxtCalc^.Draw;
+		Mouse.Show;
+	end;
+end;
 
-		if BtnDot.Clicked or ((Key = '.') or (Key = ',')) then
-		begin
-			if (Length(TxtCalc.Text) < 22) and (Pos('.', TxtCalc.Text) = 0) then
-			begin
-				if LastClick = 'EQUAL' then
-				begin
-					NumOps := 0;
-					Op1 := 0;
-				end;
-				LastClick := 'NUMB';
-				if TxtCalc.Text = '' then TxtCalc.Text := '0';
-				TxtCalc.Text := TxtCalc.Text + '.';
-				Mouse.Hide;
-				TxtCalc.Text := FormatNum(TxtCalc.Text);
-				TxtCalc.Draw;
-				Mouse.Show;
-			end;
-		end;
+procedure HkEscapeClick(Sender: PUIObject); far;
+begin
+	{If escape is pressed, clear the number. If it already is cleared,
+	 clear everything}
+	if Length(TxtCalc^.GetText) > 0 then
+		BtnC^.Click
+	else
+		BtnCE^.Click;
+end;
 
-		if BtnEquals.Clicked or (Key = '=') or (Key = KeyEnter) then
-		begin
-			
-		end;
+procedure BtnAboutClick(Sender: PUIObject); far;
+begin
+	AboutBox(App);
+end;
 
-		if BtnMulti.Clicked then Key := '*';
-		if BtnDivide.Clicked then Key := '/';
-		if BtnPlus.Clicked then Key := '+';
-		if BtnMinus.Clicked then Key := '-';
+procedure BtnExitClick(Sender: PUIObject); far;
+begin
+	App^.Terminate;
+end;
 
-	until False;
+procedure InitUI;
+var
+	i: Integer;
+begin
+	New(WinMain, Init(0, 0, nil));
+	with WinMain^ do
+	begin
+		SetSize(GetMaxX, GetMaxY);
+		RemoveState(SBordered);
+	end;
 
+	New(FrmCalc, Init(12, 42, WinMain));
+	with FrmCalc^ do
+	begin
+		SetSize(218, 208);
+	end;
+
+	New(TxtCalc, Init(13, 12, '', FrmCalc));
+	with TxtCalc^ do
+	begin
+		SetSize(191, SizeRetain);
+		SetMaxLength(25);
+		RemoveState(SEnabled);
+	end;
+
+	New(BtnNumb[0], Init(14, 172, '0', FrmCalc));
+	With BtnNumb[0]^ do
+	begin
+		SetSize(90, SizeRetain);
+		AddHotKey('0');
+		SetOnClick(BtnNumbClick);
+	end;
+	New(BtnNumb[1], Init(14, 139, '1', FrmCalc));
+	New(BtnNumb[2], Init(64, 139, '2', FrmCalc));
+	New(BtnNumb[3], Init(114, 139, '3', FrmCalc));
+	New(BtnNumb[4], Init(14, 106, '4', FrmCalc));
+	New(BtnNumb[5], Init(64, 106, '5', FrmCalc));
+	New(BtnNumb[6], Init(114, 106, '6', FrmCalc));
+	New(BtnNumb[7], Init(14, 73, '7', FrmCalc));
+	New(BtnNumb[8], Init(64, 73, '8', FrmCalc));
+	New(BtnNumb[9], Init(114, 73, '9', FrmCalc));
+	for i := 1 to 9 do
+	begin
+		BtnNumb[i]^.AddHotKey(Char(Ord('0') + i));
+		BtnNumb[i]^.SetSize(40, SizeRetain);
+		BtnNumb[i]^.SetOnClick(BtnNumbClick);
+	end;
+	New(BtnDecimal, Init(114, 172, '.', FrmCalc));
+	With BtnDecimal^ do
+	begin
+		SetSize(40, SizeRetain);
+		AddHotKey('.'); {Add both so it works with both decimal signs}
+		AddHotKey(',');
+		SetOnClick(BtnDecimalClick);
+	end;
+
+	{Clear and Clear Everything buttons}
+	New(BtnC, Init(14, 40, CAP_CLEAR, FrmCalc));
+	With BtnC^ do
+	begin
+		SetSize(40, SizeRetain);
+		AddHotKey(KeyAltC);
+		SetOnClick(BtnCClick);
+	end;
+	New(BtnCE, Init(64, 40, CAP_CLEAR_EVERYTHING, FrmCalc));
+	With BtnCE^ do
+	begin
+		SetSize(40, SizeRetain);
+		AddHotKey(KeyAltE);
+		SetOnClick(BtnCEClick);
+	end;
+
+	{Operator buttons}
+	New(BtnDivide, Init(114, 40, '/', FrmCalc));
+	With BtnDivide^ do
+	begin
+		SetSize(40, SizeRetain);
+		AddHotKey('/');
+		SetOnClick(BtnOperatorClick);
+	end;
+	New(BtnMultiply, Init(164, 40, '*', FrmCalc));
+	With BtnMultiply^ do
+	begin
+		SetSize(40, SizeRetain);
+		AddHotKey('*');
+		SetOnClick(BtnOperatorClick);
+	end;
+	New(BtnSubstract, Init(164, 73, '-', FrmCalc));
+	With BtnSubstract^ do
+	begin
+		SetSize(40, SizeRetain);
+		AddHotKey('-');
+		SetOnClick(BtnOperatorClick);
+	end;
+	New(BtnAdd, Init(164, 106, '+', FrmCalc));
+	With BtnAdd^ do
+	begin
+		SetSize(40, SizeRetain);
+		AddHotKey('+');
+		SetOnClick(BtnOperatorClick);
+	end;
+
+	New(BtnEquals, Init(164, 139, '=', FrmCalc));
+	With BtnEquals^ do
+	begin
+		SetSize(40, 55);
+		AddHotKey('=');
+		AddHotKey(KeyEnter);
+		SetOnClick(BtnEqualsClick);
+	end;
+
+	New(AreaLog, Init(242, 42, WinMain));
+	with AreaLog^ do
+	begin
+		SetSize(385, 295);
+	end;
+
+	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
+	With BtnAbout^ do
+	begin
+		SetOnClick(BtnAboutClick);
+		AddHotKey(KeyAltA);
+	end;
+	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
+	With BtnExit^ do
+	begin
+		SetOnClick(BtnExitClick);
+		AddHotKey(KeyAltX);
+		AddHotKey(KeyAltF4);
+	end;
+
+	New(HkBackspace, Init(KeyBackspace, WinMain));
+	HkBackspace^.SetOnClick(HkBackSpaceClick);
+	New(HkEscape, Init(KeyEscape, WinMain));
+	HkEscape^.SetOnClick(HkEscapeClick);
+end;
+
+begin
+	New(App, Init);
+	App^.SetInfo(AppName, AppVersion, AppAuthor, AppIcon);
+
+	InitUI;
+
+	App^.OpenWindow(WinMain);
+	App^.Run;
 end.

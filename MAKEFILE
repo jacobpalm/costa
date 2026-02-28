@@ -31,7 +31,7 @@ TASM = TASM
 TLINK = TLINK
 BINOBJ = BINOBJ
 
-# Zip command for SvarDOS packaging
+# Zip command for SvarDOS packaging - using Info-ZIP
 ZIPCMD = ZIP -9rkDX
 
 # Settings for compilers/linkers
@@ -59,7 +59,7 @@ APPPATHS = -U$(SOURCEDIR) -I$(SOURCEDIR) -O$(SOURCEDIR) -E$(COSTADIR)
 
 # Generate all applications #################################################
 
-ALL: COSTA.EXE DESKTOP.EXE ICONEDIT.EXE MINES.EXE TEXTVIEW.EXE CONFIG.EXE
+ALL: COSTA.EXE DESKTOP.EXE ICONEDIT.EXE MINES.EXE TEXTVIEW.EXE CONFIG.EXE CALC.EXE
 	@echo.
 	@echo All applications built.
 
@@ -110,8 +110,8 @@ TEXTVIEW.EXE: $(SOURCEDIR)\TEXTVIEW.PAS COSTALIB.TPU UIBUTTON.TPU UITXTBOX.TPU M
 
 # Calculator ################################################################
 
-#CALC.EXE: $(SOURCEDIR)\CALC.PAS COSTALIB.TPU UIBUTTON.TPU UIFRAME.TPU UITXTBOX.TPU
-#   $(TPCCMD) $(SOURCEDIR)\CALC.PAS $(APPPATHS)
+CALC.EXE: $(SOURCEDIR)\CALC.PAS COSTALIB.TPU UIBUTTON.TPU UIFRAME.TPU UITXTBOX.TPU
+   $(TPCCMD) $(SOURCEDIR)\CALC.PAS $(APPPATHS)
 
 # Tic Tac Toe ###############################################################
 

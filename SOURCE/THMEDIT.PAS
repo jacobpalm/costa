@@ -1,7 +1,7 @@
 program ThemeEditor;
 
 uses
-	CostaLib, UIButton, UILabel, UITxtbox, UIArea, UIFrame, UIIcon, AboutDlg, MsgDlg, InputDlg, FileDlg, Graph, DOS;
+	CostaLib, UIButton, UILabel, UITxtbox, UIArea, UIFrame, UIIcon, UIThmPrw, AboutDlg, MsgDlg, InputDlg, FileDlg, Graph, DOS;
 
 const
 	AppName           = 'Theme Editor';
