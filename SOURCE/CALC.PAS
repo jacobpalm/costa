@@ -29,22 +29,22 @@ var
 	BtnDecimal:          PButton;
 	AreaLog:             PArea;
 	BtnC,
-	BtnCE:               PButton;
+	BtnCE,
 	BtnAdd,
 	BtnSubstract,
 	BtnMultiply,
-	BtnDivide:           PButton;
-	BtnEquals:           PButton;
+	BtnDivide,
+	BtnEquals,
 	BtnExit,
 	BtnAbout:            PButton;
 
-	HkBackspace:         PHotKey;
+	HkBackspace,
 	HkEscape:            PHotKey;
 
-	Operand:	         TOperand; {Current operand selected}
+	Operand:	           TOperand; {Current operand selected}
 	FirstNumber,
 	SecondNumber:        Real;    {Numbers involved in calculation}
-	
+	DoingCalculation:    Boolean; {True if calculation is in progress, false if first number hasn't been entered yet}
 
 function FormatNumber(TargetStr: string): string;
 var
@@ -55,7 +55,7 @@ var
 begin
 	IsNegative := False;
 	ResultStr := '';
-	
+
 	{Remove decimals if any, and add again later}
 	DotPos := Pos('.', TargetStr);
 	if DotPos > 0 then
@@ -113,8 +113,12 @@ begin
 end;
 
 procedure BtnNumbClick(Sender: PUIObject); far;
+var
+	NewText: string;
 begin
-	TxtCalc^.SetText(TxtCalc^.GetText + PButton(Sender)^.GetCaption);
+	{DEBUG - check length + format output}
+	NewText := TxtCalc^.GetText + PButton(Sender)^.GetCaption;
+	TxtCalc^.SetText(NewText);
 	Mouse.Hide;
 	TxtCalc^.Draw;
 	Mouse.Show;
@@ -122,13 +126,14 @@ end;
 
 procedure BtnDecimalClick(Sender: PUIObject); far;
 var
-	NewText: string;
+	OldText, NewText: string;
 begin
 	{DEBUG - check length}
+	OldText := TxtCalc^.GetText;
 	{If there is not already a decimal sign, add one}
-	if Pos(DecimalSign, TxtCalc^.GetText) = 0 then
+	if Pos(DecimalSign, OldText) = 0 then
 	begin
-		NewText := TxtCalc^.GetText + DecimalSign;
+		NewText := OldText + DecimalSign;
 		{If the text is empty, add a leading zero}
 		if Length(NewText) = 1 then
 			NewText := '0' + NewText;
@@ -139,12 +144,45 @@ begin
 	end;
 end;
 
+procedure BtnCClick(Sender: PUIObject); far;
+begin
+	if Length(TxtCalc^.GetText) > 0 then
+	begin
+		TxtCalc^.SetText('');
+		Mouse.Hide;
+		TxtCalc^.Draw;
+		Mouse.Show;
+	end;
+end;
+
+procedure BtnCEClick(Sender: PUIObject); far;
+begin
+	{BtnCClick clears the textbox, reuse that and then clear working variables}
+	BtnCClick(Sender);
+
+	FirstNumber := 0;
+	SecondNumber := 0;
+	Operand := opNone;
+end;
+
 procedure BtnOperatorClick(Sender: PUIObject); far;
 var
 	ClickedBtn: PButton;
+	ValCode: Integer;
 begin
-	{DEBUG - handle already stored operand, if any}
+	{DEBUG - handle already stored operand, if any, and perform that calculation first}
 	ClickedBtn := PButton(Sender);
+	{if DoingCalculation and (Operand <> opNone) then
+		Calculate
+	else
+	begin
+		ValCode := 0;
+		Val(TxtCalc^.GetText, FirstNumber, ValCode);
+		if ValCode <> 0 then
+			FirstNumber := 0;
+		BtnCClick(Sender);
+		DoingCalculation := True;
+	end;}
 
 	if ClickedBtn = BtnAdd then
 		Operand := opAdd
@@ -160,16 +198,6 @@ end;
 
 procedure BtnEqualsClick(Sender: PUIObject); far;
 begin
-end;
-
-procedure BtnCClick(Sender: PUIObject); far;
-begin
-	TxtCalc^.SetText('');
-end;
-
-procedure BtnCEClick(Sender: PUIObject); far;
-begin
-	{DEBUG - clear everything}
 end;
 
 procedure HkBackSpaceClick(Sender: PUIObject); far;
