@@ -1,7 +1,7 @@
 program Calculator;
 
 uses
-	CostaLib, UIButton, UIArea, UITxtBox, UIFrame, MsgDlg, AboutDlg, Crt, Strings, Graph;
+	CostaLib, UIButton, UIArea, UITxtBox, UIFrame, AboutDlg, Crt, Strings, Graph;
 
 const
 	AppName              = 'Calculator';
@@ -9,13 +9,13 @@ const
 	AppAuthor            = 'Jacob Palm';
 	AppIcon	             = 'CALC';
 
-	DecimalSign          = '.';
-
 	CAP_ABOUT            = #127 + 'About...';
 	CAP_EXIT             = 'E' + #127 + 'xit';
 	CAP_CLEAR            = #127 + 'C';
 	CAP_CLEAR_EVERYTHING = 'C' + #127 + 'E';
 	MSG_DIV_ZERO         = 'Division by zero';
+
+	DecimalDigits        = 6;    {Amount of decimal digits to show in results - only affects display}
 
 type
 	TOperand             = (opNone, opAdd, opSubtract, opMultiply, opDivide);
@@ -25,7 +25,7 @@ var
 	WinMain:             PWindow;
 	FrmCalc:             PFrame;
 	TxtCalc:             PTextbox;
-	BtnNumb:             array[0..9] of PButton;
+	BtnNumb:             Array[0..9] of PButton;
 	BtnDecimal:          PButton;
 	AreaLog:             PArea;
 	BtnC,
@@ -41,12 +41,19 @@ var
 	HkBackspace,
 	HkEscape:            PHotKey;
 
-	Operand:	           TOperand; {Current operand selected}
-	FirstNumber,
-	SecondNumber:        Real;    {Numbers involved in calculation}
-	DoingCalculation:    Boolean; {True if calculation is in progress, false if first number hasn't been entered yet}
+	CurrentInput:        String;   {Current value in calculator display}
+	Op:	                 TOperand; {Current operand selected}
+	Num1,
+	Num2:                Real;     {Numbers involved in calculation}
 
-function FormatNumber(TargetStr: string): string;
+	LastOp:              TOperand; {Operand and number from last calculation}
+	LastNum:             Real;
+
+	ResultValue:         Real;
+
+	NewInput:            Boolean;  {Tracks if display needs to be cleared when entering a new number}
+
+procedure UpdateDisplay;
 var
 	IntPart, DecPart, ResultStr: string;
 	IsNegative: Boolean;
@@ -57,15 +64,21 @@ begin
 	ResultStr := '';
 
 	{Remove decimals if any, and add again later}
-	DotPos := Pos('.', TargetStr);
+	DotPos := Pos(DecimalSign, CurrentInput);
 	if DotPos > 0 then
 	begin
-		IntPart := Copy(TargetStr, 1, DotPos - 1);
-		DecPart := Copy(TargetStr, DotPos, Length(TargetStr) - DotPos + 1);
+		IntPart := Copy(CurrentInput, 1, DotPos - 1);
+		DecPart := Copy(CurrentInput, DotPos, Length(CurrentInput) - DotPos + 1);
+		{Remove trailing zeros from decimal part}
+		while (Length(DecPart) > 0) and (DecPart[Length(DecPart)] = '0') do
+      Delete(DecPart, Length(DecPart), 1);
+		{If only decimal sign remains, remove that too}
+		if DecPart = DecimalSign then
+			DecPart := '';
 	end
 	else
 	begin
-		IntPart := TargetStr;
+		IntPart := CurrentInput;
 		DecPart := '';
 	end;
 
@@ -84,13 +97,61 @@ begin
 		ResultStr := IntPart[i] + ResultStr;
 		Inc(Count);
 		if (Count mod 3 = 0) and (i > 1) then
-			ResultStr := ',' + ResultStr;
+			ResultStr := ThousandsSign + ResultStr;
 	end;
 
 	if IsNegative then
 		ResultStr := '-' + ResultStr;
 
-	FormatNumber := ResultStr + DecPart;
+	ResultStr := ResultStr + DecPart;
+
+	{If display is empty, show a zero}
+	If ResultStr = '' then
+		ResultStr := '0';
+
+	TxtCalc^.SetText(ResultStr);
+	Mouse.Hide;
+	TxtCalc^.Draw;
+	Mouse.Show;
+end;
+
+function StringToReal(S : string) : Real;
+var
+  R : Real;
+  Code : Integer;
+begin
+  Val(S, R, Code);
+
+  if Code <> 0 then
+    R := 0;
+
+  StringToReal := R;
+end;
+
+procedure ExecuteOperation;
+begin
+  case Op of
+
+    opAdd:
+      ResultValue := Num1 + Num2;
+
+    opSubtract:
+      ResultValue := Num1 - Num2;
+
+    opMultiply:
+      ResultValue := Num1 * Num2;
+
+    opDivide:
+      begin
+        if Num2 <> 0 then
+          ResultValue := Num1 / Num2
+        else
+        begin
+          {DEBUG - handle division by zero}
+
+        end;
+      end;
+  end;
 end;
 
 procedure LogLine(Text: string);
@@ -107,108 +168,138 @@ begin
 	Print(Text, 624 - Length(Text) * 8, TopOffset + (LogLinesWritten * 15), Thm.WinText);}
 end;
 
-procedure Calculate;
-begin
-	{DEBUG - perform calculation based on Operand and update TxtCalc}
-end;
-
 procedure BtnNumbClick(Sender: PUIObject); far;
-var
-	NewText: string;
 begin
 	{DEBUG - check length + format output}
-	NewText := TxtCalc^.GetText + PButton(Sender)^.GetCaption;
-	TxtCalc^.SetText(NewText);
-	Mouse.Hide;
-	TxtCalc^.Draw;
-	Mouse.Show;
+	if NewInput then
+  begin
+    CurrentInput := '';
+    NewInput := False;
+  end;
+
+  CurrentInput := CurrentInput + PButton(Sender)^.GetCaption;
+  UpdateDisplay;
 end;
 
 procedure BtnDecimalClick(Sender: PUIObject); far;
-var
-	OldText, NewText: string;
 begin
-	{DEBUG - check length}
-	OldText := TxtCalc^.GetText;
 	{If there is not already a decimal sign, add one}
-	if Pos(DecimalSign, OldText) = 0 then
+	if Pos(DecimalSign, CurrentInput) = 0 then
 	begin
-		NewText := OldText + DecimalSign;
+		CurrentInput := CurrentInput + DecimalSign;
 		{If the text is empty, add a leading zero}
-		if Length(NewText) = 1 then
-			NewText := '0' + NewText;
-		TxtCalc^.SetText(NewText);
-		Mouse.Hide;
-		TxtCalc^.Draw;
-		Mouse.Show;
+		if Length(CurrentInput) = 1 then
+			CurrentInput := '0' + CurrentInput;
+		UpdateDisplay;
 	end;
 end;
 
 procedure BtnCClick(Sender: PUIObject); far;
 begin
+	{Check length of text in textbox, rather than CurrentInput, because a result may
+	 be displayed there}
 	if Length(TxtCalc^.GetText) > 0 then
 	begin
-		TxtCalc^.SetText('');
-		Mouse.Hide;
-		TxtCalc^.Draw;
-		Mouse.Show;
+		CurrentInput := '';
+		UpdateDisplay;
 	end;
 end;
 
 procedure BtnCEClick(Sender: PUIObject); far;
 begin
-	{BtnCClick clears the textbox, reuse that and then clear working variables}
-	BtnCClick(Sender);
+	CurrentInput := '';
+	UpdateDisplay;
 
-	FirstNumber := 0;
-	SecondNumber := 0;
-	Operand := opNone;
+  Num1 := 0;
+  Num2 := 0;
+
+  LastNum := 0;
+
+  Op := opNone;
+  LastOp := opNone;
+
+  ResultValue := 0;
+
+  NewInput := True;
 end;
 
 procedure BtnOperatorClick(Sender: PUIObject); far;
 var
 	ClickedBtn: PButton;
-	ValCode: Integer;
 begin
-	{DEBUG - handle already stored operand, if any, and perform that calculation first}
 	ClickedBtn := PButton(Sender);
-	{if DoingCalculation and (Operand <> opNone) then
-		Calculate
-	else
-	begin
-		ValCode := 0;
-		Val(TxtCalc^.GetText, FirstNumber, ValCode);
-		if ValCode <> 0 then
-			FirstNumber := 0;
-		BtnCClick(Sender);
-		DoingCalculation := True;
-	end;}
+
+  if CurrentInput <> '' then
+  begin
+
+    if Op = opNone then
+    begin
+      Num1 := StringToReal(CurrentInput);
+    end
+    else
+    begin
+      Num2 := StringToReal(CurrentInput);
+
+      ExecuteOperation;
+
+      Num1 := ResultValue;
+
+      UpdateDisplay;
+    end;
+  end;
 
 	if ClickedBtn = BtnAdd then
-		Operand := opAdd
+		Op := opAdd
 	else if ClickedBtn = BtnSubstract then
-		Operand := opSubtract
+		Op := opSubtract
 	else if ClickedBtn = BtnMultiply then
-		Operand := opMultiply
+		Op := opMultiply
 	else if ClickedBtn = BtnDivide then
-		Operand := opDivide
+		Op := opDivide
 	else
-		Operand := opNone;
+		Op := opNone;
+
+	CurrentInput := '';
+  NewInput := False;
+
 end;
 
 procedure BtnEqualsClick(Sender: PUIObject); far;
 begin
+	{ First equals press }
+  if CurrentInput <> '' then
+  begin
+    Num2 := StringToReal(CurrentInput);
+
+    LastNum := Num2;
+    LastOp := Op;
+  end
+  else
+  begin
+    { Repeated equals }
+    Num2 := LastNum;
+    Op := LastOp;
+  end;
+
+  ExecuteOperation;
+
+  {UpdateDisplay shows CurrentInput in display, so copy ResultValue to it temporarily to show it}
+  Str(ResultValue:0:DecimalDigits, CurrentInput);
+  UpdateDisplay;
+  CurrentInput := '';
+
+  Num1 := ResultValue;
+
+  NewInput := True;
 end;
 
 procedure HkBackSpaceClick(Sender: PUIObject); far;
 begin
 	{Remove last character from the textbox}
-	if Length(TxtCalc^.GetText) > 0 then
+	if Length(CurrentInput) > 0 then
 	begin
-		TxtCalc^.SetText(Copy(TxtCalc^.GetText, 1, Length(TxtCalc^.GetText) - 1));
-		Mouse.Hide;
-		TxtCalc^.Draw;
-		Mouse.Show;
+		CurrentInput := Copy(CurrentInput, 1, Length(CurrentInput) - 1);
+		UpdateDisplay;
 	end;
 end;
 
@@ -217,8 +308,9 @@ begin
 	{If escape is pressed, clear the number. If it already is cleared,
 	 clear everything}
 	if Length(TxtCalc^.GetText) > 0 then
-		BtnC^.Click
-	else
+		BtnC^.Click;
+
+	if NewInput = True then
 		BtnCE^.Click;
 end;
 

@@ -20,12 +20,15 @@ const
 
 	MenuItemHeight       = 16;   {Height of a menu item in pixels}
 
-	CharArrowUp:	Char = #24;  {Arrows symbols for fonts}
+	CharArrowUp:    Char = #24;  {Arrows symbols for fonts}
 	CharArrowDown:  Char = #25;
 	CharArrowRight: Char = #26;
 	CharArrowLeft:  Char = #27;
 	NewLine:        Char = #13;  {Wrap lines in Print, MsgBox, InputBox etc.}
 	HotkeyChr:      Char = #127; {Marks hotkeys in object captions}
+
+	DecimalSign          = '.';  {Seperator signs - for localization}
+	ThousandsSign        = ',';
 
 	{Standard DOS error messages used by Turbo Pascal}
 	MSG_DOSERROR_1       = 'Invalid function';
@@ -218,12 +221,12 @@ type
 			procedure   GetInfo(var AppName, AppVersion, AppAuthor, AppIcon: string);
 
 			function    Path: DirStr;
-			
+
 			procedure   LoadSettings;
 			procedure   SaveSettings;
-			
+
 			procedure   LoadTheme(Filename: string);
-			
+
 			procedure   OpenWindow(Win: PWindow);
 			procedure   CloseWindow;
 
@@ -1083,7 +1086,7 @@ begin
 	{$I+}
 	if IOResult <> 0 then
 		exit;
-	
+
 	if FileSize(F) <> SizeOf(TLibSetting) then
 	begin
 		Close(F);
@@ -1780,8 +1783,8 @@ begin
 		15:  GetDosErrorMsg := MSG_DOSERROR_15;
 		16:  GetDosErrorMsg := MSG_DOSERROR_16;
 		17:  GetDosErrorMsg := MSG_DOSERROR_17;
-		
-		
+
+
 		else
 		begin
 			Str(ErrorCode, ErrorCodeStr);
