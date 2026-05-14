@@ -53,6 +53,8 @@ var
 
 	NewInput:            Boolean;  {Tracks if display needs to be cleared when entering a new number}
 
+{Updates the text in the display, by formatting the number in CurrentInput with
+ thousands seperators and setting textbox caption to the formatted string}
 procedure UpdateDisplay;
 var
 	IntPart, DecPart, ResultStr: string;
@@ -63,30 +65,34 @@ begin
 	IsNegative := False;
 	ResultStr := '';
 
+	{If first sign is a minus, remove it and add again later so it doesn't affect formatting of
+	 thousands}
+	if (Length(IntPart) > 0) and (IntPart[1] = '-') then
+	begin
+		IsNegative := True;
+		Delete(IntPart, 1, 1);
+	end;
+
 	{Remove decimals if any, and add again later}
 	DotPos := Pos(DecimalSign, CurrentInput);
 	if DotPos > 0 then
 	begin
 		IntPart := Copy(CurrentInput, 1, DotPos - 1);
 		DecPart := Copy(CurrentInput, DotPos, Length(CurrentInput) - DotPos + 1);
+
 		{Remove trailing zeros from decimal part}
 		while (Length(DecPart) > 0) and (DecPart[Length(DecPart)] = '0') do
       Delete(DecPart, Length(DecPart), 1);
-		{If only decimal sign remains, remove that too}
+
+		{If only decimal seperator remains, remove that too as we are dealing with an integer}
 		if DecPart = DecimalSign then
 			DecPart := '';
 	end
 	else
 	begin
+		{No decimals to deal with}
 		IntPart := CurrentInput;
 		DecPart := '';
-	end;
-
-	{If first sign is a minus, remove it and add again later}
-	if (Length(IntPart) > 0) and (IntPart[1] = '-') then
-	begin
-		IsNegative := True;
-		Delete(IntPart, 1, 1);
 	end;
 
 	{Insert commas every three digits in the integer part}
@@ -100,9 +106,11 @@ begin
 			ResultStr := ThousandsSign + ResultStr;
 	end;
 
+	{Add back minus if it was removed earlier}
 	if IsNegative then
 		ResultStr := '-' + ResultStr;
 
+	{Add back the decimal part, if any}
 	ResultStr := ResultStr + DecPart;
 
 	{If display is empty, show a zero}
@@ -266,6 +274,10 @@ end;
 
 procedure BtnEqualsClick(Sender: PUIObject); far;
 begin
+	{Can't do calculations if no operand is selected}
+	if (Op = opNone) then
+		exit;
+
 	{ First equals press }
   if CurrentInput <> '' then
   begin
@@ -345,7 +357,7 @@ begin
 	with TxtCalc^ do
 	begin
 		SetSize(191, SizeRetain);
-		SetMaxLength(25);
+		SetText('0');
 		RemoveState(SEnabled);
 	end;
 
