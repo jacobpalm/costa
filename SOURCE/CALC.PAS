@@ -1,5 +1,7 @@
 program Calculator;
 
+{$R-} {Disable range checking}
+
 uses
 	CostaLib, UIButton, UIArea, UITxtBox, UIFrame, AboutDlg, Crt, Strings, Graph;
 
@@ -13,12 +15,19 @@ const
 	CAP_EXIT             = 'E' + #127 + 'xit';
 	CAP_CLEAR            = #127 + 'C';
 	CAP_CLEAR_EVERYTHING = 'C' + #127 + 'E';
-	MSG_DIV_ZERO         = 'Division by zero';
 
-	DecimalDigits        = 6;    {Amount of decimal digits to show in results - only affects display}
+	MSG_DIV_ZERO         = 'ERROR: Division by zero';
+	MSG_OVERFLOW         = 'ERROR: Overflow';
+
+	MaxSafe              = 1.0E37; {Max value to allow to prevent overflows}
+	DecimalDigits        = 12;     {Amount of decimal digits to show in results - only affects display}
+	MaxInputLength       = 25;     {Maximum number of digits to allow in input}
+	MaxLogLines          = 19;     {Number of lines that will fit in the log before clearing}
+	MaxLogLineLength     = 47;     {Characters that will fit per line}
 
 type
 	TOperand             = (opNone, opAdd, opSubtract, opMultiply, opDivide);
+	TCalcError           = (ceNone, ceOverflow, ceDivZero);
 
 var
 	App:                 PApplication;
@@ -41,44 +50,42 @@ var
 	HkBackspace,
 	HkEscape:            PHotKey;
 
-	CurrentInput:        String;   {Current value in calculator display}
-	Op:	                 TOperand; {Current operand selected}
+	CurrentInput:        String;     {Current value in calculator display}
+	Op:	                 TOperand;   {Current operand selected}
 	Num1,
-	Num2:                Real;     {Numbers involved in calculation}
+	Num2:                Real;       {Numbers involved in calculation}
 
-	LastOp:              TOperand; {Operand and number from last calculation}
+	LastOp:              TOperand;   {Operand and number from last calculation}
 	LastNum:             Real;
 
 	ResultValue:         Real;
 
-	NewInput:            Boolean;  {Tracks if display needs to be cleared when entering a new number}
+	NewInput:            Boolean;    {Tracks if display needs to be cleared when entering a new number}
 
-{Updates the text in the display, by formatting the number in CurrentInput with
- thousands seperators and setting textbox caption to the formatted string}
-procedure UpdateDisplay;
+	LogX2,
+	LogY1:               Integer;    {Top-right coordinates of log area, for calculating log output posititon}
+	LogLines:            Integer;    {Amount of lines currently printed to the log}
+
+	CalcError:           TCalcError; {Error status}
+
+{Returns a pretty formated string representation of a Real number}
+function RealPretty(RealValue: Real): String;
 var
-	IntPart, DecPart, ResultStr: string;
+	IntPart, DecPart, RealStr, ResultStr: string;
 	IsNegative: Boolean;
 	i, Len, Count: integer;
 	DotPos: integer;
 begin
 	IsNegative := False;
 	ResultStr := '';
-
-	{If first sign is a minus, remove it and add again later so it doesn't affect formatting of
-	 thousands}
-	if (Length(IntPart) > 0) and (IntPart[1] = '-') then
-	begin
-		IsNegative := True;
-		Delete(IntPart, 1, 1);
-	end;
+	Str(RealValue:0:DecimalDigits, RealStr);
 
 	{Remove decimals if any, and add again later}
-	DotPos := Pos(DecimalSign, CurrentInput);
+	DotPos := Pos(DecimalSign, RealStr);
 	if DotPos > 0 then
 	begin
-		IntPart := Copy(CurrentInput, 1, DotPos - 1);
-		DecPart := Copy(CurrentInput, DotPos, Length(CurrentInput) - DotPos + 1);
+		IntPart := Copy(RealStr, 1, DotPos - 1);
+		DecPart := Copy(RealStr, DotPos, Length(RealStr) - DotPos + 1);
 
 		{Remove trailing zeros from decimal part}
 		while (Length(DecPart) > 0) and (DecPart[Length(DecPart)] = '0') do
@@ -91,8 +98,16 @@ begin
 	else
 	begin
 		{No decimals to deal with}
-		IntPart := CurrentInput;
+		IntPart := RealStr;
 		DecPart := '';
+	end;
+
+	{If first sign is a minus, remove it and add again later so it doesn't affect formatting of
+	 thousands}
+	if (Length(IntPart) > 0) and (IntPart[1] = '-') then
+	begin
+		IsNegative := True;
+		Delete(IntPart, 1, 1);
 	end;
 
 	{Insert commas every three digits in the integer part}
@@ -117,72 +132,94 @@ begin
 	If ResultStr = '' then
 		ResultStr := '0';
 
-	TxtCalc^.SetText(ResultStr);
+	RealPretty := ResultStr;
+end;
+
+procedure UpdateDisplay;
+var
+	RealValue: Real;
+	Code: Integer;
+begin
+	Val(CurrentInput, RealValue, Code);
+  if Code <> 0 then
+    RealValue := 0;
+
+	TxtCalc^.SetText(RealPretty(RealValue));
 	Mouse.Hide;
 	TxtCalc^.Draw;
 	Mouse.Show;
 end;
 
-function StringToReal(S : string) : Real;
-var
-  R : Real;
-  Code : Integer;
+procedure LogLine(Text: string);
 begin
-  Val(S, R, Code);
+	{Truncate text if too wide}
+	if Length(Text) > MaxLogLineLength then
+		Text := Copy(Text, 1, MaxLogLineLength);
 
-  if Code <> 0 then
-    R := 0;
-
-  StringToReal := R;
+	Mouse.Hide;
+	if LogLines = MaxLogLines then
+	begin
+		LogLines := 0;
+		AreaLog^.Draw;
+	end;
+	Print(Text, LogX2 - PrintW(Text), LogY1 + (LogLines * 15), Thm.WinText);
+	Mouse.Show;
+	Inc(LogLines);
 end;
 
 procedure ExecuteOperation;
 begin
-  case Op of
+	CalcError := ceNone;
 
+  case Op of
     opAdd:
-      ResultValue := Num1 + Num2;
+	   	if ((Num1 > 0) and (Num2 > 0) and (Num1 > MaxSafe - Num2)) or
+	       ((Num1 < 0) and (Num2 < 0) and (Num1 < -MaxSafe - Num2)) then
+				CalcError := ceOverflow
+    	else
+      	ResultValue := Num1 + Num2;
 
     opSubtract:
-      ResultValue := Num1 - Num2;
+	    if ((Num1 > 0) and (Num2 < 0) and (Num1 > MaxSafe + Num2)) or
+	       ((Num1 < 0) and (Num2 > 0) and (Num1 < -MaxSafe + Num2)) then
+				CalcError := ceOverflow
+		  else
+				ResultValue := Num1 - Num2;
 
     opMultiply:
-      ResultValue := Num1 * Num2;
+     	if (Num1 <> 0) and (Abs(Num2) > MaxSafe / Abs(Num1)) then
+      	CalcError := ceOverflow
+		  else
+		  	ResultValue := Num1 * Num2;
 
     opDivide:
-      begin
-        if Num2 <> 0 then
-          ResultValue := Num1 / Num2
-        else
-        begin
-          {DEBUG - handle division by zero}
-
-        end;
-      end;
+      if Num2 = 0 then
+       	CalcError := ceDivZero
+      else if (Abs(Num2) < 1.0) and (Abs(Num1) > MaxSafe * Abs(Num2)) then
+      	CalcError := ceOverflow
+      else
+        ResultValue := Num1 / Num2;
   end;
-end;
 
-procedure LogLine(Text: string);
-const
-	MaxLogLines = 18;
-	TopOffset = 52;
-begin
-	{Inc(LogLinesWritten);
-	if LogLinesWritten > MaxLogLines then
-	begin
-		LogLinesWritten := 0;
-		AreaLog.Draw;
-	end;
-	Print(Text, 624 - Length(Text) * 8, TopOffset + (LogLinesWritten * 15), Thm.WinText);}
+  if CalcError <> ceNone then
+  	ResultValue := 0;
 end;
 
 procedure BtnNumbClick(Sender: PUIObject); far;
 begin
-	{DEBUG - check length + format output}
 	if NewInput then
   begin
     CurrentInput := '';
     NewInput := False;
+    Op := opNone;
+    {Log an empty line so there's space between calculations}
+    LogLine('');
+  end;
+
+  if Length(CurrentInput) >= MaxInputLength then
+  begin
+  	SystemSound(sndError);
+  	exit;
   end;
 
   CurrentInput := CurrentInput + PButton(Sender)^.GetCaption;
@@ -191,6 +228,13 @@ end;
 
 procedure BtnDecimalClick(Sender: PUIObject); far;
 begin
+	{Can't add decimal sign unless there's room for at least it plus one decimal}
+ 	if Length(CurrentInput) > (MaxInputLength - 2) then
+  begin
+ 		SystemSound(sndError);
+  	exit;
+  end;
+
 	{If there is not already a decimal sign, add one}
 	if Pos(DecimalSign, CurrentInput) = 0 then
 	begin
@@ -234,6 +278,8 @@ end;
 procedure BtnOperatorClick(Sender: PUIObject); far;
 var
 	ClickedBtn: PButton;
+	Code: Integer;
+	LogOutput: String;
 begin
 	ClickedBtn := PButton(Sender);
 
@@ -242,11 +288,24 @@ begin
 
     if Op = opNone then
     begin
-      Num1 := StringToReal(CurrentInput);
+      Val(CurrentInput, Num1, Code);
+      if Code <> 0 then
+        Num1 := 0;
+      LogLine(RealPretty(Num1));
     end
     else
     begin
-      Num2 := StringToReal(CurrentInput);
+      Val(CurrentInput, Num2, Code);
+      if Code <> 0 then
+        Num2 := 0;
+
+      case Op of
+      	opAdd: LogOutput := '+ ';
+        opSubtract: LogOutput := '-';
+        opMultiply: LogOutput := '* ';
+        opDivide: LogOutput := '/ ';
+      end;
+      LogLine(LogOutput + RealPretty(Num2));
 
       ExecuteOperation;
 
@@ -273,15 +332,30 @@ begin
 end;
 
 procedure BtnEqualsClick(Sender: PUIObject); far;
+var
+	Code: Integer;
+	LogOutput: String;
 begin
 	{Can't do calculations if no operand is selected}
 	if (Op = opNone) then
+	begin
+		SystemSound(sndError);
 		exit;
+	end;
+
+	case Op of
+  	opAdd: LogOutput := '+ ';
+    opSubtract: LogOutput := '-';
+    opMultiply: LogOutput := '* ';
+    opDivide: LogOutput := '/ ';
+  end;
 
 	{ First equals press }
   if CurrentInput <> '' then
   begin
-    Num2 := StringToReal(CurrentInput);
+    Val(CurrentInput, Num2, Code);
+    if Code <> 0 then
+      Num2 := 0;
 
     LastNum := Num2;
     LastOp := Op;
@@ -293,14 +367,27 @@ begin
     Op := LastOp;
   end;
 
+  LogLine(LogOutput + RealPretty(Num2));
   ExecuteOperation;
 
-  {UpdateDisplay shows CurrentInput in display, so copy ResultValue to it temporarily to show it}
-  Str(ResultValue:0:DecimalDigits, CurrentInput);
-  UpdateDisplay;
-  CurrentInput := '';
+  if CalcError <> ceNone then
+  begin
+  	if CalcError = ceOverflow then LogLine(MSG_OVERFLOW);
+   	if CalcError = ceDivZero then LogLine(MSG_DIV_ZERO);
+    SystemSound(sndError);
+    BtnCEClick(nil);
+  end
+  else
+  begin
+	  {UpdateDisplay shows CurrentInput in display, so copy ResultValue to it temporarily to show it}
+	  Str(ResultValue:0:DecimalDigits, CurrentInput);
+	  UpdateDisplay;
 
-  Num1 := ResultValue;
+  	LogLine('= ' + RealPretty(ResultValue));
+	  CurrentInput := '';
+
+	  Num1 := ResultValue;
+  end;
 
   NewInput := True;
 end;
@@ -336,6 +423,20 @@ begin
 	App^.Terminate;
 end;
 
+procedure WinMainRun(Sender: PUIObject); far;
+const
+	LogPadding = 5;
+var
+	X1, Y2: integer;
+begin
+	{Calculate position of log output for use in LogLine}
+	AreaLog^.GetPos(X1, LogY1, true);
+	AreaLog^.GetSize(LogX2, Y2);
+	LogX2 := LogX2 + X1 - LogPadding;
+	LogY1 := LogY1 + LogPadding;
+	LogLines := 0;
+end;
+
 procedure InitUI;
 var
 	i: Integer;
@@ -343,6 +444,7 @@ begin
 	New(WinMain, Init(0, 0, nil));
 	with WinMain^ do
 	begin
+		SetOnRun(WinMainRun);
 		SetSize(GetMaxX, GetMaxY);
 		RemoveState(SBordered);
 	end;
@@ -471,6 +573,7 @@ begin
 	HkBackspace^.SetOnClick(HkBackSpaceClick);
 	New(HkEscape, Init(KeyEscape, WinMain));
 	HkEscape^.SetOnClick(HkEscapeClick);
+
 end;
 
 begin

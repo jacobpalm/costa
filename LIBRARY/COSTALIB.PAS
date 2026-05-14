@@ -275,7 +275,8 @@ type
 		LinkCapt,
 		LinkTarget,
 		ConfLinkDel,
-		ConfExit:    Boolean;
+		ConfExit,
+		Audio:       Boolean;
 		ThmFile:     string[8];
 	end;
 
@@ -296,6 +297,8 @@ type
 		Sel,
 		SelText: Integer;
 	end;
+
+	TSystemSound = (sndError, sndAttention);
 
 var
 	Mouse:          TMouse;      {Global mouse object}
@@ -324,6 +327,7 @@ function  Replace(Input, OldSubStr, NewSubStr: String): String;
 function  ReplaceMsg(const Msg, Value: String): String;
 
 procedure SoundNote(Frequency, Duration: Integer);
+procedure SystemSound(SoundType: TSystemSound);
 
 implementation
 
@@ -1075,6 +1079,7 @@ begin
 	Setting.LinkTarget  := False;
 	Setting.ConfLinkDel := True;
 	Setting.ConfExit    := False;
+	Setting.Audio       := False;
 	Setting.ThmFile     := 'DEFAULT';
 
 	if not FileExists(Self.Path + GlobalSettings) then
@@ -1689,6 +1694,26 @@ begin
   Sound(Frequency);
   Delay(Duration);
   NoSound;
+end;
+
+procedure SystemSound(SoundType: TSystemSound);
+begin
+	if not Setting.Audio then
+		exit;
+
+	case SoundType of
+		sndError:
+			begin
+				Sound(440);
+				Delay(45);
+			end;
+		sndAttention:
+			begin
+				Sound(960);
+				Delay(25);
+			end;
+	end;
+	NoSound;
 end;
 
 function ReplaceMsg(const Msg, Value: String): String;

@@ -30,7 +30,7 @@ const
 	CAP_EXIT                  = 'E' + #127 + 'xit';
 
 	MSG_REMOVE_LINK_TITLE     = 'Remove desktop link';
-	MSG_REMOVE_LINK           = 'This will permanently delete this' + #13 + 
+	MSG_REMOVE_LINK           = 'This will permanently delete this' + #13 +
 	                            'desktop link. Are you sure?';
 	MSG_EXIT                  = 'Exit Costa';
 	MSG_EXIT_PROMPT           = 'This will exit Costa and return you to the DOS' + #13 +
@@ -38,14 +38,14 @@ const
 	MSG_SAVE_ERROR_TITLE      = 'Error writing to file';
 	MSG_SAVE_ERROR            = '%s. Could not write to' + #13;
 	MSG_LOAD_ERROR_TITLE      = 'Error loading desktop links';
-	MSG_LOAD_ERROR            = 'Could not open file for reading. The' + #13 + 
+	MSG_LOAD_ERROR            = 'Could not open file for reading. The' + #13 +
 	                            'file may corrupt or inaccesible:' + #13;
 	MSG_OUT_OF_MEMORY         = 'Out of memory.';
 	MSG_NOT_A_PROGRAM_TITLE   = 'Not a program';
 	MSG_NOT_A_PROGRAM         = 'The file you are trying to run is not a program.' + #13 +
 	                            'Only .EXE, .COM and .BAT files can be executed.';
 	MSG_FILE_NOT_FOUND_TITLE  = 'File not found';
-	MSG_PROGRAM_NOT_FOUND     = 'The program/file you are trying to open was not found:' + #13;
+	MSG_PROGRAM_NOT_FOUND     = 'The program or file was not found:' + #13;
 	MSG_COMSPEC_TITLE         = 'COMSPEC not set';
 	MSG_COMSPEC               = 'The COMSPEC environment variable is not set.' + #13 +
 	                            'This is required to run batch files.';
@@ -142,7 +142,7 @@ begin
 	RunData[RunBinOffsetParameters + Length(OutLink.Parameters)] := #13; {CR terminator used for cmd tail}
 
 	RunData[RunBinOffSetPause] := Char(OutLink.PauseOnExit);
-	
+
 	Assign(F, ProgramPath + RunFile);
 	{$I-}
 	Rewrite(F, 1);
@@ -156,7 +156,7 @@ begin
 
 	BlockWrite(F, RunData, SizeOf(RunData));
 	Close(F);
-	
+
 	App^.SetExitCode(0);
 	WinMain^.Close;
 end;
@@ -172,7 +172,7 @@ begin
 	{Don't switch if the requested desktop is already active}
 	if (DeskID = Setting.DeskID) and not ForceSwitch then
 		exit;
-	
+
 	{Make sure current desktop is saved before clearing}
 	if Length(DesktopFile) > 0 then
 	begin
@@ -201,7 +201,7 @@ begin
 
 		if result then
 			exit;
-		
+
 		{If we reach here, loading failed - show error message}
 		MsgBox(MSG_LOAD_ERROR_TITLE, MSG_LOAD_ERROR + DesktopFile, MsgError);
 	end;
@@ -211,7 +211,7 @@ begin
 		Desk^.LoadLinks(DesktopDefault);
 
 	{Wether we loaded default links or not, save the links so that the file now exists}
-	Desk^.SaveLinks(DesktopFile);	
+	Desk^.SaveLinks(DesktopFile);
 end;
 
 procedure BtnAddClick(Sender: PUIObject); far;
@@ -273,7 +273,7 @@ begin
 		{Otherwise, ask for confirmation}
 		if MsgBox(MSG_EXIT, MSG_EXIT_PROMPT, MsgQuest) then
 			DoExit := true;
-	
+
 	if DoExit then
 	begin
 		App^.SetExitCode(1); {Error code 1 makes COSTA.EXE terminate and return to DOS prompt}
@@ -290,7 +290,7 @@ begin
 	ClickedLink := Desk^.GetActiveLink;
 	if not Assigned(ClickedLink) then
 		exit;
-	
+
 	LinkAction := LinkMenu(ClickedLink);
 	case LinkAction of
 
@@ -327,7 +327,7 @@ begin
 			else
 				{Link delete confirmation disabled, just proceed}
 				result := true;
-			
+
 			if result then
 				Desk^.RemoveLink(ClickedLink);
 		end;
@@ -407,14 +407,14 @@ begin
 	begin
 		AddHotkey(KeyAltD);
 		SetOnClick(BtnAddClick);
-	end;	
+	end;
 	New(BtnRun, Init(101, 2, CAP_RUN, WinMain));
 	With BtnRun^ do
 	begin
 		AddHotkey(KeyAltR);
 		SetOnClick(BtnRunClick);
 	end;
-	
+
 	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
 	With BtnAbout^ do
 	begin

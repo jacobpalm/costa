@@ -25,6 +25,8 @@ var
 	LblTitle,
 	LblText:     PLabel;
 
+	MsgBoxType:  TMsgBox; {Audible alert needs to know type of message to select sound}
+
 	ReturnValue: Boolean;
 
 procedure BtnFirstClick(Sender: PUIObject); far;
@@ -37,6 +39,14 @@ procedure BtnSecondClick(Sender: PUIObject); far;
 begin
 	ReturnValue := False;
 	WinMsgBox^.Close;
+end;
+
+procedure WinMsgBoxDraw(Sender: PUIObject); far;
+begin
+	if MsgBoxType = MsgError then
+		SystemSound(sndError)
+	else
+		SystemSound(sndAttention);
 end;
 
 function MsgBox(const MsgTitle, MsgText: string; MsgType: TMsgBox): Boolean;
@@ -58,6 +68,7 @@ begin
 		Center(OrBoth);
 		SaveBackdrop;
 		GetPos(X1, Y1, True);
+		SetOnDraw(WinMsgBoxDraw);
 	end;
 
 	case MsgType of
@@ -67,7 +78,8 @@ begin
 		MsgError: IconFile := 'MSGERROR';
 	end;
 	New(ImgIcon, Init(13, 15, IconFile, WinMsgBox));
-	
+	MsgBoxType := MsgType;
+
 	if MsgType = MsgQuest then
 	begin
 		New(BtnFirst, Init((X2 div 2) - 98, Y2 - 36, CAP_YES, WinMsgBox));
@@ -93,7 +105,7 @@ begin
 	end;
 	New(LblTitle, Init(56, 15, MsgTitle, WinMsgBox));
 	New(LblText, Init(56, 31, MsgText, WinMsgBox));
-	
+
 	WinMsgBox^.Run;
 	Dispose(WinMsgBox, Done);
 	WinMsgBox := nil;

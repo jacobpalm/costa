@@ -38,9 +38,8 @@ ZIPCMD = ZIP -9rkDX
 
 # -M   = Make modified units
 # -$D- = Disable debug info
-# -$E- = Disable 80x87 emulation
 # -$L- = Disable local debug symbols
-TPCSWITCHES = -M -$D- -$E- -$L-
+TPCSWITCHES = -M -$D- -$L-
 TPCCMD = $(TPC) $(TPCSWITCHES)
 
 # TASM/TLINK options for COSTA.EXE

@@ -1,0 +1,9 @@
+{
+	"ensure_final_newline_on_save": false,
+	"preferred_line_length": 127,
+	"hard_tabs": true,
+	"file_types": {
+		"Pascal": ["PAS", "INC"],
+		"Assembly": ["ASM"],
+	},
+}

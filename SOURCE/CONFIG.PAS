@@ -13,6 +13,7 @@ const
 	LinkTarget           = 1;
 	LinkDelete           = 2;
 	ConfExit             = 3;
+	Audio                = 4;
 
 	CAP_EXIT             = 'E' + #127 + 'xit';
 	CAP_ABOUT            = #127 + 'About...';
@@ -22,6 +23,7 @@ const
 	CAP_LINKTARGET       = 'Show icon pr' + #127 + 'ogram names';
 	CAP_LINKDELETE       = 'Confirm icon ' + #127 + 'removal';
 	CAP_CONFEXIT         = 'Confirm before ' + #127 + 'exiting Costa';
+	CAP_AUDIO            = 'A' + #127 + 'udible alerts';
 	CAP_BUTTON           = 'Button';
 	CAP_TEXTBOX          = 'Textbox';
 	CAP_CURR_THEME       = 'This is your current' + #13 + 'theme.';
@@ -32,7 +34,7 @@ const
 	CAP_THEMES           = 'Theme' + #13 +
 	                       'Choose colors for the UI.';
 	CAP_LOADING          = 'Loading...';
-	
+
 	MSG_NO_THEMES        = 'No themes found in \THEMES.';
 
 type
@@ -58,7 +60,7 @@ var
 	LblSettings,
 	LblTheme,
 	LblNoThemes:    PLabel;
-	ChkSetting:     array[0..4] of PCheckbox;
+	ChkSetting:     array[0..5] of PCheckbox;
 
 	{Shared variables}
 	NewThemeList:   PThemeList;
@@ -86,7 +88,7 @@ begin
 			LastNode := LastNode^.Next;
 		LastNode^.Next := NewNode;
 	end;
-	
+
 	Inc(ThemeCount);
 end;
 
@@ -119,7 +121,7 @@ begin
         begin
             FSplit(FileInfo.Name, FPath, FName, FExt);
 			AddThemeToList(FName);
-			
+
 			{If this is the currently selected theme, load it into the preview and set it
 			 as the selected theme index}
 			if FName = Setting.ThmFile then
@@ -128,7 +130,7 @@ begin
                 SelectedTheme := ThemeCount;
 			end;
         end;
-		
+
         FindNext(FileInfo);
     end;
 
@@ -145,7 +147,7 @@ begin
 		SelectedTheme := ThemeCount
 	else if SelectedTheme > ThemeCount then
 		SelectedTheme := 1;
-	
+
 	Node := NewThemeList;
 	i := 1;
 	while Assigned(Node) and (i < SelectedTheme) do
@@ -187,6 +189,7 @@ begin
 	Setting.LinkTarget := ChkSetting[LinkTarget]^.GetChecked;
 	Setting.ConfLinkDel := ChkSetting[LinkDelete]^.GetChecked;
 	Setting.ConfExit := ChkSetting[ConfExit]^.GetChecked;
+	Setting.Audio := ChkSetting[Audio]^.GetChecked;
 
 	App^.SaveSettings;
 	App^.Terminate;
@@ -237,7 +240,7 @@ begin
 		AddHotkey(KeyAltF4);
 		SetOnClick(BtnExitClick);
 	end;
-	
+
 	{Settings frame and its contents}
 	New(FrmSettings, Init(14, 43, WinMain));
 	FrmSettings^.SetSize(310, 293);
@@ -251,6 +254,8 @@ begin
 	ChkSetting[LinkDelete]^.AddHotkey(KeyAltR);
 	New(ChkSetting[ConfExit], Init(14, 122, CAP_CONFEXIT, Setting.ConfExit, FrmSettings));
 	ChkSetting[ConfExit]^.AddHotkey(KeyAltE);
+	New(ChkSetting[Audio], Init(14, 144, CAP_AUDIO, Setting.Audio, FrmSettings));
+	ChkSetting[Audio]^.AddHotkey(KeyAltU);
 
 	{Theme frame and its contents}
 	W := 288;
