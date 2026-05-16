@@ -14,7 +14,7 @@ type
 
 			procedure    SetLightColor(Color: Byte);
 			function	 GetLightColor: Byte;
-			
+
 			procedure    SetDarkColor(Color: Byte);
 			function	 GetDarkColor: Byte;
 		private

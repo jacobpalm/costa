@@ -77,7 +77,7 @@ begin
 	TabVisible   := false;
 	TabBgSize    := ImageSize(0, 0, 37, 37); {Size of 34x34 tab indicator + 3px border}
 	OnRightClick := nil;
-	
+
 	{Allocate memory for tab background image}
 	GetMem(TabBgImg, TabBgSize);
 end;
@@ -177,7 +177,7 @@ begin
 		GetPos(OffsetX, OffsetY, True);
 		OffsetX := Mouse.X - OffSetX;
 		OffsetY := Mouse.Y - OffSetY;
-		
+
 		{Iterate through Icons to see if one was clicked}
 		TempNode := Icons;
 		while TempNode <> nil do
@@ -232,7 +232,7 @@ begin
 		KeyPressed := true;
 		DoTabAction(TabMovePrev);
 	end;
-	
+
 	{Enter to clear a cell, Space to toggle flag}
 	if (HotkeyInput = KeyEnter) and Assigned(SelectedIcon) then
 	begin
@@ -362,7 +362,7 @@ var
 	begin
 		if not TabVisible or not Assigned(SelectedIcon) then
 			exit;
-		
+
 		{Restore saved background}
 		Mouse.Hide;
 		if Assigned(TabBgImg) then
@@ -376,7 +376,7 @@ var
 	begin
 		if not Assigned(SelectedIcon) then
 			exit;
-		
+
 		Mouse.Hide;
 		GetImage(SelectedIcon^.Left - 3, SelectedIcon^.Top - 3, SelectedIcon^.Left + 34, SelectedIcon^.Top + 34, TabBgImg^);
 		Mouse.Show;
@@ -393,7 +393,7 @@ begin
 
 	if Action = TabHide then
 		HideTabIndicator;
-	
+
 	If (IconCount = 0) or not Assigned(Icons) then
 		Exit; {No Icons to select}
 
@@ -427,7 +427,7 @@ begin
 					SelectedIcon := TempNode^.Next^.ID
 				else
 					SelectedIcon := Icons^.ID; {Wrap around to first icon}
-				
+
 				break;
 			end;
 			TempNode := TempNode^.Next;
@@ -475,7 +475,7 @@ var
 begin
 	if not Assigned(Icons) then
 		Exit;
-	
+
 	DoTabAction(TabClear);
 
 	{Itererate through Icons until no swaps are made}
@@ -483,7 +483,7 @@ begin
 		Sorted := true;
 		CurrentNode := Icons;
 		PrevNode := nil;
- 
+
 		while Assigned(CurrentNode) and Assigned(CurrentNode^.Next) do
 		begin
 			NextNode := CurrentNode^.Next;
@@ -495,7 +495,7 @@ begin
 			    (CurrentNode^.Top > NextNode^.Top)) then
 			begin
 				{Swap the two nodes in the Icons linked list}
-				
+
 				{If PrevNode is nil, we are swapping the head node}
 				if not Assigned(PrevNode) then
 					Icons := NextNode
@@ -535,7 +535,7 @@ var
 begin
 	if icon = nil then
 		Exit;
-	
+
 	{Unless escape is pressed, we assume the icon was moved}
 	WasMoved := true;
 
@@ -587,14 +587,14 @@ begin
 	ClearInputBuffer;
 	repeat
 		Key := GetKey;
-		
+
 		{Escape cancels move}
 		if Key = KeyEscape then
 		begin
 			WasMoved := false;
 			break;
 		end;
-		
+
 		{Enter confirms move}
 		if Key = KeyEnter then
 			break;
@@ -613,7 +613,7 @@ begin
 		if CursorX > MaxX then CursorX:= MaxX;
 		if CursorY < MinY then CursorY := MinY;
 		if CursorY > MaxY then CursorY := MaxY;
-		
+
 		{If icon is moved with arrow keys, set cursor position}
 		if Length(Key) = 2 then
 			Mouse.Move(CursorX, CursorY);
@@ -635,7 +635,7 @@ begin
 			DrawY := CurGridY * iconGridSize;
 			if DrawY > 318 then
 				DrawY := 318;
-		
+
 			{Save backdrop, plot icon in its place}
 			GetImage(DrawX, DrawY, DrawX + 31, DrawY + 31, BackdropImgP^);
 			PutImage(DrawX, DrawY, IconImgP^, NormalPut);
@@ -670,7 +670,7 @@ begin
 
 	{Free allocated memory}
 	FreeMem(IconImgP, IconSize);
-	FreeMem(BackdropImgP, IconSize);	
+	FreeMem(BackdropImgP, IconSize);
 	ClearInputBuffer;
 end;
 

@@ -116,7 +116,7 @@ begin
 	AreaListPreview.Draw;
 	ImgLogo.Draw;
 	ImgPreview.Draw;
-	
+
 	{Text on Desk and window}
 	Print(MSG_PREVIEW, ImgLogo.Left + 42, ImgLogo.Top + 5, Thm.WinText);
 	Print(CAP_PREVIEW_LINK, ImgPreview.Left + 38, ImgPreview.Top + 4, Thm.DeskText);
@@ -147,7 +147,7 @@ begin
 		Color := 15
 	else if Color > 15 then
 		Color := 0;
-	
+
 	PreviousColor := SelectedColor;
 	SelectedColor := Color;
 	Mouse.Hide;
@@ -171,7 +171,7 @@ begin
 		Sel:       ThemeData.Sel := Color;
 		SelText:   ThemeData.SelText := Color;
 	end;
-	
+
 	{Mark theme as changed and update preview}
 	if DrawPreview then
 	begin
@@ -225,12 +225,12 @@ begin
 		NextSelection := Ord(ActiveSelection) - 1
 	else
 		NextSelection := Ord(ActiveSelection) + 1;
-	
+
 	if NextSelection < 0 then
 		NextSelection := High(BtnObjSelect)
 	else if NextSelection > High(BtnObjSelect) then
 		NextSelection := 0;
-	
+
 	ActiveSelection := TThemeObject(NextSelection);
 	BtnObjSelect[Ord(ActiveSelection)].State := BsDown;
 	BtnObjSelect[Ord(ActiveSelection)].Draw;
@@ -255,7 +255,7 @@ begin
 	BackgroundSize := ImageSize(X1, Y1, X2, Y2);
 	GetMem(BackgroundP, BackgroundSize);
 	GetImage(X1, Y1, X2, Y2, BackgroundP^);
-	
+
 	WinSelectObject.Draw;
 	ActiveSelection := SelectedObject;
 	for i := 0 to High(BtnObjSelect) do
@@ -347,7 +347,7 @@ begin
 			if not SaveTheme(false) then
 				exit; {Theme was not saved, exit}
 	end;
-	
+
 	SelectedFile := FileSelect('*.BIN', 'THEMES', True);
 	if Length(SelectedFile) = 0 then
 		exit;
@@ -368,7 +368,7 @@ begin
 		LoadError := True
 	else if FileSize(F) <> SizeOf(TTheme) + 42 then
 		LoadError := True;
-	
+
 	if LoadError then
 	begin
 		Close(F);
@@ -391,7 +391,7 @@ begin
 end;
 
 function SaveTheme(SaveAs: boolean): boolean;
-var	
+var
 	F: File;
 	Filename: string;
 	SaveName, SaveAuthor: string[20];
@@ -596,7 +596,7 @@ begin
 		begin
 			Init(BtnObject.Left, BtnObject.Top - 15, SizeDefault, SizeDefault, CAP_OBJECT_SEL);
 		end;
-		
+
 		Y1 := 0;
 		X1 := 0;
 		for I := 0 to 15 do

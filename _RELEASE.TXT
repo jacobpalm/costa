@@ -19,7 +19,11 @@ when releasing a new version.
 - Update changelog in DOCS\CHANGES.TXT
 - Update year in LICENSE
 - Update version information in the CONST section of each unit
-- Compile all EXE files by running _BUILD.BAT
+- Update information in SVARDOS\APPINFO\COSTA.LSM
+- Compile all EXE files by running
+  MAKE -B all
+- For SvarDOS releases, run
+  MAKE -B svardos
 - Remove all .BIN files except from DESKDEF.BIN from the CONFIG directory
 - Exclude the following from the ZIP file:
   - Directories:

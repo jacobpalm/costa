@@ -115,7 +115,7 @@ begin
 		exit;
 
 	Clicked := False;
-	
+
 	{Check if mouse is clicked on the object}
 	if (Mouse.Clicked = MbLeft) and Self.IsMouseOver then
 	begin

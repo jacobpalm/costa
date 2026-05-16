@@ -12,7 +12,7 @@ type
 			constructor  Init(Parent: PContainer);
 			procedure    CheckEvent; virtual;
 			procedure    Draw; virtual;
-			
+
 			procedure    Start;
 			procedure    Stop;
 			function	 IsRunning: boolean;
@@ -46,7 +46,7 @@ begin
 	{Don't check for events if timer is disabled or not running}
 	if not GetState(SEnabled) or not Running then
 		exit;
-	
+
 	{Check if interval time has passed since last tick}
 	if Timer > LastTick + Interval then
 	begin
@@ -89,7 +89,7 @@ end;
 procedure TTimer.SetInterval(Seconds: Real);
 begin
 	Interval := Seconds;
-	
+
 	{If timer is running, reset last tick to current time}
 	if Running then
 		LastTick := Timer;

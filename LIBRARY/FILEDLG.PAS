@@ -52,7 +52,7 @@ var
 	HkHome,
 	HkEnd,
 	HkTab:          PHotkey;
-	
+
 	List:           array[-1..0] of PList;
 	ActiveList:     Integer;
 
@@ -106,15 +106,15 @@ var
 begin
 	{Clear previous directory list}
 	List[DirList]^.ClearItems;
-	
+
 	{Add '..' for parent directory if not at root}
 	if Length(Path) > 3 then
 		List[DirList]^.AddItem('..');
-	
+
 	{Add backslash if missing}
 	if (Path[Length(Path)] <> '\') then
 		Path := Path + '\';
-	
+
 	FindFirst(Path + '*.*', Directory, DirInfo);
 	{If an error other than 18 (no files found) occurred, show message}
 	if (DosError > 0) and (DosError <> 18) then
@@ -126,7 +126,7 @@ begin
 	begin
 		if ((DirInfo.Attr and Directory) <> 0) and (DirInfo.Name <> '.') and (DirInfo.Name <> '..') then
 			List[DirList]^.AddItem(DirInfo.Name);
-		
+
 		FindNext(DirInfo);
 	end;
 end;
@@ -150,7 +150,7 @@ begin
 			exit;
 		end;
 	end;
-	
+
 	{Either there is no selection, or the preview should be hidden - do so if previously shown}
 	if not ImgPreview^.GetState(SHidden) then
 	begin
@@ -237,7 +237,7 @@ begin
 		ClickedList := FileList
 	else
 		ClickedList := DirList;
-	
+
 	{If the list is not active, make it active}
 	if ActiveList <> ClickedList then
 		SetActiveList(ClickedList);
@@ -256,7 +256,7 @@ begin
 		TargetList := DirList
 	else
 		TargetList := ActiveList;
-	
+
 	SelectedItemName := List[TargetList]^.GetSelectedItem;
 	if SelectedItemName <> '' then
 	begin
@@ -460,25 +460,25 @@ begin
 
 	New(ImgPreview, Init(393, 108, '', WinFileSelect));
 	ImgPreview^.AddState(SHidden);
-	
+
 	New(HkUp, Init(KeyUp, WinFileSelect));
 	HkUp^.SetOnClick(HkDirectionPress);
-	
+
 	New(HkDown, Init(KeyDown, WinFileSelect));
 	HkDown^.SetOnClick(HkDirectionPress);
-	
+
 	New(HkPageUp, Init(KeyPageUp, WinFileSelect));
 	HkPageUp^.SetOnClick(HkDirectionPress);
-	
+
 	New(HkPageDown, Init(KeyPageDown, WinFileSelect));
 	HkPageDown^.SetOnClick(HkDirectionPress);
-	
+
 	New(HkHome, Init(KeyHome, WinFileSelect));
 	HkHome^.SetOnClick(HkDirectionPress);
-	
+
 	New(HkEnd, Init(KeyEnd, WinFileSelect));
 	HkEnd^.SetOnClick(HkDirectionPress);
-	
+
 	New(HkTab, Init(KeyTab, WinFileSelect));
 	with HkTab^ do
 	begin
@@ -496,15 +496,15 @@ begin
 	ActiveList := FileList;
 
 	GetDir(0, OriginalPath); {Save to restore later}
-	
+
 	{If path provided, use it - otherwise use current directory}
 	if Length(StartPath) > 0 then
 		Path := StartPath
 	else
 		Path := OriginalPath;
-	
+
 	InitUI;
-	
+
 	WinFileSelect^.Run;
 	Dispose(WinFileSelect, Done);
 	WinFileSelect := nil;

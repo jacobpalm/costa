@@ -46,24 +46,24 @@ begin
 
 	{About button}
 	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
-				
+
 	{Create an icon. Only the filename, without extension or path, is set.
 	 This is because icons are always in the same directory. An icon does
 	 not use the width or height property, they are always 32x32 pixels.}
 	ImgSample.Init(WinSample.Top + 34, WinSample.Left + 200, 'SAMPLE');
-	
+
 	{Remember to hide/show the mouse when drawing!}
 	Mouse.Hide;
 
 	{Top menu - default for all Costa apps, holds buttons like about,
 	 exit etc.}
-	MenuBar.Draw; 
+	MenuBar.Draw;
 
 	{App background - not drawn automatically, as some apps may wish to use
 	 a custom background.}
 	SetFillStyle(SolidFill, Thm.Win);
 	Bar(0, 29, 639, 349);
-	
+
 	WinSample.Draw;
 	BtnAbout.Draw;
 	BtnExit.Draw;
@@ -74,7 +74,7 @@ begin
 
 	repeat
 		{Fetch any pressed key}
-		Key := GetKey;       
+		Key := GetKey;
 
 		{BtnClick will return True or False, and can be used to check
 		 if a button is clicked. It will also take care of drawing the
@@ -95,7 +95,7 @@ begin
 		 consistency between all programs}
 		if BtnAbout.Clicked or (Key = KeyAltA) then
 		  AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
-		
+
 	until False;
 
 end.

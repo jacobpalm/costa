@@ -82,7 +82,7 @@ begin
 	OnRightClick := nil;
 	TabVisible   := false;
 	TabBgSize    := ImageSize(0, 0, 37, 37);
-	
+
 	{Allocate memory for tab background image, 32x32 icon plus 3 pixel border}
 	GetMem(TabBgImg, TabBgSize);
 end;
@@ -195,7 +195,7 @@ begin
 		GetPos(OffsetX, OffsetY, True);
 		OffsetX := Mouse.X - OffSetX;
 		OffsetY := Mouse.Y - OffSetY;
-		
+
 		{Iterate through links to see if one was clicked}
 		TempNode := Links;
 		while TempNode <> nil do
@@ -251,7 +251,7 @@ begin
 		KeyPressed := true;
 		DoTabAction(TabMovePrev);
 	end;
-	
+
 	{Enter to clear a cell, Space to toggle flag}
 	if (HotkeyInput = KeyEnter) and Assigned(SelectedLink) then
 	begin
@@ -358,7 +358,7 @@ var
 begin
 	if Link = nil then
 		Exit;
-	
+
 	{Unless escape is pressed, we assume the link was moved}
 	WasMoved := true;
 
@@ -410,14 +410,14 @@ begin
 	ClearInputBuffer;
 	repeat
 		Key := GetKey;
-		
+
 		{Escape cancels move}
 		if Key = KeyEscape then
 		begin
 			WasMoved := false;
 			break;
 		end;
-		
+
 		{Enter confirms move}
 		if Key = KeyEnter then
 			break;
@@ -436,7 +436,7 @@ begin
 		if CursorX > MaxX then CursorX:= MaxX;
 		if CursorY < MinY then CursorY := MinY;
 		if CursorY > MaxY then CursorY := MaxY;
-		
+
 		{If icon is moved with arrow keys, set cursor position}
 		if Length(Key) = 2 then
 			Mouse.Move(CursorX, CursorY);
@@ -458,7 +458,7 @@ begin
 			DrawY := CurGridY * LinkGridSize;
 			if DrawY > 318 then
 				DrawY := 318;
-		
+
 			{Save backdrop, plot icon in its place}
 			GetImage(DrawX, DrawY, DrawX + 31, DrawY + 31, BackdropImg^);
 			PutImage(DrawX, DrawY, LinkIconImg^, NormalPut);
@@ -493,7 +493,7 @@ begin
 
 	{Free allocated memory}
 	FreeMem(LinkIconImg, IconSize);
-	FreeMem(BackdropImg, IconSize);	
+	FreeMem(BackdropImg, IconSize);
 	ClearInputBuffer;
 end;
 
@@ -537,7 +537,7 @@ begin
 	{If file doesn't exist, do nothing}
 	if not FileExists(Filename) then
 		exit;
-	
+
 	Assign(F, Filename);
 	{$I-}
 	Reset(F, 1);
@@ -566,7 +566,7 @@ begin
 			Exit;
 		end;
 	end;
-	
+
 	Close(F);
 
 	{Make sure links are sorted by position after loading, to enable tab navigation}
@@ -634,7 +634,7 @@ var
 	begin
 		if not TabVisible or not Assigned(SelectedLink) then
 			exit;
-		
+
 		{Restore saved background}
 		if Assigned(TabBgImg) then
 		begin
@@ -656,7 +656,7 @@ var
 	begin
 		if not Assigned(SelectedLink) then
 			exit;
-		
+
 		Mouse.Hide;
 		{Get absolute position of desktop, and set icon position relative to it}
 		GetPos(x1, y1, True);
@@ -670,7 +670,7 @@ var
 
 		SetFillStyle(SolidFill, Thm.Btn);
 		Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
-	
+
 		{Top + left outer border}
 		SetColor(White);
 		Line(X1, Y1, X2, Y1);
@@ -705,7 +705,7 @@ begin
 
 	if Action = TabHide then
 		HideTabIndicator;
-	
+
 	If (LinkCount = 0) or not Assigned(Links) then
 		Exit; {No links to select}
 
@@ -739,7 +739,7 @@ begin
 					SelectedLink := TempNode^.Next^.Link
 				else
 					SelectedLink := Links^.Link; {Wrap around to first link}
-				
+
 				break;
 			end;
 			TempNode := TempNode^.Next;
@@ -787,7 +787,7 @@ var
 begin
 	if not Assigned(Links) then
 		Exit;
-	
+
 	DoTabAction(TabClear);
 
 	{Itererate through Links until no swaps are made}
@@ -795,7 +795,7 @@ begin
 		Sorted := true;
 		CurrentNode := Links;
 		PrevNode := nil;
- 
+
 		while Assigned(CurrentNode) and Assigned(CurrentNode^.Next) do
 		begin
 			NextNode := CurrentNode^.Next;
@@ -807,7 +807,7 @@ begin
 			    (CurrentNode^.Link^.Top > NextNode^.Link^.Top)) then
 			begin
 				{Swap the two nodes in the Links linked list}
-				
+
 				{If PrevNode is nil, we are swapping the head node}
 				if not Assigned(PrevNode) then
 					Links := NextNode

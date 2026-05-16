@@ -12,7 +12,7 @@ type
 			constructor  Init(X, Y: Integer; Cap: string; Parent: PContainer);
 			procedure    CheckEvent; virtual;
 			procedure    Draw; virtual;
-			
+
 			procedure    SetCaption(Cap: string);
 			function     GetCaption: string;
 		private
@@ -28,7 +28,7 @@ const
 begin
 	TUIObject.Init;
 	Caption := Cap;
-	
+
 	SetParent(Parent);
 	SetSize(DefaultW, DefaultH);
 	SetPos(X, Y);
@@ -41,7 +41,7 @@ begin
 	{Don't check for events if object is disabled or hidden}
 	if not GetState(SEnabled) or GetState(SHidden) then
 		exit;
-	
+
 	Clicked := False;
 	{Check for left click, while drawing button pressed while mouse is down and over
 	 the button}
@@ -122,7 +122,7 @@ begin
 		SetFillStyle(SolidFill, BgColor);
 		Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 2);
 	End;
-	
+
 	{Invert border colors if pressed down}
 	if not GetState(SActive) then
 	begin
@@ -167,7 +167,7 @@ begin
 
 		if FgColor = ColorDefault then
 			FgColor := Thm.WinText;
-		
+
 		{If button is pressed, move text 1 pixel down and right}
 		if GetState(SActive) then
 		begin

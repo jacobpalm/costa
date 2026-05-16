@@ -76,8 +76,8 @@ begin
 
 	{We get this right after setting it, in case SetColor wrapped around the value}
 	NewColor := Canvas^.GetColor;
-	
-	{Remove selection marker from previous color and draw it on the new color - 
+
+	{Remove selection marker from previous color and draw it on the new color -
 	 AreaColorDraw handles drawing the marker automatically}
 	Mouse.Hide;
 	AreaColor[OldColor]^.Draw;
@@ -145,7 +145,7 @@ begin
 	begin
 		MsgBox(MSG_INVALID_ICON_TITLE, MSG_INVALID_ICON_TEXT, MsgError);
 	end;
-	
+
 	{If the icon is already loaded, but has been changed, ask if we should reload it}
 	if (FName = Canvas^.GetIconFile) and (Canvas^.IsChanged) then
 	begin
@@ -188,12 +188,12 @@ begin
 		if MbResult = false then
 			exit;
 	end;
-	
+
 	Canvas^.SaveIcon(Filename);
 
 	{if he file could not be saved, show an error}
 	if Canvas^.IsChanged then
-		MsgBox(MSG_SAVE_ERROR_TITLE, MSG_SAVE_ERROR_TEXT + Filename, MsgError);	
+		MsgBox(MSG_SAVE_ERROR_TITLE, MSG_SAVE_ERROR_TEXT + Filename, MsgError);
 end;
 
 procedure BtnToolClick(Sender: PUIObject); far;
@@ -268,7 +268,7 @@ var
 	MbResult: Boolean;
 begin
 	UnsavedChangesToKeep := false;
-	
+
 	if not Canvas^.IsChanged then
 		exit;
 
@@ -348,7 +348,7 @@ begin
 
 	X := X + W + 12;
 	New(LblTools, Init(X, Y, CAP_TOOLS, WinMain));
-	
+
 	New(BtnPencil, Init(X, Y, CAP_PENCIL, WinMain));
 	With BtnPencil^ do
 	begin
@@ -377,7 +377,7 @@ begin
 	Canvas^.GetPos(X, Y, True);
 	X := X - 51;
 	New(LblColor, Init(X, Y, CAP_COLOR, WinMain));
-	
+
 	Y := Y + 14;
 	for i := 0 to MaxColor do
 	begin
@@ -414,5 +414,5 @@ begin
 	App^.OpenWindow(WinMain);
 	App^.Run;
 	App^.Terminate;
-	
+
 end.

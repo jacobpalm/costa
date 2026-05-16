@@ -751,7 +751,7 @@ begin
 		IndicatorOn := FSelected in Cell[IndicatorRow, IndicatorCol];
 		if IndicatorOn then
 			MoveIndicator(DHide);
-		
+
 		{Set new indicator position}
 		IndicatorRow := Row;
 		IndicatorCol := Col;

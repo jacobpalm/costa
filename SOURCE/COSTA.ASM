@@ -192,7 +192,7 @@ DosVersionOk:
 
 LoadRunData:
 	mov [RunningDesktop], 0		   ; Clear running desktop flag
-	
+
 	lea dx, [CostaPath]            ; Change to Costa's drive+path before loading file
 	call ChDir
 	jnc OpenRunFile                ; Jump if successful
@@ -276,7 +276,7 @@ ShrinkMemory:
 	mov ah, GET_PSP_FUNCTION
 	int 21h
 	mov es, bx                     ; set ES = PSP segment
-	
+
 	; Calculate required memory size for COSTA.EXE to keep
 	mov ax, offset EndOfData       ; Label EndOfData marks the end of the data segment
 	add ax, STACK_SIZE             ; Include stack size
@@ -481,10 +481,10 @@ SetDrive:
 	mov ah, [si]                   ; Store for comparison
 	cmp ah, ':'                    ; Is it a colon?
 	jne SetDir                     ; PathPtr doesn't specify drive, skip drive change
-	
+
 	and al, 0DFh                   ; force uppercase drive letter just in case
 	sub al, 'A'                    ; Substracting 'A' gives 0 for A, 1 for B, etc.
-	
+
 	mov ah, SET_DRIVE_FUNCTION     ; DOS set current drive function
 	mov dl, al                     ; DL = drive number
 	int 21h                        ; No error checking, chdir will fail if drive invalid

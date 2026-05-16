@@ -190,7 +190,7 @@ begin
 
 	if FileName = '' then
 		Exit;
-	
+
 	{Check if file exists}
 	if not FileExists(FileName) then
 	begin
@@ -211,11 +211,11 @@ begin
 	end;
 
 	ShowLoading;
-	
+
 	if FileOpened then
 		FreeLines; {Free previously loaded lines}
-	 
-	{Initialize Lines array with default capacity, exit if failed} 
+
+	{Initialize Lines array with default capacity, exit if failed}
 	if not InitLines(InitialCap) then
 	begin
 		FileOpened := False;
@@ -236,7 +236,7 @@ begin
 		end;
 
 		{Replace TAB with two spaces}
-		ReadData := Replace(ReadData, #9, '  '); 
+		ReadData := Replace(ReadData, #9, '  ');
 
 		{Add each line to the array, truncate at MaxLineLength if necessary by
 		 splitting into multiple lines}
@@ -304,7 +304,7 @@ begin
 	for i := StartLine to StartLine + MaxLinesShown do
 	begin
 		Inc(DrawnLines);
-		
+
 		{Clear line}
 		Bar(7, (PrintLineH * (i - StartLine + 1)) + 22, 633, PrintLineH * (i - StartLine + 1) + 36);
 
@@ -389,7 +389,7 @@ begin
 	{Draw empty text area when main window is first drawn}
 	SetFillStyle(SolidFill, Thm.Txt);
 	Bar(0, 29, GetMaxX, GetMaxY);
-	
+
 	if not FileOpened then
 		{Pass first command line argument as file name, LoadFile will ignore it if empty}
 		LoadFile(ParamStr(1));

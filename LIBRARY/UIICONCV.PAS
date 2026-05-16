@@ -52,7 +52,7 @@ type
 
 			{Array holding the icon pixel data}
 			IconData:    array[0..IconSize, 0..IconSize] of Byte;
-			
+
 			procedure    DoCanvasAction(Action: TCanvasAction);
 			procedure    DrawPixel(X, Y, Col: Integer);
 			procedure    FloodFill(X, Y, FillColor: Integer);
@@ -73,7 +73,7 @@ begin
 
 	New(ImgPreview, Init(X + DefaultW + 12, Y, '', nil)); {Set preview icon position to right of canvas}
 	ImgPreview^.SetBgColor(White);
-	
+
 	IndicatorX := 16;
 	IndicatorY := 16;
 	DrawCol    := Black;
@@ -116,7 +116,7 @@ begin
 		SetColor(DarkGray);
 		Line(X1 + 2, Y1 + 1 + (I * PixelSize), X2 - 2, Y1 + 1 + (I * PixelSize)); {Horizontal}
 		Line(X1 + 1 + (I * PixelSize), Y1 + 2, X1 + 1 + (I * PixelSize), Y2 - 2); {Vertical}
-		
+
 		{Black dotted foreground part}
 		SetLineStyle(UserBitLn, $AAAA, NormWidth);
 		SetColor(Black);
@@ -183,7 +183,7 @@ begin
 	FillChar(IconData, SizeOf(IconData), White);
 	IconFile := '';
 	Changed := false;
-	
+
 	{Redraw the canvas}
 	Mouse.Hide;
 	Self.Draw;
@@ -202,7 +202,7 @@ begin
 	 since DrawPixel checks if the color is different before drawing}
 	FillChar(IconData, SizeOf(IconData), 255);
 	ImgPreview^.SetIcon(Filename);
-	
+
 	Mouse.Hide;
 	ImgPreview^.Draw;
 	ImgPreview^.GetPos(PreviewX, PreviewY, True);
@@ -220,7 +220,7 @@ begin
 	{If keyboard indicator was visible before load, redraw it}
 	if IndicatorOn then
 		MoveIndicator(DirStay);
-	
+
 	{Update icon file name and mark it as not changed}
 	IconFile := Filename;
 	Changed := false;
@@ -242,7 +242,7 @@ begin
 	Mouse.Hide;
 	GetImage(X1, Y1, X2, Y2, p^);
 	Mouse.Show;
-	
+
 	{Open the file and output the data}
 	Assign(F, Filename);
 	{$I-}
@@ -396,7 +396,7 @@ begin
 				SetTool(ToolPencil);
 			end;
 	end;
-	
+
 	{Make sure indicator will appear where mouse was lifted}
 	if Action = ActionMouse then
 	begin
@@ -427,7 +427,7 @@ begin
 	Self.GetPos(OffsetX, OffsetY, True);
 	Inc(OffsetX, 2);
 	Inc(OffsetY, 2);
-	
+
 	CanvasX := OffsetX + (X * PixelSize);
 	CanvasY := OffsetY + (Y * PixelSize);
 
@@ -437,7 +437,7 @@ begin
 	SetFillStyle(SolidFill, Col);
 	{Draw on canvas}
 	Bar(CanvasX, CanvasY, CanvasX + PixelSize - 2, CanvasY + PixelSize - 2);
-	
+
 	{Update preview}
 	ImgPreview^.GetPos(PreviewX, PreviewY, True);
 	PutPixel(PreviewX + X, PreviewY + Y, Col);
@@ -606,7 +606,7 @@ begin
 		DirLeft:  Dec(IndicatorX);
 		DirRight: Inc(IndicatorX);
 	end;
-	
+
 	{Prevent out of bounds}
 	if IndicatorY < 0 then IndicatorY := 0;
 	if IndicatorY > IconSize then IndicatorY := IconSize;

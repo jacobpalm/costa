@@ -6,17 +6,23 @@ uses
 	Costalib, Graph;
 
 type
+	TAlign = (AlLeft, AlCenter, AlRight);
+
 	PLabel = ^TLabel;
 	TLabel = object(TUIObject)
 		public
 			constructor Init(X, Y: Integer; Cap: String; Parent: PContainer);
 			procedure   Draw; virtual;
 			procedure   AutoSize;
-			
+
 			procedure   SetCaption(Cap: string);
 			function    GetCaption: string;
+
+			procedure   SetAlign(Val: TAlign);
+			function    GetAlign: TAlign;
 		private
 			Caption:    String;
+			Align:      TAlign;
 	end;
 
 implementation
@@ -28,7 +34,8 @@ const
 begin
 	TUIObject.Init;
 	Caption := Cap;
-	
+	Align := AlLeft;
+
 	AddState(STransparent);
 	SetParent(Parent);
 	SetPos(X, Y);
@@ -65,10 +72,17 @@ begin
 		SetFillStyle(SolidFill, BgColor);
 		Bar(X1, Y1, X2, Y2);
 	end;
-	
+
 	{Use FgColor for text if set, otherwise use window color}
 	if FGColor = ColorDefault then
 		FGColor := Thm.WinText;
+
+	if Align = AlRight then
+		X1 := X2 - PrintW(Caption);
+
+	if Align = AlCenter then
+		X1 := ((X2 - X1) - PrintW(Caption)) div 2 + X1;
+
 	Print(Caption, X1, Y1, FgColor);
 
 	TUIObject.Draw;
@@ -85,6 +99,16 @@ end;
 function TLabel.GetCaption: string;
 begin
 	GetCaption := Caption;
+end;
+
+procedure TLabel.SetAlign(Val: TAlign);
+begin
+	Align := Val;
+end;
+
+function TLabel.GetAlign: TAlign;
+begin
+	GetAlign := Align;
 end;
 
 end.

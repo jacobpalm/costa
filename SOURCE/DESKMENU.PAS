@@ -57,7 +57,7 @@ begin
 		LinkAction := laRemove
 	else
 		LinkAction := laNone;
-	
+
 	WinLinkMenu^.Close;
 end;
 
@@ -99,7 +99,7 @@ begin
 		Path := Copy(Path, 1, MaxLLength - 3) + '...';
 	if Length(Parameters) > MaxLLength then
 		Parameters := Copy(Parameters, 1, MaxLLength - 3) + '...';
-	
+
 	LblLinkInfo^.SetCaption(TargetLink^.Caption + #13 + Filename);
 	LblPathValue^.SetCaption(Path);
 	LblParametersValue^.SetCaption(Parameters);
@@ -167,7 +167,7 @@ begin
 	end;
 
 	TargetLink := Link;
-	
+
 	InitUI;
 	WinLinkMenu^.Run;
 	Dispose(WinLinkMenu, Done);

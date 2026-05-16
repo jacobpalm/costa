@@ -199,9 +199,9 @@ begin
 	{Can't edit a non-existing link}
 	if not Assigned(Link) then
 		exit;
-	
+
 	TargetLink := Link;
-	
+
 	InitUI;
 	WinEdit^.Run;
 	Dispose(WinEdit, Done);

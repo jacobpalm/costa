@@ -55,10 +55,10 @@ begin
 		IconError := True;
 
 	Size := ImageSize(0, 0, 31, 31); {Coords don't matter, just size}
-	
+
 	{Get absolute position of the object}
 	GetPos(X, Y, True);
-	
+
 	{Icon border}
 	SetColor(Thm.Light);
 	Line(X - 1, Y - 1, X + 32, Y - 1);
@@ -84,11 +84,11 @@ begin
 		{$I-}
 		Reset(F, 1);
 		{$I+}
-		if (IOResult <> 0) then 
+		if (IOResult <> 0) then
 			IconError := True
 		else if (FileSize(F) <> Size) then
 			IconError := True;
-			
+
 		if IconError then
 			Close(F);
 	end;

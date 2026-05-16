@@ -101,7 +101,7 @@ SUB ConvertDesktop ()
 		OutputFile = "..\DATA\CONFIG\DESKLNK" + LTRIM$(STR$(DesktopID)) + ".RAW"
 
 		IF File.Exists(DeskLinkFile) THEN
-		
+
 			OPEN DeskLinkFile FOR BINARY AS #1
 			IF NOT LOF(1) = 0 THEN GET #1, , LinkCount
 

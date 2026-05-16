@@ -35,7 +35,7 @@ begin
 		BtnOK^.RemoveState(SEnabled)
 	else
 		exit;
-	
+
 	Mouse.Hide;
 	BtnOK^.Draw;
 	Mouse.Show;

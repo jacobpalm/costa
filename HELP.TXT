@@ -29,13 +29,13 @@ Before you start
  operating system.
 
  When using Costa, you can use icons to launch programs instead of long and
- difficult commands. Launching a program is just a mouse click away, and 
+ difficult commands. Launching a program is just a mouse click away, and
  Costa even comes with a collection of programs to replace the ones that came
  with MS-DOS. All of these programs act and look like Costa itself, which
  means better consistency between programs and an easier learning curve for
  users.
 
- Costa is developed by Jacob Palm. More info can be found at Costa's 
+ Costa is developed by Jacob Palm. More info can be found at Costa's
  website: https://costa.jacobpalm.dk
 
 1.2 System requirements
@@ -61,7 +61,7 @@ Before you start
 Using Costa
 ------------------------------------------------------------------------------
 2.1 Starting Costa
- 
+
  Starting Costa is very simple - simply run COSTA.EXE. This will bring you to
  Costa's desktop. Individual accessories can be run directly from DOS, but
  the desktop must be started by running COSTA.EXE.
@@ -73,12 +73,12 @@ Using Costa
  that you want to exit.
 
 2.3 Managing desktop icons
- 
+
  To open a desktop icon using the mouse, simply click it. You can also use
  the TAB key on your keyboard to cycle through the icons from left to right,
  and then press Enter when the desired icon is highlighted. Use Shift+TAB to
  cycle through icons in reverse order.
- 
+
  When you open a desktop icon, you will be presented with a dialog with
  information about the icon, as well as a few options.
 
@@ -87,7 +87,7 @@ Using Costa
 
   -Edit...
    Opens a dialog where you can change the target program, path, icon and
-   more. If the "Pause after exit" checkbox is selected, Costa will wait for 
+   more. If the "Pause after exit" checkbox is selected, Costa will wait for
    a key press before returning to the desktop once the program ends. This is
    useful if you need to see the output of a program before returning to the
    desktop.
@@ -95,7 +95,7 @@ Using Costa
   -Move
    Allows you to move the icon freely around the screen. Once the icon is
    where you want it to be, click any mouse button. If you don't have a
-   mouse, use the arrow keys to move the icon and press Enter when done. You 
+   mouse, use the arrow keys to move the icon and press Enter when done. You
    can also move icons to other desktops using the buttons in the top menu,
    or by switching to another desktop using the number 1-5 keys or Page Up
    or Page Down keys on your keyboard.
@@ -142,7 +142,7 @@ Using Costa
  and arrow down keys - you can also use the Page Up and Page Down keys to
  scroll entire pages.
 
- In the icon editor, use the arrow keys to select the pixel you want to 
+ In the icon editor, use the arrow keys to select the pixel you want to
  paint, and then press the space or Enter key to paint it. If the indicator
  is hidden, pressing the space or Enter key will reveal it. Pressing again
  will paint the selected pixel.
@@ -181,12 +181,12 @@ Customizing Costa
  selector. Use this to switch between a number of predefined themes, some
  made by myself and some submitted by users of earlier versions. Your own
  themes will also be available here.
- 
+
  To select a theme, click one of the two arrow buttons underneath the preview
  or press the left and right keys to cycle through the themes. Once you've
  found one you like, simply exit the program to apply the changes
  immediately.
- 
+
  If none of the default themes suit your taste, use the included theme editor
  to make your own. User submitted themes are always welcome!
 
@@ -194,7 +194,7 @@ Customizing Costa
 
  The left panel in the Configuration program allows you to tweak various
  aspects of Costa to your liking.
- 
+
  To toggle a feature on or off, click the checkbox in front of it. An X in a
  checkbox indicates an enabled feature, an empty checkbox indicates a
  disabled feature. Saving is not necessary, changes take effect right away.

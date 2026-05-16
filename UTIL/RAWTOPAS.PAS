@@ -157,7 +157,7 @@ begin
 		FillChar(ThemeName, SizeOf(ThemeName), 0);
 		FillChar(Theme, SizeOf(Theme), 0);
 		TempRead := '';
-		
+
 		{Author}
 		ReadLn(F, TempRead);
 		if Length(TempRead) > SizeOf(ThemeAuthor) then
@@ -171,7 +171,7 @@ begin
 			ThemeName := Copy(TempRead, 1, SizeOf(ThemeName))
 		else
 			ThemeName := TempRead;
-		
+
 		ReadLn(F, Thm.Desk);
 		ReadLn(F, Thm.DeskText);
 		ReadLn(F, Thm.Win);
@@ -236,7 +236,7 @@ begin
 			Writeln('Error reading raw file.');
 			Halt(1);
 		end;
-		
+
 		Assign(OutputFile, '..\CONFIG\'+FName+'.BIN');
 		Writeln('..\CONFIG\'+FName+'.BIN');
 		{$I-}
@@ -266,11 +266,11 @@ begin
 				DeskLink.PauseOnExit := PauseValue <> 0;
 				ReadLn(F, DeskLink.Left);
 				ReadLn(F, DeskLink.Top);
-				
+
 				BlockWrite(OutputFile, DeskLink, SizeOf(DeskLink));
 			end;
 		end;
-		
+
 		Close(F);
 		Close(OutputFile);
 

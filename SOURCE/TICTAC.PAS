@@ -1,7 +1,7 @@
 program TicTacToe;
 
 uses
-	CostaLib, Crt, Strings, Graph;
+	CostaLib, UILabel, UIButton, UIFrame, AboutDlg, Crt, Strings, Graph;
 
 const
 	AppName             = 'Tic Tac Toe';
@@ -61,20 +61,149 @@ type
 	TSound   = (SndX, SndO, SndIllegal, SndWin, SndLoose, SndDraw, SndNew);
 	TGameMsg = (MsgWin, MsgDraw, MsgPcTurn, MsgPlayerTurn, MsgNewGame);
 
+	{Custom UI object for a field showing an X or an O}
+	PField = ^TField;
+	TField = object(TUIObject)
+		public
+			constructor  Init(X, Y: Integer; Parent: PContainer);
+			procedure    Draw; virtual;
+
+			procedure    SetValue(Val: TPlayer);
+			function     GetValue: TPlayer;
+		private
+			Value:       TPlayer;
+	end;
+
+
 var
-	PlayField: array[1..3, 1..3] of TPlayer;
-	AreaPlayField: array[1..3, 1..3] of TArea;
-	PlayerStart, PlayerTurn: TPlayer;
-	TotalTurns: integer;
-	VersusPC, SoundOn: boolean;
+	App:           PApplication;
+	WinMain:       PWindow;
+	BtnNew,
+	BtnGameMode,
+	BtnSound,
+	BtnAbout,
+	BtnExit:       PButton;
+	FrmTic:        PFrame;
+
+	LblMessage,
+	LblPlayers,
+	LblSound:      PLabel;
+
+	PlayField:     Array[1..3, 1..3] of PField;
+
+	PlayerStart,
+	PlayerTurn:    TPlayer;
+	TotalTurns:    Integer;
+
+	VersusPC,
+	SoundOn:       Boolean;
 
 {Forward declarations}
-procedure DrawXO(Row, Col: integer; Player: TPlayer); forward;
 procedure PlaySound(SoundType: TSound); forward;
 procedure PrintMsg(MessageType: TGameMsg); forward;
 procedure PrintStatus; forward;
 function  CanWin(Player: TPlayer; var Row, Col: integer): boolean; forward;
 function  DidWin: boolean; forward;
+
+constructor TField.Init(X, Y: Integer; Parent: PContainer);
+const
+	DefaultW = 60;
+	DefaultH = 60;
+begin
+	TUIObject.Init;
+	Value := PlayerNone;
+	SetParent(Parent);
+	SetPos(X, Y);
+	SetBGColor(White);
+	SetSize(DefaultW, DefaultH);
+end;
+
+procedure TField.Draw;
+var
+	X1, X2, Y1, Y2: Integer;
+begin
+	if GetState(SHidden) then
+		exit;
+
+	{Get absolute position and size of the object}
+	Self.GetPos(X1, Y1, True);
+	Self.GetSize(X2, Y2);
+	Inc(X2, X1);
+	Inc(Y2, Y1);
+
+	{Interior}
+	SetFillStyle(SolidFill, White);
+	Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 2);
+
+	{Borders}
+	SetColor(LightGreen);
+	Rectangle(X1, Y1, X2 - 1, Y2 - 1);
+	SetColor(DarkGray);
+	Rectangle(X1 + 1, Y1 + 1, X2, Y2);
+
+	if Value = PlayerX then
+	begin
+		SetColor(Black);
+		Line(X1 + 11, Y1 + 12, X1 + 48, Y1 + 49);
+		Line(X1 + 11, Y1 + 13, X1 + 47, Y1 + 49);
+		Line(X1 + 12, Y1 + 12, X1 + 49, Y1 + 49);
+		Line(X1 + 13, Y1 + 12, X1 + 49, Y1 + 48);
+		Line(X1 + 11, Y1 + 48, X1 + 47, Y1 + 12);
+		Line(X1 + 11, Y1 + 49, X1 + 48, Y1 + 12);
+		Line(X1 + 12, Y1 + 49, X1 + 49, Y1 + 12);
+		Line(X1 + 13, Y1 + 49, X1 + 49, Y1 + 13);
+	end;
+
+	if Value = PlayerO then
+	begin
+		{Default aspect ration is 7750:10000}
+		SetAspectRatio(10000, 10000);
+		SetColor(Black);
+		Circle(X1 + 30, Y1 + 30, 19);
+		Circle(X1 + 30, Y1 + 30, 18);
+		Circle(X1 + 30, Y1 + 30, 17);
+
+		{Circles aren't perfect, fill in gaps}
+		PutPixel(X1 + 14, Y1 + 23, Black);
+		PutPixel(X1 + 15, Y1 + 21, Black);
+		PutPixel(X1 + 21, Y1 + 15, Black);
+		PutPixel(X1 + 23, Y1 + 14, Black);
+		PutPixel(X1 + 14, Y1 + 37, Black);
+		PutPixel(X1 + 15, Y1 + 39, Black);
+		PutPixel(X1 + 21, Y1 + 45, Black);
+		PutPixel(X1 + 23, Y1 + 46, Black);
+		PutPixel(X1 + 37, Y1 + 46, Black);
+		PutPixel(X1 + 39, Y1 + 45, Black);
+		PutPixel(X1 + 45, Y1 + 39, Black);
+		PutPixel(X1 + 46, Y1 + 37, Black);
+		PutPixel(X1 + 46, Y1 + 23, Black);
+		PutPixel(X1 + 45, Y1 + 21, Black);
+		PutPixel(X1 + 39, Y1 + 15, Black);
+		PutPixel(X1 + 37, Y1 + 14, Black);
+		Line(X1 + 16, Y1 + 18, X1 + 18, Y1 + 16);
+		Line(X1 + 42, Y1 + 16, X1 + 44, Y1 + 18);
+		Line(X1 + 44, Y1 + 42, X1 + 42, Y1 + 44);
+		Line(X1 + 16, Y1 + 42, X1 + 18, Y1 + 44);
+	end;
+
+	TUIObject.Draw;
+end;
+
+procedure TField.SetValue(Val: TPlayer);
+begin
+	if Val <> Value then
+	begin
+		Value := Val;
+		Mouse.Hide;
+		Self.Draw;
+		Mouse.Show;
+	end;
+end;
+
+function TField.GetValue: TPlayer;
+begin
+	GetValue := Value;
+end;
 
 procedure PcMove;
 var
@@ -91,15 +220,13 @@ begin
 	{Check if the computer can win}
 	if CanWin(PlayerO, Row, Col) then
 	begin
-		PlayField[Row, Col] := PlayerO;
-		DrawXO(Row, Col, PlayerO);
+		PlayField[Row, Col]^.SetValue(PlayerO);
 		FoundMove := true;
 	end
 	{Check if player can win, block if so}
 	else if CanWin(PlayerX, Row, Col) then
 	begin
-		PlayField[Row, Col] := PlayerO;
-		DrawXO(Row, Col, PlayerO);
+		PlayField[Row, Col]^.SetValue(PlayerO);
 		FoundMove := true;
 	end;
 
@@ -110,10 +237,9 @@ begin
 		Col := Random(3) + 1;
 		Row := Random(3) + 1;
 
-		if PlayField[Row, Col] = PlayerNone then
+		if PlayField[Row, Col]^.GetValue = PlayerNone then
 		begin
-			PlayField[Row, Col] := PlayerO;
-			DrawXO(Row, Col, PlayerO);
+			PlayField[Row, Col]^.SetValue(PlayerO);
 			break;
 		end;
 		until false;
@@ -128,7 +254,7 @@ begin
 		TotalTurns := 9;
 		exit;
 	end;
-	
+
 	{If board is full with no winner, it's a draw}
 	if TotalTurns = 9 then
 	begin
@@ -153,9 +279,9 @@ begin
 	{Check rows}
 	for Row := 1 to 3 do
 	begin
-		if (PlayField[Row, 1] = PlayField[Row, 2]) and
-			(PlayField[Row, 2] = PlayField[Row, 3]) and
-			(PlayField[Row, 1] <> PlayerNone) then
+		if (PlayField[Row, 1]^.GetValue = PlayField[Row, 2]^.GetValue) and
+			 (PlayField[Row, 2]^.GetValue = PlayField[Row, 3]^.GetValue) and
+			 (PlayField[Row, 1]^.GetValue <> PlayerNone) then
 		begin
 			DidWin := true;
 			exit;
@@ -165,9 +291,9 @@ begin
 	{Check columns}
 	for Col := 1 to 3 do
 	begin
-		if (PlayField[1, Col] = PlayField[2, Col]) and
-			(PlayField[2, Col] = PlayField[3, Col]) and
-			(PlayField[1, Col] <> PlayerNone) then
+		if (PlayField[1, Col]^.GetValue = PlayField[2, Col]^.GetValue) and
+			 (PlayField[2, Col]^.GetValue = PlayField[3, Col]^.GetValue) and
+			 (PlayField[1, Col]^.GetValue <> PlayerNone) then
 		begin
 			DidWin := true;
 			exit;
@@ -175,18 +301,18 @@ begin
 	end;
 
 	{Check diagonal \}
-	if (PlayField[1, 1] = PlayField[2, 2]) and
-		(PlayField[2, 2] = PlayField[3, 3]) and
-		(PlayField[1, 1] <> PlayerNone) then
+	if (PlayField[1, 1]^.GetValue = PlayField[2, 2]^.GetValue) and
+		 (PlayField[2, 2]^.GetValue = PlayField[3, 3]^.GetValue) and
+		 (PlayField[1, 1]^.GetValue <> PlayerNone) then
 	begin
 		DidWin := true;
 		exit;
 	end;
 
-	{Check reverse diagonal /}
-	if (PlayField[1, 3] = PlayField[2, 2]) and
-		(PlayField[2, 2] = PlayField[3, 1]) and
-		(PlayField[1, 3] <> PlayerNone) then
+	{Check diagonal /}
+	if (PlayField[1, 3]^.GetValue = PlayField[2, 2]^.GetValue) and
+		 (PlayField[2, 2]^.GetValue = PlayField[3, 1]^.GetValue) and
+		 (PlayField[1, 3]^.GetValue <> PlayerNone) then
 	begin
 		DidWin := true;
 		exit;
@@ -207,9 +333,9 @@ begin
       Col := 0;
       for c := 1 to 3 do
       begin
-        if PlayField[r, c] = Player then
+        if PlayField[r, c]^.GetValue = Player then
           Inc(Sum)
-        else if PlayField[r, c] = PlayerNone then
+        else if PlayField[r, c]^.GetValue = PlayerNone then
           Col := c;
       end;
       if (Sum = 2) and (Col <> 0) then
@@ -227,9 +353,9 @@ begin
       Row := 0;
       for r := 1 to 3 do
       begin
-        if PlayField[r, c] = Player then
+        if PlayField[r, c]^.GetValue = Player then
           Inc(Sum)
-        else if PlayField[r, c] = PlayerNone then
+        else if PlayField[r, c]^.GetValue = PlayerNone then
           Row := r;
       end;
       if (Sum = 2) and (Row <> 0) then
@@ -246,9 +372,9 @@ begin
     Col := 0;
     for r := 1 to 3 do
     begin
-      if PlayField[r, r] = Player then
+      if PlayField[r, r]^.GetValue = Player then
         Inc(Sum)
-      else if PlayField[r, r] = PlayerNone then
+      else if PlayField[r, r]^.GetValue = PlayerNone then
       begin
         Row := r;
         Col := r;
@@ -267,9 +393,9 @@ begin
 	for r := 1 to 3 do
 	begin
 		c := 4 - r; { Calculate the column for the reverse diagonal }
-		if PlayField[r, c] = Player then
+		if PlayField[r, c]^.GetValue = Player then
 			Inc(Sum)
-		else if PlayField[r, c] = PlayerNone then
+		else if PlayField[r, c]^.GetValue = PlayerNone then
 		begin
 			Row := r;
 			Col := c;
@@ -282,121 +408,22 @@ begin
 	end;
 end;
 
-procedure DrawBg;
-var
-	X: integer;
-begin
-	SetFillStyle(SolidFill, Green);
-	Bar(0, 29, 639, 349);
-
-	SetLineStyle(UserBitLn, $1111, 1);
-	SetColor(LightGreen);
-	for X := 0 to 639 do
-	begin
-		if X mod 6 = 0 then
-			Line(X, 29, X, 349);
-	end;
-
-	for X := 3 to 639 do
-	begin
-		if (X - 3) mod 6 = 0 then
-			Line(X, 31, X, 349);
-	end;
-	SetLineStyle(SolidLn, 0, 1);	
-end;
-
-procedure DrawBoard;
-var
-	Row, Col: integer;
-	X1, Y1, X2, Y2: integer;
-begin
-	Mouse.Hide;
-	for Row := 1 to 3 do
-	begin
-		for Col := 1 to 3 do
-		begin
-			AreaPlayField[Row, Col].Draw;
-			X1 := AreaPlayField[Row, Col].Left;
-			Y1 := AreaPlayField[Row, Col].Top;
-			X2 := AreaPlayField[Row, Col].Left + AreaPlayField[Row, Col].Width;
-			Y2 := AreaPlayField[Row, Col].Top + AreaPlayField[Row, Col].Height;
-			{Draw light green border around each cell instead of
-			 default color, to match app theme}
-			SetColor(LightGreen);
-			Rectangle(X1, Y1, X2 - 1, Y2 - 1);
-			SetColor(DarkGray);
-			Rectangle(X1 + 1, Y1 + 1, X2, Y2);
-		end;
-	end;
-	Mouse.Show;
-end;
-
-procedure DrawXO(Row, Col: integer; Player: TPlayer);
-var
-	X, Y: integer;
-begin
-	X := AreaPlayField[Row, Col].Left;
-	Y := AreaPlayField[Row, Col].Top;
-
-	Mouse.Hide;
-	SetColor(Black);
-	if Player = PlayerX then
-	begin
-		Line(X + 11, Y + 12, X + 48, Y + 49);
-		Line(X + 11, Y + 13, X + 47, Y + 49);
-		Line(X + 12, Y + 12, X + 49, Y + 49);
-		Line(X + 13, Y + 12, X + 49, Y + 48);
-		Line(X + 11, Y + 48, X + 47, Y + 12);
-		Line(X + 11, Y + 49, X + 48, Y + 12);
-		Line(X + 12, Y + 49, X + 49, Y + 12);
-		Line(X + 13, Y + 49, X + 49, Y + 13);
-	end
-	else
-	begin
-		{DEBUG - circle is not really round, and PutPixel/Line needs rework}
-		Circle(X + 30, Y + 30, 19);
-		Circle(X + 30, Y + 30, 18);
-		Circle(X + 30, Y + 30, 17);
-		PutPixel(X + 14, Y + 23, Black);
-		PutPixel(X + 15, Y + 21, Black);
-		PutPixel(X + 21, Y + 15, Black);
-		PutPixel(X + 23, Y + 14, Black);
-		PutPixel(X + 14, Y + 37, Black);
-		PutPixel(X + 15, Y + 39, Black);
-		PutPixel(X + 21, Y + 45, Black);
-		PutPixel(X + 23, Y + 46, Black);
-		PutPixel(X + 37, Y + 46, Black);
-		PutPixel(X + 39, Y + 45, Black);
-		PutPixel(X + 45, Y + 39, Black);
-		PutPixel(X + 46, Y + 37, Black);
-		PutPixel(X + 46, Y + 23, Black);
-		PutPixel(X + 45, Y + 21, Black);
-		PutPixel(X + 39, Y + 15, Black);
-		PutPixel(X + 37, Y + 14, Black);
-		Line(X + 16, Y + 18, X + 18, Y + 16);
-		Line(X + 42, Y + 16, X + 44, Y + 18);
-		Line(X + 44, Y + 42, X + 42, Y + 44);
-		Line(X + 16, Y + 42, X + 18, Y + 44);
-	end;
-	Mouse.Show;
-
-end;
-
 procedure NewGame;
 var
 	Row, Col: integer;
 begin
 	for Row := 1 to 3 do
 		for Col := 1 to 3 do
-			PlayField[Row, Col] := PlayerNone;
-	DrawBoard;
+		begin
+			PlayField[Row, Col]^.SetValue(PlayerNone);
+		end;
 
 	TotalTurns := 0;
 	if PlayerStart = PlayerX then
 		PlayerStart := PlayerO
 	else
 		PlayerStart := PlayerX;
-	
+
 	PlayerTurn := PlayerStart;
 
 	PrintMsg(MsgNewGame);
@@ -410,14 +437,39 @@ begin
 		exit;
 
 	case SoundType of
-		SndX:       SoundNote(400, 70);
-		SndO:       SoundNote(800, 70);
-		SndIllegal: SoundNote(100, 70);
-		{DEBUG}
-		{SndWin:     PLAY 'O2 T100 C D T200 G T400 E'
-		SndLoose:   PLAY 'O1 T400 E3 G3 D6 T100 C9 C9'
-		SndDraw:    PLAY 'O1 T400 C9 T100 E9 G9 D C9'
-		SndNew:     PLAY 'O2 T180 C8 C8 E3'}
+		SndX:
+			SoundNote(400, 70);
+		SndO:
+			SoundNote(800, 70);
+		SndIllegal:
+			SoundNote(100, 70);
+		SndNew:
+			begin
+				SoundNote(65, 180);
+				SoundNote(65, 180);
+				SoundNote(82, 180);
+			end;
+		SndWin:
+			begin
+				SoundNote(65, 600);
+				SoundNote(73, 600);
+				SoundNote(98, 300);
+				SoundNote(82, 150);
+			end;
+		SndLoose:
+			begin
+			  SoundNote(61, 180);
+			  SoundNote(57, 180);
+			  SoundNote(69, 180);
+			  SoundNote(49, 500);
+			end;
+		SndDraw:
+			begin
+				SoundNote(70, 180);
+				SoundNote(75, 180);
+				SoundNote(90, 150);
+				SoundNote(60, 500);
+			end;
 	end;
 end;
 
@@ -442,192 +494,266 @@ begin
 		MsgPlayerTurn: Message := MSG_PLAYER_TURN_TEXT[Randomizer];
 		MsgNewGame:    Message := MSG_NEW_GAME_TEXT[Randomizer];
 	end;
-	
-	Message := ReplaceMsg(Message, CurrentTurn);
 
-	Mouse.Hide;
-	SetFillStyle(SolidFill, Green);
-	Bar(12, 49, 627, 65);
-	Print(Message, (640 - PrintW(Message)) div 2, 53, Black);
-	Mouse.Show;
+	Message := ReplaceMsg(Message, CurrentTurn);
+	LblMessage^.SetCaption(Message);
 end;
 
 procedure PrintStatus;
-var
-	ModeMsg, SoundMsg: string;
-begin	
+begin
 	if VersusPC then
-		ModeMsg := MSG_GAMEMODE_PC
+		LblPlayers^.SetCaption(MSG_GAMEMODE_PC)
 	else
-		ModeMsg := MSG_GAMEMODE_PLAYER;
+		LblPlayers^.SetCaption(MSG_GAMEMODE_PLAYER);
 
 	if SoundOn then
-		SoundMsg := MSG_SOUND_ON
+		LblSound^.SetCaption(MSG_SOUND_ON)
 	else
-		SoundMsg := MSG_SOUND_OFF;
-
-	Mouse.Hide;
-	SetFillStyle(SolidFill, Green);
-	Bar(162, 316, 477, 332);
-	Print(ModeMsg, 166, 320, Black);
-	Print(SoundMsg, 476 - PrintW(SoundMsg), 320, Black);
-	Mouse.Show;
+		LblSound^.SetCaption(MSG_SOUND_OFF);
 end;
 
-
-var
-	FieldClicked: boolean;
-	FrmTic: TFrame;
-	BtnNew, BtnGameMode, BtnSound, BtnAbout, BtnExit: TButton;
-	Row, Col: integer;
-	Key: string;
+procedure BtnNewClick(Sender: PUIObject); far;
 begin
-	FieldClicked := false;
+	NewGame;
+	if VersusPC and (PlayerTurn = PlayerO) then
+		PcMove;
+end;
 
-	FrmTic.Init(sizeCenter, sizeCenter, 221, 221);
-	FrmTic.Transparent := false;
-	FrmTic.BgColor := Green;
-	FrmTic.LightColor := LightGreen;
-	FrmTic.DarkColor := DarkGray;
-	Inc(FrmTic.Top, 16); {To accomodate menu bar}
+procedure BtnGameModeClick(Sender: PUIObject); far;
+begin
+	VersusPC := not VersusPC;
+	NewGame;
+	if VersusPC and (PlayerTurn = PlayerO) then
+		PcMove;
+end;
+
+procedure BtnSoundClick(Sender: PUIObject); far;
+begin
+	SoundOn := not SoundOn;
+	PrintStatus;
+end;
+
+procedure BtnAboutClick(Sender: PUIObject); far;
+begin
+	AboutBox(App);
+end;
+
+procedure BtnExitClick(Sender: PUIObject); far;
+begin
+	App^.Terminate;
+end;
+
+procedure PlayFieldClick(Sender: PUIObject); far;
+var
+	FieldFound: Boolean;
+	Row, Col: Integer;
+begin
+	{Can't do anything if board is full}
+	if TotalTurns >= 9 then
+	begin
+		PlaySound(SndIllegal);
+		exit;
+	end;
+
+	{Prevent sound from running wild if mouse/key is held down}
+	ClearInputBuffer;
+
+	{Find out which field was clicked}
+	FieldFound := false;
+	for Row := 1 to 3 do
+	begin
+		for Col := 1 to 3 do
+			if PlayField[Row, Col] = PField(Sender) then
+			begin
+				FieldFound := true;
+				break;
+			end;
+
+			if FieldFound then
+				break;
+	end;
+
+
+	if PlayField[Row, Col]^.GetValue = PlayerNone then
+	begin
+		PlayField[Row, Col]^.SetValue(PlayerTurn);
+		if PlayerTurn = PlayerX then
+			PlaySound(SndX)
+		else
+			PlaySound(SndO);
+		Inc(TotalTurns);
+
+		if DidWin then
+		begin
+			PrintMsg(MsgWin);
+			TotalTurns := 9;
+			PlaySound(SndWin);
+		end
+		else
+		begin
+			if TotalTurns < 9 then
+			begin
+				if PlayerTurn = PlayerX then
+					PlayerTurn := PlayerO
+				else
+					PlayerTurn := PlayerX;
+
+				if (VersusPC) and (PlayerTurn = PlayerO) then
+					PcMove
+				else
+					PrintMsg(MsgPlayerTurn);
+			end
+			else
+			begin
+				PrintMsg(MsgDraw);
+				PlaySound(SndDraw);
+			end;
+
+		end;
+	end
+	else
+		PlaySound(SndIllegal);
+end;
+
+procedure WinMainDraw(Sender: PUIObject); far;
+var
+	X: integer;
+begin
+	SetFillStyle(SolidFill, Green);
+	Bar(0, 29, 639, 349);
+
+	SetLineStyle(UserBitLn, $1111, 1);
+	SetColor(LightGreen);
+	for X := 0 to 639 do
+	begin
+		if X mod 6 = 0 then
+			Line(X, 29, X, 349);
+	end;
+
+	for X := 3 to 639 do
+	begin
+		if (X - 3) mod 6 = 0 then
+			Line(X, 31, X, 349);
+	end;
+	SetLineStyle(SolidLn, 0, 1);
+	SetFillStyle(SolidFill, Green);
+	Bar(12, 49, 627, 65);    {Top bar for messages}
+	Bar(162, 316, 477, 332); {Bottom bar for game mode / sound state}
+
+	PrintMsg(MsgNewGame);
+	PlaySound(SndNew);
+end;
+
+procedure WinMainRun(Sender: PUIObject); far;
+begin
+	PlayerTurn := PlayerX;
+	PlayerStart := PlayerX;
+	SoundOn := True;
+end;
+
+procedure InitUI;
+var
+	Row, Col: Integer;
+begin
+	New(WinMain, Init(0, 0, nil));
+	With WinMain^ do
+	begin
+		SetSize(640, 350);
+		RemoveState(SBordered);
+		SetOnDraw(WinMainDraw);
+		SetOnRun(WinMainRun);
+	end;
+
+	New(FrmTic, Init(209, 80, WinMain));
+	With FrmTic^ do
+	begin
+		SetSize(221, 221);
+		AddState(STransparent);
+		SetBgColor(Green);
+		SetLightColor(LightGreen);
+		SetDarkColor(DarkGray);
+	end;
 
 	for Row := 1 to 3 do
 	begin
 		for Col := 1 to 3 do
 		begin
-		if (Row = 1) and (Col = 1) then
-			AreaPlayField[Row, Col].Init(FrmTic.Left + 10, FrmTic.Top + 10, 60, 60)
-		else if Col = 1 then
-			AreaPlayField[Row, Col].Init(AreaPlayField[Row - 1, Col].Left,
-				AreaPlayField[Row - 1, Col].Top + 70, 60, 60)
-		else
-			AreaPlayField[Row, Col].Init(AreaPlayField[Row, Col - 1].Left + 70,
-				AreaPlayField[Row, Col - 1].Top, 60, 60);
-		AreaPlayField[Row, Col].BGColor := White;
+			New(PlayField[Row, Col], Init(10 + ((Row - 1) * 70), 10 + ((Col - 1) * 70), FrmTic));
+			PlayField[Row, Col]^.SetOnClick(PlayFieldClick);
 		end;
 	end;
-	
-	BtnNew.Init(3, 2, SizeDefault, SizeDefault, CAP_NEW_GAME);
-	BtnGameMode.Init(102, 2, SizeDefault, SizeDefault, CAP_GAME_MODE);
-	BtnSound.Init(201, 2, SizeDefault, SizeDefault, CAP_SOUND);
-	BtnAbout.Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
-	BtnExit.Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
-	
-	Mouse.Hide;
-	MenuBar.Draw;
-	DrawBg;
 
-	FrmTic.Draw;
-	BtnNew.Draw;
-	BtnGameMode.Draw;
-	BtnSound.Draw;
-	BtnAbout.Draw;
-	BtnExit.Draw;
-	Mouse.Show;
+	New(BtnNew, Init(2, 2, CAP_NEW_GAME, WinMain));
+	With BtnNew^ do
+	begin
+		AddHotkey(KeyAltN);
+		SetOnClick(BtnNewClick);
+	end;
+	New(BtnGameMode, Init(101, 2, CAP_GAME_MODE, WinMain));
+	With BtnGameMode^ do
+	begin
+		AddHotkey(KeyAltM);
+		SetOnClick(BtnGameModeClick);
+	end;
+	New(BtnSound, Init(200, 2, CAP_SOUND, WinMain));
+	With BtnSound^ do
+	begin
+		AddHotkey(KeyAltS);
+		SetOnClick(BtnSoundClick);
+	end;
 
-	PlayerTurn := PlayerX;
-	PlayerStart := PlayerX;
-	DrawBoard;
-	PlaySound(SndNew);
-	PrintMsg(MsgNewGame);
-	PrintStatus;
+	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
+	With BtnAbout^ do
+	begin
+		AddHotkey(KeyAltA);
+		SetOnClick(BtnAboutClick);
+	end;
+	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
+	With BtnExit^ do
+	begin
+		AddHotkey(KeyAltX);
+		AddHotkey(KeyAltF4);
+		SetOnClick(BtnExitClick);
+	end;
 
-	repeat
-		Key := GetKey;
-		
-		if BtnNew.Clicked or (Key = KeyAltN) then
-		begin
-			NewGame;
-			if VersusPC and (PlayerTurn = PlayerO) then
-				PcMove;
-		end;
+	New(LblMessage, Init(12, 53, '', WinMain));
+	with LblMessage^ do
+	begin
+		RemoveState(STransparent);
+		SetSize(616, 8);
+		SetFgColor(Black);
+		SetBgColor(Green);
+		SetAlign(AlCenter);
+	end;
 
-		if BtnAbout.Clicked or (Key = KeyAltA) then
-			AboutBox(AppName, AppVersion, AppAuthor, AppIcon);
+	New(LblPlayers, Init(166, 320, MSG_GAMEMODE_PLAYER, WinMain));
+	with LblPlayers^ do
+	begin
+		RemoveState(STransparent);
+		SetSize(192, 8);
+		SetFgColor(Black);
+		SetBgColor(Green);
+	end;
 
-		if BtnExit.Clicked or (Key = KeyAltX) or (Key = KeyAltF4) then
-			break;
+	New(LblSound, Init(396, 320, MSG_SOUND_ON, WinMain));
+	with LblSound^ do
+	begin
+		RemoveState(STransparent);
+		SetSize(80, 8);
+		SetFgColor(Black);
+		SetBgColor(Green);
+		SetAlign(AlRight);
+	end;
+end;
 
-		if BtnGameMode.Clicked or (Key = KeyAltM) then
-		begin
-			VersusPC := not VersusPC;
-			NewGame;
-			if VersusPC and (PlayerTurn = PlayerO) then
-				PcMove;
-		end;
+begin
+	New(App, Init);
 
-		if BtnSound.Clicked or (Key = KeyAltS) then
-		begin
-			SoundOn := not SoundOn;
-			PrintStatus;
-		end;
+	App^.SetInfo(AppName, AppVersion, AppAuthor, AppIcon);
 
-		if TotalTurns < 9 then
-		begin
-			for Row := 1 to 3 do
-			begin
-				for Col := 1 to 3 do
-				begin
-					if AreaPlayField[Row, Col].Clicked then
-					begin
-						FieldClicked := true;
-						break;
-					end;
-				end;
-				if FieldClicked then
-					break;
-			end;
+	InitUI;
 
-			if FieldClicked then
-			begin
-				{Prevent sound from running wild if mouse/key is held down}
-				ClearInputBuffer;
-
-				if PlayField[Row, Col] = PlayerNone then
-				begin
-					FieldClicked := false;
-					PlayField[Row, Col] := PlayerTurn;
-					DrawXO(Row, Col, PlayerTurn);
-					if PlayerTurn = PlayerX then
-						PlaySound(SndX)
-					else
-						PlaySound(SndO);
-					Inc(TotalTurns);
-
-					if DidWin then
-					begin
-						PrintMsg(MsgWin);
-						TotalTurns := 9;
-						PlaySound(SndWin);
-					end
-					else
-					begin
-						if TotalTurns < 9 then
-						begin
-							if PlayerTurn = PlayerX then
-								PlayerTurn := PlayerO
-							else
-								PlayerTurn := PlayerX;
-
-							if (VersusPC) and (PlayerTurn = PlayerO) then
-								PcMove
-							else
-								PrintMsg(MsgPlayerTurn);
-						end
-						else
-						begin
-							PrintMsg(MsgDraw);
-							PlaySound(SndDraw);
-						end;
-
-					end;
-				end
-				else
-					PlaySound(SndIllegal);
-			end;
-		end;
-
-	until false;
-	
-	CloseGraph;
+	App^.OpenWindow(WinMain);
+	App^.Run;
+	App^.Terminate;
 end.

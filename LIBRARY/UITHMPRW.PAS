@@ -18,7 +18,7 @@ type
 
 			procedure    LoadFile(Filename: string);
 			procedure    LoadMem(ThemePtr: PTheme);
-			
+
 			procedure    Preview;
 
 		private
@@ -64,7 +64,7 @@ begin
 	ThemeLoaded := false;
 	FillChar(ThemeData, SizeOf(ThemeData), 0);
 	FillChar(OrigTheme, SizeOf(OrigTheme), 0);
-	
+
 	{Initialize objects in preview frame - size and position are set on draw to allow
 	 for resizing of the preview frame}
 
@@ -96,7 +96,7 @@ begin
 	WinPreview^.SetSize(W - 28, 123);
 	ImgPreview^.SetPos(12, 12);
 	LblPreviewInfo^.SetPos(54, 16);
-	
+
 	WinPreview^.GetSize(W, H);
 	TxtPreview^.SetPos(12, 57);
 	TxtPreview^.SetSize(W - 23, SizeRetain);

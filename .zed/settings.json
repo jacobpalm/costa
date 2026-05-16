@@ -1,6 +1,9 @@
 {
+	"line_ending": "enforce_crlf",
+	"format_on_save": "off",
+	"auto_indent": "preserve_indent",
 	"ensure_final_newline_on_save": false,
-	"preferred_line_length": 127,
+	"wrap_guides": [127],
 	"hard_tabs": true,
 	"file_types": {
 		"Pascal": ["PAS", "INC"],

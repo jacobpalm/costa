@@ -13,13 +13,13 @@ const
 
 type
 	TListDirection = (Up, Down, First, Last, PageUp, PageDown);
-	
+
 	PListItem = ^TListItem;
 	TListItem = record
 		Text: string;
 		Next: PListItem;
 	end;
-	
+
 	PList = ^TList;
 	TList = object(TArea)
 		public
@@ -32,9 +32,9 @@ type
 			function       GetItem(Index: integer): string;
 			function       GetSelectedItem: string;
 			procedure      ClearItems;
-			
+
 			procedure      MoveSelection(Direction: TListDirection);
-			
+
 			procedure      SetListActive(IsActive: boolean);
 			function       GetListActive: boolean;
 
@@ -102,7 +102,7 @@ begin
 	{Don't check for events if object is disabled or hidden}
 	if not GetState(SEnabled) or GetState(SHidden) then
 		exit;
-	
+
 	{Get absolute position and size of the object}
 	GetPos(X1, Y1, True);
 	GetSize(Width, Height);
@@ -127,7 +127,7 @@ begin
 		{There is a 3-pixel border before the first item.
 		Calculate clicked item}
 		ClickedItem := ((ClickedY - 3) div ListItemHeight) + 1;
-		
+
 		if ClickedItem > MaxVisibleItems then
 		begin
 			{Clicked inside list area, but in the small gap after the last item.
@@ -175,7 +175,7 @@ begin
 		DblClickTimer := Timer;
 		while Mouse.Clicked > MbNone do;
 	end;
-	
+
 	{Trigger click event if assigned}
 	Self.Click;
 end;
@@ -207,7 +207,7 @@ begin
 		begin
 			if not Assigned(TargetNode) then
 				break;
-			
+
 			TargetNode := TargetNode^.Next
 		end;
 	end;
@@ -232,7 +232,7 @@ var
 begin
 	{Draw procedure of TArea draws the background and border}
 	inherited Draw;
-	
+
 	if Head = nil then
 		exit; {Nothing to draw}
 
@@ -309,7 +309,7 @@ begin
 		NewSelection := 1
 	else if NewSelection > Length then
 		NewSelection := Length;
-	
+
 	{If selection is the same, no need to do anything}
 	if NewSelection = Selection then
 		exit;
@@ -336,7 +336,7 @@ begin
 		begin
 			repeat
 				Inc(NewStartPos, MaxVisibleItems);
-			until (NewStartPos <= NewSelection) and 
+			until (NewStartPos <= NewSelection) and
 				(NewStartPos + MaxVisibleItems - 1 >= NewSelection);
 			if NewStartPos > Length then
 				NewStartPos := Length;
@@ -379,7 +379,7 @@ begin
 		AddState(SActive)
 	else
 		RemoveState(SActive);
-	
+
 	{If there's no valid selection, we won't draw anything}
 	if (Selection < 1) or (Selection > Length) then
 		exit;

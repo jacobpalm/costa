@@ -44,7 +44,7 @@ begin
 	Text        := '';
 	MaxLen      := 255;
 	OnChange    := nil;
-	
+
 	SetParent(Parent);
 	SetPos(X, Y);
 	SetSize(DefaultW, DefaultH);
@@ -101,7 +101,7 @@ begin
 	BgColor := GetBgColor;
 	if BgColor = ColorDefault then
 		BgColor := Thm.Txt;
-	
+
 	MaxShow := Width - 10;
 	OrigTxt := Text;
 
@@ -118,7 +118,7 @@ begin
 		{If mouse is clicked outside the textbox, stop editing}
 		if (Mouse.Clicked > MbNone) and not Self.IsMouseOver then
 			break;
-		
+
 		if Key = KeyBackspace then
 		begin
 			if Length(Text) > 0 then

@@ -1,3 +1,3 @@
 [default_config]
 instruction_set = "x86"
-assembler = "MASM"
+assembler = "masm"
