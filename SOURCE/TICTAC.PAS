@@ -19,6 +19,7 @@ const
 	MSG_GAMEMODE_PLAYER = 'Playing two players';
 	MSG_SOUND_ON        = 'Sound: On';
 	MSG_SOUND_OFF       = 'Sound: Off';
+	MSG_BY              = 'by';
 
 	MSG_WIN_TEXT: array[0..5] of string = (
 		'%s has brought honor to the family!',
@@ -639,9 +640,6 @@ begin
 	SetFillStyle(SolidFill, Green);
 	Bar(12, 49, 627, 65);    {Top bar for messages}
 	Bar(162, 316, 477, 332); {Bottom bar for game mode / sound state}
-
-	PrintMsg(MsgNewGame);
-	PlaySound(SndNew);
 end;
 
 procedure WinMainRun(Sender: PUIObject); far;
@@ -716,7 +714,7 @@ begin
 		SetOnClick(BtnExitClick);
 	end;
 
-	New(LblMessage, Init(12, 53, '', WinMain));
+	New(LblMessage, Init(12, 53, AppName + #32 + MSG_BY + #32 + AppAuthor, WinMain));
 	with LblMessage^ do
 	begin
 		RemoveState(STransparent);
