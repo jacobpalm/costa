@@ -167,7 +167,6 @@ var
 	FileName: string;
 begin
 	PrwTheme^.LoadFile(SelectedFileName);
-	PrwTheme^.Preview;
 end;
 
 procedure SwitchTheme(Sender: PUIObject); far;

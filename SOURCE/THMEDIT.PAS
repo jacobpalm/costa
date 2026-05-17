@@ -21,10 +21,6 @@ const
 	CAP_AUTHOR        = 'Theme a' + #127 + 'uthor';
 	CAP_OBJECT_SEL    = 'O' + #127 + 'bject selected:';
 	CAP_COLOR_SEL     = #127 + 'Color for object:';
-	CAP_PREVIEW_LINK  = 'Preview link';
-	CAP_PREVIEW_EXE   = 'preview.exe';
-	CAP_LIST_ITEM     = 'List item';
-	CAP_SELECTED_ITEM = 'Selected item';
 
 	CAP_OBJECT: array[0..12] of string = (
 		'Desktop', 'Desktop text', 'Window', 'Window border', 'Window title',
@@ -57,87 +53,49 @@ const
 type
 	TThemeObject = (Desk, DeskText, Win, Title, TitleText,
 	                WinText, Btn, Txt, TxtText, Light, Shadow,
-					Sel, SelText);
+	                Sel, SelText);
 
 var
-	ThemeFile: string;
-	ThemeChanged: Boolean;
-	ThemeData, SysTheme: TTheme;
-
-	SelectedColor: integer;
-	SelectedObject: TThemeObject;
-
-	App: TApplication;
+	App:              PApplication;
 
 	{Main screen}
-	WinMain: TWindow;
-	AreaColor: array[0..15] of TArea;
-	BtnNew, BtnOpen, BtnObject, BtnSave, BtnSaveAs, BtnAbout, BtnExit: TButton;
-	TxtName, TxtAuthor: TTextbox;
-	LblObject, LblColor: TLabel;
-	HkNextColor: THotkey;
+	WinMain:          PWindow;
+	AreaColor:        Array[0..15] of PArea;
+	BtnNew,
+	BtnOpen,
+	BtnObject,
+	BtnSave,
+	BtnSaveAs,
+	BtnAbout,
+	BtnExit:          PButton;
+	TxtName,
+	TxtAuthor:        PTextbox;
+	PrwTheme:         PThemePreview;
+	LblObject,
+	LblColor:         PLabel;
+	HkNextColor:      PHotkey;
 
 	{Object selection window}
-	WinSelectObject: TWindow;
-	BtnObjSelect: array[0..12] of TButton;
-	HkUp, HkDown, HkEnter, HkEscape: THotkey;
-	SelectObjectDone: boolean;
-	ActiveSelection: TThemeObject;
+	WinSelectObject:  PWindow;
+	BtnObjSelect:     Array[0..12] of PButton;
+	HkUp,
+	HkDown,
+	HkEnter,
+	HkEscape:         PHotkey;
+	SelectObjectDone: Boolean;
+	ActiveSelection:  TThemeObject;
 
-	{Preview frame and contents}
-	FrmPreview: TFrame;
-	MnuPreview: TMenu;
-	WinPreview: TWindow;
-	TxtPreview: TTextbox;
-	BtnPreview1, BtnPreview2, BtnPreview3: TButton;
-	ImgPreview, ImgLogo: TIcon;
-	AreaListPreview: TArea;
+	ThemeFile:        String;
+	ThemeChanged:     Boolean;
+	ThemeData,
+	SysTheme:         TTheme;
+
+	SelectedColor:    Integer;
+	SelectedObject:   TThemeObject;
 
 {Forward declarations}
 function  SaveTheme(SaveAs: boolean): boolean; forward;
 function  RTrim(s: string): string; forward;
-
-procedure FrmPreviewDraw(Sender: PUIObject); far;
-var
-	X1, Y1, X2, Y2: Integer;
-begin
-	{Overwrite system theme with current theme}
-	Thm := ThemeData;
-
-	Mouse.Hide;
-	SetFillStyle(SolidFill, Thm.Desk);
-	Bar(FrmPreview.Left + 2, FrmPreview.Top + 2, FrmPreview.Left + FrmPreview.Width - 2, FrmPreview.Top + FrmPreview.Height - 2);
-	MnuPreview.Draw;
-	WinPreview.Draw;
-	TxtPreview.Draw;
-	BtnPreview1.Draw;
-	BtnPreview2.Draw;
-	BtnPreview3.Draw;
-	AreaListPreview.Draw;
-	ImgLogo.Draw;
-	ImgPreview.Draw;
-
-	{Text on Desk and window}
-	Print(MSG_PREVIEW, ImgLogo.Left + 42, ImgLogo.Top + 5, Thm.WinText);
-	Print(CAP_PREVIEW_LINK, ImgPreview.Left + 38, ImgPreview.Top + 4, Thm.DeskText);
-	Print(CAP_PREVIEW_EXE, ImgPreview.Left + 38, ImgPreview.Top + 18, Thm.DeskText);
-
-	{Draw list preview}
-	X1 := AreaListPreview.Left;
-	Y1 := AreaListPreview.Top;
-	X2 := AreaListPreview.Left + AreaListPreview.Width;
-	SetFillStyle(SolidFill, Thm.Sel);
-	Bar(X1 + 2, Y1 + 14, X2 - 2, Y1 + 26);
-	Print(CAP_LIST_ITEM, X1 + 5, Y1 + 5, Thm.TxtText);
-	Print(CAP_SELECTED_ITEM, X1 + 5, Y1 + 5 + 12, Thm.SelText);
-	Print(CAP_LIST_ITEM, X1 + 5, Y1 + 5 + 24, Thm.TxtText);
-	Print(CAP_LIST_ITEM, X1 + 5, Y1 + 5 + 36, Thm.TxtText);
-	Print(CAP_LIST_ITEM, X1 + 5, Y1 + 5 + 48, Thm.TxtText);
-	Mouse.Show;
-
-	{Restore system theme}
-	Thm := SysTheme;
-end;
 
 procedure SelectColor(Color: integer; DrawPreview: boolean);
 var
@@ -151,8 +109,8 @@ begin
 	PreviousColor := SelectedColor;
 	SelectedColor := Color;
 	Mouse.Hide;
-	AreaColor[PreviousColor].Draw;
-	AreaColor[SelectedColor].Draw;
+	AreaColor[PreviousColor]^.Draw;
+	AreaColor[SelectedColor]^.Draw;
 	Mouse.Show;
 
 	{Change the color of the currently selected object}
@@ -176,7 +134,7 @@ begin
 	if DrawPreview then
 	begin
 		ThemeChanged := True;
-		FrmPreview.Draw;
+		PrwTheme^.LoadMem(@ThemeData, TxtName^.GetText, TxtAuthor^.GetText);
 	end;
 end;
 
@@ -192,7 +150,7 @@ begin
 	{Check which button was pressed}
 	for i := 0 to High(BtnObjSelect) do
 	begin
-		if Sender = @BtnObjSelect[i] then
+		if Sender = PUIObject(BtnObjSelect[i]) then
 		begin
 			SelectedObject := TThemeObject(i);
 			SelectObjectDone := True;
@@ -202,7 +160,7 @@ begin
 
 	{If no button was pressed, check if Enter was pressed. If so, ActiveSelection will already
 	 contain the right value, and we can just mark selection as done}
-	if Sender = @HkEnter then
+	if Sender = PUIObject(HkEnter) then
 	begin
 		SelectedObject := ActiveSelection;
 		SelectObjectDone := True;
@@ -219,8 +177,8 @@ var
 	NextSelection: integer;
 begin
 	Mouse.Hide;
-	BtnObjSelect[Ord(ActiveSelection)].State := BsUp;
-	BtnObjSelect[Ord(ActiveSelection)].Draw;
+	BtnObjSelect[Ord(ActiveSelection)]^.RemoveState(SActive);
+	BtnObjSelect[Ord(ActiveSelection)]^.Draw;
 	if Sender = @HkUp then
 		NextSelection := Ord(ActiveSelection) - 1
 	else
@@ -232,8 +190,8 @@ begin
 		NextSelection := 0;
 
 	ActiveSelection := TThemeObject(NextSelection);
-	BtnObjSelect[Ord(ActiveSelection)].State := BsDown;
-	BtnObjSelect[Ord(ActiveSelection)].Draw;
+	BtnObjSelect[Ord(ActiveSelection)]^.AddState(sActive);
+	BtnObjSelect[Ord(ActiveSelection)]^.Draw;
 	Mouse.Show;
 end;
 
@@ -247,46 +205,7 @@ var
 begin
 	SelectObjectDone := False;
 
-	Mouse.Hide;
-	X1 := WinSelectObject.Left;
-	Y1 := WinSelectObject.Top;
-	X2 := WinSelectObject.Left + WinSelectObject.Width;
-	Y2 := WinSelectObject.Top + WinSelectObject.Height;
-	BackgroundSize := ImageSize(X1, Y1, X2, Y2);
-	GetMem(BackgroundP, BackgroundSize);
-	GetImage(X1, Y1, X2, Y2, BackgroundP^);
-
-	WinSelectObject.Draw;
-	ActiveSelection := SelectedObject;
-	for i := 0 to High(BtnObjSelect) do
-	begin
-		if i = Ord(ActiveSelection) then
-			BtnObjSelect[i].State := BsDown
-		else
-			BtnObjSelect[i].State := BsUp;
-		BtnObjSelect[i].Draw;
-	end;
-	Mouse.Show;
-
-	repeat
-		Key := GetKey;
-		HotkeyInput := Key; {DEBUG - move to event loop later}
-
-		for i := 0 to High(BtnObjSelect) do
-			BtnObjSelect[i].CheckEvent;
-
-		HkUp.CheckEvent;
-		HkDown.CheckEvent;
-		HkEnter.CheckEvent;
-		HkEscape.CheckEvent;
-	until SelectObjectDone;
-
-	Mouse.Hide;
-	PutImage(X1, Y1, BackgroundP^, NormalPut);
-	FreeMem(BackgroundP, BackgroundSize);
-	BtnObject.SetCaption( CAP_OBJECT[Ord(SelectedObject)] );
-	BtnObject.Draw;
-	Mouse.Show;
+	WinSelectObject^.Run;
 
 	{Change the color of the currently selected object}
 	case SelectedObject of
@@ -321,11 +240,12 @@ begin
 	{Start with current theme as basis for editing}
 	ThemeData := Thm;
 	ThemeFile := '';
-	TxtName.Text := DefaultName;
-	TxtAuthor.Text := '';
-	TxtName.Draw;
-	TxtAuthor.Draw;
+	TxtName^.SetText(DefaultName);
+	TxtAuthor^.SetText('');
+	TxtName^.Draw;
+	TxtAuthor^.Draw;
 	SelectColor(ThemeData.Desk, false);
+	PrwTheme^.LoadMem(@Thm, '', '');
 	ThemeChanged := False;
 end;
 
@@ -348,19 +268,19 @@ begin
 				exit; {Theme was not saved, exit}
 	end;
 
-	SelectedFile := FileSelect('*.BIN', 'THEMES', True);
+	SelectedFile := FileSelect('*.BIN', 'THEMES');
 	if Length(SelectedFile) = 0 then
 		exit;
 
 	FSplit(SelectedFile, FDir, FName, FExt);
-	if not (FDir = App.Path + 'THEMES\') or not (FExt = '.BIN') then
+	if not (FDir = App^.Path + 'THEMES\') or not (FExt = '.BIN') then
 	begin
 		MsgBox(MSG_ERROR_OPENING_TITLE, MSG_INVALID_THEME_FILE, MsgError);
 		exit;
 	end;
 
 	LoadError := False;
-	Assign(F, App.Path + 'THEMES\' + FName + '.BIN');
+	Assign(F, App^.Path + 'THEMES\' + FName + '.BIN');
 	{$I-}
 	Reset(F, 1);
 	{$I+}
@@ -381,12 +301,15 @@ begin
 	BlockRead(F, LoadAuthor, SizeOf(LoadAuthor));
 	Close(F);
 
-	TxtName.Text := Rtrim(LoadName);
-	TxtAuthor.Text := Rtrim(LoadAuthor);
-	SelectColor(ThemeData.Desk, true);
+	TxtName^.SetText(RTrim(LoadName));
+	TxtAuthor^.SetText(RTrim(LoadAuthor));
+	SelectColor(ThemeData.Desk, False);
 	ThemeFile := SelectedFile;
-	TxtName.Draw;
-	TxtAuthor.Draw;
+	Mouse.Hide;
+	TxtName^.Draw;
+	TxtAuthor^.Draw;
+	Mouse.Show;
+	PrwTheme^.LoadMem(@ThemeData, LoadName, LoadAuthor);
 	ThemeChanged := False;
 end;
 
@@ -414,7 +337,7 @@ begin
 			exit;
 		end;
 
-		Filename := App.Path + 'THEMES\' + FileName + '.BIN';
+		Filename := App^.Path + 'THEMES\' + FileName + '.BIN';
 	end
 	else
 		Filename := ThemeFile;
@@ -429,8 +352,8 @@ begin
 
 	FillChar(SaveName, SizeOf(SaveName), 0);
 	FillChar(SaveAuthor, SizeOf(SaveAuthor), 0);
-	SaveName := TxtName.Text;
-	SaveAuthor := TxtAuthor.Text;
+	SaveName := TxtName^.GetText;
+	SaveAuthor := TxtAuthor^.GetText;
 	Assign(F, Filename);
 	{$I-}
 	Rewrite(F, 1);
@@ -465,10 +388,14 @@ var
 begin
 	if Sender = @AreaColor[SelectedColor] then
 	begin
-		X1 := Sender^.Left + 4;
-		Y1 := Sender^.Top + 4;
-		X2 := Sender^.Left + Sender^.Width - 4;
-		Y2 := Sender^.Top + Sender^.Height - 4;
+		AreaColor[SelectedColor]^.GetPos(X1, Y1, True);
+		AreaColor[SelectedColor]^.GetSize(X2, Y2);
+		Inc(X2, X1);
+		Inc(Y2, Y1);
+		Inc(X1, 4);
+		Inc(Y1, 4);
+		Dec(X2, 4);
+		Dec(Y2, 4);
 		SetColor(DarkGray);
 		Rectangle(X1, Y1, X2, Y2);
 		SetColor(White);
@@ -483,18 +410,18 @@ begin
 	{Need to use a PAreaColor pointer here, since PUIObject doesn't
 	 have a BGColor property}
 	PAreaColor := Pointer(Sender);
-	SelectColor(PAreaColor^.BGColor, true);
+	SelectColor(PAreaColor^.GetBGColor, true);
 end;
 
 procedure BtnSaveClick(Sender: PUIObject); far;
 begin
 	{If sender was BtnSaveAs, true will be passed to the SaveAs parameter}
-	SaveTheme((Sender = @BtnSaveAs));
+	SaveTheme((Sender = PUIObject(BtnSaveAs)));
 end;
 
 procedure BtnAboutClick(Sender: PUIObject); far;
 begin
-	AboutBox(@App);
+	AboutBox(App);
 end;
 
 procedure BtnExitClick(Sender: PUIObject); far;
@@ -520,207 +447,8 @@ begin
 	ThemeChanged := True;
 end;
 
-procedure InitUI;
-var
-	i: integer;
-	X1, Y1, X2, Y2: Integer;
+procedure WinMainRun(Sender: PUIObject); far;
 begin
-	{Main screen}
-		with BtnNew do
-		begin
-			Init(2, 2, SizeDefault, SizeDefault, CAP_NEW);
-			AddHotKey(KeyAltN);
-			OnClick := NewTheme;
-		end;
-
-		with BtnOpen do
-		begin
-			Init(101, 2, SizeDefault, SizeDefault, CAP_OPEN);
-			AddHotKey(KeyAltO);
-			OnClick := LoadTheme;
-		end;
-
-		with BtnSave do
-		begin
-			Init(200, 2, SizeDefault, SizeDefault, CAP_SAVE);
-			AddHotKey(KeyAltS);
-			OnClick := BtnSaveClick;
-		end;
-
-		with BtnSaveAs do
-		begin
-			Init(299, 2, SizeDefault, SizeDefault, CAP_SAVE_AS);
-			AddHotKey(KeyAltV);
-			OnClick := BtnSaveClick;
-		end;
-
-		with BtnAbout do
-		begin
-			Init(446, 2, SizeDefault, SizeDefault, CAP_ABOUT);
-			AddHotKey(KeyAltA);
-			OnClick := BtnAboutClick;
-		end;
-
-		with BtnExit do
-		begin
-			Init(545, 2, SizeDefault, SizeDefault, CAP_EXIT);
-			AddHotKey(KeyAltX);
-			AddHotKey(KeyEscape);
-			OnClick := BtnExitClick;
-		end;
-
-		with TxtName do
-		begin
-			Init(434, 59, 194, SizeDefault, CAP_NAME);
-			AddHotKey(KeyAltM);
-			OnChange := TextboxChange;
-			MaxLen := 20;
-		end;
-
-		with TxtAuthor do
-		begin
-			Init(434, TxtName.Top + 48, 194, SizeDefault, CAP_AUTHOR);
-			AddHotKey(KeyAltU);
-			MaxLen := 20;
-			OnChange := TextboxChange;
-		end;
-
-		with BtnObject do
-		begin
-			Init(434, TxtAuthor.Top + 48, 194, SizeDefault, CAP_OBJECT[0]);
-			AddHotKey(KeyAltB);
-			OnClick := SelectObject;
-		end;
-
-		with LblObject do
-		begin
-			Init(BtnObject.Left, BtnObject.Top - 15, SizeDefault, SizeDefault, CAP_OBJECT_SEL);
-		end;
-
-		Y1 := 0;
-		X1 := 0;
-		for I := 0 to 15 do
-		begin
-			if I = 8 then
-			begin
-				Y1 := 25;
-				X1 := 0;
-			end;
-			with AreaColor[i] do
-			begin
-				Init(TxtAuthor.Left + X1, TxtAuthor.Top + 98 + Y1, 19, 19);
-				BGColor := i;
-				OnClick := AreaColorClick;
-				OnDraw := AreaColorDraw;
-			end;
-			Inc(X1, 25);
-		end;
-
-		with LblColor do
-		begin
-			Init(AreaColor[0].Left, AreaColor[0].Top - 15, SizeDefault, SizeDefault, CAP_COLOR_SEL);
-		end;
-
-		with HkNextColor do
-		begin
-			Init(KeyAltC);
-			OnClick := SelectNextColor;
-		end;
-
-		with FrmPreview do
-		begin
-			Init(12, 42, 410, 293);
-			Transparent := True;
-			OnDraw := FrmPreviewDraw;
-		end;
-
-		with WinMain do
-		begin
-			Init(0, 0, GetMaxX, GetMaxY);
-			Border := false;
-			AddObject(@BtnNew);
-			AddObject(@BtnOpen);
-			AddObject(@BtnSave);
-			AddObject(@BtnSaveAs);
-			AddObject(@BtnAbout);
-			AddObject(@BtnExit);
-			AddObject(@TxtName);
-			AddObject(@TxtAuthor);
-			AddObject(@BtnObject);
-			AddObject(@HkNextColor);
-			for i := 0 to 15 do
-				AddObject(@AreaColor[i]);
-			AddObject(@LblObject);
-			AddObject(@LblColor);
-			AddObject(@FrmPreview);
-		end;
-		App.OpenWindow(@WinMain);
-
-	{Object selection window}
-		WinSelectObject.Init(sizeCenter, sizeCenter, 226, 326);
-		for i := 0 to High(BtnObjSelect) do
-		begin
-			BtnObjSelect[I].Init(WinSelectObject.Left + 13, WinSelectObject.Top + (I * 23) + 15, 200, SizeDefault, CAP_OBJECT[i]);
-			BtnObjSelect[I].OnClick := BtnObjSelectClick;
-		end;
-		{DEBUG - make just one procedure for handling hotkeys}
-		HkUp.Init(KeyUp);
-		HkUp.OnClick := SelectObjectArrowPressed;
-		HkDown.Init(KeyDown);
-		HkDown.OnClick := SelectObjectArrowPressed;
-		HkEnter.Init(KeyEnter);
-		HkEnter.OnClick := BtnObjSelectClick;
-		HkEscape.Init(KeyEscape);
-		HkEscape.OnClick := SelectObjectEscPressed;
-
-		With WinSelectObject do
-		begin
-			AddObject(@HkUp);
-			AddObject(@HkDown);
-			AddObject(@HkEnter);
-			AddObject(@HkEscape);
-			for i := 0 to High(BtnObjSelect) do
-				AddObject(@BtnObjSelect[i]);
-		end;
-
-	{Preview frame contents}
-		X1 := FrmPreview.Left;
-		Y1 := FrmPreview.Top;
-		X2 := FrmPreview.Left + FrmPreview.Width;
-		Y2 := FrmPreview.Top + FrmPreview.Height;
-		with MnuPreview do
-		begin
-			Init;
-			Left := FrmPreview.Left + 2;
-			Top := FrmPreview.Top + 2;
-			Width := FrmPreview.Width - 4;
-		end;
-		BtnPreview3.Init(X2 - 96, Y1 + 3, SizeDefault, SizeDefault, CAP_OBJECT[Ord(TThemeObject(Btn))]);
-		AreaListPreview.Init(X2 - 182, Y2 - 82, 166, 66);
-		ImgPreview.Init(FrmPreview.Left + 16, Y2 - 48, 'PAINT');
-		WinPreview.Init(X1 + ((FrmPreview.Width - 260) div 2), Y1 + 65, 260, 127);
-		X1 := WinPreview.Left;
-		Y1 := WinPreview.Top;
-		ImgLogo.Init(X1 + 12, Y1 + 12, 'LOGO');
-		with TxtPreview do
-		begin
-			Init(X1 + 12, Y1 + 56, 236, SizeDefault, '');
-			Text := CAP_OBJECT[Ord(TThemeObject(Txt))];
-		end;
-		BtnPreview1.Init(X1 + 14, Y1 + 93, 111, SizeDefault, CAP_OBJECT[Ord(TThemeObject(Btn))]);
-		with BtnPreview2 do
-		begin
-			Init(X1 + 133, Y1 + 93, 111, SizeDefault, CAP_OBJECT[Ord(TThemeObject(Btn))]);
-			State := BsDown;
-		end;
-end;
-
-begin
-
-	App^.SetInfo(AppName, AppVersion, AppAuthor, AppIcon);
-
-	InitUI;
-
 	{Save current theme so we can restore it whenever preview has been drawn,
 	 and set current theme as basis for editing}
 	SysTheme := Thm;
@@ -728,6 +456,162 @@ begin
 	{Desktop is the default selected object, so use its color for default
 	 color selection}
 	SelectedColor := ThemeData.Desk;
+end;
 
-	App.Run;
+procedure InitUI;
+var
+	i: integer;
+	X1, Y1, X2, Y2: Integer;
+begin
+	New(WinMain, Init(0, 0, nil));
+	with WinMain^ do
+	begin
+		SetSize(GetMaxX, GetMaxY);
+		RemoveState(SBordered);
+		SetOnRun(WinMainRun);
+	end;
+
+	{Main screen}
+	New(BtnNew, Init(2, 2, CAP_NEW, WinMain));
+	with BtnNew^ do
+	begin
+		AddHotKey(KeyAltN);
+		SetOnClick(NewTheme);
+	end;
+
+	New(BtnOpen, Init(101, 2, CAP_OPEN, WinMain));
+	with BtnOpen^ do
+	begin
+		AddHotKey(KeyAltO);
+		SetOnClick(LoadTheme);
+	end;
+
+	New(BtnSave, Init(200, 2, CAP_SAVE, WinMain));
+	with BtnSave^ do
+	begin
+		AddHotKey(KeyAltS);
+		SetOnClick(BtnSaveClick);
+	end;
+
+	New(BtnSaveAs, Init(299, 2, CAP_SAVE_AS, WinMain));
+	with BtnSaveAs^ do
+	begin
+		AddHotKey(KeyAltV);
+		SetOnClick(BtnSaveClick);
+	end;
+
+	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
+	with BtnAbout^ do
+	begin
+		AddHotKey(KeyAltA);
+		SetOnClick(BtnAboutClick);
+	end;
+
+	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
+	with BtnExit^ do
+	begin
+		AddHotKey(KeyAltX);
+		AddHotKey(KeyEscape);
+		SetOnClick(BtnExitClick);
+	end;
+
+	New(TxtName, Init(434, 59, CAP_NAME, WinMain));
+	with TxtName^ do
+	begin
+		SetSize(194, SizeRetain);
+		AddHotKey(KeyAltM);
+		SetOnChange(TextboxChange);
+		SetMaxLength(20);
+	end;
+
+	New(TxtAuthor, Init(434, 107, CAP_AUTHOR, WinMain));
+	with TxtAuthor^ do
+	begin
+		SetSize(194, SizeRetain);
+		AddHotKey(KeyAltU);
+		SetOnChange(TextboxChange);
+		SetMaxLength(20);
+	end;
+
+	New(BtnObject, Init(434, 155, CAP_OBJECT[0], WinMain));
+	with BtnObject^ do
+	begin
+		SetSize(194, SizeRetain);
+		AddHotKey(KeyAltB);
+		SetOnClick(SelectObject);
+	end;
+
+	New(LblObject, Init(434, 140, CAP_OBJECT_SEL, WinMain));
+
+	{Color boxes}
+	Y1 := 0;
+	X1 := 0;
+	for I := 0 to 15 do
+	begin
+		{8 starts new row, so back to top and move right}
+		if I = 8 then
+		begin
+			Y1 := 25;
+			X1 := 0;
+		end;
+		New(AreaColor[i], Init(434 + X1, 205 + Y1, WinMain));
+		with AreaColor[i]^ do
+		begin
+			SetSize(19, 19);
+			SetBgColor(i);
+			SetOnClick(AreaColorClick);
+			SetOnDraw(AreaColorDraw);
+		end;
+		Inc(X1, 25);
+	end;
+
+	New(LblColor, Init(434, 190, CAP_COLOR_SEL, WinMain));
+
+	New(HkNextColor, Init(KeyAltC, WinMain));
+	HkNextColor^.SetOnClick(SelectNextColor);
+
+	New(PrwTheme, Init(12, 42, WinMain));
+	with PrwTheme^ do
+	begin
+		SetSize(410, 293);
+		RemoveState(SEnabled);
+		SetLightColor(Thm.Light);
+		SetDarkColor(Thm.Shadow);
+	end;
+
+	{Object selection window}
+	New(WinSelectObject, Init(0, 0, nil));
+	With WinSelectObject^ do
+	begin
+		SetSize(226, 326);
+		SaveBackdrop;
+		Center(OrBoth);
+	end;
+
+	for i := 0 to High(BtnObjSelect) do
+	begin
+		New(BtnObjSelect[I], Init(13, I * 23 + 15, CAP_OBJECT[I], WinSelectObject));
+		BtnObjSelect[I]^.SetSize(200, SizeRetain);
+		BtnObjSelect[I]^.SetOnClick(BtnObjSelectClick);
+	end;
+
+	New(HkUp, Init(KeyUp, WinSelectObject));
+	HkUp^.SetOnClick(SelectObjectArrowPressed);
+	New(HkDown, Init(KeyDown, WinSelectObject));
+	HkDown^.SetOnClick(SelectObjectArrowPressed);
+	New(HkEnter, Init(KeyEnter, WinSelectObject));
+	HkEnter^.SetOnClick(BtnObjSelectClick);
+	New(HkEscape, Init(KeyEscape, WinSelectObject));
+	HkEscape^.SetOnClick(SelectObjectEscPressed);
+end;
+
+begin
+	New(App, Init);
+	App^.SetInfo(AppName, AppVersion, AppAuthor, AppIcon);
+
+	InitUI;
+
+	App^.OpenWindow(WinMain);
+	App^.Run;
+	App^.Terminate;
 end.

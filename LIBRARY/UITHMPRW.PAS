@@ -11,13 +11,14 @@ uses
 
 type
 	PThemePreview = ^TThemePreview;
+	{Note - no destructor as it inherits PContainer destructor which cleans up child objects}
 	TThemePreview = Object(TFrame)
 		public
 			constructor  Init(X, Y: Integer; Parent: PContainer);
 			procedure    Draw; virtual;
 
 			procedure    LoadFile(Filename: string);
-			procedure    LoadMem(ThemePtr: PTheme);
+			procedure    LoadMem(ThemePtr: PTheme; Author, Name: String);
 
 			procedure    Preview;
 
@@ -59,11 +60,13 @@ begin
 	Inherited Init(X, Y, Parent);
 	SetSize(DefaultW, DefaultH);
 
+
 	ThemeName := '';
 	ThemeAuthor := '';
 	ThemeLoaded := false;
 	FillChar(ThemeData, SizeOf(ThemeData), 0);
 	FillChar(OrigTheme, SizeOf(OrigTheme), 0);
+	OrigTheme := Thm;
 
 	{Initialize objects in preview frame - size and position are set on draw to allow
 	 for resizing of the preview frame}
@@ -110,7 +113,7 @@ begin
 	{Set frame background color}
 	Self.SetBGColor(Thm.Desk);
 
-	{Draw the container, which will also draw and its children}
+	{Draw the container, which will also draw its children}
 	Inherited Draw;
 
 	{Restore original theme}
@@ -125,8 +128,6 @@ var
 	ErrorText: string;
 begin
 	{Load the specified theme file}
-
-	OrigTheme := Thm; {Store original theme to restore later}
 
 	Assign(F, ProgramPath + 'THEMES\' + Filename + '.BIN');
 	{$I-}
@@ -147,6 +148,7 @@ begin
 		ThemeData := OrigTheme; {Restore original theme}
 		ThemeAuthor := '';
 		ThemeName := '';
+		ThemeLoaded := False;
 		ErrorText := ReplaceMsg(MSG_LOAD_ERROR_TEXT, GetDosErrorMsg(ErrorCode));
 		ErrorText := ReplaceMsg(ErrorText, FileName);
 		MsgBox(MSG_LOAD_ERROR_TITLE, ErrorText, MsgError);
@@ -154,20 +156,29 @@ begin
 
 	{Update preview info label to show theme name and author}
 	LblPreviewInfo^.SetCaption(ThemeName + #13 + ThemeAuthor);
+
+	Mouse.Hide;
+	Self.Draw;
+	Mouse.Show;
 end;
 
-procedure TThemePreview.LoadMem(ThemePtr: PTheme);
+procedure TThemePreview.LoadMem(ThemePtr: PTheme; Author, Name: String);
 begin
 	{Preview the specified theme from memory and redraw the object}
 	if ThemePtr = nil then
 		exit;
 
-	OrigTheme := Thm; {Store original theme to restore later}
 	ThemeData := ThemePtr^;
 	ThemeLoaded := true;
 
-	{Update preview info label to show default text, since author and name are unknown}
-	LblPreviewInfo^.SetCaption(CAP_PREVIEW);
+	If (Length(Author) > 0) or (Length(Name) > 0) then
+		LblPreviewInfo^.SetCaption(ThemeName + #13 + ThemeAuthor)
+	else
+		LblPreviewInfo^.SetCaption(CAP_PREVIEW);
+
+	Mouse.Hide;
+	Self.Draw;
+	Mouse.Show;
 end;
 
 procedure TThemePreview.Preview;

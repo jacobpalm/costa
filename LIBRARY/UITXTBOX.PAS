@@ -16,7 +16,7 @@ type
 			procedure   Edit;
 
 			procedure   SetCaption(Cap: string);
-			function	GetCaption: string;
+			function    GetCaption: string;
 
 			procedure   SetText(Txt: string);
 			function    GetText: string;
