@@ -18,7 +18,7 @@ type
 			procedure    Draw; virtual;
 
 			procedure    LoadFile(Filename: string);
-			procedure    LoadMem(ThemePtr: PTheme; Author, Name: String);
+			procedure    LoadMem(ThemePtr: PTheme; Name, Author: String);
 
 			procedure    Preview;
 
@@ -162,7 +162,7 @@ begin
 	Mouse.Show;
 end;
 
-procedure TThemePreview.LoadMem(ThemePtr: PTheme; Author, Name: String);
+procedure TThemePreview.LoadMem(ThemePtr: PTheme; Name, Author: String);
 begin
 	{Preview the specified theme from memory and redraw the object}
 	if ThemePtr = nil then
@@ -170,8 +170,10 @@ begin
 
 	ThemeData := ThemePtr^;
 	ThemeLoaded := true;
+	ThemeName := Name;
+	ThemeAuthor := Author;
 
-	If (Length(Author) > 0) or (Length(Name) > 0) then
+	If (Length(ThemeName) > 0) or (Length(ThemeAuthor) > 0) then
 		LblPreviewInfo^.SetCaption(ThemeName + #13 + ThemeAuthor)
 	else
 		LblPreviewInfo^.SetCaption(CAP_PREVIEW);

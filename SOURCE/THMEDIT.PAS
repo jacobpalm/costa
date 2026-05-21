@@ -82,7 +82,7 @@ var
 	HkDown,
 	HkEnter,
 	HkEscape:         PHotkey;
-	SelectObjectDone: Boolean;
+
 	ActiveSelection:  TThemeObject;
 
 	ThemeFile:        String;
@@ -153,7 +153,7 @@ begin
 		if Sender = PUIObject(BtnObjSelect[i]) then
 		begin
 			SelectedObject := TThemeObject(i);
-			SelectObjectDone := True;
+			WinSelectObject^.Close;
 			Exit;
 		end;
 	end;
@@ -163,13 +163,13 @@ begin
 	if Sender = PUIObject(HkEnter) then
 	begin
 		SelectedObject := ActiveSelection;
-		SelectObjectDone := True;
+		WinSelectObject^.Close;
 	end;
 end;
 
 procedure SelectObjectEscPressed(Sender: PUIObject); far;
 begin
-	SelectObjectDone := True;
+	WinSelectObject^.Close;
 end;
 
 procedure SelectObjectArrowPressed(Sender: PUIObject); far;
@@ -179,7 +179,7 @@ begin
 	Mouse.Hide;
 	BtnObjSelect[Ord(ActiveSelection)]^.RemoveState(SActive);
 	BtnObjSelect[Ord(ActiveSelection)]^.Draw;
-	if Sender = @HkUp then
+	if Sender = PUIObject(HkUp) then
 		NextSelection := Ord(ActiveSelection) - 1
 	else
 		NextSelection := Ord(ActiveSelection) + 1;
@@ -203,8 +203,6 @@ var
 	BackgroundSize: Word;
 	BackgroundP: Pointer;
 begin
-	SelectObjectDone := False;
-
 	WinSelectObject^.Run;
 
 	{Change the color of the currently selected object}
@@ -223,6 +221,8 @@ begin
 		Sel:       SelectColor(ThemeData.Sel, false);
 		SelText:   SelectColor(ThemeData.SelText, false);
 	end;
+
+	BtnObject^.SetCaption(CAP_OBJECT[Ord(SelectedObject)]);
 end;
 
 procedure NewTheme(Sender: PUIObject); far;
@@ -445,6 +445,7 @@ end;
 procedure TextboxChange(Sender: PUIObject); far;
 begin
 	ThemeChanged := True;
+	PrwTheme^.LoadMem(@ThemeData, TxtName^.GetText, TxtAuthor^.GetText);
 end;
 
 procedure WinMainRun(Sender: PUIObject); far;
