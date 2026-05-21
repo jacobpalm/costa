@@ -1,7 +1,8 @@
 program ThemeEditor;
 
 uses
-	CostaLib, UIButton, UILabel, UITxtbox, UIArea, UIFrame, UIIcon, UIThmPrw, AboutDlg, MsgDlg, InputDlg, FileDlg, Graph, DOS;
+	CostaLib, UIButton, UILabel, UITxtbox, UIArea, UIFrame, UIIcon, UIThmPrw,
+	AboutDlg, MsgDlg, InputDlg, ThmSelec, FileDlg, Graph, DOS;
 
 const
 	AppName           = 'Theme Editor';
@@ -21,11 +22,6 @@ const
 	CAP_AUTHOR        = 'Theme a' + #127 + 'uthor';
 	CAP_OBJECT_SEL    = 'O' + #127 + 'bject selected:';
 	CAP_COLOR_SEL     = #127 + 'Color for object:';
-
-	CAP_OBJECT: array[0..12] of string = (
-		'Desktop', 'Desktop text', 'Window', 'Window border', 'Window title',
-		'Window text', 'Button', 'Textbox', 'Textbox text', '3D light',
-		'3D Shadow', 'Selection', 'Selection text');
 
 	MSG_FILE_EXISTS_TITLE      = 'File already exists';
 	MSG_FILE_EXISTS_PROMPT     = 'The specified file already exists. Do you want' + #13 +
@@ -49,12 +45,6 @@ const
 	                             'space and that the directory isn''t write-protected.';
 	MSG_PREVIEW                = 'This is a preview of' + #13 + 'your theme';
 
-
-type
-	TThemeObject = (Desk, DeskText, Win, Title, TitleText,
-	                WinText, Btn, Txt, TxtText, Light, Shadow,
-	                Sel, SelText);
-
 var
 	App:              PApplication;
 
@@ -74,16 +64,6 @@ var
 	LblObject,
 	LblColor:         PLabel;
 	HkNextColor:      PHotkey;
-
-	{Object selection window}
-	WinSelectObject:  PWindow;
-	BtnObjSelect:     Array[0..12] of PButton;
-	HkUp,
-	HkDown,
-	HkEnter,
-	HkEscape:         PHotkey;
-
-	ActiveSelection:  TThemeObject;
 
 	ThemeFile:        String;
 	ThemeChanged:     Boolean;
@@ -143,69 +123,11 @@ begin
 	SelectColor(SelectedColor + 1, true);
 end;
 
-procedure BtnObjSelectClick(Sender: PUIObject); far;
-var
-	i: integer;
+procedure BtnObjectClick(Sender: PUIObject); far;
 begin
-	{Check which button was pressed}
-	for i := 0 to High(BtnObjSelect) do
-	begin
-		if Sender = PUIObject(BtnObjSelect[i]) then
-		begin
-			SelectedObject := TThemeObject(i);
-			WinSelectObject^.Close;
-			Exit;
-		end;
-	end;
+	SelectedObject := SelectThemeObject(SelectedObject);
 
-	{If no button was pressed, check if Enter was pressed. If so, ActiveSelection will already
-	 contain the right value, and we can just mark selection as done}
-	if Sender = PUIObject(HkEnter) then
-	begin
-		SelectedObject := ActiveSelection;
-		WinSelectObject^.Close;
-	end;
-end;
-
-procedure SelectObjectEscPressed(Sender: PUIObject); far;
-begin
-	WinSelectObject^.Close;
-end;
-
-procedure SelectObjectArrowPressed(Sender: PUIObject); far;
-var
-	NextSelection: integer;
-begin
-	Mouse.Hide;
-	BtnObjSelect[Ord(ActiveSelection)]^.RemoveState(SActive);
-	BtnObjSelect[Ord(ActiveSelection)]^.Draw;
-	if Sender = PUIObject(HkUp) then
-		NextSelection := Ord(ActiveSelection) - 1
-	else
-		NextSelection := Ord(ActiveSelection) + 1;
-
-	if NextSelection < 0 then
-		NextSelection := High(BtnObjSelect)
-	else if NextSelection > High(BtnObjSelect) then
-		NextSelection := 0;
-
-	ActiveSelection := TThemeObject(NextSelection);
-	BtnObjSelect[Ord(ActiveSelection)]^.AddState(sActive);
-	BtnObjSelect[Ord(ActiveSelection)]^.Draw;
-	Mouse.Show;
-end;
-
-procedure SelectObject(Sender: PUIObject); far;
-var
-	i: integer;
-	Key: string;
-	X1, Y1, X2, Y2: Integer;
-	BackgroundSize: Word;
-	BackgroundP: Pointer;
-begin
-	WinSelectObject^.Run;
-
-	{Change the color of the currently selected object}
+	{Change the color selection to the currently selected object}
 	case SelectedObject of
 		Desk:      SelectColor(ThemeData.Desk, false);
 		DeskText:  SelectColor(ThemeData.DeskText, false);
@@ -222,7 +144,9 @@ begin
 		SelText:   SelectColor(ThemeData.SelText, false);
 	end;
 
+	Mouse.Hide;
 	BtnObject^.SetCaption(CAP_OBJECT[Ord(SelectedObject)]);
+	Mouse.Show;
 end;
 
 procedure NewTheme(Sender: PUIObject); far;
@@ -386,7 +310,7 @@ procedure AreaColorDraw(Sender: PUIObject); far;
 var
 	X1, Y1, X2, Y2: integer;
 begin
-	if Sender = @AreaColor[SelectedColor] then
+	if PArea(Sender) = AreaColor[SelectedColor] then
 	begin
 		AreaColor[SelectedColor]^.GetPos(X1, Y1, True);
 		AreaColor[SelectedColor]^.GetSize(X2, Y2);
@@ -456,6 +380,7 @@ begin
 	ThemeData := Thm;
 	{Desktop is the default selected object, so use its color for default
 	 color selection}
+	SelectedObject := Desk;
 	SelectedColor := ThemeData.Desk;
 end;
 
@@ -539,7 +464,7 @@ begin
 	begin
 		SetSize(194, SizeRetain);
 		AddHotKey(KeyAltB);
-		SetOnClick(SelectObject);
+		SetOnClick(BtnObjectClick);
 	end;
 
 	New(LblObject, Init(434, 140, CAP_OBJECT_SEL, WinMain));
@@ -579,31 +504,6 @@ begin
 		SetLightColor(Thm.Light);
 		SetDarkColor(Thm.Shadow);
 	end;
-
-	{Object selection window}
-	New(WinSelectObject, Init(0, 0, nil));
-	With WinSelectObject^ do
-	begin
-		SetSize(226, 326);
-		SaveBackdrop;
-		Center(OrBoth);
-	end;
-
-	for i := 0 to High(BtnObjSelect) do
-	begin
-		New(BtnObjSelect[I], Init(13, I * 23 + 15, CAP_OBJECT[I], WinSelectObject));
-		BtnObjSelect[I]^.SetSize(200, SizeRetain);
-		BtnObjSelect[I]^.SetOnClick(BtnObjSelectClick);
-	end;
-
-	New(HkUp, Init(KeyUp, WinSelectObject));
-	HkUp^.SetOnClick(SelectObjectArrowPressed);
-	New(HkDown, Init(KeyDown, WinSelectObject));
-	HkDown^.SetOnClick(SelectObjectArrowPressed);
-	New(HkEnter, Init(KeyEnter, WinSelectObject));
-	HkEnter^.SetOnClick(BtnObjSelectClick);
-	New(HkEscape, Init(KeyEscape, WinSelectObject));
-	HkEscape^.SetOnClick(SelectObjectEscPressed);
 end;
 
 begin
