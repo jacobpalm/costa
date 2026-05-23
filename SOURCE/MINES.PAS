@@ -32,7 +32,7 @@ const
 	MSG_OFF           = 'Off';
 
 var
-	App: PApplication;
+	App:         PApplication;
 
 	{Main window}
 	WinMain:     PWindow;
@@ -64,11 +64,6 @@ var
 	MessageText: String;
 	FlaggedStr, MineCountStr: string;
 begin
-	{Only hide mouse if it's near the text, to avoid cursor flicker on old PCs}
-	Mouse.Poll;
-	if Mouse.Y > 310 then
-		Mouse.Hide;
-
 	if Length(Msg) = 0 then
 	begin
 		Str(Minefield^.GetFlagged, FlaggedStr);
@@ -77,11 +72,7 @@ begin
 	end;
 
 	LblStatus^.SetCaption(Msg);
-	LblStatus^.Draw;
-
-	Mouse.Show;
 end;
-
 
 procedure DrawBackground;
 var
@@ -109,7 +100,6 @@ begin
 	{Status area at bottom of screen}
 	SetFillStyle(SolidFill, LightGray);
 	Bar(7, 330, 631, 343);
-	LblSound^.Draw;
 end;
 
 procedure TiStatusClick(Sender: PUIObject); far;
@@ -151,12 +141,6 @@ begin
 		MessageText := '00:00:00';
 
 	LblTime^.SetCaption(MessageText);
-	{Hide mouse if it's near the timer, to avoid cursor flicker on old PCs}
-	Mouse.Poll;
-	if Mouse.Y > 310 then
-		Mouse.Hide;
-	LblTime^.Draw;
-	Mouse.Show;
 end;
 
 procedure MineFieldClick(Sender: PUIObject); far;
@@ -212,9 +196,7 @@ end;
 
 procedure BtnNewClick(Sender: PUIObject); far;
 begin
-	Mouse.Hide;
 	MineField^.NewGame;
-	Mouse.Show;
 	UpdateStatus('');
 	TiStatusClick(nil);
 end;
@@ -237,9 +219,6 @@ begin
 		BtnPause^.RemoveHotKey(KeyAltR);
 		BtnPause^.AddHotKey(KeyAltP);
 	end;
-	Mouse.Hide;
-	BtnPause^.Draw;
-	Mouse.Show;
 end;
 
 procedure BtnSetSizeClick(Sender: PUIObject); far;
@@ -252,10 +231,8 @@ begin
 	if SizeChanged then
 	begin
 		SizeChanged := False;
-		Mouse.Hide;
 		DrawBackground;
 		MineField^.NewGame;
-		Mouse.Show;
 		UpdateStatus('');
 		TiStatusClick(nil); {Update time display immediately}
 	end
@@ -277,10 +254,7 @@ begin
 		MessageText := MSG_OFF;
 	MessageText := MSG_SOUND + ' ' + MessageText;
 
-	Mouse.Hide;
 	LblSound^.SetCaption(MessageText);
-	LblSound^.Draw;
-	Mouse.Show;
 end;
 
 procedure BtnAboutClick(Sender: PUIObject); far;
@@ -318,8 +292,6 @@ procedure WinSetSizeDraw(Sender: PUIObject); far;
 var
 	X, Y, W, H, TextOffset: integer;
 begin
-	Mouse.Hide;
-
 	BtnSize[0]^.GetPos(X, Y, True);
 	BtnSize[0]^.GetSize(W, H); {Only need to get once, all buttons are same size}
 	TextOffset := ((W - PrintW(CAP_SMALL)) div 2);
@@ -361,13 +333,11 @@ begin
 		Line(339 + X * 9, 195, 339 + X * 9, 240);
 	for Y := 0 to 5 do
 		Line(339, 195 + Y * 9, 411, 195 + Y * 9);
-
-	Mouse.Show;
 end;
 
 procedure InitUI;
 begin
-{Main window and controls}
+	{Main window and controls}
 	New(WinMain, Init(0, 0, nil));
 	with WinMain^ do
 	begin
@@ -432,17 +402,16 @@ begin
 		SetFgColor(Black);
 		SetBgColor(LightGray);
 	end;
-	New(LblSound, Init(550, 333, '', WinMain));
+	New(LblSound, Init(550, 333, MSG_SOUND + ' ' + MSG_ON, WinMain));
 	with LblSound^ do
 	begin
-		SetCaption(MSG_SOUND + ' ' + MSG_ON);
 		RemoveState(STransparent);
 		SetSize(80, 8);
 		SetFgColor(Black);
 		SetBgColor(LightGray);
 	end;
 
-	{CFieldAlign container is used solely to contaion minefield, so that minefield can be centered
+	{CFieldAlign container is used solely to contain minefield, so that minefield can be centered
 	 on its parent when resized, while taking into account the menu and status bars}
 	New(CFieldAlign, Init(0, 29, WinMain));
 	With CFieldAlign^ do

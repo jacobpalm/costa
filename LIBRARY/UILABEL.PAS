@@ -6,8 +6,6 @@ uses
 	Costalib, Graph;
 
 type
-	TAlign = (AlLeft, AlCenter, AlRight);
-
 	PLabel = ^TLabel;
 	TLabel = object(TUIObject)
 		public
@@ -45,6 +43,7 @@ end;
 procedure TLabel.AutoSize;
 begin
 	SetSize(PrintW(Caption), PrintH(Caption));
+	AddState(SDirty);
 end;
 
 procedure TLabel.Draw;
@@ -91,6 +90,7 @@ end;
 procedure TLabel.SetCaption(Cap: string);
 begin
 	Caption := Cap;
+	AddState(SDirty);
 end;
 
 function TLabel.GetCaption: string;
@@ -101,6 +101,7 @@ end;
 procedure TLabel.SetAlign(Val: TAlign);
 begin
 	Align := Val;
+	AddState(SDirty);
 end;
 
 function TLabel.GetAlign: TAlign;

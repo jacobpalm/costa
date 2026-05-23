@@ -86,12 +86,10 @@ begin
 	else if Color > 15 then
 		Color := 0;
 
-	PreviousColor := SelectedColor;
+	{Adding dirty states triggers redraw}
+	AreaColor[SelectedColor]^.AddState(SDirty);
+	AreaColor[Color]^.AddState(SDirty);
 	SelectedColor := Color;
-	Mouse.Hide;
-	AreaColor[PreviousColor]^.Draw;
-	AreaColor[SelectedColor]^.Draw;
-	Mouse.Show;
 
 	{Change the color of the currently selected object}
 	case SelectedObject of
@@ -145,9 +143,6 @@ begin
 	end;
 
 	BtnObject^.SetCaption(CAP_OBJECT[Ord(SelectedObject)]);
-	Mouse.Hide;
-	BtnObject^.Draw;
-	Mouse.Show;
 end;
 
 procedure NewTheme(Sender: PUIObject); far;
@@ -167,8 +162,6 @@ begin
 	ThemeFile := '';
 	TxtName^.SetText(DefaultName);
 	TxtAuthor^.SetText('');
-	TxtName^.Draw;
-	TxtAuthor^.Draw;
 	SelectColor(ThemeData.Desk, false);
 	PrwTheme^.LoadMem(@Thm, '', '');
 	ThemeChanged := False;
@@ -230,10 +223,6 @@ begin
 	TxtAuthor^.SetText(RTrim(LoadAuthor));
 	SelectColor(ThemeData.Desk, False);
 	ThemeFile := SelectedFile;
-	Mouse.Hide;
-	TxtName^.Draw;
-	TxtAuthor^.Draw;
-	Mouse.Show;
 	PrwTheme^.LoadMem(@ThemeData, LoadName, LoadAuthor);
 	ThemeChanged := False;
 end;

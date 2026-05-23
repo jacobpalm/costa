@@ -138,6 +138,10 @@ begin
 			end;
 		end;
 	end;
+
+	{If keyboard indicater on, draw it as well}
+	if IndicatorOn then
+		MoveIndicator(DirStay);
 end;
 
 procedure TIconCanvas.CheckEvent;
@@ -185,13 +189,7 @@ begin
 	Changed := false;
 
 	{Redraw the canvas}
-	Mouse.Hide;
-	Self.Draw;
-	Mouse.Show;
-
-	{If indicator was visible, redraw it}
-	if IndicatorOn then
-		MoveIndicator(DirStay);
+	AddState(SDirty);
 end;
 
 procedure TIconCanvas.LoadIcon(Filename: string);

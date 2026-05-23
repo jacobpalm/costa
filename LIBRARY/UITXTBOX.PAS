@@ -261,6 +261,7 @@ end;
 procedure TTextbox.SetCaption(Cap: string);
 begin
 	Caption := Cap;
+	AddState(SDirty);
 end;
 
 function TTextbox.GetCaption: string;
@@ -271,6 +272,7 @@ end;
 procedure TTextbox.SetText(Txt: string);
 begin
 	Text := Txt;
+	AddState(SDirty);
 end;
 
 function TTextbox.GetText: string;
@@ -281,6 +283,13 @@ end;
 procedure TTextbox.SetMaxLength(Len: Byte);
 begin
 	MaxLen := Len;
+
+	{If current text is longer than new max, trim it and trigger redraw}
+	if Length(Text) > MaxLen then
+	begin
+		Text := Copy(Text, 1, MaxLen);
+		AddState(SDirty);
+	end;
 end;
 
 function TTextbox.GetMaxLength: Byte;

@@ -289,7 +289,8 @@ begin
 	NewNode^.Next := Links;
 	Links := NewNode;
 
-	{Draw the new link on the desktop}
+	{Draw the new link on the desktop - we don't use SDirty flag here because
+	 we only want to draw a single icon, not entire object}
 	Mouse.Hide;
 	DrawLink(NewLink);
 	Mouse.Show;
@@ -339,9 +340,7 @@ begin
 		TempNode := TempNode^.Next;
 	end;
 
-	Mouse.Hide;
-	Self.Draw; {Redraw entire desktop to remove the link visually}
-	Mouse.Show;
+	AddState(SDirty);
 end;
 
 procedure TDesktop.MoveLink(Link: PLink);
@@ -478,9 +477,7 @@ begin
 		Link^.Left := DrawX - OffsetX;
 		Link^.Top := DrawY - OffsetY;
 		Self.SortLinks;
-		Mouse.Hide;
-		Self.Draw;
-		Mouse.Show;
+		AddState(SDirty);
 	end
 	else
 	begin
@@ -515,8 +512,10 @@ begin
 	end;
 	LinkCount := 0;
 
+	{Redraw immediately, in case we are called for LoadLinks which
+	 will start drawing links on top directly after clear}
 	Mouse.Hide;
-	Self.Draw; {Redraw desktop to clear all links visually}
+	Self.Draw;
 	Mouse.Show;
 end;
 

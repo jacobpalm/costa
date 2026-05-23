@@ -32,13 +32,7 @@ begin
 	if (Length(TxtFilename^.GetText) > 0) and (not BtnOK^.GetState(SEnabled)) then
 		BtnOK^.AddState(SEnabled)
 	else if (Length(TxtFilename^.GetText) = 0) and BtnOK^.GetState(SEnabled) then
-		BtnOK^.RemoveState(SEnabled)
-	else
-		exit;
-
-	Mouse.Hide;
-	BtnOK^.Draw;
-	Mouse.Show;
+		BtnOK^.RemoveState(SEnabled);
 end;
 
 procedure BtnOK_Click(Sender: PUIObject); far;
@@ -69,9 +63,6 @@ begin
 	if Length(SelectedFile) <> 0 then
 	begin
 		TxtFilename^.SetText(SelectedFile);
-		Mouse.Hide;
-		TxtFilename^.Draw;
-		Mouse.Show;
 		TxtFilename_Change(nil);
 	end;
 end;

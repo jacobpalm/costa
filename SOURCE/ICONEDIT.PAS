@@ -71,18 +71,13 @@ procedure SetDrawColor(Col: Byte);
 var
 	NewColor, OldColor: Byte;
 begin
-	OldColor := Canvas^.GetColor;
+	{Trigger redraw of new and old color object}
+	AreaColor[Canvas^.GetColor]^.AddState(SDirty);
+	AreaColor[Col]^.AddState(SDirty);
+
+	{We get color right after setting it, in case SetColor wrapped around the value}
 	Canvas^.SetColor(Col);
-
-	{We get this right after setting it, in case SetColor wrapped around the value}
 	NewColor := Canvas^.GetColor;
-
-	{Remove selection marker from previous color and draw it on the new color -
-	 AreaColorDraw handles drawing the marker automatically}
-	Mouse.Hide;
-	AreaColor[OldColor]^.Draw;
-	AreaColor[NewColor]^.Draw;
-	Mouse.Show;
 end;
 
 {This procedure draws a selection marker in the active color area}
@@ -212,11 +207,6 @@ begin
 		BtnFloodFill^.AddState(SActive);
 		Canvas^.SetTool(ToolFloodFill);
 	end;
-	Mouse.Hide;
-	BtnPencil^.Draw;
-	BtnFloodFill^.Draw;
-	{DEBUG - set tool on field}
-	Mouse.Show;
 end;
 
 procedure BtnAboutClick(Sender: PUIObject); far;

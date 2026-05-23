@@ -20,8 +20,6 @@ type
 			procedure    LoadFile(Filename: string);
 			procedure    LoadMem(ThemePtr: PTheme; Name, Author: String);
 
-			procedure    Preview;
-
 		private
 			ThemeAuthor:    string[20];
 			ThemeName:      string[20];
@@ -157,9 +155,7 @@ begin
 	{Update preview info label to show theme name and author}
 	LblPreviewInfo^.SetCaption(ThemeName + #13 + ThemeAuthor);
 
-	Mouse.Hide;
-	Self.Draw;
-	Mouse.Show;
+	AddState(SDirty);
 end;
 
 procedure TThemePreview.LoadMem(ThemePtr: PTheme; Name, Author: String);
@@ -178,16 +174,7 @@ begin
 	else
 		LblPreviewInfo^.SetCaption(CAP_PREVIEW);
 
-	Mouse.Hide;
-	Self.Draw;
-	Mouse.Show;
-end;
-
-procedure TThemePreview.Preview;
-begin
-	Mouse.Hide;
-	Self.Draw;
-	Mouse.Show;
+	AddState(SDirty);
 end;
 
 end.

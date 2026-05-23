@@ -64,11 +64,14 @@ type
 
 	{Object states - implemented as a set to be able to store multiple values in one
 	 byte, and to allow one Get/Set method to handle multiple boolean properties}
-	TState       = (SEnabled, SHidden, SActive, SSelected, STransparent, SBordered);
+	TState       = (SEnabled, SHidden, SActive, SSelected, STransparent, SBordered, SDirty);
 	TStateSet    = set of TState;
 
 	{Orientation for centering objects}
 	TOrientation = (OrHorizontal, OrVertical, OrBoth);
+
+	{Text alignment}
+	TAlign = (AlLeft, AlCenter, AlRight);
 
 	{Menu types}
 	TMenuStyle   = (MsPopup, MsMenuBar);
@@ -117,6 +120,9 @@ type
 
 			procedure   SetOnClick(Event: TEventProc);
 			procedure   SetOnDraw(Event: TEventProc);
+
+			function    IsContainer: boolean; virtual;
+
 		private
 			Left,
 			Top,
@@ -150,6 +156,8 @@ type
 			procedure   AddObject(Obj: PUIObject);
 			procedure   CheckEvent; virtual;
 			procedure   DrawChildren;
+			procedure   DrawDirtyObjects;
+			function    IsContainer: boolean; virtual;
 		private
 			Objects:    PObjectNode; {Linked list of objects in the container}
 	end;
@@ -373,6 +381,10 @@ begin
 		Dispose(Hotkey);          {Free current node}
 		Hotkey := NextNode;       {Move to next node}
 	end;
+
+	{If object was visible and has a parent, that parent needs to be redrawn}
+	if (ParentObj <> nil) and not (SHidden in State) then
+		ParentObj^.AddState(SDirty);
 end;
 
 function TUIObject.GetState(S: TState): Boolean;
@@ -474,11 +486,19 @@ end;
 procedure TUIObject.AddState(S: TState);
 begin
 	Include(State, S);
+
+	{State change should trigger redraw}
+	if s <> SDirty then
+		Include(State, SDirty);
 end;
 
 procedure TUIObject.RemoveState(S: TState);
 begin
 	Exclude(State, S);
+
+	{State change should trigger redraw}
+	if s <> SDirty then
+		Include(State, SDirty);
 end;
 
 
@@ -513,13 +533,16 @@ begin
 		OnClick(@Self);
 end;
 
-{Descandants should implement their own versions with drawing code, but can call
- this version at the end to trigger any custom drawing code assigned to OnDraw}
+{Descandants should implement their own versions with drawing code, but should call
+ this version at the end to clear SDirty and trigger any custom drawing code assigned
+ to OnDraw}
 procedure TUIObject.Draw;
 begin
 	{Don't draw or trigger event if object is hidden}
 	if GetState(SHidden) then
 		exit;
+
+	RemoveState(SDirty);
 
 	if Assigned(OnDraw) then
 		OnDraw(@Self);
@@ -531,6 +554,8 @@ begin
 		Left := X;
 	if Y <> SizeRetain then
 		Top := Y;
+
+	AddState(SDirty);
 end;
 
 procedure TUIObject.GetPos(var X, Y: Integer; Absolute: Boolean);
@@ -570,6 +595,8 @@ begin
 		Left := (ParentW - Width) div 2;
 	if Orientation in [OrVertical, OrBoth] then
 		Top := (ParentH - Height) div 2;
+
+	AddState(SDirty);
 end;
 
 procedure TUIObject.SetParent(Parent: PContainer);
@@ -597,6 +624,8 @@ begin
 
 	if H <> SizeRetain then
 		Height := H;
+
+	AddState(SDirty);
 end;
 
 procedure TUIObject.GetSize(var W, H: Integer);
@@ -605,7 +634,6 @@ begin
 	H := Height;
 end;
 
-
 procedure TUIObject.SetFGColor(Color: Byte);
 begin
 	if (Color < 0) or (Color > GetMaxColor) then
@@ -613,6 +641,8 @@ begin
 
 	{Set the high byte of Colors to the foreground color}
 	Colors := (Colors and $00FF) or (Color shl 8);
+
+	AddState(SDirty);
 end;
 
 procedure TUIObject.SetBGColor(Color: Byte);
@@ -622,6 +652,8 @@ begin
 
 	{Set the low byte of Colors to the background color}
 	Colors := (Colors and $FF00) or Color;
+
+	AddState(SDirty);
 end;
 
 function TUIObject.GetFGColor: Byte;
@@ -647,6 +679,10 @@ begin
 	OnDraw := Event;
 end;
 
+function TUIObject.IsContainer: boolean;
+begin
+	IsContainer := false;
+end;
 
 {----------------------------------------------------------------------------}
 { Hotkey object implementation }
@@ -1176,7 +1212,7 @@ begin
 		CloseGraph;
 		Writeln('Error: Attempt to add nil object to container');
 		Halt(1);
-		{DEBUG}
+		{DEBUG - this is a bit extreme}
 	end;
 
 	New(NewNode);
@@ -1194,6 +1230,9 @@ begin
 			LastNode := LastNode^.Next;
 		LastNode^.Next := NewNode;
 	end;
+
+	{Since object has just been added, a draw is needed}
+	Obj^.AddState(SDirty);
 end;
 
 procedure TContainer.CheckEvent;
@@ -1231,6 +1270,59 @@ begin
 
 	{OnDraw is not triggered by the container, as it is not a visual object -
 	 descendants should implement their own Draw method and trigger OnDraw there}
+end;
+
+{Any objects in container that have queued a redraw is taken care of in this proc}
+procedure TContainer.DrawDirtyObjects;
+var
+	CurrObj: PObjectNode;
+	ContainerObj: PContainer;
+	MouseHidden: Boolean;
+begin
+	{Keep track of mouse state - we don't want it to flicker if nothing is redrawn}
+	{DEBUG - maybe only hide mouse if near a redrawn object?}
+	MouseHidden := False;
+
+	{If the window itself is dirty, EVERYTHING in it needs redraw - so just call Draw}
+	if GetState(SDirty) then
+	begin
+		Self.Draw;
+		Exit;
+	end;
+
+	{Window clean, so iterate through Objects in window to find dirty ones}
+	CurrObj := Objects;
+	while Assigned(CurrObj) do
+	begin
+		{Draw dirty objects}
+		if (CurrObj^.ObjectP^.GetState(SDirty) = true) and
+		   (CurrObj^.ObjectP^.GetState(SHidden) = false) then
+		begin
+			if not MouseHidden then
+				Mouse.Hide;
+			CurrObj^.ObjectP^.Draw; {TUIObject.Draw removes dirty state}
+		end;
+
+		{If we have descendant containers, trigger DrawDirtyObjects on them too}
+		if CurrObj^.ObjectP^.IsContainer then
+		begin
+			PContainer(CurrObj^.ObjectP)^.DrawDirtyObjects;
+
+			{In case container made the mouse visible again}
+			if MouseHidden then
+				Mouse.Hide;
+		end;
+
+		CurrObj := CurrObj^.Next;
+	end;
+
+	if MouseHidden then
+		Mouse.Show;
+end;
+
+function TContainer.IsContainer: boolean;
+begin
+	IsContainer := true;
 end;
 
 destructor TContainer.Done;
@@ -1364,6 +1456,7 @@ begin
 	begin
 		HotkeyInput := GetKey;
 		Self.CheckEvent;
+		Self.DrawDirtyObjects;
 	end;
 
 	if Assigned(OnClose) then
@@ -1454,6 +1547,8 @@ var
 	regs: registers;
 begin
 	Visible := False;
+	XPos := 0; {Set in case mouse isn't supported, so X/Y functins wont return garbage}
+	YPos := 0;
 
 	{Check for mouse support}
 	Intr($33, regs);
@@ -1809,12 +1904,11 @@ begin
 		16:  GetDosErrorMsg := MSG_DOSERROR_16;
 		17:  GetDosErrorMsg := MSG_DOSERROR_17;
 
-
 		else
-		begin
-			Str(ErrorCode, ErrorCodeStr);
-			GetDosErrorMsg := ReplaceMsg(MSG_DOSERROR_UNKNOWN, ErrorCodeStr);
-		end;
+			begin
+				Str(ErrorCode, ErrorCodeStr);
+				GetDosErrorMsg := ReplaceMsg(MSG_DOSERROR_UNKNOWN, ErrorCodeStr);
+			end;
 	end;
 end;
 

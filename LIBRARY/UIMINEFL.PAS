@@ -111,8 +111,6 @@ begin
 	Inc(X2, X1);
 	Inc(Y2, Y1);
 
-	Mouse.Hide;
-
 	{Button color}
 	SetFillStyle(SolidFill, LightGray);
 	Bar(X1, Y1, X2, Y2);
@@ -151,7 +149,7 @@ begin
 	{Borders around playfield}
 	Rectangle(X1, Y1, X2, Y2);
 
-	Mouse.Show;
+	TUIObject.Draw;
 end;
 
 procedure TMinefield.DrawCell(Row, Col: byte);

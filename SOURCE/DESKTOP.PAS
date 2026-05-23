@@ -193,9 +193,6 @@ begin
 	DesktopFile := App^.Path + ReplaceMsg(DeskFilePattern, sDeskID);
 	Str(MaxDesktops, sMaxDesktops);
 	LblDesktop^.SetCaption( Concat(sDeskID, '/', sMaxDesktops) );
-	Mouse.Hide;
-	LblDesktop^.Draw;
-	Mouse.Show;
 
 	{Load the links, and exit if successful}
 	if FileExists(DesktopFile) then
@@ -308,11 +305,7 @@ begin
 		laEdit:
 		begin
 			if EditLink(ClickedLink) then
-			begin
-				Mouse.Hide;
-				Desk^.Draw;
-				Mouse.Show;
-			end;
+				Desk^.AddState(SDirty);
 		end;
 
 		{Move link on current desktop}

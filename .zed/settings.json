@@ -1,5 +1,12 @@
 {
-	"line_ending": "enforce_crlf",
+	"languages": {
+  "Pascal": {
+   "use_on_type_format": false,
+   "auto_indent": "preserve_indent",
+   "auto_indent_on_paste": false
+  }
+ },
+ "line_ending": "enforce_crlf",
 	"format_on_save": "off",
 	"auto_indent": "preserve_indent",
 	"ensure_final_newline_on_save": false,

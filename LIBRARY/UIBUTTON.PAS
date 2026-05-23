@@ -183,6 +183,7 @@ end;
 procedure TButton.SetCaption(Cap: string);
 begin
 	Caption := Cap;
+	AddState(SDirty);
 end;
 
 function TButton.GetCaption: string;

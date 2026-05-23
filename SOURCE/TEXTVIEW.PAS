@@ -70,10 +70,7 @@ begin
 
 	FreeLines; {Free any previously allocated lines}
 	FileOpened := False;
-	Mouse.Hide;
-	SetFillStyle(SolidFill, Thm.Txt);
-	Bar(0, 29, 639, 349);
-	Mouse.Show;
+	WinMain^.AddState(SDirty);
 	MsgBox(MSG_OPEN_ERROR_TITLE, MSG_MEMORY_TEXT, MsgError);
 	CustomHeapError := 1; {Make GetMem return a nil pointer}
 end;
@@ -277,9 +274,7 @@ begin
 		{If a file wasn't previously opened, scroll buttons won't be visible}
 		FileOpened := True;
 		BtnPageUp^.RemoveState(SHidden);
-		BtnPageUp^.Draw;
 		BtnPageDown^.RemoveState(SHidden);
-		BtnPageDown^.Draw;
 	end;
 	DrawText;
 end;

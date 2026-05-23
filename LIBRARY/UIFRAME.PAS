@@ -75,6 +75,8 @@ begin
 	if ((Color >= 0) and (Color <= GetMaxColor)) or
 	   (Color = ColorDefault) then
 		LightColor := Color;
+
+	AddState(SDirty);
 end;
 
 function TFrame.GetLightColor: Byte;
@@ -87,6 +89,8 @@ begin
 	if ((Color >= 0) and (Color <= GetMaxColor)) or
 	   (Color = ColorDefault) then
 		DarkColor := Color;
+
+	AddState(SDirty);
 end;
 
 function TFrame.GetDarkColor: Byte;

@@ -68,9 +68,7 @@ procedure HkArrowClick(Sender: PUIObject); far;
 var
 	NextSelection: integer;
 begin
-	Mouse.Hide;
 	BtnObject[Ord(ActiveSelection)]^.RemoveState(SActive);
-	BtnObject[Ord(ActiveSelection)]^.Draw;
 	if Sender = PUIObject(HkArrow[Up]) then
 		NextSelection := Ord(ActiveSelection) - 1
 	else
@@ -83,8 +81,6 @@ begin
 
 	ActiveSelection := TThemeObject(NextSelection);
 	BtnObject[Ord(ActiveSelection)]^.AddState(sActive);
-	BtnObject[Ord(ActiveSelection)]^.Draw;
-	Mouse.Show;
 end;
 
 procedure InitUI;

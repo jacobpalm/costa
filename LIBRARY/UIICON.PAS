@@ -117,9 +117,7 @@ end;
 procedure TIcon.SetIcon(Icon: string);
 begin
 	IconFile := Icon;
-	Mouse.Hide;
-	Self.Draw;
-	Mouse.Show;
+	AddState(SDirty);
 end;
 
 function TIcon.GetIcon: string;

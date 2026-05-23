@@ -3,7 +3,7 @@ program Calculator;
 {$R-} {Disable range checking}
 
 uses
-	CostaLib, UIButton, UIArea, UITxtBox, UIFrame, AboutDlg, Crt, Strings, Graph;
+	CostaLib, UIButton, UIArea, UITxtBox, UIFrame, UILog, AboutDlg, Crt, Strings, Graph;
 
 const
 	AppName              = 'Calculator';
@@ -22,8 +22,7 @@ const
 	MaxSafe              = 1.0E37; {Max value to allow to prevent overflows}
 	DecimalDigits        = 12;     {Amount of decimal digits to show in results - only affects display}
 	MaxInputLength       = 25;     {Maximum number of digits to allow in input}
-	MaxLogLines          = 19;     {Number of lines that will fit in the log before clearing}
-	MaxLogLineLength     = 47;     {Characters that will fit per line}
+
 
 type
 	TOperand             = (opNone, opAdd, opSubtract, opMultiply, opDivide);
@@ -36,7 +35,7 @@ var
 	TxtCalc:             PTextbox;
 	BtnNumb:             Array[0..9] of PButton;
 	BtnDecimal:          PButton;
-	AreaLog:             PArea;
+	AreaLog:             PLogArea;
 	BtnC,
 	BtnCE,
 	BtnAdd,
@@ -61,10 +60,6 @@ var
 	ResultValue:         Real;
 
 	NewInput:            Boolean;    {Tracks if display needs to be cleared when entering a new number}
-
-	LogX2,
-	LogY1:               Integer;    {Top-right coordinates of log area, for calculating log output posititon}
-	LogLines:            Integer;    {Amount of lines currently printed to the log}
 
 	CalcError:           TCalcError; {Error status}
 
@@ -145,26 +140,6 @@ begin
     RealValue := 0;
 
 	TxtCalc^.SetText(RealPretty(RealValue));
-	Mouse.Hide;
-	TxtCalc^.Draw;
-	Mouse.Show;
-end;
-
-procedure LogLine(Text: string);
-begin
-	{Truncate text if too wide}
-	if Length(Text) > MaxLogLineLength then
-		Text := Copy(Text, 1, MaxLogLineLength);
-
-	Mouse.Hide;
-	if LogLines = MaxLogLines then
-	begin
-		LogLines := 0;
-		AreaLog^.Draw;
-	end;
-	Print(Text, LogX2 - PrintW(Text), LogY1 + (LogLines * 15), Thm.WinText);
-	Mouse.Show;
-	Inc(LogLines);
 end;
 
 procedure ExecuteOperation;
@@ -213,7 +188,7 @@ begin
     NewInput := False;
     Op := opNone;
     {Log an empty line so there's space between calculations}
-    LogLine('');
+    AreaLog^.AddEntry('');
   end;
 
   if Length(CurrentInput) >= MaxInputLength then
@@ -291,7 +266,7 @@ begin
       Val(CurrentInput, Num1, Code);
       if Code <> 0 then
         Num1 := 0;
-      LogLine(RealPretty(Num1));
+      AreaLog^.AddEntry(RealPretty(Num1));
     end
     else
     begin
@@ -305,7 +280,7 @@ begin
         opMultiply: LogOutput := '* ';
         opDivide: LogOutput := '/ ';
       end;
-      LogLine(LogOutput + RealPretty(Num2));
+      AreaLog^.AddEntry(LogOutput + RealPretty(Num2));
 
       ExecuteOperation;
 
@@ -367,13 +342,13 @@ begin
     Op := LastOp;
   end;
 
-  LogLine(LogOutput + RealPretty(Num2));
+  AreaLog^.AddEntry(LogOutput + RealPretty(Num2));
   ExecuteOperation;
 
   if CalcError <> ceNone then
   begin
-  	if CalcError = ceOverflow then LogLine(MSG_OVERFLOW);
-   	if CalcError = ceDivZero then LogLine(MSG_DIV_ZERO);
+  	if CalcError = ceOverflow then AreaLog^.AddEntry(MSG_OVERFLOW);
+   	if CalcError = ceDivZero then AreaLog^.AddEntry(MSG_DIV_ZERO);
     SystemSound(sndError);
     BtnCEClick(nil);
   end
@@ -383,7 +358,7 @@ begin
 	  Str(ResultValue:0:DecimalDigits, CurrentInput);
 	  UpdateDisplay;
 
-  	LogLine('= ' + RealPretty(ResultValue));
+  	AreaLog^.AddEntry('= ' + RealPretty(ResultValue));
 	  CurrentInput := '';
 
 	  Num1 := ResultValue;
@@ -423,20 +398,6 @@ begin
 	App^.Terminate;
 end;
 
-procedure WinMainRun(Sender: PUIObject); far;
-const
-	LogPadding = 5;
-var
-	X1, Y2: integer;
-begin
-	{Calculate position of log output for use in LogLine}
-	AreaLog^.GetPos(X1, LogY1, true);
-	AreaLog^.GetSize(LogX2, Y2);
-	LogX2 := LogX2 + X1 - LogPadding;
-	LogY1 := LogY1 + LogPadding;
-	LogLines := 0;
-end;
-
 procedure InitUI;
 var
 	i: Integer;
@@ -444,7 +405,6 @@ begin
 	New(WinMain, Init(0, 0, nil));
 	with WinMain^ do
 	begin
-		SetOnRun(WinMainRun);
 		SetSize(GetMaxX, GetMaxY);
 		RemoveState(SBordered);
 	end;
@@ -553,6 +513,7 @@ begin
 	with AreaLog^ do
 	begin
 		SetSize(385, 295);
+		SetAlign(AlRight);
 	end;
 
 	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));

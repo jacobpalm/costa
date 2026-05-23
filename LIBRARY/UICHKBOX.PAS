@@ -140,7 +140,7 @@ end;
 procedure TCheckbox.SetCaption(Cap: string);
 begin
 	Caption := Cap;
-	Self.Draw;
+	AddState(SDirty);
 end;
 
 function TCheckbox.GetCaption: string;
@@ -163,9 +163,8 @@ begin
 	else
 		RemoveState(SSelected);
 
-	Mouse.Hide;
-	Self.Draw;
-	Mouse.Show;
+	AddState(SDirty);
+
 	if Assigned(OnChange) then
 		OnChange(@Self);
 end;

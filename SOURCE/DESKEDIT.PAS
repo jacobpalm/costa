@@ -96,10 +96,6 @@ begin
 			TxtPath^.SetText(Path);
 		end;
 		TxtFileName^.SetText(SelectedFile);
-		Mouse.Hide;
-		TxtFilename^.Draw;
-		TxtPath^.Draw;
-		Mouse.Show;
 	end;
 end;
 
