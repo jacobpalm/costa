@@ -90,10 +90,7 @@ end;
 
 procedure TLabel.SetCaption(Cap: string);
 begin
-	Mouse.Hide;
 	Caption := Cap;
-	Self.Draw;
-	Mouse.Show;
 end;
 
 function TLabel.GetCaption: string;

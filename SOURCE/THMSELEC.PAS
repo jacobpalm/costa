@@ -120,12 +120,6 @@ begin
 end;
 
 function SelectThemeObject(CurrentSelection: TThemeObject): TThemeObject;
-var
-	i: integer;
-	Key: string;
-	X1, Y1, X2, Y2: Integer;
-	BackgroundSize: Word;
-	BackgroundP: Pointer;
 begin
 	ActiveSelection := CurrentSelection;
 	OriginalSelection := CurrentSelection;

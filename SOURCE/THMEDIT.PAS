@@ -144,8 +144,9 @@ begin
 		SelText:   SelectColor(ThemeData.SelText, false);
 	end;
 
-	Mouse.Hide;
 	BtnObject^.SetCaption(CAP_OBJECT[Ord(SelectedObject)]);
+	Mouse.Hide;
+	BtnObject^.Draw;
 	Mouse.Show;
 end;
 

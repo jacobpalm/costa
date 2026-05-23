@@ -498,6 +498,9 @@ begin
 
 	Message := ReplaceMsg(Message, CurrentTurn);
 	LblMessage^.SetCaption(Message);
+	Mouse.Hide;
+	LblMessage^.Draw;
+	Mouse.Show;
 end;
 
 procedure PrintStatus;
@@ -511,6 +514,11 @@ begin
 		LblSound^.SetCaption(MSG_SOUND_ON)
 	else
 		LblSound^.SetCaption(MSG_SOUND_OFF);
+
+	Mouse.Hide;
+	LblPlayers^.Draw;
+	LblSound^.Draw;
+	Mouse.Show;
 end;
 
 procedure BtnNewClick(Sender: PUIObject); far;

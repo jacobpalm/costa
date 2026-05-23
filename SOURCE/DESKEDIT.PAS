@@ -82,13 +82,23 @@ end;
 procedure BtnBrowse_Click(Sender: PUIObject); far;
 var
 	SelectedFile: string;
+	Path: DirStr;
+	FName: NameStr;
+	FExt: ExtStr;
 begin
 	SelectedFile := FileSelect('*.EXE', '');
 	if Length(SelectedFile) <> 0 then
 	begin
+		{If the Path field is empty, copy path from selected file there}
+		if Length(TxtPath^.GetText) = 0 then
+		begin
+			FSplit(SelectedFile, Path, FName, FExt);
+			TxtPath^.SetText(Path);
+		end;
 		TxtFileName^.SetText(SelectedFile);
 		Mouse.Hide;
 		TxtFilename^.Draw;
+		TxtPath^.Draw;
 		Mouse.Show;
 	end;
 end;

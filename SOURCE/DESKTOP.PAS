@@ -193,6 +193,9 @@ begin
 	DesktopFile := App^.Path + ReplaceMsg(DeskFilePattern, sDeskID);
 	Str(MaxDesktops, sMaxDesktops);
 	LblDesktop^.SetCaption( Concat(sDeskID, '/', sMaxDesktops) );
+	Mouse.Hide;
+	LblDesktop^.Draw;
+	Mouse.Show;
 
 	{Load the links, and exit if successful}
 	if FileExists(DesktopFile) then
