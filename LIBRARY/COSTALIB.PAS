@@ -287,11 +287,6 @@ type
 	{Settings for the library, saved to disk}
 	PLibSetting = ^TLibSetting;
 	TLibSetting = record
-		DeskID:      Integer;
-		LinkCapt,
-		LinkTarget,
-		ConfLinkDel,
-		ConfExit,
 		Audio:       Boolean;
 		ThmFile:     string[8];
 	end;
@@ -348,7 +343,7 @@ procedure SystemSound(SoundType: TSystemSound);
 implementation
 
 const
-	GlobalSettings               = 'CONFIG\SETTINGS.BIN';
+	GlobalSettings               = 'CONFIG\SYSTEM.BIN';
 
 	{Message strings}
 	MSG_SAVE_SETTING_ERROR_TITLE = 'Error saving settings';
@@ -1059,6 +1054,8 @@ end;
 
 procedure TApplication.Terminate;
 begin
+	{Debug - close windows nicely?}
+
 	If Assigned(OnExit) then
 		OnExit(@Self);
 
@@ -1144,11 +1141,6 @@ begin
 
 	{Set defaults - will be overwritten if settings file loads successfully}
 	FillChar(Setting, SizeOf(TLibSetting), 0);
-	Setting.DeskID      := 1;
-	Setting.LinkCapt    := True;
-	Setting.LinkTarget  := False;
-	Setting.ConfLinkDel := True;
-	Setting.ConfExit    := False;
 	Setting.Audio       := False;
 	Setting.ThmFile     := 'DEFAULT';
 

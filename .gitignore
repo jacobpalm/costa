@@ -9,10 +9,10 @@
 *.DSK
 *.TPU
 
-# Costa profile and configuration data
-CONFIG/DESK?.BIN
-CONFIG/SETTINGS.BIN
-CONFIG/RUN.BIN
+# Costa profile and configuration data - user specific data
+CONFIG/*.BIN
+# We do want the template for recreating the first desktop to be included
+!CONFIG/DESKDEF.BIN
 
 #Intermediate file formats used when converting data
 *.RAW
@@ -30,3 +30,6 @@ desktop.ini
 SVARDOS/PROGS
 *.SVP
 *.ZIP
+
+# Batch files created on the fly for testing
+*TEST*.BAT

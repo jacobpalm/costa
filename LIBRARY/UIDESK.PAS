@@ -51,6 +51,8 @@ type
 
 			procedure    MoveLink(Link: PLink);
 
+			procedure    SetDisplay(Captions, Targets: boolean);
+
 			function     LoadLinks(Filename: string): boolean;
 			function     SaveLinks(Filename: string): boolean;
 			procedure    ClearLinks;
@@ -66,6 +68,8 @@ type
 			TabBgImg:     Pointer;     {Saved background image for tab indicator}
 			TabBgSize:    Word;        {Memory size of the saved background image for tab indicator}
 			OnRightClick: TEventProc;  {Event to trigger on link right click - inherited OnClick is used for left click}
+			ShowCaption,
+			ShowTarget:   Boolean;     {Toggles visibility of text next to icons}
 			procedure     DrawLink(Link: PLink);
 			procedure     DoTabAction(Action: TTabAction);
 			procedure     SortLinks;   {Sort links based on position left to right, top to botton, for easy tab navigation}
@@ -157,10 +161,10 @@ begin
 
 	{If caption display is enabled, draw it to the right of the icon - also
 	 display the target filename if that setting is enabled}
-	if Setting.LinkCapt then
+	if ShowCaption then
 	begin
 		Print(Link^.Caption, X + 38, Y + 4, Color);
-		if Setting.LinkTarget then
+		if ShowTarget then
 		begin
 			FSplit(Link^.FileName, FDir, FName, FExt);
 			Print(FName + FExt, X + 38, Y + 18, Color);
@@ -517,6 +521,13 @@ begin
 	Mouse.Hide;
 	Self.Draw;
 	Mouse.Show;
+end;
+
+procedure TDesktop.SetDisplay(Captions, Targets: boolean);
+begin
+	ShowCaption := Captions;
+	ShowTarget := Targets;
+	Self.AddState(SDirty);
 end;
 
 function TDesktop.LoadLinks(Filename: string): boolean;

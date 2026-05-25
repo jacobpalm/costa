@@ -11,6 +11,7 @@ const
 	AppVersion                = '2.0';
 	AppAuthor                 = 'Jacob Palm';
 	AppIcon                   = 'LOGO';
+	AppConfigFile             = 'DESKTOP';
 
 	RunFile                   = 'CONFIG\RUN.BIN';
 	DeskFilePattern           = 'CONFIG\DESK%s.BIN'; {%s = placeholder for active desktop ID}
@@ -52,6 +53,9 @@ const
 	MSG_RUN_COSTA             = 'This program is intended to be run from within Costa.' + #10 + #13 +
 	                            'Please run COSTA.EXE to start Costa and the desktop.';
 
+type
+	{$I DESKSET.INC} {Desktop settings are in separate file so CONFIG can use them too}
+
 var
 	App:         PApplication;
 	WinMain:     PWindow;
@@ -66,6 +70,8 @@ var
 	HkDesktop:   array[1..MaxDesktops] of PHotkey;
 
 	DesktopFile: PathStr;
+
+	Settings:    TDeskSetting;
 
 procedure RunExternal(Target: PLink);
 var
@@ -170,7 +176,7 @@ begin
 	result := false;
 
 	{Don't switch if the requested desktop is already active}
-	if (DeskID = Setting.DeskID) and not ForceSwitch then
+	if (DeskID = Settings.DeskID) and not ForceSwitch then
 		exit;
 
 	{Make sure current desktop is saved before clearing}
@@ -182,14 +188,14 @@ begin
 
 	{Make sure we stay within bounds}
 	if (DeskID < 1) then
-		Setting.DeskID := MaxDesktops
+		Settings.DeskID := MaxDesktops
 	else if (DeskID > MaxDesktops) then
-		Setting.DeskID := 1
+		Settings.DeskID := 1
 	else
-		Setting.DeskID := DeskID;
+		Settings.DeskID := DeskID;
 
 	{Replace the placeholder char}
-	Str(Setting.DeskID, sDeskID);
+	Str(Settings.DeskID, sDeskID);
 	DesktopFile := App^.Path + ReplaceMsg(DeskFilePattern, sDeskID);
 	Str(MaxDesktops, sMaxDesktops);
 	LblDesktop^.SetCaption( Concat(sDeskID, '/', sMaxDesktops) );
@@ -207,7 +213,7 @@ begin
 	end;
 
 	{If loading failed or file wasn't found, try to load default desktop links}
-	if FileExists(DesktopDefault) and (Setting.DeskID = 1) then
+	if FileExists(DesktopDefault) and (Settings.DeskID = 1) then
 		Desk^.LoadLinks(DesktopDefault);
 
 	{Wether we loaded default links or not, save the links so that the file now exists}
@@ -266,7 +272,7 @@ var
 begin
 	DoExit := false;
 
-	if not Setting.ConfExit then
+	if not Settings.ConfExit then
 		{If exit confirmation is disabled, just exit}
 		DoExit := true
 	else
@@ -317,7 +323,7 @@ begin
 		{Remove/delete link}
 		laRemove:
 		begin
-			if Setting.ConfLinkDel then
+			if Settings.ConfLinkDel then
 				{Link delete confirmation enabled, prompt user}
 				result := MsgBox(MSG_REMOVE_LINK_TITLE, MSG_REMOVE_LINK, MsgQuest)
 			else
@@ -341,12 +347,12 @@ end;
 
 procedure BtnPreviousClick(Sender: PUIObject); far;
 begin
-	SwitchDesktop(Setting.DeskID - 1, false);
+	SwitchDesktop(Settings.DeskID - 1, false);
 end;
 
 procedure BtnNextClick(Sender: PUIObject); far;
 begin
-	SwitchDesktop(Setting.DeskID + 1, false);
+	SwitchDesktop(Settings.DeskID + 1, false);
 end;
 
 procedure HkDesktopClick(Sender: PUIObject); far;
@@ -359,7 +365,7 @@ begin
 		if Sender = PUIObject(HkDesktop[i]) then
 		begin
 			{Switch to that desktop if it's not the current one}
-			if i <> Setting.DeskID then
+			if i <> Settings.DeskID then
 				SwitchDesktop(i, false);
 			exit;
 		end;
@@ -371,7 +377,7 @@ begin
 	{First time the main window is drawn, load the desktop links}
 	if Length(DesktopFile) = 0 then
 	begin
-		SwitchDesktop(Setting.DeskID, true);
+		SwitchDesktop(Settings.DeskID, true);
 		{Show the desktop now that links are loaded}
 		Desk^.RemoveState(SHidden);
 	end;
@@ -382,6 +388,23 @@ begin
 	{When the window is closed, the desktop will exit. Save data before closing}
 	Desk^.SaveLinks(DesktopFile);
 	App^.SaveSettings;
+	App^.Terminate;
+end;
+
+procedure AppRun(Sender: PUIObject); far;
+begin
+	if not App^.LoadSettings then
+	begin
+		{If loading of settings fails, use defaults}
+		SoundNote(800, 100);
+		Settings.DeskID      := 1;
+		Settings.LinkCapt    := True;
+		Settings.LinkTarget  := False;
+		Settings.ConfLinkDel := True;
+		Settings.ConfExit    := False;
+	end;
+
+	Desk^.SetDisplay(Settings.LinkCapt, Settings.LinkTarget);
 end;
 
 procedure InitUI;
@@ -474,11 +497,11 @@ begin
 
 	New(App, Init);
 	App^.SetInfo(AppName, AppVersion, AppAuthor, AppIcon);
+	App^.SetConfigFile(AppConfigFile, @Settings, SizeOf(TDeskSetting));
+	App^.SetOnRun(AppRun);
 
 	InitUI;
 
-	WinMain^.Run;
-	Dispose(WinMain, Done);
-	WinMain := nil;
-	App^.Terminate;
+	App^.OpenWindow(WinMain);
+	App^.Run;
 end.

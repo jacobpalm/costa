@@ -9,17 +9,11 @@ const
 	AppAuthor            = 'Jacob Palm';
 	AppIcon              = 'CONFIG';
 
-	LinkDesc             = 0;
-	LinkTarget           = 1;
-	LinkDelete           = 2;
-	ConfExit             = 3;
-	Audio                = 4;
-
-	CAP_EXIT             = 'E' + #127 + 'xit';
 	CAP_ABOUT            = #127 + 'About...';
+	CAP_EXIT             = 'E' + #127 + 'xit';
 	CAP_PREVIOUS         = #27 + ' ' + #127 + 'Previous';
 	CAP_NEXT             = #127 + 'Next ' + #26;
-	CAP_LINKDESC         = 'Show icon ' + #127 + 'captions';
+	CAP_LinkCapt         = 'Show icon ' + #127 + 'captions';
 	CAP_LINKTARGET       = 'Show icon pr' + #127 + 'ogram names';
 	CAP_LINKDELETE       = 'Confirm icon ' + #127 + 'removal';
 	CAP_CONFEXIT         = 'Confirm before ' + #127 + 'exiting Costa';
@@ -35,7 +29,15 @@ const
 	                       'Choose colors for the UI.';
 	CAP_LOADING          = 'Loading...';
 
-	MSG_NO_THEMES        = 'No themes found in \THEMES.';
+	MSG_NO_THEMES        = 'No themes found in THEMES.';
+
+	LinkCapt             = 0;
+	LinkTarget           = 1;
+	LinkDelete           = 2;
+	ConfExit             = 3;
+	Audio                = 4;
+
+	DeskConfigFile       = 'DESKTOP';
 
 type
 	PThemeList = ^TThemeList;
@@ -43,6 +45,8 @@ type
 		FileName: string;
 		Next: PThemeList;
 	end;
+
+	{$I DESKSET.INC} {Settings record used by desktop is defined here}
 
 var
 	{Main window}
@@ -66,6 +70,8 @@ var
 	NewThemeList:   PThemeList;
 	ThemeCount:     integer;
 	SelectedTheme:  integer;
+
+	DeskSettings:   TDeskSetting;
 
 procedure AddThemeToList(const ThemeName: string);
 var
@@ -179,17 +185,27 @@ begin
 	ThemePreview;
 end;
 
+procedure ChkSettingLinkCaptChange(Sender: PUIObject); far;
+begin
+	{Link target can only be shown if LinkCapt is enabled }
+	if ChkSetting[LinkCapt]^.GetState(SSelected) then
+		ChkSetting[LinkTarget]^.AddState(SEnabled)
+	else
+		ChkSetting[LinkTarget]^.RemoveState(SEnabled);
+end;
+
 procedure BtnExitClick(Sender: PUIObject); far;
 begin
 	if ThemeCount > 0 then
 		Setting.ThmFile := SelectedFileName;
 
-	Setting.LinkCapt := ChkSetting[LinkDesc]^.GetChecked;
-	Setting.LinkTarget := ChkSetting[LinkTarget]^.GetChecked;
-	Setting.ConfLinkDel := ChkSetting[LinkDelete]^.GetChecked;
-	Setting.ConfExit := ChkSetting[ConfExit]^.GetChecked;
+	DeskSettings.LinkCapt := ChkSetting[LinkCapt]^.GetChecked;
+	DeskSettings.LinkTarget := ChkSetting[LinkTarget]^.GetChecked;
+	DeskSettings.ConfLinkDel := ChkSetting[LinkDelete]^.GetChecked;
+	DeskSettings.ConfExit := ChkSetting[ConfExit]^.GetChecked;
 	Setting.Audio := ChkSetting[Audio]^.GetChecked;
 
+	App^.SaveSettings;
 	App^.SaveSystemSettings;
 	App^.Terminate;
 end;
@@ -245,13 +261,16 @@ begin
 	FrmSettings^.SetSize(310, 293);
 	New(ImgSetting, Init(14, 14, 'CONFIG', FrmSettings));
 	New(LblSettings, Init(56, 19, CAP_SETTINGS, FrmSettings));
-	New(ChkSetting[LinkDesc], Init(14, 56, CAP_LINKDESC, Setting.LinkCapt, FrmSettings));
-	ChkSetting[LinkDesc]^.AddHotkey(KeyAltC);
-	New(ChkSetting[LinkTarget], Init(14, 78, CAP_LINKTARGET, Setting.LinkTarget, FrmSettings));
+	New(ChkSetting[LinkCapt], Init(14, 56, CAP_LinkCapt, DeskSettings.LinkCapt, FrmSettings));
+	ChkSetting[LinkCapt]^.AddHotkey(KeyAltC);
+	ChkSetting[LinkCapt]^.SetOnChange(ChkSettingLinkCaptChange);
+	New(ChkSetting[LinkTarget], Init(14, 78, CAP_LINKTARGET, DeskSettings.LinkTarget, FrmSettings));
 	ChkSetting[LinkTarget]^.AddHotkey(KeyAltO);
-	New(ChkSetting[LinkDelete], Init(14, 100, CAP_LINKDELETE, Setting.ConfLinkDel, FrmSettings));
+	if not DeskSettings.LinkCapt then
+		ChkSetting[LinkTarget]^.RemoveState(SEnabled);
+	New(ChkSetting[LinkDelete], Init(14, 100, CAP_LINKDELETE, DeskSettings.ConfLinkDel, FrmSettings));
 	ChkSetting[LinkDelete]^.AddHotkey(KeyAltR);
-	New(ChkSetting[ConfExit], Init(14, 122, CAP_CONFEXIT, Setting.ConfExit, FrmSettings));
+	New(ChkSetting[ConfExit], Init(14, 122, CAP_CONFEXIT, DeskSettings.ConfExit, FrmSettings));
 	ChkSetting[ConfExit]^.AddHotkey(KeyAltE);
 	New(ChkSetting[Audio], Init(14, 144, CAP_AUDIO, Setting.Audio, FrmSettings));
 	ChkSetting[Audio]^.AddHotkey(KeyAltU);
@@ -301,6 +320,11 @@ end;
 begin
 	New(App, Init);
 	App^.SetInfo(AppName, AppVersion, AppAuthor, AppIcon);
+
+	{At the moment, config only changes system and desktop settings, so for now we can just used
+	 the desktop config file as our own}
+	App^.SetConfigFile(DeskConfigFile, @DeskSettings, SizeOf(TDeskSetting));
+	App^.LoadSettings;
 
 	InitUI;
 
