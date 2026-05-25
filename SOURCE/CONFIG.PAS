@@ -190,7 +190,7 @@ begin
 	Setting.ConfExit := ChkSetting[ConfExit]^.GetChecked;
 	Setting.Audio := ChkSetting[Audio]^.GetChecked;
 
-	App^.SaveSettings;
+	App^.SaveSystemSettings;
 	App^.Terminate;
 end;
 

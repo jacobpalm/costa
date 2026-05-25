@@ -29,13 +29,15 @@ type
 			Align:      TAlign;
 
 			procedure   SetLimits;
+			procedure   Scroll;
 			procedure   DrawLine(Index: Integer);
 	end;
 
 implementation
 
 const
-	LogPadding = 4;
+	LogPadding        = 4;
+	KeepLinesOnScroll = 3;
 
 constructor TLogArea.Init(X, Y: Integer; Parent: PContainer);
 const
@@ -57,6 +59,7 @@ end;
 procedure TLogArea.Draw;
 var
 	X1, X2, Y1, Y2: Integer;
+	I: Integer;
 	FgColor, BgColor: Byte;
 	TestStr: String;
 begin
@@ -72,13 +75,10 @@ begin
 	{Draw the area using ancestor TArea}
 	TArea.Draw;
 
-	if GetState(SDirty) then
-	begin
-		AddEntry('Still dirty');
-		RemoveState(SDirty);
-	end;
 	{Draw log lines}
-	{DEBUG}
+	if LineCount > 0 then
+		for I := 0 to LineCount - 1 do
+			DrawLine(I);
 end;
 
 procedure TLogArea.AddEntry(Text: string);
@@ -88,7 +88,7 @@ begin
 		SetLimits;
 
 	if LineCount = MaxLines then
-		Self.Clear; {Debug - carry a couple of lines over instead of just clearing}
+		Self.Scroll;
 
 	{Truncate text if too wide}
 	if Length(Text) > MaxLength then
@@ -98,9 +98,13 @@ begin
 	New(Entries[LineCount - 1]);
 	Entries[LineCount - 1]^ := Text;
 
-	Mouse.Hide;
-	Self.DrawLine(LineCount - 1);
-	Mouse.Show;
+	{Draw the entry, unless entire object is going to be redrawn}
+	if not Self.GetState(SDirty) then
+	begin
+		Mouse.Hide;
+		Self.DrawLine(LineCount - 1);
+		Mouse.Show;
+	end;
 end;
 
 procedure TLogArea.Clear;
@@ -112,10 +116,42 @@ begin
 			Dispose(Entries[i]);
 
 	FillChar(Entries, SizeOf(Entries), 0);
-
 	LineCount := 0;
 
-	AddState(SDirty);
+	{Trigger redraw}
+	Self.AddState(SDirty);
+end;
+
+procedure TLogArea.Scroll;
+var
+	i: integer;
+begin
+	{Move KeepLinesOnScroll items to beginning of Entries}
+	for i := 0 to KeepLinesOnScroll - 1 do
+	begin
+		{Dispose existing strings before overwriting pointers}
+		if Entries[i] <> nil then
+			Dispose(Entries[i]);
+
+		{Copy pointer from end to beginning}
+		Entries[i] := Entries[LineCount - KeepLinesOnScroll + i];
+
+		{Set pointer of copied item to nil so it doesn't get cleared below}
+		Entries[LineCount - KeepLinesOnScroll + i] := nil;
+	end;
+
+	{Clear the rest of the lines}
+	for i := KeepLinesOnScroll to High(Entries) do
+	begin
+		if Entries[i] <> nil then
+		begin
+			Dispose(Entries[i]);
+			Entries[i] := nil;
+		end;
+	end;
+
+	LineCount := KeepLinesOnScroll;
+	Self.AddState(SDirty);
 end;
 
 procedure TLogArea.DrawLine(Index: Integer);
@@ -128,7 +164,7 @@ begin
 		exit;
 
 	{Validate index}
-	if (Index > MaxLines) or (Index > High(Entries)) then
+	if (Index > MaxLines) or (Index > High(Entries)) or (Index < 0) then
 		exit;
 	if Entries[Index] = nil then
 		exit;
@@ -141,7 +177,7 @@ begin
 	GetPos(X1, Y1, True);
 	GetSize(X2, Y2);
 
-	PrintY := Y1 + LogPadding + ((LineCount - 1) * PrintLineH);
+	PrintY := Y1 + LogPadding + (Index * PrintLineH);
 	case Align of
 		AlCenter:
 			PrintX := (X2 - PrintW(Entries[Index]^)) div 2 + X1;

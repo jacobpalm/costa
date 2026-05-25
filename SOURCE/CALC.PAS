@@ -10,11 +10,15 @@ const
 	AppVersion           = '2.0';
 	AppAuthor            = 'Jacob Palm';
 	AppIcon	             = 'CALC';
+	AppConfigFile        = 'CALC';
 
 	CAP_ABOUT            = #127 + 'About...';
 	CAP_EXIT             = 'E' + #127 + 'xit';
 	CAP_CLEAR            = #127 + 'C';
 	CAP_CLEAR_EVERYTHING = 'C' + #127 + 'E';
+
+	CAP_HIDE_LOG         = 'Hide ' + #127 + 'log';
+	CAP_SHOW_LOG         = 'Show ' + #127 + 'log';
 
 	MSG_DIV_ZERO         = 'ERROR: Division by zero';
 	MSG_OVERFLOW         = 'ERROR: Overflow';
@@ -27,6 +31,10 @@ const
 type
 	TOperand             = (opNone, opAdd, opSubtract, opMultiply, opDivide);
 	TCalcError           = (ceNone, ceOverflow, ceDivZero);
+
+	TCalcSetting = record
+		ShowLog: boolean;
+	end;
 
 var
 	App:                 PApplication;
@@ -43,8 +51,10 @@ var
 	BtnMultiply,
 	BtnDivide,
 	BtnEquals,
-	BtnExit,
-	BtnAbout:            PButton;
+	BtnLog,
+	BtnAbout,
+	BtnExit:             PButton;
+	FrmClientArea:       PFrame;
 
 	HkBackspace,
 	HkEscape:            PHotKey;
@@ -62,6 +72,8 @@ var
 	NewInput:            Boolean;    {Tracks if display needs to be cleared when entering a new number}
 
 	CalcError:           TCalcError; {Error status}
+
+	Settings:            TCalcSetting;
 
 {Returns a pretty formated string representation of a Real number}
 function RealPretty(RealValue: Real): String;
@@ -128,6 +140,24 @@ begin
 		ResultStr := '0';
 
 	RealPretty := ResultStr;
+end;
+
+procedure ToggleLog(Shown: boolean);
+begin
+	if Shown then
+	begin
+		AreaLog^.RemoveState(SHidden);
+		BtnLog^.SetCaption(CAP_HIDE_LOG);
+		FrmCalc^.SetPos(12, 13);
+	end
+	else
+	begin
+		AreaLog^.AddState(SHidden);
+		BtnLog^.SetCaption(CAP_SHOW_LOG);
+		FrmCalc^.Center(OrBoth);
+	end;
+
+	Settings.ShowLog := Shown;
 end;
 
 procedure UpdateDisplay;
@@ -303,7 +333,6 @@ begin
 
 	CurrentInput := '';
   NewInput := False;
-
 end;
 
 procedure BtnEqualsClick(Sender: PUIObject); far;
@@ -388,6 +417,12 @@ begin
 		BtnCE^.Click;
 end;
 
+procedure BtnLogClick(Sender: PUIObject); far;
+begin
+	{If hidden, GetState := true which will toggle log on}
+	ToggleLog(AreaLog^.GetState(SHidden));
+end;
+
 procedure BtnAboutClick(Sender: PUIObject); far;
 begin
 	AboutBox(App);
@@ -395,7 +430,16 @@ end;
 
 procedure BtnExitClick(Sender: PUIObject); far;
 begin
+	App^.SaveSettings;
 	App^.Terminate;
+end;
+
+procedure AppRun(Sender: PUIObject); far;
+begin
+	if not App^.LoadSettings then
+		Settings.ShowLog := true;
+
+	ToggleLog(Settings.ShowLog);
 end;
 
 procedure InitUI;
@@ -409,10 +453,43 @@ begin
 		RemoveState(SBordered);
 	end;
 
-	New(FrmCalc, Init(12, 42, WinMain));
+	New(BtnLog, Init(2, 2, CAP_SHOW_LOG, WinMain));
+	With BtnLog^ do
+	begin
+		AddHotkey(KeyAltL);
+		SetOnClick(BtnLogClick);
+	end;
+
+	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
+	With BtnAbout^ do
+	begin
+		SetOnClick(BtnAboutClick);
+		AddHotKey(KeyAltA);
+	end;
+
+	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
+	With BtnExit^ do
+	begin
+		SetOnClick(BtnExitClick);
+		AddHotKey(KeyAltX);
+		AddHotKey(KeyAltF4);
+	end;
+
+	{Non-visible frame used to center objects below menu bar and to make sure object MSG_OVERFLOW
+	 only redraws part of the window}
+	New(FrmClientArea, Init(0, 29, WinMain));
+	With FrmClientArea^ do
+	begin
+		SetSize(639, 329);
+		RemoveState(SBordered);
+		RemoveState(STransParent);
+	end;
+
+	New(FrmCalc, Init(0, 0, FrmClientArea));
 	with FrmCalc^ do
 	begin
 		SetSize(218, 208);
+		Center(OrBoth);
 	end;
 
 	New(TxtCalc, Init(13, 12, '', FrmCalc));
@@ -509,37 +586,25 @@ begin
 		SetOnClick(BtnEqualsClick);
 	end;
 
-	New(AreaLog, Init(242, 42, WinMain));
+	New(AreaLog, Init(242, 13, FrmClientArea));
 	with AreaLog^ do
 	begin
 		SetSize(385, 295);
 		SetAlign(AlRight);
-	end;
-
-	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
-	With BtnAbout^ do
-	begin
-		SetOnClick(BtnAboutClick);
-		AddHotKey(KeyAltA);
-	end;
-	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
-	With BtnExit^ do
-	begin
-		SetOnClick(BtnExitClick);
-		AddHotKey(KeyAltX);
-		AddHotKey(KeyAltF4);
+		AddState(SHidden);
 	end;
 
 	New(HkBackspace, Init(KeyBackspace, WinMain));
 	HkBackspace^.SetOnClick(HkBackSpaceClick);
 	New(HkEscape, Init(KeyEscape, WinMain));
 	HkEscape^.SetOnClick(HkEscapeClick);
-
 end;
 
 begin
 	New(App, Init);
 	App^.SetInfo(AppName, AppVersion, AppAuthor, AppIcon);
+	App^.SetConfigFile(AppConfigFile, @Settings, SizeOf(TCalcSetting));
+	App^.SetOnRun(AppRun);
 
 	InitUI;
 

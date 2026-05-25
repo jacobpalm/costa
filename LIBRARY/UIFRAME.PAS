@@ -31,6 +31,7 @@ const
 begin
 	Inherited Init(X, Y, Parent);
 	SetSize(DefaultW, DefaultH);
+	AddState(SBordered);
 	LightColor := Thm.Light;
 	DarkColor := Thm.Shadow;
 end;
@@ -50,23 +51,29 @@ begin
 	Inc(Y2, Y1);
 
 	{Interior}
-	BgColor := GetBGColor;
 	if not GetState(STransparent) then
 	begin
+		BgColor := GetBGColor;
 		if BgColor = ColorDefault then
 			BgColor := Thm.Win;
 		SetFillStyle(SolidFill, BGColor);
-		Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 2);
+		if GetState(SBordered) then
+			Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 2)
+		else
+			Bar(X1, Y1, X2, Y2);
 	end;
 
 	{Borders}
-	SetColor(LightColor);
-	Rectangle(X1 + 1, Y1 + 1, X2 - 1, Y2);
-	SetColor(DarkColor);
-	Rectangle(X1, Y1, X2 - 1, Y2 - 1);
+	if GetState(SBordered) then
+	begin
+		SetColor(LightColor);
+		Rectangle(X1 + 1, Y1 + 1, X2 - 1, Y2);
+		SetColor(DarkColor);
+		Rectangle(X1, Y1, X2 - 1, Y2 - 1);
+	end;
 
+	{Draw child objects and call inherited draw to update State etc.}
 	DrawChildren;
-
 	TUIObject.Draw;
 end;
 

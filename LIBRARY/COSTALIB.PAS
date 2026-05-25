@@ -155,6 +155,7 @@ type
 			destructor  Done; virtual;
 			procedure   AddObject(Obj: PUIObject);
 			procedure   CheckEvent; virtual;
+			procedure   Draw; virtual;
 			procedure   DrawChildren;
 			procedure   DrawDirtyObjects;
 			function    IsContainer: boolean; virtual;
@@ -230,8 +231,12 @@ type
 
 			function    Path: DirStr;
 
-			procedure   LoadSettings;
-			procedure   SaveSettings;
+			procedure   LoadSystemSettings;
+			procedure   SaveSystemSettings;
+
+			procedure   SetConfigFile(Filename: String; Ptr: pointer; MemSize: Integer);
+			function    LoadSettings: boolean;
+			function    SaveSettings: boolean;
 
 			procedure   LoadTheme(Filename: string);
 
@@ -254,6 +259,9 @@ type
 			OnRun:      TEventProc;
 			OnExit:     TEventProc;
 			Window:     PWindowNode;
+			ConfFile:   String[8];   {Filename without extension of apps config file, if any}
+			ConfPtr:    Pointer;     {Pointer to, and size off, app config - usually a Record type declared by user}
+			ConfLen:    Integer;
 	end;
 
 	{Mouse support is implemnted via custom object}
@@ -383,13 +391,8 @@ begin
 	end;
 
 	{If object was visible and has a parent, that parent needs to be redrawn}
-	if (ParentObj <> nil) and not (SHidden in State) then
+	if not (SHidden in State) and (ParentObj <> nil) then
 		ParentObj^.AddState(SDirty);
-end;
-
-function TUIObject.GetState(S: TState): Boolean;
-begin
-	GetState := (S in State);
 end;
 
 {Check for hotkeys events assigned to the object}
@@ -482,25 +485,35 @@ begin
 	end;
 end;
 
-
 procedure TUIObject.AddState(S: TState);
 begin
+	{Do nothing is state is already there}
+	if S in State then
+		exit;
+
 	Include(State, S);
 
-	{State change should trigger redraw}
-	if s <> SDirty then
-		Include(State, SDirty);
+	{Any state change should trigger redraw}
+	Include(State, SDirty);
+
+	{If state added is SHidden, parent must be redrawn to hide the object}
+	if (s = SHidden) and (ParentObj <> nil) then
+		ParentObj^.AddState(SDirty);
+end;
+
+function TUIObject.GetState(S: TState): Boolean;
+begin
+	GetState := (S in State);
 end;
 
 procedure TUIObject.RemoveState(S: TState);
 begin
 	Exclude(State, S);
 
-	{State change should trigger redraw}
+	{State change should trigger redraw - unless of course SDirty is being cleared because of redraw}
 	if s <> SDirty then
 		Include(State, SDirty);
 end;
-
 
 {Check for events on object}
 procedure TUIObject.CheckEvent;
@@ -508,7 +521,7 @@ var
 	Clicked: boolean;
 begin
 	{Don't check for events if object is disabled or hidden}
-	if not GetState(SEnabled) or GetState(SHidden) then
+	if not (SEnabled in State) or (SHidden in State) then
 		exit;
 
 	Clicked := False;
@@ -539,10 +552,10 @@ end;
 procedure TUIObject.Draw;
 begin
 	{Don't draw or trigger event if object is hidden}
-	if GetState(SHidden) then
+	if SHidden in State then
 		exit;
 
-	RemoveState(SDirty);
+	Exclude(State, SDirty);
 
 	if Assigned(OnDraw) then
 		OnDraw(@Self);
@@ -555,7 +568,12 @@ begin
 	if Y <> SizeRetain then
 		Top := Y;
 
-	AddState(SDirty);
+	Include(State, SDirty);
+
+	{If the object is currently visible, the parent will need to be redrawn or the object will show twice
+	 when it is redrawn in new position}
+	if not (SHidden in State) and (ParentObj <> nil) then
+		ParentObj^.AddState(SDirty);
 end;
 
 procedure TUIObject.GetPos(var X, Y: Integer; Absolute: Boolean);
@@ -596,7 +614,12 @@ begin
 	if Orientation in [OrVertical, OrBoth] then
 		Top := (ParentH - Height) div 2;
 
-	AddState(SDirty);
+	Include(State, SDirty);
+
+	{If the object is currently visible, the parent will need to be redrawn or the object will show twice
+	 when it is redrawn in new position}
+	if not (SHidden in State) and (ParentObj <> nil) then
+		ParentObj^.AddState(SDirty);
 end;
 
 procedure TUIObject.SetParent(Parent: PContainer);
@@ -625,7 +648,12 @@ begin
 	if H <> SizeRetain then
 		Height := H;
 
-	AddState(SDirty);
+	Include(State, SDirty);
+
+	{If the object is currently visible, the parent will need to be redrawn or the object will be drawn with new size
+	 on top of the previous draw}
+	if not (SHidden in State) and (ParentObj <> nil) then
+		ParentObj^.AddState(SDirty);
 end;
 
 procedure TUIObject.GetSize(var W, H: Integer);
@@ -642,7 +670,7 @@ begin
 	{Set the high byte of Colors to the foreground color}
 	Colors := (Colors and $00FF) or (Color shl 8);
 
-	AddState(SDirty);
+	Include(State, SDirty);
 end;
 
 procedure TUIObject.SetBGColor(Color: Byte);
@@ -653,7 +681,7 @@ begin
 	{Set the low byte of Colors to the background color}
 	Colors := (Colors and $FF00) or Color;
 
-	AddState(SDirty);
+	Include(State, SDirty);
 end;
 
 function TUIObject.GetFGColor: Byte;
@@ -668,7 +696,6 @@ begin
 	GetBGColor := Colors and $00FF;
 end;
 
-
 procedure TUIObject.SetOnClick(Event: TEventProc);
 begin
 	OnClick := Event;
@@ -679,6 +706,9 @@ begin
 	OnDraw := Event;
 end;
 
+{TContainer overrides this function with one that returns true - used in event/draw loops
+ to determine if an object can have children, since Turbo Pascal doesn't have a built-in
+ way to determine inheritance at runtime}
 function TUIObject.IsContainer: boolean;
 begin
 	IsContainer := false;
@@ -946,10 +976,14 @@ begin
 	Version  := '';
 	Author   := '';
 	Icon     := '';
+	ConfFile := '';
+	ConfPtr := nil;
+	ConfLen := 0;
 	ExitCode := 0;
 	Window   := nil;
 	OnRun    := nil;
 	OnExit   := nil;
+
 	{Retrieve full path of the executable}
 	FullPath := ParamStr(0);
 	FSplit(FullPath, FPath, FName, FExt);
@@ -969,7 +1003,7 @@ begin
 	End;
 
 	{Load settings and theme}
-	Self.LoadSettings;
+	Self.LoadSystemSettings;
 	Self.LoadTheme(Setting.ThmFile);
 
 	{Initialize mouse}
@@ -1103,7 +1137,7 @@ begin
 	end;
 end;
 
-procedure TApplication.LoadSettings;
+procedure TApplication.LoadSystemSettings;
 var
 	F: file;
 begin
@@ -1138,7 +1172,7 @@ begin
 	Close(F);
 end;
 
-procedure TApplication.SaveSettings;
+procedure TApplication.SaveSystemSettings;
 var
 	F: file;
 begin
@@ -1154,6 +1188,95 @@ begin
 	end;
 	BlockWrite(F, Setting, SizeOf(TLibSetting));
 	Close(F);
+end;
+
+procedure TApplication.SetConfigFile(Filename: String; Ptr: pointer; MemSize: Integer);
+begin
+	{Input validation - anything off? Then clear everything to be safe}
+	if (Length(Filename) > 8) or (Length(FileName) < 1) or
+		 (Ptr = nil) or (MemSize < 1) then
+	begin
+		ConfFile := '';
+		ConfPtr := nil;
+		ConfLen := 0;
+		exit;
+	end;
+
+	ConfFile := Filename;
+	ConfPtr := Ptr;
+	ConfLen := MemSize;
+end;
+
+function TApplication.LoadSettings: boolean;
+var
+	F: file;
+	Filename: String;
+begin
+	{Validate config vars before attempting load}
+	if (ConfPtr = nil) or (Length(ConfFile) = 0) or (ConfLen < 1) then
+	begin
+		LoadSettings := false;
+		Exit;
+	end;
+
+	Filename := Self.Path + 'CONFIG\' + ConfFile + '.BIN';
+
+	if not FileExists(Filename) then
+	begin
+		LoadSettings := false;
+		Exit;
+	end;
+
+	Assign(F, Filename);
+	{$I-}
+	Reset(F, 1);
+	{$I+}
+	if IOResult <> 0 then
+	begin
+		LoadSettings := false;
+		Exit;
+	end;
+
+	if FileSize(F) <> ConfLen then
+	begin
+		Close(F);
+		LoadSettings := false;
+		exit;
+	end;
+
+	BlockRead(F, ConfPtr^, ConfLen);
+	Close(F);
+	LoadSettings := true;
+end;
+
+function TApplication.SaveSettings: boolean;
+var
+	F: file;
+	Filename: String;
+begin
+	{Validate config vars before attempting load}
+	if (ConfPtr = nil) or (Length(ConfFile) = 0) or (ConfLen < 1) then
+	begin
+		SaveSettings := false;
+		Exit;
+	end;
+
+	Filename := Self.Path + 'CONFIG\' + ConfFile + '.BIN';
+
+	Assign(F, Filename);
+	{$I-}
+	Rewrite(F, 1);
+	{$I+}
+	if IOResult <> 0 then
+	begin
+		{MsgBox(MSG_SAVE_SETTING_ERROR_TITLE, MSG_SAVE_SETTING_ERROR_TEXT, MsgError);}
+		{DEBUG - this must be handled alternatively, MsgBox can't be included in the library}
+		SaveSettings := false;
+		Exit;
+	end;
+	BlockWrite(F, ConfPtr^, ConfLen);
+	Close(F);
+	SaveSettings := true;
 end;
 
 procedure TApplication.SetInfo(AppName, AppVersion, AppAuthor, AppIcon: string);
@@ -1233,6 +1356,15 @@ begin
 
 	{Since object has just been added, a draw is needed}
 	Obj^.AddState(SDirty);
+end;
+
+procedure TContainer.Draw;
+begin
+	{TContainer has no visible element, so just draw its children}
+	DrawChildren;
+
+	{Call inherited Draw to handle state etc.}
+	TUIObject.Draw;
 end;
 
 procedure TContainer.CheckEvent;

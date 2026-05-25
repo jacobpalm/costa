@@ -13,7 +13,7 @@ type
 			procedure   Draw; virtual;
 
 			procedure   SetIcon(Icon: string);
-			function	GetIcon: string;
+			function	  GetIcon: string;
 		private
 			IconFile:   string[8];
 	end;
