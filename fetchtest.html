@@ -111,7 +111,12 @@
         </div>
 
         <!-- Content -->
-        <div id="siteContent"></div>
+        <div id="contentContainer">
+            <p>
+                Loading content...<br />If this message doesn't disappear, make
+                sure JavaScript is enabled in your browser.
+            </p>
+        </div>
 
         <!-- Footer -->
         <footer class="w3-container hidden-print">
@@ -138,14 +143,20 @@
 
         <!-- Dynamic content load -->
         <script>
-            const contentContainer = document.getElementById("siteContainer");
+            const contentContainer =
+                document.getElementById("contentContainer");
 
             fetchContent("content.html");
 
             async function fetchContent(file) {
-                let contentFile = await fetch(file);
-                let content = await contentFile.text();
-                contentContainer.innerHTML = content;
+                try {
+                    let contentObj = await fetch(file);
+                    let contentText = await myObject.text();
+                    contentContainer.innerHTML = contentText;
+                } catch (error) {
+                    contentContainer.innerHTML =
+                        "Error while retrieving " + file + ": " + error;
+                }
             }
         </script>
     </body>
