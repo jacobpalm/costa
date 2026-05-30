@@ -140,8 +140,10 @@
         <script>
             const contentContainer = document.getElementById("siteContainer");
 
-            async function fetchContent() {
-                let contentFile = await fetch("content.html");
+            fetchContent("content.html");
+
+            async function fetchContent(file) {
+                let contentFile = await fetch(file);
                 let content = await contentFile.text();
                 contentContainer.innerHTML = content;
             }
