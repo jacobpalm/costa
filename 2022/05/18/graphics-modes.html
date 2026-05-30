@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>Graphics modes - EGA and VGA - The Costa GUI</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Costa is a small and lightweight GUI (Graphical User Interface) for MS-DOS compatible systems, provided to you free of charge." />
+        <meta
+            name="keywords"
+            content="costa, gui, jacob, palm, qbasic, vbdos, visual, basic, walrus, hvalrossen, vb, qb, quickbasic, dos, shell"
+        />
+        <meta name="author" content="Jacob Palm" />
+
+        <base href="https://costa.jacobpalm.dk" />
+
+        <link rel="shortcut icon" href="https://costa.jacobpalm.dk/favicon.ico" />
+
+        <link rel="stylesheet" href="assets/w3.css" />
+        <link rel="stylesheet" href="assets/custom.css" />
+
+        <link rel="canonical" href="https://costa.jacobpalm.dk" />
+        <link
+            rel="alternate"
+            type="application/atom+xml"
+            title="The Costa GUI"
+            href="https://costa.jacobpalm.dk/feed.xml"
+        />
+    </head>
+    <body id="sitetop">
+        <!-- Navbar desktop -->
+        <div
+            class="w3-bar w3-mobile menubar w3-card w3-large w3-hide-medium w3-hide-small hidden-print"
+        >
+            <div class="w3-content">
+                <a
+                    href="https://costa.jacobpalm.dk/index.html#about"
+                    class="w3-bar-item w3-padding-large w3-mobile"
+                    >About</a
+                >
+                <a
+                    href="https://costa.jacobpalm.dk/index.html#downloads"
+                    class="w3-bar-item w3-padding-large w3-mobile"
+                    >Download</a
+                >
+                <a
+                    href="https://costa.jacobpalm.dk/blog/"
+                    class="w3-bar-item w3-padding-large w3-mobile"
+                    >Blog</a
+                >
+                <a
+                    href="https://costa.jacobpalm.dk/archive.html"
+                    class="w3-bar-item w3-padding-large w3-mobile"
+                    >Archive</a
+                >
+                <div class="topnav-right">
+                    <a
+                        href="https://costa.jacobpalm.dk"
+                        class="w3-bar-item w3-padding-large w3-mobile sitetitle"
+                        >The Costa GUI</a
+                    >
+                </div>
+            </div>
+        </div>
+
+        <!-- Navbar mobile -->
+        <div
+            class="w3-bar-block w3-mobile menubar w3-card w3-large w3-hide-large hidden-print"
+        >
+            <div class="w3-content">
+                <a href="https://costa.jacobpalm.dk" class="w3-padding-large sitetitle"
+                    >The Costa GUI</a
+                >
+                <a
+                    href="javascript:void(0)"
+                    class="w3-padding-large w3-right"
+                    style="text-decoration: none"
+                    onclick="toggleMenu()"
+                    >&#9776;</a
+                >
+                <div id="mobilemenu" class="w3-hide">
+                    <a
+                        href="https://costa.jacobpalm.dk/index.html#about"
+                        class="w3-bar-item w3-padding-large w3-mobile"
+                        >About</a
+                    >
+                    <a
+                        href="https://costa.jacobpalm.dk/index.html#downloads"
+                        class="w3-bar-item w3-padding-large w3-mobile"
+                        >Download</a
+                    >
+                    <a
+                        href="https://costa.jacobpalm.dk/blog/"
+                        class="w3-bar-item w3-padding-large w3-mobile"
+                        >Blog</a
+                    >
+                    <a
+                        href="https://costa.jacobpalm.dk/archive.html"
+                        class="w3-bar-item w3-padding-large w3-mobile"
+                        >Archive</a
+                    >
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="w3-row-padding darkcolor w3-padding-32 w3-container">
+    <div class="w3-content blogpost">
+        <div class="w3-center">
+            <article>
+                <h1>Graphics modes - EGA and VGA</h1>
+                <div class="posttime">
+                    Posted <time datetime="2022-05-18">May 18th, 2022</time><br>
+                    &nbsp;
+                </div>
+                
+                    <a href="/assets/img/blog/2022-05-18.png"><img class="w3-image" src="/assets/img/blog/2022-05-18.png"></a>
+                
+            </div>
+            <p>Since its inception in 2004, Costa has always used <a href="https://en.wikipedia.org/wiki/Video_Graphics_Array">VGA</a> graphics. More specifically, it used the standard VGA 640x480 pixels resolution, with 16 colors. I chose this resolution, because I liked the relatively sharp graphics it can produce, and the amount of screen real estate it provides. But, this graphics mode has a couple of drawbacks.<!--more--></p>
+
+<p>Most importantly, it doesn’t support screen pages. This means that there is no off-screen buffer I can use to store graphics. Everything is drawn directly to the screen, erasing what was there before. This results in having to redraw the entire screen when a window or dialog is closed, slowing down Costa significantly on older machines like the one from 1987 I am testing on.</p>
+
+<p>So, for a long time I was thinking about using another graphics mode. And I chose to go with <a href="https://en.wikipedia.org/wiki/Enhanced_Graphics_Adapter">EGA</a> graphics, 640x350 with 16 colors. This is still a fairly high resolution, and it provides two screen pages for me to draw on. It is also fully compatible with VGA adapters. This gives me the ability to preserve the screen before a window was shown, and instantly restore it when the window is closed, speeding up Costa significantly. This also allows Costa to run on machines with only an EGA graphics card (provided that the card has at least 64 KB memory), allowing Costa to work on older and lower specification machines than previously possible.</p>
+
+<p>Below is a screenshot comparing the icon editor in VGA and EGA resolution. When running in the smaller EGA resolution, the grid is resized to be smaller, and the buttons are moved around to fit the screen better.</p>
+
+<p><img src="https://costa.jacobpalm.dk/assets/img/blog/2022-05-18_egavga.png" alt="The icon editor in VGA and EGA resolution" /></p>
+
+<p>Wether you prefer the EGA or the VGA resolution is a matter of taste, and on any computer that can run it just fine, I would say that the VGA resolution is the way to go. So, to make Costa as flexible as possible, I have made an option in the configuration dialog to change resolution. You can do this on the fly, it’s not necessary to exit and restart Costa. Pretty nifty, I think.</p>
+
+<p>To sum up, I’ll list some of the differences between the EGA and VGA resolution.</p>
+
+<h4 id="ega">EGA</h4>
+
+<ul>
+  <li>640x350 pixels, 16 colors</li>
+  <li>Lower resolution, thus less space for objects on the screen</li>
+  <li>Supports screen pages, resulting in significant speed increases in some drawing operations</li>
+  <li>When running on a <a href="https://en.wikipedia.org/wiki/Cathode-ray_tube">CRT</a> display, this resolution has horizontal <a href="https://en.wikipedia.org/wiki/Scan_line">scan lines</a>. Which looks super cool, in my opinion.</li>
+  <li>Works on both EGA and VGA adapters, provided the EGA adapter has at least 64 KB memory. Better compatibility with old systems.</li>
+</ul>
+
+<h4 id="vga">VGA</h4>
+
+<ul>
+  <li>640x480 pixels, 16 colors</li>
+  <li>Higher resolution, more space for objects on the screen</li>
+  <li>Much slower for some graphics operations</li>
+  <li>The “universal” standard of the 1990s, supported by almost every PC</li>
+</ul>
+
+        </article>
+    </div>
+</div>
+
+
+        <!-- Footer -->
+        <footer class="w3-container hidden-print">
+            <div class="w3-content w3-center">
+                <p class="w3-padding-large">
+                    Site &copy; 2004-2026 by
+                    <a href="https://codeberg.org/jacobpalm">Jacob Palm</a>,
+                    software released under the MIT License.
+                </p>
+            </div>
+        </footer>
+
+        <!-- Menu code -->
+        <script>
+            function toggleMenu() {
+                var x = document.getElementById("mobilemenu");
+                if (x.className.indexOf("w3-show") == -1) {
+                    x.className += " w3-show";
+                } else {
+                    x.className = x.className.replace(" w3-show", "");
+                }
+            }
+        </script>
+    </body>
+</html>

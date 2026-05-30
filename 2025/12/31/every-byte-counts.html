@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>Every byte counts - The Costa GUI</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Costa is a small and lightweight GUI (Graphical User Interface) for MS-DOS compatible systems, provided to you free of charge." />
+        <meta
+            name="keywords"
+            content="costa, gui, jacob, palm, qbasic, vbdos, visual, basic, walrus, hvalrossen, vb, qb, quickbasic, dos, shell"
+        />
+        <meta name="author" content="Jacob Palm" />
+
+        <base href="https://costa.jacobpalm.dk" />
+
+        <link rel="shortcut icon" href="https://costa.jacobpalm.dk/favicon.ico" />
+
+        <link rel="stylesheet" href="assets/w3.css" />
+        <link rel="stylesheet" href="assets/custom.css" />
+
+        <link rel="canonical" href="https://costa.jacobpalm.dk" />
+        <link
+            rel="alternate"
+            type="application/atom+xml"
+            title="The Costa GUI"
+            href="https://costa.jacobpalm.dk/feed.xml"
+        />
+    </head>
+    <body id="sitetop">
+        <!-- Navbar desktop -->
+        <div
+            class="w3-bar w3-mobile menubar w3-card w3-large w3-hide-medium w3-hide-small hidden-print"
+        >
+            <div class="w3-content">
+                <a
+                    href="https://costa.jacobpalm.dk/index.html#about"
+                    class="w3-bar-item w3-padding-large w3-mobile"
+                    >About</a
+                >
+                <a
+                    href="https://costa.jacobpalm.dk/index.html#downloads"
+                    class="w3-bar-item w3-padding-large w3-mobile"
+                    >Download</a
+                >
+                <a
+                    href="https://costa.jacobpalm.dk/blog/"
+                    class="w3-bar-item w3-padding-large w3-mobile"
+                    >Blog</a
+                >
+                <a
+                    href="https://costa.jacobpalm.dk/archive.html"
+                    class="w3-bar-item w3-padding-large w3-mobile"
+                    >Archive</a
+                >
+                <div class="topnav-right">
+                    <a
+                        href="https://costa.jacobpalm.dk"
+                        class="w3-bar-item w3-padding-large w3-mobile sitetitle"
+                        >The Costa GUI</a
+                    >
+                </div>
+            </div>
+        </div>
+
+        <!-- Navbar mobile -->
+        <div
+            class="w3-bar-block w3-mobile menubar w3-card w3-large w3-hide-large hidden-print"
+        >
+            <div class="w3-content">
+                <a href="https://costa.jacobpalm.dk" class="w3-padding-large sitetitle"
+                    >The Costa GUI</a
+                >
+                <a
+                    href="javascript:void(0)"
+                    class="w3-padding-large w3-right"
+                    style="text-decoration: none"
+                    onclick="toggleMenu()"
+                    >&#9776;</a
+                >
+                <div id="mobilemenu" class="w3-hide">
+                    <a
+                        href="https://costa.jacobpalm.dk/index.html#about"
+                        class="w3-bar-item w3-padding-large w3-mobile"
+                        >About</a
+                    >
+                    <a
+                        href="https://costa.jacobpalm.dk/index.html#downloads"
+                        class="w3-bar-item w3-padding-large w3-mobile"
+                        >Download</a
+                    >
+                    <a
+                        href="https://costa.jacobpalm.dk/blog/"
+                        class="w3-bar-item w3-padding-large w3-mobile"
+                        >Blog</a
+                    >
+                    <a
+                        href="https://costa.jacobpalm.dk/archive.html"
+                        class="w3-bar-item w3-padding-large w3-mobile"
+                        >Archive</a
+                    >
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="w3-row-padding darkcolor w3-padding-32 w3-container">
+    <div class="w3-content blogpost">
+        <div class="w3-center">
+            <article>
+                <h1>Every byte counts</h1>
+                <div class="posttime">
+                    Posted <time datetime="2025-12-31">December 31st, 2025</time><br>
+                    &nbsp;
+                </div>
+                
+                    <a href="/assets/img/blog/2025-12-31.png"><img class="w3-image" src="/assets/img/blog/2025-12-31.png"></a>
+                
+            </div>
+            <p>Over the past month, I have been working on optimizing a key part of Costa - the launcher, <code class="language-plaintext highlighter-rouge">COSTA.EXE</code>. The launcher is the program you run when you want to start Costa. It stays in memory at all times, including when running external programs such as games or DOS utilities, and because of this, it’s absolutely vital to keep it as small as possible to preserve memory for other programs.
+<!--more--></p>
+
+<h3 id="what-does-the-launcher-do">What does the launcher do?</h3>
+
+<p>The purpose of the launcher is to run whatever program the user wants. When it is run, it will first run the desktop. When the desktop wants to run another program, for example a game the user has clicked on, it writes information about what to run to a temporary file, and then exits. The reason it exits is to preserve memory - with only <a href="https://en.wikipedia.org/wiki/Conventional_memory#640_KB_barrier">640 KB base memory to share</a> between DOS, applications and drivers, every byte of memory counts. Take up too much, and some of the users games or programs might not be able to run because of low memory. That’s why the desktop doesn’t just launch programs directly.</p>
+
+<p>Once the desktop has exited, the launcher checks if the temporary file exists, and reads the data in it. It then runs the requested program, waits for it to exit, and re-loads the desktop. Every time the desktop exits, Costa checks for a specific <a href="https://en.wikipedia.org/wiki/Exit_status">exit code</a> returned by the desktop. If that error code was returned, it is a signal to the launcher to exit itself and return the user to the command prompt.</p>
+
+<h3 id="a-bit-of-history">A bit of history</h3>
+
+<p>In older versions of Costa, the launcher didn’t exist. Instead, Costa was launched via a <a href="https://en.wikipedia.org/wiki/Batch_file">batch file</a>, COSTA.BAT, which changed to the right directory, set some <a href="https://en.wikipedia.org/wiki/Environment_variable">environment variables</a> needed by Costa, and launched the desktop. This worked fine, but had one major drawback: For it to be able to launch the desktop, it needed to know exactly where on the disk it was located. If Costa was started from its own directory, eg. <code class="language-plaintext highlighter-rouge">C:\COSTA</code>, then there was no issue. But what if the user was in the root of the drive, and launched Costa by running the command <code class="language-plaintext highlighter-rouge">COSTA\COSTA.BAT</code>? A batch file cannot reliably determine its own location, and thus cannot launch programs unless it knows where they are located, or their path is included in the PATH environment variable. For that reason, I created a small utility that could update the batch file with full paths. This worked fine, but made Costa non-portable unless the utility was run each time the path changed. It also wasn’t a very elegant solution.</p>
+
+<h3 id="pascal">Pascal</h3>
+
+<p>So, a while back I wrote a program to replace the batch file. Coding it in <a href="https://en.wikipedia.org/wiki/QuickBASIC">BASIC</a> like the rest of Costa was out of the question - Microsoft’s Visual BASIC for DOS produces far too big EXE files for something like a launcher. So, instead I chose to write it in <a href="https://en.wikipedia.org/wiki/Turbo_Pascal">Turbo Pascal</a>, which is a much more optimized language with far less overhead. This was quite a detour from the past, as Costa has always been written entirely in BASIC. Why not the <a href="https://en.wikipedia.org/wiki/C_(programming_language)">C programming language</a>? Well, I’ve always had a soft spot for Pascal. It was the first programming language I used, back when I was maybe 11-12 years old.</p>
+
+<p><img src="https://costa.jacobpalm.dk/assets/img/blog/2025-12-31-before.png" alt="Screenshot of old COSTA.EXE size on disk and in memory" /></p>
+
+<p>Using this method, I managed to create a fairly small launcher. As you can see from the screenshot above, it takes up what amounts to 4.75 kilobytes. That’s pretty decent. Runtime memory usage sits at 8.85 kilobytes. While that’s certainly not much, remember that DOS only has 640 kilobytes available in total. On a pretty base DOS installation I have, with barely any drivers, I have 608 kilobytes available. 8.85 kilobytes out of that amounts to <strong>1.45% memory used by the launcher</strong>. Suddenly, it sounds like a lot more, and I wanted to squeeze it even tighter.</p>
+
+<h3 id="assembly">Assembly</h3>
+
+<p>I’ve been wanting to dive into <a href="https://en.wikipedia.org/wiki/Assembly_language">Assembly programming</a> for years. It’s a very low level language, meaning it doesn’t have any built-in functions to speak of. Rather than including libraries with default procedures like most other languages, you have to write almost everything yourself. And you have to do it in a manner where you tell the CPU exactly what to do - what <a href="https://en.wikipedia.org/wiki/Memory_address">addresses in memory</a> to manipulate, what data to put in <a href="https://en.wikipedia.org/wiki/Processor_register">CPU registers</a> etc.</p>
+
+<p>The downside to Assembly is that it is more difficult to get started with, and writing programs takes more time and requires more thought and care to not mess anything up, as the language will allow you to do almost anything you tell it to, without safeguards. The big upside is that since it doesn’t include a lot of pre-made code, there’s as good as no overhead to the programs you write in it. Since they only include what you write, nothing more, you don’t have any code you don’t need.</p>
+
+<p>An example of what I am talking about is the <code class="language-plaintext highlighter-rouge">WriteLn</code> procedure in Pascal. You can use it to print text to the screen, followed by a line break:</p>
+
+<div class="language-pascal highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">WriteLn</span><span class="p">(</span><span class="s">'Hello, world'</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Simple and easy. The thing with WriteLn is that it can do various things that I don’t need in the launcher. Nifty if you need it, wasted bytes if you don’t. In Assembly, there’s no procedure to write text to the screen. But you can point a CPU register to the location of your text in memory, put a value MS-DOS interprets as “write text on the screen, please” and then call a <a href="https://en.wikipedia.org/wiki/Interrupt#Software_interrupts">software interrupt</a> to have DOS do your bidding. It’s difficult to explain without diving into how the CPU, memory and DOS operate, but an example of how to perform the same task as <code class="language-plaintext highlighter-rouge">WriteLn</code> above could look like this (code simplified for demonstration, won’t run on its own):</p>
+
+<pre><code class="language-assembly">MSGHELLO db 'Hello, world$'  ; Defines text we can use later on
+
+lea dx, [MSGHELLO]   ; Load the memory address of the text to CPU register
+mov ah, 09h          ; 09h in another register tells DOS we want to print text
+int 21h              ; Calls DOS to execute our write request
+</code></pre>
+
+<p>As you can see, the code is more complex to write than in Pascal. It looks longer, but that’s only because <code class="language-plaintext highlighter-rouge">WriteLn</code> hides all the code that really happens behind the scenes from us. The Assembly version is smaller in the final program, and takes up less memory. There’s absolutely nothing there that we don’t need. This was just one example for one specific thing. When you add all the procedures you use in Pascal up, even though they are very effective and well-written, the result is many bytes saved by using Assembly.</p>
+
+<p>Rewriting the launcher in Assembly took me a month, because I needed to learn how to properly use Assembly along the way. I am by no means an expert at this point, but I have the basics down and I’m still working on improving the code I’ve written so far.</p>
+
+<h3 id="other-optimizations">Other optimizations</h3>
+
+<p>Other than switching from Pascal to Assembly for coding the launcher, I also made some changes to the logic of it, and to how it stores data - all in the name of optimization. Some examples:</p>
+
+<ul>
+  <li>Previously, I just wrote the entire desktop shortcut - including its data like which icon to use and it’s location on the desktop - to the temporary file. The launcher loaded all of it, but ignored what it didn’t need. This has been optimized, so that the desktop now only saves exactly the data needed. The desktop also saves it in a format that can be loaded directly to memory in Assembly, removing the need for the launcher to parse the file at all. Again, less code and less data.</li>
+  <li>Some logic has been moved to the desktop. For example, checking if the program user wants to run exists. Path handling has also been moved to the desktop. The launcher will still switch to the path the desktop tells it to, but the desktop will try to resolve paths before it hands them to the launcher. Again, this saves code and memory in the launcher.</li>
+  <li>Removal of redundant code, and streamlining code to reduce the amount of jumps. Some code was used in more than one place, so now I’ve tried to restructure the code so that it only appears one place, which will be reached on multiple conditions. Avoiding duplicate code = bytes saved.</li>
+</ul>
+
+<h3 id="the-result">The result</h3>
+
+<p>I’m not fully satisfied with the launcher yet - I still have some things I want to improve - but it’s working perfectly at this stage. And it’s a lot smaller than the Pascal version, as you can see:</p>
+
+<p><img src="https://costa.jacobpalm.dk/assets/img/blog/2025-12-31-after.png" alt="Screenshot of new COSTA.EXE size on disk and in memory" /></p>
+
+<p>It’s down to 1.73 kilobytes on disk, a reduction of <strong>64%</strong>. The memory it occupies when it is loaded is down to 2.91 kilobytes, a reduction of <strong>67%</strong>. That’s pretty wild, and it is for sure the smallest program I have ever written. I’m curious to see how much further I can squeeze it, though I imagine it won’t be much. But, every byte counts!</p>
+
+<h3 id="when-will-you-see-it-in-action">When will you see it in action?</h3>
+
+<p>Expect to see the new launcher in the next release of Costa, which will bring a complete rewrite of all code - not in Assembly, though, but in Pascal. As mentioned earlier, Pascal is vastly superior to BASIC in terms of size and speed, and its <a href="https://en.wikipedia.org/wiki/Object-oriented_programming">object-oriented</a> features fit a <a href="https://en.wikipedia.org/wiki/Graphical_user_interface">GUI</a> perfectly. Writing it all in Assembly, while possible, would be a massive undertaking, so I’m opting for a simpler but still far better language. More news on that in the future.</p>
+
+        </article>
+    </div>
+</div>
+
+
+        <!-- Footer -->
+        <footer class="w3-container hidden-print">
+            <div class="w3-content w3-center">
+                <p class="w3-padding-large">
+                    Site &copy; 2004-2026 by
+                    <a href="https://codeberg.org/jacobpalm">Jacob Palm</a>,
+                    software released under the MIT License.
+                </p>
+            </div>
+        </footer>
+
+        <!-- Menu code -->
+        <script>
+            function toggleMenu() {
+                var x = document.getElementById("mobilemenu");
+                if (x.className.indexOf("w3-show") == -1) {
+                    x.className += " w3-show";
+                } else {
+                    x.className = x.className.replace(" w3-show", "");
+                }
+            }
+        </script>
+    </body>
+</html>
