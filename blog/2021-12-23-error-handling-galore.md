@@ -1,0 +1,17 @@
+---
+title:  "Error handling galore - and optimizations"
+image: 2021-12-23.png
+---
+With all the recent changes to Costa, namely the changes to all file formats, came the opportunity to really go through the code and try to make sure all file related errors are handled properly. <!--more-->The language used to develop Costa, [BASIC](https://en.wikipedia.org/wiki/BASIC), does not have modern try/catch functionality baked in, but uses "ON ERROR" statements to jump to a specific place in the code when an error occurs. Any unhandled error will cause the runtime library to write out an error to the screen, and stop program execution. For that reason, it is especially important to handle errors that might occur when saving data - if the program stops with a runtime error at that point, user data may be lost.
+
+So, every place I could think of where Costa loads or saves data to/from files, I've now added proper error handling code. I have tried to test this as rigorously as possible, by deleting random files and observing how Costa handles it. I've also tried to corrupt some icon files, and made sure the routine that loads icons can handle this. The routine now handles this in much the same manner as browsers of yesteryear - it displays a placeholder, to signal that the image could not be loaded.
+
+Related to error handling, is data validation. More input fields now validate the data entered into them, to prevent input of invalid data (for example, a file name longer than 8 characters, which is unsupported under DOS).
+
+Another rather big change since the last post on here is that all config files and image files have moved from human-readable format to binary format. I figured no one was actually editing these files by hand, so the performance gain from switching to binary files was well worth it. On the old [386](https://en.wikipedia.org/wiki/I386) PC I use to test Costa, this and other file-related changes have made a massive difference in reducing delays while using Costa. Everything feels far smoother. Those running Costa in [DOSBox](https://www.dosbox.com) likely won't feel any difference, but anyone out there using Costa on real hardware will for sure.
+
+Other improvements include code optimizations at various places. For instance, some routines which were in the shared library, but only ever used from the desktop, has been moved to the desktop, reducing the size of all other executables, without increasing the size of the desktop executable. Another example is the mouse routines - there was a "base" mouse routine in the code, which all other mouse routines called to communicate with the mouse driver - but now, each mouse routine communicates directly with the mouse driver. A slight increase in the amount of code, but faster execution and less overhead on the stack.
+
+Another performance-related change is that all settings are now stored in memory. Previously, Costa would load each setting from the config files every time it needed to know the value of the setting. For example, every time a desktop icon was clicked, Costa would query the config file to see if the menu should be shown on both left- and right-click. Now, all settings are stored in memory using a user-defined TYPE. Whenever a setting is changed, the whole TYPE is quickly stored to disk in binary format.
+
+Lastly, a couple of graphical glitches have been fixed. One related to desktop redrawing, and one to button appearance under certain color schemes.
