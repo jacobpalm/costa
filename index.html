@@ -2,8 +2,6 @@
 <html lang="en">
     <head>
         <title>The Costa GUI</title>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta
             name="description"
             content="Costa is a small and lightweight GUI (Graphical User Interface) for MS-DOS compatible systems, provided to you free of charge."
@@ -14,117 +12,131 @@
         />
         <meta name="author" content="Jacob Palm" />
         <link rel="shortcut icon" href="/favicon.ico" />
-        <link rel="stylesheet" href="assets/w3.css" />
-        <link rel="stylesheet" href="assets/custom.css" />
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="/assets/jpdk.css" />
         <link rel="canonical" href="https://costa.jacobpalm.dk" />
     </head>
     <body id="sitetop">
-        <!-- Navbar desktop -->
-        <div
-            class="w3-bar w3-mobile menubar w3-card w3-large w3-hide-medium w3-hide-small hidden-print"
-        >
-            <div class="w3-content">
-                <a href="/#about" class="w3-bar-item w3-padding-large w3-mobile"
-                    >About</a
-                >
-                <a
-                    href="/#downloads"
-                    class="w3-bar-item w3-padding-large w3-mobile"
-                    >Download</a
-                >
-                <a
-                    href="/?page=blog"
-                    class="w3-bar-item w3-padding-large w3-mobile"
-                    >Blog</a
-                >
-                <a
-                    href="/?page=archive"
-                    class="w3-bar-item w3-padding-large w3-mobile"
-                    >Archive</a
-                >
-                <div class="topnav-right">
-                    <a
-                        href="/"
-                        class="w3-bar-item w3-padding-large w3-mobile sitetitle"
-                        >The Costa GUI</a
-                    >
-                </div>
-            </div>
-        </div>
-
-        <!-- Navbar mobile -->
-        <div
-            class="w3-bar-block w3-mobile menubar w3-card w3-large w3-hide-large hidden-print"
-        >
-            <div class="w3-content">
-                <a href="/" class="w3-padding-large sitetitle">The Costa GUI</a>
-                <a
-                    href="javascript:void(0)"
-                    class="w3-padding-large w3-right"
-                    style="text-decoration: none"
-                    onclick="toggleMenu()"
-                    >&#9776;</a
-                >
-                <div id="mobilemenu" class="w3-hide">
-                    <a
-                        href="/#about"
-                        class="w3-bar-item w3-padding-large w3-mobile"
-                        >About</a
-                    >
-                    <a
-                        href="/#downloads"
-                        class="w3-bar-item w3-padding-large w3-mobile"
-                        >Download</a
-                    >
-                    <a
-                        href="/?page=blog"
-                        class="w3-bar-item w3-padding-large w3-mobile"
-                        >Blog</a
-                    >
-                    <a
-                        href="/?page=archive"
-                        class="w3-bar-item w3-padding-large w3-mobile"
-                        >Archive</a
-                    >
-                </div>
-            </div>
-        </div>
+        <header>
+            <h1>The Costa GUI</h1>
+        </header>
 
         <!-- Content -->
-        <div
-            class="w3-row-padding darkcolor w3-padding-32 w3-container w3-center"
-        >
-            <div id="contentContainer" class="w3-content">
-                <h1>Loading content...</h1>
+        <main>
+            <article>
+                <header>
+                    <h2>About Costa</h2>
+                </header>
                 <p>
-                    If this message doesn't disappear, make sure JavaScript is
-                    enabled in your browser.
+                    Costa is a small and lightweight application which runs on
+                    top of MS-DOS or compatible operating systems. It replaces
+                    the DOS-prompt with a clean, user-friendly interface - a
+                    so-called GUI (Graphical User Interface). Costa comes packed
+                    with a bunch of useful accessories and can be used with or
+                    without a mouse.
                 </p>
-            </div>
-        </div>
+                <p>
+                    Developed by
+                    <a href="https://codeberg.org/jacobpalm/">Jacob Palm</a>, a
+                    Danish IT-professional and hobby developer, the first
+                    release of Costa came way back in 2004. Over the years - and
+                    through several releases - Costa has gradually evolved into
+                    what it is today, with new releases still coming out
+                    regularly as of 2026.
+                </p>
+                <p>
+                    Costa is provided free of charge, and the
+                    <a href="https://codeberg.org/jacobpalm/costa"
+                        >source code</a
+                    >
+                    is open sourced for anyone who wants to have a look.
+                </p>
+            </article>
 
-        <div
-            class="w3-row-padding lightcolor w3-padding-32 w3-container w3-hide"
-        >
-            <div id="subContentContainer" class="w3-content"></div>
-        </div>
+            <article>
+                <header>
+                    <h2>Screenshots</h2>
+                </header>
+                <div id="screenshots"></div>
+            </article>
+
+            <article>
+                <header>
+                    <h2>Download</h2>
+                </header>
+                <p>
+                    You can download the latest or any previous version of Costa
+                    now, free of charge. To get started, simply unzip the
+                    downloaded archive and run Costa. Full documentation is
+                    included.
+                </p>
+                <p>
+                    Since September 2017, the full source code has been
+                    available.
+                    <a href="https://codeberg.org/jacobpalm/costa"
+                        >Visit Codeberg</a
+                    >
+                    to have a look or pull a copy for your own use.
+                </p>
+                <form autocomplete="off">
+                    <label for="versionList">Select version:</label><br />
+                    <select id="versionList" onchange="showVersion()"></select>
+                </form>
+                &nbsp;
+                <article>
+                    <header>
+                        <h3 id="versionHeader"></h3>
+                        <div class="subheading">
+                            Released <time id="versionDate"></time>
+                        </div>
+                        <span id="versionDetails"></span>
+                        <a id="versionImgLink" href="">
+                            <img
+                                id="versionImg"
+                                src=""
+                                alt="Screenshot of Costa"
+                            />
+                        </a>
+                        <div class="alignleft">
+                            <p id="versionDescription"></p>
+                            <ul id="versionBullets"></ul>
+                        </div>
+                        <p>
+                            <a id="downloadButton" class="linkbutton" href="">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    fill="currentColor"
+                                    class="bi bi-floppy2-fill"
+                                    viewBox="0 0 16 16"
+                                >
+                                    <path d="M12 2h-2v3h2z" />
+                                    <path
+                                        d="M1.5 0A1.5 1.5 0 0 0 0 1.5v13A1.5 1.5 0 0 0 1.5 16h13a1.5 1.5 0 0 0 1.5-1.5V2.914a1.5 1.5 0 0 0-.44-1.06L14.147.439A1.5 1.5 0 0 0 13.086 0zM4 6a1 1 0 0 1-1-1V1h10v4a1 1 0 0 1-1 1zM3 9h10a1 1 0 0 1 1 1v5H2v-5a1 1 0 0 1 1-1"
+                                    />
+                                </svg>
+                                <span id="downloadText"></span>
+                            </a>
+                        </p>
+                    </header>
+                </article>
+            </article>
+        </main>
 
         <!-- Footer -->
-        <footer class="w3-container hidden-print">
-            <div class="w3-content w3-center">
-                <p class="w3-padding-large">
-                    Site &copy; 2004-2026 by
-                    <a href="https://jacobpalm.dk">Jacob Palm</a> &#124;
-                    Software released under the
-                    <a
-                        href="https://codeberg.org/jacobpalm/costa/src/branch/master/LICENSE"
-                        >MIT License</a
-                    >
-                </p>
-            </div>
+        <footer>
+            Site &copy; 2004-2026 by
+            <a href="https://jacobpalm.dk">Jacob Palm</a> &#124; Software
+            released under the
+            <a
+                href="https://codeberg.org/jacobpalm/costa/src/branch/master/LICENSE"
+                >MIT License</a
+            >
         </footer>
 
-        <!-- Dynamic content load, menu code etc. -->
+        <!-- Dynamic content load -->
         <script src="/assets/dynamic.js"></script>
     </body>
 </html>

@@ -442,5 +442,31 @@
         "Text viewer now uses a variable width font, allowing much longer lines to be displayed."
       ]
     }
+  ],
+  "screenshots": [
+    {
+      "src": "/img/aboutbox.png",
+      "alt": "Screenshot of Costa showing the About dialog"
+    },
+    {
+      "src": "/img/config.png",
+      "alt": "Screenshot of the configuration utility that comes with Costa"
+    },
+    {
+      "src": "/img/iconedit.png",
+      "alt": "Screenshot of the Costa icon editor and an icon being drawn using it"
+    },
+    {
+      "src": "/img/iconproperties.png",
+      "alt": "Screenshot of the Costa desktop and the icon properties dialog"
+    },
+    {
+      "src": "/img/textviewer.png",
+      "alt": "Screenshot of Costas text viewer"
+    },
+    {
+      "src": "/img/tictactoe.png",
+      "alt": "Screenshot of Tic Tac Toe for Costa"
+    }
   ]
 }

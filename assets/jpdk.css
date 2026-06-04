@@ -1,0 +1,175 @@
+:root {
+    --basecolor: #006666;
+    --activecolor: #008585;
+    --textcolor: #eee;
+    --basetextcolor: #ccc;
+    --activetextcolor: #eee;
+}
+
+body {
+    background: #121212;
+    color: var(--textcolor);
+    margin: 0;
+    font-family: Verdana, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+main {
+    max-width: 980px;
+    margin: 0 auto;
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: inherit;
+}
+
+/* Top level header - site title */
+body > header {
+    width: 100%;
+    background: var(--basecolor);
+    margin: 0 0 32px 0;
+    padding: 0px;
+}
+
+body > header > h1 {
+    color: var(--basetextcolor);
+    margin: 0;
+    padding: 4px 32px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: 700;
+    color: var(--textcolor);
+    margin: 10px 0;
+}
+
+h1 {
+    font-size: 36px;
+}
+h2 {
+    font-size: 30px;
+}
+h3 {
+    font-size: 24px;
+}
+
+body > footer {
+    text-align: center;
+    margin: 32px;
+}
+
+a {
+    color: var(--basecolor);
+}
+a:hover {
+    color: var(--activecolor);
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    border-style: none;
+    vertical-align: middle;
+}
+
+article {
+    background: rgba(255, 255, 255, 0.05);
+    /* Rounded corners */
+    border-radius: 8px;
+    padding: 16px;
+    margin: auto;
+    text-align: center !important;
+}
+
+main > article {
+    margin-bottom: 32px;
+}
+
+ul {
+    text-align: left !important;
+}
+
+.subheading {
+    font-size: 20px;
+    margin-top: -10px;
+    margin-bottom: 10px;
+}
+
+.alignleft {
+    text-align: left;
+}
+
+/* Links styled as buttons */
+.linkbutton {
+    background-color: var(--basecolor);
+    color: var(--basetextcolor);
+    width: auto;
+    border: none;
+    border-radius: 8px;
+    display: inline-block;
+    padding: 8px 16px;
+    margin: 16px !important;
+    vertical-align: middle;
+    overflow: hidden;
+    text-decoration: none;
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+    min-width: 100px;
+}
+.linkbutton:hover {
+    background-color: var(--activecolor) !important;
+    color: var(--activetextcolor) !important;
+}
+
+.hide {
+    display: none;
+}
+
+#screenshots {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 16px;
+}
+
+#versionImg {
+    margin-top: 16px;
+    margin-bottom: 16px;
+}
+
+/* "Select" form control restyled */
+select,
+::picker(select) {
+    appearance: base-select;
+}
+select {
+    background-color: var(--basecolor);
+    color: var(--basetextcolor);
+    width: auto;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    margin: 16px !important;
+    vertical-align: middle;
+    overflow: hidden;
+    text-decoration: none;
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+    min-width: 100px;
+}
+select:hover {
+    background-color: var(--activecolor) !important;
+    color: var(--activetextcolor) !important;
+}
