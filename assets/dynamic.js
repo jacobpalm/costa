@@ -9,11 +9,9 @@ async function init() {
   versionList = document.getElementById("versionList");
   if (siteData.versions) {
     populateVersionList();
-    showVersion(siteData.versions[0]);
+    showVersion();
   }
-  if (siteData.screenshots) {
-    showScreenshots();
-  }
+  showScreenshots();
 }
 
 // all global data loaded here
@@ -24,11 +22,6 @@ async function loadData() {
   }
 }
 
-// allow only a-z, A-Z, 0-9 and . in strings
-function sanitize(str) {
-  return str?.replace(/[^a-zA-Z0-9/.]/g, "");
-}
-
 // format iso dates from json to "May 29, 2023" format
 function formatIsoDate(str) {
   const d = new Date(str);
@@ -37,7 +30,6 @@ function formatIsoDate(str) {
     month: "long",
     day: "numeric",
   };
-
   return d.toLocaleDateString("en-US", o);
 }
 
@@ -47,87 +39,98 @@ async function populateVersionList() {
     console.error(`populateVersionList called with no argument`);
     return;
   }
+  let i = 0;
   siteData.versions.forEach((v) => {
     let listItem = document.createElement("option");
     listItem.value = v.id;
     listItem.innerText = v.title;
+    i++;
+    if (i == 1) {
+      listItem.innerText += " (current)";
+    }
     versionList.appendChild(listItem);
   });
 }
 
 async function showVersion() {
-  const version = versionList.value;
+  try {
+    const version = versionList.value;
+    if (!version) {
+      throw new Error("Could not get value of versionList");
+    }
 
-  console.log(`showVersion requested for ${version}`);
-  if (!version) {
-    return;
-  }
+    //Load the desired version
+    const versionInfo = siteData.versions.find((v) => v.id === version);
+    if (!versionInfo) {
+      throw new Error(`Version with id ${version} not found`);
+    }
 
-  //Load the desired version into subContentContainer
-  const versionInfo = siteData.versions.find((v) => v.id === version);
+    const template = document.getElementById("versionTemplate");
+    if (!template) {
+      throw new Error("Version template not found");
+    }
 
-  if (!versionInfo) {
-    console.error(`Version with id ${version} not found`);
-    return;
-  }
+    const clone = template.content.cloneNode(true);
+    clone.querySelector("#title").textContent = "Version " + versionInfo.title;
+    clone.querySelector("#date").textContent = formatIsoDate(versionInfo.date);
+    clone.querySelector("#description").innerHTML = versionInfo.description;
 
-  if (versionInfo.unavailable) {
-    console.log(
-      `Version with id ${version} does not have screenshot or download`,
-    );
-  }
+    if (versionInfo.unavailable) {
+      // No screenshot or download link for this version
+      clone.querySelector("#downloadlink").remove();
+      clone.querySelector("#imagelink").remove();
+    } else {
+      clone.querySelector("#downloadlink").href =
+        `/downloads/costa${versionInfo.id}.zip`;
+      clone.querySelector("#downloadtext").innerText =
+        `Download Costa ${versionInfo.title}`;
+      clone.querySelector("#imagelink").href = `/img/${versionInfo.id}.png`;
+      clone.querySelector("#image").src = `/img/${versionInfo.id}.png`;
+      clone.querySelector("#image").alt += versionInfo.title;
+    }
 
-  const versionHeader = document.getElementById("versionHeader");
-  const versionDate = document.getElementById("versionDate");
-  const versionImgLink = document.getElementById("versionImgLink");
-  const versionImg = document.getElementById("versionImg");
-  const versionDescription = document.getElementById("versionDescription");
-  const versionBullets = document.getElementById("versionBullets");
-  const downloadButton = document.getElementById("downloadButton");
-  const downloadText = document.getElementById("downloadText");
-
-  versionHeader.innerText = `Version ${versionInfo.title}`;
-  versionDate.datetime = versionInfo.date;
-  versionDate.innerText = formatIsoDate(versionInfo.date);
-
-  if (!versionInfo.unavailable) {
-    versionImgLink.classList.remove("hide");
-    versionImgLink.href = `/img/${versionInfo.id}.png`;
-    versionImg.src = versionImgLink.href;
-  } else {
-    versionImg.classList.add("hide");
-  }
-
-  versionDescription.innerHTML = versionInfo.description;
-
-  versionBullets.innerHTML = "";
-  versionInfo.bullets.forEach((text) => {
-    const li = document.createElement("li");
-    li.textContent = text;
-    versionBullets.appendChild(li);
-  });
-
-  if (!versionInfo.unavailable) {
-    downloadButton.classList.remove("hide");
-    downloadButton.href = `/downloads/costa${versionInfo.id}.zip`;
-    downloadText.innerText = `Download Costa ${versionInfo.title}`;
-  } else {
-    downloadButton.classList.add("hide");
+    // loop through and add each bullet to to ol
+    versionInfo.bullets.forEach((text) => {
+      const li = document.createElement("li");
+      li.textContent = text;
+      clone.querySelector("#bullets").appendChild(li);
+    });
+    document.querySelector("#versionDetails").innerHTML = "";
+    document.querySelector("#versionDetails").appendChild(clone);
+  } catch (e) {
+    console.error(e.message);
+    const versionDetails = document.querySelector("#versionDetails");
+    if (versionDetails) {
+      versionDetails.innerHTML = `<p>An error occured while loading details about this version:<br />${e.message}`;
+    }
   }
 }
 
 function showScreenshots() {
-  const screenshots = document.getElementById("screenshots");
+  const screenshots = document.querySelector("#screenshots");
+  if (!screenshots) {
+    console.error("Could not find screenshots element");
+    return;
+  }
 
-  siteData.screenshots.forEach((imgData) => {
-    const img = document.createElement("img");
-    const a = document.createElement("a");
-    a.href = imgData.src;
-    a.appendChild(img);
-    img.src = imgData.src;
-    img.alt = imgData.alt;
-    screenshots.appendChild(a);
-  });
+  try {
+    if (!siteData.screenshots || siteData.screenshots.length == 0) {
+      throw new Error("Site data doesn't contain any screenshots");
+    }
+
+    siteData.screenshots.forEach((imgData) => {
+      const img = document.createElement("img");
+      const a = document.createElement("a");
+      a.href = imgData.src;
+      a.appendChild(img);
+      img.src = imgData.src;
+      img.alt = imgData.alt;
+      screenshots.appendChild(a);
+    });
+  } catch (e) {
+    console.error(e.message);
+    screenshots.innerHTML = `<p>An error occured while loading screenshots:<br />${e.message}</p>`;
+  }
 }
 
 async function fetchJson(file) {

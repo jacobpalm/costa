@@ -90,6 +90,7 @@ article {
     text-align: center !important;
 }
 
+/* top level articles only */
 main > article {
     margin-bottom: 32px;
 }
@@ -165,6 +166,7 @@ select {
     text-decoration: none;
     text-align: center;
     font-weight: bold;
+    font-size: 16px;
     cursor: pointer;
     white-space: nowrap;
     min-width: 100px;
