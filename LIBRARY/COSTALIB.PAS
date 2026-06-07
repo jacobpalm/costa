@@ -503,6 +503,10 @@ end;
 
 procedure TUIObject.RemoveState(S: TState);
 begin
+	{Do nothing if state not present}
+	if not (S in State) then
+		exit;
+
 	Exclude(State, S);
 
 	{State change should trigger redraw - unless of course SDirty is being cleared because of redraw}
@@ -876,12 +880,7 @@ begin
 	begin
 		{Make sure item is highlighted when mouse is over}
 		if not GetState(SActive) then
-		begin
 			AddState(SActive);
-			Mouse.Hide;
-			Self.Draw;
-			Mouse.Show;
-		end;
 
 		if Mouse.Clicked = MbLeft then
 		begin
@@ -890,9 +889,6 @@ begin
 			if Self.IsMouseOver then
 			begin
 				RemoveState(SActive);
-				Mouse.Hide;
-				Self.Draw;
-				Mouse.Show;
 				Self.Click;
 			end;
 		end;
@@ -901,12 +897,7 @@ begin
 	begin
 		{If mouse is not over the item, remove highlight}
 		if GetState(SActive) then
-		begin
 			RemoveState(SActive);
-			Mouse.Hide;
-			Self.Draw;
-			Mouse.Show;
-		end;
 	end;
 
 	if Self.HotkeyPressed then
@@ -1410,7 +1401,9 @@ begin
 	{If the window itself is dirty, EVERYTHING in it needs redraw - so just call Draw}
 	if GetState(SDirty) then
 	begin
+		Mouse.Hide;
 		Self.Draw;
+		Mouse.Show;
 		Exit;
 	end;
 
@@ -1423,19 +1416,16 @@ begin
 		   (CurrObj^.ObjectP^.GetState(SHidden) = false) then
 		begin
 			if not MouseHidden then
+			begin
 				Mouse.Hide;
+				MouseHidden := true;
+			end;
 			CurrObj^.ObjectP^.Draw; {TUIObject.Draw removes dirty state}
 		end;
 
 		{If we have descendant containers, trigger DrawDirtyObjects on them too}
 		if CurrObj^.ObjectP^.IsContainer then
-		begin
 			PContainer(CurrObj^.ObjectP)^.DrawDirtyObjects;
-
-			{In case container made the mouse visible again}
-			if MouseHidden then
-				Mouse.Hide;
-		end;
 
 		CurrObj := CurrObj^.Next;
 	end;
@@ -1551,13 +1541,9 @@ begin
 		Bar(X1, Y1, X2, Y2);
 	end;
 
-	{Trigger ondraw event, allowing to draw custom background etc. before
+	{Trigger ondraw event via TUIObject, allowing apps to draw custom background etc. before
 	 drawing child objects}
 	TUIObject.Draw;
-
-	{Make sure mouse is hidden while drawing children, as it might have been
-	 shown in OnDraw event}
-	Mouse.Hide;
 	DrawChildren;
 end;
 

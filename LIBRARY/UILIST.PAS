@@ -161,6 +161,8 @@ begin
 				Self.SetListActive(False);
 				Selection := ClickedItem;
 				Self.SetListActive(True);
+				{DEBUG - this is a drity hack, since SetListActive triggers redraw of list by modifying SActive state...}
+				Self.RemoveState(SDirty);
 				{Trigger change event if assigned}
 				if Assigned(OnChange) then
 					OnChange(@Self);
@@ -347,9 +349,9 @@ begin
 	if (NewStartPos <> StartPos) or not GetState(SActive) then
 	begin
 		AddState(SActive);
+		AddState(SDirty); {Ensure full redraw}
 		Selection := NewSelection;
 		StartPos := NewStartPos;
-		Self.Draw;
 	end
 	else
 	begin
@@ -358,6 +360,8 @@ begin
 		{Move selection and redraw only that item}
 		Selection := NewSelection;
 		Self.SetListActive(True);
+		{DEBUG - dirty hack, should be handled better than this}
+		Self.RemoveState(SDirty);
 	end;
 
 	if Assigned(OnChange) then

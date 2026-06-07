@@ -31,6 +31,7 @@ begin
 	else
 		IconFile := '';
 
+	AddState(SBordered);
 	SetParent(Parent);
 	SetPos(X, Y);
 	SetSize(DefaultW, DefaultH);
@@ -60,12 +61,15 @@ begin
 	GetPos(X, Y, True);
 
 	{Icon border}
-	SetColor(Thm.Light);
-	Line(X - 1, Y - 1, X + 32, Y - 1);
-	Line(X - 1, Y, X - 1, Y + 32);
-	SetColor(Thm.Shadow);
-	Line(X, Y + 32, X + 32, Y + 32);
-	Line(X + 32, Y, X + 32, Y + 31);
+	if Self.GetState(SBordered) then
+	begin
+		SetColor(Thm.Light);
+		Line(X - 1, Y - 1, X + 32, Y - 1);
+		Line(X - 1, Y, X - 1, Y + 32);
+		SetColor(Thm.Shadow);
+		Line(X, Y + 32, X + 32, Y + 32);
+		Line(X + 32, Y, X + 32, Y + 31);
+	end;
 
 	{If no Icon file, draw an empty box}
 	if Length(IconFile) = 0 then
@@ -75,6 +79,7 @@ begin
 			BgColor := Thm.Txt;
 		SetFillStyle(SolidFill, BgColor);
 		Bar(X, Y, X + 31, Y + 31);
+		TUIObject.Draw;
 		Exit;
 	end;
 
@@ -116,8 +121,11 @@ end;
 
 procedure TIcon.SetIcon(Icon: string);
 begin
-	IconFile := Icon;
-	AddState(SDirty);
+	if IconFile <> Icon then
+	begin
+		IconFile := Icon;
+		AddState(SDirty);
+	end;
 end;
 
 function TIcon.GetIcon: string;

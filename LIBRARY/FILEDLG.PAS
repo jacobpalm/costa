@@ -98,6 +98,8 @@ begin
 		end;
 		FindNext(FileInfo);
 	end;
+	{Trigger redraw of list}
+	List[FileList]^.AddState(SDirty);
 end;
 
 procedure GetChildDirs(Path: String);
@@ -129,6 +131,8 @@ begin
 
 		FindNext(DirInfo);
 	end;
+	{Trigger redraw of list}
+	List[DirList]^.AddState(SDirty);
 end;
 
 procedure DrawPreview(Sender: PUIObject); far;
@@ -145,22 +149,13 @@ begin
 		FSplit(SelectedFile, FDir, FName, FExt);
 		if (Length(FName) <> 0) and (FExt = '.BIN') then
 		begin
-			ImgPreview^.RemoveState(SHidden);
 			ImgPreview^.SetIcon(FName);
 			exit;
 		end;
 	end;
 
-	{Either there is no selection, or the preview should be hidden - do so if previously shown}
-	if not ImgPreview^.GetState(SHidden) then
-	begin
-		Mouse.Hide;
-		SetFillStyle(SolidFill, Thm.Win);
-		ImgPreview^.GetPos(X1, Y1, True);
-		Bar(X1 - 1, Y1 - 1, X1 + 32, Y1 + 32);
-		Mouse.Show;
-		ImgPreview^.AddState(SHidden);
-	end;
+	{Either there is no selection, or the preview should be hidden}
+	ImgPreview^.SetIcon('');
 end;
 
 function SetDrive(DriveLetter: Char): Boolean;
@@ -183,10 +178,6 @@ begin
 		Drive := DriveLetter;
 		GetChildFiles(Path, Pattern);
 		GetChildDirs(Path);
-		Mouse.Hide;
-		List[FileList]^.Draw;
-		List[DirList]^.Draw;
-		Mouse.Show;
 		SetDrive := True;
 		DrawPreview(nil);
 	end
@@ -209,12 +200,6 @@ begin
 		GetChildDirs(Path);
 		Drive := Copy(Path, 1, 1);
 		TxtDrive^.SetText(Drive);
-		Mouse.Hide;
-		List[FileList]^.Draw;
-		List[DirList]^.Draw;
-		TxtDrive^.Draw;
-		Mouse.Show;
-		Drive := Copy(Path, 1, 1);
 	end
 	else
 	begin
@@ -301,9 +286,6 @@ begin
 	if not SetDrive(NewDrive[1]) then
 	begin
 		TxtDrive^.SetText(Drive); {Restore original drive letter}
-		Mouse.Hide;
-		TxtDrive^.Draw;
-		Mouse.Show;
 	end;
 end;
 
@@ -313,9 +295,6 @@ begin
 	if Length(Pattern) = 0 then
 		Pattern := '*.*';
 	GetChildFiles(Path, Pattern);
-	Mouse.Hide;
-	List[FileList]^.Draw;
-	Mouse.Show;
 	DrawPreview(nil);
 end;
 
@@ -459,7 +438,11 @@ begin
 	end;
 
 	New(ImgPreview, Init(393, 108, '', WinFileSelect));
-	ImgPreview^.AddState(SHidden);
+	with ImgPreview^ do
+	begin
+		RemoveState(SBordered);
+		SetBgColor(Thm.Win);
+	end;
 
 	New(HkUp, Init(KeyUp, WinFileSelect));
 	HkUp^.SetOnClick(HkDirectionPress);

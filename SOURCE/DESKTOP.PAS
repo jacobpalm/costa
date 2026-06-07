@@ -396,7 +396,6 @@ begin
 	if not App^.LoadSettings then
 	begin
 		{If loading of settings fails, use defaults}
-		SoundNote(800, 100);
 		Settings.DeskID      := 1;
 		Settings.LinkCapt    := True;
 		Settings.LinkTarget  := False;
