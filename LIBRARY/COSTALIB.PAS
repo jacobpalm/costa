@@ -278,13 +278,10 @@ type
 			function    Y: Integer;
 			procedure   Hide;
 			procedure   Move(Left, Top: Integer);
-			procedure   Poll;
 			procedure   Show;
 		private
 			Visible,
 			Support:    Boolean;
-			XPos,
-			YPos:       Integer;
 	end;
 
 	{Settings for the library, saved to disk}
@@ -355,7 +352,15 @@ const
 	                               'Verify that the path exists and isn''t read-only.';
 	MSG_GRAPHICS_ERROR           = 'Graphics error:';
 
+var
+	MouseEvent:   Boolean;
+	MouseX,
+	MouseY,
+	MouseButtons: Word;
 
+
+procedure InstallMouseHandler; forward;
+procedure UninstallMouseHandler; forward;
 
 {----------------------------------------------------------------------------}
 { Base UI object implementation }
@@ -427,7 +432,6 @@ begin
 	Inc(X2, X1);
 	Inc(Y2, Y1);
 
-	Mouse.Poll;
 	IsMouseOver := (Mouse.X >= X1) and (Mouse.X <= X2) and (Mouse.Y >= Y1) and (Mouse.Y <= Y2);
 end;
 
@@ -997,6 +1001,8 @@ begin
 
 	{Initialize mouse}
 	Mouse.Init;
+	if Mouse.Supported then
+		InstallMouseHandler;
 end;
 
 destructor TApplication.Done;
@@ -1017,6 +1023,8 @@ begin
 		{Move to next node}
 		Window := NextNode;
 	end;
+
+	UninstallMouseHandler;
 end;
 
 procedure TApplication.OpenWindow(Win: PWindow);
@@ -1660,15 +1668,13 @@ var
 	regs: registers;
 begin
 	Visible := False;
-	XPos := 0; {Set in case mouse isn't supported, so X/Y functins wont return garbage}
-	YPos := 0;
+	MouseX := 0;
+	MouseY := 0;
+	MouseButtons := 0;
 
 	{Check for mouse support}
 	Intr($33, regs);
 	Support := Regs.ax > 0;
-
-	{Get initial mouse position}
-	Self.Poll;
 end;
 
 function TMouse.Clicked: TMouseButton;
@@ -1681,33 +1687,19 @@ begin
 		exit;
 	end;
 
-	regs.ax := 3;
-	Intr($33, regs);
-	Clicked := TMouseButton(regs.bx);
+	Clicked := TMouseButton(MouseButtons);
 end;
 
-Procedure TMouse.Hide;
-Var
+procedure TMouse.Hide;
+var
 	Regs: Registers;
-Begin
+begin
 	{Don't call interrupt if no mouse or already hidden}
 	If Not Support Or Not Visible Then
 		Exit;
 	Regs.ax := 2;
 	Intr($33, Regs);
 	Visible := False;
-End;
-
-procedure TMouse.Poll;
-var
-	regs: registers;
-begin
-	if not Support then
-		Exit;
-	regs.ax := 3;
-	Intr($33, regs);
-	XPos := regs.cx;
-	YPos := regs.dx;
 end;
 
 procedure TMouse.Move(Left, Top: Integer);
@@ -1747,12 +1739,12 @@ End;
 
 Function TMouse.X: Integer;
 Begin
-	X := XPos;
+	X := MouseX;
 End;
 
 Function TMouse.Y: Integer;
 Begin
-	Y := YPos;
+	Y := MouseY;
 End;
 
 {----------------------------------------------------------------------------}
@@ -2026,6 +2018,45 @@ begin
 				GetDosErrorMsg := ReplaceMsg(MSG_DOSERROR_UNKNOWN, ErrorCodeStr);
 			end;
 	end;
+end;
+
+procedure MouseHandler; far; assembler;
+asm
+	push ds                 {Ensure correct DS when mouse driver calls this procedure}
+	mov ax, seg MouseEvent
+	mov ds, ax
+
+	mov ax, 3               {Poll mouse state}
+	int 33h
+
+	mov MouseButtons, bx    {Save mouse state}
+	mov MouseX, cx
+	mov MouseY, dx
+	mov MouseEvent, 1       {Set to True so app knows it needs to check for UI events}
+
+	pop ds                  {Restore DS}
+end;
+
+procedure InstallMouseHandler;
+var
+	Regs: Registers;
+begin
+	Regs.AX := $000C; {Set mouse event handler}
+	Regs.CX := $FFFF; {Any event - press, release or move}
+	Regs.ES := Seg(MouseHandler);
+	Regs.DX := Ofs(MouseHandler);
+	Intr($33, Regs);
+end;
+
+procedure UninstallMouseHandler;
+var
+	Regs: Registers;
+begin
+	Regs.AX := $000C; {Set mouse event handler}
+	Regs.CX := 0;     {No events}
+	Regs.ES := 0;
+	Regs.DX := 0;
+	Intr($33, Regs);
 end;
 
 end.

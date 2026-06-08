@@ -284,7 +284,6 @@ begin
 	begin
 		{Capture mouse state}
 		MouseButton := Mouse.Clicked;
-		Mouse.Poll;
 
 		{Since mouse was clicked, hide the keyboard indicator if visible}
 		MoveIndicator(DHide);

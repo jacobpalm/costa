@@ -189,7 +189,6 @@ begin
 	begin
 		{Capture mouse state}
 		MouseButton := Mouse.Clicked;
-		Mouse.Poll;
 
 		{Mouse was clicked, so hide keyboard tab indicator and clear SelectedItem}
 		DoTabAction(TabClear);
@@ -396,7 +395,6 @@ begin
 
 	if Mouse.Supported then
 	begin
-		Mouse.Poll;
 		CursorX := Mouse.X;
 		CursorY := Mouse.Y;
 	end
@@ -425,7 +423,6 @@ begin
 		if Key = KeyEnter then
 			break;
 
-		Mouse.Poll;
 		CursorX := Mouse.X;
 		CursorY := Mouse.Y;
 

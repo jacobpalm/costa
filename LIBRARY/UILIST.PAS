@@ -107,7 +107,6 @@ begin
 	GetPos(X1, Y1, True);
 	GetSize(Width, Height);
 
-	Mouse.Poll;
 	if (Mouse.Clicked = MbNone) or (not Self.IsMouseOver) then
 	begin
 		{No mouse click or click outside the object, check for hotkeys only}

@@ -544,7 +544,6 @@ begin
 
 	if Self.IsMouseOver then
 	begin
-		Mouse.Poll;
 		X := (Mouse.X - OffsetX) div PixelSize;
 		Y := (Mouse.Y - OffsetY) div PixelSize;
 
