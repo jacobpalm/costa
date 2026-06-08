@@ -15,10 +15,10 @@ type
 
 			procedure    Start;
 			procedure    Stop;
-			function	 IsRunning: boolean;
+			function     IsRunning: boolean;
 
 			procedure    SetInterval(Seconds: Real);
-			function	 GetInterval: Real;
+			function     GetInterval: Real;
 		private
 			Interval,
 			LastTick:    real;
@@ -62,6 +62,8 @@ procedure TTimer.Draw;
 begin
 	{Dummy procedure - Timer has no visual representation. Only used to override
 	 TUIObject.Draw which triggers an OnDraw event}
+	if Self.GetState(SDirty) then
+		Self.RemoveState(SDirty);
 end;
 
 procedure TTimer.Start;
