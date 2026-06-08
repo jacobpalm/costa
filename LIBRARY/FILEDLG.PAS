@@ -160,13 +160,23 @@ end;
 
 function SetDrive(DriveLetter: Char): Boolean;
 var
-	ErrorCode: Integer;
+	DriveNum, ErrorCode: Integer;
+	DiskCheck: LongInt;
 	Int24Old: Pointer;
 begin
 	SetDrive := false;
 	DriveLetter := UpCase(DriveLetter);
 	if (DriveLetter < 'A') or (DriveLetter > 'Z') then
 		exit;
+
+	DriveNum := Ord(DriveLetter) - 64; {Substracting 64 from ASCII code makes A=1, B=2 etc.}
+	DiskCheck := DiskFree(DriveNum);
+
+	if DiskCheck = -1 then
+	begin
+		MsgBox(MSG_ERROR_TITLE, ReplaceMsg(MSG_DRIVE_ERROR, DriveLetter), msgError);
+		exit;
+	end;
 
 	{$I-}
 	ChDir(DriveLetter + ':\');
