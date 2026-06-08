@@ -19,7 +19,8 @@
 STACK_SIZE             EQU 400h    ; 1 kilobyte stack size
 PARAGRAPH_SIZE         EQU 16      ; Size of a memory paragraph in bytes
 WORD_SIZE              EQU 2       ; Size of a word in bytes
-DOS_REQUIRED_VERSION   EQU 4       ; Minimum required DOS major version
+MSDOS_REQUIRED_VERSION EQU 4       ; Minimum required MS-DOS major version
+DRDOS_REQUIRED_VERSION EQU 5       ; Minimum DR-DOS version
 DESKTOP_EXIT_CODE      EQU 1       ; Exit code from desktop that signals to exit
 
 EXEC_FUNCTION          EQU 4Bh     ; DOS EXEC function number
@@ -179,9 +180,18 @@ start:
 	; Check required DOS version (4.0 or higher)
 	mov ah, GET_DOS_VER_FUNCTION
 	int 21h
-	cmp al, DOS_REQUIRED_VERSION   ; al = major version, must be >= required
+	cmp al, MSDOS_REQUIRED_VERSION ; al = major version, must be >= required
 	jnc DosVersionOk               ; Jump if version is sufficient
 
+	; If DOS version is less than 4, check if we are running on DR-DOS since most
+	; versions of DR-DOS lie and report DOS 3.31.
+	mov ax, 4452h
+	int 21h
+	jc DosVersionNotOk             ; Not running DR-DOS
+	cmp al, DRDOS_REQUIRED_VERSION ; If DR-DOS, al = major version
+	jnc DosVersionOk
+
+DosVersionNotOk:
 	mov al, ERR_DOS_VERSION        ; DOS version error, will terminate
 	mov ah, FATAL_ERROR_FLAG
 	call HandleError
