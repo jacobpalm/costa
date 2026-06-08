@@ -41,7 +41,10 @@ const
 	MSG_DOSERROR_15      = 'Invalid drive number';
 	MSG_DOSERROR_16      = 'Cannot remove current directory';
 	MSG_DOSERROR_17      = 'Cannot rename across drives';
-	MSG_DOSERROR_UNKNOWN = 'Unknown error (code %s)';
+	MSG_DOSERROR_150     = 'Disk is write protected';
+	MSG_DOSERROR_152     = 'Drive not ready';
+	MSG_DOSERROR_162     = 'Hardware failure';
+	MSG_DOSERROR_UNKNOWN = 'Unknown error (DOS error code %s)';
 
 	{$I KEYCODES.INC}
 
@@ -2003,16 +2006,19 @@ var
 	ErrorCodeStr: String;
 begin
 	case ErrorCode of
-		1:   GetDosErrorMsg := MSG_DOSERROR_1;
-		2:   GetDosErrorMsg := MSG_DOSERROR_2;
-		3:   GetDosErrorMsg := MSG_DOSERROR_3;
-		4:   GetDosErrorMsg := MSG_DOSERROR_4;
-		5:   GetDosErrorMsg := MSG_DOSERROR_5;
-		6:   GetDosErrorMsg := MSG_DOSERROR_6;
-		12:  GetDosErrorMsg := MSG_DOSERROR_12;
-		15:  GetDosErrorMsg := MSG_DOSERROR_15;
-		16:  GetDosErrorMsg := MSG_DOSERROR_16;
-		17:  GetDosErrorMsg := MSG_DOSERROR_17;
+		  1:  GetDosErrorMsg := MSG_DOSERROR_1;
+		  2:  GetDosErrorMsg := MSG_DOSERROR_2;
+		  3:  GetDosErrorMsg := MSG_DOSERROR_3;
+		  4:  GetDosErrorMsg := MSG_DOSERROR_4;
+		  5:  GetDosErrorMsg := MSG_DOSERROR_5;
+		  6:  GetDosErrorMsg := MSG_DOSERROR_6;
+		 12:  GetDosErrorMsg := MSG_DOSERROR_12;
+		 15:  GetDosErrorMsg := MSG_DOSERROR_15;
+		 16:  GetDosErrorMsg := MSG_DOSERROR_16;
+		 17:  GetDosErrorMsg := MSG_DOSERROR_17;
+		150:  GetDosErrorMsg := MSG_DOSERROR_150;
+		152:  GetDosErrorMsg := MSG_DOSERROR_152;
+		162:  GetDosErrorMsg := MSG_DOSERROR_162;
 
 		else
 			begin
