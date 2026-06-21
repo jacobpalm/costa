@@ -66,25 +66,7 @@ begin
 	if BgColor = ColorDefault then
 		BgColor := Thm.Txt;
 
-	{Interior}
-	SetFillStyle(SolidFill, BgColor);
-	Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
-
-	{Top + left border}
-	SetColor(Black);
-	Line(X1, Y1, X2, Y1);
-	Line(X1, Y1 + 1, X1, Y2);
-	SetColor(Thm.Shadow);
-	Line(X1 + 1, Y1 + 1, X2 - 1, Y1 + 1);
-	Line (X1 + 1, Y1 + 2, X1 + 1, Y2 - 1);
-
-	{Bottom + right border}
-	SetColor(White);
-	Line(X2, Y1 + 1, X2, Y2);
-	Line(X1 + 1, Y2, X2 - 1, Y2);
-	SetColor(Thm.Light);
-	Line(X2 - 1, Y1 + 2, X2 - 1, Y2 - 1);
-	Line(X1 + 2, Y2 - 1, X2 - 2, Y2 - 1);
+	DrawUIPrimitive(UIBorderDown, X1, Y1, X2, Y2, BgColor, False);
 
 	if GetState(SSelected) then
 	begin

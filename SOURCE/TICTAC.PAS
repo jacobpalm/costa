@@ -132,6 +132,7 @@ begin
 	Inc(X2, X1);
 	Inc(Y2, Y1);
 
+	{Custom drawing, not using UI primitives since this is a game with a bit of a custom UI look}
 	{Interior}
 	SetFillStyle(SolidFill, White);
 	Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 2);

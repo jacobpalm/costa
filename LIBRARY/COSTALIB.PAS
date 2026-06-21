@@ -30,6 +30,10 @@ const
 	DecimalSign          = '.';  {Seperator signs - for localization}
 	ThousandsSign        = ',';
 
+	MouseInt             = $33;
+	MouseFuncSetHandler  = $000C;
+	MouseFuncExchSubRout = $0014;
+
 	{Standard DOS error messages used by Turbo Pascal}
 	MSG_DOSERROR_1       = 'Invalid function';
 	MSG_DOSERROR_2       = 'File not found';
@@ -72,6 +76,9 @@ type
 
 	{Orientation for centering objects}
 	TOrientation = (OrHorizontal, OrVertical, OrBoth);
+
+	{Styles for UI primitives used by all objects}
+	TUIPrimitive = (UIBorderUp, UIBorderDown);
 
 	{Text alignment}
 	TAlign = (AlLeft, AlCenter, AlRight);
@@ -272,13 +279,14 @@ type
 	TMouse = object
 		public
 			constructor Init;
+			destructor  Done;
 			function    Clicked: TMouseButton;
 			function    Supported: Boolean;
 			function    X: Integer;
 			function    Y: Integer;
+			procedure   Show;
 			procedure   Hide;
 			procedure   Move(Left, Top: Integer);
-			procedure   Show;
 		private
 			Visible,
 			Support:    Boolean;
@@ -340,6 +348,8 @@ function  ReplaceMsg(const Msg, Value: String): String;
 procedure SoundNote(Frequency, Duration: Integer);
 procedure SystemSound(SoundType: TSystemSound);
 
+procedure DrawUIPrimitive(Style: TUIPrimitive; X1, Y1, X2, Y2: Integer; BgColor: Byte; Transparent: Boolean);
+
 implementation
 
 const
@@ -353,14 +363,91 @@ const
 	MSG_GRAPHICS_ERROR           = 'Graphics error:';
 
 var
-	MouseEvent:   Boolean;
+	MouseEvent:           Boolean;
 	MouseX,
 	MouseY,
-	MouseButtons: Word;
+	MouseButtons:         Word;
+	PrevMouseHandlerSeg,
+	PrevMouseHandlerOfs,
+	PrevMouseHandlerMask: Word;
 
 
-procedure InstallMouseHandler; forward;
-procedure UninstallMouseHandler; forward;
+{----------------------------------------------------------------------------}
+{ Helper functions used by library, objects and user applications
+{----------------------------------------------------------------------------}
+
+{TMouse hooks the mouse driver to this procedure, which the mouse driver calls every time the mouse is moved or clicked. This
+ procedure then updates mouse variables, which the TMouse object returns when asked. This allows the mouse to work without
+ polling}
+procedure MouseHandler; far; assembler;
+asm
+	push ds                 {Ensure correct DS when mouse driver calls this procedure}
+	mov ax, seg MouseEvent
+	mov ds, ax
+
+	mov ax, 3               {Poll mouse state}
+	int 33h
+
+	mov MouseButtons, bx    {Save mouse state}
+	mov MouseX, cx
+	mov MouseY, dx
+	mov MouseEvent, 1       {Set to True so app knows it needs to check for UI events}
+
+	pop ds                  {Restore DS}
+end;
+
+{Used for drawing objects, in order to reduce redundant drawing code and to ensure similarity of objects}
+procedure DrawUIPrimitive(Style: TUIPrimitive; X1, Y1, X2, Y2: Integer; BgColor: Byte; Transparent: Boolean);
+var
+	TLColor1, TLColor2, BRColor1, BRColor2: Byte; {TL = top+left, BR = bottom+right}
+begin
+	if (Style = UIBorderUp) or (Style = UIBorderDown) then
+	begin
+		{Interior}
+		If Not Transparent Then
+		begin
+			SetFillStyle(SolidFill, BgColor);
+			Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 2);
+		end;
+
+		{Invert border colors if pressed down}
+		if Style = UIBorderUp then
+		begin
+			{Border is up}
+			TLColor1 := White;
+			TLColor2 := Thm.Light;
+			BRColor1 := Black;
+			BRColor2 := Thm.Shadow;
+		end
+		else
+		begin
+			{Border is down}
+			TLColor1 := Black;
+			TLColor2 := Thm.Shadow;
+			BRColor1 := White;
+			BRColor2 := Thm.Light;
+		end;
+
+		{Top + left outer border}
+		SetColor(TLColor1);
+		Line(X1, Y1, X2, Y1);
+		Line(X1, Y1 + 1, X1, Y2);
+		{Inner border}
+		SetColor(TLColor2);
+		Line(X1 + 1, Y1 + 1, X2 - 1, Y1 + 1);
+		Line (X1 + 1, Y1 + 2, X1 + 1, Y2 - 1);
+
+		{Bottom + right outer border}
+		SetColor(BRColor1);
+		Line(X2, Y1 + 1, X2, Y2);
+		Line(X1 + 1, Y2, X2 - 1, Y2);
+		{Inner border}
+		SetColor(BRColor2);
+		Line(X2 - 1, Y1 + 2, X2 - 1, Y2 - 1);
+		Line(X1 + 2, Y2 - 1, X2 - 2, Y2 - 1);
+	end;
+
+end;
 
 {----------------------------------------------------------------------------}
 { Base UI object implementation }
@@ -368,7 +455,7 @@ procedure UninstallMouseHandler; forward;
 
 constructor TUIObject.Init;
 begin
-	State     := [SEnabled];
+	State     := [SEnabled, SDirty];
 	Hotkey    := nil;
 	OnClick   := nil;
 	OnDraw    := nil;
@@ -999,10 +1086,8 @@ begin
 	Self.LoadSystemSettings;
 	Self.LoadTheme(Setting.ThmFile);
 
-	{Initialize mouse}
+	{Initialize mouse and hook event handler}
 	Mouse.Init;
-	if Mouse.Supported then
-		InstallMouseHandler;
 end;
 
 destructor TApplication.Done;
@@ -1024,7 +1109,8 @@ begin
 		Window := NextNode;
 	end;
 
-	UninstallMouseHandler;
+	{Must be called to remove the mouse handler procedure hook in the mouse driver}
+	Mouse.Done;
 end;
 
 procedure TApplication.OpenWindow(Win: PWindow);
@@ -1673,8 +1759,26 @@ begin
 	MouseButtons := 0;
 
 	{Check for mouse support}
-	Intr($33, regs);
+	Intr(MouseInt, regs);
 	Support := Regs.ax > 0;
+
+	if not Support then
+		exit;
+
+	{If mouse is supported, install MouseHandler in the driver so that is is called whenever mouse is moved or clicked
+	 We use MouseFuncExchSubRout instead of MouseFuncSetHandler, since this one returns the current values so we Can
+	 restore them on exit.}
+	Regs.AX := MouseFuncExchSubRout;
+	Regs.CX := $FFFF;
+	Regs.ES := Seg(MouseHandler);
+	Regs.DX := Ofs(MouseHandler);
+	Intr(MouseInt, Regs);
+
+	{In case a previous handler was installed before starting appplication, save it to be restored on exit to avoid
+	 breaking other apps on the system}
+	PrevMouseHandlerMask := Regs.CX;
+	PrevMouseHandlerSeg := Regs.ES;
+	PrevMouseHandlerOfs := Regs.DX;
 end;
 
 function TMouse.Clicked: TMouseButton;
@@ -1698,7 +1802,7 @@ begin
 	If Not Support Or Not Visible Then
 		Exit;
 	Regs.ax := 2;
-	Intr($33, Regs);
+	Intr(MouseInt, Regs);
 	Visible := False;
 end;
 
@@ -1717,10 +1821,10 @@ begin
 	regs.ax := 4;
 	regs.cx := Left;
 	regs.dx := Top;
-	Intr($33, regs);
+	Intr(MouseInt, regs);
 end;
 
-Procedure TMouse.Show;
+procedure TMouse.Show;
 Var
 	Regs: Registers;
 Begin
@@ -1728,7 +1832,7 @@ Begin
 	If Not Support Then
 		Exit;
 	Regs.ax := 1;
-	Intr($33, Regs);
+	Intr(MouseInt, Regs);
 	Visible := True;
 End;
 
@@ -1746,6 +1850,21 @@ Function TMouse.Y: Integer;
 Begin
 	Y := MouseY;
 End;
+
+destructor TMouse.Done;
+var
+	Regs: Registers;
+begin
+	if not Support then
+		exit;
+
+	{If mouse is supported, restore the event handler if any that was set before we installed our own handler}
+	Regs.AX := MouseFuncSetHandler;  {Set mouse event handler function}
+	Regs.CX := PrevMouseHandlerMask; {No events}
+	Regs.ES := PrevMouseHandlerSeg;  {Clear segment+offset of handler function}
+	Regs.DX := PrevMouseHandlerOfs;
+	Intr(MouseInt, Regs);
+end;
 
 {----------------------------------------------------------------------------}
 { Generic functions/procedures that fall outside any object }
@@ -2018,45 +2137,6 @@ begin
 				GetDosErrorMsg := ReplaceMsg(MSG_DOSERROR_UNKNOWN, ErrorCodeStr);
 			end;
 	end;
-end;
-
-procedure MouseHandler; far; assembler;
-asm
-	push ds                 {Ensure correct DS when mouse driver calls this procedure}
-	mov ax, seg MouseEvent
-	mov ds, ax
-
-	mov ax, 3               {Poll mouse state}
-	int 33h
-
-	mov MouseButtons, bx    {Save mouse state}
-	mov MouseX, cx
-	mov MouseY, dx
-	mov MouseEvent, 1       {Set to True so app knows it needs to check for UI events}
-
-	pop ds                  {Restore DS}
-end;
-
-procedure InstallMouseHandler;
-var
-	Regs: Registers;
-begin
-	Regs.AX := $000C; {Set mouse event handler}
-	Regs.CX := $FFFF; {Any event - press, release or move}
-	Regs.ES := Seg(MouseHandler);
-	Regs.DX := Ofs(MouseHandler);
-	Intr($33, Regs);
-end;
-
-procedure UninstallMouseHandler;
-var
-	Regs: Registers;
-begin
-	Regs.AX := $000C; {Set mouse event handler}
-	Regs.CX := 0;     {No events}
-	Regs.ES := 0;
-	Regs.DX := 0;
-	Intr($33, Regs);
 end;
 
 end.

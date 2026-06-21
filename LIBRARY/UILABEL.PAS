@@ -100,6 +100,9 @@ end;
 
 procedure TLabel.SetAlign(Val: TAlign);
 begin
+	if Align = Val then
+		exit;
+
 	Align := Val;
 	AddState(SDirty);
 end;

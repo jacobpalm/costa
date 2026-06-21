@@ -21,7 +21,7 @@ type
 	end;
 
 	PList = ^TList;
-	TList = object(TArea)
+	TList = object(TUIObject)
 		public
 			constructor    Init(X, Y: Integer; Parent: PContainer);
 			destructor     Done; virtual;
@@ -53,8 +53,15 @@ type
 implementation
 
 constructor TList.Init(X, Y: Integer; Parent: PContainer);
+const
+	DefaultW = 150;
+	DefaultH = 185;
 begin
-	inherited Init(X, Y, Parent);
+	inherited Init;
+	SetParent(Parent);
+	SetPos(X, Y);
+	SetSize(DefaultW, DefaultH);
+
 	Head          := nil;
 	Selection     := 1;
 	StartPos      := 1;
@@ -231,9 +238,6 @@ var
 	ItemText: String;
 	FgColor, BgColor: Byte;
 begin
-	{Draw procedure of TArea draws the background and border}
-	inherited Draw;
-
 	if Head = nil then
 		exit; {Nothing to draw}
 
@@ -241,13 +245,7 @@ begin
 	GetPos(X1, Y1, True);
 	GetSize(X2, Y2);
 	Inc(X2, X1);
-
-	{Set X coordinates to internal area inside border, and Y coordinates to the first item position}
-	Inc(X1, 2);
-	Dec(X2, 2);
-	Inc(Y1, 3);
-	Y2 := Y1 + 12;
-	Counter := 0;
+	Inc(Y2, Y1);
 
 	{Get colors}
 	FgColor := GetFgColor;
@@ -256,6 +254,16 @@ begin
 		FgColor := Thm.TxtText;
 	if BgColor = ColorDefault then
 		BgColor := Thm.Txt;
+
+	DrawUIPrimitive(UIBorderDown, X1, Y1, X2, Y2, BgColor, GetState(STransparent));
+
+	{Draw contents of list}
+	{Set X coordinates to internal area inside border, and Y coordinates to the first item position}
+	Inc(X1, 2);
+	Dec(X2, 2);
+	Inc(Y1, 3);
+	Y2 := Y1 + 12;
+	Counter := 0;
 
 	if StartPos > Length then
 		StartPos := 1; {Reset start position if it exceeds item count}

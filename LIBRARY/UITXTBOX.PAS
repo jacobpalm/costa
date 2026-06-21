@@ -7,7 +7,7 @@ uses
 
 type
 	PTextbox = ^TTextbox;
-	TTextbox = object(TArea)
+	TTextbox = object(TUIObject)
 		public
 			constructor Init(X, Y: Integer; Cap: String; Parent: PContainer);
 			procedure   CheckEvent; virtual;
@@ -214,13 +214,10 @@ procedure TTextbox.Draw;
 var
 	X1, Y1, Width, Height, MaxShow: Integer;
 	S: string;
-	FgColor: Byte;
+	FgColor, BGColor: Byte;
 begin
 	if GetState(SHidden) then
 		exit;
-
-	{Draw the textbox border+interior inherited from TArea}
-	inherited Draw;
 
 	{Get absolute position and size of the object}
 	GetPos(X1, Y1, True);
@@ -230,13 +227,17 @@ begin
 	if Length(Caption) > 0 then
 		Print(Caption, X1, Y1 - 15, Thm.WinText);
 
-	Y1 := (Height - 7) div 2 + Y1;
-
 	FGColor := GetFgColor;
 	if FGColor = ColorDefault then
 		FGColor := Thm.TxtText;
+	BGColor := GetBgColor;
+	if BGColor = ColorDefault then
+		BGColor := Thm.Txt;
+
+	DrawUIPrimitive(UIBorderDown, X1, Y1, X1 + Width, Y1 + Height, BGColor, GetState(STransparent));
 
 	{Draw text inside the textbox}
+	Y1 := (Height - 7) div 2 + Y1; {Centered vertically}
 	S := Text;
 	if S <> '' then
 	begin

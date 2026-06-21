@@ -319,7 +319,7 @@ end;
 
 procedure AreaColorClick(Sender: PUIObject); far;
 var
-	PAreaColor: ^TArea;
+	PAreaColor: PArea;
 begin
 	{Need to use a PAreaColor pointer here, since PUIObject doesn't
 	 have a BGColor property}

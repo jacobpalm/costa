@@ -9,7 +9,7 @@ type
 	PLogEntry = ^String;
 
 	PLogArea = ^TLogArea;
-	TLogArea = Object(TArea)
+	TLogArea = Object(TUIObject)
 		public
 			constructor Init(X, Y: Integer; Parent: PContainer);
 			destructor  Done; virtual;
@@ -72,13 +72,19 @@ begin
 	Inc(X2, X1);
 	Inc(Y2, Y1);
 
+	BgColor := GetBgColor;
+	if BgColor = ColorDefault then
+		BgColor := Thm.Txt;
+
 	{Draw the area using ancestor TArea}
-	TArea.Draw;
+	DrawUIPrimitive(UIBorderDown, X1, Y1, X2, Y2, BgColor, GetState(STransparent));
 
 	{Draw log lines}
 	if LineCount > 0 then
 		for I := 0 to LineCount - 1 do
 			DrawLine(I);
+
+	Inherited Draw;
 end;
 
 procedure TLogArea.AddEntry(Text: string);

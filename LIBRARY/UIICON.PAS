@@ -35,6 +35,7 @@ begin
 	SetParent(Parent);
 	SetPos(X, Y);
 	SetSize(DefaultW, DefaultH);
+	SetBgColor(Thm.Txt);
 end;
 
 procedure TIcon.Draw;
@@ -62,14 +63,7 @@ begin
 
 	{Icon border}
 	if Self.GetState(SBordered) then
-	begin
-		SetColor(Thm.Light);
-		Line(X - 1, Y - 1, X + 32, Y - 1);
-		Line(X - 1, Y, X - 1, Y + 32);
-		SetColor(Thm.Shadow);
-		Line(X, Y + 32, X + 32, Y + 32);
-		Line(X + 32, Y, X + 32, Y + 31);
-	end;
+		DrawUIPrimitive(UIBorderUp, X - 2, Y - 2, X + 33, Y + 33, 0, True);
 
 	{If no Icon file, draw an empty box}
 	if Length(IconFile) = 0 then

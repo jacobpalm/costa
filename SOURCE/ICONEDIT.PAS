@@ -69,15 +69,15 @@ function UnsavedChangesToKeep: Boolean; forward;
  selection marker to the corresponding color area}
 procedure SetDrawColor(Col: Byte);
 var
-	NewColor, OldColor: Byte;
+	NewColor: Byte;
 begin
 	{Trigger redraw of new and old color object}
-	AreaColor[Canvas^.GetColor]^.AddState(SDirty);
+	AreaColor[Canvas^.GetDrawColor]^.AddState(SDirty);
 	AreaColor[Col]^.AddState(SDirty);
 
 	{We get color right after setting it, in case SetColor wrapped around the value}
-	Canvas^.SetColor(Col);
-	NewColor := Canvas^.GetColor;
+	Canvas^.SetDrawColor(Col);
+	NewColor := Canvas^.GetDrawColor;
 end;
 
 {This procedure draws a selection marker in the active color area}
@@ -86,7 +86,7 @@ var
 	X1, Y1, X2, Y2: integer;
 	Color: Byte;
 begin
-	Color := Canvas^.GetColor;
+	Color := Canvas^.GetDrawColor;
 
 	{If this isn't the active area, just exit}
 	If Sender <> PUIObject(AreaColor[Color]) then
@@ -234,7 +234,7 @@ end;
 
 procedure HkColorClick(Sender: PUIObject); far;
 begin
-	SetDrawColor(Canvas^.GetColor + 1);
+	SetDrawColor(Canvas^.GetDrawColor + 1);
 end;
 
 procedure CanvasClick(Sender: PUIObject); far;
@@ -285,14 +285,6 @@ begin
 		RemoveState(SBordered);
 	end;
 
-	New(Canvas, Init(172, 44, WinMain));
-	With Canvas^ do
-	begin
-		SetSize(290, 290);
-		SetBgColor(White);
-		SetOnClick(CanvasClick);
-		SetPreviewPos(314, 89);
-	end;
 	New(BtnNew, Init(2, 2, CAP_NEW, WinMain));
 	With BtnNew^ do
 	begin
@@ -331,12 +323,35 @@ begin
 		SetOnClick(BtnExitClick);
 	end;
 
+	{Init now to ensure correct ZOrder, but set pos after we now position of canvas}
+	New(LblPreview, Init(0, 0, CAP_PREVIEW, WinMain));
+	New(AreaPreview, Init(0, 0, WinMain));
+	With AreaPreview^ do
+	begin
+		SetSize(56, 56);
+		SetBgColor(Thm.Desk);
+	end;
+
+	New(Canvas, Init(172, 44, WinMain));
+	With Canvas^ do
+	begin
+		SetSize(290, 290);
+		SetBgColor(White);
+		SetOnClick(CanvasClick);
+		SetPreviewPos(314, 89);
+	end;
+
 	{Get absolute position of canvas area, and its size, so other objects can be
 	 positioned relative to it}
 	Canvas^.GetPos(X, Y, True);
 	Canvas^.GetSize(W, H);
 
 	X := X + W + 12;
+
+	{Move preview area to the right of the canvas}
+	LblPreview^.SetPos(X, Y + 62);
+	AreaPreview^.SetPos(X, Y + 77);
+
 	New(LblTools, Init(X, Y, CAP_TOOLS, WinMain));
 
 	New(BtnPencil, Init(X, Y, CAP_PENCIL, WinMain));
@@ -353,14 +368,6 @@ begin
 		SetSize(56, SizeRetain);
 		AddHotkey(KeyAltF);
 		SetOnClick(BtnToolClick);
-	end;
-
-	New(LblPreview, Init(X, Y + 62, CAP_PREVIEW, WinMain));
-	New(AreaPreview, Init(X, Y + 77, WinMain));
-	With AreaPreview^ do
-	begin
-		SetSize(56, 56);
-		SetBgColor(Thm.Desk);
 	end;
 
 	{Get position of canvas again, to position color areas left to it}

@@ -18,7 +18,7 @@ type
 	TCanvasDir    = (DirHide, DirStay, DirLeft, DirRight, DirUp, DirDown);
 
 	PIconCanvas   = ^TIconCanvas;
-	TIconCanvas   = object(TArea)
+	TIconCanvas   = object(TUIObject)
 		public
 			constructor  Init(X, Y: Integer; Parent: PContainer);
 			destructor   Done; virtual;
@@ -32,8 +32,8 @@ type
 			procedure    SetTool(Tool: TCanvasTool);
 			function     GetTool: TCanvasTool;
 
-			procedure    SetColor(Color: Byte);
-			function     GetColor: Byte;
+			procedure    SetDrawColor(Color: Byte);
+			function     GetDrawColor: Byte;
 
 			function     GetIconFile: string;
 			function     IsChanged: Boolean;
@@ -67,11 +67,14 @@ const
 	DefaultW = 290;
 	DefaultH = 290;
 begin
-	TArea.Init(X, Y, Parent);
+	Inherited Init;
+	SetParent(Parent);
+	SetPos(X, Y);
 	SetSize(DefaultW, DefaultH);
+	SetBgColor(White);
 	FillChar(IconData, SizeOf(IconData), White);
 
-	New(ImgPreview, Init(X + DefaultW + 12, Y, '', nil)); {Set preview icon position to right of canvas}
+	New(ImgPreview, Init(X + DefaultW + 12, Y, '', Parent)); {Set preview icon position to right of canvas}
 	ImgPreview^.SetBgColor(White);
 
 	IndicatorX := 16;
@@ -87,24 +90,26 @@ begin
 	if Assigned(ImgPreview) then
 		Dispose(ImgPreview, Done);
 
-	TArea.Done;
+	Inherited Done;
 end;
 
 procedure TIconCanvas.Draw;
 var
 	X1, Y1, X2, Y2, I: Integer;
+	BGColor: Byte;
 begin
 	if GetState(SHidden) then
 		exit;
-
-	{Draw area, which will draw background color and borders}
-	TArea.Draw;
 
 	{Get absolute position and size of the object}
 	Self.GetPos(X1, Y1, True);
 	Self.GetSize(X2, Y2);
 	Inc(X2, X1);
 	Inc(Y2, Y1);
+
+	BgColor := GetBgColor;
+
+	DrawUIPrimitive(UIBorderDown, X1, Y1, X2, Y2, BgColor, False);
 
 	{The canvas is divided into pixels by horizontal and vertical lines in a grid. These lines
  	 are dotted in alternate colors to make them visible on any background.}
@@ -142,6 +147,9 @@ begin
 	{If keyboard indicater on, draw it as well}
 	if IndicatorOn then
 		MoveIndicator(DirStay);
+
+	{Clearing of dirty flag etc. handled by parent}
+	Inherited Draw;
 end;
 
 procedure TIconCanvas.CheckEvent;
@@ -273,7 +281,7 @@ begin
 	GetTool := DrawTool;
 end;
 
-procedure TIconCanvas.SetColor(Color: Byte);
+procedure TIconCanvas.SetDrawColor(Color: Byte);
 begin
 	{Prevent color outside range by wrapping around, allowing color cycling by
 	 incrementing/decrementing beyond limits}
@@ -285,9 +293,9 @@ begin
 		DrawCol := Color;
 end;
 
-function TIconCanvas.GetColor: Byte;
+function TIconCanvas.GetDrawColor: Byte;
 begin
-	GetColor := DrawCol;
+	GetDrawColor := DrawCol;
 end;
 
 function TIconCanvas.GetIconFile: string;

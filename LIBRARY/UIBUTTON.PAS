@@ -99,7 +99,7 @@ procedure TButton.Draw;
 var
 	X1, X2, Y1, Y2: Integer;
 	FgColor, BgColor: Byte;
-	TLColor1, TLColor2, BRColor1, BRColor2: Byte; {TL = top+left, BR = bottom+right}
+	Style: TUIPrimitive;
 begin
 	if GetState(SHidden) then
 		exit;
@@ -113,51 +113,15 @@ begin
 	{Get colors}
 	FgColor := GetFGColor;
 	BgColor := GetBGColor;
+	if BgColor = ColorDefault then
+		BgColor := Thm.Btn;
 
-	{Interior}
-	If Not GetState(STransparent) Then
-	Begin
-		if BgColor = ColorDefault then
-			BgColor := Thm.Btn;
-		SetFillStyle(SolidFill, BgColor);
-		Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 2);
-	End;
-
-	{Invert border colors if pressed down}
-	if not GetState(SActive) then
-	begin
-		{Button is up}
-		TLColor1 := White;
-		TLColor2 := Thm.Light;
-		BRColor1 := Black;
-		BRColor2 := Thm.Shadow;
-	end
+	if GetState(SActive) then
+		Style := UIBorderDown
 	else
-	begin
-		{Button is down}
-		TLColor1 := Black;
-		TLColor2 := Thm.Shadow;
-		BRColor1 := White;
-		BRColor2 := Thm.Light;
-	end;
+		Style := UIBorderUp;
 
-	{Top + left outer border}
-	SetColor(TLColor1);
-	Line(X1, Y1, X2, Y1);
-	Line(X1, Y1 + 1, X1, Y2);
-	{Inner border}
-	SetColor(TLColor2);
-	Line(X1 + 1, Y1 + 1, X2 - 1, Y1 + 1);
-	Line (X1 + 1, Y1 + 2, X1 + 1, Y2 - 1);
-
-	{Bottom + right outer border}
-	SetColor(BRColor1);
-	Line(X2, Y1 + 1, X2, Y2);
-	Line(X1 + 1, Y2, X2 - 1, Y2);
-	{Inner border}
-	SetColor(BRColor2);
-	Line(X2 - 1, Y1 + 2, X2 - 1, Y2 - 1);
-	Line(X1 + 2, Y2 - 1, X2 - 2, Y2 - 1);
+	DrawUIPrimitive(Style, X1, Y1, X2, Y2, BGColor, GetState(STransparent));
 
 	if Caption <> '' then
 	begin
