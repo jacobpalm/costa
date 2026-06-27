@@ -619,9 +619,6 @@ procedure WinMainDraw(Sender: PUIObject); far;
 var
 	X: integer;
 begin
-	SetFillStyle(SolidFill, Green);
-	Bar(0, 29, 639, 349);
-
 	SetLineStyle(UserBitLn, $1111, 1);
 	SetColor(LightGreen);
 	for X := 0 to 639 do
@@ -659,6 +656,7 @@ begin
 		RemoveState(SBordered);
 		SetOnDraw(WinMainDraw);
 		SetOnRun(WinMainRun);
+		SetBgColor(Green);
 	end;
 
 	New(FrmTic, Init(209, 80, WinMain));

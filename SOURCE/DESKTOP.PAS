@@ -490,7 +490,7 @@ begin
 	{Desktop won't work if run outside Costa, so make sure the right parameter is passed from COSTA.EXE}
 	if not (ParamStr(1) = '/RUN') then
 	begin
-		Writeln(MSG_RUN_COSTA);
+		DosPrint(MSG_RUN_COSTA);
 		Exit;
 	end;
 

@@ -8,6 +8,7 @@
 *.QDB
 *.DSK
 *.TPU
+*.MAP
 
 # Costa profile and configuration data - user specific data
 CONFIG/*.BIN

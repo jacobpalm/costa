@@ -340,6 +340,7 @@ function  PrintW(Text: String): Integer;
 function  PrintH(Text: string): Integer;
 
 function  GetDosErrorMsg(ErrorCode: Integer): String;
+procedure DosPrint(Text: String);
 
 function  UpperCase(s: string): string;
 function  Replace(Input, OldSubStr, NewSubStr: String): String;
@@ -1078,7 +1079,8 @@ begin
 	If ErrorCode <> GrOk Then
 	Begin
 		CloseGraph;
-		Writeln(MSG_GRAPHICS_ERROR, GraphErrorMsg(ErrorCode));
+		DosPrint(MSG_GRAPHICS_ERROR);
+		DosPrint(GraphErrorMsg(ErrorCode));
 		Halt(1);
 	End;
 
@@ -1413,7 +1415,7 @@ begin
 	if not Assigned(Obj) then
 	begin
 		CloseGraph;
-		Writeln('Error: Attempt to add nil object to container');
+		DosPrint('Error: Attempt to add nil object to container');
 		Halt(1);
 		{DEBUG - this is a bit extreme}
 	end;
@@ -1509,8 +1511,8 @@ begin
 	while Assigned(CurrObj) do
 	begin
 		{Draw dirty objects}
-		if (CurrObj^.ObjectP^.GetState(SDirty) = true) and
-		   (CurrObj^.ObjectP^.GetState(SHidden) = false) then
+		if (CurrObj^.ObjectP^.GetState(SDirty) and
+		    not CurrObj^.ObjectP^.GetState(SHidden)) then
 		begin
 			if not MouseHidden then
 			begin
@@ -1581,6 +1583,7 @@ end;
 procedure TWindow.Draw;
 var
 	X1, X2, Y1, Y2: Integer;
+	BgColor: Byte;
 begin
 	{Don't draw or trigger event if window is hidden}
 	if GetState(SHidden) then
@@ -1591,6 +1594,9 @@ begin
 	Self.GetSize(X2, Y2);
 	Inc(X2, X1);
 	Inc(Y2, Y1);
+	BgColor := GetBGColor;
+	if BgColor = ColorDefault then
+		BgColor := Thm.Win;
 
 	{If background preservation is enabled, and background hasn't been
 	 captured yet, capture it now before drawing anything}
@@ -1612,7 +1618,7 @@ begin
 		{Draw the window border and interior}
 		SetFillStyle(SolidFill, Thm.Title);
 		Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 1);
-		SetFillStyle(SolidFill, Thm.Win);
+		SetFillStyle(SolidFill, BgColor);
 		Bar(X1 + 7, Y1 + 7, X2 - 7, Y2 - 7);
 		SetColor(15);
 		Line(X1, Y1, X2 - 1, Y1);
@@ -1634,7 +1640,7 @@ begin
 	else
 	begin
 		{Draw window interior without border}
-		SetFillStyle(SolidFill, Thm.Win);
+		SetFillStyle(SolidFill, BgColor);
 		Bar(X1, Y1, X2, Y2);
 	end;
 
@@ -2006,6 +2012,26 @@ begin
 		end;
 		Y := Y + PrintLineH; {Move down one line}
 	end;
+end;
+
+{DosPrint outputs console text. This is to avoid linking WriteLn and all of the special formatting code it contains}
+procedure DosPrint(Text: string);
+var
+	EscapedText: String;
+	Regs: Registers;
+begin
+	if Length(Text) = 0 then
+		exit;
+
+	EscapedText := Text;
+	if (EscapedText[Length(EscapedText)] <> '$') then
+		EscapedText := EscapedText + '$';
+
+	FillChar(Regs, SizeOf(Regs), $0);
+	Regs.Ah := 9;
+	Regs.Ds := Seg(EscapedText[1]); {Use segment/offset of first char, to avoid the length byte being printed}
+	Regs.Dx := Ofs(EscapedText[1]);
+	MsDos(Regs);
 end;
 
 procedure SoundNote(Frequency, Duration: Integer);

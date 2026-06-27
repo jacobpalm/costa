@@ -43,14 +43,15 @@ ZIPCMD = ZIP -9rkDX
 # -$D- = Disable debug info
 # -$L- = Disable local debug symbols
 # -$R- = Disable range checking and virtual method call checking
-TPCSWITCHES = -M -$D- -$L- -$R-
+# -GD  = Generate detailed map file for each executable
+TPCSWITCHES = -M -GD
 TPCCMD = $(TPC) $(TPCSWITCHES)
 
 # TASM/TLINK options for COSTA.EXE
 # /ZN = Debug info disabled
 TASMSWITCHES = /zn
 TASMCMD = $(TASM) $(TASMSWITCHES)
-TLINKSWITCHES = /x
+TLINKSWITCHES = /m
 TLINKCMD = $(TLINK) $(TLINKSWITCHES)
 
 # BINOBJ options for building binary object files, used for graphics drivers
@@ -182,7 +183,7 @@ UILOG.TPU: $(LIBDIR)\UILOG.PAS COSTALIB.TPU UIAREA.TPU
 UITXTBOX.TPU: $(LIBDIR)\UITXTBOX.PAS COSTALIB.TPU UIAREA.TPU
 	$(TPCCMD) $(LIBDIR)\UITXTBOX.PAS $(LIBPATHS)
 
-UITHMPRW.TPU: $(LIBDIR)\UITHMPRW.PAS
+UITHMPRW.TPU: $(LIBDIR)\UITHMPRW.PAS LIBRARY
 	$(TPCCMD) $(LIBDIR)\UITHMPRW.PAS $(LIBPATHS)
 
 # Dialogs
