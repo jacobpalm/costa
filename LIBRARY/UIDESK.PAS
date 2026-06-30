@@ -177,7 +177,7 @@ var
 	TempNode: PLinkNode;
 	OffsetX, OffsetY: integer;
 	X1, Y1, X2, Y2: Integer;
-	MouseButton: TMouseButton;
+	MouseButton: Word;
 	KeyPressed: boolean;
 begin
 	{Don't check for events if object is disabled or hidden}

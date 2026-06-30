@@ -62,7 +62,7 @@ type
 
 			function      GetNeighborCount(Row, Col: byte): byte;
 			procedure     ClearCell(Row, Col: byte);
-			procedure     ClickCell(Row, Col: byte; MouseButton: TMouseButton);
+			procedure     ClickCell(Row, Col: byte; MouseButton: Word);
 			procedure     DrawCell(Row, Col: byte);
 			procedure     HelpFirstMove(Row, Col: byte);
 			procedure     LooseGame;
@@ -268,7 +268,7 @@ procedure TMineField.CheckEvent;
 var
 	R, C: byte;
 	X1, Y1: integer;
-	MouseButton: TMouseButton;
+	MouseButton: Word;
 	KeyPressed: boolean;
 begin
 	{Don't check for events if object is disabled or hidden}
@@ -729,7 +729,7 @@ begin
 	end;
 end;
 
-procedure TMinefield.ClickCell(Row, Col: byte; MouseButton: TMouseButton);
+procedure TMinefield.ClickCell(Row, Col: byte; MouseButton: Word);
 var
 	IndicatorOn: boolean;
 begin

@@ -11,7 +11,6 @@ const
 	LibYear              = '2025';
 
 	SizeRetain           = -255; {Used to retain current width/height on object resize}
-
 	ColorDefault         = 255;  {Used to set default colors on objects}
 
 	DoubleClickDelay     = 0.5;
@@ -30,9 +29,12 @@ const
 	DecimalSign          = '.';  {Seperator signs - for localization}
 	ThousandsSign        = ',';
 
-	MouseInt             = $33;
-	MouseFuncSetHandler  = $000C;
-	MouseFuncExchSubRout = $0014;
+	MouseInt             = $33;   {Mouse drive interrupt}
+	MouseFuncSetHandler  = $000C; {Function: Set Mouse Handler Routine}
+	MouseFuncExchSubRout = $0014; {Function: Swap Mouse Handler Routine}
+	MbNone               = 0;     {Mouse button states}
+	MbLeft               = 1;
+	MbRight              = 2;
 
 	{Standard DOS error messages used by Turbo Pascal}
 	MSG_DOSERROR_1       = 'Invalid function';
@@ -74,14 +76,9 @@ type
 	TState       = (SEnabled, SHidden, SActive, SSelected, STransparent, SBordered, SDirty);
 	TStateSet    = set of TState;
 
-	{Orientation for centering objects}
-	TOrientation = (OrHorizontal, OrVertical, OrBoth);
-
-	{Styles for UI primitives used by all objects}
-	TUIPrimitive = (UIBorderUp, UIBorderDown);
-
-	{Text alignment}
-	TAlign = (AlLeft, AlCenter, AlRight);
+	TOrientation = (OrHorizontal, OrVertical, OrBoth); {Orientation for centering objects}
+	TAlign       = (AlLeft, AlCenter, AlRight);        {Text alignment}
+	TUIPrimitive = (UIBorderUp, UIBorderDown);         {Styles for UI primitives used by all objects}
 
 	{Menu types}
 	TMenuStyle   = (MsPopup, MsMenuBar);
@@ -90,6 +87,24 @@ type
 	THotkeyNode = record
 		Hotkey: string;      {Hotkey as returned by GetKey}
 		Next:   PHotkeyNode; {Pointer to next node in linked list}
+	end;
+
+	TKeyPress = string[2];
+	TEventType = (evCleared, evClick, evRightClick, evKeyPress, evRedraw, evChange, evTimer);
+	PEvent = ^TEvent;
+	TEvent = record
+		Sender:      PUIObject;
+		Event:       TEventType;
+		MouseX,
+		MouseY,
+		MouseButton: Word;
+		Key:         TKeyPress;
+	end;
+
+	PEventNode = ^TEventNode;
+	TEventNode = record
+		EventData: PEvent;
+		Next:      PEventNode;
 	end;
 
 	{Base object which all objects, visual or not, are based on}
@@ -182,6 +197,10 @@ type
 			procedure   CheckEvent; virtual;
 			procedure   Draw; virtual;
 
+			procedure   QueueEvent(Sender: PUIObject; Event: TEventType; MouseX, MouseY, MouseButton: Word; Key: TKeyPress);
+			procedure   GetEvent(var Event: TEvent);
+			procedure   ClearEventQueue;
+
 			procedure   Run;
 			procedure   Close;
 
@@ -198,6 +217,7 @@ type
 			BackdropS:        Word;            {Size of memory block used by BackdropP}
 			OnRun:            TEventProc;
 			OnClose:          TEventProc;
+			EventQueue:       PEventNode;
 			procedure         RestoreBackdrop;
 	end;
 
@@ -275,21 +295,24 @@ type
 	end;
 
 	{Mouse support is implemnted via custom object}
-	TMouseButton  = (MbNone, MbLeft, MbRight, MbBoth);
 	TMouse = object
 		public
+			X,
+			Y:          Word;
+			Clicked:    Word;
+
 			constructor Init;
 			destructor  Done;
-			function    Clicked: TMouseButton;
 			function    Supported: Boolean;
-			function    X: Integer;
-			function    Y: Integer;
 			procedure   Show;
 			procedure   Hide;
 			procedure   Move(Left, Top: Integer);
 		private
 			Visible,
 			Support:    Boolean;
+			PrevMouseHandlerSeg,
+			PrevMouseHandlerOfs,
+			PrevMouseHandlerMask: Word;
 	end;
 
 	{Settings for the library, saved to disk}
@@ -363,15 +386,6 @@ const
 	                               'Verify that the path exists and isn''t read-only.';
 	MSG_GRAPHICS_ERROR           = 'Graphics error:';
 
-var
-	MouseEvent:           Boolean;
-	MouseX,
-	MouseY,
-	MouseButtons:         Word;
-	PrevMouseHandlerSeg,
-	PrevMouseHandlerOfs,
-	PrevMouseHandlerMask: Word;
-
 
 {----------------------------------------------------------------------------}
 { Helper functions used by library, objects and user applications
@@ -383,18 +397,17 @@ var
 procedure MouseHandler; far; assembler;
 asm
 	push ds                 {Ensure correct DS when mouse driver calls this procedure}
-	mov ax, seg MouseEvent
+	mov ax, seg Mouse.X
 	mov ds, ax
 
 	mov ax, 3               {Poll mouse state}
 	int 33h
 
-	mov MouseButtons, bx    {Save mouse state}
-	mov MouseX, cx
-	mov MouseY, dx
-	mov MouseEvent, 1       {Set to True so app knows it needs to check for UI events}
+	mov Mouse.Clicked, bx  {Save mouse state to variables}
+	mov Mouse.X, cx
+	mov Mouse.Y, dx
 
-	pop ds                  {Restore DS}
+	pop ds                 {Restore DS}
 end;
 
 {Used for drawing objects, in order to reduce redundant drawing code and to ensure similarity of objects}
@@ -1650,6 +1663,77 @@ begin
 	DrawChildren;
 end;
 
+procedure TWindow.QueueEvent(Sender: PUIObject; Event: TEventType; MouseX, MouseY, MouseButton: Word; Key: TKeyPress);
+var
+	NewEvent: PEvent;
+	NewEventNode, CheckEventNode: PEventNode;
+begin
+	{Create a new event record in memory and assign its data}
+	NewEvent := New(PEvent);
+	NewEvent^.Sender := Sender;
+	NewEvent^.Event := Event;
+	NewEvent^.MouseX := MouseX;
+	NewEvent^.MouseY := MouseY;
+	NewEvent^.MouseButton := MouseButton;
+	NewEvent^.Key := Key;
+
+	{Create a new node for the event queue and point it to the event record}
+	NewEventNode := New(PEventNode);
+	NewEventNode^.EventData := NewEvent;
+	NewEventNode^.Next := nil;
+
+	{If there is no queue, set new node as queue}
+	if Self.EventQueue = nil then
+	begin
+		Self.EventQueue := NewEventNode;
+		Exit;
+	end;
+
+	{If there is an existing queue, iterate through each item until a node with no
+	 Next node is found}
+	CheckEventNode := Self.EventQueue;
+	while Assigned(CheckEventNode^.Next) do
+		CheckEventNode := CheckEventNode^.Next;
+
+	{Set Next of last node to the new node}
+	CheckEventNode^.Next := NewEventNode;
+end;
+
+procedure TWindow.GetEvent(var Event: TEvent);
+var
+	TempNode: PEventNode;
+begin
+	if not (Assigned(Self.EventQueue)) then
+	begin
+		{Debug - this is where to check for user events}
+		FillChar(Event, SizeOf(Event), 0);
+		Exit;
+	end;
+
+	Event := Self.EventQueue^.EventData^;
+
+	{Save event node pointer, and remove it from the queue by setting queue header to next event node}
+	TempNode := Self.EventQueue;
+	Self.EventQueue := Self.EventQueue^.Next;
+
+	{Dispose of the event itself and the event node that held it}
+	Dispose(TempNode^.EventData);
+	Dispose(TempNode);
+end;
+
+procedure TWindow.ClearEventQueue;
+var
+	TempNode: PEventNode;
+begin
+	while Assigned(Self.EventQueue) do
+	begin
+		TempNode := Self.EventQueue;
+		Self.EventQueue := Self.EventQueue^.Next;
+		Dispose(TempNode^.EventData);
+		Dispose(TempNode);
+	end;
+end;
+
 procedure TWindow.Run;
 var
 	CurrObj: PObjectNode;
@@ -1747,6 +1831,8 @@ begin
 	if Assigned(BackdropP) then
 		FreeMem(BackdropP, BackdropS);
 
+	Self.ClearEventQueue;
+
 	{Call ancestor destructor for properties that aren't specific to TWindow}
 	inherited Done;
 end;
@@ -1760,9 +1846,9 @@ var
 	regs: registers;
 begin
 	Visible := False;
-	MouseX := 0;
-	MouseY := 0;
-	MouseButtons := 0;
+	X := 0;
+	Y := 0;
+	Clicked := MbNone;
 
 	{Check for mouse support}
 	Intr(MouseInt, regs);
@@ -1785,19 +1871,6 @@ begin
 	PrevMouseHandlerMask := Regs.CX;
 	PrevMouseHandlerSeg := Regs.ES;
 	PrevMouseHandlerOfs := Regs.DX;
-end;
-
-function TMouse.Clicked: TMouseButton;
-var
-	regs: registers;
-begin
-	if not Support then
-	begin
-		Clicked := MbNone;
-		exit;
-	end;
-
-	Clicked := TMouseButton(MouseButtons);
 end;
 
 procedure TMouse.Hide;
@@ -1845,16 +1918,6 @@ End;
 Function TMouse.Supported: Boolean;
 Begin
 	Supported := Support;
-End;
-
-Function TMouse.X: Integer;
-Begin
-	X := MouseX;
-End;
-
-Function TMouse.Y: Integer;
-Begin
-	Y := MouseY;
 End;
 
 destructor TMouse.Done;
