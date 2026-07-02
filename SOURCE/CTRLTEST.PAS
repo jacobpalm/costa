@@ -49,27 +49,27 @@ begin
 
 	New(WinMain, Init(50, 50, NoParent));
 	WinMain^.Center(OrBoth);
-	
+
 	New(Btn1, Init(20, 20, #127 + 'About...', WinMain));
 	With Btn1^ do
 	begin
 		AddHotkey(KeyAltA);
-		SetOnClick(Btn1Click);
+		OnClick := Btn1Click;
 	end;
 	New(Btn2, Init(120, 20, #127 + 'Open...', WinMain));
 	With Btn2^ do
 	begin
 		AddHotkey(KeyAltO);
-		SetOnClick(Btn2Click);
+		OnClick := Btn2Click;
 	end;
 	New(Btn3, Init(220, 20, 'E' + #127 + 'xit', WinMain));
 	With Btn3^ do
 	begin
 		AddHotkey(KeyAltX);
-		SetOnClick(Btn3Click);
+		OnClick := Btn3Click;
 	end;
 	New(HkEsc, Init(KeyEscape, WinMain));
-	HkEsc^.SetOnClick(Btn3Click);
+	HkEsc^.OnClick := Btn3Click;
 
 	New(Frm1, Init(20, 50, WinMain));
 	Frm1^.SetSize(200, 100);
@@ -78,7 +78,7 @@ begin
 	begin
 		SetText('John Doe');
 		Center(OrHorizontal);
-		SetOnChange(Txt1Change);
+		OnChange := Txt1Change);
 	end;
 
 	WinMain^.Run;

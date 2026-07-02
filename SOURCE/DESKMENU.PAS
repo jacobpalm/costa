@@ -112,7 +112,7 @@ begin
 	begin
 		SetSize(413, 165);
 		Center(OrBoth);
-		SetOnDraw(WinLinkMenuDraw);
+		OnDraw := WinLinkMenuDraw;
 		SaveBackdrop;
 	end;
 	New(BtnOpen, Init(12, 101, CAP_OPEN, WinLinkMenu));
@@ -121,32 +121,32 @@ begin
 		SetSize(389, SizeRetain);
 		AddHotkey(KeyAltO);
 		AddHotkey(KeyEnter);
-		SetOnClick(ButtonClick);
+		OnClick := ButtonClick;
 	end;
 	New(BtnEdit, Init(12, 131, CAP_EDIT, WinLinkMenu));
 	with BtnEdit^ do
 	begin
 		AddHotkey(KeyAltE);
-		SetOnClick(ButtonClick);
+		OnClick := ButtonClick;
 	end;
 	New(BtnMove, Init(111, 131, CAP_MOVE, WinLinkMenu));
 	with BtnMove^ do
 	begin
 		AddHotkey(KeyAltM);
-		SetOnClick(ButtonClick);
+		OnClick := ButtonClick;
 	end;
 	New(BtnRemove, Init(210, 131, CAP_REMOVE, WinLinkMenu));
 	with BtnRemove^ do
 	begin
 		AddHotkey(KeyAltR);
-		SetOnClick(ButtonClick);
+		OnClick := ButtonClick;
 	end;
 	New(BtnCancel, Init(309, 131, CAP_CANCEL, WinLinkMenu));
 	with BtnCancel^ do
 	begin
 		AddHotkey(KeyAltC);
 		AddHotkey(KeyEscape);
-		SetOnClick(ButtonClick);
+		OnClick := ButtonClick;
 	end;
 	New(ImgIcon, Init(12, 11, TargetLink^.IconFile, WinLinkMenu));
 

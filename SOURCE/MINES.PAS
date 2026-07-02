@@ -293,7 +293,8 @@ var
 	X, Y, W, H, TextOffset: integer;
 begin
 	BtnSize[0]^.GetPos(X, Y, True);
-	BtnSize[0]^.GetSize(W, H); {Only need to get once, all buttons are same size}
+	W := BtnSize[0]^.Width;  {All buttons are same size}
+	H := BtnSize[0]^.Height;
 	TextOffset := ((W - PrintW(CAP_SMALL)) div 2);
 	Print(CAP_SMALL, X + TextOffset, Y + 79, Thm.WinText);
 
@@ -342,44 +343,44 @@ begin
 	with WinMain^ do
 	begin
 		SetSize(GetMaxX, GetMaxY);
-		SetOnDraw(WinMainDraw);
+		OnDraw := WinMainDraw;
 		RemoveState(SBordered);
 	end;
 
 	New(BtnNew, Init(3, 2, CAP_NEW_GAME, WinMain));
 	With BtnNew^ do
 	begin
-		SetOnClick(BtnNewClick);
+		OnClick := BtnNewClick;
 		AddHotKey(KeyAltN);
 	end;
 	New(BtnPause, Init(102, 2, CAP_PAUSE, WinMain));
 	With BtnPause^ do
 	begin
-		SetOnClick(BtnPauseClick);
+		OnClick := BtnPauseClick;
 		AddHotKey(KeyAltP);
 	end;
 	New(BtnSetSize, Init(201, 2, CAP_SIZE, WinMain));
 	With BtnSetSize^ do
 	begin
-		SetOnClick(BtnSetSizeClick);
+		OnClick := BtnSetSizeClick;
 		AddHotKey(KeyAltZ);
 	end;
 	New(BtnSound, Init(300, 2, CAP_SOUND, WinMain));
 	With BtnSound^ do
 	begin
-		SetOnClick(BtnSoundClick);
+		OnClick := BtnSoundClick;
 		AddHotKey(KeyAltS);
 	end;
 	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
 	With BtnAbout^ do
 	begin
-		SetOnClick(BtnAboutClick);
+		OnClick := BtnAboutClick;
 		AddHotKey(KeyAltA);
 	end;
 	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
 	With BtnExit^ do
 	begin
-		SetOnClick(BtnExitClick);
+		OnClick := BtnExitClick;
 		AddHotKey(KeyAltX);
 		AddHotKey(KeyAltF4);
 	end;
@@ -423,19 +424,19 @@ begin
 	With MineField^ do
 	begin
 		AddState(SHidden);
-		SetOnClick(MineFieldClick);
+		OnClick := MineFieldClick;
 	end;
 
 	{Cheat hotkey (question mark) to reveal mines}
 	New(HkCheat, Init('?', WinMain));
-	HkCheat^.SetOnClick(HkCheatClick);
+	HkCheat^.OnClick := HkCheatClick;
 
 	{Timer for updating elapsed time display}
 	New(TiStatus, Init(WinMain));
 	With TiStatus^ do
 	begin
 		SetInterval(1.0);
-		SetOnClick(TiStatusClick);
+		OnClick := TiStatusClick;
 	end;
 
 	{Size dialog window and controls therein}
@@ -445,7 +446,7 @@ begin
 		SetSize(236, 264);
 		Center(OrBoth);
 		SaveBackdrop;
-		SetOnDraw(WinSetSizeDraw);
+		OnDraw := WinSetSizeDraw;
 	end;
 
 	New(BtnSize[0], Init(13, 11, '', WinSetSize));
@@ -454,7 +455,7 @@ begin
 		AddHotkey(KeyAlt9);
 		SetSize(100, 100);
 		AddState(STransparent);
-		SetOnClick(BtnSizeClick);
+		OnClick := BtnSizeClick;
 	end;
 	New(BtnSize[1], Init(123, 11, '', WinSetSize));
 	With BtnSize[1]^ do
@@ -462,7 +463,7 @@ begin
 		AddHotkey(KeyAlt1);
 		SetSize(100, 100);
 		AddState(STransparent);
-		SetOnClick(BtnSizeClick);
+		OnClick := BtnSizeClick;
 	end;
 	New(BtnSize[2], Init(13, 121, '', WinSetSize));
 	With BtnSize[2]^ do
@@ -470,7 +471,7 @@ begin
 		AddHotkey(KeyAlt2);
 		SetSize(100, 100);
 		AddState(STransparent);
-		SetOnClick(BtnSizeClick);
+		OnClick := BtnSizeClick;
 	end;
 	New(BtnSize[3], Init(123, 121, '', WinSetSize));
 	With BtnSize[3]^ do
@@ -478,7 +479,7 @@ begin
 		AddHotkey(KeyAlt3);
 		SetSize(100, 100);
 		AddState(STransparent);
-		SetOnClick(BtnSizeClick);
+		OnClick := BtnSizeClick;
 	end;
 	New(BtnCancel, Init(13, 231, CAP_CANCEL, WinSetSize));
 	With BtnCancel^ do
@@ -486,14 +487,20 @@ begin
 		AddHotkey(KeyAltC);
 		AddHotkey(KeyEscape);
 		SetSize(210, SizeRetain);
-		SetOnClick(BtnCancelClick)
+		OnClick := BtnCancelClick;
 	End;
 end;
 
 {Main program}
 begin
 	New(App, Init);
-	App^.SetInfo(AppName, AppVersion, AppAuthor, AppIcon);
+	With App^ do
+	begin
+		Name := AppName;
+		Version := AppVersion;
+		Author := AppAuthor;
+		Icon := AppIcon;
+	end;
 
 	InitUI;
 

@@ -102,14 +102,13 @@ var
 	R, C: byte;
 	X1, Y1, X2, Y2: integer;
 begin
-	if GetState(SHidden) then
+	if SHidden in State then
 		exit;
 
 	{Get absolute position and size of the object}
 	GetPos(X1, Y1, True);
-	GetSize(X2, Y2);
-	Inc(X2, X1);
-	Inc(Y2, Y1);
+	X2 := X1 + Width;
+	Y2 := Y1 + Height;
 
 	{Button color}
 	SetFillStyle(SolidFill, LightGray);
@@ -272,7 +271,7 @@ var
 	KeyPressed: boolean;
 begin
 	{Don't check for events if object is disabled or hidden}
-	if not GetState(SEnabled) or GetState(SHidden) then
+	if not (SEnabled in State) or (SHidden in State) then
 		exit;
 
 	{If the game has been paused, won or lost, ignore input events}
@@ -373,9 +372,8 @@ begin
 	PauseTime := Timer;
 
 	GetPos(X1, Y1, True);
-	GetSize(W, H);
-	X2 := X1 + W;
-	Y2 := Y1 + H;
+	X2 := X1 + Width;
+	Y2 := Y1 + Height;
 
 	{Clear field - no peeking at field while timer is stopped!}
 	Mouse.Hide;
@@ -383,8 +381,8 @@ begin
 	Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
 
 	{Center pause text in field}
-	X1 := X1 + ((W - PrintW(MSG_PAUSE)) div 2);
-	Y1 := Y1 + ((H - PrintH(MSG_PAUSE)) div 2);
+	X1 := X1 + ((Width - PrintW(MSG_PAUSE)) div 2);
+	Y1 := Y1 + ((Height - PrintH(MSG_PAUSE)) div 2);
 	Print(MSG_PAUSE, X1, Y1, Black);
 	Mouse.Show;
 

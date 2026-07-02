@@ -9,18 +9,16 @@ type
 	PLabel = ^TLabel;
 	TLabel = object(TUIObject)
 		public
-			constructor Init(X, Y: Integer; Cap: String; Parent: PContainer);
-			procedure   Draw; virtual;
-			procedure   AutoSize;
-
-			procedure   SetCaption(Cap: string);
-			function    GetCaption: string;
-
-			procedure   SetAlign(Val: TAlign);
-			function    GetAlign: TAlign;
-		private
 			Caption:    String;
 			Align:      TAlign;
+
+			constructor Init(X, Y: Integer; Cap: String; Parent: PContainer);
+			procedure   Draw; virtual;
+
+			procedure   SetCaption(Cap: string);
+			procedure   SetAlign(Val: TAlign);
+			procedure   AutoSize;
+		private
 	end;
 
 implementation
@@ -33,11 +31,12 @@ begin
 	TUIObject.Init;
 	Caption := Cap;
 	Align := AlLeft;
-
-	AddState(STransparent);
+	Left := X;
+	Top := Y;
+	Width := DefaultW;
+	Height := DefaultH;
 	SetParent(Parent);
-	SetPos(X, Y);
-	SetSize(DefaultW, DefaultH);
+	AddState(STransparent);
 end;
 
 procedure TLabel.AutoSize;
@@ -51,20 +50,19 @@ var
 	X1, Y1, X2, Y2: Integer;
 	FGColor, BgColor: Byte;
 begin
-	if GetState(SHidden) then
+	if SHidden in State then
 		exit;
 
 	{Get absolute position and size of the object}
 	GetPos(X1, Y1, True);
-	GetSize(X2, Y2);
-	Inc(X2, X1);
-	Inc(Y2, Y1);
+	X2 := X1 + Width;
+	Y2 := Y1 + Height;
 
 	FGColor := GetFGColor;
 	BgColor := GetBGColor;
 
 	{If a background color is set, fill the label area with it}
-	if not GetState(STransparent) then
+	if not (STransparent in State) then
 	begin
 		if BgColor = ColorDefault then
 			BgColor := Thm.Win;
@@ -93,10 +91,6 @@ begin
 	AddState(SDirty);
 end;
 
-function TLabel.GetCaption: string;
-begin
-	GetCaption := Caption;
-end;
 
 procedure TLabel.SetAlign(Val: TAlign);
 begin
@@ -105,11 +99,6 @@ begin
 
 	Align := Val;
 	AddState(SDirty);
-end;
-
-function TLabel.GetAlign: TAlign;
-begin
-	GetAlign := Align;
 end;
 
 end.

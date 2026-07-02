@@ -9,6 +9,11 @@ type
 	PTextbox = ^TTextbox;
 	TTextbox = object(TUIObject)
 		public
+			OnChange:   TEventProc;
+			Caption,
+			Text:       string;
+			MaxLen:     Byte;
+
 			constructor Init(X, Y: Integer; Cap: String; Parent: PContainer);
 			procedure   CheckEvent; virtual;
 			procedure   Draw; virtual;
@@ -16,20 +21,13 @@ type
 			procedure   Edit;
 
 			procedure   SetCaption(Cap: string);
-			function    GetCaption: string;
 
 			procedure   SetText(Txt: string);
 			function    GetText: string;
 
 			procedure   SetMaxLength(Len: Byte);
 			function    GetMaxLength: Byte;
-
-			procedure   SetOnChange(Proc: TEventProc);
 		private
-			Caption,
-			Text:       string;
-			MaxLen:     Byte;
-			OnChange:   TEventProc;
 	end;
 
 implementation
@@ -44,10 +42,12 @@ begin
 	Text        := '';
 	MaxLen      := 255;
 	OnChange    := nil;
+	Left        := X;
+	Top         := Y;
+	Width       := DefaultW;
+	Height      := DefaultH;
 
 	SetParent(Parent);
-	SetPos(X, Y);
-	SetSize(DefaultW, DefaultH);
 end;
 
 procedure TTextbox.CheckEvent;
@@ -55,7 +55,7 @@ var
 	Clicked: boolean;
 begin
 	{Don't check for events if object is disabled or hidden}
-	if not GetState(SEnabled) or GetState(SHidden) then
+	if not (SEnabled in State) or (SHidden in State) then
 		exit;
 
 	Clicked := False;
@@ -84,12 +84,11 @@ end;
 procedure TTextbox.Edit;
 var
 	OrigTxt, Key: string;
-	X1, Y1, Width, Height, CursorX, MaxShow: integer;
+	X1, Y1, CursorX, MaxShow: integer;
 	BgColor, FgColor: Byte;
 begin
 	{Get absolute position of the object}
 	GetPos(X1, Y1, True);
-	GetSize(Width, Height);
 
 	{Text is located 5 pixels from the left border, and vertically centered}
 	Inc(X1, 5);
@@ -212,16 +211,15 @@ end;
 
 procedure TTextbox.Draw;
 var
-	X1, Y1, Width, Height, MaxShow: Integer;
+	X1, Y1, MaxShow: Integer;
 	S: string;
 	FgColor, BGColor: Byte;
 begin
-	if GetState(SHidden) then
+	if SHidden in State then
 		exit;
 
 	{Get absolute position and size of the object}
 	GetPos(X1, Y1, True);
-	GetSize(Width, Height);
 
 	{Draw caption if set}
 	if Length(Caption) > 0 then
@@ -234,7 +232,7 @@ begin
 	if BGColor = ColorDefault then
 		BGColor := Thm.Txt;
 
-	DrawUIPrimitive(UIBorderDown, X1, Y1, X1 + Width, Y1 + Height, BGColor, GetState(STransparent));
+	DrawUIPrimitive(UIBorderDown, X1, Y1, X1 + Width, Y1 + Height, BGColor, (STransparent in State));
 
 	{Draw text inside the textbox}
 	Y1 := (Height - 7) div 2 + Y1; {Centered vertically}
@@ -248,7 +246,7 @@ begin
 		Print(S, X1 + 5, Y1, FGColor);
 	end;
 
-	if GetState(SActive) then
+	if SActive in State then
 	begin
 		{Cursor}
 		X1 := X1 + 7 + PrintW(S);
@@ -265,10 +263,6 @@ begin
 	AddState(SDirty);
 end;
 
-function TTextbox.GetCaption: string;
-begin
-	GetCaption := Caption;
-end;
 
 procedure TTextbox.SetText(Txt: string);
 begin
@@ -296,11 +290,6 @@ end;
 function TTextbox.GetMaxLength: Byte;
 begin
 	GetMaxLength := MaxLen;
-end;
-
-procedure TTextbox.SetOnChange(Proc: TEventProc);
-begin
-	OnChange := Proc;
 end;
 
 end.

@@ -188,7 +188,7 @@ end;
 procedure ChkSettingLinkCaptChange(Sender: PUIObject); far;
 begin
 	{Link target can only be shown if LinkCapt is enabled }
-	if ChkSetting[LinkCapt]^.GetState(SSelected) then
+	if SSelected in ChkSetting[LinkCapt]^.State then
 		ChkSetting[LinkTarget]^.AddState(SEnabled)
 	else
 		ChkSetting[LinkTarget]^.RemoveState(SEnabled);
@@ -239,21 +239,21 @@ begin
 	begin
 		SetSize(GetMaxX, GetMaxY);
 		RemoveState(SBordered);
-		SetOnRun(WinMainRun);
+		OnRun := WinMainRun;
 	end;
 
 	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
 	with BtnAbout^ do
 	begin
 		AddHotkey(KeyAltA);
-		SetOnClick(BtnAboutClick);
+		OnClick := BtnAboutClick;
 	end;
 	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
 	with BtnExit^ do
 	begin
 		AddHotkey(KeyAltX);
 		AddHotkey(KeyAltF4);
-		SetOnClick(BtnExitClick);
+		OnClick := BtnExitClick;
 	end;
 
 	{Settings frame and its contents}
@@ -263,7 +263,7 @@ begin
 	New(LblSettings, Init(56, 19, CAP_SETTINGS, FrmSettings));
 	New(ChkSetting[LinkCapt], Init(14, 56, CAP_LinkCapt, DeskSettings.LinkCapt, FrmSettings));
 	ChkSetting[LinkCapt]^.AddHotkey(KeyAltC);
-	ChkSetting[LinkCapt]^.SetOnChange(ChkSettingLinkCaptChange);
+	ChkSetting[LinkCapt]^.OnChange := ChkSettingLinkCaptChange;
 	New(ChkSetting[LinkTarget], Init(14, 78, CAP_LINKTARGET, DeskSettings.LinkTarget, FrmSettings));
 	ChkSetting[LinkTarget]^.AddHotkey(KeyAltO);
 	if not DeskSettings.LinkCapt then
@@ -297,7 +297,7 @@ begin
 	begin
 		AddHotkey(KeyAltP);
 		AddHotkey(KeyLeft);
-		SetOnClick(SwitchTheme);
+		OnClick := SwitchTheme;
 		AddState(SHidden);
 	end;
 	New(BtnNext, Init(W - 92 - 14, H - 34, CAP_NEXT, FrmTheme));
@@ -305,7 +305,7 @@ begin
 	begin
 		AddHotkey(KeyAltN);
 		AddHotkey(KeyRight);
-		SetOnClick(SwitchTheme);
+		OnClick := SwitchTheme;
 		AddState(SHidden);
 	end;
 	New(LblNoThemes, Init(0, H - 28, MSG_NO_THEMES, FrmTheme));
@@ -319,12 +319,18 @@ end;
 
 begin
 	New(App, Init);
-	App^.SetInfo(AppName, AppVersion, AppAuthor, AppIcon);
+	With App^ do
+	begin
+		Name := AppName;
+		Version := AppVersion;
+		Author := AppAuthor;
+		Icon := AppIcon;
 
-	{At the moment, config only changes system and desktop settings, so for now we can just used
-	 the desktop config file as our own}
-	App^.SetConfigFile(DeskConfigFile, @DeskSettings, SizeOf(TDeskSetting));
-	App^.LoadSettings;
+		{At the moment, config only changes system and desktop settings, so for now we can just used
+		 the desktop config file as our own}
+		SetConfigFile(DeskConfigFile, @DeskSettings, SizeOf(TDeskSetting));
+		LoadSettings;
+	end;
 
 	InitUI;
 

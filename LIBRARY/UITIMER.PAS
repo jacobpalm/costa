@@ -34,8 +34,6 @@ const
 begin
 	TUIObject.Init;
 	SetParent(Parent);
-	SetSize(0, 0);
-	SetPos(0, 0);
 	Interval := 0;
 	LastTick := 0;
 	Running := False;
@@ -44,7 +42,7 @@ end;
 procedure TTimer.CheckEvent;
 begin
 	{Don't check for events if timer is disabled or not running}
-	if not GetState(SEnabled) or not Running then
+	if not (SEnabled in State) or not Running then
 		exit;
 
 	{Check if interval time has passed since last tick}
@@ -62,8 +60,8 @@ procedure TTimer.Draw;
 begin
 	{Dummy procedure - Timer has no visual representation. Only used to override
 	 TUIObject.Draw which triggers an OnDraw event}
-	if Self.GetState(SDirty) then
-		Self.RemoveState(SDirty);
+	if SDirty in State then
+		Exclude(State, SDirty);
 end;
 
 procedure TTimer.Start;

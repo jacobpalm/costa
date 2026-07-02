@@ -23,6 +23,9 @@ type
 	PList = ^TList;
 	TList = object(TUIObject)
 		public
+			OnChange:      TEventProc;
+			OnDoubleClick: TEventProc;
+
 			constructor    Init(X, Y: Integer; Parent: PContainer);
 			destructor     Done; virtual;
 			procedure      CheckEvent; virtual;
@@ -38,16 +41,12 @@ type
 			procedure      SetListActive(IsActive: boolean);
 			function       GetListActive: boolean;
 
-			procedure      SetOnChange(Proc: TEventProc);
-			procedure      SetOnDoubleClick(Proc: TEventProc);
 		private
 			Head:          PListItem;
 			Selection:     Integer;
 			StartPos:      Integer;
 			Length:        Integer;
 			DblClickTimer: Real;
-			OnChange:      TEventProc;
-			OnDoubleClick: TEventProc;
 	end;
 
 implementation
@@ -101,18 +100,17 @@ end;
 
 procedure TList.CheckEvent;
 var
-	X1, Y1, Width, Height: Integer;
+	X1, Y1: Integer;
 	ClickedX, ClickedY, ClickedItem: Integer;
 	ListItem: TListItem;
 	I: Integer;
 begin
 	{Don't check for events if object is disabled or hidden}
-	if not GetState(SEnabled) or GetState(SHidden) then
+	if not (SEnabled in State) or (SHidden in State) then
 		exit;
 
 	{Get absolute position and size of the object}
 	GetPos(X1, Y1, True);
-	GetSize(Width, Height);
 
 	if (Mouse.Clicked = MbNone) or (not Self.IsMouseOver) then
 	begin
@@ -243,9 +241,8 @@ begin
 
 	{Get absolute position and size of the object}
 	GetPos(X1, Y1, True);
-	GetSize(X2, Y2);
-	Inc(X2, X1);
-	Inc(Y2, Y1);
+	X2 := X1 + Width;
+	Y2 := Y1 + Height;
 
 	{Get colors}
 	FgColor := GetFgColor;
@@ -255,7 +252,7 @@ begin
 	if BgColor = ColorDefault then
 		BgColor := Thm.Txt;
 
-	DrawUIPrimitive(UIBorderDown, X1, Y1, X2, Y2, BgColor, GetState(STransparent));
+	DrawUIPrimitive(UIBorderDown, X1, Y1, X2, Y2, BgColor, (STransparent in State));
 
 	{Draw contents of list}
 	{Set X coordinates to internal area inside border, and Y coordinates to the first item position}
@@ -276,7 +273,7 @@ begin
 			ItemText := Self.GetItem(I);
 
 			{Highlight selected item if list is active}
-			if (I = Selection) and GetState(SActive) then
+			if (I = Selection) and (SActive in State) then
 			begin
 				SetFillStyle(SolidFill, Thm.Sel);
 				Bar(X1, Y1 + (Counter * ListItemHeight), X2, Y2 - 1 + (Counter * ListItemHeight));
@@ -353,7 +350,7 @@ begin
 	end;
 
 	{If list has scrolled, we need a full redraw}
-	if (NewStartPos <> StartPos) or not GetState(SActive) then
+	if (NewStartPos <> StartPos) or not (SActive in State) then
 	begin
 		AddState(SActive);
 		AddState(SDirty); {Ensure full redraw}
@@ -383,7 +380,7 @@ var
 	Counter: Integer;
 	FgColor, BgColor: Byte;
 begin
-	if (GetState(SActive) = IsActive) then
+	if (SActive in State) = IsActive then
 		exit;
 
 	if IsActive then
@@ -396,13 +393,12 @@ begin
 		exit;
 
 	{If list is not visible, we won't draw anything}
-	if GetState(SHidden) then
+	if SHidden in State then
 		exit;
 
 	{Get absolute position and size of the object}
 	GetPos(X1, Y1, True);
-	GetSize(X2, Y2);
-	Inc(X2, X1);
+	X2 := X1 + Width;
 
 	{Calculate selection position and update it to reflect the new state}
 	Inc(X1, 2);
@@ -413,7 +409,7 @@ begin
 	Counter := 0;
 
 	{If list is active, use selection colors, otherwise use normal colors defined on object}
-	if GetState(SActive) then
+	if SActive in State then
 	begin
 		FgColor := Thm.SelText;
 		BgColor := Thm.Sel;
@@ -443,17 +439,7 @@ end;
 
 function TList.GetListActive: boolean;
 begin
-	GetListActive := GetState(SActive);
-end;
-
-procedure TList.SetOnChange(Proc: TEventProc);
-begin
-	OnChange := Proc;
-end;
-
-procedure TList.SetOnDoubleClick(Proc: TEventProc);
-begin
-	OnDoubleClick := Proc;
+	GetListActive := SActive in State;
 end;
 
 destructor TList.Done;

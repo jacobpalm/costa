@@ -11,6 +11,8 @@ type
 	PLogArea = ^TLogArea;
 	TLogArea = Object(TUIObject)
 		public
+			Align:      TAlign;
+
 			constructor Init(X, Y: Integer; Parent: PContainer);
 			destructor  Done; virtual;
 
@@ -20,13 +22,11 @@ type
 			procedure   Clear;
 
 			procedure   SetAlign(Val: TAlign);
-			function    GetAlign: TAlign;
 		private
 			LineCount,           {Number of lines added to log}
 			MaxLines,            {Number of lines that will fit visually in log}
 			MaxLength:  Integer; {Characters that will fit per line}
 			Entries:    array[0..99] of PLogEntry;
-			Align:      TAlign;
 
 			procedure   SetLimits;
 			procedure   Scroll;
@@ -50,10 +50,11 @@ begin
 	LineCount := 0;
 	Align := AlLeft;
 	FillChar(Entries, SizeOf(Entries), 0);
-
+	Left := X;
+	Top := Y;
+	Width := DefaultW;
+	Height := DefaultH;
 	SetParent(Parent);
-	SetSize(DefaultW, DefaultH);
-	SetPos(X, Y);
 end;
 
 procedure TLogArea.Draw;
@@ -63,21 +64,20 @@ var
 	FgColor, BgColor: Byte;
 	TestStr: String;
 begin
-	if GetState(SHidden) then
+	if SHidden in State then
 		exit;
 
 	{Get absolute position and size of the object}
 	GetPos(X1, Y1, True);
-	GetSize(X2, Y2);
-	Inc(X2, X1);
-	Inc(Y2, Y1);
+	X2 := X1 + Width;
+	Y2 := Y1 + Height;
 
 	BgColor := GetBgColor;
 	if BgColor = ColorDefault then
 		BgColor := Thm.Txt;
 
 	{Draw the area using ancestor TArea}
-	DrawUIPrimitive(UIBorderDown, X1, Y1, X2, Y2, BgColor, GetState(STransparent));
+	DrawUIPrimitive(UIBorderDown, X1, Y1, X2, Y2, BgColor, (STransparent in State));
 
 	{Draw log lines}
 	if LineCount > 0 then
@@ -105,7 +105,7 @@ begin
 	Entries[LineCount - 1]^ := Text;
 
 	{Draw the entry, unless entire object is going to be redrawn}
-	if not Self.GetState(SDirty) then
+	if not (SDirty in State) then
 	begin
 		Mouse.Hide;
 		Self.DrawLine(LineCount - 1);
@@ -162,11 +162,11 @@ end;
 
 procedure TLogArea.DrawLine(Index: Integer);
 var
-	X1, X2, Y1, Y2: Integer;
+	X1, X2, Y1: Integer;
 	PrintX, PrintY: Integer;
 	FgColor: Byte;
 begin
-	if GetState(SHidden) then
+	if SHidden in State then
 		exit;
 
 	{Validate index}
@@ -181,7 +181,7 @@ begin
 
 	{Get absolute position and size of the object}
 	GetPos(X1, Y1, True);
-	GetSize(X2, Y2);
+	X2 := Width;
 
 	PrintY := Y1 + LogPadding + (Index * PrintLineH);
 	case Align of
@@ -200,7 +200,8 @@ procedure TLogArea.SetLimits;
 var
 	X2, Y2: Integer;
 begin
-	GetSize(X2, Y2);
+	X2 := Self.Width;
+	Y2 := Self.Height;
 	Dec(X2, LogPadding * 2);
 	Dec(Y2, LogPadding * 2);
 	MaxLength := X2 div PrintCharW;
@@ -211,11 +212,6 @@ procedure TLogArea.SetAlign(Val: TAlign);
 begin
 	Align := Val;
 	AddState(SDirty);
-end;
-
-function TLogArea.GetAlign: TAlign;
-begin
-	GetAlign := Align;
 end;
 
 destructor TLogArea.Done;

@@ -9,14 +9,13 @@ type
 	PButton = ^TButton;
 	TButton = object(TUIObject)
 		public
+			Caption:     string;
+
 			constructor  Init(X, Y: Integer; Cap: string; Parent: PContainer);
 			procedure    CheckEvent; virtual;
 			procedure    Draw; virtual;
 
 			procedure    SetCaption(Cap: string);
-			function     GetCaption: string;
-		private
-			Caption:     string;
 	end;
 
 implementation
@@ -28,10 +27,11 @@ const
 begin
 	TUIObject.Init;
 	Caption := Cap;
-
+	Left := X;
+	Top := Y;
+	Width := DefaultW;
+	Height := DefaultH;
 	SetParent(Parent);
-	SetSize(DefaultW, DefaultH);
-	SetPos(X, Y);
 end;
 
 procedure TButton.CheckEvent;
@@ -39,7 +39,7 @@ var
 	Clicked: boolean;
 begin
 	{Don't check for events if object is disabled or hidden}
-	if not GetState(SEnabled) or GetState(SHidden) then
+	if not (SEnabled in State) or (SHidden in State) then
 		exit;
 
 	Clicked := False;
@@ -55,9 +55,9 @@ begin
 			if Self.IsMouseOver then
 			begin
 				{Mouse over button, show pressed state if not already shown}
-				if not GetState(SActive) then
+				if not (SActive in State) then
 				begin
-					AddState(SActive);
+					Include(State, SActive);
 					Mouse.Hide;
 					Self.Draw;
 					Mouse.Show;
@@ -66,9 +66,9 @@ begin
 			else
 			begin
 				{Mouse not over button, show unpressed state if not already shown}
-				if GetState(SActive) then
+				if SActive in State then
 				begin
-					RemoveState(SActive);
+					Exclude(State, SActive);
 					Mouse.Hide;
 					Self.Draw;
 					Mouse.Show;
@@ -76,9 +76,9 @@ begin
 			end;
 		until Mouse.Clicked = MbNone;
 
-		if GetState(SActive) then
+		if SActive in State then
 		begin
-			RemoveState(SActive);
+			Exclude(State, SActive);
 			Mouse.Hide;
 			Self.Draw;
 			Mouse.Show;
@@ -101,14 +101,13 @@ var
 	FgColor, BgColor: Byte;
 	Style: TUIPrimitive;
 begin
-	if GetState(SHidden) then
+	if SHidden in State then
 		exit;
 
 	{Get absolute position and size of the object}
 	GetPos(X1, Y1, True);
-	GetSize(X2, Y2);
-	Inc(X2, X1);
-	Inc(Y2, Y1);
+	X2 := X1 + Width;
+	Y2 := Y1 + Height;
 
 	{Get colors}
 	FgColor := GetFGColor;
@@ -116,12 +115,12 @@ begin
 	if BgColor = ColorDefault then
 		BgColor := Thm.Btn;
 
-	if GetState(SActive) then
+	if SActive in State then
 		Style := UIBorderDown
 	else
 		Style := UIBorderUp;
 
-	DrawUIPrimitive(Style, X1, Y1, X2, Y2, BGColor, GetState(STransparent));
+	DrawUIPrimitive(Style, X1, Y1, X2, Y2, BGColor, (STransparent in State));
 
 	if Caption <> '' then
 	begin
@@ -133,7 +132,7 @@ begin
 			FgColor := Thm.WinText;
 
 		{If button is pressed, move text 1 pixel down and right}
-		if GetState(SActive) then
+		if SActive in State then
 		begin
 			Inc(X1);
 			Inc(Y1);
@@ -148,11 +147,6 @@ procedure TButton.SetCaption(Cap: string);
 begin
 	Caption := Cap;
 	AddState(SDirty);
-end;
-
-function TButton.GetCaption: string;
-begin
-	GetCaption := Caption;
 end;
 
 end.

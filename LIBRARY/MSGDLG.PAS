@@ -68,7 +68,7 @@ begin
 		Center(OrBoth);
 		SaveBackdrop;
 		GetPos(X1, Y1, True);
-		SetOnDraw(WinMsgBoxDraw);
+		OnDraw := WinMsgBoxDraw;
 	end;
 
 	case MsgType of
@@ -92,7 +92,7 @@ begin
 		BtnFirst^.AddHotkey(KeyAltO);
 	end;
 	BtnFirst^.AddHotkey(KeyEnter);
-	BtnFirst^.SetOnClick(BtnFirstClick);
+	BtnFirst^.OnClick := BtnFirstClick;
 	if MsgType = MsgQuest then
 	begin
 		New(BtnSecond, Init((X2 div 2) + 6, Y2 - 36, CAP_NO, WinMsgBox));
@@ -100,7 +100,7 @@ begin
 		begin
 			AddHotkey(KeyAltN);
 			AddHotkey(KeyEscape);
-			SetOnClick(BtnSecondClick);
+			OnClick := BtnSecondClick;
 		end;
 	end;
 	New(LblTitle, Init(56, 15, MsgTitle, WinMsgBox));

@@ -69,8 +69,10 @@ const
 begin
 	Inherited Init;
 	SetParent(Parent);
-	SetPos(X, Y);
-	SetSize(DefaultW, DefaultH);
+	Left := X;
+	Top := Y;
+	Width := DefaultW;
+	Height := DefaultH;
 	SetBgColor(White);
 	FillChar(IconData, SizeOf(IconData), White);
 
@@ -98,14 +100,13 @@ var
 	X1, Y1, X2, Y2, I: Integer;
 	BGColor: Byte;
 begin
-	if GetState(SHidden) then
+	if SHidden in State then
 		exit;
 
 	{Get absolute position and size of the object}
 	Self.GetPos(X1, Y1, True);
-	Self.GetSize(X2, Y2);
-	Inc(X2, X1);
-	Inc(Y2, Y1);
+	X2 := X1 + Width;
+	Y2 := Y1 + Height;
 
 	BgColor := GetBgColor;
 
@@ -155,7 +156,7 @@ end;
 procedure TIconCanvas.CheckEvent;
 begin
 	{Don't process events if disabled or hidden}
-	if not GetState(SEnabled) or GetState(SHidden) then
+	if not (SEnabled in State) or (SHidden in State) then
 		exit;
 
 	{Check for mouse click in canvas area}

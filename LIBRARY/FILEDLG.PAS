@@ -65,8 +65,8 @@ procedure HandleDosError(ErrorCode: Integer; Path: String);
 var
 	ErrMsg: String;
 begin
-	ErrMsg := ReplaceMsg(MSG_DOS_ERROR, GetDosErrorMsg(ErrorCode));
-	ErrMsg := ReplaceMsg(ErrMsg, Path);
+	ErrMsg := Replace(MSG_DOS_ERROR, Placeholder, GetDosErrorMsg(ErrorCode));
+	ErrMsg := Replace(ErrMsg, Placeholder, Path);
 	MsgBox(MSG_ERROR_TITLE, ErrMsg, MsgError);
 end;
 
@@ -174,7 +174,7 @@ begin
 
 	if DiskCheck = -1 then
 	begin
-		MsgBox(MSG_ERROR_TITLE, ReplaceMsg(MSG_DRIVE_ERROR, DriveLetter), msgError);
+		MsgBox(MSG_ERROR_TITLE, Replace(MSG_DRIVE_ERROR, Placeholder, DriveLetter), msgError);
 		exit;
 	end;
 
@@ -344,8 +344,6 @@ begin
 end;
 
 procedure InitUI;
-var
-	X1, Y1, X2, Y2: Integer;
 begin
 {Init window and save coordinates for later use}
 	New(WinFileSelect, Init(0, 0, NoParent));
@@ -354,12 +352,8 @@ begin
 		SetSize(468, 270);
 		Center(OrBoth);
 		SaveBackdrop;
-		GetPos(X1, Y1, True);
-		GetSize(X2, Y2);
-		SetOnDraw(WinFileSelectDraw);
+		OnDraw := WinFileSelectDraw;
 	end;
-	Inc(X2, X1);
-	Inc(Y2, Y1);
 
 	New(TxtPattern, Init(15, 28, CAP_PATTERN, WinFileSelect));
 	with TxtPattern^ do
@@ -367,7 +361,7 @@ begin
 		SetSize(150, SizeRetain);
 		AddHotkey(KeyAltP);
 		SetText(Pattern);
-		SetOnChange(TxtPatternChange);
+		OnChange := TxtPatternChange;
 		SetMaxLength(12); {8.3 including the dot}
 	end;
 
@@ -377,7 +371,7 @@ begin
 		SetSize(150, SizeRetain);
 		AddHotkey(KeyAltR);
 		SetText(Drive);
-		SetOnChange(TxtDriveChange);
+		OnChange := TxtDriveChange;
 		SetMaxLength(1);
 	end;
 
@@ -389,9 +383,9 @@ begin
 	begin
 		SetSize(150, 185);
 		AddHotkey(KeyAltF);
-		SetOnChange(DrawPreview);
-		SetOnClick(ListClicked);
-		SetOnDoubleClick(ListDblClicked);
+		OnChange := DrawPreview;
+		OnClick := ListClicked;
+		OnDoubleClick := ListDblClicked;
 	end;
 
 	New(List[DirList], Init(187, 71, WinFileSelect));
@@ -399,8 +393,8 @@ begin
 	begin
 		SetSize(150, 185);
 		AddHotkey(KeyAltD);
-		SetOnClick(ListClicked);
-		SetOnDoubleClick(ListDblClicked);
+		OnClick := ListClicked;
+		OnDoubleClick := ListDblClicked;
 	end;
 
 	New(BtnSelect, Init(363, 28, CAP_SELECT, WinFileSelect));
@@ -408,7 +402,7 @@ begin
 	begin
 		AddHotkey(KeyAltS);
 		AddHotkey(KeyEnter);
-		SetOnClick(ListDblClicked);
+		OnClick := ListDblClicked;
 	end;
 
 	New(BtnCancel, Init(363, 58, CAP_CANCEL, WinFileSelect));
@@ -416,35 +410,35 @@ begin
 	begin
 		AddHotkey(KeyAltC);
 		AddHotkey(KeyEscape);
-		SetOnClick(BtnCancelClick);
+		OnClick := BtnCancelClick;
 	end;
 
 	New(BtnFilePrev, Init(168, 71, CharArrowUp, WinFileSelect));
 	with BtnFilePrev^ do
 	begin
 		SetSize(14, 91);
-		SetOnClick(BtnDirectionClick);
+		OnClick := BtnDirectionClick;
 	end;
 
 	New(BtnFileNext, Init(168, 71 + 94, CharArrowDown, WinFileSelect));
 	with BtnFileNext^ do
 	begin
 		SetSize(14, 91);
-		SetOnClick(BtnDirectionClick);
+		OnClick := BtnDirectionClick;
 	end;
 
 	New(BtnDirPrev, Init(339, 71, CharArrowUp, WinFileSelect));
 	with BtnDirPrev^ do
 	begin
 		SetSize(14, 91);
-		SetOnClick(BtnDirectionClick);
+		OnClick := BtnDirectionClick;
 	end;
 
 	New(BtnDirNext, Init(339, 71 + 94, CharArrowDown, WinFileSelect));
 	with BtnDirNext^ do
 	begin
 		SetSize(14, 91);
-		SetOnClick(BtnDirectionClick);
+		OnClick := BtnDirectionClick;
 	end;
 
 	New(ImgPreview, Init(393, 108, '', WinFileSelect));
@@ -455,28 +449,28 @@ begin
 	end;
 
 	New(HkUp, Init(KeyUp, WinFileSelect));
-	HkUp^.SetOnClick(HkDirectionPress);
+	HkUp^.OnClick := HkDirectionPress;
 
 	New(HkDown, Init(KeyDown, WinFileSelect));
-	HkDown^.SetOnClick(HkDirectionPress);
+	HkDown^.OnClick := HkDirectionPress;
 
 	New(HkPageUp, Init(KeyPageUp, WinFileSelect));
-	HkPageUp^.SetOnClick(HkDirectionPress);
+	HkPageUp^.OnClick := HkDirectionPress;
 
 	New(HkPageDown, Init(KeyPageDown, WinFileSelect));
-	HkPageDown^.SetOnClick(HkDirectionPress);
+	HkPageDown^.OnClick := HkDirectionPress;
 
 	New(HkHome, Init(KeyHome, WinFileSelect));
-	HkHome^.SetOnClick(HkDirectionPress);
+	HkHome^.OnClick := HkDirectionPress;
 
 	New(HkEnd, Init(KeyEnd, WinFileSelect));
-	HkEnd^.SetOnClick(HkDirectionPress);
+	HkEnd^.OnClick := HkDirectionPress;
 
 	New(HkTab, Init(KeyTab, WinFileSelect));
 	with HkTab^ do
 	begin
 		AddHotkey(KeyShiftTab);
-		SetOnClick(HkTabPress);
+		OnClick := HkTabPress;
 	end;
 end;
 

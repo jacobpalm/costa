@@ -9,13 +9,13 @@ type
 	PIcon = ^TIcon;
 	TIcon = object(TUIObject)
 		public
+			IconFile:   string[8];
+
 			constructor Init(X, Y: Integer; Icon: string; Parent: PContainer);
 			procedure   Draw; virtual;
 
 			procedure   SetIcon(Icon: string);
-			function	  GetIcon: string;
 		private
-			IconFile:   string[8];
 	end;
 
 implementation
@@ -31,11 +31,13 @@ begin
 	else
 		IconFile := '';
 
+	Left := X;
+	Top := Y;
+	Width := DefaultW;
+	Height := DefaultH;
+
 	AddState(SBordered);
 	SetParent(Parent);
-	SetPos(X, Y);
-	SetSize(DefaultW, DefaultH);
-	SetBgColor(Thm.Txt);
 end;
 
 procedure TIcon.Draw;
@@ -48,7 +50,7 @@ var
 	Filename: String;
 	BgColor: Byte;
 begin
-	if GetState(SHidden) then
+	if SHidden in State then
 		exit;
 
 	IconError := False;
@@ -62,7 +64,7 @@ begin
 	GetPos(X, Y, True);
 
 	{Icon border}
-	if Self.GetState(SBordered) then
+	if SBordered in State then
 		DrawUIPrimitive(UIBorderUp, X - 2, Y - 2, X + 33, Y + 33, 0, True);
 
 	{If no Icon file, draw an empty box}
@@ -120,11 +122,6 @@ begin
 		IconFile := Icon;
 		AddState(SDirty);
 	end;
-end;
-
-function TIcon.GetIcon: string;
-begin
-	GetIcon := IconFile;
 end;
 
 end.

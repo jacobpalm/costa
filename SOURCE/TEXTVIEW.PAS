@@ -203,7 +203,7 @@ begin
 	ErrorCode := IOResult;
 	if ErrorCode <> 0 then
 	begin
-		MsgBox(MSG_OPEN_ERROR_TITLE, ReplaceMsg(MSG_READ_ERROR, GetDosErrorMsg(ErrorCode)) + FileName, MsgError);
+		MsgBox(MSG_OPEN_ERROR_TITLE, Replace(MSG_READ_ERROR, Placeholder, GetDosErrorMsg(ErrorCode)) + FileName, MsgError);
 		Exit;
 	end;
 
@@ -398,20 +398,20 @@ begin
 	begin
 		SetSize(GetMaxX, GetMaxY);
 		RemoveState(SBordered);
-		SetOnDraw(WinMainDraw);
+		OnDraw := WinMainDraw;
 	end;
 
 	New(BtnOpen, Init(3, 2, CAP_OPEN, WinMain));
 	with BtnOpen^ do
 	begin
-		SetOnClick(BtnOpenClick);
+		OnClick := BtnOpenClick;
 		AddHotkey(KeyAltO);
 	end;
 
 	New(BtnPageUp, Init(102, 2, CAP_PAGE_UP, WinMain));
 	with BtnPageUp^ do
 	begin
-		SetOnClick(PageScrollEvent);
+		OnClick := PageScrollEvent;
 		AddHotkey(KeyAltU);
 		AddHotkey(KeyPageUp);
 		AddState(SHidden); {Hidden until a file is opened}
@@ -420,7 +420,7 @@ begin
 	New(BtnPageDown, Init(201, 2, CAP_PAGE_DOWN, WinMain));
 	with BtnPageDown^ do
 	begin
-		SetOnClick(PageScrollEvent);
+		OnClick := PageScrollEvent;
 		AddHotkey(KeyAltD);
 		AddHotkey(KeyPageDown);
 		AddState(SHidden);
@@ -429,27 +429,27 @@ begin
 	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
 	with BtnAbout^ do
 	begin
-		SetOnClick(BtnAboutClick);
+		OnClick := BtnAboutClick;
 		AddHotkey(KeyAltA);
 	end;
 
 	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
 	with BtnExit^ do
 	begin
-		SetOnClick(BtnExitClick);
+		OnClick := BtnExitClick;
 		AddHotkey(KeyAltX);
 		AddHotkey(KeyAltF4);
 	end;
 
 	{Hotkeys for scrolling}
 	New(HkUp, Init(KeyUp, WinMain));
-	HkUp^.SetOnClick(PageScrollEvent);
+	HkUp^.OnClick := PageScrollEvent;
 	New(HkDown, Init(KeyDown, WinMain));
-	HkDown^.SetOnClick(PageScrollEvent);
+	HkDown^.OnClick := PageScrollEvent;
 	New(HkHome, Init(KeyHome, WinMain));
-	HkHome^.SetOnClick(PageScrollEvent);
+	HkHome^.OnClick := PageScrollEvent;
 	New(HkEnd, Init(KeyEnd, WinMain));
-	HkEnd^.SetOnClick(PageScrollEvent);
+	HkEnd^.OnClick := PageScrollEvent;
 end;
 
 begin
@@ -457,7 +457,13 @@ begin
 	StdHeapErr := HeapError;
 
 	New(App, Init);
-	App^.SetInfo(AppName, AppVersion, AppAuthor, AppIcon);
+	With App^ do
+	begin
+		Name := AppName;
+		Version := AppVersion;
+		Author := AppAuthor;
+		Icon := AppIcon;
+	end;
 
 	InitUI;
 

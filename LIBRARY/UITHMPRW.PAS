@@ -86,23 +86,20 @@ end;
 
 procedure TThemePreview.Draw;
 var
-	W, H: Integer;
 	OldTheme: String[8];
 begin
 	{Set positions and sizes of preview objects based on current size of preview frame}
-	Self.GetSize(W, H);
-	ImgPreviewLink^.SetPos(14, H - 42);
-	LblPreviewLink^.SetPos(52, H - 38);
+	ImgPreviewLink^.SetPos(14, Height - 42);
+	LblPreviewLink^.SetPos(52, Height - 38);
 	WinPreview^.SetPos(14, 12);
-	WinPreview^.SetSize(W - 28, 123);
+	WinPreview^.SetSize(Width - 28, 123);
 	ImgPreview^.SetPos(12, 12);
 	LblPreviewInfo^.SetPos(54, 16);
 
-	WinPreview^.GetSize(W, H);
 	TxtPreview^.SetPos(12, 57);
-	TxtPreview^.SetSize(W - 23, SizeRetain);
-	BtnPreview1^.SetPos(12, H - 34);
-	BtnPreview2^.SetPos(W - 104, H - 34);
+	TxtPreview^.SetSize(WinPreview^.Width - 23, SizeRetain);
+	BtnPreview1^.SetPos(12, WinPreview^.Height - 34);
+	BtnPreview2^.SetPos(WinPreview^.Width - 104, WinPreview^.Height - 34);
 
 	{If a theme file is loaded, apply it for preview}
 	if ThemeLoaded then
@@ -147,8 +144,8 @@ begin
 		ThemeAuthor := '';
 		ThemeName := '';
 		ThemeLoaded := False;
-		ErrorText := ReplaceMsg(MSG_LOAD_ERROR_TEXT, GetDosErrorMsg(ErrorCode));
-		ErrorText := ReplaceMsg(ErrorText, FileName);
+		ErrorText := Replace(MSG_LOAD_ERROR_TEXT, Placeholder, GetDosErrorMsg(ErrorCode));
+		ErrorText := Replace(ErrorText, Placeholder, FileName);
 		MsgBox(MSG_LOAD_ERROR_TITLE, ErrorText, MsgError);
 	end;
 

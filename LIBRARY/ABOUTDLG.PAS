@@ -36,16 +36,11 @@ end;
 
 procedure AboutBox(AppP: PApplication);
 var
-	X1, Y1, X2, Y2: Integer;
-	Name, Version, Author, Icon: String;
 	Text: String;
 begin
-	Text := ReplaceMsg(MSG_ABOUT_TEXT, LibName);
-	Text := ReplaceMsg(Text, LibVersion);
-	Text := ReplaceMsg(Text, LibYear);
-
-	{Get app info}
-	AppP^.GetInfo(Name, Version, Author, Icon);
+	Text := Replace(MSG_ABOUT_TEXT, Placeholder, LibName);
+	Text := Replace(Text, Placeholder, LibVersion);
+	Text := Replace(Text, Placeholder, LibYear);
 
 	New(WinAboutBox, Init(0, 0, nil));
 	with WinAboutBox^ do
@@ -53,25 +48,21 @@ begin
 		SetSize(PrintW(Text) + 29, PrintH(Text) + 99);
 		Center(OrBoth);
 		SaveBackdrop;
-		GetPos(X1, Y1, True);
-		GetSize(X2, Y2);
 	end;
-	Inc(X2, X1);
-	Inc(Y2, Y1);
 
-	New(ImgLogo, Init(13, 15, Icon, WinAboutBox));
-	New(BtnClose, Init(0, Y2 - Y1 - 34, CAP_CLOSE, WinAboutBox));
+	New(ImgLogo, Init(13, 15, AppP^.Icon, WinAboutBox));
+	New(BtnClose, Init(0, WinAboutBox^.Height - 34, CAP_CLOSE, WinAboutBox));
 	with BtnClose^ do
 	begin
 		Center(OrHorizontal);
 		AddHotkey(KeyAltC);
 		AddHotkey(KeyEnter);
 		AddHotkey(KeyEscape);
-		SetOnClick(BtnCloseClick);
+		OnClick := BtnCloseClick;
 	end;
 
-	New(LblInfo[0], Init(56, 21, Name + ' ' + Version, WinAboutBox));
-	New(LblInfo[1], Init(56, 33, ReplaceMsg(MSG_BY_TEXT, Author), WinAboutBox));
+	New(LblInfo[0], Init(56, 21, AppP^.Name + ' ' + AppP^.Version, WinAboutBox));
+	New(LblInfo[1], Init(56, 33, Replace(MSG_BY_TEXT, Placeholder, AppP^.Author), WinAboutBox));
 	New(LblInfo[2], Init(15, 57, Text, WinAboutBox));
 
 	WinAboutBox^.Run;

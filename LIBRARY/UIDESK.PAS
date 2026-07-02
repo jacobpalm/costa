@@ -41,6 +41,8 @@ type
 	PDesktop  = ^TDesktop;
 	TDesktop  = object(TContainer)
 		public
+			OnRightClick: TEventProc;  {Event to trigger on link right click - inherited OnClick is used for left click}
+
 			constructor  Init(X, Y: Integer; Parent: PContainer);
 			destructor   Done; virtual;
 			procedure    Draw; virtual;
@@ -59,7 +61,6 @@ type
 
 			function     GetActiveLink: PLink;
 
-			procedure    SetOnRightClick(Proc: TEventProc);
 		private
 			Links:        PLinkNode;   {Head of the linked list of links}
 			LinkCount:    Byte;        {Number of links on the desktop}
@@ -67,7 +68,6 @@ type
 			TabVisible:   Boolean;     {Whether the keyboard tab indicator is visible}
 			TabBgImg:     Pointer;     {Saved background image for tab indicator}
 			TabBgSize:    Word;        {Memory size of the saved background image for tab indicator}
-			OnRightClick: TEventProc;  {Event to trigger on link right click - inherited OnClick is used for left click}
 			ShowCaption,
 			ShowTarget:   Boolean;     {Toggles visibility of text next to icons}
 			procedure     DrawLink(Link: PLink);
@@ -104,14 +104,13 @@ var
 	TempNode: PLinkNode;
 	BgColor: byte;
 begin
-	if GetState(SHidden) then
+	if SHidden in State then
 		Exit;
 
 	{Get absolute position and size}
 	Self.GetPos(x1, y1, True);
-	Self.GetSize(x2, y2);
-	Inc(X2, X1);
-	Inc(Y2, Y1);
+	X2 := X1 + Width;
+	Y2 := Y1 + Height;
 
 	{Draw background}
 	BgColor := GetBgColor;
@@ -143,7 +142,7 @@ var
 	FName:        NameStr;
 	FExt:         ExtStr;
 begin
-	if (Link = nil) or (GetState(SHidden)) then
+	if (Link = nil) or (SHidden in State) then
 		Exit;
 
 	{Get absolute position of desktop, and set icon position relative to it}
@@ -181,7 +180,7 @@ var
 	KeyPressed: boolean;
 begin
 	{Don't check for events if object is disabled or hidden}
-	if not GetState(SEnabled) or GetState(SHidden) then
+	if not (SEnabled in State) or (SHidden in State) then
 		exit;
 
 	{Check for mouse click}
@@ -370,7 +369,8 @@ begin
 	{Get absolute position of desktop to calculate relative mouse position and
 	 movement boundaries}
 	GetPos(OffsetX, OffsetY, True);
-	GetSize(MaxX, MaxY);
+	MaxX := Self.Width;
+	MaxY := Self.Height;
 	MinX := OffsetX + 20;
 	MinY := OffsetY + 20;
 	MaxX := OffsetX + MaxX - 20;
@@ -623,11 +623,6 @@ end;
 function TDesktop.GetActiveLink: PLink;
 begin
 	GetActiveLink := SelectedLink;
-end;
-
-procedure TDesktop.SetOnRightClick(Proc: TEventProc);
-begin
-	OnRightClick := Proc;
 end;
 
 procedure TDesktop.DoTabAction(Action: TTabAction);

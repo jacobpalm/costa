@@ -25,11 +25,16 @@ const
 	CharArrowLeft:  Char = #27;
 	NewLine:        Char = #13;  {Wrap lines in Print, MsgBox, InputBox etc.}
 	HotkeyChr:      Char = #127; {Marks hotkeys in object captions}
+	Placeholder          = '%s'; {Placeholder in strings to replace with value}
 
 	DecimalSign          = '.';  {Seperator signs - for localization}
 	ThousandsSign        = ',';
 
+	DosInt               = $21;   {MS-DOS API}
+	DosFuncGetIntVector  = $35;   {Function: Get Interrupt Vector}
+
 	MouseInt             = $33;   {Mouse drive interrupt}
+	MouseFuncResetDriver = $0000; {Function: Reset driver and read status}
 	MouseFuncSetHandler  = $000C; {Function: Set Mouse Handler Routine}
 	MouseFuncExchSubRout = $0014; {Function: Swap Mouse Handler Routine}
 	MbNone               = 0;     {Mouse button states}
@@ -110,6 +115,17 @@ type
 	{Base object which all objects, visual or not, are based on}
 	TUIObject = object
 		public
+			Left,
+			Top,
+			Width,
+			Height:     Integer;     {Position relative to parent, and size}
+			Colors:     Word;        {High byte = foreground, low byte = background}
+			Hotkey:     PHotKeyNode; {Linked list of hotkeys}
+			State:      TStateSet;   {State flags}
+			OnClick:    TEventProc;  {Event procedure for mouse click or hotkey press}
+			OnDraw:     TEventProc;  {Event procedure called at the end of Draw method, to allow custom drawing etc.}
+			ParentObj:  PContainer;  {Parent object, if any}
+
 			constructor Init;
 			Destructor  Done; virtual;
 
@@ -122,17 +138,14 @@ type
 			procedure   RemoveHotkey(Key: string);
 
 			procedure   SetParent(Parent: PContainer);
-			function    GetParent: PContainer;
 
 			procedure   AddState(S: TState);
-			function    GetState(S: TState): Boolean;
 			procedure   RemoveState(S: TState);
 
 			procedure   Click;
 			procedure   Draw; virtual;
 
 			procedure   SetSize(W, H: Integer);
-			procedure   GetSize(var W, H: Integer);
 
 			procedure   SetPos(X, Y: Integer);
 			procedure   GetPos(var X, Y: Integer; Absolute: Boolean);
@@ -143,22 +156,7 @@ type
 			procedure   SetBGColor(Color: Byte);
 			function    GetBGColor: Byte;
 
-			procedure   SetOnClick(Event: TEventProc);
-			procedure   SetOnDraw(Event: TEventProc);
-
 			function    IsContainer: boolean; virtual;
-
-		private
-			Left,
-			Top,
-			Width,
-			Height:     Integer;     {Position relative to parent, and size}
-			Colors:     Word;        {High byte = foreground, low byte = background}
-			ParentObj:  PContainer;  {Parent object, if any - should only use container types}
-			Hotkey:     PHotKeyNode; {Linked list of hotkeys}
-			State:      TStateSet;   {State flags}
-			OnClick:    TEventProc;  {Event procedure for mouse click or hotkey press}
-			OnDraw:     TEventProc;  {Event procedure called at the end of Draw method, to allow custom drawing etc.}
 	end;
 
 	{Linked list of objects based on PUIObject, can contain objects of any descendant type}
@@ -191,6 +189,9 @@ type
 	{Window object}
 	TWindow = object(TContainer)
 		public
+			OnRun:            TEventProc;
+			OnClose:          TEventProc;
+
 			constructor Init(X, Y: Integer; Parent: PContainer);
 			destructor  Done; virtual;
 
@@ -206,8 +207,6 @@ type
 
 			procedure   SaveBackdrop;
 
-			procedure   SetOnRun(Proc: TEventProc);
-			procedure   SetOnClose(Proc: TEventProc);
 			{procedure   SetMenuBar(MenuBar: PMenu);}
 		private
 			MenuObj:          PMenu;           {Menu bar object, if any}
@@ -215,8 +214,6 @@ type
 			PreserveBackdrop: Boolean;         {If true, backdrop is preserved when window is drawn and restored when closed}
 			BackdropP:        Pointer;         {Stores background image to restore when window is closed}
 			BackdropS:        Word;            {Size of memory block used by BackdropP}
-			OnRun:            TEventProc;
-			OnClose:          TEventProc;
 			EventQueue:       PEventNode;
 			procedure         RestoreBackdrop;
 	end;
@@ -253,11 +250,16 @@ type
 	{Main application object, to which windows can be added}
 	TApplication = object
 		public
+			Name,
+			Version,
+			Author:     string;
+			Icon:       string[8];
+			ExitCode:   byte;
+			OnRun:      TEventProc;
+			OnExit:     TEventProc;
+
 			constructor Init;
 			destructor  Done; virtual;
-
-			procedure   SetInfo(AppName, AppVersion, AppAuthor, AppIcon: string);
-			procedure   GetInfo(var AppName, AppVersion, AppAuthor, AppIcon: string);
 
 			function    Path: DirStr;
 
@@ -273,21 +275,9 @@ type
 			procedure   OpenWindow(Win: PWindow);
 			procedure   CloseWindow;
 
-			procedure   SetOnRun(Proc: TEventProc);
-			procedure   SetOnExit(Proc: TEventProc);
-
-			procedure   SetExitCode(Code: byte);
-
 			procedure   Run;
 			procedure   Terminate;
 		private
-			Name,
-			Version,
-			Author,
-			Icon:       string;
-			ExitCode:   byte;
-			OnRun:      TEventProc;
-			OnExit:     TEventProc;
 			Window:     PWindowNode;
 			ConfFile:   String[8];   {Filename without extension of apps config file, if any}
 			ConfPtr:    Pointer;     {Pointer to, and size off, app config - usually a Record type declared by user}
@@ -367,7 +357,6 @@ procedure DosPrint(Text: String);
 
 function  UpperCase(s: string): string;
 function  Replace(Input, OldSubStr, NewSubStr: String): String;
-function  ReplaceMsg(const Msg, Value: String): String;
 
 procedure SoundNote(Frequency, Duration: Integer);
 procedure SystemSound(SoundType: TSystemSound);
@@ -529,9 +518,8 @@ var
 begin
 	{Get absolute position and size of the object}
 	Self.GetPos(X1, Y1, True);
-	Self.GetSize(X2, Y2);
-	Inc(X2, X1);
-	Inc(Y2, Y1);
+	X2 := X1 + Self.Width;
+	Y2 := Y1 + Self.Height;
 
 	IsMouseOver := (Mouse.X >= X1) and (Mouse.X <= X2) and (Mouse.Y >= Y1) and (Mouse.Y <= Y2);
 end;
@@ -604,10 +592,6 @@ begin
 		ParentObj^.AddState(SDirty);
 end;
 
-function TUIObject.GetState(S: TState): Boolean;
-begin
-	GetState := (S in State);
-end;
 
 procedure TUIObject.RemoveState(S: TState);
 begin
@@ -709,8 +693,11 @@ begin
 		ParentH := GetMaxY;
 	end
 	else
+	begin
 		{Get parent dimensions}
-		ParentObj^.GetSize(ParentW, ParentH);
+		ParentW := ParentObj^.Width;
+		ParentH := ParentObj^.Height;
+	end;
 
 	{To center, the size of the object is subtracted from the size of the parent.
 	 The remaining space is the additional width the parent has, and dividing this by
@@ -742,10 +729,6 @@ begin
 		ParentObj^.AddObject(@Self);
 end;
 
-function TUIObject.GetParent: PContainer;
-begin
-	GetParent := ParentObj;
-end;
 
 procedure TUIObject.SetSize(W, H: Integer);
 begin
@@ -761,12 +744,6 @@ begin
 	 on top of the previous draw}
 	if not (SHidden in State) and (ParentObj <> nil) then
 		ParentObj^.AddState(SDirty);
-end;
-
-procedure TUIObject.GetSize(var W, H: Integer);
-begin
-	W := Width;
-	H := Height;
 end;
 
 procedure TUIObject.SetFGColor(Color: Byte);
@@ -803,16 +780,6 @@ begin
 	GetBGColor := Colors and $00FF;
 end;
 
-procedure TUIObject.SetOnClick(Event: TEventProc);
-begin
-	OnClick := Event;
-end;
-
-procedure TUIObject.SetOnDraw(Event: TEventProc);
-begin
-	OnDraw := Event;
-end;
-
 {TContainer overrides this function with one that returns true - used in event/draw loops
  to determine if an object can have children, since Turbo Pascal doesn't have a built-in
  way to determine inheritance at runtime}
@@ -834,7 +801,7 @@ end;
 
 procedure THotkey.CheckEvent;
 begin
-	if not GetState(SEnabled) then
+	if not (SEnabled in State) then
 		exit;
 
 	if Self.HotkeyPressed then
@@ -859,7 +826,7 @@ var
 	BgColor: Byte;
 begin
 	{Don't draw or trigger event if menu is hidden}
-	if GetState(SHidden) then
+	if SHidden in State then
 		exit;
 
 	{Get colors}
@@ -893,9 +860,8 @@ begin
 	begin
 		{Get absolute position and size of the object}
 		GetPos(X1, Y1, True);
-		GetSize(X2, Y2);
-		Inc(X2, X1);
-		Inc(Y2, Y1);
+		X2 := X1 + Self.Width;
+		Y2 := Y1 + Self.Height;
 
 		{Interior}
 		SetFillStyle(SolidFill, BgColor);
@@ -930,7 +896,8 @@ begin
 		while Assigned(OffsetNode^.Next) do
 			OffsetNode := OffsetNode^.Next;
 		OffsetNode^.ObjectP^.GetPos(OffsetX, OffsetY, False);
-		OffsetNode^.ObjectP^.GetSize(OffsetW, OffsetH);
+		OffSetW := OffsetNode^.ObjectP^.Width;
+		OffSetH := OffsetNode^.ObjectP^.Height;
 		OffsetX := OffsetX + OffsetW + 1;
 		OffsetY := OffsetY + OffsetH + 1;
 	end;
@@ -979,7 +946,7 @@ end;
 procedure TMenuItem.CheckEvent;
 begin
 	{Don't check for events if item is disabled or hidden}
-	if not GetState(SEnabled) or GetState(SHidden) then
+	if not (SEnabled in State) or (SHidden in State) then
 		exit;
 
 	{Todo - if menu is a popup menu, only allow interaction when visible}
@@ -987,7 +954,7 @@ begin
 	if IsMouseOver then
 	begin
 		{Make sure item is highlighted when mouse is over}
-		if not GetState(SActive) then
+		if not (SActive in State) then
 			AddState(SActive);
 
 		if Mouse.Clicked = MbLeft then
@@ -1004,7 +971,7 @@ begin
 	else
 	begin
 		{If mouse is not over the item, remove highlight}
-		if GetState(SActive) then
+		if SActive in State then
 			RemoveState(SActive);
 	end;
 
@@ -1020,11 +987,10 @@ var
 begin
 	{Get absolute position and size of the object}
 	GetPos(X1, Y1, True);
-	GetSize(X2, Y2);
-	Inc(X2, X1);
-	Inc(Y2, Y1);
+	X2 := X1 + Width;
+	Y2 := Y1 + Height;
 
-	if GetState(SActive) then
+	if SActive in State then
 	begin
 		FGColor := Thm.SelText;
 		BgColor := Thm.Sel;
@@ -1071,8 +1037,8 @@ begin
 	Author   := '';
 	Icon     := '';
 	ConfFile := '';
-	ConfPtr := nil;
-	ConfLen := 0;
+	ConfPtr  := nil;
+	ConfLen  := 0;
 	ExitCode := 0;
 	Window   := nil;
 	OnRun    := nil;
@@ -1374,37 +1340,6 @@ begin
 	SaveSettings := true;
 end;
 
-procedure TApplication.SetInfo(AppName, AppVersion, AppAuthor, AppIcon: string);
-begin
-	Name    := AppName;
-	Version := AppVersion;
-	Author  := AppAuthor;
-	Icon    := AppIcon;
-end;
-
-procedure TApplication.GetInfo(var AppName, AppVersion, AppAuthor, AppIcon: string);
-begin
-	AppName    := Name;
-	AppVersion := Version;
-	AppAuthor  := Author;
-	AppIcon    := Icon;
-end;
-
-procedure TApplication.SetExitCode(Code: byte);
-begin
-	ExitCode := Code;
-end;
-
-procedure TApplication.SetOnRun(Proc: TEventProc);
-begin
-	OnRun := Proc;
-end;
-
-procedure TApplication.SetOnExit(Proc: TEventProc);
-begin
-	OnExit := Proc;
-end;
-
 {----------------------------------------------------------------------------}
 { Container object implementation }
 {----------------------------------------------------------------------------}
@@ -1426,12 +1361,7 @@ var
 	NewNode, LastNode: PObjectNode;
 begin
 	if not Assigned(Obj) then
-	begin
-		CloseGraph;
-		DosPrint('Error: Attempt to add nil object to container');
-		Halt(1);
-		{DEBUG - this is a bit extreme}
-	end;
+		exit;
 
 	New(NewNode);
 	NewNode^.ObjectP := Obj;
@@ -1455,6 +1385,9 @@ end;
 
 procedure TContainer.Draw;
 begin
+	if SHidden in State then
+		exit;
+
 	{TContainer has no visible element, so just draw its children}
 	DrawChildren;
 
@@ -1467,7 +1400,7 @@ var
 	CurrObj: PObjectNode;
 begin
 	{Don't check for events if container is disabled or hidden}
-	if not GetState(SEnabled) or GetState(SHidden) then
+	if not (SEnabled in State) or (SHidden in State) then
 		exit;
 
 	CurrObj := Objects;
@@ -1483,7 +1416,7 @@ var
 	CurrObj: PObjectNode;
 begin
 	{Don't draw if container is hidden or has no objects}
-	if GetState(SHidden) or not Assigned(Objects) then
+	if (SHidden in State) or not Assigned(Objects) then
 		exit;
 
 	{Draw all objects in the linked list}
@@ -1511,7 +1444,7 @@ begin
 	MouseHidden := False;
 
 	{If the window itself is dirty, EVERYTHING in it needs redraw - so just call Draw}
-	if GetState(SDirty) then
+	if SDirty in State then
 	begin
 		Mouse.Hide;
 		Self.Draw;
@@ -1524,8 +1457,8 @@ begin
 	while Assigned(CurrObj) do
 	begin
 		{Draw dirty objects}
-		if (CurrObj^.ObjectP^.GetState(SDirty) and
-		    not CurrObj^.ObjectP^.GetState(SHidden)) then
+		if (SDirty in CurrObj^.ObjectP^.State) and
+		    not (SHidden in CurrObj^.ObjectP^.State) then
 		begin
 			if not MouseHidden then
 			begin
@@ -1590,6 +1523,7 @@ begin
 	MenuObj   := nil;
 	BackdropP := nil;
 	BackdropS := 0;
+	EventQueue := nil;
 	PreserveBackdrop := False;
 end;
 
@@ -1599,14 +1533,13 @@ var
 	BgColor: Byte;
 begin
 	{Don't draw or trigger event if window is hidden}
-	if GetState(SHidden) then
+	if SHidden in State then
 		exit;
 
 	{Get absolute position and size of the window}
 	Self.GetPos(X1, Y1, True);
-	Self.GetSize(X2, Y2);
-	Inc(X2, X1);
-	Inc(Y2, Y1);
+	X2 := X1 + Width;
+	Y2 := Y1 + Height;
 	BgColor := GetBGColor;
 	if BgColor = ColorDefault then
 		BgColor := Thm.Win;
@@ -1768,7 +1701,7 @@ var
 	CurrObj: PObjectNode;
 begin
 	{Don't check for events if window is disabled or hidden}
-	if not GetState(SEnabled) or GetState(SHidden) then
+	if not (SEnabled in State) or (SHidden in State) then
 		exit;
 
 	CurrObj := Objects;
@@ -1811,16 +1744,6 @@ begin
 	PreserveBackdrop := True;
 end;
 
-procedure TWindow.SetOnRun(Proc: TEventProc);
-begin
-	OnRun := Proc;
-end;
-
-procedure TWindow.SetOnClose(Proc: TEventProc);
-begin
-	OnClose := Proc;
-end;
-
 procedure TWindow.Close;
 begin
 	Self.DoClose := True;
@@ -1849,15 +1772,23 @@ begin
 	X := 0;
 	Y := 0;
 	Clicked := MbNone;
+	Support := false;
 
-	{Check for mouse support}
+	{Check that mouse interrupt is assigned. If it isn't, calling it could hang the system}
+	regs.ah := DosFuncGetIntVector;
+	regs.al := MouseInt;
+	Intr(DosInt, regs);
+	if (regs.es = 0) or (regs.bx = 0) then
+		exit;
+
+	{Mouse interrupt OK, call it and verify that mouse is available}
+	regs.ax := MouseFuncResetDriver;
 	Intr(MouseInt, regs);
 	Support := Regs.ax > 0;
-
 	if not Support then
 		exit;
 
-	{If mouse is supported, install MouseHandler in the driver so that is is called whenever mouse is moved or clicked
+	{If mouse is available, install MouseHandler in the driver so that is is called whenever mouse is moved or clicked
 	 We use MouseFuncExchSubRout instead of MouseFuncSetHandler, since this one returns the current values so we Can
 	 restore them on exit.}
 	Regs.AX := MouseFuncExchSubRout;
@@ -1927,10 +1858,14 @@ begin
 	if not Support then
 		exit;
 
-	{If mouse is supported, restore the event handler if any that was set before we installed our own handler}
+	{Reset mouse driver}
+	Regs.AX := MouseFuncResetDriver;
+	Intr(MouseInt, Regs);
+
+	{Restore the event handler, if any, that was set before we installed our own handler}
 	Regs.AX := MouseFuncSetHandler;  {Set mouse event handler function}
-	Regs.CX := PrevMouseHandlerMask; {No events}
-	Regs.ES := PrevMouseHandlerSeg;  {Clear segment+offset of handler function}
+	Regs.CX := PrevMouseHandlerMask;
+	Regs.ES := PrevMouseHandlerSeg;
 	Regs.DX := PrevMouseHandlerOfs;
 	Intr(MouseInt, Regs);
 end;
@@ -2094,7 +2029,7 @@ begin
 	Regs.Ah := 9;
 	Regs.Ds := Seg(EscapedText[1]); {Use segment/offset of first char, to avoid the length byte being printed}
 	Regs.Dx := Ofs(EscapedText[1]);
-	MsDos(Regs);
+	Intr(DosInt, Regs);
 end;
 
 procedure SoundNote(Frequency, Duration: Integer);
@@ -2124,27 +2059,12 @@ begin
 	NoSound;
 end;
 
-function ReplaceMsg(const Msg, Value: String): String;
-var
-	Output: String;
-	PosVal: Integer;
-begin
-	Output := Msg;
-	PosVal := Pos('%s', Output); {Find the position of the %S placeholder}
-	if PosVal > 0 then
-	begin
-		Delete(Output, PosVal, 2); {Remove %S}
-		Insert(Value, Output, PosVal); {Insert value instead}
-	end;
-	ReplaceMsg := Output;
-end;
-
 function Replace(Input, OldSubStr, NewSubStr: String): String;
 var
 	PosStart: Integer;
 begin
 	PosStart := Pos(OldSubStr, Input); {Find the position of the substring}
-	while PosStart > 0 do
+	if PosStart > 0 then
 	begin
 		{Replace the substring}
 		Delete(Input, PosStart, Length(OldSubStr)); {Remove the old substring}
@@ -2223,7 +2143,7 @@ begin
 		else
 			begin
 				Str(ErrorCode, ErrorCodeStr);
-				GetDosErrorMsg := ReplaceMsg(MSG_DOSERROR_UNKNOWN, ErrorCodeStr);
+				GetDosErrorMsg := Replace(MSG_DOSERROR_UNKNOWN, Placeholder, ErrorCodeStr);
 			end;
 	end;
 end;

@@ -25,13 +25,13 @@ var
 	BtnOK,
 	BtnCancel,
 	BtnBrowse:     PButton;
-	RunLink:	   PLink;
+	RunLink:       PLink;
 
 procedure TxtFilename_Change(Sender: PUIObject); far;
 begin
-	if (Length(TxtFilename^.GetText) > 0) and (not BtnOK^.GetState(SEnabled)) then
+	if (Length(TxtFilename^.GetText) > 0) and not (SEnabled in BtnOK^.State) then
 		BtnOK^.AddState(SEnabled)
-	else if (Length(TxtFilename^.GetText) = 0) and BtnOK^.GetState(SEnabled) then
+	else if (Length(TxtFilename^.GetText) = 0) and (SEnabled in BtnOK^.State) then
 		BtnOK^.RemoveState(SEnabled);
 end;
 
@@ -81,7 +81,7 @@ begin
 	begin
 		SetSize(358, SizeRetain);
 		AddHotkey(KeyAltF);
-		SetOnChange(TxtFilename_Change);
+		OnChange := TxtFilename_Change;
 	end;
 	New(TxtParams, Init(12, 73, CAP_PARAMETERS, WinRun));
 	with TxtParams^ do
@@ -95,20 +95,20 @@ begin
 		AddHotkey(KeyAltO);
 		AddHotkey(KeyEnter);
 		RemoveState(SEnabled);
-		SetOnClick(BtnOK_Click);
+		OnClick := BtnOK_Click;
 	end;
 	New(BtnCancel, Init(176, 103, CAP_CANCEL, WinRun));
 	with BtnCancel^ do
 	begin
 		AddHotkey(KeyAltC);
 		AddHotkey(KeyEscape);
-		SetOnClick(BtnCancel_Click);
+		OnClick := BtnCancel_Click;
 	end;
 	New(BtnBrowse, Init(278, 103, CAP_BROWSE, WinRun));
 	with BtnBrowse^ do
 	begin
 		AddHotkey(KeyAltB);
-		SetOnClick(BtnBrowse_Click);
+		OnClick := BtnBrowse_Click;
 	end;
 end;
 

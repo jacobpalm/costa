@@ -69,13 +69,13 @@ begin
 	begin
 		AddHotkey(KeyAltO);
 		AddHotkey(KeyEnter);
-		SetOnClick(BtnOkClick);
+		OnClick := BtnOkClick;
 	end;
 	With BtnCancel^ do
 	begin
 		AddHotkey(KeyAltC);
 		AddHotkey(KeyEscape);
-		SetOnClick(BtnCancelClick);
+		OnClick := BtnCancelClick;
 	end;
 	with TxtInput^ do
 	begin

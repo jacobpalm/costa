@@ -64,7 +64,7 @@ begin
 		TargetLink^.Path := TxtPath^.GetText;
 		TargetLink^.Parameters := TxtParams^.GetText;
 		TargetLink^.PauseOnExit := ChkPauseOnExit^.GetChecked;
-		TargetLink^.IconFile := ImgIcon^.GetIcon;
+		TargetLink^.IconFile := ImgIcon^.IconFile;
 		DidEdit := True;
 		WinEdit^.Close;
 	end
@@ -170,7 +170,7 @@ begin
 	New(BtnOK, Init(231, 26, CAP_OK, WinEdit));
 	With BtnOK^ do
 	begin
-		SetOnClick(BtnOK_Click);
+		OnClick := BtnOK_Click;
 		AddHotkey(KeyAltO);
 		AddHotkey(KeyEnter);
 	end;
@@ -179,23 +179,23 @@ begin
 	begin
 		AddHotkey(KeyAltC);
 		AddHotkey(KeyEscape);
-		SetOnClick(BtnCancel_Click);
+		OnClick := BtnCancel_Click;
 	end;
 	New(BtnBrowse, Init(231, 82, CAP_BROWSE, WinEdit));
 	With BtnBrowse^ do
 	begin
 		AddHotkey(KeyAltB);
-		SetOnClick(BtnBrowse_Click);
+		OnClick := BtnBrowse_Click;
 	end;
 	New(BtnIcon, Init(231, 110, CAP_ICON, WinEdit));
 	With BtnIcon^ do
 	begin
 		AddHotkey(KeyAltI);
-		SetOnClick(BtnIcon_Click);
+		OnClick := BtnIcon_Click;
 	end;
 
 	New(ImgIcon, Init(261, 157, TargetLink^.IconFile, WinEdit));
-	ImgIcon^.SetOnClick(BtnIcon_Click);
+	ImgIcon^.OnClick := BtnIcon_Click;
 end;
 
 function EditLink(Link: PLink): boolean;

@@ -94,7 +94,8 @@ begin
 
 	{Get absolute position and size of area}
 	AreaColor[Color]^.GetPos(X1, Y1, True);
-	AreaColor[Color]^.GetSize(X2, Y2);
+	X2 := AreaColor[Color]^.Width;
+	Y2 := AreaColor[Color]^.Height;
 
 	{Marker is a rectangle inset by 4 pixels from the area border}
 	Inc(X1, 4);
@@ -244,7 +245,7 @@ begin
 
 	{After a flood fill, the canvas object will switch to pencil tool automatically.
 	 Ensure the pencil/flood fill buttons are updated accordingly}
-	if (Canvas^.GetTool = ToolPencil) and not (BtnPencil^.GetState(SActive)) then
+	if (Canvas^.GetTool = ToolPencil) and not (SActive in BtnPencil^.State) then
 		BtnToolClick(PUIObject(BtnPencil));
 end;
 
@@ -289,38 +290,38 @@ begin
 	With BtnNew^ do
 	begin
 		AddHotkey(KeyAltN);
-		SetOnClick(BtnNewClick);
+		OnClick := BtnNewClick;
 	end;
 	New(BtnOpen, Init(101, 2, CAP_OPEN, WinMain));
 	With BtnOpen^ do
 	begin
 		AddHotkey(KeyAltO);
-		SetOnClick(BtnOpenClick);
+		OnClick := BtnOpenClick;
 	end;
 	New(BtnSave, Init(200, 2, CAP_SAVE, WinMain));
 	With BtnSave^ do
 	begin
 		AddHotkey(KeyAltS);
-		SetOnClick(BtnSaveClick);
+		OnClick := BtnSaveClick;
 	end;
 	New(BtnSaveAs, Init(299, 2, CAP_SAVE_AS, WinMain));
 	With BtnSaveAs^ do
 	begin
 		AddHotkey(KeyAltV);
-		SetOnClick(BtnSaveClick);
+		OnClick := BtnSaveClick;
 	end;
 	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
 	With BtnAbout^ do
 	begin
 		AddHotkey(KeyAltA);
-		SetOnClick(BtnAboutClick);
+		OnClick := BtnAboutClick;
 	end;
 	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
 	With BtnExit^ do
 	begin
 		AddHotkey(KeyAltX);
 		AddHotkey(KeyAltF4);
-		SetOnClick(BtnExitClick);
+		OnClick := BtnExitClick;
 	end;
 
 	{Init now to ensure correct ZOrder, but set pos after we now position of canvas}
@@ -337,15 +338,15 @@ begin
 	begin
 		SetSize(290, 290);
 		SetBgColor(White);
-		SetOnClick(CanvasClick);
+		OnClick := CanvasClick;
 		SetPreviewPos(314, 89);
 	end;
 
 	{Get absolute position of canvas area, and its size, so other objects can be
 	 positioned relative to it}
 	Canvas^.GetPos(X, Y, True);
-	Canvas^.GetSize(W, H);
-
+	W := Canvas^.Width;
+	H := Canvas^.Height;
 	X := X + W + 12;
 
 	{Move preview area to the right of the canvas}
@@ -360,14 +361,14 @@ begin
 		SetSize(56, SizeRetain);
 		AddState(SActive);
 		AddHotkey(KeyAltE);
-		SetOnClick(BtnToolClick);
+		OnClick := BtnToolClick;
 	end;
 	New(BtnFloodFill, Init(X, Y + 26, CAP_FILL, WinMain));
 	With BtnFloodFill^ do
 	begin
 		SetSize(56, SizeRetain);
 		AddHotkey(KeyAltF);
-		SetOnClick(BtnToolClick);
+		OnClick := BtnToolClick;
 	end;
 
 	{Get position of canvas again, to position color areas left to it}
@@ -390,21 +391,27 @@ begin
 		begin
 			SetSize(20, 20);
 			SetBgColor(i);
-			SetOnClick(AreaColorClick);
-			SetOnDraw(AreaColorDraw);
+			OnClick := AreaColorClick;
+			OnDraw := AreaColorDraw;
 		end;
 		Inc(Y, 21);
 	end;
 
 	{Hotkey to change color}
 	New(HkColor, Init(KeyAltC, WinMain));
-	HkColor^.SetOnClick(HkColorClick);
+	HkColor^.OnClick := HkColorClick;
 end;
 
 {Main program start}
 begin
 	New(App, Init);
-	App^.SetInfo(AppName, AppVersion, AppAuthor, AppIcon);
+	With App^ do
+	begin
+		Name := AppName;
+		Version := AppVersion;
+		Author := AppAuthor;
+		Icon := AppIcon;
+	end;
 
 	InitUI;
 

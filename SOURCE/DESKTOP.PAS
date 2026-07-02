@@ -156,14 +156,13 @@ begin
 	ErrorCode := IOResult;
 	if ErrorCode <> 0 then
 	begin
-		MsgBox(MSG_SAVE_ERROR_TITLE, ReplaceMsg(MSG_SAVE_ERROR, GetDosErrorMsg(ErrorCode)) + RunFile, MsgError);
+		MsgBox(MSG_SAVE_ERROR_TITLE, Replace(MSG_SAVE_ERROR, Placeholder, GetDosErrorMsg(ErrorCode)) + RunFile, MsgError);
 		exit;
 	end;
 
 	BlockWrite(F, RunData, SizeOf(RunData));
 	Close(F);
 
-	App^.SetExitCode(0);
 	WinMain^.Close;
 end;
 
@@ -196,7 +195,7 @@ begin
 
 	{Replace the placeholder char}
 	Str(Settings.DeskID, sDeskID);
-	DesktopFile := App^.Path + ReplaceMsg(DeskFilePattern, sDeskID);
+	DesktopFile := App^.Path + Replace(DeskFilePattern, Placeholder, sDeskID);
 	Str(MaxDesktops, sMaxDesktops);
 	LblDesktop^.SetCaption( Concat(sDeskID, '/', sMaxDesktops) );
 
@@ -282,7 +281,7 @@ begin
 
 	if DoExit then
 	begin
-		App^.SetExitCode(1); {Error code 1 makes COSTA.EXE terminate and return to DOS prompt}
+		App^.ExitCode := 1; {Error code 1 makes COSTA.EXE terminate and return to DOS prompt}
 		WinMain^.Close;
 	end;
 end;
@@ -416,35 +415,35 @@ begin
 	begin
 		SetSize(640, 350);
 		RemoveState(SBordered);
-		SetOnDraw(WinMainDraw);
-		SetOnClose(WinMainClose);
+		OnDraw := WinMainDraw;
+		OnClose := WinMainClose;
 	end;
 
 	New(BtnAdd, Init(2, 2, CAP_ADD, WinMain));
 	With BtnAdd^ do
 	begin
 		AddHotkey(KeyAltD);
-		SetOnClick(BtnAddClick);
+		OnClick := BtnAddClick;
 	end;
 	New(BtnRun, Init(101, 2, CAP_RUN, WinMain));
 	With BtnRun^ do
 	begin
 		AddHotkey(KeyAltR);
-		SetOnClick(BtnRunClick);
+		OnClick := BtnRunClick;
 	end;
 
 	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
 	With BtnAbout^ do
 	begin
 		AddHotkey(KeyAltA);
-		SetOnClick(BtnAboutClick);
+		OnClick := BtnAboutClick;
 	end;
 	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
 	With BtnExit^ do
 	begin
 		AddHotkey(KeyAltX);
 		AddHotkey(KeyAltF4);
-		SetOnClick(BtnExitClick);
+		OnClick := BtnExitClick;
 	end;
 
 	New(LblDesktop, Init(10, 10, ' / ', WinMain));
@@ -459,22 +458,22 @@ begin
 	begin
 		SetSize(42, SizeRetain);
 		AddHotkey(KeyLeft);
-		SetOnClick(BtnPreviousClick);
+		OnClick := BtnPreviousClick;
 	end;
 	New(BtnNext, Init(343, 2, HotkeyChr + CharArrowRight, WinMain));
 	With BtnNext^ do
 	begin
 		SetSize(42, SizeRetain);
 		AddHotkey(KeyRight);
-		SetOnClick(BtnNextClick);
+		OnClick := BtnNextClick;
 	end;
 
 	New(Desk, Init(0, 29, WinMain));
 	With Desk^ do
 	begin
 		SetSize(640, 321);
-		SetOnClick(DeskClick);
-		SetOnRightClick(DeskRightClick);
+		OnClick := DeskClick;
+		OnRightClick := DeskRightClick;
 		AddState(SHidden); {Start hidden, will be shown when links are loaded}
 	end;
 
@@ -482,7 +481,7 @@ begin
 	begin
 		New(HkDesktop[i], Init(#0 + Chr(KeyAltNoBase + i - 1), WinMain)); {Alt+1, Alt+2, ...}
 		HkDesktop[i]^.AddHotkey(Chr(48 + i)); {Also add '1', '2', ... as hotkeys}
-		HkDesktop[i]^.SetOnClick(HkDesktopClick);
+		HkDesktop[i]^.OnClick := HkDesktopClick;
 	end;
 end;
 
@@ -495,9 +494,15 @@ begin
 	end;
 
 	New(App, Init);
-	App^.SetInfo(AppName, AppVersion, AppAuthor, AppIcon);
-	App^.SetConfigFile(AppConfigFile, @Settings, SizeOf(TDeskSetting));
-	App^.SetOnRun(AppRun);
+	With App^ do
+	begin
+		Name := AppName;
+		Version := AppVersion;
+		Author := AppAuthor;
+		Icon := AppIcon;
+		SetConfigFile(AppConfigFile, @Settings, SizeOf(TDeskSetting));
+		OnRun := AppRun;
+	end;
 
 	InitUI;
 

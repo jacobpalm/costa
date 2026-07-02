@@ -123,14 +123,13 @@ procedure TField.Draw;
 var
 	X1, X2, Y1, Y2: Integer;
 begin
-	if GetState(SHidden) then
+	if SHidden in State then
 		exit;
 
 	{Get absolute position and size of the object}
 	Self.GetPos(X1, Y1, True);
-	Self.GetSize(X2, Y2);
-	Inc(X2, X1);
-	Inc(Y2, Y1);
+	X2 := X1 + Width;
+	Y2 := Y1 + Height;
 
 	{Custom drawing, not using UI primitives since this is a game with a bit of a custom UI look}
 	{Interior}
@@ -495,7 +494,7 @@ begin
 		MsgNewGame:    Message := MSG_NEW_GAME_TEXT[Randomizer];
 	end;
 
-	Message := ReplaceMsg(Message, CurrentTurn);
+	Message := Replace(Message, Placeholder, CurrentTurn);
 	LblMessage^.SetCaption(Message);
 end;
 
@@ -654,8 +653,8 @@ begin
 	begin
 		SetSize(640, 350);
 		RemoveState(SBordered);
-		SetOnDraw(WinMainDraw);
-		SetOnRun(WinMainRun);
+		OnDraw := WinMainDraw;
+		OnRun := WinMainRun;
 		SetBgColor(Green);
 	end;
 
@@ -674,7 +673,7 @@ begin
 		for Col := 1 to 3 do
 		begin
 			New(PlayField[Row, Col], Init(10 + ((Row - 1) * 70), 10 + ((Col - 1) * 70), FrmTic));
-			PlayField[Row, Col]^.SetOnClick(PlayFieldClick);
+			PlayField[Row, Col]^.OnClick := PlayFieldClick;
 		end;
 	end;
 
@@ -682,33 +681,33 @@ begin
 	With BtnNew^ do
 	begin
 		AddHotkey(KeyAltN);
-		SetOnClick(BtnNewClick);
+		OnClick := BtnNewClick;
 	end;
 	New(BtnGameMode, Init(101, 2, CAP_GAME_MODE, WinMain));
 	With BtnGameMode^ do
 	begin
 		AddHotkey(KeyAltM);
-		SetOnClick(BtnGameModeClick);
+		OnClick := BtnGameModeClick;
 	end;
 	New(BtnSound, Init(200, 2, CAP_SOUND, WinMain));
 	With BtnSound^ do
 	begin
 		AddHotkey(KeyAltS);
-		SetOnClick(BtnSoundClick);
+		OnClick := BtnSoundClick;
 	end;
 
 	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
 	With BtnAbout^ do
 	begin
 		AddHotkey(KeyAltA);
-		SetOnClick(BtnAboutClick);
+		OnClick := BtnAboutClick;
 	end;
 	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
 	With BtnExit^ do
 	begin
 		AddHotkey(KeyAltX);
 		AddHotkey(KeyAltF4);
-		SetOnClick(BtnExitClick);
+		OnClick := BtnExitClick;
 	end;
 
 	New(LblMessage, Init(12, 53, AppName + #32 + MSG_BY + #32 + AppAuthor, WinMain));
@@ -743,8 +742,13 @@ end;
 
 begin
 	New(App, Init);
-
-	App^.SetInfo(AppName, AppVersion, AppAuthor, AppIcon);
+	With App^ do
+	begin
+		Name := AppName;
+		Version := AppVersion;
+		Author := AppAuthor;
+		Icon := AppIcon;
+	end;
 
 	InitUI;
 

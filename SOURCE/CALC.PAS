@@ -227,7 +227,7 @@ begin
   	exit;
   end;
 
-  CurrentInput := CurrentInput + PButton(Sender)^.GetCaption;
+  CurrentInput := CurrentInput + PButton(Sender)^.Caption;
   UpdateDisplay;
 end;
 
@@ -419,8 +419,8 @@ end;
 
 procedure BtnLogClick(Sender: PUIObject); far;
 begin
-	{If hidden, GetState := true which will toggle log on}
-	ToggleLog(AreaLog^.GetState(SHidden));
+	{If hidden = true, log will be enabled}
+	ToggleLog(SHidden in AreaLog^.State);
 end;
 
 procedure BtnAboutClick(Sender: PUIObject); far;
@@ -457,20 +457,20 @@ begin
 	With BtnLog^ do
 	begin
 		AddHotkey(KeyAltL);
-		SetOnClick(BtnLogClick);
+		OnClick := BtnLogClick;
 	end;
 
 	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
 	With BtnAbout^ do
 	begin
-		SetOnClick(BtnAboutClick);
+		OnClick := BtnAboutClick;
 		AddHotKey(KeyAltA);
 	end;
 
 	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
 	With BtnExit^ do
 	begin
-		SetOnClick(BtnExitClick);
+		OnClick := BtnExitClick;
 		AddHotKey(KeyAltX);
 		AddHotKey(KeyAltF4);
 	end;
@@ -505,7 +505,7 @@ begin
 	begin
 		SetSize(90, SizeRetain);
 		AddHotKey('0');
-		SetOnClick(BtnNumbClick);
+		OnClick := BtnNumbClick;
 	end;
 	New(BtnNumb[1], Init(14, 139, '1', FrmCalc));
 	New(BtnNumb[2], Init(64, 139, '2', FrmCalc));
@@ -520,7 +520,7 @@ begin
 	begin
 		BtnNumb[i]^.AddHotKey(Char(Ord('0') + i));
 		BtnNumb[i]^.SetSize(40, SizeRetain);
-		BtnNumb[i]^.SetOnClick(BtnNumbClick);
+		BtnNumb[i]^.OnClick := BtnNumbClick;
 	end;
 	New(BtnDecimal, Init(114, 172, '.', FrmCalc));
 	With BtnDecimal^ do
@@ -528,7 +528,7 @@ begin
 		SetSize(40, SizeRetain);
 		AddHotKey('.'); {Add both so it works with both decimal signs}
 		AddHotKey(',');
-		SetOnClick(BtnDecimalClick);
+		OnClick := BtnDecimalClick;
 	end;
 
 	{Clear and Clear Everything buttons}
@@ -537,14 +537,14 @@ begin
 	begin
 		SetSize(40, SizeRetain);
 		AddHotKey(KeyAltC);
-		SetOnClick(BtnCClick);
+		OnClick := BtnCClick;
 	end;
 	New(BtnCE, Init(64, 40, CAP_CLEAR_EVERYTHING, FrmCalc));
 	With BtnCE^ do
 	begin
 		SetSize(40, SizeRetain);
 		AddHotKey(KeyAltE);
-		SetOnClick(BtnCEClick);
+		OnClick := BtnCEClick;
 	end;
 
 	{Operator buttons}
@@ -553,28 +553,28 @@ begin
 	begin
 		SetSize(40, SizeRetain);
 		AddHotKey('/');
-		SetOnClick(BtnOperatorClick);
+		OnClick := BtnOperatorClick;
 	end;
 	New(BtnMultiply, Init(164, 40, '*', FrmCalc));
 	With BtnMultiply^ do
 	begin
 		SetSize(40, SizeRetain);
 		AddHotKey('*');
-		SetOnClick(BtnOperatorClick);
+		OnClick := BtnOperatorClick;
 	end;
 	New(BtnSubstract, Init(164, 73, '-', FrmCalc));
 	With BtnSubstract^ do
 	begin
 		SetSize(40, SizeRetain);
 		AddHotKey('-');
-		SetOnClick(BtnOperatorClick);
+		OnClick := BtnOperatorClick;
 	end;
 	New(BtnAdd, Init(164, 106, '+', FrmCalc));
 	With BtnAdd^ do
 	begin
 		SetSize(40, SizeRetain);
 		AddHotKey('+');
-		SetOnClick(BtnOperatorClick);
+		OnClick := BtnOperatorClick;
 	end;
 
 	New(BtnEquals, Init(164, 139, '=', FrmCalc));
@@ -583,7 +583,7 @@ begin
 		SetSize(40, 55);
 		AddHotKey('=');
 		AddHotKey(KeyEnter);
-		SetOnClick(BtnEqualsClick);
+		OnClick := BtnEqualsClick;
 	end;
 
 	New(AreaLog, Init(242, 13, FrmClientArea));
@@ -595,16 +595,22 @@ begin
 	end;
 
 	New(HkBackspace, Init(KeyBackspace, WinMain));
-	HkBackspace^.SetOnClick(HkBackSpaceClick);
+	HkBackspace^.OnClick := HkBackSpaceClick;
 	New(HkEscape, Init(KeyEscape, WinMain));
-	HkEscape^.SetOnClick(HkEscapeClick);
+	HkEscape^.OnClick := HkEscapeClick;
 end;
 
 begin
 	New(App, Init);
-	App^.SetInfo(AppName, AppVersion, AppAuthor, AppIcon);
-	App^.SetConfigFile(AppConfigFile, @Settings, SizeOf(TCalcSetting));
-	App^.SetOnRun(AppRun);
+	With App^ do
+	begin
+		Name := AppName;
+		Version := AppVersion;
+		Author := AppAuthor;
+		Icon := AppIcon;
+		SetConfigFile(AppConfigFile, @Settings, SizeOf(TCalcSetting));
+		OnRun := AppRun;
+	end;
 
 	InitUI;
 

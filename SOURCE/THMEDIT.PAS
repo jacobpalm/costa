@@ -303,9 +303,8 @@ begin
 	if PArea(Sender) = AreaColor[SelectedColor] then
 	begin
 		AreaColor[SelectedColor]^.GetPos(X1, Y1, True);
-		AreaColor[SelectedColor]^.GetSize(X2, Y2);
-		Inc(X2, X1);
-		Inc(Y2, Y1);
+		X2 := X1 + AreaColor[SelectedColor]^.Width;
+		Y2 := Y1 + AreaColor[SelectedColor]^.Height;
 		Inc(X1, 4);
 		Inc(Y1, 4);
 		Dec(X2, 4);
@@ -384,7 +383,7 @@ begin
 	begin
 		SetSize(GetMaxX, GetMaxY);
 		RemoveState(SBordered);
-		SetOnRun(WinMainRun);
+		OnRun := WinMainRun;
 	end;
 
 	{Main screen}
@@ -392,35 +391,35 @@ begin
 	with BtnNew^ do
 	begin
 		AddHotKey(KeyAltN);
-		SetOnClick(NewTheme);
+		OnClick := NewTheme;
 	end;
 
 	New(BtnOpen, Init(101, 2, CAP_OPEN, WinMain));
 	with BtnOpen^ do
 	begin
 		AddHotKey(KeyAltO);
-		SetOnClick(LoadTheme);
+		OnClick := LoadTheme;
 	end;
 
 	New(BtnSave, Init(200, 2, CAP_SAVE, WinMain));
 	with BtnSave^ do
 	begin
 		AddHotKey(KeyAltS);
-		SetOnClick(BtnSaveClick);
+		OnClick := BtnSaveClick;
 	end;
 
 	New(BtnSaveAs, Init(299, 2, CAP_SAVE_AS, WinMain));
 	with BtnSaveAs^ do
 	begin
 		AddHotKey(KeyAltV);
-		SetOnClick(BtnSaveClick);
+		OnClick := BtnSaveClick;
 	end;
 
 	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
 	with BtnAbout^ do
 	begin
 		AddHotKey(KeyAltA);
-		SetOnClick(BtnAboutClick);
+		OnClick := BtnAboutClick;
 	end;
 
 	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
@@ -428,7 +427,7 @@ begin
 	begin
 		AddHotKey(KeyAltX);
 		AddHotKey(KeyEscape);
-		SetOnClick(BtnExitClick);
+		OnClick := BtnExitClick;
 	end;
 
 	New(TxtName, Init(434, 59, CAP_NAME, WinMain));
@@ -436,7 +435,7 @@ begin
 	begin
 		SetSize(194, SizeRetain);
 		AddHotKey(KeyAltM);
-		SetOnChange(TextboxChange);
+		OnChange := TextboxChange;
 		SetMaxLength(20);
 	end;
 
@@ -445,7 +444,7 @@ begin
 	begin
 		SetSize(194, SizeRetain);
 		AddHotKey(KeyAltU);
-		SetOnChange(TextboxChange);
+		OnChange := TextboxChange;
 		SetMaxLength(20);
 	end;
 
@@ -454,7 +453,7 @@ begin
 	begin
 		SetSize(194, SizeRetain);
 		AddHotKey(KeyAltB);
-		SetOnClick(BtnObjectClick);
+		OnClick := BtnObjectClick;
 	end;
 
 	New(LblObject, Init(434, 140, CAP_OBJECT_SEL, WinMain));
@@ -475,8 +474,8 @@ begin
 		begin
 			SetSize(19, 19);
 			SetBgColor(i);
-			SetOnClick(AreaColorClick);
-			SetOnDraw(AreaColorDraw);
+			OnClick := AreaColorClick;
+			OnDraw := AreaColorDraw;
 		end;
 		Inc(X1, 25);
 	end;
@@ -484,7 +483,7 @@ begin
 	New(LblColor, Init(434, 190, CAP_COLOR_SEL, WinMain));
 
 	New(HkNextColor, Init(KeyAltC, WinMain));
-	HkNextColor^.SetOnClick(SelectNextColor);
+	HkNextColor^.OnClick := SelectNextColor;
 
 	New(PrwTheme, Init(12, 42, WinMain));
 	with PrwTheme^ do
@@ -498,7 +497,13 @@ end;
 
 begin
 	New(App, Init);
-	App^.SetInfo(AppName, AppVersion, AppAuthor, AppIcon);
+	With App^ do
+	begin
+		Name := AppName;
+		Version := AppVersion;
+		Author := AppAuthor;
+		Icon := AppIcon;
+	end;
 
 	InitUI;
 

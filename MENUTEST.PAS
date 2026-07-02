@@ -42,11 +42,11 @@ begin
 	New(Item1, Init('Item ' + HotkeyChr + '1', False, Menu));
 	New(Item2, Init('Itemq 2', False, Menu));
 	New(Item3, Init('E' + HotkeyChr + 'xit', False, Menu));
-	Item3^.SetOnClick(Item3Click);
+	Item3^.OnClick := Item3Click;
 	Item3^.AddHotkey(KeyAltX);
 
 	New(HkExit, Init(KeyEscape, Win));
-	HkExit^.SetOnClick(HkExitClick);
+	HkExit^.OnClick := HkExitClick;
 
 	App^.OpenWindow(Win);
 	App^.Run;

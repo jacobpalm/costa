@@ -101,18 +101,18 @@ begin
 	begin
 		New(BtnObject[I], Init(13, I * 23 + 15, CAP_OBJECT[I], WinSelectObject));
 		BtnObject[I]^.SetSize(200, SizeRetain);
-		BtnObject[I]^.SetOnClick(BtnObjectClick);
+		BtnObject[I]^.OnClick := BtnObjectClick;
 	end;
 	BtnObject[Ord(ActiveSelection)]^.AddState(SActive);
 
 	New(HkArrow[Up], Init(KeyUp, WinSelectObject));
-	HkArrow[Up]^.SetOnClick(HkArrowClick);
+	HkArrow[Up]^.OnClick := HkArrowClick;
 	New(HkArrow[Down], Init(KeyDown, WinSelectObject));
-	HkArrow[Down]^.SetOnClick(HkArrowClick);
+	HkArrow[Down]^.OnClick := HkArrowClick;
 	New(HkEnter, Init(KeyEnter, WinSelectObject));
-	HkEnter^.SetOnClick(HkEnterClick);
+	HkEnter^.OnClick := HkEnterClick;
 	New(HkEscape, Init(KeyEscape, WinSelectObject));
-	HkEscape^.SetOnClick(HkEscClick);
+	HkEscape^.OnClick := HkEscClick;
 end;
 
 function SelectThemeObject(CurrentSelection: TThemeObject): TThemeObject;

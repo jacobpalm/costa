@@ -9,20 +9,18 @@ type
 	PCheckbox = ^TCheckbox;
 	TCheckbox = object(TUIObject)
 		public
+			OnChange:   TEventProc;
+			Caption:    string;
+
 			constructor Init(X, Y: Integer; Cap: String; Checked: Boolean; Parent: PContainer);
 			procedure   CheckEvent; virtual;
 			procedure   Draw; virtual;
 
 			procedure   SetCaption(Cap: string);
-			function    GetCaption: string;
 
 			function    GetChecked: boolean;
 			procedure   SetChecked(Checked: boolean);
-
-			procedure   SetOnChange(Proc: TEventProc);
 		private
-			Caption:    string;
-			OnChange:   TEventProc;
 	end;
 
 implementation
@@ -35,12 +33,14 @@ begin
 	TUIObject.Init;
 	Caption := Cap;
 	OnChange := nil;
-	If Checked then
-		AddState(SSelected);
-
+	Left := X;
+	Top := Y;
+	Width := DefaultW;
+	Height := DefaultH;
 	SetParent(Parent);
-	SetSize(DefaultW, DefaultH);
-	SetPos(X, Y);
+
+	If Checked then
+		Include(State, SSelected);
 end;
 
 procedure TCheckbox.Draw;
@@ -48,14 +48,13 @@ var
 	X1, X2, Y1, Y2, ChkColor: Integer;
 	FgColor, BgColor: Byte;
 begin
-	if GetState(SHidden) then
+	if SHidden in State then
 		exit;
 
 	{Get absolute position and size of the object}
 	GetPos(X1, Y1, True);
-	GetSize(X2, Y2);
-	Inc(X2, X1);
-	Inc(Y2, Y1);
+	X2 := X1 + Width;
+	Y2 := Y1 + Height;
 
 	{Get colors}
 	FgColor := GetFgColor;
@@ -68,7 +67,7 @@ begin
 
 	DrawUIPrimitive(UIBorderDown, X1, Y1, X2, Y2, BgColor, False);
 
-	if GetState(SSelected) then
+	if SSelected in State then
 	begin
 		SetColor(FgColor);
 		Line(X1 + 5, Y1 + 8, X1 + 7, Y1 + 10);
@@ -93,7 +92,7 @@ var
 	Clicked: boolean;
 begin
 	{Don't check for events if object is disabled or hidden}
-	if not GetState(SEnabled) or GetState(SHidden) then
+	if not (SEnabled in State) or (SHidden in State) then
 		exit;
 
 	Clicked := False;
@@ -112,7 +111,7 @@ begin
 	if Clicked or Self.HotkeyPressed then
 	begin
 		{Toggle checkbox state}
-		Self.SetChecked(not GetState(SSelected));
+		Self.SetChecked(not (SSelected in State));
 
 		{Trigger OnClick event, if assigned}
 		Self.Click;
@@ -125,19 +124,14 @@ begin
 	AddState(SDirty);
 end;
 
-function TCheckbox.GetCaption: string;
-begin
-	GetCaption := Caption;
-end;
-
 function TCheckbox.GetChecked: boolean;
 begin
-	GetChecked := GetState(SSelected);
+	GetChecked := SSelected in State;
 end;
 
 procedure TCheckbox.SetChecked(Checked: boolean);
 begin
-	if Checked = GetState(SSelected) then
+	if Checked = (SSelected in State) then
 		exit;
 
 	if Checked then
@@ -145,15 +139,8 @@ begin
 	else
 		RemoveState(SSelected);
 
-	AddState(SDirty);
-
 	if Assigned(OnChange) then
 		OnChange(@Self);
-end;
-
-procedure TCheckbox.SetOnChange(Proc: TEventProc);
-begin
-	OnChange := Proc;
 end;
 
 end.
