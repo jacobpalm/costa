@@ -7,7 +7,7 @@ more.
 The low system requirements make Costa especially useful for older machines,
 which are also the machines that typically run the DOS operating system.
 
-![The Costa GUI](https://costa.jacobpalm.dk/assets/img/screenshots/aboutbox.png)
+![The Costa GUI](https://costa.jacobpalm.dk/img/aboutbox.png)
 
 ## System requirements
 Costa is designed for MS-DOS, but tested with PC-DOS, DR-DOS, FreeDOS,
