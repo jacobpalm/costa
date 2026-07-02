@@ -449,7 +449,8 @@ begin
 	New(WinMain, Init(0, 0, nil));
 	with WinMain^ do
 	begin
-		SetSize(GetMaxX, GetMaxY);
+		Width := ScreenWidth;
+		Height := ScreenHeight;
 		RemoveState(SBordered);
 	end;
 

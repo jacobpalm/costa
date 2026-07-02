@@ -383,7 +383,7 @@ procedure WinMainDraw(Sender: PUIObject); far;
 begin
 	{Draw empty text area when main window is first drawn}
 	SetFillStyle(SolidFill, Thm.Txt);
-	Bar(0, 29, GetMaxX, GetMaxY);
+	Bar(0, 29, ScreenWidth, ScreenHeight);
 
 	if not FileOpened then
 		{Pass first command line argument as file name, LoadFile will ignore it if empty}
@@ -396,7 +396,7 @@ begin
 	New(WinMain, Init(0, 0, nil));
 	with WinMain^ do
 	begin
-		SetSize(GetMaxX, GetMaxY);
+		SetSize(ScreenWidth, ScreenHeight);
 		RemoveState(SBordered);
 		OnDraw := WinMainDraw;
 	end;

@@ -3,7 +3,7 @@ unit CostaLib;
 interface
 
 uses
-	Crt, Dos, Graph, Strings, EGADriv;
+	Crt, Dos, Graph, Strings;
 
 const
 	LibName              = 'Costa UI Library';
@@ -16,6 +16,8 @@ const
 	DoubleClickDelay     = 0.5;
 	PrintLineH           = 12;   {Font dimensions - line height}
 	PrintCharW           = 8;    {Width of a single character}
+	ScreenWidth          = 639;  {To avoid overhead of GetMaxX/GetMaxY functions}
+	ScreenHeight         = 349;
 
 	MenuItemHeight       = 16;   {Height of a menu item in pixels}
 
@@ -36,7 +38,6 @@ const
 	MouseInt             = $33;   {Mouse drive interrupt}
 	MouseFuncResetDriver = $0000; {Function: Reset driver and read status}
 	MouseFuncSetHandler  = $000C; {Function: Set Mouse Handler Routine}
-	MouseFuncExchSubRout = $0014; {Function: Swap Mouse Handler Routine}
 	MbNone               = 0;     {Mouse button states}
 	MbLeft               = 1;
 	MbRight              = 2;
@@ -300,9 +301,6 @@ type
 		private
 			Visible,
 			Support:    Boolean;
-			PrevMouseHandlerSeg,
-			PrevMouseHandlerOfs,
-			PrevMouseHandlerMask: Word;
 	end;
 
 	{Settings for the library, saved to disk}
@@ -373,7 +371,7 @@ const
 	MSG_SAVE_SETTING_ERROR_TEXT  = 'Could not write to the settings file' + #13 +
 	                               '%s.' + #13 +
 	                               'Verify that the path exists and isn''t read-only.';
-	MSG_GRAPHICS_ERROR           = 'Graphics error:';
+	MSG_GRAPHICS_ERROR           = 'Graphics error: ';
 
 
 {----------------------------------------------------------------------------}
@@ -689,8 +687,8 @@ begin
 	if not Assigned(ParentObj) then
 	begin
 		{If no parent, use full screen dimensions}
-		ParentW := GetMaxX;
-		ParentH := GetMaxY;
+		ParentW := ScreenWidth;
+		ParentH := ScreenHeight;
 	end
 	else
 	begin
@@ -1050,10 +1048,9 @@ begin
 	ProgramPath := FPath;
 
 	{Initialize EGA 640x350 mode}
-	RegisterBGIdriver(@EGAVGADriverProc);
 	GraphDriver := EGA;
 	GraphMode := EGAHI;
-	InitGraph(GraphDriver, GraphMode, '');
+	InitGraph(GraphDriver, GraphMode, ProgramPath); {EGAVGA.BGI must be in EXE directory}
 	ErrorCode := GraphResult;
 	If ErrorCode <> GrOk Then
 	Begin
@@ -1788,20 +1785,12 @@ begin
 	if not Support then
 		exit;
 
-	{If mouse is available, install MouseHandler in the driver so that is is called whenever mouse is moved or clicked
-	 We use MouseFuncExchSubRout instead of MouseFuncSetHandler, since this one returns the current values so we Can
-	 restore them on exit.}
-	Regs.AX := MouseFuncExchSubRout;
+	{If mouse is available, install MouseHandler in the driver so that is is called whenever mouse is moved or clicked}
+	Regs.AX := MouseFuncSetHandler;
 	Regs.CX := $FFFF;
 	Regs.ES := Seg(MouseHandler);
 	Regs.DX := Ofs(MouseHandler);
 	Intr(MouseInt, Regs);
-
-	{In case a previous handler was installed before starting appplication, save it to be restored on exit to avoid
-	 breaking other apps on the system}
-	PrevMouseHandlerMask := Regs.CX;
-	PrevMouseHandlerSeg := Regs.ES;
-	PrevMouseHandlerOfs := Regs.DX;
 end;
 
 procedure TMouse.Hide;
@@ -1824,8 +1813,8 @@ begin
 	if not Support then
 		Exit;
 
-	if (Left < 0) or (Left > GetMaxX) or
-	   (Top < 0) or (Top > GetMaxY) then
+	if (Left < 0) or (Left > ScreenWidth) or
+	   (Top < 0) or (Top > ScreenHeight) then
 		Exit; {Out of bounds}
 
 	regs.ax := 4;
@@ -1860,13 +1849,6 @@ begin
 
 	{Reset mouse driver}
 	Regs.AX := MouseFuncResetDriver;
-	Intr(MouseInt, Regs);
-
-	{Restore the event handler, if any, that was set before we installed our own handler}
-	Regs.AX := MouseFuncSetHandler;  {Set mouse event handler function}
-	Regs.CX := PrevMouseHandlerMask;
-	Regs.ES := PrevMouseHandlerSeg;
-	Regs.DX := PrevMouseHandlerOfs;
 	Intr(MouseInt, Regs);
 end;
 
