@@ -1,7 +1,7 @@
 program TicTacToe;
 
 uses
-	CostaLib, UILabel, UIButton, UIFrame, AboutDlg, Crt, Strings, Graph;
+	CostaLib, UILabel, UIButton, UIFrame, AboutDlg, Graph;
 
 const
 	AppName             = 'Tic Tac Toe';
@@ -214,7 +214,7 @@ begin
 
 	{Simulate some random "thinking" time}
 	Randomize;
-	Delay(Random(850) + 550);
+	Sleep(Random(850) + 550);
 
 	{Check if the computer can win}
 	if CanWin(PlayerO, Row, Col) then

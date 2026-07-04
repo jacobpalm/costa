@@ -3,7 +3,7 @@ unit CostaLib;
 interface
 
 uses
-	Crt, Dos, Graph, Strings;
+	Dos, Graph;
 
 const
 	LibName              = 'Costa UI Library';
@@ -34,6 +34,8 @@ const
 
 	DosInt               = $21;   {MS-DOS API}
 	DosFuncGetIntVector  = $35;   {Function: Get Interrupt Vector}
+	DosFuncStdInStatus   = $0B;
+	DosFuncConInpNoEcho  = $08;
 
 	MouseInt             = $33;   {Mouse drive interrupt}
 	MouseFuncResetDriver = $0000; {Function: Reset driver and read status}
@@ -356,7 +358,8 @@ procedure DosPrint(Text: String);
 function  UpperCase(s: string): string;
 function  Replace(Input, OldSubStr, NewSubStr: String): String;
 
-procedure SoundNote(Frequency, Duration: Integer);
+procedure Sleep(Milliseconds: Word);
+procedure SoundNote(Frequency, Duration: Word);
 procedure SystemSound(SoundType: TSystemSound);
 
 procedure DrawUIPrimitive(Style: TUIPrimitive; X1, Y1, X2, Y2: Integer; BgColor: Byte; Transparent: Boolean);
@@ -2014,11 +2017,20 @@ begin
 	Intr(DosInt, Regs);
 end;
 
-procedure SoundNote(Frequency, Duration: Integer);
+procedure SoundNote(Frequency, Duration: Word);
+var
+	Divisor: Word;
 begin
-  Sound(Frequency);
-  Delay(Duration);
-  NoSound;
+	if (Frequency = 0) or (Duration = 0) then
+	  Exit;
+
+	Divisor   := 1193180 div Frequency;  {Set PIT base frequency}
+	Port[$43] := $B6;                    {Set PIT channel 2}
+	Port[$42] := Lo(Divisor);            {Output frequency to port}
+	Port[$42] := Hi(Divisor);
+	Port[$61] := Port[$61] or $03;       {Enable speaker}
+  Sleep(Duration);
+  Port[$61] := Port[$61] and $FC;      {Disable speaker}
 end;
 
 procedure SystemSound(SoundType: TSystemSound);
@@ -2027,18 +2039,9 @@ begin
 		exit;
 
 	case SoundType of
-		sndError:
-			begin
-				Sound(440);
-				Delay(45);
-			end;
-		sndAttention:
-			begin
-				Sound(960);
-				Delay(25);
-			end;
+		sndError:     SoundNote(440, 45);
+		sndAttention: SoundNote(960, 25);
 	end;
-	NoSound;
 end;
 
 function Replace(Input, OldSubStr, NewSubStr: String): String;
@@ -2066,6 +2069,31 @@ begin
 	Timer := Day * 86400 + Hour * 3600 + Minute * 60 + Second + Hundredth / 100.0;
 end;
 
+procedure Sleep(Milliseconds: Word);
+var
+	Start, Now, Duration: LongInt;
+begin
+	Duration := Milliseconds div 55; {55 ms per tick}
+	if Duration = 0 then
+		Duration := 1;
+
+	asm
+		mov ah, 0
+		int 1Ah
+		mov word ptr Start, dx
+		mov word ptr Start+2, cx
+	end;
+
+	repeat
+		asm
+			mov ah, 0
+			int 1Ah
+			mov word ptr Now, dx
+			mov word ptr Now+2, cx
+		end;
+	until (now - start) >= Duration;
+end;
+
 function UpperCase(s: string): string;
 var
 	i: Integer;
@@ -2077,30 +2105,53 @@ end;
 
 function GetKey: string;
 var
-	OutString: String;
+	Regs: Registers;
 begin
-	if not KeyPressed then
+	{Check if keyboard buffer contains anything}
+	Regs.AH := DosFuncStdInStatus;
+	Intr(DosInt, Regs);
+	if Regs.AL = $0 then
 	begin
 		GetKey := '';
 		Exit;
 	end;
 
-	{ Read the key pressed }
-	OutString := ReadKey;
-	if OutString = #0 then
-	begin
-		OutString := OutString + ReadKey; {Read the next key for special keys}
-	end;
+	{Read scan code from keyboard buffer}
+	Regs.AH := DosFuncConInpNoEcho;
+	Intr(DosInt, Regs);
 
-	GetKey := OutString;
+	{If scan code is null, an extended key was pressed and we must read the next scan code as well}
+	if Regs.AL = $0 then
+	begin
+		Regs.AH := DosFuncConInpNoEcho;
+		Intr(DosInt, Regs);
+		GetKey := Chr(0) + Chr(Regs.AL); {Return both scan codes combined}
+	end
+	else
+		GetKey := Chr(Regs.AL);
 end;
 
 procedure ClearInputBuffer;
+var
+	KeyStatus: Boolean;
+	Regs: Registers;
 begin
-	repeat
-		if KeyPressed then
-			ReadKey;
-	until (Mouse.Clicked = MbNone) and not KeyPressed; {Wait until mouse is released and no keys are pressed}
+	{Check if keyboard buffer contains anything}
+	Regs.AH := DosFuncStdInStatus;
+	Intr(DosInt, Regs);
+
+	{As long as keyboard buffer contains something, read it - thus clearing it}
+	while Regs.AL <> 0 do
+	begin
+		Regs.AH := DosFuncConInpNoEcho;
+		Intr(DosInt, Regs);
+
+		Regs.AH := DosFuncStdInStatus;
+		Intr(DosInt, Regs);
+	end;
+
+	{Keyboard buffer empty, wait for mouse to be released}
+	while (Mouse.Clicked <> MbNone) do;
 end;
 
 function GetDosErrorMsg(ErrorCode: Integer): String;

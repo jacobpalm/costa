@@ -3,8 +3,7 @@ program DESKTOP;
 {$M 32768, 0, 655360} {Require at least 32 KB stack}
 
 uses
-	Costalib, UIButton, UIDesk, UILabel, MsgDlg, RunDlg, AboutDlg, FileDlg, InputDlg,
-	Strings, Graph, Crt, DeskEdit, DeskMenu, Dos;
+	Costalib, UIButton, UIDesk, UILabel, MsgDlg, RunDlg, AboutDlg, FileDlg, InputDlg, DeskEdit, DeskMenu, Dos;
 
 const
 	AppName                   = 'Desktop';

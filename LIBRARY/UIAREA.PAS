@@ -3,7 +3,7 @@ unit UIAREA;
 interface
 
 uses
-	Costalib, Graph;
+	Costalib;
 
 type
 	PArea = ^TArea;

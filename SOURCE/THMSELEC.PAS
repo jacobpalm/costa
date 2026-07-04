@@ -19,7 +19,7 @@ function SelectThemeObject(CurrentSelection: TThemeObject): TThemeObject;
 implementation
 
 uses
-	CostaLib, UIButton, Graph, DOS;
+	CostaLib, UIButton;
 
 const
 	Up   = 0;

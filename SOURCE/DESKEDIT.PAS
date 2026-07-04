@@ -9,7 +9,7 @@ function EditLink(Link: PLink): boolean;
 
 implementation
 uses
-	CostaLib, UILabel, UIButton, UIIcon, UITxtbox, UIChkBox, FileDlg, MsgDlg, Strings, DOS;
+	CostaLib, UILabel, UIButton, UIIcon, UITxtbox, UIChkBox, FileDlg, MsgDlg, DOS;
 
 const
 	CAP_OK                    = #127 + 'OK';

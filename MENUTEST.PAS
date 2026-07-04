@@ -1,7 +1,7 @@
 program MenuTest;
 
 uses
-	CostaLib, Crt, Graph;
+	CostaLib, Graph;
 
 var
 	App: PApplication;

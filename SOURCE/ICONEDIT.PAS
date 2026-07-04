@@ -1,7 +1,7 @@
 program IconEditor;
 
 uses
-	CostaLib, UIIcon, UIButton, UIArea, UILabel, UIIconCv, MsgDlg, FileDlg, InputDlg, AboutDlg, Strings, DOS, Graph;
+	CostaLib, UIIcon, UIButton, UIArea, UILabel, UIIconCv, MsgDlg, FileDlg, InputDlg, AboutDlg, Graph, DOS;
 
 const
 	AppName                = 'Icon Editor';

@@ -14,7 +14,7 @@ function LinkMenu(Link: PLink): TLinkAction;
 implementation
 
 uses
-	CostaLib, UIButton, UIIcon, UILabel, MsgDlg, DeskEdit, Strings;
+	CostaLib, UIButton, UIIcon, UILabel, MsgDlg, DeskEdit;
 
 const
 	CAP_OPEN                  = #127 + 'Open';

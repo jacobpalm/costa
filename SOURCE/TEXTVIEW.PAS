@@ -1,7 +1,7 @@
 program Textview;
 
 uses
-	Costalib, UIButton, UITxtbox, MsgDlg, AboutDlg, FileDlg, Strings, Graph, Crt;
+	Costalib, UIButton, UITxtbox, MsgDlg, AboutDlg, FileDlg, Graph;
 
 const
 	AppName              = 'Text Viewer';

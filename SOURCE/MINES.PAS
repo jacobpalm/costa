@@ -3,7 +3,7 @@ program Minesweeper;
 {Minesweeper for Costa by Jacob Palm}
 
 uses
-	CostaLib, UIMineFl, UIButton, UILabel, UITimer, AboutDlg, Graph, Crt;
+	CostaLib, UIMineFl, UIButton, UILabel, UITimer, Graph, AboutDlg;
 
 const
 	AppName           = 'Minesweeper';

@@ -1,7 +1,7 @@
 program Configuration;
 
 uses
-	CostaLib, UIButton, UITxtbox, UIChkbox, UILabel, UIIcon, UIFrame, UIThmPrw, MsgDlg, AboutDlg, Graph, DOS;
+	CostaLib, UIButton, UITxtbox, UIChkbox, UILabel, UIIcon, UIFrame, UIThmPrw, MsgDlg, AboutDlg, DOS;
 
 const
 	AppName              = 'Configuration Utility';

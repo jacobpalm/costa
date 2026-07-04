@@ -467,7 +467,7 @@ begin
 			LastGridY := CurGridY;
 
 			{Reduce flicker}
-			{Delay(10);} {DEBUG}
+			{Sleep(10);} {DEBUG}
 			while (Port[$3DA] and 8) = 0 do;
 		end;
 

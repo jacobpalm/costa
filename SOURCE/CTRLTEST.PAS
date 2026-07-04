@@ -1,7 +1,7 @@
 program CTRLTEST;
 
 uses
-	Costalib, UIButton, UITxtbox, UIFrame, MsgDlg, AboutDlg, FileDlg, Strings, Graph, Crt;
+	Costalib, UIButton, UITxtbox, UIFrame, MsgDlg, AboutDlg, FileDlg;
 
 const
 	AppName              = 'Control Test Application';

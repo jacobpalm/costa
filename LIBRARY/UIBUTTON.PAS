@@ -3,7 +3,7 @@ unit UIBUTTON;
 interface
 
 uses
-	Costalib, Graph;
+	Costalib;
 
 type
 	PButton = ^TButton;

@@ -3,7 +3,7 @@ program Calculator;
 {$R-} {Disable range checking}
 
 uses
-	CostaLib, UIButton, UIArea, UITxtBox, UIFrame, UILog, AboutDlg, Crt, Strings, Graph;
+	CostaLib, UIButton, UIArea, UITxtBox, UIFrame, UILog, AboutDlg;
 
 const
 	AppName              = 'Calculator';
