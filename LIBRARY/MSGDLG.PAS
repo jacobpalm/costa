@@ -29,15 +29,9 @@ var
 
 	ReturnValue: Boolean;
 
-procedure BtnFirstClick(Sender: PUIObject); far;
+procedure BtnClick(Sender: PUIObject); far;
 begin
-	ReturnValue := True;
-	WinMsgBox^.Close;
-end;
-
-procedure BtnSecondClick(Sender: PUIObject); far;
-begin
-	ReturnValue := False;
+	ReturnValue := (Sender = PUIObject(BtnFirst)); {True if sender is BtnFirst, False if BtnSecond}
 	WinMsgBox^.Close;
 end;
 
@@ -50,57 +44,48 @@ begin
 end;
 
 function MsgBox(const MsgTitle, MsgText: string; MsgType: TMsgBox): Boolean;
-var
-	IconFile: string;
-	X1, Y1, X2, Y2: Integer;
-	Key: String;
 begin
-	{Calculate size of message box based on text dimensions}
-	X2 := PrintW(MsgText) + 68;
-	Y2 := PrintH(MsgText) + 78;
-	if X2 < 270 then
-		X2 := 270;
-
 	New(WinMsgBox, Init(0, 0, NoParent));
 	With WinMsgBox^ do
 	begin
-		SetSize(X2, Y2);
+		Width := PrintW(MsgText) + 68;
+		if Width < 270 then Width := 270;
+		Height := PrintH(MsgText) + 78;
 		Center(OrBoth);
 		SaveBackdrop;
-		GetPos(X1, Y1, True);
 		OnDraw := WinMsgBoxDraw;
 	end;
 
+	New(ImgIcon, Init(13, 15, '', WinMsgBox));
 	case MsgType of
-		MsgInfo:  IconFile := 'MSGINFO';
-		MsgWarn:  IconFile := 'MSGWARN';
-		MsgQuest: IconFile := 'MSGQUEST';
-		MsgError: IconFile := 'MSGERROR';
+		MsgInfo:  ImgIcon^.IconFile := 'MSGINFO';
+		MsgWarn:  ImgIcon^.IconFile := 'MSGWARN';
+		MsgQuest: ImgIcon^.IconFile := 'MSGQUEST';
+		MsgError: ImgIcon^.IconFile := 'MSGERROR';
 	end;
-	New(ImgIcon, Init(13, 15, IconFile, WinMsgBox));
 	MsgBoxType := MsgType;
 
 	if MsgType = MsgQuest then
 	begin
-		New(BtnFirst, Init((X2 div 2) - 98, Y2 - 36, CAP_YES, WinMsgBox));
+		New(BtnFirst, Init((WinMsgBox^.Width div 2) - 98, WinMsgBox^.Height - 36, CAP_YES, WinMsgBox));
 		BtnFirst^.AddHotkey(KeyAltY);
 	end
 	else
 	begin
-		New(BtnFirst, Init(0, Y2 - 36, CAP_OK, WinMsgBox));
+		New(BtnFirst, Init(0, WinMsgBox^.Height - 36, CAP_OK, WinMsgBox));
 		BtnFirst^.Center(OrHorizontal);
 		BtnFirst^.AddHotkey(KeyAltO);
 	end;
 	BtnFirst^.AddHotkey(KeyEnter);
-	BtnFirst^.OnClick := BtnFirstClick;
+	BtnFirst^.OnClick := BtnClick;
 	if MsgType = MsgQuest then
 	begin
-		New(BtnSecond, Init((X2 div 2) + 6, Y2 - 36, CAP_NO, WinMsgBox));
+		New(BtnSecond, Init((WinMsgBox^.Width div 2) + 6, WinMsgBox^.Height - 36, CAP_NO, WinMsgBox));
 		With BtnSecond^ do
 		begin
 			AddHotkey(KeyAltN);
 			AddHotkey(KeyEscape);
-			OnClick := BtnSecondClick;
+			OnClick := BtnClick;
 		end;
 	end;
 	New(LblTitle, Init(56, 15, MsgTitle, WinMsgBox));

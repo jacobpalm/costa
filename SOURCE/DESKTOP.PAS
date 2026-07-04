@@ -140,7 +140,7 @@ begin
 	Move(OutLink.Filename[1], RunData[RunBinOffsetFilename], Length(OutLink.Filename));
 	RunData[RunBinOffsetFilename + Length(OutLink.Filename)] := #0; {Add ASCIIZ terminator}
 
-  	Move(OutLink.Path[1], RunData[RunBinOffsetPath], Length(OutLink.Path) );
+  Move(OutLink.Path[1], RunData[RunBinOffsetPath], Length(OutLink.Path) );
 	RunData[RunBinOffsetPath + Length(OutLink.Path)] := #0; {Add ASCIIZ terminator}
 
 	Move(OutLink.Parameters[1], RunData[RunBinOffsetParameters], Length(OutLink.Parameters));
@@ -412,37 +412,38 @@ begin
 	New(WinMain, Init(0, 0, nil));
 	With WinMain^ do
 	begin
-		SetSize(640, 350);
-		RemoveState(SBordered);
+		Width := ScreenWidth;
+		Height := ScreenHeight;
 		OnDraw := WinMainDraw;
 		OnClose := WinMainClose;
+		Exclude(State, SBordered);
 	end;
 
 	New(BtnAdd, Init(2, 2, CAP_ADD, WinMain));
 	With BtnAdd^ do
 	begin
-		AddHotkey(KeyAltD);
 		OnClick := BtnAddClick;
+		AddHotkey(KeyAltD);
 	end;
 	New(BtnRun, Init(101, 2, CAP_RUN, WinMain));
 	With BtnRun^ do
 	begin
-		AddHotkey(KeyAltR);
 		OnClick := BtnRunClick;
+		AddHotkey(KeyAltR);
 	end;
 
 	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
 	With BtnAbout^ do
 	begin
-		AddHotkey(KeyAltA);
 		OnClick := BtnAboutClick;
+		AddHotkey(KeyAltA);
 	end;
 	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
 	With BtnExit^ do
 	begin
+		OnClick := BtnExitClick;
 		AddHotkey(KeyAltX);
 		AddHotkey(KeyAltF4);
-		OnClick := BtnExitClick;
 	end;
 
 	New(LblDesktop, Init(10, 10, ' / ', WinMain));
@@ -450,37 +451,38 @@ begin
 	begin
 		AutoSize;
 		Center(OrHorizontal);
-		RemoveState(STransparent);
+		Exclude(State, STransparent);
 	end;
 	New(BtnPrevious, Init(255, 2, HotkeyChr + CharArrowLeft, WinMain));
 	With BtnPrevious^ do
 	begin
-		SetSize(42, SizeRetain);
-		AddHotkey(KeyLeft);
+		Width := 42;
 		OnClick := BtnPreviousClick;
+		AddHotkey(KeyLeft);
 	end;
 	New(BtnNext, Init(343, 2, HotkeyChr + CharArrowRight, WinMain));
 	With BtnNext^ do
 	begin
-		SetSize(42, SizeRetain);
-		AddHotkey(KeyRight);
+		Width := 42;
 		OnClick := BtnNextClick;
+		AddHotkey(KeyRight);
 	end;
 
 	New(Desk, Init(0, 29, WinMain));
 	With Desk^ do
 	begin
-		SetSize(640, 321);
+		Width := ScreenWidth;
+		Height := 321;
 		OnClick := DeskClick;
 		OnRightClick := DeskRightClick;
-		AddState(SHidden); {Start hidden, will be shown when links are loaded}
+		Exclude(State, SHidden); {Start hidden, will be shown when links are loaded}
 	end;
 
 	for i := 1 to MaxDesktops do
 	begin
 		New(HkDesktop[i], Init(#0 + Chr(KeyAltNoBase + i - 1), WinMain)); {Alt+1, Alt+2, ...}
-		HkDesktop[i]^.AddHotkey(Chr(48 + i)); {Also add '1', '2', ... as hotkeys}
 		HkDesktop[i]^.OnClick := HkDesktopClick;
+		HkDesktop[i]^.AddHotkey(Chr(48 + i)); {Also add '1', '2', ... as hotkeys}
 	end;
 end;
 

@@ -45,7 +45,8 @@ begin
 	New(WinAboutBox, Init(0, 0, nil));
 	with WinAboutBox^ do
 	begin
-		SetSize(PrintW(Text) + 29, PrintH(Text) + 99);
+		Width := PrintW(Text) + 29;
+		Height := PrintH(Text) + 99;
 		Center(OrBoth);
 		SaveBackdrop;
 	end;
@@ -54,11 +55,11 @@ begin
 	New(BtnClose, Init(0, WinAboutBox^.Height - 34, CAP_CLOSE, WinAboutBox));
 	with BtnClose^ do
 	begin
+		OnClick := BtnCloseClick;
 		Center(OrHorizontal);
 		AddHotkey(KeyAltC);
 		AddHotkey(KeyEnter);
 		AddHotkey(KeyEscape);
-		OnClick := BtnCloseClick;
 	end;
 
 	New(LblInfo[0], Init(56, 21, AppP^.Name + ' ' + AppP^.Version, WinAboutBox));

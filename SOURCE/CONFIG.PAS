@@ -237,37 +237,42 @@ begin
 	New(WinMain, Init(0, 0, nil));
 	with WinMain^ do
 	begin
-		SetSize(ScreenWidth, ScreenHeight);
-		RemoveState(SBordered);
+		Width := ScreenWidth;
+		Height := ScreenHeight;
 		OnRun := WinMainRun;
+		Exclude(State, SBordered);
 	end;
 
 	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
 	with BtnAbout^ do
 	begin
-		AddHotkey(KeyAltA);
 		OnClick := BtnAboutClick;
+		AddHotkey(KeyAltA);
 	end;
 	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
 	with BtnExit^ do
 	begin
+		OnClick := BtnExitClick;
 		AddHotkey(KeyAltX);
 		AddHotkey(KeyAltF4);
-		OnClick := BtnExitClick;
 	end;
 
 	{Settings frame and its contents}
 	New(FrmSettings, Init(14, 43, WinMain));
-	FrmSettings^.SetSize(310, 293);
+	with FrmSettings^ do
+	begin
+		Width := 310;
+		Height := 293;
+	end;
 	New(ImgSetting, Init(14, 14, 'CONFIG', FrmSettings));
 	New(LblSettings, Init(56, 19, CAP_SETTINGS, FrmSettings));
 	New(ChkSetting[LinkCapt], Init(14, 56, CAP_LinkCapt, DeskSettings.LinkCapt, FrmSettings));
-	ChkSetting[LinkCapt]^.AddHotkey(KeyAltC);
 	ChkSetting[LinkCapt]^.OnChange := ChkSettingLinkCaptChange;
+	ChkSetting[LinkCapt]^.AddHotkey(KeyAltC);
 	New(ChkSetting[LinkTarget], Init(14, 78, CAP_LINKTARGET, DeskSettings.LinkTarget, FrmSettings));
 	ChkSetting[LinkTarget]^.AddHotkey(KeyAltO);
 	if not DeskSettings.LinkCapt then
-		ChkSetting[LinkTarget]^.RemoveState(SEnabled);
+		Exclude(ChkSetting[LinkTarget]^.State, SEnabled);
 	New(ChkSetting[LinkDelete], Init(14, 100, CAP_LINKDELETE, DeskSettings.ConfLinkDel, FrmSettings));
 	ChkSetting[LinkDelete]^.AddHotkey(KeyAltR);
 	New(ChkSetting[ConfExit], Init(14, 122, CAP_CONFEXIT, DeskSettings.ConfExit, FrmSettings));
@@ -276,44 +281,47 @@ begin
 	ChkSetting[Audio]^.AddHotkey(KeyAltU);
 
 	{Theme frame and its contents}
-	W := 288;
-	H := 293;
 	New(FrmTheme, Init(338, 43, WinMain));
-	FrmTheme^.SetSize(W, H);
+	with FrmTheme^ do
+	begin
+		Width := 288;
+		height := 293;
+	end;
 	New(ImgTheme, Init(14, 14, 'THEMES', FrmTheme));
 	New(LblTheme, Init(56, 19, CAP_THEMES, FrmTheme));
 	New(PrwTheme, Init(14, 55, FrmTheme));
 	with PrwTheme^ do
 	begin
-		SetSize(W - 28, 192);
-		RemoveState(SEnabled);
+		Width := FrmTheme^.Width - 28;
+		Height := 192;
+		Exclude(State, SEnabled);
 		SetLightColor(Thm.Light);
 		SetDarkColor(Thm.Shadow);
 	end;
 
 	{Theme navigation buttons and no-themes label}
-	New(BtnPrevious, Init(14, H - 34, CAP_PREVIOUS, FrmTheme));
+	New(BtnPrevious, Init(14, FrmTheme^.Height - 34, CAP_PREVIOUS, FrmTheme));
 	with BtnPrevious^ do
 	begin
+		OnClick := SwitchTheme;
+		Include(State, SHidden);
 		AddHotkey(KeyAltP);
 		AddHotkey(KeyLeft);
-		OnClick := SwitchTheme;
-		AddState(SHidden);
 	end;
-	New(BtnNext, Init(W - 92 - 14, H - 34, CAP_NEXT, FrmTheme));
+	New(BtnNext, Init(FrmTheme^.Width - 92 - 14, FrmTheme^.Height - 34, CAP_NEXT, FrmTheme));
 	with BtnNext^ do
 	begin
+		Include(State, SHidden);
+		OnClick := SwitchTheme;
 		AddHotkey(KeyAltN);
 		AddHotkey(KeyRight);
-		OnClick := SwitchTheme;
-		AddState(SHidden);
 	end;
-	New(LblNoThemes, Init(0, H - 28, MSG_NO_THEMES, FrmTheme));
+	New(LblNoThemes, Init(0, FrmTheme^.Height - 28, MSG_NO_THEMES, FrmTheme));
 	with LblNoThemes^ do
 	begin
 		AutoSize;
 		Center(OrHorizontal);
-		AddState(SHidden);
+		Include(State, SHidden);
 	end;
 end;
 

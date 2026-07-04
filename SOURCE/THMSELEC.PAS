@@ -92,15 +92,16 @@ begin
 	New(WinSelectObject, Init(0, 0, nil));
 	With WinSelectObject^ do
 	begin
-		SetSize(226, 326);
-		SaveBackdrop;
+		Width := 226;
+		Height := 326;
 		Center(OrBoth);
+		SaveBackdrop;
 	end;
 
 	for i := 0 to High(BtnObject) do
 	begin
 		New(BtnObject[I], Init(13, I * 23 + 15, CAP_OBJECT[I], WinSelectObject));
-		BtnObject[I]^.SetSize(200, SizeRetain);
+		BtnObject[I]^.Width := 200;
 		BtnObject[I]^.OnClick := BtnObjectClick;
 	end;
 	BtnObject[Ord(ActiveSelection)]^.AddState(SActive);

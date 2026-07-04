@@ -112,11 +112,13 @@ const
 	DefaultH = 60;
 begin
 	TUIObject.Init;
-	Value := PlayerNone;
-	SetParent(Parent);
-	SetPos(X, Y);
+	Value  := PlayerNone;
+	Left   := X;
+	Top    := Y;
+	Width  := DefaultW;
+	Height := DefaultH;
 	SetBGColor(White);
-	SetSize(DefaultW, DefaultH);
+	SetParent(Parent);
 end;
 
 procedure TField.Draw;
@@ -127,7 +129,7 @@ begin
 		exit;
 
 	{Get absolute position and size of the object}
-	Self.GetPos(X1, Y1, True);
+	Self.GetAbsPos(X1, Y1);
 	X2 := X1 + Width;
 	Y2 := Y1 + Height;
 
@@ -195,7 +197,7 @@ begin
 	if Val <> Value then
 	begin
 		Value := Val;
-		AddState(SDirty);
+		Include(State, SDirty);
 	end;
 end;
 
@@ -651,18 +653,20 @@ begin
 	New(WinMain, Init(0, 0, nil));
 	With WinMain^ do
 	begin
-		SetSize(640, 350);
-		RemoveState(SBordered);
+		Width := ScreenWidth;
+		Height := ScreenHeight;
 		OnDraw := WinMainDraw;
 		OnRun := WinMainRun;
+		Exclude(State, SBordered);
 		SetBgColor(Green);
 	end;
 
 	New(FrmTic, Init(209, 80, WinMain));
 	With FrmTic^ do
 	begin
-		SetSize(221, 221);
-		AddState(STransparent);
+		Width := 221;
+		Height := 221;
+		Include(State, STransparent);
 		SetBgColor(Green);
 		SetLightColor(LightGreen);
 		SetDarkColor(DarkGray);
@@ -680,51 +684,53 @@ begin
 	New(BtnNew, Init(2, 2, CAP_NEW_GAME, WinMain));
 	With BtnNew^ do
 	begin
-		AddHotkey(KeyAltN);
 		OnClick := BtnNewClick;
+		AddHotkey(KeyAltN);
 	end;
 	New(BtnGameMode, Init(101, 2, CAP_GAME_MODE, WinMain));
 	With BtnGameMode^ do
 	begin
-		AddHotkey(KeyAltM);
 		OnClick := BtnGameModeClick;
+		AddHotkey(KeyAltM);
 	end;
 	New(BtnSound, Init(200, 2, CAP_SOUND, WinMain));
 	With BtnSound^ do
 	begin
-		AddHotkey(KeyAltS);
 		OnClick := BtnSoundClick;
+		AddHotkey(KeyAltS);
 	end;
 
 	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
 	With BtnAbout^ do
 	begin
-		AddHotkey(KeyAltA);
 		OnClick := BtnAboutClick;
+		AddHotkey(KeyAltA);
 	end;
 	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
 	With BtnExit^ do
 	begin
+		OnClick := BtnExitClick;
 		AddHotkey(KeyAltX);
 		AddHotkey(KeyAltF4);
-		OnClick := BtnExitClick;
 	end;
 
 	New(LblMessage, Init(12, 53, AppName + #32 + MSG_BY + #32 + AppAuthor, WinMain));
 	with LblMessage^ do
 	begin
-		RemoveState(STransparent);
-		SetSize(616, 8);
+		Width := 616;
+		Height := 8;
+		Align := AlCenter;
+		Exclude(State, STransparent);
 		SetFgColor(Black);
 		SetBgColor(Green);
-		SetAlign(AlCenter);
 	end;
 
 	New(LblPlayers, Init(166, 320, MSG_GAMEMODE_PLAYER, WinMain));
 	with LblPlayers^ do
 	begin
-		RemoveState(STransparent);
-		SetSize(192, 8);
+		Width := 192;
+		Height := 8;
+		Exclude(State, STransparent);
 		SetFgColor(Black);
 		SetBgColor(Green);
 	end;
@@ -732,11 +738,12 @@ begin
 	New(LblSound, Init(396, 320, MSG_SOUND_ON, WinMain));
 	with LblSound^ do
 	begin
-		RemoveState(STransparent);
-		SetSize(80, 8);
+		Width := 80;
+		Height := 8;
+		Align := AlRight;
+		Exclude(State, STransparent);
 		SetFgColor(Black);
 		SetBgColor(Green);
-		SetAlign(AlRight);
 	end;
 end;
 

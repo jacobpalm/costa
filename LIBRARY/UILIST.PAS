@@ -57,10 +57,10 @@ const
 	DefaultH = 185;
 begin
 	inherited Init;
-	SetParent(Parent);
-	SetPos(X, Y);
-	SetSize(DefaultW, DefaultH);
-
+	Left          := X;
+	Top           := Y;
+	Width         := DefaultW;
+	Height        := DefaultH;
 	Head          := nil;
 	Selection     := 1;
 	StartPos      := 1;
@@ -68,6 +68,7 @@ begin
 	DblClickTimer := 0.0;
 	OnChange      := nil;
 	OnDoubleClick := nil;
+	SetParent(Parent);
 end;
 
 procedure TList.AddItem(const ItemText: string);
@@ -110,7 +111,7 @@ begin
 		exit;
 
 	{Get absolute position and size of the object}
-	GetPos(X1, Y1, True);
+	GetAbsPos(X1, Y1);
 
 	if (Mouse.Clicked = MbNone) or (not Self.IsMouseOver) then
 	begin
@@ -166,7 +167,7 @@ begin
 				Selection := ClickedItem;
 				Self.SetListActive(True);
 				{DEBUG - this is a drity hack, since SetListActive triggers redraw of list by modifying SActive state...}
-				Self.RemoveState(SDirty);
+				Exclude(State, SDirty);
 				{Trigger change event if assigned}
 				if Assigned(OnChange) then
 					OnChange(@Self);
@@ -240,7 +241,7 @@ begin
 		exit; {Nothing to draw}
 
 	{Get absolute position and size of the object}
-	GetPos(X1, Y1, True);
+	GetAbsPos(X1, Y1);
 	X2 := X1 + Width;
 	Y2 := Y1 + Height;
 
@@ -352,8 +353,8 @@ begin
 	{If list has scrolled, we need a full redraw}
 	if (NewStartPos <> StartPos) or not (SActive in State) then
 	begin
-		AddState(SActive);
-		AddState(SDirty); {Ensure full redraw}
+		Include(State, SActive);
+		Include(State, SDirty); {Ensure full redraw}
 		Selection := NewSelection;
 		StartPos := NewStartPos;
 	end
@@ -365,7 +366,7 @@ begin
 		Selection := NewSelection;
 		Self.SetListActive(True);
 		{DEBUG - dirty hack, should be handled better than this}
-		Self.RemoveState(SDirty);
+		Exclude(State, SDirty);
 	end;
 
 	if Assigned(OnChange) then
@@ -384,9 +385,9 @@ begin
 		exit;
 
 	if IsActive then
-		AddState(SActive)
+		Include(State, SActive)
 	else
-		RemoveState(SActive);
+		Exclude(State, SActive);
 
 	{If there's no valid selection, we won't draw anything}
 	if (Selection < 1) or (Selection > Length) then
@@ -397,7 +398,7 @@ begin
 		exit;
 
 	{Get absolute position and size of the object}
-	GetPos(X1, Y1, True);
+	GetAbsPos(X1, Y1);
 	X2 := X1 + Width;
 
 	{Calculate selection position and update it to reflect the new state}

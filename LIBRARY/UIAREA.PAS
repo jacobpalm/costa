@@ -21,9 +21,9 @@ const
 	DefaultH = 100;
 begin
 	TUIObject.Init;
-	Left := X;
-	Top := Y;
-	Width := DefaultW;
+	Left   := X;
+	Top    := Y;
+	Width  := DefaultW;
 	Height := DefaultH;
 	SetParent(Parent);
 end;
@@ -37,7 +37,7 @@ begin
 		exit;
 
 	{Get absolute position and size of the object}
-	Self.GetPos(X1, Y1, True);
+	Self.GetAbsPos(X1, Y1);
 	X2 := X1 + Width;
 	Y2 := Y1 + Height;
 

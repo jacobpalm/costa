@@ -28,15 +28,18 @@ begin
 	New(Win, Init(0, 0, nil));
 	with Win^ do
 	begin
-		SetSize(300, 200);
+		Width := 300;
+		Height := 200;
 		Center(OrBoth);
 	end;
 
 	New(Menu, Init(MSMenuBar, Win));
 	with Menu^ do
 	begin
-		SetPos(6, 6);
-		SetSize(288, 16);
+		Left := 6;
+		Top := 6;
+		Width := 288;
+		Height := 16;
 	end;
 
 	New(Item1, Init('Item ' + HotkeyChr + '1', False, Menu));

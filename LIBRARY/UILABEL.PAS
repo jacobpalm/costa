@@ -18,7 +18,6 @@ type
 			procedure   SetCaption(Cap: string);
 			procedure   SetAlign(Val: TAlign);
 			procedure   AutoSize;
-		private
 	end;
 
 implementation
@@ -35,14 +34,15 @@ begin
 	Top := Y;
 	Width := DefaultW;
 	Height := DefaultH;
+	Include(State, STransparent);
 	SetParent(Parent);
-	AddState(STransparent);
 end;
 
 procedure TLabel.AutoSize;
 begin
-	SetSize(PrintW(Caption), PrintH(Caption));
-	AddState(SDirty);
+	Self.Width := PrintW(Caption);
+	Self.Height := PrintH(Caption);
+	Include(State, SDirty);
 end;
 
 procedure TLabel.Draw;
@@ -54,7 +54,7 @@ begin
 		exit;
 
 	{Get absolute position and size of the object}
-	GetPos(X1, Y1, True);
+	GetAbsPos(X1, Y1);
 	X2 := X1 + Width;
 	Y2 := Y1 + Height;
 
@@ -88,7 +88,7 @@ end;
 procedure TLabel.SetCaption(Cap: string);
 begin
 	Caption := Cap;
-	AddState(SDirty);
+	Include(State, SDirty);
 end;
 
 
@@ -98,7 +98,7 @@ begin
 		exit;
 
 	Align := Val;
-	AddState(SDirty);
+	Include(State, SDirty);
 end;
 
 end.

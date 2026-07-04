@@ -29,20 +29,20 @@ var
 
 procedure TxtFilename_Change(Sender: PUIObject); far;
 begin
-	if (Length(TxtFilename^.GetText) > 0) and not (SEnabled in BtnOK^.State) then
+	if (Length(TxtFilename^.Text) > 0) and not (SEnabled in BtnOK^.State) then
 		BtnOK^.AddState(SEnabled)
-	else if (Length(TxtFilename^.GetText) = 0) and (SEnabled in BtnOK^.State) then
+	else if (Length(TxtFilename^.Text) = 0) and (SEnabled in BtnOK^.State) then
 		BtnOK^.RemoveState(SEnabled);
 end;
 
 procedure BtnOK_Click(Sender: PUIObject); far;
 begin
-	if Length(TxtFilename^.GetText) > 0 then
+	if Length(TxtFilename^.Text) > 0 then
 	begin
 		New(RunLink);
 		FillChar(RunLink^, SizeOf(TLink), 0);
-		RunLink^.FileName := UpperCase(TxtFilename^.GetText);
-		RunLink^.Parameters := TxtParams^.GetText;
+		RunLink^.FileName := UpperCase(TxtFilename^.Text);
+		RunLink^.Parameters := TxtParams^.Text;
 		WinRun^.Close;
 	end;
 end;
@@ -55,16 +55,10 @@ end;
 procedure BtnBrowse_Click(Sender: PUIObject); far;
 var
 	SelectedFile: string;
-	FDir:         DirStr;
-	FName:        NameStr;
-	FExt:         ExtStr;
 begin
 	SelectedFile := FileSelect('*.EXE', '');
 	if Length(SelectedFile) <> 0 then
-	begin
 		TxtFilename^.SetText(SelectedFile);
-		TxtFilename_Change(nil);
-	end;
 end;
 
 procedure InitUI;
@@ -72,43 +66,44 @@ begin
 	New(WinRun, Init(0, 0, nil));
 	with WinRun^ do
 	begin
-		SetSize(382, 137);
+		Width := 382;
+		Height := 137;
 		Center(OrBoth);
 		SaveBackdrop;
 	end;
 	New(TxtFilename, Init(12, 27, CAP_FILENAME, WinRun));
 	with TxtFilename^ do
 	begin
-		SetSize(358, SizeRetain);
-		AddHotkey(KeyAltF);
+		Width := 358;
 		OnChange := TxtFilename_Change;
+		AddHotkey(KeyAltF);
 	end;
 	New(TxtParams, Init(12, 73, CAP_PARAMETERS, WinRun));
 	with TxtParams^ do
 	begin
-		SetSize(358, SizeRetain);
+		Width := 358;
 		AddHotkey(KeyAltR);
 	end;
 	New(BtnOK, Init(74, 103, CAP_OK, WinRun));
 	with BtnOK^ do
 	begin
+		Exclude(State, SEnabled);
+		OnClick := BtnOK_Click;
 		AddHotkey(KeyAltO);
 		AddHotkey(KeyEnter);
-		RemoveState(SEnabled);
-		OnClick := BtnOK_Click;
 	end;
 	New(BtnCancel, Init(176, 103, CAP_CANCEL, WinRun));
 	with BtnCancel^ do
 	begin
+		OnClick := BtnCancel_Click;
 		AddHotkey(KeyAltC);
 		AddHotkey(KeyEscape);
-		OnClick := BtnCancel_Click;
 	end;
 	New(BtnBrowse, Init(278, 103, CAP_BROWSE, WinRun));
 	with BtnBrowse^ do
 	begin
-		AddHotkey(KeyAltB);
 		OnClick := BtnBrowse_Click;
+		AddHotkey(KeyAltB);
 	end;
 end;
 

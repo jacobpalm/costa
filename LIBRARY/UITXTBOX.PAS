@@ -11,8 +11,8 @@ type
 		public
 			OnChange:   TEventProc;
 			Caption,
-			Text:       string;
-			MaxLen:     Byte;
+			Text:       String;
+			MaxLength:  Byte;
 
 			constructor Init(X, Y: Integer; Cap: String; Parent: PContainer);
 			procedure   CheckEvent; virtual;
@@ -23,11 +23,7 @@ type
 			procedure   SetCaption(Cap: string);
 
 			procedure   SetText(Txt: string);
-			function    GetText: string;
-
 			procedure   SetMaxLength(Len: Byte);
-			function    GetMaxLength: Byte;
-		private
 	end;
 
 implementation
@@ -40,7 +36,7 @@ begin
 	TUIObject.Init;
 	Caption     := Cap;
 	Text        := '';
-	MaxLen      := 255;
+	MaxLength   := 255;
 	OnChange    := nil;
 	Left        := X;
 	Top         := Y;
@@ -88,7 +84,7 @@ var
 	BgColor, FgColor: Byte;
 begin
 	{Get absolute position of the object}
-	GetPos(X1, Y1, True);
+	GetAbsPos(X1, Y1);
 
 	{Text is located 5 pixels from the left border, and vertically centered}
 	Inc(X1, 5);
@@ -106,7 +102,7 @@ begin
 
 	{Redraw the textbox to show the editing state}
 	Mouse.Hide;
-	AddState(SActive);
+	Include(State, SActive);
 	Self.Draw;
 	Mouse.Show;
 
@@ -151,7 +147,7 @@ begin
 		if Key = KeyEscape then
 		begin
 			Text := OrigTxt;
-			RemoveState(SActive);
+			Exclude(State, SActive);
 			Mouse.Hide;
 			Self.Draw;
 			Mouse.Show;
@@ -159,7 +155,7 @@ begin
 		end;
 
 		{Any printable character}
-		if (Length(Key) = 1) and (Length(Text) < MaxLen) then
+		if (Length(Key) = 1) and (Length(Text) < MaxLength) then
 		begin
 			if (Ord(Key[1]) < 32) or (Ord(Key[1]) > 126) then
 				continue;
@@ -189,7 +185,7 @@ begin
 
 	until False;
 
-	RemoveState(SActive);
+	Exclude(State, SActive);
 	Mouse.Hide;
 	if PrintW(Text) + 2 < MaxShow then
 	begin
@@ -219,7 +215,7 @@ begin
 		exit;
 
 	{Get absolute position and size of the object}
-	GetPos(X1, Y1, True);
+	GetAbsPos(X1, Y1);
 
 	{Draw caption if set}
 	if Length(Caption) > 0 then
@@ -260,36 +256,28 @@ end;
 procedure TTextbox.SetCaption(Cap: string);
 begin
 	Caption := Cap;
-	AddState(SDirty);
+	Include(State, SDirty);
 end;
 
 
 procedure TTextbox.SetText(Txt: string);
 begin
 	Text := Txt;
-	AddState(SDirty);
-end;
-
-function TTextbox.GetText: string;
-begin
-	GetText := Text;
+	Include(State, SDirty);
+	if Assigned(OnChange) then
+		OnChange(@Self);
 end;
 
 procedure TTextbox.SetMaxLength(Len: Byte);
 begin
-	MaxLen := Len;
+	MaxLength := Len;
 
 	{If current text is longer than new max, trim it and trigger redraw}
-	if Length(Text) > MaxLen then
+	if Length(Text) > MaxLength then
 	begin
-		Text := Copy(Text, 1, MaxLen);
-		AddState(SDirty);
+		Text := Copy(Text, 1, MaxLength);
+		Include(State, SDirty);
 	end;
-end;
-
-function TTextbox.GetMaxLength: Byte;
-begin
-	GetMaxLength := MaxLen;
 end;
 
 end.

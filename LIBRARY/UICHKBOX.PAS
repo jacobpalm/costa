@@ -20,7 +20,6 @@ type
 
 			function    GetChecked: boolean;
 			procedure   SetChecked(Checked: boolean);
-		private
 	end;
 
 implementation
@@ -37,10 +36,11 @@ begin
 	Top := Y;
 	Width := DefaultW;
 	Height := DefaultH;
-	SetParent(Parent);
 
 	If Checked then
 		Include(State, SSelected);
+
+	SetParent(Parent);
 end;
 
 procedure TCheckbox.Draw;
@@ -52,7 +52,7 @@ begin
 		exit;
 
 	{Get absolute position and size of the object}
-	GetPos(X1, Y1, True);
+	GetAbsPos(X1, Y1);
 	X2 := X1 + Width;
 	Y2 := Y1 + Height;
 
@@ -121,7 +121,7 @@ end;
 procedure TCheckbox.SetCaption(Cap: string);
 begin
 	Caption := Cap;
-	AddState(SDirty);
+	Include(State, SDirty);
 end;
 
 function TCheckbox.GetChecked: boolean;
@@ -135,9 +135,11 @@ begin
 		exit;
 
 	if Checked then
-		AddState(SSelected)
+		Include(State, SSelected)
 	else
-		RemoveState(SSelected);
+		Exclude(State, SSelected);
+
+	Include(State, SDirty);
 
 	if Assigned(OnChange) then
 		OnChange(@Self);

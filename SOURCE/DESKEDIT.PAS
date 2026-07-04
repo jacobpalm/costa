@@ -48,21 +48,21 @@ procedure BtnOK_Click(Sender: PUIObject); far;
 var
 	CleanPath: string;
 begin
-	if Length(TxtFileName^.GetText) <> 0 then
+	if Length(TxtFileName^.Text) > 0 then
 	begin
 		{Sanitize path}
-		CleanPath := TxtPath^.GetText;
-		if Length(CleanPath) <> 0 then
+		CleanPath := TxtPath^.Text;
+		if Length(CleanPath) > 0 then
 		begin
 			if CleanPath[Length(CleanPath)] = '\' then
 				CleanPath := Copy(CleanPath, 1, Length(CleanPath) - 1);
 			if CleanPath + '\' = ProgramPath then
 				CleanPath := '';
 		end;
-		TargetLink^.Caption := TxtCaption^.GetText;
-		TargetLink^.Filename := TxtFileName^.GetText;
-		TargetLink^.Path := TxtPath^.GetText;
-		TargetLink^.Parameters := TxtParams^.GetText;
+		TargetLink^.Caption := TxtCaption^.Text;
+		TargetLink^.Filename := TxtFileName^.Text;
+		TargetLink^.Path := TxtPath^.Text;
+		TargetLink^.Parameters := TxtParams^.Text;
 		TargetLink^.PauseOnExit := ChkPauseOnExit^.GetChecked;
 		TargetLink^.IconFile := ImgIcon^.IconFile;
 		DidEdit := True;
@@ -90,7 +90,7 @@ begin
 	if Length(SelectedFile) <> 0 then
 	begin
 		{If the Path field is empty, copy path from selected file there}
-		if Length(TxtPath^.GetText) = 0 then
+		if Length(TxtPath^.Text) = 0 then
 		begin
 			FSplit(SelectedFile, Path, FName, FExt);
 			TxtPath^.SetText(Path);
@@ -124,7 +124,8 @@ begin
 	New (WinEdit, Init(0, 0, nil));
 	With WinEdit^ do
 	begin
-		SetSize(335, 214);
+		Width := 335;
+		Height := 214;
 		Center(OrBoth);
 		SaveBackdrop;
 	end;
@@ -132,33 +133,33 @@ begin
 	New(TxtCaption, Init(12, 26, CAP_CAPTION, WinEdit));
 	With TxtCaption^ do
 	begin
-		SetSize(211, SizeRetain);
-		SetMaxLength(LinkCaptMax);
-		SetText(TargetLink^.Caption);
+		Width := 211;
+		MaxLength := LinkCaptMax;
+		Text := TargetLink^.Caption;
 		AddHotkey(KeyAltA);
 	end;
 	New(TxtFilename, Init(12, 70, CAP_FILENAME, WinEdit));
 	With TxtFilename^ do
 	begin
-		SetSize(211, SizeRetain);
-		SetMaxLength(SizeOf(ComStr));
-		SetText(TargetLink^.FileName);
+		Width := 211;
+		MaxLength := SizeOf(ComStr);
+		Text := TargetLink^.FileName;
 		AddHotkey(KeyAltF);
 	end;
 	New(TxtPath, Init(12, 114, CAP_PATH, WinEdit));
 	With TxtPath^ do
 	begin
-		SetSize(211, SizeRetain);
-		SetMaxLength(SizeOf(DirStr));
-		SetText(TargetLink^.Path);
+		Width := 211;
+		MaxLength := SizeOf(DirStr);
+		Text := TargetLink^.Path;
 		AddHotkey(KeyAltT);
 	end;
 	New(TxtParams, Init(12, 158, CAP_PARAMETERS, WinEdit));
 	With TxtParams^ do
 	begin
-		SetSize(211, SizeRetain);
-		SetMaxLength(SizeOf(ComStr));
-		SetText(TargetLink^.Parameters);
+		Width := 211;
+		MaxLength := SizeOf(ComStr);
+		Text := TargetLink^.Parameters;
 		AddHotkey(KeyAltR);
 	end;
 	New(ChkPauseOnExit, Init(12, 187, CAP_PAUSE_ON_EXIT, TargetLink^.PauseOnExit, WinEdit));
@@ -177,21 +178,21 @@ begin
 	New(BtnCancel, Init(231, 54, CAP_CANCEL, WinEdit));
 	With BtnCancel^ do
 	begin
+		OnClick := BtnCancel_Click;
 		AddHotkey(KeyAltC);
 		AddHotkey(KeyEscape);
-		OnClick := BtnCancel_Click;
 	end;
 	New(BtnBrowse, Init(231, 82, CAP_BROWSE, WinEdit));
 	With BtnBrowse^ do
 	begin
-		AddHotkey(KeyAltB);
 		OnClick := BtnBrowse_Click;
+		AddHotkey(KeyAltB);
 	end;
 	New(BtnIcon, Init(231, 110, CAP_ICON, WinEdit));
 	With BtnIcon^ do
 	begin
-		AddHotkey(KeyAltI);
 		OnClick := BtnIcon_Click;
+		AddHotkey(KeyAltI);
 	end;
 
 	New(ImgIcon, Init(261, 157, TargetLink^.IconFile, WinEdit));

@@ -292,21 +292,21 @@ procedure WinSetSizeDraw(Sender: PUIObject); far;
 var
 	X, Y, W, H, TextOffset: integer;
 begin
-	BtnSize[0]^.GetPos(X, Y, True);
+	BtnSize[0]^.GetAbsPos(X, Y);
 	W := BtnSize[0]^.Width;  {All buttons are same size}
 	H := BtnSize[0]^.Height;
 	TextOffset := ((W - PrintW(CAP_SMALL)) div 2);
 	Print(CAP_SMALL, X + TextOffset, Y + 79, Thm.WinText);
 
-	BtnSize[1]^.GetPos(X, Y, True);
+	BtnSize[1]^.GetAbsPos(X, Y);
 	TextOffset := ((W - PrintW(CAP_MEDIUM)) div 2);
 	Print(CAP_MEDIUM, X + TextOffset, Y + 79, Thm.WinText);
 
-	BtnSize[2]^.GetPos(X, Y, True);
+	BtnSize[2]^.GetAbsPos(X, Y);
 	TextOffset := ((W - PrintW(CAP_LARGE)) div 2);
 	Print(CAP_LARGE, X + TextOffset, Y + 79, Thm.WinText);
 
-	BtnSize[3]^.GetPos(X, Y, True);
+	BtnSize[3]^.GetAbsPos(X, Y);
 	TextOffset := ((W- PrintW(CAP_ULTRA)) div 2);
 	Print(CAP_ULTRA, X + TextOffset, Y + 79, Thm.WinText);
 
@@ -342,9 +342,10 @@ begin
 	New(WinMain, Init(0, 0, nil));
 	with WinMain^ do
 	begin
-		SetSize(ScreenWidth, ScreenHeight);
+		Width := ScreenWidth;
+		Height := ScreenHeight;
 		OnDraw := WinMainDraw;
-		RemoveState(SBordered);
+		Exclude(State, SBordered);
 	end;
 
 	New(BtnNew, Init(3, 2, CAP_NEW_GAME, WinMain));
@@ -389,16 +390,18 @@ begin
 	New(LblStatus, Init(9, 333, '', WinMain));
 	with LblStatus^ do
 	begin
-		RemoveState(STransparent);
-		SetSize(200, 8);
+		Width := 200;
+		Height := 8;
+		Exclude(State, STransparent);
 		SetFgColor(Black);
 		SetBgColor(LightGray);
 	end;
 	New(LblTime, Init(0, 333, '', WinMain));
 	with LblTime^ do
 	begin
-		RemoveState(STransparent);
-		SetSize(64, 8);
+		Width := 64;
+		Height := 8;
+		Exclude(State, STransparent);
 		Center(OrHorizontal);
 		SetFgColor(Black);
 		SetBgColor(LightGray);
@@ -406,8 +409,9 @@ begin
 	New(LblSound, Init(550, 333, MSG_SOUND + ' ' + MSG_ON, WinMain));
 	with LblSound^ do
 	begin
-		RemoveState(STransparent);
-		SetSize(80, 8);
+		Width := 80;
+		Height := 8;
+		Exclude(State, STransparent);
 		SetFgColor(Black);
 		SetBgColor(LightGray);
 	end;
@@ -417,14 +421,15 @@ begin
 	New(CFieldAlign, Init(0, 29, WinMain));
 	With CFieldAlign^ do
 	begin
-		SetSize(639, 301);
+		Width := 639;
+		Height := 301;
 	end;
 
 	New(MineField, Init(CFieldAlign));
 	With MineField^ do
 	begin
-		AddState(SHidden);
 		OnClick := MineFieldClick;
+		Include(State, SHidden);
 	end;
 
 	{Cheat hotkey (question mark) to reveal mines}
@@ -435,59 +440,64 @@ begin
 	New(TiStatus, Init(WinMain));
 	With TiStatus^ do
 	begin
-		SetInterval(1.0);
 		OnClick := TiStatusClick;
+		SetInterval(1.0);
 	end;
 
 	{Size dialog window and controls therein}
 	New(WinSetSize, Init(0, 0, nil));
 	With WinSetSize^ do
 	begin
-		SetSize(236, 264);
+		Width := 236;
+		Height := 264;
+		OnDraw := WinSetSizeDraw;
 		Center(OrBoth);
 		SaveBackdrop;
-		OnDraw := WinSetSizeDraw;
 	end;
 
 	New(BtnSize[0], Init(13, 11, '', WinSetSize));
 	With BtnSize[0]^ do
 	begin
-		AddHotkey(KeyAlt9);
-		SetSize(100, 100);
-		AddState(STransparent);
+		Width := 100;
+		Height := 100;
 		OnClick := BtnSizeClick;
+		Include(State, STransparent);
+		AddHotkey(KeyAlt9);
 	end;
 	New(BtnSize[1], Init(123, 11, '', WinSetSize));
 	With BtnSize[1]^ do
 	begin
-		AddHotkey(KeyAlt1);
-		SetSize(100, 100);
-		AddState(STransparent);
+		Width := 100;
+		Height := 100;
 		OnClick := BtnSizeClick;
+		Include(State, STransparent);
+		AddHotkey(KeyAlt1);
 	end;
 	New(BtnSize[2], Init(13, 121, '', WinSetSize));
 	With BtnSize[2]^ do
 	begin
-		AddHotkey(KeyAlt2);
-		SetSize(100, 100);
-		AddState(STransparent);
+		Width := 100;
+		Height := 100;
 		OnClick := BtnSizeClick;
+		Include(State, STransparent);
+		AddHotkey(KeyAlt2);
 	end;
 	New(BtnSize[3], Init(123, 121, '', WinSetSize));
 	With BtnSize[3]^ do
 	begin
-		AddHotkey(KeyAlt3);
-		SetSize(100, 100);
-		AddState(STransparent);
+		Width := 100;
+		Height := 100;
+		Include(State, STransparent);
 		OnClick := BtnSizeClick;
+		AddHotkey(KeyAlt3);
 	end;
 	New(BtnCancel, Init(13, 231, CAP_CANCEL, WinSetSize));
 	With BtnCancel^ do
 	Begin
+		Width := 210;
+		OnClick := BtnCancelClick;
 		AddHotkey(KeyAltC);
 		AddHotkey(KeyEscape);
-		SetSize(210, SizeRetain);
-		OnClick := BtnCancelClick;
 	End;
 end;
 

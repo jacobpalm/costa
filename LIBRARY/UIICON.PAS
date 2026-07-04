@@ -15,7 +15,6 @@ type
 			procedure   Draw; virtual;
 
 			procedure   SetIcon(Icon: string);
-		private
 	end;
 
 implementation
@@ -36,7 +35,7 @@ begin
 	Width := DefaultW;
 	Height := DefaultH;
 
-	AddState(SBordered);
+	Include(State, SBordered);
 	SetParent(Parent);
 end;
 
@@ -61,7 +60,7 @@ begin
 	Size := ImageSize(0, 0, 31, 31); {Coords don't matter, just size}
 
 	{Get absolute position of the object}
-	GetPos(X, Y, True);
+	GetAbsPos(X, Y);
 
 	{Icon border}
 	if SBordered in State then
@@ -120,7 +119,7 @@ begin
 	if IconFile <> Icon then
 	begin
 		IconFile := Icon;
-		AddState(SDirty);
+		Include(State, SDirty);
 	end;
 end;
 

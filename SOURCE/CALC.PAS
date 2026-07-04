@@ -148,7 +148,7 @@ begin
 	begin
 		AreaLog^.RemoveState(SHidden);
 		BtnLog^.SetCaption(CAP_HIDE_LOG);
-		FrmCalc^.SetPos(12, 13);
+		FrmCalc^.Move(12, 13);
 	end
 	else
 	begin
@@ -255,7 +255,7 @@ procedure BtnCClick(Sender: PUIObject); far;
 begin
 	{Check length of text in textbox, rather than CurrentInput, because a result may
 	 be displayed there}
-	if Length(TxtCalc^.GetText) > 0 then
+	if Length(TxtCalc^.Text) > 0 then
 	begin
 		CurrentInput := '';
 		UpdateDisplay;
@@ -410,7 +410,7 @@ procedure HkEscapeClick(Sender: PUIObject); far;
 begin
 	{If escape is pressed, clear the number. If it already is cleared,
 	 clear everything}
-	if Length(TxtCalc^.GetText) > 0 then
+	if Length(TxtCalc^.Text) > 0 then
 		BtnC^.Click;
 
 	if NewInput = True then
@@ -451,14 +451,14 @@ begin
 	begin
 		Width := ScreenWidth;
 		Height := ScreenHeight;
-		RemoveState(SBordered);
+		Exclude(State, SBordered);
 	end;
 
 	New(BtnLog, Init(2, 2, CAP_SHOW_LOG, WinMain));
 	With BtnLog^ do
 	begin
-		AddHotkey(KeyAltL);
 		OnClick := BtnLogClick;
+		AddHotkey(KeyAltL);
 	end;
 
 	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
@@ -481,32 +481,34 @@ begin
 	New(FrmClientArea, Init(0, 29, WinMain));
 	With FrmClientArea^ do
 	begin
-		SetSize(639, 329);
-		RemoveState(SBordered);
-		RemoveState(STransParent);
+		Width := 639;
+		Height := 329;
+		Exclude(State, SBordered);
+		Exclude(State, STransParent);
 	end;
 
 	New(FrmCalc, Init(0, 0, FrmClientArea));
 	with FrmCalc^ do
 	begin
-		SetSize(218, 208);
+		Width := 218;
+		Height := 208;
 		Center(OrBoth);
 	end;
 
 	New(TxtCalc, Init(13, 12, '', FrmCalc));
 	with TxtCalc^ do
 	begin
-		SetSize(191, SizeRetain);
-		SetText('0');
-		RemoveState(SEnabled);
+		Width := 191;
+		Text := '0';
+		Exclude(State, SEnabled);
 	end;
 
 	New(BtnNumb[0], Init(14, 172, '0', FrmCalc));
 	With BtnNumb[0]^ do
 	begin
-		SetSize(90, SizeRetain);
-		AddHotKey('0');
+		Width := 90;
 		OnClick := BtnNumbClick;
+		AddHotKey('0');
 	end;
 	New(BtnNumb[1], Init(14, 139, '1', FrmCalc));
 	New(BtnNumb[2], Init(64, 139, '2', FrmCalc));
@@ -519,80 +521,82 @@ begin
 	New(BtnNumb[9], Init(114, 73, '9', FrmCalc));
 	for i := 1 to 9 do
 	begin
-		BtnNumb[i]^.AddHotKey(Char(Ord('0') + i));
-		BtnNumb[i]^.SetSize(40, SizeRetain);
+		BtnNumb[i]^.Width := 40;
 		BtnNumb[i]^.OnClick := BtnNumbClick;
+		BtnNumb[i]^.AddHotKey(Char(Ord('0') + i));
 	end;
 	New(BtnDecimal, Init(114, 172, '.', FrmCalc));
 	With BtnDecimal^ do
 	begin
-		SetSize(40, SizeRetain);
+		Width := 40;
+		OnClick := BtnDecimalClick;
 		AddHotKey('.'); {Add both so it works with both decimal signs}
 		AddHotKey(',');
-		OnClick := BtnDecimalClick;
 	end;
 
 	{Clear and Clear Everything buttons}
 	New(BtnC, Init(14, 40, CAP_CLEAR, FrmCalc));
 	With BtnC^ do
 	begin
-		SetSize(40, SizeRetain);
-		AddHotKey(KeyAltC);
+		Width := 40;
 		OnClick := BtnCClick;
+		AddHotKey(KeyAltC);
 	end;
 	New(BtnCE, Init(64, 40, CAP_CLEAR_EVERYTHING, FrmCalc));
 	With BtnCE^ do
 	begin
-		SetSize(40, SizeRetain);
-		AddHotKey(KeyAltE);
+		Width := 40;
 		OnClick := BtnCEClick;
+		AddHotKey(KeyAltE);
 	end;
 
 	{Operator buttons}
 	New(BtnDivide, Init(114, 40, '/', FrmCalc));
 	With BtnDivide^ do
 	begin
-		SetSize(40, SizeRetain);
-		AddHotKey('/');
+		Width := 40;
 		OnClick := BtnOperatorClick;
+		AddHotKey('/');
 	end;
 	New(BtnMultiply, Init(164, 40, '*', FrmCalc));
 	With BtnMultiply^ do
 	begin
-		SetSize(40, SizeRetain);
-		AddHotKey('*');
+		Width := 40;
 		OnClick := BtnOperatorClick;
+		AddHotKey('*');
 	end;
 	New(BtnSubstract, Init(164, 73, '-', FrmCalc));
 	With BtnSubstract^ do
 	begin
-		SetSize(40, SizeRetain);
-		AddHotKey('-');
+		Width := 40;
 		OnClick := BtnOperatorClick;
+		AddHotKey('-');
 	end;
 	New(BtnAdd, Init(164, 106, '+', FrmCalc));
 	With BtnAdd^ do
 	begin
-		SetSize(40, SizeRetain);
-		AddHotKey('+');
+		Width := 40;
 		OnClick := BtnOperatorClick;
+		AddHotKey('+');
 	end;
 
 	New(BtnEquals, Init(164, 139, '=', FrmCalc));
 	With BtnEquals^ do
 	begin
-		SetSize(40, 55);
+		Width := 40;
+		Height := 55;
+		OnClick := BtnEqualsClick;
 		AddHotKey('=');
 		AddHotKey(KeyEnter);
-		OnClick := BtnEqualsClick;
 	end;
 
 	New(AreaLog, Init(242, 13, FrmClientArea));
 	with AreaLog^ do
 	begin
-		SetSize(385, 295);
-		SetAlign(AlRight);
-		AddState(SHidden);
+		Width := 385;
+		Height := 295;
+		Align := AlRight;
+		Include(State, SHidden);
 	end;
 
 	New(HkBackspace, Init(KeyBackspace, WinMain));

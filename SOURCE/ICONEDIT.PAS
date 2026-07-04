@@ -56,7 +56,7 @@ var
 	Canvas: PIconCanvas;
 	BtnPencil, BtnFloodFill: PButton;
 	AreaColor: array[0..MaxColor] of PArea;
-	LblPreview, LblColor, LblTools: PLabel;
+	LblPreview, LblColor: PLabel;
 
 	HkColor: PHotkey;
 
@@ -93,7 +93,7 @@ begin
 		exit;
 
 	{Get absolute position and size of area}
-	AreaColor[Color]^.GetPos(X1, Y1, True);
+	AreaColor[Color]^.GetAbsPos(X1, Y1);
 	X2 := AreaColor[Color]^.Width;
 	Y2 := AreaColor[Color]^.Height;
 
@@ -282,46 +282,47 @@ begin
 	New(WinMain, Init(0, 0, nil));
 	With WinMain^ do
 	begin
-		SetSize(640, 350);
-		RemoveState(SBordered);
+		Width := ScreenWidth;
+		Height := ScreenHeight;
+		Exclude(State, SBordered);
 	end;
 
 	New(BtnNew, Init(2, 2, CAP_NEW, WinMain));
 	With BtnNew^ do
 	begin
-		AddHotkey(KeyAltN);
 		OnClick := BtnNewClick;
+		AddHotkey(KeyAltN);
 	end;
 	New(BtnOpen, Init(101, 2, CAP_OPEN, WinMain));
 	With BtnOpen^ do
 	begin
-		AddHotkey(KeyAltO);
 		OnClick := BtnOpenClick;
+		AddHotkey(KeyAltO);
 	end;
 	New(BtnSave, Init(200, 2, CAP_SAVE, WinMain));
 	With BtnSave^ do
 	begin
-		AddHotkey(KeyAltS);
 		OnClick := BtnSaveClick;
+		AddHotkey(KeyAltS);
 	end;
 	New(BtnSaveAs, Init(299, 2, CAP_SAVE_AS, WinMain));
 	With BtnSaveAs^ do
 	begin
-		AddHotkey(KeyAltV);
 		OnClick := BtnSaveClick;
+		AddHotkey(KeyAltV);
 	end;
 	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
 	With BtnAbout^ do
 	begin
-		AddHotkey(KeyAltA);
 		OnClick := BtnAboutClick;
+		AddHotkey(KeyAltA);
 	end;
 	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
 	With BtnExit^ do
 	begin
+		OnClick := BtnExitClick;
 		AddHotkey(KeyAltX);
 		AddHotkey(KeyAltF4);
-		OnClick := BtnExitClick;
 	end;
 
 	{Init now to ensure correct ZOrder, but set pos after we now position of canvas}
@@ -329,50 +330,50 @@ begin
 	New(AreaPreview, Init(0, 0, WinMain));
 	With AreaPreview^ do
 	begin
-		SetSize(56, 56);
+		Width := 56;
+		Height := 56;
 		SetBgColor(Thm.Desk);
 	end;
 
 	New(Canvas, Init(172, 44, WinMain));
 	With Canvas^ do
 	begin
-		SetSize(290, 290);
-		SetBgColor(White);
+		Width := 290;
+		Height := 290;
 		OnClick := CanvasClick;
+		SetBgColor(White);
 		SetPreviewPos(314, 89);
 	end;
 
 	{Get absolute position of canvas area, and its size, so other objects can be
 	 positioned relative to it}
-	Canvas^.GetPos(X, Y, True);
-	W := Canvas^.Width;
-	H := Canvas^.Height;
-	X := X + W + 12;
+	Canvas^.GetAbsPos(X, Y);
+	X := X + Canvas^.Width + 12;
 
 	{Move preview area to the right of the canvas}
-	LblPreview^.SetPos(X, Y + 62);
-	AreaPreview^.SetPos(X, Y + 77);
-
-	New(LblTools, Init(X, Y, CAP_TOOLS, WinMain));
+	LblPreview^.Left  := X;
+	LblPreview^.Top   := Y + 62;
+	AreaPreview^.Left := X;
+	AreaPreview^.Top  := Y + 77;
 
 	New(BtnPencil, Init(X, Y, CAP_PENCIL, WinMain));
 	With BtnPencil^ do
 	begin
-		SetSize(56, SizeRetain);
-		AddState(SActive);
-		AddHotkey(KeyAltE);
+		Width := 56;
 		OnClick := BtnToolClick;
+		Include(State, SActive);
+		AddHotkey(KeyAltE);
 	end;
 	New(BtnFloodFill, Init(X, Y + 26, CAP_FILL, WinMain));
 	With BtnFloodFill^ do
 	begin
-		SetSize(56, SizeRetain);
-		AddHotkey(KeyAltF);
+		Width := 56;
 		OnClick := BtnToolClick;
+		AddHotkey(KeyAltF);
 	end;
 
 	{Get position of canvas again, to position color areas left to it}
-	Canvas^.GetPos(X, Y, True);
+	Canvas^.GetAbsPos(X, Y);
 	X := X - 51;
 	New(LblColor, Init(X, Y, CAP_COLOR, WinMain));
 
@@ -382,17 +383,18 @@ begin
 		{On 8th item, move X to next column and reset Y}
 		if i = 8 then
 		begin
-			inc(X, 21);
+			Inc(X, 21);
 			Dec(Y, 8 * 21);
 		end;
 
 		New(AreaColor[i], Init(X, Y, WinMain));
 		With AreaColor[i]^ do
 		begin
-			SetSize(20, 20);
-			SetBgColor(i);
+			Width := 20;
+			Height := 20;
 			OnClick := AreaColorClick;
 			OnDraw := AreaColorDraw;
+			SetBgColor(i);
 		end;
 		Inc(Y, 21);
 	end;

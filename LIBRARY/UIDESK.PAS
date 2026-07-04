@@ -108,7 +108,7 @@ begin
 		Exit;
 
 	{Get absolute position and size}
-	Self.GetPos(x1, y1, True);
+	Self.GetAbsPos(X1, Y1);
 	X2 := X1 + Width;
 	Y2 := Y1 + Height;
 
@@ -146,7 +146,7 @@ begin
 		Exit;
 
 	{Get absolute position of desktop, and set icon position relative to it}
-	GetPos(X, Y, True);
+	Self.GetAbsPos(X, Y);
 	Inc(X, Link^.Left);
 	Inc(Y, Link^.Top);
 
@@ -194,7 +194,7 @@ begin
 
 		{Get absolute position of desktop and calculate substract it from mouse position,
 		 giving us the realtive position on the desktop which can be compared against links}
-		GetPos(OffsetX, OffsetY, True);
+		GetAbsPos(OffsetX, OffsetY);
 		OffsetX := Mouse.X - OffSetX;
 		OffsetY := Mouse.Y - OffSetY;
 
@@ -342,7 +342,7 @@ begin
 		TempNode := TempNode^.Next;
 	end;
 
-	AddState(SDirty);
+	Include(State, SDirty);
 end;
 
 procedure TDesktop.MoveLink(Link: PLink);
@@ -368,7 +368,7 @@ begin
 
 	{Get absolute position of desktop to calculate relative mouse position and
 	 movement boundaries}
-	GetPos(OffsetX, OffsetY, True);
+	GetAbsPos(OffsetX, OffsetY);
 	MaxX := Self.Width;
 	MaxY := Self.Height;
 	MinX := OffsetX + 20;
@@ -478,7 +478,7 @@ begin
 		Link^.Left := DrawX - OffsetX;
 		Link^.Top := DrawY - OffsetY;
 		Self.SortLinks;
-		AddState(SDirty);
+		Include(State, SDirty);
 	end
 	else
 	begin
@@ -524,7 +524,7 @@ procedure TDesktop.SetDisplay(Captions, Targets: boolean);
 begin
 	ShowCaption := Captions;
 	ShowTarget := Targets;
-	Self.AddState(SDirty);
+	Include(State, SDirty);
 end;
 
 function TDesktop.LoadLinks(Filename: string): boolean;
@@ -642,7 +642,7 @@ var
 		begin
 			Mouse.Hide;
 			{Get absolute position of desktop, and set icon position relative to it}
-			GetPos(x1, y1, True);
+			GetAbsPos(X1, Y1);
 			Inc(x1, SelectedLink^.Left);
 			Inc(y1, SelectedLink^.Top);
 			PutImage(x1 - 3, y1 - 3, TabBgImg^, NormalPut);
@@ -661,7 +661,7 @@ var
 
 		Mouse.Hide;
 		{Get absolute position of desktop, and set icon position relative to it}
-		GetPos(x1, y1, True);
+		GetAbsPos(X1, Y1);
 		Inc(x1, SelectedLink^.Left);
 		Inc(y1, SelectedLink^.Top);
 		x1 := x1 - 3;

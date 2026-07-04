@@ -130,7 +130,7 @@ type
 			ParentObj:  PContainer;  {Parent object, if any}
 
 			constructor Init;
-			Destructor  Done; virtual;
+			destructor  Done; virtual;
 
 			function    HotkeyPressed: boolean;
 			function    IsMouseOver: Boolean;
@@ -148,11 +148,11 @@ type
 			procedure   Click;
 			procedure   Draw; virtual;
 
-			procedure   SetSize(W, H: Integer);
-
-			procedure   SetPos(X, Y: Integer);
-			procedure   GetPos(var X, Y: Integer; Absolute: Boolean);
+			procedure   Resize(W, H: Integer);
+			procedure   Move(X, Y: Integer);
 			procedure   Center(Orientation: TOrientation);
+
+			procedure   GetAbsPos(var X, Y: Integer);
 
 			procedure   SetFGColor(Color: Byte);
 			function    GetFGColor: Byte;
@@ -518,7 +518,7 @@ var
 	X1, Y1, X2, Y2: Integer;
 begin
 	{Get absolute position and size of the object}
-	Self.GetPos(X1, Y1, True);
+	Self.GetAbsPos(X1, Y1);
 	X2 := X1 + Self.Width;
 	Y2 := Y1 + Self.Height;
 
@@ -653,7 +653,7 @@ begin
 		OnDraw(@Self);
 end;
 
-procedure TUIObject.SetPos(X, Y: Integer);
+procedure TUIObject.Move(X, Y: Integer);
 begin
 	if X <> SizeRetain then
 		Left := X;
@@ -668,16 +668,16 @@ begin
 		ParentObj^.AddState(SDirty);
 end;
 
-procedure TUIObject.GetPos(var X, Y: Integer; Absolute: Boolean);
+procedure TUIObject.GetAbsPos(var X, Y: Integer);
 var
 	RelX, RelY: Integer;
 begin
 	X := Left;
 	Y := Top;
 
-	if Absolute and Assigned(ParentObj) then
+	if Assigned(ParentObj) then
 	begin
-		ParentObj^.GetPos(RelX, RelY, True);
+		ParentObj^.GetAbsPos(RelX, RelY);
 		X := X + RelX;
 		Y := Y + RelY;
 	end;
@@ -731,7 +731,7 @@ begin
 end;
 
 
-procedure TUIObject.SetSize(W, H: Integer);
+procedure TUIObject.Resize(W, H: Integer);
 begin
 	if W <> SizeRetain then
 		Width := W;
@@ -817,7 +817,8 @@ end;
 constructor TMenu.Init(Style: TMenuStyle; Parent: PContainer);
 begin
 	Inherited Init(0, 0, Parent);
-	SetSize(10, 10); {Will be resized when menu items are added or when added to a window}
+	Width     := 10; {Will be resized when menu items are added or when added to a window}
+	Height    := 10;
 	MenuStyle := Style;
 end;
 
@@ -860,7 +861,7 @@ begin
 	else
 	begin
 		{Get absolute position and size of the object}
-		GetPos(X1, Y1, True);
+		GetAbsPos(X1, Y1);
 		X2 := X1 + Self.Width;
 		Y2 := Y1 + Self.Height;
 
@@ -881,13 +882,11 @@ end;
 procedure TMenu.AddMenuItem(Item: PMenuItem);
 var
 	X, Y, W, H: Integer;
-	OffsetX, OffsetY, OffsetW, OffsetH: Integer;
+	OffsetX, OffsetY: Integer;
 	OffsetNode: PObjectNode;
 begin
 	OffsetX := 0;
 	OffsetY := 0;
-	OffsetW := 0;
-	OffsetH := 0;
 
 	{Item will be placed after the last existing item, and since items are added
 	 to the start of the linked list, the first item in the list is the last added item}
@@ -896,11 +895,8 @@ begin
 		OffsetNode := Objects;
 		while Assigned(OffsetNode^.Next) do
 			OffsetNode := OffsetNode^.Next;
-		OffsetNode^.ObjectP^.GetPos(OffsetX, OffsetY, False);
-		OffSetW := OffsetNode^.ObjectP^.Width;
-		OffSetH := OffsetNode^.ObjectP^.Height;
-		OffsetX := OffsetX + OffsetW + 1;
-		OffsetY := OffsetY + OffsetH + 1;
+		OffsetX := OffsetNode^.ObjectP^.Left + OffsetNode^.ObjectP^.Width + 1;
+		OffsetY := OffsetNode^.ObjectP^.Top + OffsetNode^.ObjectP^.Height + 1;
 	end;
 
 	if MenuStyle = MsPopup then
@@ -919,8 +915,8 @@ begin
 	H := MenuItemHeight;
 
 	{Set position and size of the new menu item}
-	Item^.SetPos(X, Y);
-	Item^.SetSize(W, H);
+	Item^.Move(X, Y);
+	Item^.Resize(W, H);
 
 	{Add item to the menu's linked list of objects}
 	Item^.SetParent(@Self);
@@ -956,7 +952,12 @@ begin
 	begin
 		{Make sure item is highlighted when mouse is over}
 		if not (SActive in State) then
-			AddState(SActive);
+		begin
+			Include(State, SActive);
+			Mouse.Hide;
+			Self.Draw;
+			Mouse.Show;
+		end;
 
 		if Mouse.Clicked = MbLeft then
 		begin
@@ -964,7 +965,10 @@ begin
 			{Check if mouse is still over the item after release}
 			if Self.IsMouseOver then
 			begin
-				RemoveState(SActive);
+				Exclude(State, SActive);
+				Mouse.Hide;
+				Self.Draw;
+				Mouse.Show;
 				Self.Click;
 			end;
 		end;
@@ -973,11 +977,16 @@ begin
 	begin
 		{If mouse is not over the item, remove highlight}
 		if SActive in State then
-			RemoveState(SActive);
+		begin
+			Exclude(State, SActive);
+			Mouse.Hide;
+			Self.Draw;
+			Mouse.Show;
+		end;
 	end;
 
+	{Trigger OnClick event, if assigned}
 	if Self.HotkeyPressed then
-		{Trigger OnClick event, if assigned}
 		Self.Click;
 end;
 
@@ -987,7 +996,7 @@ var
 	FgColor, BgColor: Byte;
 begin
 	{Get absolute position and size of the object}
-	GetPos(X1, Y1, True);
+	GetAbsPos(X1, Y1);
 	X2 := X1 + Width;
 	Y2 := Y1 + Height;
 
@@ -1351,9 +1360,11 @@ const
 begin
 	TUIObject.Init;
 	Objects := nil;
+	Left    := X;
+	Top     := Y;
+	Width   := DefaultW;
+	Height  := DefaultH;
 	SetParent(Parent);
-	Self.SetPos(X, Y);
-	Self.SetSize(DefaultW, DefaultH);
 end;
 
 procedure TContainer.AddObject(Obj: PUIObject);
@@ -1515,16 +1526,17 @@ const
 	DefaultH = 175;
 begin
 	Inherited Init(X, Y, Parent);
-	SetSize(DefaultW, DefaultH);
-	AddState(SBordered);
-	DoClose   := False;
-	OnRun     := nil;
-	OnClose   := nil;
-	MenuObj   := nil;
-	BackdropP := nil;
-	BackdropS := 0;
-	EventQueue := nil;
+	Width            := DefaultW;
+	Height           := DefaultH;
+	DoClose          := False;
+	OnRun            := nil;
+	OnClose          := nil;
+	MenuObj          := nil;
+	BackdropP        := nil;
+	BackdropS        := 0;
+	EventQueue       := nil;
 	PreserveBackdrop := False;
+	Include(State, SBordered);
 end;
 
 procedure TWindow.Draw;
@@ -1537,7 +1549,7 @@ begin
 		exit;
 
 	{Get absolute position and size of the window}
-	Self.GetPos(X1, Y1, True);
+	Self.GetAbsPos(X1, Y1);
 	X2 := X1 + Width;
 	Y2 := Y1 + Height;
 	BgColor := GetBGColor;
@@ -1726,7 +1738,7 @@ begin
 
 	{DEBUG - out of bounds check}
 	{Get absolute position of the window}
-	Self.GetPos(X1, Y1, True);
+	Self.GetAbsPos(X1, Y1);
 
 	{Restore background}
 	Mouse.Hide;
@@ -1769,8 +1781,8 @@ var
 	regs: registers;
 begin
 	Visible := False;
-	X := 0;
-	Y := 0;
+	X       := 0;
+	Y       := 0;
 	Clicked := MbNone;
 	Support := false;
 

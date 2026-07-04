@@ -17,7 +17,6 @@ type
 
 			procedure    SetLightColor(Color: Byte);
 			procedure    SetDarkColor(Color: Byte);
-		private
 	end;
 
 implementation
@@ -30,7 +29,7 @@ begin
 	Inherited Init(X, Y, Parent);
 	Width := DefaultW;
 	Height := DefaultH;
-	AddState(SBordered);
+	Include(State, SBordered);
 	LightColor := Thm.Light;
 	DarkColor := Thm.Shadow;
 end;
@@ -44,7 +43,7 @@ begin
 		exit;
 
 	{Get absolute position and size of the object}
-	Self.GetPos(X1, Y1, True);
+	Self.GetAbsPos(X1, Y1);
 	X2 := X1 + Width;
 	Y2 := Y1 + Height;
 
@@ -81,7 +80,7 @@ begin
 	   (Color = ColorDefault) then
 		LightColor := Color;
 
-	AddState(SDirty);
+	Include(State, SDirty);
 end;
 
 procedure TFrame.SetDarkColor(Color: Byte);
@@ -90,7 +89,7 @@ begin
 	   (Color = ColorDefault) then
 		DarkColor := Color;
 
-	AddState(SDirty);
+	Include(State, SDirty);
 end;
 
 end.

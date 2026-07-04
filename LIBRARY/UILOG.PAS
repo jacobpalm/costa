@@ -68,7 +68,7 @@ begin
 		exit;
 
 	{Get absolute position and size of the object}
-	GetPos(X1, Y1, True);
+	GetAbsPos(X1, Y1);
 	X2 := X1 + Width;
 	Y2 := Y1 + Height;
 
@@ -125,7 +125,7 @@ begin
 	LineCount := 0;
 
 	{Trigger redraw}
-	Self.AddState(SDirty);
+	Include(State, SDirty);
 end;
 
 procedure TLogArea.Scroll;
@@ -180,7 +180,7 @@ begin
 		FGColor := Thm.TxtText;
 
 	{Get absolute position and size of the object}
-	GetPos(X1, Y1, True);
+	GetAbsPos(X1, Y1);
 	X2 := Width;
 
 	PrintY := Y1 + LogPadding + (Index * PrintLineH);
@@ -211,12 +211,14 @@ end;
 procedure TLogArea.SetAlign(Val: TAlign);
 begin
 	Align := Val;
-	AddState(SDirty);
+	Include(State, SDirty);
 end;
 
 destructor TLogArea.Done;
 begin
 	Self.Clear; {Free memory used by Entries array}
+
+	Inherited Done;
 end;
 
 end.

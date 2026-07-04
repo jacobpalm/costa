@@ -81,8 +81,6 @@ const
 constructor TMineField.Init(Parent: PContainer);
 begin
 	TUIObject.Init;
-	SetParent(Parent);
-	SetFieldSize(SMedium);
 	Cleared   := 0;
 	Flagged   := 0;
 	SoundOn   := true;
@@ -90,11 +88,15 @@ begin
 	StartTime := 0;
 	PauseTime := 0;
 
-	FillChar(Cell, SizeOf(Cell), 0);
+	SetFieldSize(SMedium);
 
-	{Center keyboard indicator and turn it off by default}
+	{Center keyboard indicator}
 	IndicatorRow := Rows div 2;
 	IndicatorCol := Cols div 2;
+
+	FillChar(Cell, SizeOf(Cell), 0);
+
+	SetParent(Parent);
 end;
 
 procedure TMineField.Draw;
@@ -106,7 +108,7 @@ begin
 		exit;
 
 	{Get absolute position and size of the object}
-	GetPos(X1, Y1, True);
+	GetAbsPos(X1, Y1);
 	X2 := X1 + Width;
 	Y2 := Y1 + Height;
 
@@ -158,7 +160,7 @@ var
 	NeighborStr: string;
 begin
 	{Calculate absolute position of cell within area}
-	GetPos(X1, Y1, True);
+	GetAbsPos(X1, Y1);
 	X1 := X1 + 1 + Col * CellSize;
 	Y1 := Y1 + 1 + Row * CellSize;
 	X2 := X1 + CellSize - 2;
@@ -288,7 +290,7 @@ begin
 		MoveIndicator(DHide);
 
 		{Calculate mouse position in field, then convert to cell coordinates}
-		GetPos(X1, Y1, True);
+		GetAbsPos(X1, Y1);
 		C := (Mouse.X - X1) div CellSize;
 		R := (Mouse.Y - Y1) div CellSize;
 
@@ -371,7 +373,7 @@ begin
 
 	PauseTime := Timer;
 
-	GetPos(X1, Y1, True);
+	GetAbsPos(X1, Y1);
 	X2 := X1 + Width;
 	Y2 := Y1 + Height;
 
@@ -460,7 +462,7 @@ begin
 	{Reveal all mines in the field}
 
 	{Get absolute position of field to use as offset for drawing}
-	GetPos(OffX, OffY, True);
+	GetAbsPos(OffX, OffY);
 
 	SetColor(Red);
 	Mouse.Hide;
@@ -879,8 +881,6 @@ begin
 end;
 
 procedure TMinefield.SetFieldSize(Size: TMinefieldSize);
-var
-	PixelW, PixelH: integer;
 begin
 	{Set number of rows, columns and mines based on selected size - in this
 	 version, only preset sizes are supported.}
@@ -912,12 +912,10 @@ begin
 			end;
 	end;
 
-	PixelW := Cols * CellSize;
-	PixelH := Rows * CellSize;
-
 	{Set size of minefield object on screen as well, and center it on parent}
-	SetSize(PixelW, PixelH);
-	Center(OrBoth);
+	Self.Width := Cols * CellSize;
+	Self.Height := Rows * CellSize;
+	Self.Center(OrBoth);
 end;
 
 procedure TMinefield.PlaySound(SoundType: TSound);

@@ -33,10 +33,10 @@ const
 	DefaultH = 22;
 begin
 	TUIObject.Init;
-	SetParent(Parent);
 	Interval := 0;
 	LastTick := 0;
 	Running := False;
+	SetParent(Parent);
 end;
 
 procedure TTimer.CheckEvent;

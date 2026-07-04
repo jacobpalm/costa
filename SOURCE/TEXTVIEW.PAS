@@ -396,9 +396,10 @@ begin
 	New(WinMain, Init(0, 0, nil));
 	with WinMain^ do
 	begin
-		SetSize(ScreenWidth, ScreenHeight);
-		RemoveState(SBordered);
+		Width := ScreenWidth;
+		Height := ScreenHeight;
 		OnDraw := WinMainDraw;
+		Exclude(State, SBordered);
 	end;
 
 	New(BtnOpen, Init(3, 2, CAP_OPEN, WinMain));
@@ -412,18 +413,18 @@ begin
 	with BtnPageUp^ do
 	begin
 		OnClick := PageScrollEvent;
+		Include(State, SHidden); {Hidden until a file is opened}
 		AddHotkey(KeyAltU);
 		AddHotkey(KeyPageUp);
-		AddState(SHidden); {Hidden until a file is opened}
 	end;
 
 	New(BtnPageDown, Init(201, 2, CAP_PAGE_DOWN, WinMain));
 	with BtnPageDown^ do
 	begin
 		OnClick := PageScrollEvent;
+		Include(State, SHidden);
 		AddHotkey(KeyAltD);
 		AddHotkey(KeyPageDown);
-		AddState(SHidden);
 	end;
 
 	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));

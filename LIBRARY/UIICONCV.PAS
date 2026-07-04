@@ -39,7 +39,6 @@ type
 			function     IsChanged: Boolean;
 
 			procedure    SetPreviewPos(RelativeX, RelativeY: Integer);
-			procedure    GetPreviewPos(var RelativeX, RelativeY: Integer);
 		private
 			IndicatorX,
 			IndicatorY:  Integer;   {Current position of keyboard indicator}
@@ -104,7 +103,7 @@ begin
 		exit;
 
 	{Get absolute position and size of the object}
-	Self.GetPos(X1, Y1, True);
+	Self.GetAbsPos(X1, Y1);
 	X2 := X1 + Width;
 	Y2 := Y1 + Height;
 
@@ -198,7 +197,7 @@ begin
 	Changed := false;
 
 	{Redraw the canvas}
-	AddState(SDirty);
+	Include(State, SDirty);
 end;
 
 procedure TIconCanvas.LoadIcon(Filename: string);
@@ -212,7 +211,7 @@ begin
 
 	Mouse.Hide;
 	ImgPreview^.Draw;
-	ImgPreview^.GetPos(PreviewX, PreviewY, True);
+	ImgPreview^.GetAbsPos(PreviewX, PreviewY);
 	{Get color of each pixel from the preview icon and draw it on the canvas}
 	for X := 0 to IconSize do
 	begin
@@ -241,7 +240,7 @@ var
 	X1, Y1, X2, Y2: Integer;
 begin
 	{Allocate memory and get the icon data}
-	ImgPreview^.GetPos(X1, Y1, True);
+	ImgPreview^.GetAbsPos(X1, Y1);
 	X2 := X1 + IconSize;
 	Y2 := Y1 + IconSize;
 	Size := ImageSize(X1, Y1, X2, Y2);
@@ -316,22 +315,11 @@ procedure TIconCanvas.SetPreviewPos(RelativeX, RelativeY: Integer);
 var
 	X, Y: Integer;
 begin
-	Self.GetPos(X, Y, True);
+	Self.GetAbsPos(X, Y);
 	Inc(X, RelativeX);
 	Inc(Y, RelativeY);
-	ImgPreview^.SetPos(X, Y);
+	ImgPreview^.Move(X, Y);
 end;
-
-procedure TIconCanvas.GetPreviewPos(var RelativeX, RelativeY: Integer);
-var
-	X, Y: Integer;
-begin
-	ImgPreview^.GetPos(RelativeX, RelativeX, True);
-	Self.GetPos(X, Y, True);
-	RelativeX := RelativeX - X;
-	RelativeY := RelativeY - Y;
-end;
-
 
 {Procedures below are private methods for internal use only}
 
@@ -431,7 +419,7 @@ begin
 	{Offset variables are the coords for the top-left corner of
 	 the drawing area, and each 'pixel' in it is PixelSize times
 	 PixelSize pixels in size}
-	Self.GetPos(OffsetX, OffsetY, True);
+	Self.GetAbsPos(OffsetX, OffsetY);
 	Inc(OffsetX, 2);
 	Inc(OffsetY, 2);
 
@@ -446,7 +434,7 @@ begin
 	Bar(CanvasX, CanvasY, CanvasX + PixelSize - 2, CanvasY + PixelSize - 2);
 
 	{Update preview}
-	ImgPreview^.GetPos(PreviewX, PreviewY, True);
+	ImgPreview^.GetAbsPos(PreviewX, PreviewY);
 	PutPixel(PreviewX + X, PreviewY + Y, Col);
 end;
 
@@ -547,7 +535,7 @@ var
 	OffsetX, OffsetY: Integer;
 begin
 	{Get absolute position of the canvas area}
-	Self.GetPos(OffsetX, OffsetY, True);
+	Self.GetAbsPos(OffsetX, OffsetY);
 	Inc(OffsetX, 2);
 	Inc(OffsetY, 2);
 
@@ -579,7 +567,7 @@ var
 	CanvasX, CanvasY: Integer;
 begin
 	{Get absolute position of the canvas area}
-	Self.GetPos(OffsetX, OffsetY, True);
+	Self.GetAbsPos(OffsetX, OffsetY);
 	Inc(OffsetX, 2);
 	Inc(OffsetY, 2);
 

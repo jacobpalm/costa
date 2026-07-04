@@ -292,7 +292,7 @@ procedure TxtDriveChange(Sender: PUIObject); far;
 var
 	NewDrive: String[1];
 begin
-	NewDrive := TxtDrive^.GetText;
+	NewDrive := TxtDrive^.Text;
 	if not SetDrive(NewDrive[1]) then
 	begin
 		TxtDrive^.SetText(Drive); {Restore original drive letter}
@@ -301,7 +301,7 @@ end;
 
 procedure TxtPatternChange(Sender: PUIObject); far;
 begin
-	Pattern := TxtPattern^.GetText;
+	Pattern := TxtPattern^.Text;
 	if Length(Pattern) = 0 then
 		Pattern := '*.*';
 	GetChildFiles(Path, Pattern);
@@ -349,30 +349,31 @@ begin
 	New(WinFileSelect, Init(0, 0, NoParent));
 	with WinFileSelect^ do
 	begin
-		SetSize(468, 270);
+		Width := 468;
+		Height := 270;
+		OnDraw := WinFileSelectDraw;
 		Center(OrBoth);
 		SaveBackdrop;
-		OnDraw := WinFileSelectDraw;
 	end;
 
 	New(TxtPattern, Init(15, 28, CAP_PATTERN, WinFileSelect));
 	with TxtPattern^ do
 	begin
-		SetSize(150, SizeRetain);
-		AddHotkey(KeyAltP);
-		SetText(Pattern);
+		Width := 150;
+		Text := Pattern;
+		MaxLength := 12; {8.3 including the dot}
 		OnChange := TxtPatternChange;
-		SetMaxLength(12); {8.3 including the dot}
+		AddHotkey(KeyAltP);
 	end;
 
 	New(TxtDrive, Init(187, 28, CAP_DRIVE, WinFileSelect));
 	with TxtDrive^ do
 	begin
-		SetSize(150, SizeRetain);
-		AddHotkey(KeyAltR);
-		SetText(Drive);
+		Width := 150;
+		Text := Drive;
+		MaxLength := 1;
 		OnChange := TxtDriveChange;
-		SetMaxLength(1);
+		AddHotkey(KeyAltR);
 	end;
 
 	New(LblFiles, Init(16, 57, CAP_FILES, WinFileSelect));
@@ -381,70 +382,76 @@ begin
 	New(List[FileList], Init(16, 71, WinFileSelect));
 	with List[FileList]^ do
 	begin
-		SetSize(150, 185);
-		AddHotkey(KeyAltF);
+		Width := 150;
+		Height := 185;
 		OnChange := DrawPreview;
 		OnClick := ListClicked;
 		OnDoubleClick := ListDblClicked;
+		AddHotkey(KeyAltF);
 	end;
 
 	New(List[DirList], Init(187, 71, WinFileSelect));
 	with List[DirList]^ do
 	begin
-		SetSize(150, 185);
-		AddHotkey(KeyAltD);
+		Width := 150;
+		Height := 185;
 		OnClick := ListClicked;
 		OnDoubleClick := ListDblClicked;
+		AddHotkey(KeyAltD);
 	end;
 
 	New(BtnSelect, Init(363, 28, CAP_SELECT, WinFileSelect));
 	with BtnSelect^ do
 	begin
+		OnClick := ListDblClicked;
 		AddHotkey(KeyAltS);
 		AddHotkey(KeyEnter);
-		OnClick := ListDblClicked;
 	end;
 
 	New(BtnCancel, Init(363, 58, CAP_CANCEL, WinFileSelect));
 	with BtnCancel^ do
 	begin
+		OnClick := BtnCancelClick;
 		AddHotkey(KeyAltC);
 		AddHotkey(KeyEscape);
-		OnClick := BtnCancelClick;
 	end;
 
 	New(BtnFilePrev, Init(168, 71, CharArrowUp, WinFileSelect));
 	with BtnFilePrev^ do
 	begin
-		SetSize(14, 91);
+		Width := 14;
+		Height := 91;
 		OnClick := BtnDirectionClick;
 	end;
 
 	New(BtnFileNext, Init(168, 71 + 94, CharArrowDown, WinFileSelect));
 	with BtnFileNext^ do
 	begin
-		SetSize(14, 91);
+		Width := 14;
+		Height := 91;
 		OnClick := BtnDirectionClick;
 	end;
 
 	New(BtnDirPrev, Init(339, 71, CharArrowUp, WinFileSelect));
 	with BtnDirPrev^ do
 	begin
-		SetSize(14, 91);
+		Width := 14;
+		Height := 91;
 		OnClick := BtnDirectionClick;
 	end;
 
 	New(BtnDirNext, Init(339, 71 + 94, CharArrowDown, WinFileSelect));
 	with BtnDirNext^ do
 	begin
-		SetSize(14, 91);
+		Width := 14;
+		Height := 91;
 		OnClick := BtnDirectionClick;
 	end;
 
 	New(ImgPreview, Init(393, 108, '', WinFileSelect));
 	with ImgPreview^ do
 	begin
-		RemoveState(SBordered);
+		Exclude(State, SBordered);
 		SetBgColor(Thm.Win);
 	end;
 
@@ -469,8 +476,8 @@ begin
 	New(HkTab, Init(KeyTab, WinFileSelect));
 	with HkTab^ do
 	begin
-		AddHotkey(KeyShiftTab);
 		OnClick := HkTabPress;
+		AddHotkey(KeyShiftTab);
 	end;
 end;
 

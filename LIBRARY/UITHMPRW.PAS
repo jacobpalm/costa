@@ -56,8 +56,8 @@ const
 	DefaultH = 192;
 begin
 	Inherited Init(X, Y, Parent);
-	SetSize(DefaultW, DefaultH);
-
+	Width := DefaultW;
+	Height := DefaultH;
 
 	ThemeName := '';
 	ThemeAuthor := '';
@@ -74,10 +74,10 @@ begin
 	New(ImgPreview, Init(0, 0, 'LOGO', WinPreview));
 	New(LblPreviewInfo, Init(0, 0, CAP_PREVIEW, WinPreview));
 	New(TxtPreview, Init(0, 0, '', WinPreview));
-	TxtPreview^.SetText(CAP_TEXTBOX);
+	TxtPreview^.Text := CAP_TEXTBOX;
 	New(BtnPreview1, Init(0, 0, CAP_BUTTON, WinPreview));
 	New(BtnPreview2, Init(0, 0, CAP_BUTTON, WinPreview));
-	BtnPreview2^.AddState(SActive);
+	Include(BtnPreview2^.State, SActive);
 
 	{Preview desktop link}
 	New(ImgPreviewLink, Init(0, 0, 'PAINT', @Self));
@@ -89,17 +89,17 @@ var
 	OldTheme: String[8];
 begin
 	{Set positions and sizes of preview objects based on current size of preview frame}
-	ImgPreviewLink^.SetPos(14, Height - 42);
-	LblPreviewLink^.SetPos(52, Height - 38);
-	WinPreview^.SetPos(14, 12);
-	WinPreview^.SetSize(Width - 28, 123);
-	ImgPreview^.SetPos(12, 12);
-	LblPreviewInfo^.SetPos(54, 16);
+	ImgPreviewLink^.Move(14, Height - 42);
+	LblPreviewLink^.Move(52, Height - 38);
+	WinPreview^.Move(14, 12);
+	WinPreview^.Resize(Width - 28, 123);
+	ImgPreview^.Move(12, 12);
+	LblPreviewInfo^.Move(54, 16);
 
-	TxtPreview^.SetPos(12, 57);
-	TxtPreview^.SetSize(WinPreview^.Width - 23, SizeRetain);
-	BtnPreview1^.SetPos(12, WinPreview^.Height - 34);
-	BtnPreview2^.SetPos(WinPreview^.Width - 104, WinPreview^.Height - 34);
+	TxtPreview^.Move(12, 57);
+	TxtPreview^.Resize(WinPreview^.Width - 23, SizeRetain);
+	BtnPreview1^.Move(12, WinPreview^.Height - 34);
+	BtnPreview2^.Move(WinPreview^.Width - 104, WinPreview^.Height - 34);
 
 	{If a theme file is loaded, apply it for preview}
 	if ThemeLoaded then
@@ -152,7 +152,7 @@ begin
 	{Update preview info label to show theme name and author}
 	LblPreviewInfo^.SetCaption(ThemeName + #13 + ThemeAuthor);
 
-	AddState(SDirty);
+	Include(State, SDirty);
 end;
 
 procedure TThemePreview.LoadMem(ThemePtr: PTheme; Name, Author: String);
@@ -161,9 +161,9 @@ begin
 	if ThemePtr = nil then
 		exit;
 
-	ThemeData := ThemePtr^;
+	ThemeData   := ThemePtr^;
 	ThemeLoaded := true;
-	ThemeName := Name;
+	ThemeName   := Name;
 	ThemeAuthor := Author;
 
 	If (Length(ThemeName) > 0) or (Length(ThemeAuthor) > 0) then
@@ -171,7 +171,7 @@ begin
 	else
 		LblPreviewInfo^.SetCaption(CAP_PREVIEW);
 
-	AddState(SDirty);
+	Include(State, SDirty);
 end;
 
 end.

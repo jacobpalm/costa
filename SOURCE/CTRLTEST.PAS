@@ -40,7 +40,7 @@ end;
 
 procedure Txt1Change(Sender: PUIObject); far;
 begin
-	MsgBox('Text Changed', 'The text has been changed to:' + #13 + Txt1^.GetText, MsgInfo);
+	MsgBox('Text Changed', 'The text has been changed to:' + #13 + Txt1^.Text, MsgInfo);
 end;
 
 begin
@@ -53,32 +53,36 @@ begin
 	New(Btn1, Init(20, 20, #127 + 'About...', WinMain));
 	With Btn1^ do
 	begin
-		AddHotkey(KeyAltA);
 		OnClick := Btn1Click;
+		AddHotkey(KeyAltA);
 	end;
 	New(Btn2, Init(120, 20, #127 + 'Open...', WinMain));
 	With Btn2^ do
 	begin
-		AddHotkey(KeyAltO);
 		OnClick := Btn2Click;
+		AddHotkey(KeyAltO);
 	end;
 	New(Btn3, Init(220, 20, 'E' + #127 + 'xit', WinMain));
 	With Btn3^ do
 	begin
-		AddHotkey(KeyAltX);
 		OnClick := Btn3Click;
+		AddHotkey(KeyAltX);
 	end;
 	New(HkEsc, Init(KeyEscape, WinMain));
 	HkEsc^.OnClick := Btn3Click;
 
 	New(Frm1, Init(20, 50, WinMain));
-	Frm1^.SetSize(200, 100);
+	with Frm1^ do
+	begin
+		Width := 200;
+		Height := 100;
+	end
 	New(Txt1, Init(10, 20, 'Name:', Frm1));
 	With Txt1^ do
 	begin
-		SetText('John Doe');
+		Text := 'John Doe';
+		OnChange := Txt1Change;
 		Center(OrHorizontal);
-		OnChange := Txt1Change);
 	end;
 
 	WinMain^.Run;

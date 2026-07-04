@@ -112,7 +112,7 @@ begin
 	if DrawPreview then
 	begin
 		ThemeChanged := True;
-		PrwTheme^.LoadMem(@ThemeData, TxtName^.GetText, TxtAuthor^.GetText);
+		PrwTheme^.LoadMem(@ThemeData, TxtName^.Text, TxtAuthor^.Text);
 	end;
 end;
 
@@ -266,8 +266,8 @@ begin
 
 	FillChar(SaveName, SizeOf(SaveName), 0);
 	FillChar(SaveAuthor, SizeOf(SaveAuthor), 0);
-	SaveName := TxtName^.GetText;
-	SaveAuthor := TxtAuthor^.GetText;
+	SaveName := TxtName^.Text;
+	SaveAuthor := TxtAuthor^.Text;
 	Assign(F, Filename);
 	{$I-}
 	Rewrite(F, 1);
@@ -302,7 +302,7 @@ var
 begin
 	if PArea(Sender) = AreaColor[SelectedColor] then
 	begin
-		AreaColor[SelectedColor]^.GetPos(X1, Y1, True);
+		AreaColor[SelectedColor]^.GetAbsPos(X1, Y1);
 		X2 := X1 + AreaColor[SelectedColor]^.Width;
 		Y2 := Y1 + AreaColor[SelectedColor]^.Height;
 		Inc(X1, 4);
@@ -358,7 +358,7 @@ end;
 procedure TextboxChange(Sender: PUIObject); far;
 begin
 	ThemeChanged := True;
-	PrwTheme^.LoadMem(@ThemeData, TxtName^.GetText, TxtAuthor^.GetText);
+	PrwTheme^.LoadMem(@ThemeData, TxtName^.Text, TxtAuthor^.Text);
 end;
 
 procedure WinMainRun(Sender: PUIObject); far;
@@ -381,79 +381,80 @@ begin
 	New(WinMain, Init(0, 0, nil));
 	with WinMain^ do
 	begin
-		SetSize(ScreenWidth, ScreenHeight);
-		RemoveState(SBordered);
+		Width := ScreenWidth;
+		Height := ScreenHeight;
 		OnRun := WinMainRun;
+		Exclude(State, SBordered);
 	end;
 
 	{Main screen}
 	New(BtnNew, Init(2, 2, CAP_NEW, WinMain));
 	with BtnNew^ do
 	begin
-		AddHotKey(KeyAltN);
 		OnClick := NewTheme;
+		AddHotKey(KeyAltN);
 	end;
 
 	New(BtnOpen, Init(101, 2, CAP_OPEN, WinMain));
 	with BtnOpen^ do
 	begin
-		AddHotKey(KeyAltO);
 		OnClick := LoadTheme;
+		AddHotKey(KeyAltO);
 	end;
 
 	New(BtnSave, Init(200, 2, CAP_SAVE, WinMain));
 	with BtnSave^ do
 	begin
-		AddHotKey(KeyAltS);
 		OnClick := BtnSaveClick;
+		AddHotKey(KeyAltS);
 	end;
 
 	New(BtnSaveAs, Init(299, 2, CAP_SAVE_AS, WinMain));
 	with BtnSaveAs^ do
 	begin
-		AddHotKey(KeyAltV);
 		OnClick := BtnSaveClick;
+		AddHotKey(KeyAltV);
 	end;
 
 	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
 	with BtnAbout^ do
 	begin
-		AddHotKey(KeyAltA);
 		OnClick := BtnAboutClick;
+		AddHotKey(KeyAltA);
 	end;
 
 	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
 	with BtnExit^ do
 	begin
+		OnClick := BtnExitClick;
 		AddHotKey(KeyAltX);
 		AddHotKey(KeyEscape);
-		OnClick := BtnExitClick;
 	end;
 
 	New(TxtName, Init(434, 59, CAP_NAME, WinMain));
 	with TxtName^ do
 	begin
-		SetSize(194, SizeRetain);
-		AddHotKey(KeyAltM);
+		Width := 194;
+		MaxLength := 20;
 		OnChange := TextboxChange;
-		SetMaxLength(20);
+		AddHotKey(KeyAltM);
 	end;
 
 	New(TxtAuthor, Init(434, 107, CAP_AUTHOR, WinMain));
 	with TxtAuthor^ do
 	begin
-		SetSize(194, SizeRetain);
-		AddHotKey(KeyAltU);
+		Width := 194;
+		MaxLength := 20;
 		OnChange := TextboxChange;
-		SetMaxLength(20);
+		AddHotKey(KeyAltU);
 	end;
 
 	New(BtnObject, Init(434, 155, CAP_OBJECT[0], WinMain));
 	with BtnObject^ do
 	begin
-		SetSize(194, SizeRetain);
-		AddHotKey(KeyAltB);
+		Width := 194;
 		OnClick := BtnObjectClick;
+		AddHotKey(KeyAltB);
 	end;
 
 	New(LblObject, Init(434, 140, CAP_OBJECT_SEL, WinMain));
@@ -472,7 +473,8 @@ begin
 		New(AreaColor[i], Init(434 + X1, 205 + Y1, WinMain));
 		with AreaColor[i]^ do
 		begin
-			SetSize(19, 19);
+			Width := 19;
+			Height := 19;
 			SetBgColor(i);
 			OnClick := AreaColorClick;
 			OnDraw := AreaColorDraw;
@@ -488,8 +490,9 @@ begin
 	New(PrwTheme, Init(12, 42, WinMain));
 	with PrwTheme^ do
 	begin
-		SetSize(410, 293);
-		RemoveState(SEnabled);
+		Width := 410;
+		Height := 293;
+		Exclude(State, SEnabled);
 		SetLightColor(Thm.Light);
 		SetDarkColor(Thm.Shadow);
 	end;

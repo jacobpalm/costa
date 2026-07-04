@@ -48,7 +48,7 @@ begin
 	if (Mouse.Clicked = MbLeft) and Self.IsMouseOver then
 	begin
 		Mouse.Hide;
-		AddState(SActive);
+		Include(State, SActive);
 		Self.Draw;
 		Mouse.Show;
 		repeat
@@ -105,7 +105,7 @@ begin
 		exit;
 
 	{Get absolute position and size of the object}
-	GetPos(X1, Y1, True);
+	GetAbsPos(X1, Y1);
 	X2 := X1 + Width;
 	Y2 := Y1 + Height;
 
@@ -146,7 +146,7 @@ end;
 procedure TButton.SetCaption(Cap: string);
 begin
 	Caption := Cap;
-	AddState(SDirty);
+	Include(State, SDirty);
 end;
 
 end.
