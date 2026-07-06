@@ -43,6 +43,7 @@ begin
 		FillChar(RunLink^, SizeOf(TLink), 0);
 		RunLink^.FileName := UpperCase(TxtFilename^.Text);
 		RunLink^.Parameters := TxtParams^.Text;
+		RunLink^.PauseOnExit := true;
 		WinRun^.Close;
 	end;
 end;

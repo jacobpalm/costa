@@ -128,24 +128,25 @@ FilenamePtr    dw 0                ; Pointer to filename for EXEC, either DESKTO
 ParametersPtr  dw 0                ; Pointer to parameters for EXEC, either DESKTOPPARAMS or RunProg.Parameters
 PathPtr        dw 0                ; Pointer to path for CHDIR, either CostaPath or RunProg.Path
 
-; Messages, both regular and error
-MSG_CONTINUE        db 'Press any key to continue...$'
-MSG_UNKNOWN_ERR     db 'Unknown error', CR_CHAR, LF_CHAR, '$'
-MSG_DOS_VER_ERR     db 'DOS 4 or newer required', CR_CHAR, LF_CHAR, '$'
+; Messages
+MSG_CONTINUE        db 'Press any key to continue...', '$'
+MSG_CRLF            db CR_CHAR, LF_CHAR, '$'           ; Used only to make DOS print a newline after an error message
 
-; Standard DOS error messages
-MSG_INVALID_FUNC    db 'Invalid function', CR_CHAR, LF_CHAR, '$'
-MSG_FILE_NOT_FOUND  db 'File not found', CR_CHAR, LF_CHAR, '$'
-MSG_PATH_NOT_FOUND  db 'Path not found', CR_CHAR, LF_CHAR, '$'
-MSG_TOO_MANY_OPEN   db 'Too many open files', CR_CHAR, LF_CHAR, '$'
-MSG_ACCESS_DENIED   db 'Access denied', CR_CHAR, LF_CHAR, '$'
-MSG_INVALID_HANDLE  db 'Invalid handle', CR_CHAR, LF_CHAR, '$'
-MSG_MEM_CB_DESTR    db 'Memory control block destroyed', CR_CHAR, LF_CHAR, '$'
-MSG_INSUFF_MEM      db 'Insufficient memory', CR_CHAR, LF_CHAR, '$'
-MSG_INVALID_MEM_ADD db 'Invalid memory address', CR_CHAR, LF_CHAR, '$'
-MSG_INVALID_ENV     db 'Invalid environment', CR_CHAR, LF_CHAR, '$'
-MSG_INVALID_FORMAT  db 'Invalid format', CR_CHAR, LF_CHAR, '$'
-MSG_INVALID_ACCESS  db 'Invalid access mode', CR_CHAR, LF_CHAR, '$'
+; Error messages
+MSG_UNKNOWN_ERR     db 'Unknown error', '$'
+MSG_INVALID_FUNC    db 'Invalid function', '$'
+MSG_FILE_NOT_FOUND  db 'File not found', '$'
+MSG_PATH_NOT_FOUND  db 'Path not found', '$'
+MSG_TOO_MANY_OPEN   db 'Too many open files', '$'
+MSG_ACCESS_DENIED   db 'Access denied', '$'
+MSG_INVALID_HANDLE  db 'Invalid handle', '$'
+MSG_MEM_CB_DESTR    db 'Memory control block destroyed', '$'
+MSG_INSUFF_MEM      db 'Insufficient memory', '$'
+MSG_INVALID_MEM_ADD db 'Invalid memory address', '$'
+MSG_INVALID_ENV     db 'Invalid environment', '$'
+MSG_INVALID_FORMAT  db 'Invalid format', '$'
+MSG_INVALID_ACCESS  db 'Invalid access mode', '$'
+MSG_DOS_VER_ERR     db 'DOS 4 or newer required', '$'
 
 ; Offset table for error messages - 1-12 are standard DOS error codes, 0 and
 ; 13+ are custom errors
@@ -451,6 +452,10 @@ PROC HandleError NEAR
 
 	mov ah, PRINT_STR_FUNCTION
 	int 21h                        ; Print error message
+
+	lea dx, [MSG_CRLF]             ; Load address of CRLF, to print a newline after error message
+	mov ah, PRINT_STR_FUNCTION     ; Print string using DOS function
+	int 21h
 
 	cmp cl, FATAL_ERROR_FLAG
 	je FatalError                  ; If fatal, terminate program
