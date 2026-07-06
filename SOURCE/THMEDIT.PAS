@@ -475,9 +475,9 @@ begin
 		begin
 			Width := 19;
 			Height := 19;
-			SetBgColor(i);
 			OnClick := AreaColorClick;
 			OnDraw := AreaColorDraw;
+			SetBgColor(i);
 		end;
 		Inc(X1, 25);
 	end;

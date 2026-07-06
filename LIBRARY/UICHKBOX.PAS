@@ -45,7 +45,7 @@ end;
 
 procedure TCheckbox.Draw;
 var
-	X1, X2, Y1, Y2, ChkColor: Integer;
+	X1, Y1: Integer;
 	FgColor, BgColor: Byte;
 begin
 	if SHidden in State then
@@ -53,8 +53,6 @@ begin
 
 	{Get absolute position and size of the object}
 	GetAbsPos(X1, Y1);
-	X2 := X1 + Width;
-	Y2 := Y1 + Height;
 
 	{Get colors}
 	FgColor := GetFgColor;
@@ -65,7 +63,7 @@ begin
 	if BgColor = ColorDefault then
 		BgColor := Thm.Txt;
 
-	DrawUIPrimitive(UIBorderDown, X1, Y1, X2, Y2, BgColor, False);
+	DrawUIPrimitive(UIBorderDown, X1, Y1, Self.Width, Self.Height, BgColor, False);
 
 	if SSelected in State then
 	begin

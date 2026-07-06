@@ -4,7 +4,7 @@ unit UIList;
 interface
 
 uses
-	Costalib, UIArea, Graph;
+	Costalib, Graph;
 
 const
 	{DEBUG - adapt to allow variable size lists}
@@ -253,7 +253,7 @@ begin
 	if BgColor = ColorDefault then
 		BgColor := Thm.Txt;
 
-	DrawUIPrimitive(UIBorderDown, X1, Y1, X2, Y2, BgColor, (STransparent in State));
+	DrawUIPrimitive(UIBorderDown, X1, Y1, Self.Width, Self.Height, BgColor, (STransparent in State));
 
 	{Draw contents of list}
 	{Set X coordinates to internal area inside border, and Y coordinates to the first item position}

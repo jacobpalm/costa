@@ -3,7 +3,7 @@ unit UILOG;
 interface
 
 uses
-	Costalib, UIArea, Graph;
+	Costalib, Graph;
 
 type
 	PLogEntry = ^String;
@@ -59,7 +59,7 @@ end;
 
 procedure TLogArea.Draw;
 var
-	X1, X2, Y1, Y2: Integer;
+	X1, Y1: Integer;
 	I: Integer;
 	FgColor, BgColor: Byte;
 	TestStr: String;
@@ -69,15 +69,12 @@ begin
 
 	{Get absolute position and size of the object}
 	GetAbsPos(X1, Y1);
-	X2 := X1 + Width;
-	Y2 := Y1 + Height;
 
 	BgColor := GetBgColor;
 	if BgColor = ColorDefault then
 		BgColor := Thm.Txt;
 
-	{Draw the area using ancestor TArea}
-	DrawUIPrimitive(UIBorderDown, X1, Y1, X2, Y2, BgColor, (STransparent in State));
+	DrawUIPrimitive(UIBorderDown, X1, Y1, Self.Width, Self.Height, BgColor, (STransparent in State));
 
 	{Draw log lines}
 	if LineCount > 0 then

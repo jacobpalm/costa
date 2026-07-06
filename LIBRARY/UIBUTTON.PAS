@@ -97,7 +97,7 @@ end;
 
 procedure TButton.Draw;
 var
-	X1, X2, Y1, Y2: Integer;
+	X1, Y1: Integer;
 	FgColor, BgColor: Byte;
 	Style: TUIPrimitive;
 begin
@@ -106,8 +106,6 @@ begin
 
 	{Get absolute position and size of the object}
 	GetAbsPos(X1, Y1);
-	X2 := X1 + Width;
-	Y2 := Y1 + Height;
 
 	{Get colors}
 	FgColor := GetFGColor;
@@ -120,13 +118,13 @@ begin
 	else
 		Style := UIBorderUp;
 
-	DrawUIPrimitive(Style, X1, Y1, X2, Y2, BGColor, (STransparent in State));
+	DrawUIPrimitive(Style, X1, Y1, Self.Width, Self.Height, BGColor, (STransparent in State));
 
 	if Caption <> '' then
 	begin
-		X1 := (X2 - X1) div 2 + X1;
+		X1 := Self.Width div 2 + X1;
 		X1 := X1 - PrintW(Caption) div 2;
-		Y1 := (Y2 - Y1) div 2 + Y1 - 4; {4 is the offset to center text vertically}
+		Y1 := Self.Height div 2 + Y1 - 4; {4 is the offset to center text vertically}
 
 		if FgColor = ColorDefault then
 			FgColor := Thm.WinText;

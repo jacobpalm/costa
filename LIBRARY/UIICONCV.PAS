@@ -109,7 +109,7 @@ begin
 
 	BgColor := GetBgColor;
 
-	DrawUIPrimitive(UIBorderDown, X1, Y1, X2, Y2, BgColor, False);
+	DrawUIPrimitive(UIBorderDown, X1, Y1, Self.Width, Self.Height, BgColor, False);
 
 	{The canvas is divided into pixels by horizontal and vertical lines in a grid. These lines
  	 are dotted in alternate colors to make them visible on any background.}

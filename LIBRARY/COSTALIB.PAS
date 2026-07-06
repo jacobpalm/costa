@@ -8,7 +8,7 @@ uses
 const
 	LibName              = 'Costa UI Library';
 	LibVersion           = '2.0';
-	LibYear              = '2025';
+	LibYear              = '2026';
 
 	SizeRetain           = -255; {Used to retain current width/height on object resize}
 	ColorDefault         = 255;  {Used to set default colors on objects}
@@ -362,7 +362,7 @@ procedure Sleep(Milliseconds: Word);
 procedure SoundNote(Frequency, Duration: Word);
 procedure SystemSound(SoundType: TSystemSound);
 
-procedure DrawUIPrimitive(Style: TUIPrimitive; X1, Y1, X2, Y2: Integer; BgColor: Byte; Transparent: Boolean);
+procedure DrawUIPrimitive(Style: TUIPrimitive; X1, Y1, Width, Height: Integer; BgColor: Byte; Transparent: Boolean);
 
 implementation
 
@@ -401,10 +401,14 @@ asm
 end;
 
 {Used for drawing objects, in order to reduce redundant drawing code and to ensure similarity of objects}
-procedure DrawUIPrimitive(Style: TUIPrimitive; X1, Y1, X2, Y2: Integer; BgColor: Byte; Transparent: Boolean);
+procedure DrawUIPrimitive(Style: TUIPrimitive; X1, Y1, Width, Height: Integer; BgColor: Byte; Transparent: Boolean);
 var
-	TLColor1, TLColor2, BRColor1, BRColor2: Byte; {TL = top+left, BR = bottom+right}
+	TopLeftOuterCol, TopLeftInnerCol, BottomRightOuterCol, BottomRightInnerCol: Byte; {TL = top+left, BR = bottom+right}
+	X2, Y2: Integer;
 begin
+	X2 := X1 + Width;
+	Y2 := Y1 + Height;
+
 	if (Style = UIBorderUp) or (Style = UIBorderDown) then
 	begin
 		{Interior}
@@ -418,35 +422,35 @@ begin
 		if Style = UIBorderUp then
 		begin
 			{Border is up}
-			TLColor1 := White;
-			TLColor2 := Thm.Light;
-			BRColor1 := Black;
-			BRColor2 := Thm.Shadow;
+			TopLeftOuterCol := White;
+			TopLeftInnerCol := Thm.Light;
+			BottomRightOuterCol := Black;
+			BottomRightInnerCol := Thm.Shadow;
 		end
 		else
 		begin
 			{Border is down}
-			TLColor1 := Black;
-			TLColor2 := Thm.Shadow;
-			BRColor1 := White;
-			BRColor2 := Thm.Light;
+			TopLeftOuterCol := Black;
+			TopLeftInnerCol := Thm.Shadow;
+			BottomRightOuterCol := White;
+			BottomRightInnerCol := Thm.Light;
 		end;
 
 		{Top + left outer border}
-		SetColor(TLColor1);
+		SetColor(TopLeftOuterCol);
 		Line(X1, Y1, X2, Y1);
 		Line(X1, Y1 + 1, X1, Y2);
 		{Inner border}
-		SetColor(TLColor2);
+		SetColor(TopLeftInnerCol);
 		Line(X1 + 1, Y1 + 1, X2 - 1, Y1 + 1);
 		Line (X1 + 1, Y1 + 2, X1 + 1, Y2 - 1);
 
 		{Bottom + right outer border}
-		SetColor(BRColor1);
+		SetColor(BottomRightOuterCol);
 		Line(X2, Y1 + 1, X2, Y2);
 		Line(X1 + 1, Y2, X2 - 1, Y2);
 		{Inner border}
-		SetColor(BRColor2);
+		SetColor(BottomRightInnerCol);
 		Line(X2 - 1, Y1 + 2, X2 - 1, Y2 - 1);
 		Line(X1 + 2, Y2 - 1, X2 - 2, Y2 - 1);
 	end;

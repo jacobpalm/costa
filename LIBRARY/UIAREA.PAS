@@ -30,7 +30,7 @@ end;
 
 procedure TArea.Draw;
 var
-	X1, X2, Y1, Y2: Integer;
+	X1, Y1: Integer;
 	BgColor: Byte;
 begin
 	if SHidden in State then
@@ -38,14 +38,12 @@ begin
 
 	{Get absolute position and size of the object}
 	Self.GetAbsPos(X1, Y1);
-	X2 := X1 + Width;
-	Y2 := Y1 + Height;
 
 	BgColor := GetBGColor;
 	if BgColor = ColorDefault then
 		BgColor := Thm.Txt;
 
-	DrawUIPrimitive(UIBorderDown, X1, Y1, X2, Y2, BgColor, (STransparent in State));
+	DrawUIPrimitive(UIBorderDown, X1, Y1, Self.Width, Self.Height, BgColor, (STransparent in State));
 
 	Inherited Draw;
 end;

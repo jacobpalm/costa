@@ -64,7 +64,7 @@ begin
 
 	{Icon border}
 	if SBordered in State then
-		DrawUIPrimitive(UIBorderUp, X - 2, Y - 2, X + 33, Y + 33, 0, True);
+		DrawUIPrimitive(UIBorderUp, X - 2, Y - 2, 35, 35, 0, True);
 
 	{If no Icon file, draw an empty box}
 	if Length(IconFile) = 0 then

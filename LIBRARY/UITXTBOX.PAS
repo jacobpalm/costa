@@ -3,7 +3,7 @@ unit UITXTBOX;
 interface
 
 uses
-	Costalib, UIArea, Graph, Strings;
+	Costalib, Graph;
 
 type
 	PTextbox = ^TTextbox;
@@ -228,7 +228,7 @@ begin
 	if BGColor = ColorDefault then
 		BGColor := Thm.Txt;
 
-	DrawUIPrimitive(UIBorderDown, X1, Y1, X1 + Width, Y1 + Height, BGColor, (STransparent in State));
+	DrawUIPrimitive(UIBorderDown, X1, Y1, Self.Width, Self.Height, BGColor, (STransparent in State));
 
 	{Draw text inside the textbox}
 	Y1 := (Height - 7) div 2 + Y1; {Centered vertically}
