@@ -11,13 +11,13 @@ const
 	LibYear              = '2026';
 
 	SizeRetain           = -255; {Used to retain current width/height on object resize}
-	ColorDefault         = 255;  {Used to set default colors on objects}
 
 	DoubleClickDelay     = 0.5;
 	PrintLineH           = 12;   {Font dimensions - line height}
 	PrintCharW           = 8;    {Width of a single character}
 	ScreenWidth          = 639;  {To avoid overhead of GetMaxX/GetMaxY functions}
 	ScreenHeight         = 349;
+	MaxColor             = 15;
 
 	MenuItemHeight       = 16;   {Height of a menu item in pixels}
 
@@ -32,10 +32,10 @@ const
 	DecimalSign          = '.';  {Seperator signs - for localization}
 	ThousandsSign        = ',';
 
-	DosInt               = $21;   {MS-DOS API}
+	DosInt               = $21;   {MS-DOS API interrupt}
 	DosFuncGetIntVector  = $35;   {Function: Get Interrupt Vector}
-	DosFuncStdInStatus   = $0B;
-	DosFuncConInpNoEcho  = $08;
+	DosFuncStdInStatus   = $0B;   {Function: Check Standard Input Status}
+	DosFuncConInpNoEcho  = $08;   {Function: Console Input Without Echo}
 
 	MouseInt             = $33;   {Mouse drive interrupt}
 	MouseFuncResetDriver = $0000; {Function: Reset driver and read status}
@@ -81,12 +81,13 @@ type
 
 	{Object states - implemented as a set to be able to store multiple values in one
 	 byte, and to allow one Get/Set method to handle multiple boolean properties}
-	TState       = (SEnabled, SHidden, SActive, SSelected, STransparent, SBordered, SDirty);
+	TState       = (SEnabled, SHidden, SActive, SSelected, SDirty);
 	TStateSet    = set of TState;
+
+	TBorderStyle = (BorNone, Bor3D, Bor3DSunken, BorFrame, BorDialog);
 
 	TOrientation = (OrHorizontal, OrVertical, OrBoth); {Orientation for centering objects}
 	TAlign       = (AlLeft, AlCenter, AlRight);        {Text alignment}
-	TUIPrimitive = (UIBorderUp, UIBorderDown);         {Styles for UI primitives used by all objects}
 
 	{Menu types}
 	TMenuStyle   = (MsPopup, MsMenuBar);
@@ -121,13 +122,16 @@ type
 			Left,
 			Top,
 			Width,
-			Height:     Integer;     {Position relative to parent, and size}
-			Colors:     Word;        {High byte = foreground, low byte = background}
-			Hotkey:     PHotKeyNode; {Linked list of hotkeys}
-			State:      TStateSet;   {State flags}
-			OnClick:    TEventProc;  {Event procedure for mouse click or hotkey press}
-			OnDraw:     TEventProc;  {Event procedure called at the end of Draw method, to allow custom drawing etc.}
-			ParentObj:  PContainer;  {Parent object, if any}
+			Height:      Integer;      {Position relative to parent, and size}
+			FgColor,
+			BgColor:     Byte;         {Foreground (usually text) and background color}
+			Hotkey:      PHotKeyNode;  {Linked list of hotkeys}
+			State:       TStateSet;    {State flags}
+			BorderStyle: TBorderStyle; {Single, double, rounded etc. for border - empty equals no border}
+			Transparent: Boolean;
+			OnClick:     TEventProc;   {Event procedure for mouse click or hotkey press}
+			OnDraw:      TEventProc;   {Event procedure called at the end of Draw method, to allow custom drawing etc.}
+			ParentObj:   PContainer;   {Parent object, if any}
 
 			constructor Init;
 			destructor  Done; virtual;
@@ -145,6 +149,11 @@ type
 			procedure   AddState(S: TState);
 			procedure   RemoveState(S: TState);
 
+			procedure   SetTransparent(T: Boolean);
+
+			procedure   SetBorderStyle(Style: TBorderStyle);
+			procedure   DrawBorder;
+
 			procedure   Click;
 			procedure   Draw; virtual;
 
@@ -155,9 +164,8 @@ type
 			procedure   GetAbsPos(var X, Y: Integer);
 
 			procedure   SetFGColor(Color: Byte);
-			function    GetFGColor: Byte;
 			procedure   SetBGColor(Color: Byte);
-			function    GetBGColor: Byte;
+
 
 			function    IsContainer: boolean; virtual;
 	end;
@@ -362,8 +370,6 @@ procedure Sleep(Milliseconds: Word);
 procedure SoundNote(Frequency, Duration: Word);
 procedure SystemSound(SoundType: TSystemSound);
 
-procedure DrawUIPrimitive(Style: TUIPrimitive; X1, Y1, Width, Height: Integer; BgColor: Byte; Transparent: Boolean);
-
 implementation
 
 const
@@ -400,80 +406,25 @@ asm
 	pop ds                 {Restore DS}
 end;
 
-{Used for drawing objects, in order to reduce redundant drawing code and to ensure similarity of objects}
-procedure DrawUIPrimitive(Style: TUIPrimitive; X1, Y1, Width, Height: Integer; BgColor: Byte; Transparent: Boolean);
-var
-	TopLeftOuterCol, TopLeftInnerCol, BottomRightOuterCol, BottomRightInnerCol: Byte; {TL = top+left, BR = bottom+right}
-	X2, Y2: Integer;
-begin
-	X2 := X1 + Width;
-	Y2 := Y1 + Height;
-
-	if (Style = UIBorderUp) or (Style = UIBorderDown) then
-	begin
-		{Interior}
-		If Not Transparent Then
-		begin
-			SetFillStyle(SolidFill, BgColor);
-			Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 2);
-		end;
-
-		{Invert border colors if pressed down}
-		if Style = UIBorderUp then
-		begin
-			{Border is up}
-			TopLeftOuterCol := White;
-			TopLeftInnerCol := Thm.Light;
-			BottomRightOuterCol := Black;
-			BottomRightInnerCol := Thm.Shadow;
-		end
-		else
-		begin
-			{Border is down}
-			TopLeftOuterCol := Black;
-			TopLeftInnerCol := Thm.Shadow;
-			BottomRightOuterCol := White;
-			BottomRightInnerCol := Thm.Light;
-		end;
-
-		{Top + left outer border}
-		SetColor(TopLeftOuterCol);
-		Line(X1, Y1, X2, Y1);
-		Line(X1, Y1 + 1, X1, Y2);
-		{Inner border}
-		SetColor(TopLeftInnerCol);
-		Line(X1 + 1, Y1 + 1, X2 - 1, Y1 + 1);
-		Line (X1 + 1, Y1 + 2, X1 + 1, Y2 - 1);
-
-		{Bottom + right outer border}
-		SetColor(BottomRightOuterCol);
-		Line(X2, Y1 + 1, X2, Y2);
-		Line(X1 + 1, Y2, X2 - 1, Y2);
-		{Inner border}
-		SetColor(BottomRightInnerCol);
-		Line(X2 - 1, Y1 + 2, X2 - 1, Y2 - 1);
-		Line(X1 + 2, Y2 - 1, X2 - 2, Y2 - 1);
-	end;
-
-end;
-
 {----------------------------------------------------------------------------}
 { Base UI object implementation }
 {----------------------------------------------------------------------------}
 
 constructor TUIObject.Init;
 begin
-	State     := [SEnabled, SDirty];
-	Hotkey    := nil;
-	OnClick   := nil;
-	OnDraw    := nil;
-	ParentObj := nil;
-	Left      := 0;
-	Top       := 0;
-	Width     := 0;
-	Height    := 0;
-	SetFgColor(ColorDefault);
-	SetBgColor(ColorDefault);
+	Left        := 0;
+	Top         := 0;
+	Width       := 0;
+	Height      := 0;
+	FgColor     := Black;
+	BgColor     := White;
+	State       := [SEnabled, SDirty];
+	BorderStyle := BorNone;
+	Transparent := false;
+	Hotkey      := nil;
+	OnClick     := nil;
+	OnDraw      := nil;
+	ParentObj   := nil;
 end;
 
 destructor TUIObject.Done;
@@ -609,6 +560,130 @@ begin
 	{State change should trigger redraw - unless of course SDirty is being cleared because of redraw}
 	if s <> SDirty then
 		Include(State, SDirty);
+end;
+
+procedure TUIObject.SetTransparent(T: Boolean);
+begin
+	if Self.Transparent = T then Exit;
+
+	Self.Transparent := T;
+	Include(Self.State, SDirty);
+end;
+
+{Used for drawing objects, in order to reduce redundant drawing code and to ensure similarity of objects}
+procedure TUIObject.DrawBorder;
+var
+	TopLeftOuterCol, TopLeftInnerCol, BottomRightOuterCol, BottomRightInnerCol: Byte; {TL = top+left, BR = bottom+right}
+	X1, Y1, X2, Y2, BorderWidth: Integer;
+begin
+	if SHidden in Self.State then
+		exit;
+
+	case Self.BorderStyle of
+		BorNone:     BorderWidth := 0;
+		Bor3D,
+		Bor3DSunken: BorderWidth := 2;
+		BorFrame:    BorderWidth := 2;
+		BorDialog:   BorderWidth := 7;
+	end;
+
+	Self.GetAbsPos(X1, Y1);
+	X2 := X1 + Self.Width;
+	Y2 := Y1 + Self.Height;
+
+	{Interior}
+	If Not Self.Transparent Then
+	begin
+		SetFillStyle(SolidFill, BgColor);
+		Bar(X1 + BorderWidth, Y1 + BorderWidth, X2 - BorderWidth, Y2 - BorderWidth);
+	end;
+
+	if Self.BorderStyle = BorNone then
+		exit;
+
+	if (Self.BorderStyle = Bor3D) or (Self.BorderStyle = Bor3DSunken) then
+	begin
+		{Invert border colors if pressed down}
+		if Self.BorderStyle = Bor3D then
+		begin
+			{Border is raised}
+			TopLeftOuterCol := White;
+			TopLeftInnerCol := Thm.Light;
+			BottomRightOuterCol := Black;
+			BottomRightInnerCol := Thm.Shadow;
+		end
+		else
+		begin
+			{Border is sunken}
+			TopLeftOuterCol := Black;
+			TopLeftInnerCol := Thm.Shadow;
+			BottomRightOuterCol := White;
+			BottomRightInnerCol := Thm.Light;
+		end;
+
+		{Top + left outer border}
+		SetColor(TopLeftOuterCol);
+		Line(X1, Y1, X2, Y1);
+		Line(X1, Y1 + 1, X1, Y2);
+		{Inner border}
+		SetColor(TopLeftInnerCol);
+		Line(X1 + 1, Y1 + 1, X2 - 1, Y1 + 1);
+		Line (X1 + 1, Y1 + 2, X1 + 1, Y2 - 1);
+
+		{Bottom + right outer border}
+		SetColor(BottomRightOuterCol);
+		Line(X2, Y1 + 1, X2, Y2);
+		Line(X1 + 1, Y2, X2 - 1, Y2);
+		{Inner border}
+		SetColor(BottomRightInnerCol);
+		Line(X2 - 1, Y1 + 2, X2 - 1, Y2 - 1);
+		Line(X1 + 2, Y2 - 1, X2 - 2, Y2 - 1);
+		Exit;
+	end;
+
+	if Self.BorderStyle = BorFrame then
+	begin
+		SetColor(White);
+		Rectangle(X1 + 1, Y1 + 1, X2, Y2);
+		SetColor(Thm.Shadow);
+		Rectangle(X1, Y1, X2 - 1, Y2 - 1);
+		PutPixel(X1, Y2, White); {Put missing pixel in bottom-left and top-right corners}
+		PutPixel(X2, Y1, White);
+		Exit;
+	end;
+
+	if Self.BorderStyle = BorDialog then
+	begin
+		{DEBUG - same areas drawn over multiple times}
+		SetFillStyle(SolidFill, Thm.Title);
+		Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 1);
+		SetFillStyle(SolidFill, BgColor);
+		Bar(X1 + 7, Y1 + 7, X2 - 7, Y2 - 7);
+		SetColor(White);
+		Line(X1, Y1, X2 - 1, Y1);
+		Line(X1, Y1 + 1, X1, Y2 - 1);
+		SetColor(Black);
+		Line(X2, Y1, X2, Y2);
+		Line(X1, Y2, X2 - 1, Y2);
+		SetColor(Thm.Shadow);
+		Line(X2 - 1, Y1 + 1, X2 - 1, Y2 - 1);
+		Line(X1 + 1, Y2 - 1, X2 - 2, Y2 - 1);
+		SetColor(Thm.Light);
+		Line(X1 + 1, Y1 + 1, X2 - 2, Y1 + 1);
+		Line(X1 + 1, Y1 + 2, X1 + 1, Y2 - 2);
+		SetColor(Thm.Shadow);
+		Rectangle(X1 + 5, Y1 + 5, X2 - 5, Y2 - 5);
+		SetColor(Thm.Light);
+		Rectangle(X1 + 6, Y1 + 6, X2 - 6, Y2 - 6);
+		Exit;
+	end;
+
+end;
+
+procedure TUIObject.SetBorderStyle(Style: TBorderStyle);
+begin
+	Self.BorderStyle := Style;
+	Include(State, SDirty);
 end;
 
 {Check for events on object}
@@ -753,36 +828,20 @@ end;
 
 procedure TUIObject.SetFGColor(Color: Byte);
 begin
-	if (Color < 0) or (Color > GetMaxColor) then
-		Color := ColorDefault; {Invalid color, use default}
+	if (Color < 0) or (Color > MaxColor) then
+		exit;
 
-	{Set the high byte of Colors to the foreground color}
-	Colors := (Colors and $00FF) or (Color shl 8);
-
+	FgColor := Color;
 	Include(State, SDirty);
 end;
 
 procedure TUIObject.SetBGColor(Color: Byte);
 begin
-	if (Color < 0) or (Color > GetMaxColor) then
-		Color := ColorDefault; {Invalid color, use default}
+	if (Color < 0) or (Color > MaxColor) then
+		exit;
 
-	{Set the low byte of Colors to the background color}
-	Colors := (Colors and $FF00) or Color;
-
+	BGColor := Color;
 	Include(State, SDirty);
-end;
-
-function TUIObject.GetFGColor: Byte;
-begin
-	{Return the high byte of Colors}
-	GetFGColor := (Colors and $FF00) shr 8;
-end;
-
-function TUIObject.GetBGColor: Byte;
-begin
-	{Return the low byte of Colors}
-	GetBGColor := Colors and $00FF;
 end;
 
 {TContainer overrides this function with one that returns true - used in event/draw loops
@@ -824,21 +883,17 @@ begin
 	Width     := 10; {Will be resized when menu items are added or when added to a window}
 	Height    := 10;
 	MenuStyle := Style;
+	FGColor   := Thm.WinText;
+	BgColor   := Thm.Win;
 end;
 
 procedure TMenu.Draw;
 var
 	X1, Y1, X2, Y2: Integer;
-	BgColor: Byte;
 begin
 	{Don't draw or trigger event if menu is hidden}
 	if SHidden in State then
 		exit;
-
-	{Get colors}
-	BgColor := GetBGColor;
-	if BgColor = ColorDefault then
-		BgColor := Thm.Win;
 
 	if MenuStyle = MsPopup then
 	begin
@@ -997,7 +1052,7 @@ end;
 procedure TMenuItem.Draw;
 var
 	X1, Y1, X2, Y2: Integer;
-	FgColor, BgColor: Byte;
+	TempFgColor, TempBgColor: Byte;
 begin
 	{Get absolute position and size of the object}
 	GetAbsPos(X1, Y1);
@@ -1006,25 +1061,20 @@ begin
 
 	if SActive in State then
 	begin
-		FGColor := Thm.SelText;
-		BgColor := Thm.Sel;
+		TempFGColor := Thm.SelText;
+		TempBgColor := Thm.Sel;
 	end
 	else
 	begin
 		{Get colors}
-		FgColor := GetFGColor;
-		BgColor := GetBGColor;
-		{Set default colors if needed}
-		if BgColor = ColorDefault then
-			BgColor := Thm.Win;
-		if FgColor = ColorDefault then
-			FgColor := Thm.WinText;
+		TempFgColor := FGColor;
+		TempBgColor := BGColor;
 	end;
 
 	{Interior}
-	SetFillStyle(SolidFill, BgColor);
+	SetFillStyle(SolidFill, TempBgColor);
 	Bar(X1, Y1, X2, Y2 - 2);
-	Print(Caption, X1 + 5, Y1 + 3, FgColor);
+	Print(Caption, X1 + 5, Y1 + 3, TempFgColor);
 end;
 
 destructor TMenuItem.Done;
@@ -1540,13 +1590,14 @@ begin
 	BackdropS        := 0;
 	EventQueue       := nil;
 	PreserveBackdrop := False;
-	Include(State, SBordered);
+	BorderStyle      := BorDialog;
+	FGColor          := Thm.WinText;
+	BgColor          := Thm.Win;
 end;
 
 procedure TWindow.Draw;
 var
 	X1, X2, Y1, Y2: Integer;
-	BgColor: Byte;
 begin
 	{Don't draw or trigger event if window is hidden}
 	if SHidden in State then
@@ -1556,9 +1607,6 @@ begin
 	Self.GetAbsPos(X1, Y1);
 	X2 := X1 + Width;
 	Y2 := Y1 + Height;
-	BgColor := GetBGColor;
-	if BgColor = ColorDefault then
-		BgColor := Thm.Win;
 
 	{If background preservation is enabled, and background hasn't been
 	 captured yet, capture it now before drawing anything}
@@ -1575,36 +1623,7 @@ begin
 		GetImage(X1, Y1, X2, Y2, BackdropP^);
 	end;
 
-	if SBordered in State then
-	begin
-		{Draw the window border and interior}
-		SetFillStyle(SolidFill, Thm.Title);
-		Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 1);
-		SetFillStyle(SolidFill, BgColor);
-		Bar(X1 + 7, Y1 + 7, X2 - 7, Y2 - 7);
-		SetColor(15);
-		Line(X1, Y1, X2 - 1, Y1);
-		Line(X1, Y1 + 1, X1, Y2 - 1);
-		SetColor(0);
-		Line(X2, Y1, X2, Y2);
-		Line(X1, Y2, X2 - 1, Y2);
-		SetColor(Thm.Shadow);
-		Line(X2 - 1, Y1 + 1, X2 - 1, Y2 - 1);
-		Line(X1 + 1, Y2 - 1, X2 - 2, Y2 - 1);
-		SetColor(Thm.Light);
-		Line(X1 + 1, Y1 + 1, X2 - 2, Y1 + 1);
-		Line(X1 + 1, Y1 + 2, X1 + 1, Y2 - 2);
-		SetColor(Thm.Shadow);
-		Rectangle(X1 + 5, Y1 + 5, X2 - 5, Y2 - 5);
-		SetColor(Thm.Light);
-		Rectangle(X1 + 6, Y1 + 6, X2 - 6, Y2 - 6);
-	end
-	else
-	begin
-		{Draw window interior without border}
-		SetFillStyle(SolidFill, BgColor);
-		Bar(X1, Y1, X2, Y2);
-	end;
+	DrawBorder;
 
 	{Trigger ondraw event via TUIObject, allowing apps to draw custom background etc. before
 	 drawing child objects}

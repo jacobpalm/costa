@@ -30,12 +30,15 @@ const
 	DefaultH = 15;
 begin
 	TUIObject.Init;
-	Caption := Cap;
-	OnChange := nil;
-	Left := X;
-	Top := Y;
-	Width := DefaultW;
-	Height := DefaultH;
+	Left        := X;
+	Top         := Y;
+	Width       := DefaultW;
+	Height      := DefaultH;
+	Caption     := Cap;
+	BorderStyle := Bor3DSunken;
+	OnChange    := nil;
+	FgColor     := Thm.TxtText;
+	BgColor     := Thm.Txt;
 
 	If Checked then
 		Include(State, SSelected);
@@ -46,7 +49,6 @@ end;
 procedure TCheckbox.Draw;
 var
 	X1, Y1: Integer;
-	FgColor, BgColor: Byte;
 begin
 	if SHidden in State then
 		exit;
@@ -54,16 +56,7 @@ begin
 	{Get absolute position and size of the object}
 	GetAbsPos(X1, Y1);
 
-	{Get colors}
-	FgColor := GetFgColor;
-	BgColor := GetBgColor;
-
-	if FgColor = ColorDefault then
-		FgColor := Thm.TxtText;
-	if BgColor = ColorDefault then
-		BgColor := Thm.Txt;
-
-	DrawUIPrimitive(UIBorderDown, X1, Y1, Self.Width, Self.Height, BgColor, False);
+	Self.DrawBorder;
 
 	if SSelected in State then
 	begin
@@ -79,8 +72,9 @@ begin
 		Line(X1 + 5, Y1 + 10, X1 + 6, Y1 + 11);
 		Line(X1 + 8, Y1 + 11, X1 + 11, Y1 + 8);
 	end;
+
 	if Length(Caption) > 0 then
-		Print (Caption, X1 + 22, Y1 + 4, Thm.WinText);
+		Print(Caption, X1 + 22, Y1 + 4, Thm.WinText);
 
 	TUIObject.Draw;
 end;

@@ -28,14 +28,11 @@ type
 implementation
 
 constructor TTimer.Init(Parent: PContainer);
-const
-	DefaultW = 92;
-	DefaultH = 22;
 begin
 	TUIObject.Init;
 	Interval := 0;
 	LastTick := 0;
-	Running := False;
+	Running  := False;
 	SetParent(Parent);
 end;
 

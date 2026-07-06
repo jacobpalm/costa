@@ -45,36 +45,29 @@ const
 	DefaultH = 200;
 begin
 	TUIObject.Init;
-	MaxLength := 0;
-	MaxLines := 0;
-	LineCount := 0;
-	Align := AlLeft;
+	MaxLength   := 0;
+	MaxLines    := 0;
+	LineCount   := 0;
+	Align       := AlLeft;
+	Left        := X;
+	Top         := Y;
+	Width       := DefaultW;
+	Height      := DefaultH;
+	BorderStyle := Bor3DSunken;
+	FgColor     := Thm.TxtText;
+	BgColor     := Thm.Txt;
 	FillChar(Entries, SizeOf(Entries), 0);
-	Left := X;
-	Top := Y;
-	Width := DefaultW;
-	Height := DefaultH;
 	SetParent(Parent);
 end;
 
 procedure TLogArea.Draw;
 var
-	X1, Y1: Integer;
 	I: Integer;
-	FgColor, BgColor: Byte;
-	TestStr: String;
 begin
 	if SHidden in State then
 		exit;
 
-	{Get absolute position and size of the object}
-	GetAbsPos(X1, Y1);
-
-	BgColor := GetBgColor;
-	if BgColor = ColorDefault then
-		BgColor := Thm.Txt;
-
-	DrawUIPrimitive(UIBorderDown, X1, Y1, Self.Width, Self.Height, BgColor, (STransparent in State));
+	DrawBorder;
 
 	{Draw log lines}
 	if LineCount > 0 then
@@ -161,7 +154,6 @@ procedure TLogArea.DrawLine(Index: Integer);
 var
 	X1, X2, Y1: Integer;
 	PrintX, PrintY: Integer;
-	FgColor: Byte;
 begin
 	if SHidden in State then
 		exit;
@@ -171,10 +163,6 @@ begin
 		exit;
 	if Entries[Index] = nil then
 		exit;
-
-	FgColor := GetFgColor;
-	if FGColor = ColorDefault then
-		FGColor := Thm.TxtText;
 
 	{Get absolute position and size of the object}
 	GetAbsPos(X1, Y1);

@@ -25,17 +25,14 @@ const
 	DefaultH = 31;
 begin
 	TUIObject.Init;
-	if Length(Icon) <= 8 then
-		IconFile := Icon
-	else
-		IconFile := '';
 
-	Left := X;
-	Top := Y;
-	Width := DefaultW;
-	Height := DefaultH;
-
-	Include(State, SBordered);
+	Left        := X;
+	Top         := Y;
+	Width       := DefaultW;
+	Height      := DefaultH;
+	BorderStyle := Bor3D;
+	IconFile    := Icon;
+	BgColor     := White;
 	SetParent(Parent);
 end;
 
@@ -47,10 +44,17 @@ var
 	F: File;
 	IconError: Boolean;
 	Filename: String;
-	BgColor: Byte;
 begin
 	if SHidden in State then
 		exit;
+
+	DrawBorder;
+
+	if Length(IconFile) = 0 then
+	begin
+		TUIObject.Draw;
+		Exit;
+	end;
 
 	IconError := False;
 	Filename := ProgramPath + 'ICONS\' + IconFile + '.BIN';
@@ -62,21 +66,7 @@ begin
 	{Get absolute position of the object}
 	GetAbsPos(X, Y);
 
-	{Icon border}
-	if SBordered in State then
-		DrawUIPrimitive(UIBorderUp, X - 2, Y - 2, 35, 35, 0, True);
-
-	{If no Icon file, draw an empty box}
-	if Length(IconFile) = 0 then
-	begin
-		BgColor := GetBgColor;
-		If BgColor = ColorDefault then
-			BgColor := Thm.Txt;
-		SetFillStyle(SolidFill, BgColor);
-		Bar(X, Y, X + 31, Y + 31);
-		TUIObject.Draw;
-		Exit;
-	end;
+	{DEBUG - icon position depending on border?}
 
 	if not IconError then
 	begin
@@ -96,16 +86,17 @@ begin
 
 	if not IconError then
 	begin
+		{All good, load and display icon}
 		GetMem(IconPointer, Size);
 		BlockRead(F, IconPointer^, Size);
 		Close(F);
 		PutImage(X, Y, IconPointer^, CopyPut);
 		FreeMem(IconPointer, Size);
 		IconPointer := nil;
-	end;
-
-	if IconError then
+	end
+	else
 	begin
+		{Couldn't load icon, show error message}
 		SetFillStyle(SolidFill, Red);
 		Bar(X, Y, X + 31, Y + 31);
 		Print('IMG' + #13 + 'ERR', X + 5, Y + 6, White);

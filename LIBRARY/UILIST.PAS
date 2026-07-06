@@ -68,6 +68,9 @@ begin
 	DblClickTimer := 0.0;
 	OnChange      := nil;
 	OnDoubleClick := nil;
+	BorderStyle   := Bor3DSunken;
+	FgColor       := Thm.TxtText;
+	BgColor       := Thm.Txt;
 	SetParent(Parent);
 end;
 
@@ -110,8 +113,6 @@ begin
 	if not (SEnabled in State) or (SHidden in State) then
 		exit;
 
-	{Get absolute position and size of the object}
-	GetAbsPos(X1, Y1);
 
 	if (Mouse.Clicked = MbNone) or (not Self.IsMouseOver) then
 	begin
@@ -122,6 +123,7 @@ begin
 	end;
 
 	{Make clicked coordinates relative to the list area}
+	GetAbsPos(X1, Y1);
 	ClickedX := Mouse.X - X1;
 	ClickedY := Mouse.Y - Y1;
 
@@ -153,6 +155,7 @@ begin
 					if Assigned(OnDoubleClick) then
 					begin
 						while Mouse.Clicked > MbNone do;
+						DblClickTimer := 0;
 						OnDoubleClick(@Self);
 						exit;
 					end
@@ -233,29 +236,25 @@ end;
 procedure TList.Draw;
 var
 	I, Counter: Integer;
-	X1, Y1, X2, Y2, YOffset: Integer;
+	X1, Y1, X2, Y2: Integer;
 	ItemText: String;
-	FgColor, BgColor: Byte;
 begin
-	if Head = nil then
-		exit; {Nothing to draw}
+	if SHidden in State then
+		exit;
 
-	{Get absolute position and size of the object}
+	DrawBorder;
+
+	if Head = nil then
+	begin
+		{No contents to draw}
+		TUIObject.Draw;
+		exit;
+	end;
+
+	{Draw contents of list}
 	GetAbsPos(X1, Y1);
 	X2 := X1 + Width;
 	Y2 := Y1 + Height;
-
-	{Get colors}
-	FgColor := GetFgColor;
-	BgColor := GetBgColor;
-	if FgColor = ColorDefault then
-		FgColor := Thm.TxtText;
-	if BgColor = ColorDefault then
-		BgColor := Thm.Txt;
-
-	DrawUIPrimitive(UIBorderDown, X1, Y1, Self.Width, Self.Height, BgColor, (STransparent in State));
-
-	{Draw contents of list}
 	{Set X coordinates to internal area inside border, and Y coordinates to the first item position}
 	Inc(X1, 2);
 	Dec(X2, 2);
@@ -379,7 +378,7 @@ var
 	YOffset: Integer;
 	ItemText: String;
 	Counter: Integer;
-	FgColor, BgColor: Byte;
+	TempFgColor, TempBgColor: Byte;
 begin
 	if (SActive in State) = IsActive then
 		exit;
@@ -412,18 +411,14 @@ begin
 	{If list is active, use selection colors, otherwise use normal colors defined on object}
 	if SActive in State then
 	begin
-		FgColor := Thm.SelText;
-		BgColor := Thm.Sel;
+		TempFgColor := Thm.SelText;
+		TempBgColor := Thm.Sel;
 	end
 	else
 	begin
 		{Get colors}
-		FgColor := GetFgColor;
-		BgColor := GetBgColor;
-		if FgColor = ColorDefault then
-			FgColor := Thm.TxtText;
-		if BgColor = ColorDefault then
-			BgColor := Thm.Txt;
+		TempFgColor := FgColor;
+		TempBgColor := BgColor;
 	end;
 
 	{Redraw only the selected item}
@@ -431,9 +426,9 @@ begin
 	if ItemText <> '' then
 	begin
 		Mouse.Hide;
-		SetFillStyle(SolidFill, BgColor);
+		SetFillStyle(SolidFill, TempBgColor);
 		Bar(X1, Y1 + YOffset, X2, Y2 - 1 + YOffset);
-		Print(ItemText, X1 + 3, Y1 + 2 + YOffset, FgColor);
+		Print(ItemText, X1 + 3, Y1 + 2 + YOffset, TempFgColor);
 		Mouse.Show;
 	end;
 end;

@@ -26,11 +26,14 @@ const
 	DefaultH = 22;
 begin
 	TUIObject.Init;
-	Caption := Cap;
-	Left := X;
-	Top := Y;
-	Width := DefaultW;
-	Height := DefaultH;
+	Caption     := Cap;
+	Left        := X;
+	Top         := Y;
+	Width       := DefaultW;
+	Height      := DefaultH;
+	BorderStyle := Bor3D;
+	FgColor     := Thm.WinText;
+	BgColor     := Thm.Btn;
 	SetParent(Parent);
 end;
 
@@ -98,36 +101,24 @@ end;
 procedure TButton.Draw;
 var
 	X1, Y1: Integer;
-	FgColor, BgColor: Byte;
-	Style: TUIPrimitive;
 begin
 	if SHidden in State then
 		exit;
 
-	{Get absolute position and size of the object}
-	GetAbsPos(X1, Y1);
-
-	{Get colors}
-	FgColor := GetFGColor;
-	BgColor := GetBGColor;
-	if BgColor = ColorDefault then
-		BgColor := Thm.Btn;
-
 	if SActive in State then
-		Style := UIBorderDown
+		Self.BorderStyle := Bor3DSunken
 	else
-		Style := UIBorderUp;
+		Self.BorderStyle := Bor3D;
 
-	DrawUIPrimitive(Style, X1, Y1, Self.Width, Self.Height, BGColor, (STransparent in State));
+	Self.DrawBorder;
 
 	if Caption <> '' then
 	begin
+		{Get absolute position and size of the object}
+		GetAbsPos(X1, Y1);
 		X1 := Self.Width div 2 + X1;
 		X1 := X1 - PrintW(Caption) div 2;
 		Y1 := Self.Height div 2 + Y1 - 4; {4 is the offset to center text vertically}
-
-		if FgColor = ColorDefault then
-			FgColor := Thm.WinText;
 
 		{If button is pressed, move text 1 pixel down and right}
 		if SActive in State then

@@ -416,7 +416,7 @@ begin
 		Height := ScreenHeight;
 		OnDraw := WinMainDraw;
 		OnClose := WinMainClose;
-		Exclude(State, SBordered);
+		BorderStyle := BorNone;
 	end;
 
 	New(BtnAdd, Init(2, 2, CAP_ADD, WinMain));
@@ -451,7 +451,7 @@ begin
 	begin
 		AutoSize;
 		Center(OrHorizontal);
-		Exclude(State, STransparent);
+		Transparent := false;
 	end;
 	New(BtnPrevious, Init(255, 2, HotkeyChr + CharArrowLeft, WinMain));
 	With BtnPrevious^ do

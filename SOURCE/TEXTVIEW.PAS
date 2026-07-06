@@ -399,7 +399,7 @@ begin
 		Width := ScreenWidth;
 		Height := ScreenHeight;
 		OnDraw := WinMainDraw;
-		Exclude(State, SBordered);
+		BorderStyle := BorNone;
 	end;
 
 	New(BtnOpen, Init(3, 2, CAP_OPEN, WinMain));

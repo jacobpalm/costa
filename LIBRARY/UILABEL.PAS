@@ -28,13 +28,15 @@ const
 	DefaultH = PrintLineH;
 begin
 	TUIObject.Init;
-	Caption := Cap;
-	Align := AlLeft;
-	Left := X;
-	Top := Y;
-	Width := DefaultW;
-	Height := DefaultH;
-	Include(State, STransparent);
+	Caption     := Cap;
+	Align       := AlLeft;
+	Left        := X;
+	Top         := Y;
+	Width       := DefaultW;
+	Height      := DefaultH;
+	Transparent := true;
+	FgColor     := Thm.WinText;
+	BgColor     := Thm.Win;
 	SetParent(Parent);
 end;
 
@@ -48,39 +50,23 @@ end;
 procedure TLabel.Draw;
 var
 	X1, Y1, X2, Y2: Integer;
-	FGColor, BgColor: Byte;
 begin
 	if SHidden in State then
 		exit;
 
-	{Get absolute position and size of the object}
-	GetAbsPos(X1, Y1);
-	X2 := X1 + Width;
-	Y2 := Y1 + Height;
+	DrawBorder;
 
-	FGColor := GetFGColor;
-	BgColor := GetBGColor;
-
-	{If a background color is set, fill the label area with it}
-	if not (STransparent in State) then
+	if Length(Self.Caption) > 0 then
 	begin
-		if BgColor = ColorDefault then
-			BgColor := Thm.Win;
-		SetFillStyle(SolidFill, BgColor);
-		Bar(X1, Y1, X2, Y2);
+		GetAbsPos(X1, Y1);
+		if Align = AlRight then
+			X1 := X1 + Self.Width - PrintW(Caption);
+
+		if Align = AlCenter then
+			X1 := (Self.Width - PrintW(Caption)) div 2 + X1;
+
+		Print(Caption, X1, Y1, FGColor);
 	end;
-
-	{Use FgColor for text if set, otherwise use window color}
-	if FGColor = ColorDefault then
-		FGColor := Thm.WinText;
-
-	if Align = AlRight then
-		X1 := X2 - PrintW(Caption);
-
-	if Align = AlCenter then
-		X1 := ((X2 - X1) - PrintW(Caption)) div 2 + X1;
-
-	Print(Caption, X1, Y1, FgColor);
 
 	TUIObject.Draw;
 end;

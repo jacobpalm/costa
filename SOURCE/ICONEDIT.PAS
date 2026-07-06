@@ -230,7 +230,7 @@ var
 	Color: PArea;
 begin
 	Color := PArea(Sender);
-	SetDrawColor(Color^.GetBgColor);
+	SetDrawColor(Color^.BgColor);
 end;
 
 procedure HkColorClick(Sender: PUIObject); far;
@@ -284,7 +284,7 @@ begin
 	begin
 		Width := ScreenWidth;
 		Height := ScreenHeight;
-		Exclude(State, SBordered);
+		BorderStyle := BorNone;
 	end;
 
 	New(BtnNew, Init(2, 2, CAP_NEW, WinMain));
@@ -332,7 +332,7 @@ begin
 	begin
 		Width := 56;
 		Height := 56;
-		SetBgColor(Thm.Desk);
+		BgColor := Thm.Desk;
 	end;
 
 	New(Canvas, Init(172, 44, WinMain));
@@ -341,7 +341,7 @@ begin
 		Width := 290;
 		Height := 290;
 		OnClick := CanvasClick;
-		SetBgColor(White);
+		BgColor := White;
 		SetPreviewPos(314, 89);
 	end;
 
@@ -394,7 +394,7 @@ begin
 			Height := 20;
 			OnClick := AreaColorClick;
 			OnDraw := AreaColorDraw;
-			SetBgColor(i);
+			BgColor := i;
 		end;
 		Inc(Y, 21);
 	end;

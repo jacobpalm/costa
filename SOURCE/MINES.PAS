@@ -345,7 +345,7 @@ begin
 		Width := ScreenWidth;
 		Height := ScreenHeight;
 		OnDraw := WinMainDraw;
-		Exclude(State, SBordered);
+		BorderStyle := BorNone;
 	end;
 
 	New(BtnNew, Init(3, 2, CAP_NEW_GAME, WinMain));
@@ -392,28 +392,28 @@ begin
 	begin
 		Width := 200;
 		Height := 8;
-		Exclude(State, STransparent);
-		SetFgColor(Black);
-		SetBgColor(LightGray);
+		Transparent := false;
+		FgColor     := Black;
+		BgColor     := LightGray;
 	end;
 	New(LblTime, Init(0, 333, '', WinMain));
 	with LblTime^ do
 	begin
 		Width := 64;
 		Height := 8;
-		Exclude(State, STransparent);
+		Transparent := false;
+		FgColor := Black;
+		BgColor := LightGray;
 		Center(OrHorizontal);
-		SetFgColor(Black);
-		SetBgColor(LightGray);
 	end;
 	New(LblSound, Init(550, 333, MSG_SOUND + ' ' + MSG_ON, WinMain));
 	with LblSound^ do
 	begin
 		Width := 80;
 		Height := 8;
-		Exclude(State, STransparent);
-		SetFgColor(Black);
-		SetBgColor(LightGray);
+		Transparent := false;
+		FgColor  := Black;
+		BgColor  := LightGray;
 	end;
 
 	{CFieldAlign container is used solely to contain minefield, so that minefield can be centered
@@ -461,7 +461,7 @@ begin
 		Width := 100;
 		Height := 100;
 		OnClick := BtnSizeClick;
-		Include(State, STransparent);
+		Transparent := true;
 		AddHotkey(KeyAlt9);
 	end;
 	New(BtnSize[1], Init(123, 11, '', WinSetSize));
@@ -470,7 +470,7 @@ begin
 		Width := 100;
 		Height := 100;
 		OnClick := BtnSizeClick;
-		Include(State, STransparent);
+		Transparent := true;
 		AddHotkey(KeyAlt1);
 	end;
 	New(BtnSize[2], Init(13, 121, '', WinSetSize));
@@ -479,7 +479,7 @@ begin
 		Width := 100;
 		Height := 100;
 		OnClick := BtnSizeClick;
-		Include(State, STransparent);
+		Transparent := true;
 		AddHotkey(KeyAlt2);
 	end;
 	New(BtnSize[3], Init(123, 121, '', WinSetSize));
@@ -487,7 +487,7 @@ begin
 	begin
 		Width := 100;
 		Height := 100;
-		Include(State, STransparent);
+		Transparent := true;
 		OnClick := BtnSizeClick;
 		AddHotkey(KeyAlt3);
 	end;

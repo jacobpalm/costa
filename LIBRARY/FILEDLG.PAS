@@ -209,7 +209,8 @@ begin
 		GetChildFiles(Path, Pattern);
 		GetChildDirs(Path);
 		Drive := Copy(Path, 1, 1);
-		TxtDrive^.SetText(Drive);
+		TxtDrive^.Text := Drive;    {Set directly and add dirty state to avoid triggering change event}
+		TxtDrive^.AddState(SDirty);
 	end
 	else
 	begin
@@ -451,8 +452,8 @@ begin
 	New(ImgPreview, Init(393, 108, '', WinFileSelect));
 	with ImgPreview^ do
 	begin
-		Exclude(State, SBordered);
-		SetBgColor(Thm.Win);
+		BorderStyle := BorNone;
+		BgColor := Thm.Win;
 	end;
 
 	New(HkUp, Init(KeyUp, WinFileSelect));

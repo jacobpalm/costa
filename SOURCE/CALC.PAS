@@ -451,7 +451,7 @@ begin
 	begin
 		Width := ScreenWidth;
 		Height := ScreenHeight;
-		Exclude(State, SBordered);
+		BorderStyle := BorNone;
 	end;
 
 	New(BtnLog, Init(2, 2, CAP_SHOW_LOG, WinMain));
@@ -483,8 +483,8 @@ begin
 	begin
 		Width := 639;
 		Height := 329;
-		Exclude(State, SBordered);
-		Exclude(State, STransParent);
+		Transparent := false;
+		BorderStyle := BorNone;
 	end;
 
 	New(FrmCalc, Init(0, 0, FrmClientArea));

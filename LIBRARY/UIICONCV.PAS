@@ -67,23 +67,23 @@ const
 	DefaultH = 290;
 begin
 	Inherited Init;
-	SetParent(Parent);
-	Left := X;
-	Top := Y;
-	Width := DefaultW;
-	Height := DefaultH;
-	SetBgColor(White);
-	FillChar(IconData, SizeOf(IconData), White);
-
-	New(ImgPreview, Init(X + DefaultW + 12, Y, '', Parent)); {Set preview icon position to right of canvas}
-	ImgPreview^.SetBgColor(White);
-
+	Left       := X;
+	Top        := Y;
+	Width      := DefaultW;
+	Height     := DefaultH;
 	IndicatorX := 16;
 	IndicatorY := 16;
 	DrawCol    := Black;
 	DrawTool   := ToolPencil;
 	Changed    := false;
 	IconFile   := '';
+	BgColor    := White;
+	SetParent(Parent);
+
+	FillChar(IconData, SizeOf(IconData), White);
+
+	New(ImgPreview, Init(X + DefaultW + 12, Y, '', Parent)); {Set preview icon position to right of canvas}
+	ImgPreview^.BgColor := White;
 end;
 
 destructor TIconCanvas.Done;
@@ -97,19 +97,16 @@ end;
 procedure TIconCanvas.Draw;
 var
 	X1, Y1, X2, Y2, I: Integer;
-	BGColor: Byte;
 begin
 	if SHidden in State then
 		exit;
+
+	DrawBorder;
 
 	{Get absolute position and size of the object}
 	Self.GetAbsPos(X1, Y1);
 	X2 := X1 + Width;
 	Y2 := Y1 + Height;
-
-	BgColor := GetBgColor;
-
-	DrawUIPrimitive(UIBorderDown, X1, Y1, Self.Width, Self.Height, BgColor, False);
 
 	{The canvas is divided into pixels by horizontal and vertical lines in a grid. These lines
  	 are dotted in alternate colors to make them visible on any background.}

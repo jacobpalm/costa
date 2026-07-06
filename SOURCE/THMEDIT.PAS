@@ -323,7 +323,7 @@ begin
 	{Need to use a PAreaColor pointer here, since PUIObject doesn't
 	 have a BGColor property}
 	PAreaColor := Pointer(Sender);
-	SelectColor(PAreaColor^.GetBGColor, true);
+	SelectColor(PAreaColor^.BGColor, true);
 end;
 
 procedure BtnSaveClick(Sender: PUIObject); far;
@@ -384,7 +384,7 @@ begin
 		Width := ScreenWidth;
 		Height := ScreenHeight;
 		OnRun := WinMainRun;
-		Exclude(State, SBordered);
+		BorderStyle := BorNone;
 	end;
 
 	{Main screen}
@@ -477,7 +477,7 @@ begin
 			Height := 19;
 			OnClick := AreaColorClick;
 			OnDraw := AreaColorDraw;
-			SetBgColor(i);
+			BgColor := i;
 		end;
 		Inc(X1, 25);
 	end;
@@ -493,8 +493,6 @@ begin
 		Width := 410;
 		Height := 293;
 		Exclude(State, SEnabled);
-		SetLightColor(Thm.Light);
-		SetDarkColor(Thm.Shadow);
 	end;
 end;
 

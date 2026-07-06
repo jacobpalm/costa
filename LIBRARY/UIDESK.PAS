@@ -85,9 +85,11 @@ begin
 	SelectedLink := nil;
 	OnRightClick := nil;
 	TabVisible   := false;
+	FgColor      := Thm.DeskText;
+	BgColor      := Thm.Desk;
 	TabBgSize    := ImageSize(0, 0, 37, 37);
 
-	{Allocate memory for tab background image, 32x32 icon plus 3 pixel border}
+	{Allocate memory for tab background image, 32x32 icon plus 4 pixel border}
 	GetMem(TabBgImg, TabBgSize);
 end;
 
@@ -102,7 +104,6 @@ procedure TDesktop.Draw;
 var
 	x1, y1, x2, y2: Integer;
 	TempNode: PLinkNode;
-	BgColor: byte;
 begin
 	if SHidden in State then
 		Exit;
@@ -113,10 +114,6 @@ begin
 	Y2 := Y1 + Height;
 
 	{Draw background}
-	BgColor := GetBgColor;
-	if BgColor = ColorDefault then
-		BgColor := Thm.Desk;
-
 	SetFillStyle(SolidFill, BgColor);
 	Bar(X1, Y1, X2, Y2);
 
@@ -135,9 +132,8 @@ end;
 
 procedure TDesktop.DrawLink(Link: PLink);
 var
-	ImgIcon: PIcon;
-	X, Y: Integer;
-	Color: byte;
+	ImgIcon:      PIcon;
+	X, Y:         Integer;
 	FDir:         DirStr;
 	FName:        NameStr;
 	FExt:         ExtStr;
@@ -150,10 +146,6 @@ begin
 	Inc(X, Link^.Left);
 	Inc(Y, Link^.Top);
 
-	Color := GetFgColor;
-	if Color = ColorDefault then
-		Color := Thm.DeskText;
-
 	New(ImgIcon, Init(X, Y, Link^.IconFile, nil));
 	ImgIcon^.Draw;
 	Dispose(ImgIcon);
@@ -162,11 +154,11 @@ begin
 	 display the target filename if that setting is enabled}
 	if ShowCaption then
 	begin
-		Print(Link^.Caption, X + 38, Y + 4, Color);
+		Print(Link^.Caption, X + 38, Y + 4, FgColor);
 		if ShowTarget then
 		begin
 			FSplit(Link^.FileName, FDir, FName, FExt);
-			Print(FName + FExt, X + 38, Y + 18, Color);
+			Print(FName + FExt, X + 38, Y + 18, FgColor);
 		end;
 	end;
 end;

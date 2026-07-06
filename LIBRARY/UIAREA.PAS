@@ -21,30 +21,22 @@ const
 	DefaultH = 100;
 begin
 	TUIObject.Init;
-	Left   := X;
-	Top    := Y;
-	Width  := DefaultW;
-	Height := DefaultH;
+	Left        := X;
+	Top         := Y;
+	Width       := DefaultW;
+	Height      := DefaultH;
+	BorderStyle := Bor3DSunken;
+	FgColor := Thm.TxtText;
+	BgColor := Thm.Txt;
 	SetParent(Parent);
 end;
 
 procedure TArea.Draw;
-var
-	X1, Y1: Integer;
-	BgColor: Byte;
 begin
 	if SHidden in State then
 		exit;
 
-	{Get absolute position and size of the object}
-	Self.GetAbsPos(X1, Y1);
-
-	BgColor := GetBGColor;
-	if BgColor = ColorDefault then
-		BgColor := Thm.Txt;
-
-	DrawUIPrimitive(UIBorderDown, X1, Y1, Self.Width, Self.Height, BgColor, (STransparent in State));
-
+	DrawBorder;
 	Inherited Draw;
 end;
 

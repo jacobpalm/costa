@@ -106,7 +106,7 @@ begin
 		Thm := ThemeData;
 
 	{Set frame background color}
-	Self.SetBGColor(Thm.Desk);
+	Self.BGColor := Thm.Desk;
 
 	{Draw the container, which will also draw its children}
 	Inherited Draw;

@@ -240,7 +240,7 @@ begin
 		Width := ScreenWidth;
 		Height := ScreenHeight;
 		OnRun := WinMainRun;
-		Exclude(State, SBordered);
+		BorderStyle := BorNone;
 	end;
 
 	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
@@ -295,8 +295,6 @@ begin
 		Width := FrmTheme^.Width - 28;
 		Height := 192;
 		Exclude(State, SEnabled);
-		SetLightColor(Thm.Light);
-		SetDarkColor(Thm.Shadow);
 	end;
 
 	{Theme navigation buttons and no-themes label}
@@ -311,8 +309,8 @@ begin
 	New(BtnNext, Init(FrmTheme^.Width - 92 - 14, FrmTheme^.Height - 34, CAP_NEXT, FrmTheme));
 	with BtnNext^ do
 	begin
-		Include(State, SHidden);
 		OnClick := SwitchTheme;
+		Include(State, SHidden);
 		AddHotkey(KeyAltN);
 		AddHotkey(KeyRight);
 	end;

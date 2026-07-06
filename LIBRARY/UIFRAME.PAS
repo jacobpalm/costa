@@ -9,14 +9,12 @@ type
 	PFrame = ^TFrame;
 	TFrame = object(TContainer)
 		public
-			LightColor,
-			DarkColor:   Byte;
+			Caption:     String[15];
 
 			constructor  Init(X, Y: Integer; Parent: PContainer);
 			procedure    Draw; virtual;
 
-			procedure    SetLightColor(Color: Byte);
-			procedure    SetDarkColor(Color: Byte);
+			procedure    SetCaption(Cap: String);
 	end;
 
 implementation
@@ -27,46 +25,33 @@ const
 	DefaultH = 100;
 begin
 	Inherited Init(X, Y, Parent);
-	Width := DefaultW;
-	Height := DefaultH;
-	Include(State, SBordered);
-	LightColor := Thm.Light;
-	DarkColor := Thm.Shadow;
+	Width       := DefaultW;
+	Height      := DefaultH;
+	BorderStyle := BorFrame;
+	Caption     := '';
+	FgColor     := Thm.WinText;
+	BgColor     := Thm.Win;
 end;
 
 procedure TFrame.Draw;
 var
-	X1, X2, Y1, Y2: Integer;
-	BgColor: Byte;
+	X1, Y1: Integer;
 begin
 	if SHidden in State then
 		exit;
 
-	{Get absolute position and size of the object}
-	Self.GetAbsPos(X1, Y1);
-	X2 := X1 + Width;
-	Y2 := Y1 + Height;
+	DrawBorder;
 
-	{Interior}
-	if not (STransparent in State) then
+	{DEBUG - test draw caption}
+	if Length(Self.Caption) > 0 then
 	begin
-		BgColor := GetBGColor;
-		if BgColor = ColorDefault then
-			BgColor := Thm.Win;
-		SetFillStyle(SolidFill, BGColor);
-		if SBordered in State then
-			Bar(X1 + 2, Y1 + 2, X2 - 2, Y2 - 2)
-		else
-			Bar(X1, Y1, X2, Y2);
-	end;
+		Self.GetAbsPos(X1, Y1);
+		if BorderStyle = BorFrame then
+			Inc(X1, 7);
 
-	{Borders}
-	if SBordered in State then
-	begin
-		SetColor(LightColor);
-		Rectangle(X1 + 1, Y1 + 1, X2 - 1, Y2);
-		SetColor(DarkColor);
-		Rectangle(X1, Y1, X2 - 1, Y2 - 1);
+		SetFillStyle(SolidFill, BgColor);
+		Bar(X1, Y1 - 3, X1 + PrintW(Caption) + 2, Y1 + 4);
+		Print(Caption, X1 + 2, Y1 - 3, FGColor);
 	end;
 
 	{Draw child objects and call inherited draw to update State etc.}
@@ -74,21 +59,9 @@ begin
 	TUIObject.Draw;
 end;
 
-procedure TFrame.SetLightColor(Color: Byte);
+procedure TFrame.SetCaption(Cap: string);
 begin
-	if ((Color >= 0) and (Color <= GetMaxColor)) or
-	   (Color = ColorDefault) then
-		LightColor := Color;
-
-	Include(State, SDirty);
-end;
-
-procedure TFrame.SetDarkColor(Color: Byte);
-begin
-	if ((Color >= 0) and (Color <= GetMaxColor)) or
-	   (Color = ColorDefault) then
-		DarkColor := Color;
-
+	Caption := Cap;
 	Include(State, SDirty);
 end;
 

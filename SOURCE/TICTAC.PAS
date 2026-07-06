@@ -112,12 +112,12 @@ const
 	DefaultH = 60;
 begin
 	TUIObject.Init;
-	Value  := PlayerNone;
-	Left   := X;
-	Top    := Y;
-	Width  := DefaultW;
-	Height := DefaultH;
-	SetBGColor(White);
+	Value   := PlayerNone;
+	Left    := X;
+	Top     := Y;
+	Width   := DefaultW;
+	Height  := DefaultH;
+	BGColor := White;
 	SetParent(Parent);
 end;
 
@@ -657,8 +657,8 @@ begin
 		Height := ScreenHeight;
 		OnDraw := WinMainDraw;
 		OnRun := WinMainRun;
-		Exclude(State, SBordered);
-		SetBgColor(Green);
+		BorderStyle := BorNone;
+		BgColor := Green;
 	end;
 
 	New(FrmTic, Init(209, 80, WinMain));
@@ -666,10 +666,11 @@ begin
 	begin
 		Width := 221;
 		Height := 221;
-		Include(State, STransparent);
-		SetBgColor(Green);
-		SetLightColor(LightGreen);
-		SetDarkColor(DarkGray);
+		Transparent := true;
+		BgColor := Green;
+		{DEBUG - fix colors}
+		{SetLightColor(LightGreen);
+		SetDarkColor(DarkGray);}
 	end;
 
 	for Row := 1 to 3 do
@@ -720,9 +721,9 @@ begin
 		Width := 616;
 		Height := 8;
 		Align := AlCenter;
-		Exclude(State, STransparent);
-		SetFgColor(Black);
-		SetBgColor(Green);
+		Transparent := false;
+		FgColor := Black;
+		BgColor := Green;
 	end;
 
 	New(LblPlayers, Init(166, 320, MSG_GAMEMODE_PLAYER, WinMain));
@@ -730,9 +731,9 @@ begin
 	begin
 		Width := 192;
 		Height := 8;
-		Exclude(State, STransparent);
-		SetFgColor(Black);
-		SetBgColor(Green);
+		Transparent := false;
+		FgColor := Black;
+		BgColor := Green;
 	end;
 
 	New(LblSound, Init(396, 320, MSG_SOUND_ON, WinMain));
@@ -741,9 +742,9 @@ begin
 		Width := 80;
 		Height := 8;
 		Align := AlRight;
-		Exclude(State, STransparent);
-		SetFgColor(Black);
-		SetBgColor(Green);
+		Transparent := false;
+		FgColor := Black;
+		BgColor := Green;
 	end;
 end;
 

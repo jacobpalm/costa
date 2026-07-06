@@ -42,7 +42,9 @@ begin
 	Top         := Y;
 	Width       := DefaultW;
 	Height      := DefaultH;
-
+	BorderStyle := Bor3DSunken;
+	FgColor     := Thm.TxtText;
+	BgColor     := Thm.Txt;
 	SetParent(Parent);
 end;
 
@@ -81,7 +83,6 @@ procedure TTextbox.Edit;
 var
 	OrigTxt, Key: string;
 	X1, Y1, CursorX, MaxShow: integer;
-	BgColor, FgColor: Byte;
 begin
 	{Get absolute position of the object}
 	GetAbsPos(X1, Y1);
@@ -89,13 +90,6 @@ begin
 	{Text is located 5 pixels from the left border, and vertically centered}
 	Inc(X1, 5);
 	Y1 := (Height - 7) div 2 + Y1;
-
-	FgColor := GetFgColor;
-	if FGColor = ColorDefault then
-		FGColor := Thm.TxtText;
-	BgColor := GetBgColor;
-	if BgColor = ColorDefault then
-		BgColor := Thm.Txt;
 
 	MaxShow := Width - 10;
 	OrigTxt := Text;
@@ -209,7 +203,6 @@ procedure TTextbox.Draw;
 var
 	X1, Y1, MaxShow: Integer;
 	S: string;
-	FgColor, BGColor: Byte;
 begin
 	if SHidden in State then
 		exit;
@@ -221,14 +214,7 @@ begin
 	if Length(Caption) > 0 then
 		Print(Caption, X1, Y1 - 15, Thm.WinText);
 
-	FGColor := GetFgColor;
-	if FGColor = ColorDefault then
-		FGColor := Thm.TxtText;
-	BGColor := GetBgColor;
-	if BGColor = ColorDefault then
-		BGColor := Thm.Txt;
-
-	DrawUIPrimitive(UIBorderDown, X1, Y1, Self.Width, Self.Height, BGColor, (STransparent in State));
+	DrawBorder;
 
 	{Draw text inside the textbox}
 	Y1 := (Height - 7) div 2 + Y1; {Centered vertically}
