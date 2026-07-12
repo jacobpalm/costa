@@ -56,7 +56,7 @@ begin
 		OnDraw := WinMsgBoxDraw;
 	end;
 
-	New(ImgIcon, Init(13, 15, '', WinMsgBox));
+	New(ImgIcon, Init(11, 13, '', WinMsgBox));
 	case MsgType of
 		MsgInfo:  ImgIcon^.IconFile := 'MSGINFO';
 		MsgWarn:  ImgIcon^.IconFile := 'MSGWARN';

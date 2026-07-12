@@ -5,6 +5,9 @@ interface
 uses
 	Costalib, Graph;
 
+const
+	IconSize = 31; {0-31 = 32x32 pixels}
+
 type
 	PIcon = ^TIcon;
 	TIcon = object(TUIObject)
@@ -20,19 +23,20 @@ type
 implementation
 
 constructor TIcon.Init(X, Y: Integer; Icon: string; Parent: PContainer);
-const
-	DefaultW = 31;
-	DefaultH = 31;
+var
+	BorderWidth: Word;
 begin
 	TUIObject.Init;
-
 	Left        := X;
 	Top         := Y;
-	Width       := DefaultW;
-	Height      := DefaultH;
 	BorderStyle := Bor3D;
 	IconFile    := Icon;
 	BgColor     := White;
+
+	BorderWidth := Self.GetBorderWidth;
+	Self.Width  := IconSize + (2 * BorderWidth);
+	Self.Height := IconSize + (2 * BorderWidth);
+
 	SetParent(Parent);
 end;
 
@@ -40,7 +44,7 @@ procedure TIcon.Draw;
 var
 	X, Y: Integer;
 	IconPointer: Pointer;
-	Size: Word;
+	Size, BorderWidth: Word;
 	F: File;
 	IconError: Boolean;
 	Filename: String;
@@ -48,6 +52,10 @@ begin
 	if SHidden in State then
 		exit;
 
+	{Icons are fixed size, so make sure width/height is correct}
+	BorderWidth := Self.GetBorderWidth;
+	Self.Width := IconSize + (2 * BorderWidth);
+	Self.Height := IconSize + (2 * BorderWidth);
 	DrawBorder;
 
 	if Length(IconFile) = 0 then
@@ -90,7 +98,7 @@ begin
 		GetMem(IconPointer, Size);
 		BlockRead(F, IconPointer^, Size);
 		Close(F);
-		PutImage(X, Y, IconPointer^, CopyPut);
+		PutImage(X + BorderWidth, Y + BorderWidth, IconPointer^, CopyPut);
 		FreeMem(IconPointer, Size);
 		IconPointer := nil;
 	end
@@ -98,8 +106,8 @@ begin
 	begin
 		{Couldn't load icon, show error message}
 		SetFillStyle(SolidFill, Red);
-		Bar(X, Y, X + 31, Y + 31);
-		Print('IMG' + #13 + 'ERR', X + 5, Y + 6, White);
+		Bar(X + BorderWidth, Y + BorderWidth, X + BorderWidth + IconSize, Y + BorderWidth + IconSize);
+		Print('IMG' + #13 + 'ERR', X + BorderWidth + 5, Y + BorderWidth + 6, White);
 	end;
 
 	TUIObject.Draw;

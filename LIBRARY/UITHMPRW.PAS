@@ -70,7 +70,7 @@ begin
 	 for resizing of the preview frame}
 
 	{Preview window and its contents}
-	New(WinPreview, Init(10, 0, @Self));
+	New(WinPreview, Init(8, 0, @Self));
 	New(ImgPreview, Init(0, 0, 'LOGO', WinPreview));
 	New(LblPreviewInfo, Init(0, 0, CAP_PREVIEW, WinPreview));
 	New(TxtPreview, Init(0, 0, '', WinPreview));
@@ -89,17 +89,17 @@ var
 	OldTheme: String[8];
 begin
 	{Set positions and sizes of preview objects based on current size of preview frame}
-	ImgPreviewLink^.Move(14, Height - 42);
-	LblPreviewLink^.Move(52, Height - 38);
-	WinPreview^.Move(14, 12);
-	WinPreview^.Resize(Width - 28, 123);
-	ImgPreview^.Move(12, 12);
-	LblPreviewInfo^.Move(54, 16);
+	ImgPreviewLink^.Move(12, Height - 48);
+	LblPreviewLink^.Move(56, Height - 41);
+	WinPreview^.Move(12, 10);
+	WinPreview^.Resize(Width - 28, 121);
+	ImgPreview^.Move(6, 6);
+	LblPreviewInfo^.Move(50, 13);
 
-	TxtPreview^.Move(12, 57);
-	TxtPreview^.Resize(WinPreview^.Width - 23, SizeRetain);
-	BtnPreview1^.Move(12, WinPreview^.Height - 34);
-	BtnPreview2^.Move(WinPreview^.Width - 104, WinPreview^.Height - 34);
+	TxtPreview^.Move(6, 51);
+	TxtPreview^.Resize(WinPreview^.Width - 23, TxtPreview^.Height);
+	BtnPreview1^.Move(6, WinPreview^.Height - 40);
+	BtnPreview2^.Move(WinPreview^.Width - 110, WinPreview^.Height - 40);
 
 	{If a theme file is loaded, apply it for preview}
 	if ThemeLoaded then

@@ -50,13 +50,13 @@ begin
 		SaveBackdrop;
 	end;
 
-	New(ImgIcon, Init(13, 15, IconFile, WinInputBox));
-	New(BtnOK, Init(WinInputBox^.Width - 207, WinInputBox^.Height - 36, CAP_OK, WinInputBox));
-	New(BtnCancel, Init(WinInputBox^.Width - 105, WinInputBox^.Height - 36, CAP_CANCEL, WinInputBox));
-	New(TxtInput, Init(12, WinInputBox^.Height - 63, CAP_INPUT, WinInputBox));
+	New(ImgIcon, Init(5, 7, IconFile, WinInputBox));
+	New(BtnOK, Init(WinInputBox^.Width - 210, WinInputBox^.Height - 40, CAP_OK, WinInputBox));
+	New(BtnCancel, Init(WinInputBox^.Width - 111, WinInputBox^.Height - 40, CAP_CANCEL, WinInputBox));
+	New(TxtInput, Init(6, WinInputBox^.Height - 69, CAP_INPUT, WinInputBox));
 	TxtInput^.Width := WinInputBox^.Width - 24;
-	New(LblTitle, Init(56, 15, Title, WinInputBox));
-	New(LblText, Init(56, 31, Prompt, WinInputBox));
+	New(LblTitle, Init(50, 9, Title, WinInputBox));
+	New(LblText, Init(50, 25, Prompt, WinInputBox));
 	With BtnOK^ do
 	begin
 		OnClick := BtnClick;

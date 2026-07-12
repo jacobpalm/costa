@@ -495,7 +495,7 @@ begin
 		Center(OrBoth);
 	end;
 
-	New(TxtCalc, Init(13, 12, '', FrmCalc));
+	New(TxtCalc, Init(12, 10, '', FrmCalc));
 	with TxtCalc^ do
 	begin
 		Width := 191;
@@ -503,29 +503,29 @@ begin
 		Exclude(State, SEnabled);
 	end;
 
-	New(BtnNumb[0], Init(14, 172, '0', FrmCalc));
+	New(BtnNumb[0], Init(13, 170, '0', FrmCalc));
 	With BtnNumb[0]^ do
 	begin
 		Width := 90;
 		OnClick := BtnNumbClick;
 		AddHotKey('0');
 	end;
-	New(BtnNumb[1], Init(14, 139, '1', FrmCalc));
-	New(BtnNumb[2], Init(64, 139, '2', FrmCalc));
-	New(BtnNumb[3], Init(114, 139, '3', FrmCalc));
-	New(BtnNumb[4], Init(14, 106, '4', FrmCalc));
-	New(BtnNumb[5], Init(64, 106, '5', FrmCalc));
-	New(BtnNumb[6], Init(114, 106, '6', FrmCalc));
-	New(BtnNumb[7], Init(14, 73, '7', FrmCalc));
-	New(BtnNumb[8], Init(64, 73, '8', FrmCalc));
-	New(BtnNumb[9], Init(114, 73, '9', FrmCalc));
+	New(BtnNumb[1], Init(12, 137, '1', FrmCalc));
+	New(BtnNumb[2], Init(62, 137, '2', FrmCalc));
+	New(BtnNumb[3], Init(112, 137, '3', FrmCalc));
+	New(BtnNumb[4], Init(12, 104, '4', FrmCalc));
+	New(BtnNumb[5], Init(62, 104, '5', FrmCalc));
+	New(BtnNumb[6], Init(112, 104, '6', FrmCalc));
+	New(BtnNumb[7], Init(12, 71, '7', FrmCalc));
+	New(BtnNumb[8], Init(62, 71, '8', FrmCalc));
+	New(BtnNumb[9], Init(112, 71, '9', FrmCalc));
 	for i := 1 to 9 do
 	begin
 		BtnNumb[i]^.Width := 40;
 		BtnNumb[i]^.OnClick := BtnNumbClick;
 		BtnNumb[i]^.AddHotKey(Char(Ord('0') + i));
 	end;
-	New(BtnDecimal, Init(114, 172, '.', FrmCalc));
+	New(BtnDecimal, Init(112, 170, '.', FrmCalc));
 	With BtnDecimal^ do
 	begin
 		Width := 40;
@@ -535,14 +535,14 @@ begin
 	end;
 
 	{Clear and Clear Everything buttons}
-	New(BtnC, Init(14, 40, CAP_CLEAR, FrmCalc));
+	New(BtnC, Init(12, 38, CAP_CLEAR, FrmCalc));
 	With BtnC^ do
 	begin
 		Width := 40;
 		OnClick := BtnCClick;
 		AddHotKey(KeyAltC);
 	end;
-	New(BtnCE, Init(64, 40, CAP_CLEAR_EVERYTHING, FrmCalc));
+	New(BtnCE, Init(62, 38, CAP_CLEAR_EVERYTHING, FrmCalc));
 	With BtnCE^ do
 	begin
 		Width := 40;
@@ -551,28 +551,28 @@ begin
 	end;
 
 	{Operator buttons}
-	New(BtnDivide, Init(114, 40, '/', FrmCalc));
+	New(BtnDivide, Init(112, 38, '/', FrmCalc));
 	With BtnDivide^ do
 	begin
 		Width := 40;
 		OnClick := BtnOperatorClick;
 		AddHotKey('/');
 	end;
-	New(BtnMultiply, Init(164, 40, '*', FrmCalc));
+	New(BtnMultiply, Init(162, 38, '*', FrmCalc));
 	With BtnMultiply^ do
 	begin
 		Width := 40;
 		OnClick := BtnOperatorClick;
 		AddHotKey('*');
 	end;
-	New(BtnSubstract, Init(164, 73, '-', FrmCalc));
+	New(BtnSubstract, Init(162, 71, '-', FrmCalc));
 	With BtnSubstract^ do
 	begin
 		Width := 40;
 		OnClick := BtnOperatorClick;
 		AddHotKey('-');
 	end;
-	New(BtnAdd, Init(164, 106, '+', FrmCalc));
+	New(BtnAdd, Init(162, 104, '+', FrmCalc));
 	With BtnAdd^ do
 	begin
 		Width := 40;
@@ -580,7 +580,7 @@ begin
 		AddHotKey('+');
 	end;
 
-	New(BtnEquals, Init(164, 139, '=', FrmCalc));
+	New(BtnEquals, Init(162, 137, '=', FrmCalc));
 	With BtnEquals^ do
 	begin
 		Width := 40;
@@ -590,7 +590,7 @@ begin
 		AddHotKey(KeyEnter);
 	end;
 
-	New(AreaLog, Init(242, 13, FrmClientArea));
+	New(AreaLog, Init(240, 11, FrmClientArea));
 	with AreaLog^ do
 	begin
 		Width := 385;

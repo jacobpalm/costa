@@ -72,20 +72,20 @@ begin
 		Center(OrBoth);
 		SaveBackdrop;
 	end;
-	New(TxtFilename, Init(12, 27, CAP_FILENAME, WinRun));
+	New(TxtFilename, Init(6, 21, CAP_FILENAME, WinRun));
 	with TxtFilename^ do
 	begin
 		Width := 358;
 		OnChange := TxtFilename_Change;
 		AddHotkey(KeyAltF);
 	end;
-	New(TxtParams, Init(12, 73, CAP_PARAMETERS, WinRun));
+	New(TxtParams, Init(6, 67, CAP_PARAMETERS, WinRun));
 	with TxtParams^ do
 	begin
 		Width := 358;
 		AddHotkey(KeyAltR);
 	end;
-	New(BtnOK, Init(74, 103, CAP_OK, WinRun));
+	New(BtnOK, Init(68, 97, CAP_OK, WinRun));
 	with BtnOK^ do
 	begin
 		Exclude(State, SEnabled);
@@ -93,14 +93,14 @@ begin
 		AddHotkey(KeyAltO);
 		AddHotkey(KeyEnter);
 	end;
-	New(BtnCancel, Init(176, 103, CAP_CANCEL, WinRun));
+	New(BtnCancel, Init(170, 97, CAP_CANCEL, WinRun));
 	with BtnCancel^ do
 	begin
 		OnClick := BtnCancel_Click;
 		AddHotkey(KeyAltC);
 		AddHotkey(KeyEscape);
 	end;
-	New(BtnBrowse, Init(278, 103, CAP_BROWSE, WinRun));
+	New(BtnBrowse, Init(272, 97, CAP_BROWSE, WinRun));
 	with BtnBrowse^ do
 	begin
 		OnClick := BtnBrowse_Click;

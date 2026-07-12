@@ -67,23 +67,28 @@ const
 	DefaultH = 290;
 begin
 	Inherited Init;
-	Left       := X;
-	Top        := Y;
-	Width      := DefaultW;
-	Height     := DefaultH;
-	IndicatorX := 16;
-	IndicatorY := 16;
-	DrawCol    := Black;
-	DrawTool   := ToolPencil;
-	Changed    := false;
-	IconFile   := '';
-	BgColor    := White;
+	Left        := X;
+	Top         := Y;
+	Width       := DefaultW;
+	Height      := DefaultH;
+	IndicatorX  := 16;
+	IndicatorY  := 16;
+	DrawCol     := Black;
+	DrawTool    := ToolPencil;
+	Changed     := false;
+	IconFile    := '';
+	BgColor     := White;
+	BorderStyle := Bor3D;
 	SetParent(Parent);
 
 	FillChar(IconData, SizeOf(IconData), White);
 
 	New(ImgPreview, Init(X + DefaultW + 12, Y, '', Parent)); {Set preview icon position to right of canvas}
-	ImgPreview^.BgColor := White;
+	with ImgPreview^ do
+	begin
+		BgColor := White;
+		BorderStyle := Bor3D;
+	end;
 end;
 
 destructor TIconCanvas.Done;
@@ -200,6 +205,7 @@ end;
 procedure TIconCanvas.LoadIcon(Filename: string);
 var
 	PreviewX, PreviewY, X, Y, PixelCol: Integer;
+	BorderWidth: Word;
 begin
 	{Clear IconData with invalid values - this makes sure color 0 will also be drawn,
 	 since DrawPixel checks if the color is different before drawing}
@@ -209,12 +215,13 @@ begin
 	Mouse.Hide;
 	ImgPreview^.Draw;
 	ImgPreview^.GetAbsPos(PreviewX, PreviewY);
+	BorderWidth := ImgPreview^.GetBorderWidth;
 	{Get color of each pixel from the preview icon and draw it on the canvas}
 	for X := 0 to IconSize do
 	begin
 		for Y := 0 to IconSize do
 		begin
-			PixelCol := GetPixel(PreviewX + X, PreviewY + Y);
+			PixelCol := GetPixel(PreviewX + X + BorderWidth, PreviewY + Y + BorderWidth);
 			DrawPixel(X, Y, PixelCol);
 		end;
 	end;
@@ -232,12 +239,15 @@ end;
 procedure TIconCanvas.SaveIcon(Filename: string);
 var
 	F: file;
-	Size: Word;
+	Size, BorderWidth: Word;
 	p: Pointer;
 	X1, Y1, X2, Y2: Integer;
 begin
 	{Allocate memory and get the icon data}
 	ImgPreview^.GetAbsPos(X1, Y1);
+	BorderWidth := ImgPreview^.GetBorderWidth;
+	Inc(X1, BorderWidth);
+	Inc(Y1, BorderWidth);
 	X2 := X1 + IconSize;
 	Y2 := Y1 + IconSize;
 	Size := ImageSize(X1, Y1, X2, Y2);
@@ -247,7 +257,7 @@ begin
 	Mouse.Show;
 
 	{Open the file and output the data}
-	Assign(F, Filename);
+	Assign(F, ProgramPath + 'ICONS\' + Filename + '.BIN');
 	{$I-}
 	Rewrite(F, 1);
 	{$I+}
@@ -412,6 +422,7 @@ procedure TIconCanvas.DrawPixel(X, Y, Col: Integer);
 var
 	CanvasX, CanvasY, OffsetX, OffsetY: Integer;
 	PreviewX, PreviewY: Integer;
+	ImgPreviewBorder: Word;
 begin
 	{Offset variables are the coords for the top-left corner of
 	 the drawing area, and each 'pixel' in it is PixelSize times
@@ -432,7 +443,8 @@ begin
 
 	{Update preview}
 	ImgPreview^.GetAbsPos(PreviewX, PreviewY);
-	PutPixel(PreviewX + X, PreviewY + Y, Col);
+	ImgPreviewBorder := ImgPreview^.GetBorderWidth;
+	PutPixel(PreviewX + ImgPreviewBorder + X, PreviewY + ImgPreviewBorder + Y, Col);
 end;
 
 

@@ -357,7 +357,7 @@ begin
 		SaveBackdrop;
 	end;
 
-	New(TxtPattern, Init(15, 28, CAP_PATTERN, WinFileSelect));
+	New(TxtPattern, Init(9, 22, CAP_PATTERN, WinFileSelect));
 	with TxtPattern^ do
 	begin
 		Width := 150;
@@ -367,7 +367,7 @@ begin
 		AddHotkey(KeyAltP);
 	end;
 
-	New(TxtDrive, Init(187, 28, CAP_DRIVE, WinFileSelect));
+	New(TxtDrive, Init(181, 22, CAP_DRIVE, WinFileSelect));
 	with TxtDrive^ do
 	begin
 		Width := 150;
@@ -377,10 +377,10 @@ begin
 		AddHotkey(KeyAltR);
 	end;
 
-	New(LblFiles, Init(16, 57, CAP_FILES, WinFileSelect));
-	New(LblDirs, Init(187, 57, CAP_DIRS, WinFileSelect));
+	New(LblFiles, Init(10, 51, CAP_FILES, WinFileSelect));
+	New(LblDirs, Init(181, 51, CAP_DIRS, WinFileSelect));
 
-	New(List[FileList], Init(16, 71, WinFileSelect));
+	New(List[FileList], Init(10, 65, WinFileSelect));
 	with List[FileList]^ do
 	begin
 		Width := 150;
@@ -391,7 +391,7 @@ begin
 		AddHotkey(KeyAltF);
 	end;
 
-	New(List[DirList], Init(187, 71, WinFileSelect));
+	New(List[DirList], Init(181, 65, WinFileSelect));
 	with List[DirList]^ do
 	begin
 		Width := 150;
@@ -401,7 +401,7 @@ begin
 		AddHotkey(KeyAltD);
 	end;
 
-	New(BtnSelect, Init(363, 28, CAP_SELECT, WinFileSelect));
+	New(BtnSelect, Init(356, 22, CAP_SELECT, WinFileSelect));
 	with BtnSelect^ do
 	begin
 		OnClick := ListDblClicked;
@@ -409,7 +409,7 @@ begin
 		AddHotkey(KeyEnter);
 	end;
 
-	New(BtnCancel, Init(363, 58, CAP_CANCEL, WinFileSelect));
+	New(BtnCancel, Init(357, 52, CAP_CANCEL, WinFileSelect));
 	with BtnCancel^ do
 	begin
 		OnClick := BtnCancelClick;
@@ -417,7 +417,7 @@ begin
 		AddHotkey(KeyEscape);
 	end;
 
-	New(BtnFilePrev, Init(168, 71, CharArrowUp, WinFileSelect));
+	New(BtnFilePrev, Init(162, 65, CharArrowUp, WinFileSelect));
 	with BtnFilePrev^ do
 	begin
 		Width := 14;
@@ -425,7 +425,7 @@ begin
 		OnClick := BtnDirectionClick;
 	end;
 
-	New(BtnFileNext, Init(168, 71 + 94, CharArrowDown, WinFileSelect));
+	New(BtnFileNext, Init(162, 159, CharArrowDown, WinFileSelect));
 	with BtnFileNext^ do
 	begin
 		Width := 14;
@@ -433,7 +433,7 @@ begin
 		OnClick := BtnDirectionClick;
 	end;
 
-	New(BtnDirPrev, Init(339, 71, CharArrowUp, WinFileSelect));
+	New(BtnDirPrev, Init(333, 65, CharArrowUp, WinFileSelect));
 	with BtnDirPrev^ do
 	begin
 		Width := 14;
@@ -441,7 +441,7 @@ begin
 		OnClick := BtnDirectionClick;
 	end;
 
-	New(BtnDirNext, Init(339, 71 + 94, CharArrowDown, WinFileSelect));
+	New(BtnDirNext, Init(333, 159, CharArrowDown, WinFileSelect));
 	with BtnDirNext^ do
 	begin
 		Width := 14;
@@ -449,10 +449,10 @@ begin
 		OnClick := BtnDirectionClick;
 	end;
 
-	New(ImgPreview, Init(393, 108, '', WinFileSelect));
+	New(ImgPreview, Init(383, 98, '', WinFileSelect));
 	with ImgPreview^ do
 	begin
-		BorderStyle := BorNone;
+		BorderStyle := Bor3D;
 		BgColor := Thm.Win;
 	end;
 

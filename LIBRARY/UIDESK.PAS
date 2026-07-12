@@ -154,11 +154,11 @@ begin
 	 display the target filename if that setting is enabled}
 	if ShowCaption then
 	begin
-		Print(Link^.Caption, X + 38, Y + 4, FgColor);
+		Print(Link^.Caption, X + 44, Y + 7, FgColor);
 		if ShowTarget then
 		begin
 			FSplit(Link^.FileName, FDir, FName, FExt);
-			Print(FName + FExt, X + 38, Y + 18, FgColor);
+			Print(FName + FExt, X + 44, Y + 21, FgColor);
 		end;
 	end;
 end;
@@ -375,15 +375,15 @@ begin
 	LastGridY := 0;
 
 	Mouse.Hide;
-	IconSize := ImageSize(0, 0, 31, 31);
+	IconSize := ImageSize(0, 0, 35, 35);
 	GetMem(LinkIconImg, IconSize);
 	GetMem(BackdropImg, IconSize);
-	GetImage(DrawX, DrawY, DrawX + 31, DrawY + 31, LinkIconImg^);
-	GetImage(DrawX, DrawY, DrawX + 31, DrawY + 31, BackdropImg^);
+	GetImage(DrawX, DrawY, DrawX + 35, DrawY + 35, LinkIconImg^);
+	GetImage(DrawX, DrawY, DrawX + 35, DrawY + 35, BackdropImg^);
 	Mouse.Show;
 
 	{Center mouse on icon}
-	Mouse.Move(DrawX + 16, DrawY + 16);
+	Mouse.Move(DrawX + 18, DrawY + 18);
 
 	if Mouse.Supported then
 	begin
@@ -394,8 +394,8 @@ begin
 	begin
 		{Set mouse pos variables manually to make the rest of the code work
 		 if no mouse is present}
-		CursorX := DrawX + 16;
-		CursorY := DrawY + 16;
+		CursorX := DrawX + 18;
+		CursorY := DrawY + 18;
 	end;
 
 	CurGridX := CursorX div LinkGridSize;
@@ -434,10 +434,10 @@ begin
 			Mouse.Move(CursorX, CursorY);
 
 		{Calculate grid position}
-		CurGridX := (CursorX- 16) div LinkGridSize;
+		CurGridX := (CursorX - 18) div LinkGridSize;
 		if CurGridX < 0 then
 			CurGridX := 0;
-		CurGridY := (CursorY - 16) div LinkGridSize;
+		CurGridY := (CursorY - 18) div LinkGridSize;
 		if CurGridY < 4 then
 			CurGridY := 4;
 
@@ -452,7 +452,7 @@ begin
 				DrawY := 318;
 
 			{Save backdrop, plot icon in its place}
-			GetImage(DrawX, DrawY, DrawX + 31, DrawY + 31, BackdropImg^);
+			GetImage(DrawX, DrawY, DrawX + 35, DrawY + 35, BackdropImg^);
 			PutImage(DrawX, DrawY, LinkIconImg^, NormalPut);
 			Mouse.Show;
 			LastGridX := CurGridX;

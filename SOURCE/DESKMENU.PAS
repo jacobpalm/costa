@@ -111,12 +111,12 @@ begin
 	with WinLinkMenu^ do
 	begin
 		Width := 413;
-		Height := 165;
+		Height := 166;
 		OnDraw := WinLinkMenuDraw;
 		Center(OrBoth);
 		SaveBackdrop;
 	end;
-	New(BtnOpen, Init(12, 101, CAP_OPEN, WinLinkMenu));
+	New(BtnOpen, Init(6, 96, CAP_OPEN, WinLinkMenu));
 	with BtnOpen^ do
 	begin
 		Width := 389;
@@ -124,38 +124,38 @@ begin
 		AddHotkey(KeyAltO);
 		AddHotkey(KeyEnter);
 	end;
-	New(BtnEdit, Init(12, 131, CAP_EDIT, WinLinkMenu));
+	New(BtnEdit, Init(6, 126, CAP_EDIT, WinLinkMenu));
 	with BtnEdit^ do
 	begin
 		OnClick := ButtonClick;
 		AddHotkey(KeyAltE);
 	end;
-	New(BtnMove, Init(111, 131, CAP_MOVE, WinLinkMenu));
+	New(BtnMove, Init(105, 126, CAP_MOVE, WinLinkMenu));
 	with BtnMove^ do
 	begin
 		OnClick := ButtonClick;
 		AddHotkey(KeyAltM);
 	end;
-	New(BtnRemove, Init(210, 131, CAP_REMOVE, WinLinkMenu));
+	New(BtnRemove, Init(204, 126, CAP_REMOVE, WinLinkMenu));
 	with BtnRemove^ do
 	begin
 		OnClick := ButtonClick;
 		AddHotkey(KeyAltR);
 	end;
-	New(BtnCancel, Init(309, 131, CAP_CANCEL, WinLinkMenu));
+	New(BtnCancel, Init(303, 126, CAP_CANCEL, WinLinkMenu));
 	with BtnCancel^ do
 	begin
 		OnClick := ButtonClick;
 		AddHotkey(KeyAltC);
 		AddHotkey(KeyEscape);
 	end;
-	New(ImgIcon, Init(12, 11, TargetLink^.IconFile, WinLinkMenu));
+	New(ImgIcon, Init(4, 4, TargetLink^.IconFile, WinLinkMenu));
 
-	New(LblLinkInfo, Init(54, 17, '', WinLinkMenu));
-	New(LblPath, Init(12, 59, CAP_PATH, WinLinkMenu));
-	New(LblPathValue, Init(108, 59, '', WinLinkMenu));
-	New(LblParameters, Init(12, 76, CAP_PARAMETERS, WinLinkMenu));
-	New(LblParametersValue, Init(108, 76, '', WinLinkMenu));
+	New(LblLinkInfo, Init(48, 12, '', WinLinkMenu));
+	New(LblPath, Init(6, 54, CAP_PATH, WinLinkMenu));
+	New(LblPathValue, Init(102, 54, '', WinLinkMenu));
+	New(LblParameters, Init(6, 71, CAP_PARAMETERS, WinLinkMenu));
+	New(LblParametersValue, Init(102, 71, '', WinLinkMenu));
 end;
 
 function LinkMenu(Link: PLink): TLinkAction;

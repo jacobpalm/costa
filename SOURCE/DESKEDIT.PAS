@@ -130,7 +130,7 @@ begin
 		SaveBackdrop;
 	end;
 
-	New(TxtCaption, Init(12, 26, CAP_CAPTION, WinEdit));
+	New(TxtCaption, Init(6, 20, CAP_CAPTION, WinEdit));
 	With TxtCaption^ do
 	begin
 		Width := 211;
@@ -138,7 +138,7 @@ begin
 		Text := TargetLink^.Caption;
 		AddHotkey(KeyAltA);
 	end;
-	New(TxtFilename, Init(12, 70, CAP_FILENAME, WinEdit));
+	New(TxtFilename, Init(6, 64, CAP_FILENAME, WinEdit));
 	With TxtFilename^ do
 	begin
 		Width := 211;
@@ -146,7 +146,7 @@ begin
 		Text := TargetLink^.FileName;
 		AddHotkey(KeyAltF);
 	end;
-	New(TxtPath, Init(12, 114, CAP_PATH, WinEdit));
+	New(TxtPath, Init(6, 108, CAP_PATH, WinEdit));
 	With TxtPath^ do
 	begin
 		Width := 211;
@@ -154,7 +154,7 @@ begin
 		Text := TargetLink^.Path;
 		AddHotkey(KeyAltT);
 	end;
-	New(TxtParams, Init(12, 158, CAP_PARAMETERS, WinEdit));
+	New(TxtParams, Init(6, 152, CAP_PARAMETERS, WinEdit));
 	With TxtParams^ do
 	begin
 		Width := 211;
@@ -162,40 +162,40 @@ begin
 		Text := TargetLink^.Parameters;
 		AddHotkey(KeyAltR);
 	end;
-	New(ChkPauseOnExit, Init(12, 187, CAP_PAUSE_ON_EXIT, TargetLink^.PauseOnExit, WinEdit));
+	New(ChkPauseOnExit, Init(6, 181, CAP_PAUSE_ON_EXIT, TargetLink^.PauseOnExit, WinEdit));
 	With ChkPauseOnExit^ do
 	begin
 		AddHotkey(KeyAltX);
 	end;
 
-	New(BtnOK, Init(231, 26, CAP_OK, WinEdit));
+	New(BtnOK, Init(225, 20, CAP_OK, WinEdit));
 	With BtnOK^ do
 	begin
 		OnClick := BtnOK_Click;
 		AddHotkey(KeyAltO);
 		AddHotkey(KeyEnter);
 	end;
-	New(BtnCancel, Init(231, 54, CAP_CANCEL, WinEdit));
+	New(BtnCancel, Init(225, 48, CAP_CANCEL, WinEdit));
 	With BtnCancel^ do
 	begin
 		OnClick := BtnCancel_Click;
 		AddHotkey(KeyAltC);
 		AddHotkey(KeyEscape);
 	end;
-	New(BtnBrowse, Init(231, 82, CAP_BROWSE, WinEdit));
+	New(BtnBrowse, Init(225, 76, CAP_BROWSE, WinEdit));
 	With BtnBrowse^ do
 	begin
 		OnClick := BtnBrowse_Click;
 		AddHotkey(KeyAltB);
 	end;
-	New(BtnIcon, Init(231, 110, CAP_ICON, WinEdit));
+	New(BtnIcon, Init(225, 104, CAP_ICON, WinEdit));
 	With BtnIcon^ do
 	begin
 		OnClick := BtnIcon_Click;
 		AddHotkey(KeyAltI);
 	end;
 
-	New(ImgIcon, Init(261, 157, TargetLink^.IconFile, WinEdit));
+	New(ImgIcon, Init(253, 149, TargetLink^.IconFile, WinEdit));
 	ImgIcon^.OnClick := BtnIcon_Click;
 end;
 

@@ -164,22 +164,23 @@ begin
 	begin
 		Filename := UpperCase(InputBox(MSG_SAVE_TITLE, MSG_SAVE_TEXT, AppIcon, ''));
 
-		{Validate input}
 		if Length(Filename) = 0 then
 			exit;
-		if (Length(Filename) > 8) or (not Valid8dot3(FileName + '.BIN')) then
+
+		{Validate input}
+		if not Valid8dot3(FileName + '.BIN') then
 		begin
 			MsgBox(MSG_INVALID_NAME_TITLE, MSG_INVALID_NAME_TEXT, MsgError);
 			exit;
 		end;
-		Filename := ProgramPath + 'ICONS\' + Filename + '.BIN';
 	end
 	else
 		Filename := Canvas^.GetIconFile;
 
 	{Check if file already exists}
-	if FileExists(Filename) and (Filename <> Canvas^.GetIconFile) then
+	if FileExists(ProgramPath + 'ICONS\' + Filename + '.BIN') and (Filename <> Canvas^.GetIconFile) then
 	begin
+		{Another file with same name exists, confirm overwrite and exit if the user doesn't want to do so}
 		MbResult := MsgBox(MSG_FILE_EXISTS_TITLE, MSG_FILE_EXISTS_TEXT, MsgQuest);
 		if MbResult = false then
 			exit;
@@ -330,8 +331,8 @@ begin
 	New(AreaPreview, Init(0, 0, WinMain));
 	With AreaPreview^ do
 	begin
-		Width := 56;
-		Height := 56;
+		Width := 57;
+		Height := 57;
 		BgColor := Thm.Desk;
 	end;
 
@@ -342,7 +343,7 @@ begin
 		Height := 290;
 		OnClick := CanvasClick;
 		BgColor := White;
-		SetPreviewPos(314, 89);
+		SetPreviewPos(313, 88);
 	end;
 
 	{Get absolute position of canvas area, and its size, so other objects can be
@@ -359,7 +360,7 @@ begin
 	New(BtnPencil, Init(X, Y, CAP_PENCIL, WinMain));
 	With BtnPencil^ do
 	begin
-		Width := 56;
+		Width := 57;
 		OnClick := BtnToolClick;
 		Include(State, SActive);
 		AddHotkey(KeyAltE);
@@ -367,7 +368,7 @@ begin
 	New(BtnFloodFill, Init(X, Y + 26, CAP_FILL, WinMain));
 	With BtnFloodFill^ do
 	begin
-		Width := 56;
+		Width := 57;
 		OnClick := BtnToolClick;
 		AddHotkey(KeyAltF);
 	end;
@@ -420,5 +421,4 @@ begin
 	App^.OpenWindow(WinMain);
 	App^.Run;
 	App^.Terminate;
-
 end.

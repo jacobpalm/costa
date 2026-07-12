@@ -88,8 +88,6 @@ begin
 	StartTime := 0;
 	PauseTime := 0;
 
-	SetFieldSize(SMedium);
-
 	{Center keyboard indicator}
 	IndicatorRow := Rows div 2;
 	IndicatorCol := Cols div 2;
@@ -97,6 +95,7 @@ begin
 	FillChar(Cell, SizeOf(Cell), 0);
 
 	SetParent(Parent);
+	SetFieldSize(SMedium); {SetFieldSzie centers on parent}
 end;
 
 procedure TMineField.Draw;

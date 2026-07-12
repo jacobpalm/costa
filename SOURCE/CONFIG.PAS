@@ -264,20 +264,20 @@ begin
 		Width := 310;
 		Height := 293;
 	end;
-	New(ImgSetting, Init(14, 14, 'CONFIG', FrmSettings));
-	New(LblSettings, Init(56, 19, CAP_SETTINGS, FrmSettings));
-	New(ChkSetting[LinkCapt], Init(14, 56, CAP_LinkCapt, DeskSettings.LinkCapt, FrmSettings));
+	New(ImgSetting, Init(10, 10, 'CONFIG', FrmSettings));
+	New(LblSettings, Init(54, 17, CAP_SETTINGS, FrmSettings));
+	New(ChkSetting[LinkCapt], Init(12, 54, CAP_LinkCapt, DeskSettings.LinkCapt, FrmSettings));
 	ChkSetting[LinkCapt]^.OnChange := ChkSettingLinkCaptChange;
 	ChkSetting[LinkCapt]^.AddHotkey(KeyAltC);
-	New(ChkSetting[LinkTarget], Init(14, 78, CAP_LINKTARGET, DeskSettings.LinkTarget, FrmSettings));
+	New(ChkSetting[LinkTarget], Init(12, 76, CAP_LINKTARGET, DeskSettings.LinkTarget, FrmSettings));
 	ChkSetting[LinkTarget]^.AddHotkey(KeyAltO);
 	if not DeskSettings.LinkCapt then
 		Exclude(ChkSetting[LinkTarget]^.State, SEnabled);
-	New(ChkSetting[LinkDelete], Init(14, 100, CAP_LINKDELETE, DeskSettings.ConfLinkDel, FrmSettings));
+	New(ChkSetting[LinkDelete], Init(12, 98, CAP_LINKDELETE, DeskSettings.ConfLinkDel, FrmSettings));
 	ChkSetting[LinkDelete]^.AddHotkey(KeyAltR);
-	New(ChkSetting[ConfExit], Init(14, 122, CAP_CONFEXIT, DeskSettings.ConfExit, FrmSettings));
+	New(ChkSetting[ConfExit], Init(12, 120, CAP_CONFEXIT, DeskSettings.ConfExit, FrmSettings));
 	ChkSetting[ConfExit]^.AddHotkey(KeyAltE);
-	New(ChkSetting[Audio], Init(14, 144, CAP_AUDIO, Setting.Audio, FrmSettings));
+	New(ChkSetting[Audio], Init(12, 142, CAP_AUDIO, Setting.Audio, FrmSettings));
 	ChkSetting[Audio]^.AddHotkey(KeyAltU);
 
 	{Theme frame and its contents}
@@ -287,9 +287,9 @@ begin
 		Width := 288;
 		height := 293;
 	end;
-	New(ImgTheme, Init(14, 14, 'THEMES', FrmTheme));
-	New(LblTheme, Init(56, 19, CAP_THEMES, FrmTheme));
-	New(PrwTheme, Init(14, 55, FrmTheme));
+	New(ImgTheme, Init(10, 10, 'THEMES', FrmTheme));
+	New(LblTheme, Init(54, 17, CAP_THEMES, FrmTheme));
+	New(PrwTheme, Init(12, 53, FrmTheme));
 	with PrwTheme^ do
 	begin
 		Width := FrmTheme^.Width - 28;
@@ -298,7 +298,7 @@ begin
 	end;
 
 	{Theme navigation buttons and no-themes label}
-	New(BtnPrevious, Init(14, FrmTheme^.Height - 34, CAP_PREVIOUS, FrmTheme));
+	New(BtnPrevious, Init(12, FrmTheme^.Height - 36, CAP_PREVIOUS, FrmTheme));
 	with BtnPrevious^ do
 	begin
 		OnClick := SwitchTheme;
@@ -306,7 +306,7 @@ begin
 		AddHotkey(KeyAltP);
 		AddHotkey(KeyLeft);
 	end;
-	New(BtnNext, Init(FrmTheme^.Width - 92 - 14, FrmTheme^.Height - 34, CAP_NEXT, FrmTheme));
+	New(BtnNext, Init(FrmTheme^.Width - 92 - 16, FrmTheme^.Height - 36, CAP_NEXT, FrmTheme));
 	with BtnNext^ do
 	begin
 		OnClick := SwitchTheme;
@@ -314,7 +314,7 @@ begin
 		AddHotkey(KeyAltN);
 		AddHotkey(KeyRight);
 	end;
-	New(LblNoThemes, Init(0, FrmTheme^.Height - 28, MSG_NO_THEMES, FrmTheme));
+	New(LblNoThemes, Init(0, FrmTheme^.Height - 30, MSG_NO_THEMES, FrmTheme));
 	with LblNoThemes^ do
 	begin
 		AutoSize;

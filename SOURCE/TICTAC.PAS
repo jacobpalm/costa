@@ -140,9 +140,11 @@ begin
 
 	{Borders}
 	SetColor(LightGreen);
-	Rectangle(X1, Y1, X2 - 1, Y2 - 1);
-	SetColor(DarkGray);
 	Rectangle(X1 + 1, Y1 + 1, X2, Y2);
+	SetColor(DarkGray);
+	Rectangle(X1, Y1, X2 - 1, Y2 - 1);
+	PutPixel(X1, Y2, LightGreen); {Put missing pixel in bottom-left and top-right corners}
+	PutPixel(X2, Y1, LightGreen);
 
 	if Value = PlayerX then
 	begin
@@ -618,7 +620,7 @@ end;
 
 procedure WinMainDraw(Sender: PUIObject); far;
 var
-	X: integer;
+	X, Y, W, H: integer;
 begin
 	SetLineStyle(UserBitLn, $1111, 1);
 	SetColor(LightGreen);
@@ -637,6 +639,14 @@ begin
 	SetFillStyle(SolidFill, Green);
 	Bar(12, 49, 627, 65);    {Top bar for messages}
 	Bar(162, 316, 477, 332); {Bottom bar for game mode / sound state}
+
+	FrmTic^.GetAbsPos(X, Y);
+	SetColor(LightGreen);
+	Rectangle(X + 1, Y + 1, X + FrmTic^.Width, Y + FrmTic^.Height);
+	SetColor(DarkGray);
+	Rectangle(X, Y, X + FrmTic^.Width - 1, Y + FrmTic^.Height - 1);
+	PutPixel(X, Y + FrmTic^.Height, LightGreen); {Put missing pixel in bottom-left and top-right corners}
+	PutPixel(X + FrmTic^.Width, Y, LightGreen);
 end;
 
 procedure WinMainRun(Sender: PUIObject); far;
@@ -664,20 +674,17 @@ begin
 	New(FrmTic, Init(209, 80, WinMain));
 	With FrmTic^ do
 	begin
-		Width := 221;
-		Height := 221;
+		Width := 224;
+		Height := 224;
 		Transparent := true;
-		BgColor := Green;
-		{DEBUG - fix colors}
-		{SetLightColor(LightGreen);
-		SetDarkColor(DarkGray);}
+		BorderStyle := BorNone;
 	end;
 
 	for Row := 1 to 3 do
 	begin
 		for Col := 1 to 3 do
 		begin
-			New(PlayField[Row, Col], Init(10 + ((Row - 1) * 70), 10 + ((Col - 1) * 70), FrmTic));
+			New(PlayField[Row, Col], Init(12 + ((Row - 1) * 70), 12 + ((Col - 1) * 70), FrmTic));
 			PlayField[Row, Col]^.OnClick := PlayFieldClick;
 		end;
 	end;

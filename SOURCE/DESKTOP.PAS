@@ -414,9 +414,9 @@ begin
 	begin
 		Width := ScreenWidth;
 		Height := ScreenHeight;
+		BorderStyle := BorNone;
 		OnDraw := WinMainDraw;
 		OnClose := WinMainClose;
-		BorderStyle := BorNone;
 	end;
 
 	New(BtnAdd, Init(2, 2, CAP_ADD, WinMain));
@@ -453,14 +453,14 @@ begin
 		Center(OrHorizontal);
 		Transparent := false;
 	end;
-	New(BtnPrevious, Init(255, 2, HotkeyChr + CharArrowLeft, WinMain));
+	New(BtnPrevious, Init(254, 2, HotkeyChr + CharArrowLeft, WinMain));
 	With BtnPrevious^ do
 	begin
 		Width := 42;
 		OnClick := BtnPreviousClick;
 		AddHotkey(KeyLeft);
 	end;
-	New(BtnNext, Init(343, 2, HotkeyChr + CharArrowRight, WinMain));
+	New(BtnNext, Init(340, 2, HotkeyChr + CharArrowRight, WinMain));
 	With BtnNext^ do
 	begin
 		Width := 42;

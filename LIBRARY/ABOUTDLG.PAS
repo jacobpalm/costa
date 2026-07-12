@@ -51,8 +51,8 @@ begin
 		SaveBackdrop;
 	end;
 
-	New(ImgLogo, Init(13, 15, AppP^.Icon, WinAboutBox));
-	New(BtnClose, Init(0, WinAboutBox^.Height - 34, CAP_CLOSE, WinAboutBox));
+	New(ImgLogo, Init(6, 6, AppP^.Icon, WinAboutBox));
+	New(BtnClose, Init(0, WinAboutBox^.Height - 42, CAP_CLOSE, WinAboutBox));
 	with BtnClose^ do
 	begin
 		OnClick := BtnCloseClick;
@@ -62,9 +62,9 @@ begin
 		AddHotkey(KeyEscape);
 	end;
 
-	New(LblInfo[0], Init(56, 21, AppP^.Name + ' ' + AppP^.Version, WinAboutBox));
-	New(LblInfo[1], Init(56, 33, Replace(MSG_BY_TEXT, Placeholder, AppP^.Author), WinAboutBox));
-	New(LblInfo[2], Init(15, 57, Text, WinAboutBox));
+	New(LblInfo[0], Init(51, 14, AppP^.Name + ' ' + AppP^.Version, WinAboutBox));
+	New(LblInfo[1], Init(51, 26, Replace(MSG_BY_TEXT, Placeholder, AppP^.Author), WinAboutBox));
+	New(LblInfo[2], Init(8, 49, Text, WinAboutBox));
 
 	WinAboutBox^.Run;
 	Dispose(WinAboutBox, Done);

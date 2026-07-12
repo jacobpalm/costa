@@ -290,50 +290,61 @@ end;
 {Size dialog - custom icons on buttons with text below}
 procedure WinSetSizeDraw(Sender: PUIObject); far;
 var
-	X, Y, W, H, TextOffset: integer;
+	X, Y: Integer;
+	W, H, TextOffset: Word;
+	XOffSet, YOffSet, BorderWidth: Word;
 begin
-	BtnSize[0]^.GetAbsPos(X, Y);
 	W := BtnSize[0]^.Width;  {All buttons are same size}
 	H := BtnSize[0]^.Height;
-	TextOffset := ((W - PrintW(CAP_SMALL)) div 2);
-	Print(CAP_SMALL, X + TextOffset, Y + 79, Thm.WinText);
+	BorderWidth := BtnSize[0]^.GetBorderWidth;
 
-	BtnSize[1]^.GetAbsPos(X, Y);
-	TextOffset := ((W - PrintW(CAP_MEDIUM)) div 2);
-	Print(CAP_MEDIUM, X + TextOffset, Y + 79, Thm.WinText);
-
-	BtnSize[2]^.GetAbsPos(X, Y);
-	TextOffset := ((W - PrintW(CAP_LARGE)) div 2);
-	Print(CAP_LARGE, X + TextOffset, Y + 79, Thm.WinText);
-
-	BtnSize[3]^.GetAbsPos(X, Y);
-	TextOffset := ((W- PrintW(CAP_ULTRA)) div 2);
-	Print(CAP_ULTRA, X + TextOffset, Y + 79, Thm.WinText);
-
-	SetColor(Thm.WinText);
 	{9x9}
+	BtnSize[0]^.GetAbsPos(X, Y);
+	XOffSet := (W - 28) div 2 + X;
+	YOffSet := (H - 28) div 2 + Y - 8;
+	TextOffset := (W - PrintW(CAP_SMALL)) div 2 + 2;
+	Print(CAP_SMALL, X + TextOffset, Y + 79, Thm.WinText);
+	SetColor(Thm.WinText);
 	for X := 0 to 3 do
-		Line(252 + X * 9, 94, 252 + X * 9, 121);
+		Line(XOffSet + X * 9, YOffset, XOffSet + X * 9, YOffset + 27);
 	for Y := 0 to 3 do
-		Line(252, 94 + Y * 9, 279, 94 + Y * 9);
+		Line(XOffSet, YOffSet + Y * 9, XOffSet + 27, YOffSet + Y * 9);
 
 	{16x16}
+	BtnSize[1]^.GetAbsPos(X, Y);
+	XOffSet := (W - 36) div 2 + X;
+	YOffSet := (H - 36) div 2 + Y - 8;
+	TextOffset := (W - PrintW(CAP_MEDIUM)) div 2 + 2;
+	Print(CAP_MEDIUM, X + TextOffset, Y + 79, Thm.WinText);
+	SetColor(Thm.WinText);
 	for X := 0 to 4 do
-		Line(357 + X * 9, 90, 357 + X * 9, 126);
+		Line(XOffSet + X * 9, YOffset, XOffSet + X * 9, YOffset + 35);
 	for Y := 0 to 4 do
-		Line(357, 90 + Y * 9, 393, 90 + Y * 9);
+		Line(XOffSet, YOffSet + Y * 9, XOffSet + 35, YOffSet + Y * 9);
 
 	{22x18}
+	BtnSize[2]^.GetAbsPos(X, Y);
+	XOffSet := (W - 55) div 2 + X;
+	YOffSet := (H - 46) div 2 + Y - 8;
+	TextOffset := (W - PrintW(CAP_LARGE)) div 2 + 2;
+	Print(CAP_LARGE, X + TextOffset, Y + 79, Thm.WinText);
+	SetColor(Thm.WinText);
 	for X := 0 to 6 do
-		Line(238 + X * 9, 195, 238 + X * 9, 240);
+		Line(XOffSet + X * 9, YOffset, XOffSet + X * 9, YOffset + 45);
 	for Y := 0 to 5 do
-		Line(238, 195 + Y * 9, 292, 195 + Y * 9);
+		Line(XOffSet, YOffSet + Y * 9, XOffSet + 54, YOffSet + Y * 9);
 
 	{39x18}
+	BtnSize[3]^.GetAbsPos(X, Y);
+	XOffSet := (W - 73) div 2 + X;
+	YOffSet := (H - 46) div 2 + Y - 8;
+	TextOffset := (W - PrintW(CAP_ULTRA)) div 2 + 2;
+	Print(CAP_ULTRA, X + TextOffset, Y + 79, Thm.WinText);
+	SetColor(Thm.WinText);
 	for X := 0 to 8 do
-		Line(339 + X * 9, 195, 339 + X * 9, 240);
+		Line(XOffSet + X * 9, YOffset, XOffSet + X * 9, YOffset + 45);
 	for Y := 0 to 5 do
-		Line(339, 195 + Y * 9, 411, 195 + Y * 9);
+		Line(XOffSet, YOffSet + Y * 9, XOffSet + 72, YOffSet + Y * 9);
 end;
 
 procedure InitUI;
@@ -344,6 +355,7 @@ begin
 	begin
 		Width := ScreenWidth;
 		Height := ScreenHeight;
+		BgColor := DarkGray;
 		OnDraw := WinMainDraw;
 		BorderStyle := BorNone;
 	end;
@@ -448,14 +460,14 @@ begin
 	New(WinSetSize, Init(0, 0, nil));
 	With WinSetSize^ do
 	begin
-		Width := 236;
-		Height := 264;
+		Width := 234;
+		Height := 266;
 		OnDraw := WinSetSizeDraw;
 		Center(OrBoth);
 		SaveBackdrop;
 	end;
 
-	New(BtnSize[0], Init(13, 11, '', WinSetSize));
+	New(BtnSize[0], Init(6, 6, '', WinSetSize));
 	With BtnSize[0]^ do
 	begin
 		Width := 100;
@@ -464,7 +476,7 @@ begin
 		Transparent := true;
 		AddHotkey(KeyAlt9);
 	end;
-	New(BtnSize[1], Init(123, 11, '', WinSetSize));
+	New(BtnSize[1], Init(116, 6, '', WinSetSize));
 	With BtnSize[1]^ do
 	begin
 		Width := 100;
@@ -473,7 +485,7 @@ begin
 		Transparent := true;
 		AddHotkey(KeyAlt1);
 	end;
-	New(BtnSize[2], Init(13, 121, '', WinSetSize));
+	New(BtnSize[2], Init(6, 116, '', WinSetSize));
 	With BtnSize[2]^ do
 	begin
 		Width := 100;
@@ -482,7 +494,7 @@ begin
 		Transparent := true;
 		AddHotkey(KeyAlt2);
 	end;
-	New(BtnSize[3], Init(123, 121, '', WinSetSize));
+	New(BtnSize[3], Init(116, 116, '', WinSetSize));
 	With BtnSize[3]^ do
 	begin
 		Width := 100;
@@ -491,10 +503,10 @@ begin
 		OnClick := BtnSizeClick;
 		AddHotkey(KeyAlt3);
 	end;
-	New(BtnCancel, Init(13, 231, CAP_CANCEL, WinSetSize));
+	New(BtnCancel, Init(6, 226, CAP_CANCEL, WinSetSize));
 	With BtnCancel^ do
 	Begin
-		Width := 210;
+		Width := 209;
 		OnClick := BtnCancelClick;
 		AddHotkey(KeyAltC);
 		AddHotkey(KeyEscape);
