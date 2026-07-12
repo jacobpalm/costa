@@ -66,8 +66,7 @@ type
 			LinkCount:    Byte;        {Number of links on the desktop}
 			SelectedLink: PLink;       {Currently selected link, if any}
 			TabVisible:   Boolean;     {Whether the keyboard tab indicator is visible}
-			TabBgImg:     Pointer;     {Saved background image for tab indicator}
-			TabBgSize:    Word;        {Memory size of the saved background image for tab indicator}
+			TabBorder:    PUIObject;   {Used for drawing border around active link}
 			ShowCaption,
 			ShowTarget:   Boolean;     {Toggles visibility of text next to icons}
 			procedure     DrawLink(Link: PLink);
@@ -87,16 +86,22 @@ begin
 	TabVisible   := false;
 	FgColor      := Thm.DeskText;
 	BgColor      := Thm.Desk;
-	TabBgSize    := ImageSize(0, 0, 37, 37);
-
-	{Allocate memory for tab background image, 32x32 icon plus 4 pixel border}
-	GetMem(TabBgImg, TabBgSize);
+	New(TabBorder, Init);
+	with TabBorder^ do
+	begin
+		Width := 35;
+		Height := 35;
+		Transparent := True;
+		BorderStyle := Bor3D;
+		Include(State, SHidden);
+		SetParent(@Self);
+	end;
 end;
 
 destructor TDesktop.Done;
 begin
+	{No need to dispose TabBorder, it has been added as a child object and will be cleared automatically}
 	Self.ClearLinks;
-	FreeMem(TabBgImg, TabBgSize);
 	inherited Done;
 end;
 
@@ -623,68 +628,41 @@ var
 
 	{Helper procedure to hide the tab indicator if visible}
 	procedure HideTabIndicator;
-	var
-		x1, y1: Integer;
 	begin
 		if not TabVisible or not Assigned(SelectedLink) then
 			exit;
 
-		{Restore saved background}
-		if Assigned(TabBgImg) then
+		{Get absolute position of desktop, and set icon position relative to it}
+		with TabBorder^ do
 		begin
-			Mouse.Hide;
-			{Get absolute position of desktop, and set icon position relative to it}
-			GetAbsPos(X1, Y1);
-			Inc(x1, SelectedLink^.Left);
-			Inc(y1, SelectedLink^.Top);
-			PutImage(x1 - 3, y1 - 3, TabBgImg^, NormalPut);
-			Mouse.Show;
+			Left := SelectedLink^.Left;
+			Top := SelectedLink^.Top;
+			BorderStyle := Bor3D;
 		end;
+		Mouse.Hide;
+		TabBorder^.DrawBorder;
+		Mouse.Show;
+		Include(TabBorder^.State, SHidden);
+
 		TabVisible := false;
 	end;
 
 	{Helper procedure to draw the tab indicator at SelectedLink}
 	procedure DrawTabIndicator;
-	var
-		x1, y1, x2, y2: Integer;
 	begin
 		if not Assigned(SelectedLink) then
 			exit;
 
-		Mouse.Hide;
 		{Get absolute position of desktop, and set icon position relative to it}
-		GetAbsPos(X1, Y1);
-		Inc(x1, SelectedLink^.Left);
-		Inc(y1, SelectedLink^.Top);
-		x1 := x1 - 3;
-		y1 := y1 - 3;
-		x2 := x1 + 37;
-		y2 := y1 + 37;
-		GetImage(x1, y1, x2, y2, TabBgImg^);
-
-		SetFillStyle(SolidFill, Thm.Btn);
-		Bar(X1 + 1, Y1 + 1, X2 - 1, Y2 - 1);
-
-		{Top + left outer border}
-		SetColor(White);
-		Line(X1, Y1, X2, Y1);
-		Line(X1, Y1 + 1, X1, Y2);
-		{Inner border}
-		SetColor(Thm.Shadow);
-		Line(X1 + 1, Y1 + 1, X2 - 1, Y1 + 1);
-		Line (X1 + 1, Y1 + 2, X1 + 1, Y2 - 1);
-
-		{Bottom + right outer border}
-		SetColor(Black);
-		Line(X2, Y1 + 1, X2, Y2);
-		Line(X1 + 1, Y2, X2 - 1, Y2);
-		{Inner border}
-		SetColor(Thm.Light);
-		Line(X2 - 1, Y1 + 2, X2 - 1, Y2 - 1);
-		Line(X1 + 2, Y2 - 1, X2 - 2, Y2 - 1);
-
-		DrawLink(SelectedLink);
-
+		with TabBorder^ do
+		begin
+			Left := SelectedLink^.Left;
+			Top := SelectedLink^.Top;
+			BorderStyle := Bor3DSunken;
+			Exclude(State, SHidden);
+		end;
+		Mouse.Hide;
+		TabBorder^.DrawBorder;
 		Mouse.Show;
 
 		TabVisible := true;
