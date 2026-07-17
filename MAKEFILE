@@ -51,7 +51,9 @@ TPCCMD = $(TPC) $(TPCSWITCHES)
 # /ZN = Debug info disabled
 TASMSWITCHES = /zn
 TASMCMD = $(TASM) $(TASMSWITCHES)
-TLINKSWITCHES = /m
+# /m = MAP
+# /t = Make COM program
+TLINKSWITCHES = /m /t
 TLINKCMD = $(TLINK) $(TLINKSWITCHES)
 
 # BINOBJ options for building binary object files, used for graphics drivers
@@ -63,13 +65,13 @@ APPPATHS = -U$(SOURCEDIR) -I$(SOURCEDIR) -O$(SOURCEDIR) -E$(COSTADIR)
 
 # Generate all applications #################################################
 
-ALL: COSTA.EXE DESKTOP.EXE ICONEDIT.EXE MINES.EXE TEXTVIEW.EXE CONFIG.EXE CALC.EXE TICTAC.EXE THMEDIT.EXE
+ALL: COSTA.COM DESKTOP.EXE ICONEDIT.EXE MINES.EXE TEXTVIEW.EXE CONFIG.EXE CALC.EXE TICTAC.EXE THMEDIT.EXE
 	@echo.
 	@echo All applications built.
 
 # Launcher ##################################################################
 
-COSTA.EXE: COSTA.OBJ
+COSTA.COM: COSTA.OBJ
 	$(TLINKCMD) COSTA.OBJ
 
 COSTA.OBJ: $(SOURCEDIR)\COSTA.ASM

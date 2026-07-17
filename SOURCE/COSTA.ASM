@@ -16,11 +16,11 @@
 ; Constants
 ; ---------------------------------------------------------------------------
 
-STACK_SIZE             EQU 400h    ; 1 kilobyte stack size
+STACK_SIZE             EQU 40h     ; 128 byte stack size
 PARAGRAPH_SIZE         EQU 16      ; Size of a memory paragraph in bytes
 WORD_SIZE              EQU 2       ; Size of a word in bytes
 MSDOS_REQUIRED_VERSION EQU 4       ; Minimum required MS-DOS major version
-DRDOS_REQUIRED_VERSION EQU 5       ; Minimum DR-DOS version
+DRDOS_REQUIRED_VERSION EQU 5       ; Minimum DR-DOS major version
 DESKTOP_EXIT_CODE      EQU 1       ; Exit code from desktop that signals to exit
 
 EXEC_FUNCTION          EQU 4Bh     ; DOS EXEC function number
@@ -57,28 +57,12 @@ CR_CHAR                EQU 0Dh     ; ASCII code for carriage return
 LF_CHAR                EQU 0Ah     ; ASCII code for line feed
 
 
-;----------------------------------------------------------------------------
+; ---------------------------------------------------------------------------
 ; Assembler instructions
 ; ---------------------------------------------------------------------------
 IDEAL
 NAME COSTA
-MODEL SMALL
-STACK STACK_SIZE
-
-
-; ---------------------------------------------------------------------------
-; Macros
-; ---------------------------------------------------------------------------
-
-; Print "Press any key to continue..." and wait for key press
-MACRO WAITFORKEY
-	lea dx, [MSG_CONTINUE]         ; Load address of message into DX
-	mov ah, PRINT_STR_FUNCTION     ; Print string using DOS function
-	int 21h
-
-	mov ah, READ_CHAR_FUNCTION     ; Wait for keypress without printing it
-	int 21h
-ENDM WAITFORKEY
+MODEL TINY
 
 
 ; ---------------------------------------------------------------------------
@@ -104,102 +88,55 @@ ENDS RunProgStruc
 
 
 ; ---------------------------------------------------------------------------
-; Data segment
+; Macros
 ; ---------------------------------------------------------------------------
-DATASEG
 
-DESKTOPEXE     db 'DESKTOP.EXE', 0     ; File name of desktop program
-DESKTOPPARAMS  db 5, ' /RUN', CR_CHAR  ; Format: Length, space, string, CR
-RUNFILE        db 'CONFIG\RUN.BIN', 0  ; File where desktop writes info about program to run to
+; Print "Press any key to continue..." and wait for key press
+MACRO WAITFORKEY
+	lea dx, [MSG_CONTINUE]         ; Load address of message into DX
+	mov ah, PRINT_STR_FUNCTION     ; Print string using DOS function
+	int 21h
 
-CostaPath      db 68 dup(0)        ; 63 char + null - path to self
-RunFileHandle  dw 0                ; File handle for RUN.BIN
-
-RunningDesktop db 0                ; Bool - are we running desktop?
-ExecErrorCode  db 0                ; DOS error code saved here if EXEC fails
-
-SavedSS        dw 0                ; Stack Segment + pointer saved before EXEC
-SavedSP        dw 0
-
-ParamBlock     ExecPB <>           ; EXEC parameter block
-RunProg        RunProgStruc <>     ; Data about program to run
-
-FilenamePtr    dw 0                ; Pointer to filename for EXEC, either DESKTOPEXE or RunProg.Filename
-ParametersPtr  dw 0                ; Pointer to parameters for EXEC, either DESKTOPPARAMS or RunProg.Parameters
-PathPtr        dw 0                ; Pointer to path for CHDIR, either CostaPath or RunProg.Path
-
-; Messages
-MSG_CONTINUE        db 'Press any key to continue...', '$'
-MSG_CRLF            db CR_CHAR, LF_CHAR, '$'           ; Used only to make DOS print a newline after an error message
-
-; Error messages
-MSG_UNKNOWN_ERR     db 'Unknown error', '$'
-MSG_INVALID_FUNC    db 'Invalid function', '$'
-MSG_FILE_NOT_FOUND  db 'File not found', '$'
-MSG_PATH_NOT_FOUND  db 'Path not found', '$'
-MSG_TOO_MANY_OPEN   db 'Too many open files', '$'
-MSG_ACCESS_DENIED   db 'Access denied', '$'
-MSG_INVALID_HANDLE  db 'Invalid handle', '$'
-MSG_MEM_CB_DESTR    db 'Memory control block destroyed', '$'
-MSG_INSUFF_MEM      db 'Insufficient memory', '$'
-MSG_INVALID_MEM_ADD db 'Invalid memory address', '$'
-MSG_INVALID_ENV     db 'Invalid environment', '$'
-MSG_INVALID_FORMAT  db 'Invalid format', '$'
-MSG_INVALID_ACCESS  db 'Invalid access mode', '$'
-MSG_DOS_VER_ERR     db 'DOS 4 or newer required', '$'
-
-; Offset table for error messages - 1-12 are standard DOS error codes, 0 and
-; 13+ are custom errors
-MsgTable dw MSG_UNKNOWN_ERR        ; 0
-         dw MSG_INVALID_FUNC       ; 1
-		 dw MSG_FILE_NOT_FOUND     ; 2
-		 dw MSG_PATH_NOT_FOUND     ; 3
-		 dw MSG_TOO_MANY_OPEN      ; 4
-		 dw MSG_ACCESS_DENIED      ; 5
-		 dw MSG_INVALID_HANDLE     ; 6
-		 dw MSG_MEM_CB_DESTR       ; 7
-		 dw MSG_INSUFF_MEM         ; 8
-		 dw MSG_INVALID_MEM_ADD    ; 9
-		 dw MSG_INVALID_ENV        ; 10
-		 dw MSG_INVALID_FORMAT     ; 11
-		 dw MSG_INVALID_ACCESS     ; 12
-		 dw MSG_DOS_VER_ERR        ; 13
-
-LABEL EndOfData BYTE               ; Marks end of the data segment, used for memory resize
+	mov ah, READ_CHAR_FUNCTION     ; Wait for keypress without printing it
+	int 21h
+ENDM WAITFORKEY
 
 
 ; ---------------------------------------------------------------------------
-; Code segment
+; Code segment start - the only segment since we're making a COM program
 ; ---------------------------------------------------------------------------
 CODESEG
+ORG 100h
 
 start:
-	mov ax, @data                  ; Initialize data segment registers
-	mov ds, ax
-	mov es, ax
+    ;Use custom stack - point SS/SP to the variable inside our code segment. DOS normally creates a stack
+    ;at the end of the segment, but we want to be able to free as much continous memory as possible so we
+    ;make our own stack
+    mov ax, cs                    ; Store code segment in ax
+    mov ss, ax                    ; Set stack segment pointer to ax
+    mov ax, offset CustomStackTop ; Store location of top of custom stack in ax
+    mov sp, ax                    ; Set stack pointer to adress stored in ax
 
-	; Check required DOS version (4.0 or higher)
-	mov ah, GET_DOS_VER_FUNCTION
-	int 21h
-	cmp al, MSDOS_REQUIRED_VERSION ; al = major version, must be >= required
-	jnc DosVersionOk               ; Jump if version is sufficient
+    ; Initialize program
+    call Init
 
-	; If DOS version is less than 4, check if we are running on DR-DOS since most
-	; versions of DR-DOS lie and report DOS 3.31.
-	mov ax, 4452h
-	int 21h
-	jc DosVersionNotOk             ; Not running DR-DOS
-	cmp al, DRDOS_REQUIRED_VERSION ; If DR-DOS, al = major version
-	jnc DosVersionOk
-
-DosVersionNotOk:
-	mov al, ERR_DOS_VERSION        ; DOS version error, will terminate
-	mov ah, FATAL_ERROR_FLAG
-	call HandleError
-
-DosVersionOk:
 	; Get path to this executable (Costa launcher)
 	call GetPathToSelf
+
+	; Calculate required memory size for COSTA.COM to keep
+	mov ax, offset EndOfResident   ; Label marks the end of the resident part of this program
+	add ax, PARAGRAPH_SIZE - 1     ; Make sure divison rounds up to next paragraph
+	shr ax, 4                      ; AX = byte count, divide by 16 to get paragraph count
+	;add ax, 40h                    ; Add 16 paragraphs for PSP and 32 for overhead (768 bytes)
+	mov bx, ax                     ; BX = new size in paragraphs
+	mov ah, RESIZE_MEM_FUNCTION
+	int 21h
+
+	jnc LoadRunData                ; No errors, continue ahead
+
+	; Error during memory resize
+	mov ah, FATAL_ERROR_FLAG       ; al already contains error code from int 21
+	call HandleError               ; Handle memory release error, will terminate
 
 LoadRunData:
 	mov [RunningDesktop], 0		   ; Clear running desktop flag
@@ -212,9 +149,7 @@ LoadRunData:
 	call HandleError               ; Handle path change error
 
 OpenRunFile:
-    ; Load program to run data from RUN.BIN
-	mov ax, @data
-	mov ds, ax
+	; Load program to run data from RUN.BIN
 	mov ah, OPEN_FILE_FUNCTION
 	mov al, OPEN_READ_ONLY
 	lea dx, [RUNFILE]              ; DS:DX = filename to open
@@ -225,8 +160,6 @@ OpenRunFile:
 
 ReadRunFile:
 	mov [RunFileHandle], ax        ; Save file handle
-	mov ax, @data
-	mov ds, ax
 	mov ah, READ_FILE_FUNCTION
 	mov bx, [RunFileHandle]        ; BX = file handle
 	mov cx, SIZE RunProgStruc      ; Number of bytes to read
@@ -273,36 +206,14 @@ RunDesktop:
 	mov [RunProg.PauseOnExit], 0   ; Don't pause after desktop exit
 	mov [RunningDesktop], 1        ; We are running the desktop now
 
-ChangePath:
+   ChangePath:
 	mov dx, [PathPtr]              ; Load pointer to path into DX
 	call ChDir                     ; Change directory to desired path
-	jnc ShrinkMemory               ; Jump if successful
+	jnc CallExecFunction           ; Jump if successful
 
 	mov ah, [RunningDesktop]       ; AL already contains error code from int 21
 	call HandleError               ; Handle path change error
 	jmp RunDesktop                 ; Try to run desktop
-
-ShrinkMemory:
-	; Shrink memory before running external program
-	mov ah, GET_PSP_FUNCTION
-	int 21h
-	mov es, bx                     ; set ES = PSP segment
-
-	; Calculate required memory size for COSTA.EXE to keep
-	mov ax, offset EndOfData       ; Label EndOfData marks the end of the data segment
-	add ax, STACK_SIZE             ; Include stack size
-	add ax, PARAGRAPH_SIZE - 1     ; Make sure divison rounds up to next paragraph
-	shr ax, 4                      ; AX = byte count, divide by 16 to get paragraph count
-	add ax, 40h				       ; Add 16 paragraphs for PSP and 32 for overhead (768 bytes)
-	mov bx, ax                     ; BX = new size in paragraphs
-	mov ah, RESIZE_MEM_FUNCTION
-	int 21h
-
-	jnc CallExecFunction           ; No errors, continue to EXEC
-
-	; Error during memory resize
-	mov ah, FATAL_ERROR_FLAG       ; al already contains error code from int 21
-	call HandleError               ; Handle memory release error, will terminate
 
 CallExecFunction:
 	; Note that we are NOT saving registers and SS/SP here - DOS 3+ handles this, and we
@@ -311,16 +222,12 @@ CallExecFunction:
 	; DEBUG - verify that file exists before EXEC, some versions of DOS will hang if not
 
 	; Set up the EXEC parameter block
-	mov ax, @data
+	mov ax, cs
 	mov es, ax
 	mov [ParamBlock.EnvSeg], 0     ; 0 = inherit parent environment
 	mov ax, [ParametersPtr]        ; Load adress stored in ParametersPtr
 	mov [ParamBlock.ParamOff], ax  ; Offset of command tail
 	mov [ParamBlock.ParamSeg], ds  ; Segment of command tail, always DS in this case
-	mov [ParamBlock.FCB1PtrSeg], 0 ; 0 = inherit FCBs
-	mov [ParamBlock.FCB1PtrOff], 0
-	mov [ParamBlock.FCB2PtrSeg], 0
-	mov [ParamBlock.FCB2PtrOff], 0
 
 	; Call EXEC to run the program
 	mov dx, [FilenamePtr]          ; Load adress stored in FilenamePtr
@@ -334,18 +241,18 @@ CallExecFunction:
 	jnc ExecSucceeded              ; Jump if no error
 	jmp ExecFailed
 
-ExecSucceeded:
+   ExecSucceeded:
 	; EXEC succeeded, now check if we need to pause on exit
 	cmp [RunProg.PauseOnExit], 0
 	je NoPause                     ; If no pause on exit requested, skip ahead
 	WAITFORKEY
 
-NoPause:
+   NoPause:
 	cmp [RunningDesktop], 1        ; Were we running the desktop?
 	je EvaluateExitCode            ; If so, check exit code to see if we should exit
 	jmp LoadRunData                ; Otherwise, jump to top and load RUN.BIN again
 
-EvaluateExitCode:
+   EvaluateExitCode:
 	; Desktop was exited, check exit code to see if we should exit Costa or not
 	mov ah, GET_EXIT_CODE_FUNCTION
 	int 21h
@@ -353,92 +260,34 @@ EvaluateExitCode:
 	je ProgramEnd                  ; If so, exit program
 	jmp LoadRunData                ; Otherwise, reload RUN.BIN and continue
 
-ExecFailed:
+   ExecFailed:
 	; Error occurred during EXEC, evaluate
 	mov al, [ExecErrorCode]
 	mov ah, [RunningDesktop]       ; If running desktop, any error is fatal
 	call HandleError               ; AH will already contain error code from int 21
 	jmp RunDesktop                 ; If we returned from HandleError, run desktop
 
-ProgramEnd:
+   ProgramEnd:
 	mov ah, TERMINATE_FUNCTION
 	mov al, 0                      ; Exitcode = 0
 	int 21h                        ; Bye
 
 
-; ---------------------------------------------------------------------------
-; Procedures
-; ---------------------------------------------------------------------------
+   ; ---------------------------------------------------------------------------
+   ; Procedures
+   ; ---------------------------------------------------------------------------
 
-; GetPathToSelf - Get path to this executable
-;
-; Inputs:   None
-;
-; Outputs:  CostaPath filled with path to this executable
-;
-PROC GetPathToSelf NEAR
-	push es
-
-	; Path is stored in environment block, which is pointed to by PSP
-	mov ah, GET_PSP_FUNCTION       ; DOS: Get PSP segment
-	int 21h
-	mov es, bx                     ; ES = PSP
-
-	; Get environment segment pointer from PSP:2Ch
-	mov bx, [es:2Ch]               ; ES:2C contains WORD pointer to environment segment
-	mov es, bx                     ; ES = environment segment
-	xor si, si                     ; SI = offset in environment segment, start at 0
-
-	; Scan for double null terminator (end of environment block)
-FindEnvEnd:
-	mov al, [es:si]
-	inc si
-	or al, al
-	jne FindEnvEnd                 ; byte not null, keep scanning
-	mov al, [es:si]                ; byte null, check next byte
-	inc si
-	or al, al
-	jne FindEnvEnd                 ; second byte not null, keep scanning
-
-	add si, 2 ; Skip word gap between environment and exe path
-
-	; Copy executable path + name into CostaPath, track last backslash
-	lea di, [CostaPath]            ; DI = destination in DS
-	xor bx, bx                     ; BX = pointer to last backslash in CostaPath
-
-CopyPathLoop:
-	mov al, [es:si]                ; read byte from environment
-	inc si
-	mov [di], al                   ; store byte into CostaPath
-	cmp al, BACKSLASH_CHAR         ; is byte a backslash?
-	jne NotSlash
-	mov bx, di                     ; move counter into bx to track last backslash
-NotSlash:
-	inc di
-	cmp al, 0                      ; null terminator?
-	jne CopyPathLoop               ; if not, keep copying
-
-    ; Remove filename: replace last backslash with null
-	test bx, bx
-	jz DoneCopy                    ; if no backslash found, skip ahead
-	xor al, al                     ; AL = 0
-	mov [bx], al                   ; Replace last backslash with null
-DoneCopy:
-	pop es                         ; Restore data segment
-	ret
-ENDP GetPathToSelf
-
-; HandleError - Display error message based on error code, terminate
-;               program if error is fatal
-;
-; Inputs: AL = error code number
-;         AH = fatal error flag (non-zero = fatal)
-;
-; Outputs: None
-;
-; Destroys: CF
-;
-PROC HandleError NEAR
+   ; HandleError - Display error message based on error code, terminate
+   ;               program if error is fatal
+   ;
+   ; Inputs: AL = error code number
+   ;         AH = fatal error flag (non-zero = fatal)
+   ;
+   ; Outputs: None
+   ;
+   ; Destroys: CF
+   ;
+   PROC HandleError NEAR
 	push bx                        ; Preserve registers
 	push cx
 	push dx
@@ -466,29 +315,29 @@ PROC HandleError NEAR
 	WAITFORKEY
 	ret
 
-FatalError:
+   FatalError:
 	mov ah, TERMINATE_FUNCTION
 	mov al, 1                      ; Exitcode = 1 for error
 	int 21h                        ; Terminate program
-ENDP HandleError
+   ENDP HandleError
 
 
-; ChDir - Change drive and directory
-;
-; Inputs:  DX = pointer to null-terminated path string
-;
-; Outputs: AL = DOS error code if CF flag set, otherwise undefined
-;
-; Destroys: CF, AX, SI
-;
-PROC ChDir NEAR
+   ; ChDir - Change drive and directory
+   ;
+   ; Inputs:  DX = pointer to null-terminated path string
+   ;
+   ; Outputs: AL = DOS error code if CF flag set, otherwise undefined
+   ;
+   ; Destroys: CF, AX, SI
+   ;
+   PROC ChDir NEAR
 
 	mov si, dx                     ; Load path pointer
 	mov al, [si]                   ; Check if first character is non-null
 	or al, al
 	jz Done                        ; If null, nothing to do
 
-SetDrive:
+   SetDrive:
 	push dx                        ; Preserve DX
 
 	; Check if path specifies a drive
@@ -504,13 +353,162 @@ SetDrive:
 	mov dl, al                     ; DL = drive number
 	int 21h                        ; No error checking, chdir will fail if drive invalid
 
-SetDir:
+   SetDir:
 	mov ah, CHDIR_FUNCTION         ; Change directory function
 	pop dx                         ; Restore DX
 	int 21h
 
-Done:
+   Done:
 	ret
-ENDP ChDir
+   ENDP ChDir
 
-END start                          ; Mark the program's entry point
+	; ---------------------------------------------------------------------------
+	; Variables
+	; ---------------------------------------------------------------------------
+	DESKTOPEXE     db 'DESKTOP.EXE', 0     ; File name of desktop program
+	DESKTOPPARAMS  db 5, ' /RUN', CR_CHAR  ; Format: Length, space, string, CR
+	RUNFILE        db 'CONFIG\RUN.BIN', 0  ; File where desktop writes info about program to run to
+
+	CostaPath      db 68 dup(0)        ; 63 char + null - path to self
+	RunFileHandle  dw 0                ; File handle for RUN.BIN
+
+	RunningDesktop db 0                ; Bool - are we running desktop?
+	ExecErrorCode  db 0                ; DOS error code saved here if EXEC fails
+
+	ParamBlock     ExecPB <>           ; EXEC parameter block
+	RunProg        RunProgStruc <>     ; Data about program to run
+
+	FilenamePtr    dw 0                ; Pointer to filename for EXEC, either DESKTOPEXE or RunProg.Filename
+	ParametersPtr  dw 0                ; Pointer to parameters for EXEC, either DESKTOPPARAMS or RunProg.Parameters
+	PathPtr        dw 0                ; Pointer to path for CHDIR, either CostaPath or RunProg.Path
+
+	; Messages
+	MSG_CONTINUE        db 'Press any key to continue...', '$'
+	MSG_CRLF            db CR_CHAR, LF_CHAR, '$'           ; Used only to make DOS print a newline after an error message
+
+	; Error messages
+	MSG_UNKNOWN_ERR     db 'Unknown error', '$'
+	MSG_INVALID_FUNC    db 'Invalid function', '$'
+	MSG_FILE_NOT_FOUND  db 'File not found', '$'
+	MSG_PATH_NOT_FOUND  db 'Path not found', '$'
+	MSG_TOO_MANY_OPEN   db 'Too many open files', '$'
+	MSG_ACCESS_DENIED   db 'Access denied', '$'
+	MSG_INVALID_HANDLE  db 'Invalid handle', '$'
+	MSG_MEM_CB_DESTR    db 'Memory control block destroyed', '$'
+	MSG_INSUFF_MEM      db 'Insufficient memory', '$'
+	MSG_INVALID_MEM_ADD db 'Invalid memory address', '$'
+	MSG_INVALID_ENV     db 'Invalid environment', '$'
+	MSG_INVALID_FORMAT  db 'Invalid format', '$'
+	MSG_INVALID_ACCESS  db 'Invalid access mode', '$'
+	MSG_DOS_VER_ERR     db 'DOS 4 or newer required', '$'
+
+	; Offset table for error messages - 1-12 are standard DOS error codes, 0 and
+	; 13+ are custom errors
+	MsgTable dw MSG_UNKNOWN_ERR        ; 0
+             dw MSG_INVALID_FUNC       ; 1
+             dw MSG_FILE_NOT_FOUND     ; 2
+             dw MSG_PATH_NOT_FOUND     ; 3
+             dw MSG_TOO_MANY_OPEN      ; 4
+             dw MSG_ACCESS_DENIED      ; 5
+             dw MSG_INVALID_HANDLE     ; 6
+             dw MSG_MEM_CB_DESTR       ; 7
+             dw MSG_INSUFF_MEM         ; 8
+             dw MSG_INVALID_MEM_ADD    ; 9
+             dw MSG_INVALID_ENV        ; 10
+             dw MSG_INVALID_FORMAT     ; 11
+             dw MSG_INVALID_ACCESS     ; 12
+             dw MSG_DOS_VER_ERR        ; 13
+
+	CustomStack      db  STACK_SIZE dup(?)         ; Custom stack
+	CustomStackTop   equ CustomStack + STACK_SIZE  ; Pointer to top of custom stack
+
+	LABEL EndOfResident BYTE                       ; End-of-program marker for memory resize
+
+
+	; ---------------------------------------------------------------------------
+	; Code after this point will be destroyed at runtime when memory is shrinked
+	; ---------------------------------------------------------------------------
+
+	; GetPathToSelf - Get path to this executable
+	;
+	; Inputs:   None
+	;
+	; Outputs:  CostaPath filled with path to this executable
+	;
+	PROC GetPathToSelf NEAR
+		push es
+
+		; Path is stored in environment block, which is pointed to by PSP
+		mov ah, GET_PSP_FUNCTION       ; DOS: Get PSP segment
+		int 21h
+		mov es, bx                     ; ES = PSP
+
+		; Get environment segment pointer from PSP:2Ch
+		mov bx, [es:2Ch]               ; ES:2C contains WORD pointer to environment segment
+		mov es, bx                     ; ES = environment segment
+		xor si, si                     ; SI = offset in environment segment, start at 0
+
+		; Scan for double null terminator (end of environment block)
+	FindEnvEnd:
+		mov al, [es:si]
+		inc si
+		or al, al
+		jne FindEnvEnd                 ; byte not null, keep scanning
+		mov al, [es:si]                ; byte null, check next byte
+		inc si
+		or al, al
+		jne FindEnvEnd                 ; second byte not null, keep scanning
+
+		add si, 2 ; Skip word gap between environment and exe path
+
+		; Copy executable path + name into CostaPath, track last backslash
+		lea di, [CostaPath]            ; DI = destination in DS
+		xor bx, bx                     ; BX = pointer to last backslash in CostaPath
+
+	CopyPathLoop:
+		mov al, [es:si]                ; read byte from environment
+		inc si
+		mov [di], al                   ; store byte into CostaPath
+		cmp al, BACKSLASH_CHAR         ; is byte a backslash?
+		jne NotSlash
+		mov bx, di                     ; move counter into bx to track last backslash
+	NotSlash:
+		inc di
+		cmp al, 0                      ; null terminator?
+		jne CopyPathLoop               ; if not, keep copying
+
+	    ; Remove filename: replace last backslash with null
+		test bx, bx
+		jz DoneCopy                    ; if no backslash found, skip ahead
+		xor al, al                     ; AL = 0
+		mov [bx], al                   ; Replace last backslash with null
+	DoneCopy:
+		pop es                         ; Restore data segment
+		ret
+	ENDP GetPathToSelf
+
+	PROC Init NEAR
+		; Check required DOS version (4.0 or higher)
+		mov ah, GET_DOS_VER_FUNCTION
+		int 21h
+		cmp al, MSDOS_REQUIRED_VERSION ; al = major version, must be >= required
+		jnc DosVersionOk               ; Jump if version is sufficient
+
+		; If DOS version is less than 4, check if we are running on DR-DOS since most
+		; versions of DR-DOS lie and report DOS 3.31.
+		mov ax, 4452h
+		int 21h
+		jc DosVersionNotOk             ; Not running DR-DOS
+		cmp al, DRDOS_REQUIRED_VERSION ; If DR-DOS, al = major version
+		jnc DosVersionOk
+
+	DosVersionNotOk:
+		mov al, ERR_DOS_VERSION        ; DOS version error, will terminate
+		mov ah, FATAL_ERROR_FLAG
+		call HandleError
+
+	DosVersionOk:
+		ret
+	ENDP Init
+
+END start
