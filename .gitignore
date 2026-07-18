@@ -10,6 +10,9 @@
 *.TPU
 *.MAP
 
+# Turbo Debugger trace files
+*.TR
+
 # Costa profile and configuration data - user specific data
 CONFIG/*.BIN
 # We do want the template for recreating the first desktop to be included

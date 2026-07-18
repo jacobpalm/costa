@@ -134,7 +134,7 @@ begin
 	With TxtCaption^ do
 	begin
 		Width := 211;
-		MaxLength := LinkCaptMax;
+		MaxLength := SizeOf(TargetLink^.Caption);
 		Text := TargetLink^.Caption;
 		AddHotkey(KeyAltA);
 	end;
@@ -142,7 +142,7 @@ begin
 	With TxtFilename^ do
 	begin
 		Width := 211;
-		MaxLength := SizeOf(ComStr);
+		MaxLength := SizeOf(TargetLink^.FileName);
 		Text := TargetLink^.FileName;
 		AddHotkey(KeyAltF);
 	end;
@@ -150,7 +150,7 @@ begin
 	With TxtPath^ do
 	begin
 		Width := 211;
-		MaxLength := SizeOf(DirStr);
+		MaxLength := SizeOf(TargetLink^.Path);
 		Text := TargetLink^.Path;
 		AddHotkey(KeyAltT);
 	end;
@@ -158,7 +158,7 @@ begin
 	With TxtParams^ do
 	begin
 		Width := 211;
-		MaxLength := SizeOf(ComStr);
+		MaxLength := SizeOf(TargetLink^.Parameters);
 		Text := TargetLink^.Parameters;
 		AddHotkey(KeyAltR);
 	end;

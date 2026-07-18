@@ -44,16 +44,16 @@ ZIPCMD = ZIP -9rkDX
 # -$L- = Disable local debug symbols
 # -$R- = Disable range checking and virtual method call checking
 # -GD  = Generate detailed map file for each executable
-TPCSWITCHES = -M -GD
+TPCSWITCHES = -M -GD -$D-
 TPCCMD = $(TPC) $(TPCSWITCHES)
 
 # TASM/TLINK options for COSTA.EXE
 # /ZN = Debug info disabled
-TASMSWITCHES = /zn
+TASMSWITCHES = /zi /v
 TASMCMD = $(TASM) $(TASMSWITCHES)
 # /m = MAP
 # /t = Make COM program
-TLINKSWITCHES = /m /t
+TLINKSWITCHES = /t
 TLINKCMD = $(TLINK) $(TLINKSWITCHES)
 
 # BINOBJ options for building binary object files, used for graphics drivers

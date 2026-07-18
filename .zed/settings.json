@@ -1,16 +1,18 @@
 {
 	"languages": {
+  "Assembly": {
+   "wrap_guides": [77]
+  },
   "Pascal": {
    "use_on_type_format": false,
-   "auto_indent": "preserve_indent",
-   "auto_indent_on_paste": false
+   "auto_indent_on_paste": false,
+   "wrap_guides": [127]
   }
  },
  "line_ending": "enforce_crlf",
 	"format_on_save": "off",
 	"auto_indent": "preserve_indent",
 	"ensure_final_newline_on_save": false,
-	"wrap_guides": [127],
 	"hard_tabs": true,
 	"file_types": {
 		"Pascal": ["PAS", "INC"],

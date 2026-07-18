@@ -18,11 +18,11 @@ const
 	MaxDesktops               = 5;
 	KeyAltNoBase              = 120; {Key code for Alt+1, used to set hotkeys for desktops in loop}
 
-	RunBinSize                = 277; {Size of RUN.BIN in bytes}
-	RunBinOffsetFileName      = 0;   {Offsets within RUN.BIN where each variable is stored}
-	RunBinOffsetPath          = 80;
-	RunBinOffsetParameters    = 148;
-	RunBinOffsetPause         = 276;
+	RunBinSize                = 273; {Size of RUN.BIN in bytes}
+	RunBinOffsetFileName      = 0;   {0-79 = filename with or without path, 80 bytes}
+	RunBinOffsetPath          = 80;  {80-143 = path, 64 bytes}
+	RunBinOffsetParameters    = 144; {144-271 = paramters (command tail), 128 bytes}
+	RunBinOffsetPause         = 272; {270 = pause on exit, one byte}
 
 	CAP_ADD                   = 'A' + #127 + 'dd...';
 	CAP_RUN                   = #127 + 'Run...';
@@ -128,11 +128,6 @@ begin
 		OutLink.FileName := ComSpec;
 	end;
 
-	if Length(OutLink.Parameters) > 0 then
-		OutLink.Parameters := #32 + OutLink.Parameters; {If parameters exist, ensure they start with space}
-	OutLink.Parameters := Char(Length(OutLink.Parameters)) + OutLink.Parameters;
-		{Ensure parameters end with CR, req. by cmd tail}
-
 	{Convert strings to ASCIIZ - COSTA.EXE expects this format and we use fixed size
 	 records for simplicity in loading data in COSTA.EXE}
 	FillChar(RunData, SizeOf(RunData), 0); {Clear buffer}
@@ -143,8 +138,10 @@ begin
   Move(OutLink.Path[1], RunData[RunBinOffsetPath], Length(OutLink.Path) );
 	RunData[RunBinOffsetPath + Length(OutLink.Path)] := #0; {Add ASCIIZ terminator}
 
-	Move(OutLink.Parameters[1], RunData[RunBinOffsetParameters], Length(OutLink.Parameters));
-	RunData[RunBinOffsetParameters + Length(OutLink.Parameters)] := #13; {CR terminator used for cmd tail}
+	RunData[RunBinOffsetParameters] := Char(Length(OutLink.Parameters) + 2);
+	RunData[RunBinOffsetParameters + 1] := #32;
+	Move(OutLink.Parameters[1], RunData[RunBinOffsetParameters + 2], Length(OutLink.Parameters));
+	RunData[RunBinOffsetParameters + 2 + Length(OutLink.Parameters)] := #13; {CR terminator used for cmd tail}
 
 	RunData[RunBinOffSetPause] := Char(OutLink.PauseOnExit);
 

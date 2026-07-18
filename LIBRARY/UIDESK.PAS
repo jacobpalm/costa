@@ -12,7 +12,6 @@ const
 	LinkGridSize  = 4;   {Icons are moved in increments of this size to help ease
 	                      alignment}
 	MaxLinkCount  = 100; {Maximum number of links on the desktop}
-	LinkCaptMax   = 20;  {Maximum length for link captions}
 
 type
 	{Actions that can be triggered on the tab keyboard indicator}
@@ -21,10 +20,10 @@ type
 	{Link record type}
 	PLink = ^TLink;
 	TLink = record
-		Caption:     String[LinkCaptMax];
-		FileName:    PathStr;
-		Path:        DirStr;
-		Parameters:  ComStr;
+		Caption:     String[20];
+		FileName:    String[80];
+		Path:        String[64];
+		Parameters:  String[125];
 		IconFile:    String[8]; {8 char filename w/o extension}
 		PauseOnExit: Boolean;
 		Left,
