@@ -40,6 +40,7 @@ DELETE_FILE_FUNCTION   EQU 41h     ; DOS delete file function number
 SET_DRIVE_FUNCTION     EQU 0Eh     ; DOS set current drive function number
 
 ERR_DOS_VERSION        EQU 13      ; Index for unsupported DOS version error
+NONFATAL_ERROR_FLAG    EQU 0       ; Flag indicating non-fatal error for HandleError
 FATAL_ERROR_FLAG       EQU 1       ; Flag indicating fatal error for HandleError
 
 BACKSLASH_CHAR         EQU 5Ch     ; ASCII code for backslash
@@ -70,10 +71,10 @@ STRUC ExecPB                       ; MS-DOS INT 21H EXEC parameter block
 ENDS ExecPB
 
 STRUC RunProgStruc
-	Filename        db 80 dup(0)   ; 79 char + null - filename, maybe path
-	Path            db 68 dup(0)   ; 67 char + null - working directory
-	Parameters      db 128 dup(0)  ; 127 char + cr - command tail
-	PauseOnExit     db 0           ; Boolean - pause after EXEC
+	Filename    db 80 dup(0)       ; 79 char + null - filename, maybe path
+	Path        db 68 dup(0)       ; 67 char + null - working directory
+	Parameters  db 128 dup(0)      ; 127 char + cr - command tail
+	PauseOnExit db 0               ; Boolean - pause after EXEC
 ENDS RunProgStruc
 
 
@@ -83,7 +84,7 @@ ENDS RunProgStruc
 
 ; Print "Press any key to continue..." and wait for key press
 MACRO WAITFORKEY
-	lea dx, [MSG_CONTINUE]         ; Load address of message into DX
+	mov dx, offset MSG_CONTINUE    ; Load address of message into DX
 	mov ah, PRINT_STR_FUNCTION     ; Print string using DOS function
 	int 21h
 
@@ -123,7 +124,7 @@ ShrinkMemory:
 MainLoop:
 	mov [RunningDesktop], 0		   ; Clear running desktop flag
 
-	lea dx, [CostaPath]            ; Change to Costa's drive+path before loading file
+	mov dx, offset CostaPath       ; Change to Costa's drive+path before loading file
 	call ChDir
 	jnc OpenRunFile                ; Jump if successful
 
@@ -133,7 +134,7 @@ MainLoop:
 OpenRunFile:
 	mov ah, OPEN_FILE_FUNCTION     ; Load data about program to run from RUN.BIN
 	mov al, OPEN_READ_ONLY
-	lea dx, [RUNFILE]              ; DS:DX = filename to open
+	mov dx, offset RUNFILE         ; DS:DX = filename to open
 	int 21h
 	jnc ReadRunFile                ; Jump if open successful
 
@@ -144,17 +145,18 @@ ReadRunFile:
 	mov ah, READ_FILE_FUNCTION
 	mov bx, [RunFileHandle]        ; BX = file handle
 	mov cx, SIZE RunProgStruc      ; Number of bytes to read
-	lea dx, [RunProg.Filename]     ; DS:DX = buffer to read into, first field of struct
+	mov dx, offset RunProg.Filename ; DS:DX = buffer to read into, first field of struct
 	int 21h
 	jnc CloseRunFile               ; Jump if read successful
 
-	mov ah, 0                      ; Non-fatal error, error code already in AL
+	mov ah, NONFATAL_ERROR_FLAG    ; Read uncessesful, non-fatal error, error code already in AL
 	call HandleError               ; Handle read error
 
 	mov ah, CLOSE_FILE_FUNCTION    ; Make sure file is closed
 	mov bx, [RunFileHandle]
 	int 21h                        ; Close file
-	jmp RunDesktop                 ; After showing error, run the desktop
+
+	jmp RunDesktop                 ; Since run of program failed, run the desktop instead
 
 CloseRunFile:
 	mov ah, CLOSE_FILE_FUNCTION
@@ -162,29 +164,22 @@ CloseRunFile:
 	int 21h                        ; Close file
 
 	mov ah, DELETE_FILE_FUNCTION
-	lea dx, [RUNFILE]
+	mov dx, offset RUNFILE
 	int 21h                        ; Delete file so we don't read the same data again
 
 	; Move pointers to RunProg variables loaded from RUN.BIN
-	mov ax, offset RunProg.Filename
-	mov [FilenamePtr], ax
-	mov ax, offset RunProg.Parameters
-	mov [ParametersPtr], ax
-	mov ax, offset RunProg.Path
-	mov [PathPtr], ax
+	mov [FilenamePtr], offset RunProg.Filename
+	mov [ParametersPtr], offset RunProg.Parameters
+	mov [PathPtr], offset RunProg.Path
 
 	jmp ChangeRunPath              ; All is good, move ahead
 
 RunDesktop:
-	; The desktop is to be run, so move all pointers to desktop variables
-	mov ax, offset DESKTOPEXE      ; Get offset of desktop filename
-	mov [FilenamePtr], ax          ; Set filename pointer to that offset
-	mov ax, offset DESKTOPPARAMS   ; Same for parameters
-	mov [ParametersPtr], ax
-	mov ax, offset CostaPath       ; Desktop is in the same path as this program, so use own path
-	mov [PathPtr], ax
-	mov [RunProg.PauseOnExit], 0   ; Don't pause after desktop exit
-	mov [RunningDesktop], 1        ; We are running the desktop now
+	mov [FilenamePtr], offset DESKTOPEXE      ; Move pointers to desktop variables
+	mov [ParametersPtr], offset DESKTOPPARAMS
+	mov [PathPtr], offset CostaPath           ; Desktop is in the same path as this program, so use own path
+	mov [RunProg.PauseOnExit], 0              ; Don't pause after desktop exit
+	mov [RunningDesktop], 1                   ; Yes, we are running the desktop now
 
 ChangeRunPath:
 	mov dx, [PathPtr]              ; Load pointer to path into DX
@@ -239,7 +234,7 @@ EvaluateDesktopExit:
 
 ProgramEnd:
 	mov ah, TERMINATE_FUNCTION
-	mov al, 0                      ; Exitcode = 0
+	xor al, 0                      ; Exitcode = 0
 	int 21h                        ; Bye
 
 
@@ -255,9 +250,9 @@ ProgramEnd:
 ; Outputs:  None
 ; Destroys: CF
 PROC HandleError NEAR
-	push bx                        ; Preserve registers
-	push cx
-	push dx
+	;push bx                        ; Preserve registers
+	;push cx
+	;push dx
 
 	mov cl, ah                     ; Save fatal flag in CL
 
@@ -269,16 +264,16 @@ PROC HandleError NEAR
 	mov ah, PRINT_STR_FUNCTION
 	int 21h                        ; Print error message
 
-	lea dx, [MSG_CRLF]             ; Load address of CRLF, to print a newline after error message
+	mov dx, offset MSG_CRLF        ; Load address of CRLF, to print a newline after error message
 	mov ah, PRINT_STR_FUNCTION     ; Print string using DOS function
 	int 21h
 
 	cmp cl, FATAL_ERROR_FLAG
 	je FatalError                  ; If fatal, terminate program
 
-	pop dx                         ; Restore registers
-	pop cx
-	pop bx
+	;pop dx                         ; Restore registers
+	;pop cx
+	;pop bx
 	WAITFORKEY
 	ret
 
@@ -328,21 +323,21 @@ ENDP ChDir
 ; ---------------------------------------------------------------------------
 ; Variables
 ; ---------------------------------------------------------------------------
-	DESKTOPEXE     db 'DESKTOP.EXE', 0     ; File name of desktop program
-	DESKTOPPARAMS  db 5, ' /RUN', CR_CHAR  ; Format: Length, space, string, CR
-	RUNFILE        db 'CONFIG\RUN.BIN', 0  ; File where desktop writes info about program to run to
+	DESKTOPEXE          db 'DESKTOP.EXE', 0     ; File name of desktop program
+	DESKTOPPARAMS       db 5, ' /RUN', CR_CHAR  ; Format: Length, space, string, CR
+	RUNFILE             db 'CONFIG\RUN.BIN', 0  ; File where desktop writes info about program to run to
 
-	CostaPath      db 68 dup(0)        ; 63 char + null - path to self
-	RunFileHandle  dw 0                ; File handle for RUN.BIN
+	CostaPath           db 68 dup(0)        ; 63 char + null - path to self
+	RunFileHandle       dw 0                ; File handle for RUN.BIN
 
-	RunningDesktop db 0                ; Bool - are we running desktop?
+	RunningDesktop      db 0                ; Bool - are we running desktop?
 
-	ParamBlock     ExecPB <>           ; EXEC parameter block
-	RunProg        RunProgStruc <>     ; Data about program to run
+	ParamBlock          ExecPB <>           ; EXEC parameter block
+	RunProg             RunProgStruc <>     ; Data about program to run
 
-	FilenamePtr    dw 0                ; Pointer to filename for EXEC, either DESKTOPEXE or RunProg.Filename
-	ParametersPtr  dw 0                ; Pointer to parameters for EXEC, either DESKTOPPARAMS or RunProg.Parameters
-	PathPtr        dw 0                ; Pointer to path for CHDIR, either CostaPath or RunProg.Path
+	FilenamePtr         dw 0                ; Pointer to filename for EXEC, either DESKTOPEXE or RunProg.Filename
+	ParametersPtr       dw 0                ; Pointer to parameters for EXEC, either DESKTOPPARAMS or RunProg.Parameters
+	PathPtr             dw 0                ; Pointer to path for CHDIR, either CostaPath or RunProg.Path
 
 	; Messages
 	MSG_CONTINUE        db 'Press any key to continue...', '$'
@@ -368,21 +363,21 @@ ENDP ChDir
 	; 13+ are custom errors
 	MsgTable dw MSG_UNKNOWN_ERR        ; 0
              dw MSG_INVALID_FUNC       ; 1
-             dw MSG_FILE_NOT_FOUND     ; 2
-             dw MSG_PATH_NOT_FOUND     ; 3
-             dw MSG_TOO_MANY_OPEN      ; 4
-             dw MSG_ACCESS_DENIED      ; 5
-             dw MSG_INVALID_HANDLE     ; 6
-             dw MSG_MEM_CB_DESTR       ; 7
-             dw MSG_INSUFF_MEM         ; 8
-             dw MSG_INVALID_MEM_ADD    ; 9
-             dw MSG_INVALID_ENV        ; 10
-             dw MSG_INVALID_FORMAT     ; 11
-             dw MSG_INVALID_ACCESS     ; 12
-             dw MSG_DOS_VER_ERR        ; 13
+	         dw MSG_FILE_NOT_FOUND     ; 2
+	         dw MSG_PATH_NOT_FOUND     ; 3
+	         dw MSG_TOO_MANY_OPEN      ; 4
+	         dw MSG_ACCESS_DENIED      ; 5
+	         dw MSG_INVALID_HANDLE     ; 6
+	         dw MSG_MEM_CB_DESTR       ; 7
+	         dw MSG_INSUFF_MEM         ; 8
+	         dw MSG_INVALID_MEM_ADD    ; 9
+	         dw MSG_INVALID_ENV        ; 10
+	         dw MSG_INVALID_FORMAT     ; 11
+	         dw MSG_INVALID_ACCESS     ; 12
+	         dw MSG_DOS_VER_ERR        ; 13
 
-	CustomStack      db  STACK_SIZE dup(?)         ; Custom stack
-	CustomStackTop   equ CustomStack + STACK_SIZE  ; Pointer to top of custom stack
+	CustomStack         db  STACK_SIZE dup(?)         ; Custom stack
+	CustomStackTop      equ CustomStack + STACK_SIZE  ; Pointer to top of custom stack
 
 	LABEL EndOfResident BYTE                       ; End-of-program marker for memory resize
 
@@ -395,10 +390,10 @@ Init:
 	;Use custom stack - point SS/SP to the variable inside code segment. DOS normally creates a stack at
 	;the end of the segment, but we want to be able to free as much continous memory as possible so we
 	;make our own stack
-	mov ax, cs                    ; Store code segment in ax
-	mov ss, ax                    ; Set stack segment pointer to ax
-	mov ax, offset CustomStackTop ; Store location of top of custom stack in ax
-	mov sp, ax                    ; Set stack pointer to adress stored in ax
+	mov ax, cs                     ; Store code segment in ax
+	mov ss, ax                     ; Set stack segment pointer to ax
+	mov ax, offset CustomStackTop  ; Store location of top of custom stack in ax
+	mov sp, ax                     ; Set stack pointer to adress stored in ax
 
 	; Check required DOS version (4.0 or higher)
 	mov ah, GET_DOS_VER_FUNCTION
@@ -432,16 +427,16 @@ GetPathToSelf:
 	mov es, bx                     ; ES = environment segment
 	xor si, si                     ; SI = offset in environment segment, start at 0
 
+GetPathFindEnvEnd:
 	; Scan for double null terminator (end of environment block)
-FindEnvEnd:
 	mov al, [es:si]
 	inc si
 	or al, al
-	jne FindEnvEnd                 ; byte not null, keep scanning
+	jne GetPathFindEnvEnd          ; byte not null, keep scanning
 	mov al, [es:si]                ; byte null, check next byte
 	inc si
 	or al, al
-	jne FindEnvEnd                 ; second byte not null, keep scanning
+	jne GetPathFindEnvEnd          ; second byte not null, keep scanning
 
 	add si, 2 ; Skip word gap between environment and exe path
 
@@ -449,24 +444,26 @@ FindEnvEnd:
 	lea di, [CostaPath]            ; DI = destination in DS
 	xor bx, bx                     ; BX = pointer to last backslash in CostaPath
 
-CopyPathLoop:
+GetPathCopyLoop:
 	mov al, [es:si]                ; read byte from environment
 	inc si
 	mov [di], al                   ; store byte into CostaPath
 	cmp al, BACKSLASH_CHAR         ; is byte a backslash?
-	jne NotSlash
+	jne GetPathNotSlash
 	mov bx, di                     ; move counter into bx to track last backslash
-NotSlash:
+
+GetPathNotSlash:
 	inc di
 	cmp al, 0                      ; null terminator?
-	jne CopyPathLoop               ; if not, keep copying
+	jne GetPathCopyLoop            ; if not, keep copying
 
     ; Remove filename: replace last backslash with null
 	test bx, bx
-	jz DoneCopy                    ; if no backslash found, skip ahead
+	jz GetPathDone                 ; if no backslash found, skip ahead
 	xor al, al                     ; AL = 0
 	mov [bx], al                   ; Replace last backslash with null
-DoneCopy:
+
+GetPathDone:
 	pop es                         ; Restore data segment
 	jmp ShrinkMemory
 

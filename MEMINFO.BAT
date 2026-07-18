@@ -1,2 +1,2 @@
-@dir costa.exe
+@dir costa.com
 @mem /m COSTA
