@@ -50,7 +50,7 @@ const
 	MSG_COMSPEC               = 'The COMSPEC environment variable is not set.' + #13 +
 	                            'This is required to run batch files.';
 	MSG_RUN_COSTA             = 'This program is intended to be run from within Costa.' + #10 + #13 +
-	                            'Please run COSTA.EXE to start Costa and the desktop.';
+	                            'Please run COSTA.COM to start Costa and the desktop.';
 
 type
 	{$I DESKSET.INC} {Desktop settings are in separate file so CONFIG can use them too}
@@ -128,8 +128,8 @@ begin
 		OutLink.FileName := ComSpec;
 	end;
 
-	{Convert strings to ASCIIZ - COSTA.EXE expects this format and we use fixed size
-	 records for simplicity in loading data in COSTA.EXE}
+	{Convert strings to ASCIIZ - COSTA.COM expects this format and we use fixed size
+	 records for simplicity in loading data in COSTA.COM}
 	FillChar(RunData, SizeOf(RunData), 0); {Clear buffer}
 
 	Move(OutLink.Filename[1], RunData[RunBinOffsetFilename], Length(OutLink.Filename));
@@ -277,7 +277,7 @@ begin
 
 	if DoExit then
 	begin
-		App^.ExitCode := 1; {Error code 1 makes COSTA.EXE terminate and return to DOS prompt}
+		App^.ExitCode := 1; {Error code 1 makes COSTA.COM terminate and return to DOS prompt}
 		WinMain^.Close;
 	end;
 end;
@@ -367,17 +367,6 @@ begin
 	end;
 end;
 
-procedure WinMainDraw(Sender: PUIObject); far;
-begin
-	{First time the main window is drawn, load the desktop links}
-	if Length(DesktopFile) = 0 then
-	begin
-		SwitchDesktop(Settings.DeskID, true);
-		{Show the desktop now that links are loaded}
-		Desk^.RemoveState(SHidden);
-	end;
-end;
-
 procedure WinMainClose(Sender: PUIObject); far;
 begin
 	{When the window is closed, the desktop will exit. Save data before closing}
@@ -399,20 +388,23 @@ begin
 	end;
 
 	Desk^.SetDisplay(Settings.LinkCapt, Settings.LinkTarget);
+
+	{Load desktop icons - Settings.DeskID contains ID of the desktop thas was shown
+	 when desktop was last exited}
+	SwitchDesktop(Settings.DeskID, true);
 end;
 
 procedure InitUI;
 var
 	i: integer;
 begin
-{Initialize UI objects}
+	{Initialize UI objects}
 	New(WinMain, Init(0, 0, nil));
 	With WinMain^ do
 	begin
 		Width := ScreenWidth;
 		Height := ScreenHeight;
 		BorderStyle := BorNone;
-		OnDraw := WinMainDraw;
 		OnClose := WinMainClose;
 	end;
 
@@ -472,7 +464,6 @@ begin
 		Height := 321;
 		OnClick := DeskClick;
 		OnRightClick := DeskRightClick;
-		Exclude(State, SHidden); {Start hidden, will be shown when links are loaded}
 	end;
 
 	for i := 1 to MaxDesktops do
@@ -484,7 +475,7 @@ begin
 end;
 
 begin
-	{Desktop won't work if run outside Costa, so make sure the right parameter is passed from COSTA.EXE}
+	{Desktop won't work if run outside Costa, so make sure the right parameter is passed from COSTA.COM}
 	if not (ParamStr(1) = '/RUN') then
 	begin
 		DosPrint(MSG_RUN_COSTA);

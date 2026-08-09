@@ -68,6 +68,7 @@ type
 			TabBorder:    PUIObject;   {Used for drawing border around active link}
 			ShowCaption,
 			ShowTarget:   Boolean;     {Toggles visibility of text next to icons}
+			ImgIcon:      PIcon;       {Used for drawing icons in DrawLink}
 			procedure     DrawLink(Link: PLink);
 			procedure     DoTabAction(Action: TTabAction);
 			procedure     SortLinks;   {Sort links based on position left to right, top to botton, for easy tab navigation}
@@ -95,12 +96,15 @@ begin
 		Include(State, SHidden);
 		SetParent(@Self);
 	end;
+
+	New(ImgIcon, Init(0, 0, '', nil));
 end;
 
 destructor TDesktop.Done;
 begin
 	{No need to dispose TabBorder, it has been added as a child object and will be cleared automatically}
 	Self.ClearLinks;
+	Dispose(ImgIcon);
 	inherited Done;
 end;
 
@@ -136,7 +140,6 @@ end;
 
 procedure TDesktop.DrawLink(Link: PLink);
 var
-	ImgIcon:      PIcon;
 	X, Y:         Integer;
 	FDir:         DirStr;
 	FName:        NameStr;
@@ -150,9 +153,14 @@ begin
 	Inc(X, Link^.Left);
 	Inc(Y, Link^.Top);
 
-	New(ImgIcon, Init(X, Y, Link^.IconFile, nil));
-	ImgIcon^.Draw;
-	Dispose(ImgIcon);
+	with ImgIcon^ do
+	begin
+		Left := X;
+		Top := Y;
+		IconFile := Link^.IconFile;
+		Draw;
+	end;
+
 
 	{If caption display is enabled, draw it to the right of the icon - also
 	 display the target filename if that setting is enabled}
@@ -287,16 +295,14 @@ begin
 	NewNode^.Next := Links;
 	Links := NewNode;
 
-	{Draw the new link on the desktop - we don't use SDirty flag here because
-	 we only want to draw a single icon, not entire object}
-	Mouse.Hide;
-	DrawLink(NewLink);
-	Mouse.Show;
-
 	{Increment link count so we can track if we reach the maximum}
 	Inc(LinkCount);
 
+	{Ensure tab order is correct}
 	Self.SortLinks;
+
+	{Trigger redraw}
+	Self.AddState(SDirty);
 end;
 
 procedure TDesktop.RemoveLink(Link: PLink);
@@ -509,11 +515,7 @@ begin
 	end;
 	LinkCount := 0;
 
-	{Redraw immediately, in case we are called for LoadLinks which
-	 will start drawing links on top directly after clear}
-	Mouse.Hide;
-	Self.Draw;
-	Mouse.Show;
+	Self.AddState(SDirty);
 end;
 
 procedure TDesktop.SetDisplay(Captions, Targets: boolean);
@@ -575,8 +577,6 @@ begin
 	{Make sure links are sorted by position after loading, to enable tab navigation}
 	Self.SortLinks;
 	LoadLinks := true;
-
-	{We don't need to redraw here, as AddLink already draws each link}
 end;
 
 function TDesktop.SaveLinks(Filename: string): boolean;
