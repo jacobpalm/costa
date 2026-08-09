@@ -117,9 +117,15 @@ begin
 	CurrObj := Objects;
 	while Assigned(CurrObj) do
 	begin
-		{Draw dirty objects}
-		if (SDirty in CurrObj^.ObjectP^.State) and
-		    not (SHidden in CurrObj^.ObjectP^.State) then
+		{Skip hidden objects}
+		if SHidden in CurrObj^.ObjectP^.State then
+		begin
+			CurrObj := CurrObj^.Next;
+			continue;
+		end;
+
+		{If object is dirty, redraw it - after making sure cursor is hidden}
+		if (SDirty in CurrObj^.ObjectP^.State) then
 		begin
 			if not MouseHidden then
 			begin
@@ -129,10 +135,13 @@ begin
 			CurrObj^.ObjectP^.Draw; {TUIObject.Draw removes dirty state}
 		end;
 
-		{If we have descendant containers, trigger DrawDirtyObjects on them too}
+		{If object is a container, trigger DrawDirtyObjects on it too to make
+		 sure dirty objects in it get redrawn. If entire object has bee redrawn above,
+		 there will be nothing dirty and so nothing will get drawn twice}
 		if CurrObj^.ObjectP^.IsContainer then
 			PContainer(CurrObj^.ObjectP)^.DrawDirtyObjects;
 
+		{Move to next object}
 		CurrObj := CurrObj^.Next;
 	end;
 
