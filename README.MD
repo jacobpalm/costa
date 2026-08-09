@@ -56,7 +56,7 @@ but that is not something that has been looked into.
 > Visual Basic for DOS. If you're looking for the BASIC code, switch to the
 > non-maintained "Archived_1xx" branch of this repository.
 
-All programs (except *COSTA.EXE*) are written using the **Costa UI Library**.
+All programs (except *COSTA.COM*) are written using the **Costa UI Library**.
 The library code is stored in the *LIBRARY* directory. The base library
 resides in the unit *COSTALIB.PAS*, which must be included in the *USES*
 section of all programs that use the library.
@@ -69,7 +69,7 @@ library. In addition, some units with commonly used dialogs are included, such a
 an input box to the user. These dialogs include the controls they need
 themselves, so to use them, you only need to include the one unit.
 
-### The exception - COSTA.EXE
+### The exception - COSTA.COM
 *COSTA.ASM* is the memory-resident part of Costa. It launches the desktop,
 and when the desktop exits, it checks if Costa should terminate, or if the
 desktop has instructed it to run another program. If it runs another program,

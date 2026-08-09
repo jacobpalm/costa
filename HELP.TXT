@@ -62,9 +62,9 @@ Using Costa
 ------------------------------------------------------------------------------
 2.1 Starting Costa
 
- Starting Costa is very simple - simply run COSTA.EXE. This will bring you to
+ Starting Costa is very simple - simply run COSTA.COM. This will bring you to
  Costa's desktop. Individual accessories can be run directly from DOS, but
- the desktop must be started by running COSTA.EXE.
+ the desktop must be started by running COSTA.COM.
 
 2.2 Exiting Costa
 

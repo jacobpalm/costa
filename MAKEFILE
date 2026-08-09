@@ -12,7 +12,7 @@
 #   make library
 #
 # To build only specific applications, run:
-#   make COSTA.EXE
+#   make COSTA.COM
 #   make DESKTOP.EXE
 #   etc.
 #
@@ -47,7 +47,7 @@ ZIPCMD = ZIP -9rkDX
 TPCSWITCHES = -M -GD -$D-
 TPCCMD = $(TPC) $(TPCSWITCHES)
 
-# TASM/TLINK options for COSTA.EXE
+# TASM/TLINK options for COSTA.COM
 # /ZN = Debug info disabled
 TASMSWITCHES = /zi /v
 TASMCMD = $(TASM) $(TASMSWITCHES)
