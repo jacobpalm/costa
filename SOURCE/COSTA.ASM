@@ -108,7 +108,7 @@ start:
 
 ShrinkMemory:
 	; Calculate required memory size for COSTA.COM to keep
-	mov ax, offset EndOfResident   ; Label marks the end of the resident code
+	lea ax, EndOfResident          ; Label marks the end of the resident code
 	add ax, PARAGRAPH_SIZE - 1     ; Make sure divison rounds up to paragraph
 	shr ax, 4                      ; Bytes in AX div 16 AX = paragraph count
 	mov bx, ax                     ; BX = new size in paragraphs
@@ -445,15 +445,15 @@ GetPathFindEnvEnd:
 
 	; Copy executable path + name into CostaPath, track last backslash
 	lea di, [CostaPath]            ; DI = destination in DS
-	xor bx, bx                     ; BX = pointer to last \ in CostaPath
+	xor bx, bx                     ; BX = offset off last \ in CostaPath
 
 GetPathCopyLoop:
 	mov al, [es:si]                ; read byte from environment
 	inc si
 	mov [di], al                   ; store byte into CostaPath
 	cmp al, BACKSLASH_CHAR         ; is byte a backslash?
-	jne GetPathNotSlash
-	mov bx, di                     ; move counter into bx to track last \
+	jne GetPathNotSlash            ; if not skip ahead
+	mov bx, di                     ; move offset into bx to track last \
 
 GetPathNotSlash:
 	inc di
@@ -463,8 +463,19 @@ GetPathNotSlash:
     ; Remove filename: replace last backslash with null
 	test bx, bx
 	jz GetPathDone                 ; if no backslash found, skip ahead
+
+	; Check if last slash is at position 2 - indicating that we are at then
+	; root of a drive
+	lea di, [CostaPath]            ; Load address of CostaPath to di
+	add di, 2                      ; Add two the get address of third char
+	cmp bx, di                     ; If di matches bx, we are at root
+	jne GetPathAddNull             ; If not root, add null over last \
+
+	add bx, 1                      ; If root, move one additional char
+
+GetPathAddNull:
 	xor al, al                     ; AL = 0
-	mov [bx], al                   ; Replace last backslash with null
+	mov [bx], al                   ; Add null terminator to path string
 
 GetPathDone:
 	pop es                         ; Restore data segment
