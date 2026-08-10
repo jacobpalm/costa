@@ -86,25 +86,31 @@ begin
 	TabVisible   := false;
 	FgColor      := Thm.DeskText;
 	BgColor      := Thm.Desk;
+
+	New(ImgIcon, Init(0, 0, '', nil));
+	with ImgIcon^ do
+	begin
+		BorderStyle := Bor3D;
+		Include(State, SHidden);
+	end;
+
 	New(TabBorder, Init);
 	with TabBorder^ do
 	begin
-		Width := 35;
-		Height := 35;
+		Width := 31 + (2 * ImgIcon^.GetBorderWidth);
+		Height := Width;
 		Transparent := True;
 		BorderStyle := Bor3D;
 		Include(State, SHidden);
 		SetParent(@Self);
 	end;
-
-	New(ImgIcon, Init(0, 0, '', nil));
 end;
 
 destructor TDesktop.Done;
 begin
-	{No need to dispose TabBorder, it has been added as a child object and will be cleared automatically}
+	{No need to dispose TabBorder, it's a child object and will be disposed of by library}
 	Self.ClearLinks;
-	Dispose(ImgIcon);
+	Dispose(ImgIcon, Done);
 	inherited Done;
 end;
 
@@ -158,9 +164,10 @@ begin
 		Left := X;
 		Top := Y;
 		IconFile := Link^.IconFile;
+		Exclude(State, SHidden);
 		Draw;
+		Include(State, SHidden);
 	end;
-
 
 	{If caption display is enabled, draw it to the right of the icon - also
 	 display the target filename if that setting is enabled}
@@ -206,12 +213,11 @@ begin
 		TempNode := Links;
 		while TempNode <> nil do
 		begin
-			{Get coordinates of the link area (34x34 pixels since there is a 1px border
-			 around the 32x32 icon that should also be clicckable)}
-			X1 := TempNode^.Link^.Left - 1;
-			Y1 := TempNode^.Link^.Top - 1;
-			X2 := X1 + 33;
-			Y2 := Y1 + 33;
+			{Get coordinates of the link area (32x32 pixels + border}
+			X1 := TempNode^.Link^.Left;
+			Y1 := TempNode^.Link^.Top;
+			X2 := X1 + 31 + (2 * ImgIcon^.GetBorderWidth);
+			Y2 := Y1 + 31 + (2 * ImgIcon^.GetBorderWidth);
 			if (OffsetX >= X1) and (OffsetX <= X2) and
 			   (OffsetY >= Y1) and (OffsetY <= Y2) then
 			begin
@@ -354,6 +360,7 @@ var
 	OffsetX, OffsetY: Integer;
 	MinX, MinY, MaxX, MaxY: Integer;
 	DrawX, DrawY: integer;
+	BufferDimension: Word;
 	CurGridX, CurGridY, LastGridX, LastGridY: integer;
 	CursorX, CursorY: integer;
 	Key: String;
@@ -384,12 +391,14 @@ begin
 	LastGridX := 0;
 	LastGridY := 0;
 
+	BufferDimension := 31 + (2 * ImgIcon^.GetBorderWidth);
 	Mouse.Hide;
-	IconSize := ImageSize(0, 0, 35, 35);
+	IconSize := ImageSize(0, 0, BufferDimension, BufferDimension);
 	GetMem(LinkIconImg, IconSize);
 	GetMem(BackdropImg, IconSize);
-	GetImage(DrawX, DrawY, DrawX + 35, DrawY + 35, LinkIconImg^);
-	GetImage(DrawX, DrawY, DrawX + 35, DrawY + 35, BackdropImg^);
+	GetImage(DrawX, DrawY, DrawX + BufferDimension, DrawY + 31 + BufferDimension, LinkIconImg^);
+	{DEBUG - copy memory instead of calling GetImage twice}
+	GetImage(DrawX, DrawY, DrawX + BufferDimension, DrawY + 31 + BufferDimension, BackdropImg^);
 	Mouse.Show;
 
 	{Center mouse on icon}
