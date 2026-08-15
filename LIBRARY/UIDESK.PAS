@@ -87,7 +87,7 @@ begin
 	FgColor      := Thm.DeskText;
 	BgColor      := Thm.Desk;
 
-	New(ImgIcon, Init(0, 0, '', nil));
+	New(ImgIcon, Init(0, 0, '', @Self));
 	with ImgIcon^ do
 	begin
 		BorderStyle := Bor3D;
@@ -110,7 +110,6 @@ destructor TDesktop.Done;
 begin
 	{No need to dispose TabBorder, it's a child object and will be disposed of by library}
 	Self.ClearLinks;
-	Dispose(ImgIcon, Done);
 	inherited Done;
 end;
 
@@ -154,15 +153,10 @@ begin
 	if (Link = nil) or (SHidden in State) then
 		Exit;
 
-	{Get absolute position of desktop, and set icon position relative to it}
-	Self.GetAbsPos(X, Y);
-	Inc(X, Link^.Left);
-	Inc(Y, Link^.Top);
-
 	with ImgIcon^ do
 	begin
-		Left := X;
-		Top := Y;
+		Left := Link^.Left;
+		Top := Link^.Top;
 		IconFile := Link^.IconFile;
 		Exclude(State, SHidden);
 		Draw;
@@ -173,6 +167,11 @@ begin
 	 display the target filename if that setting is enabled}
 	if ShowCaption then
 	begin
+		{Get absolute position of desktop, and set position relative to it}
+		Self.GetAbsPos(X, Y);
+		Inc(X, Link^.Left);
+		Inc(Y, Link^.Top);
+
 		Print(Link^.Caption, X + 44, Y + 7, FgColor);
 		if ShowTarget then
 		begin
@@ -364,7 +363,7 @@ var
 	CurGridX, CurGridY, LastGridX, LastGridY: integer;
 	CursorX, CursorY: integer;
 	Key: String;
-	WasMoved: Boolean;
+	WasMoved, MouseSupport: Boolean;
 begin
 	if Link = nil then
 		Exit;
@@ -390,32 +389,22 @@ begin
 	DrawY := Link^.Top + OffsetY;
 	LastGridX := 0;
 	LastGridY := 0;
+	BufferDimension := 31 + (2 * ImgIcon^.GetBorderWidth); {Icon width + border on both sides}
 
-	BufferDimension := 31 + (2 * ImgIcon^.GetBorderWidth);
 	Mouse.Hide;
 	IconSize := ImageSize(0, 0, BufferDimension, BufferDimension);
 	GetMem(LinkIconImg, IconSize);
 	GetMem(BackdropImg, IconSize);
-	GetImage(DrawX, DrawY, DrawX + BufferDimension, DrawY + 31 + BufferDimension, LinkIconImg^);
-	{DEBUG - copy memory instead of calling GetImage twice}
-	GetImage(DrawX, DrawY, DrawX + BufferDimension, DrawY + 31 + BufferDimension, BackdropImg^);
+	GetImage(DrawX, DrawY, DrawX + BufferDimension, DrawY + BufferDimension, LinkIconImg^);
+  GetImage(DrawX, DrawY, DrawX + BufferDimension, DrawY + BufferDimension, BackdropImg^);
 	Mouse.Show;
 
 	{Center mouse on icon}
-	Mouse.Move(DrawX + 18, DrawY + 18);
+	Mouse.Move(DrawX + (BufferDimension div 2), DrawY + (BufferDimension div 2));
 
-	if Mouse.Supported then
-	begin
-		CursorX := Mouse.X;
-		CursorY := Mouse.Y;
-	end
-	else
-	begin
-		{Set mouse pos variables manually to make the rest of the code work
-		 if no mouse is present}
-		CursorX := DrawX + 18;
-		CursorY := DrawY + 18;
-	end;
+	MouseSupport := Mouse.Supported;
+	CursorX := DrawX + (BufferDimension div 2);
+	CursorY := DrawY + (BufferDimension div 2);
 
 	CurGridX := CursorX div LinkGridSize;
 	CurGridY := CursorY div LinkGridSize;
@@ -434,8 +423,11 @@ begin
 		if Key = KeyEnter then
 			break;
 
-		CursorX := Mouse.X;
-		CursorY := Mouse.Y;
+		if MouseSupport and (Length(Key) = 0) then
+		begin
+			CursorX := Mouse.X;
+			CursorY := Mouse.Y;
+		end;
 
 		{Arrow keys - move mouse cursor in direction pressed}
 		if Key = KeyLeft then CursorX := CursorX - LinkGridSize;
@@ -443,20 +435,21 @@ begin
 		if Key = KeyUp then CursorY := CursorY - LinkGridSize;
 		if Key = KeyDown then CursorY := CursorY + LinkGridSize - 1;
 
+		{If moved with arrow keys, validate bounds}
 		if CursorX < MinX then CursorX:= MinX;
 		if CursorX > MaxX then CursorX:= MaxX;
 		if CursorY < MinY then CursorY := MinY;
 		if CursorY > MaxY then CursorY := MaxY;
 
 		{If icon is moved with arrow keys, set cursor position}
-		if Length(Key) = 2 then
+		if (CursorX <> Mouse.X) and (CursorY <> Mouse.Y) then
 			Mouse.Move(CursorX, CursorY);
 
 		{Calculate grid position}
-		CurGridX := (CursorX - 18) div LinkGridSize;
+		CurGridX := (CursorX - (BufferDimension div 2)) div LinkGridSize;
 		if CurGridX < 0 then
 			CurGridX := 0;
-		CurGridY := (CursorY - 18) div LinkGridSize;
+		CurGridY := (CursorY - (BufferDimension div 2)) div LinkGridSize;
 		if CurGridY < 4 then
 			CurGridY := 4;
 
@@ -467,11 +460,13 @@ begin
 			PutImage(DrawX, DrawY, BackdropImg^, NormalPut);
 			DrawX := CurGridX * LinkGridSize;
 			DrawY := CurGridY * LinkGridSize;
-			if DrawY > 318 then
-				DrawY := 318;
+			if DrawX > ScreenWidth - BufferDimension then
+				DrawX := ScreenWidth - BufferDimension;
+			if DrawY > ScreenHeight - BufferDimension then
+				DrawY := ScreenHeight - BufferDimension;
 
 			{Save backdrop, plot icon in its place}
-			GetImage(DrawX, DrawY, DrawX + 35, DrawY + 35, BackdropImg^);
+			GetImage(DrawX, DrawY, DrawX + BufferDimension, DrawY + BufferDimension, BackdropImg^);
 			PutImage(DrawX, DrawY, LinkIconImg^, NormalPut);
 			Mouse.Show;
 			LastGridX := CurGridX;

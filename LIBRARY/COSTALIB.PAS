@@ -808,13 +808,16 @@ procedure TMouse.Move(Left, Top: Integer);
 var
 	regs: registers;
 begin
-	{Can't move mouse if no mouse support}
-	if not Support then
-		Exit;
-
 	if (Left < 0) or (Left > ScreenWidth) or
 	   (Top < 0) or (Top > ScreenHeight) then
 		Exit; {Out of bounds}
+
+	Self.X := Left;
+	Self.Y := Top;
+
+	{Can't move mouse if no mouse support}
+	if not Support then
+		Exit;
 
 	regs.ax := 4;
 	regs.cx := Left;
