@@ -48,15 +48,15 @@ begin
 	New(WinMsgBox, Init(0, 0, NoParent));
 	With WinMsgBox^ do
 	begin
-		Width := PrintW(MsgText) + 68;
+		Width := PrintW(MsgText) + 70;
 		if Width < 270 then Width := 270;
-		Height := PrintH(MsgText) + 78;
+		Height := PrintH(MsgText) + 72;
 		Center(OrBoth);
 		SaveBackdrop;
 		OnDraw := WinMsgBoxDraw;
 	end;
 
-	New(ImgIcon, Init(11, 13, '', WinMsgBox));
+	New(ImgIcon, Init(5, 7, '', WinMsgBox));
 	case MsgType of
 		MsgInfo:  ImgIcon^.IconFile := 'MSGINFO';
 		MsgWarn:  ImgIcon^.IconFile := 'MSGWARN';
@@ -67,12 +67,12 @@ begin
 
 	if MsgType = MsgQuest then
 	begin
-		New(BtnFirst, Init((WinMsgBox^.Width div 2) - 98, WinMsgBox^.Height - 36, CAP_YES, WinMsgBox));
+		New(BtnFirst, Init((WinMsgBox^.Width div 2) - 98 - WinMsgBox^.GetBorderWidth, WinMsgBox^.Height - 40, CAP_YES, WinMsgBox));
 		BtnFirst^.AddHotkey(KeyAltY);
 	end
 	else
 	begin
-		New(BtnFirst, Init(0, WinMsgBox^.Height - 36, CAP_OK, WinMsgBox));
+		New(BtnFirst, Init(0, WinMsgBox^.Height - 40, CAP_OK, WinMsgBox));
 		BtnFirst^.Center(OrHorizontal);
 		BtnFirst^.AddHotkey(KeyAltO);
 	end;
@@ -80,7 +80,7 @@ begin
 	BtnFirst^.OnClick := BtnClick;
 	if MsgType = MsgQuest then
 	begin
-		New(BtnSecond, Init((WinMsgBox^.Width div 2) + 6, WinMsgBox^.Height - 36, CAP_NO, WinMsgBox));
+		New(BtnSecond, Init((WinMsgBox^.Width div 2) + 6 - WinMsgBox^.GetBorderWidth, WinMsgBox^.Height - 40, CAP_NO, WinMsgBox));
 		With BtnSecond^ do
 		begin
 			AddHotkey(KeyAltN);
@@ -88,8 +88,8 @@ begin
 			OnClick := BtnClick;
 		end;
 	end;
-	New(LblTitle, Init(56, 15, MsgTitle, WinMsgBox));
-	New(LblText, Init(56, 31, MsgText, WinMsgBox));
+	New(LblTitle, Init(50, 9, MsgTitle, WinMsgBox));
+	New(LblText, Init(50, 25, MsgText, WinMsgBox));
 
 	WinMsgBox^.Run;
 	Dispose(WinMsgBox, Done);

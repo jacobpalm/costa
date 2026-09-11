@@ -33,8 +33,8 @@ const
 	MSG_REMOVE_LINK           = 'This will permanently delete this' + #13 +
 	                            'desktop link. Are you sure?';
 	MSG_EXIT                  = 'Exit Costa';
-	MSG_EXIT_PROMPT           = 'This will exit Costa and return you to the DOS' + #13 +
-	                            'prompt. Continue?';
+	MSG_EXIT_PROMPT           = 'This will exit Costa and return you to' + #13 +
+	                            'the DOS prompt. Continue?';
 	MSG_SAVE_ERROR_TITLE      = 'Error writing to file';
 	MSG_SAVE_ERROR            = '%s. Could not write to' + #13;
 	MSG_LOAD_ERROR_TITLE      = 'Error loading desktop links';
