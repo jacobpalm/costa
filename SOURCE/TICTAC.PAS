@@ -689,6 +689,16 @@ begin
 		end;
 	end;
 
+	PlayField[1, 3]^.AddHotkey('1');
+	PlayField[2, 3]^.AddHotkey('2');
+	PlayField[3, 3]^.AddHotkey('3');
+	PlayField[1, 2]^.AddHotkey('4');
+	PlayField[2, 2]^.AddHotkey('5');
+	PlayField[3, 2]^.AddHotkey('6');
+	PlayField[1, 1]^.AddHotkey('7');
+	PlayField[2, 1]^.AddHotkey('8');
+	PlayField[3, 1]^.AddHotkey('9');
+
 	New(BtnNew, Init(2, 2, CAP_NEW_GAME, WinMain));
 	With BtnNew^ do
 	begin
