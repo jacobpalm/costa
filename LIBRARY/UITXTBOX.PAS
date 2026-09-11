@@ -133,6 +133,7 @@ begin
 				end;
 				Mouse.Show;
 			end;
+			continue;
 		end;
 
 		If Key = KeyEnter then
@@ -175,6 +176,14 @@ begin
 				Self.Draw;
 			end;
 			Mouse.Show;
+			continue;
+		end;
+
+		{If we reach this point, at a hotkey was pressed, exit editing so that the hotkey can be handled by other objects}
+		if Length(Key) = 2 then
+		begin
+			HotkeyInput := Key;
+			break;
 		end;
 
 	until False;
