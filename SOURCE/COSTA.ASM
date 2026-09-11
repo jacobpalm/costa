@@ -198,8 +198,7 @@ CallExecFunction:
 	; Note that we are NOT saving registers and SS/SP here - DOS 3+ handles
 	; this, and we only target newer versions of DOS.
 
-	; DEBUG - verify that file exists before EXEC, some versions of DOS will
-	; hang if not
+	; DESKTOP.EXE is reponsible for making sure the program to execute exists
 
 	; Set up the EXEC parameter block
 	mov [ParamBlock.EnvSeg], 0     ; 0 = inherit parent environment

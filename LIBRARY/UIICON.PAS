@@ -71,10 +71,12 @@ begin
 
 	Size := ImageSize(0, 0, 31, 31); {Coords don't matter, just size}
 
+	{Do we have enough memory to load the icon?}
+	if MaxAvail < ImageSize then
+		IconError := True;
+
 	{Get absolute position of the object}
 	GetAbsPos(X, Y);
-
-	{DEBUG - icon position depending on border?}
 
 	if not IconError then
 	begin
@@ -90,7 +92,6 @@ begin
 		if IconError then
 			Close(F);
 	end;
-	{DEBUG - verify getmem and BlockRead}
 
 	if not IconError then
 	begin

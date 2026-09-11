@@ -200,8 +200,8 @@ begin
 	else
 		{There's more text than fits, so we'll have to redraw the entire textbox}
 		Self.Draw;
+
 	Mouse.Show;
-	ClearInputBuffer;
 
 	If Text <> OrigTxt then
 		if Assigned(OnChange) then

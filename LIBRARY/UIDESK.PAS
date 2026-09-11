@@ -391,10 +391,14 @@ begin
 	LastGridY := 0;
 	BufferDimension := 31 + (2 * ImgIcon^.GetBorderWidth); {Icon width + border on both sides}
 
-	Mouse.Hide;
 	IconSize := ImageSize(0, 0, BufferDimension, BufferDimension);
+	{DEBUG - show out of memory error}
+	if MaxAvail < (IconSize * 2) then
+		exit;
+
 	GetMem(LinkIconImg, IconSize);
 	GetMem(BackdropImg, IconSize);
+	Mouse.Hide;
 	GetImage(DrawX, DrawY, DrawX + BufferDimension, DrawY + BufferDimension, LinkIconImg^);
   GetImage(DrawX, DrawY, DrawX + BufferDimension, DrawY + BufferDimension, BackdropImg^);
 	Mouse.Show;

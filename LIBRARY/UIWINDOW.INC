@@ -31,24 +31,31 @@ begin
 	if SHidden in State then
 		exit;
 
-	{Get absolute position and size of the window}
-	Self.GetAbsPos(X1, Y1);
-	X2 := X1 + Width;
-	Y2 := Y1 + Height;
-
 	{If background preservation is enabled, and background hasn't been
 	 captured yet, capture it now before drawing anything}
 	if PreserveBackdrop and not Assigned(BackdropP) then
 	begin
-		{DEBUG - out of bounds check}
+		{Get absolute position and size of the window}
+		Self.GetAbsPos(X1, Y1);
+		X2 := X1 + Width;
+		Y2 := Y1 + Height;
+
+		{Make sure we don't try to copy memory outside screen area}
+		if X1 < 0 then X1 := 0;
+		if Y1 < 0 then Y1 := 0;
+		if X2 > ScreenWidth then X2 := ScreenWidth;
+		if Y2 > ScreenHeight then Y2 := ScreenHeight;
 		{Calculate size of memory block required to store background image}
 		BackdropS := ImageSize(X1, Y1, X2, Y2);
 
-		{Allocate memory required to store the background image}
-		GetMem(BackdropP, BackdropS);
+		if MaxAvail > BackdropS then
+		begin
+			{Allocate memory required to store the background image}
+			GetMem(BackdropP, BackdropS);
 
-		{Capture background image}
-		GetImage(X1, Y1, X2, Y2, BackdropP^);
+			{Capture background image}
+			GetImage(X1, Y1, X2, Y2, BackdropP^);
+		end;
 	end;
 
 	DrawBorder;

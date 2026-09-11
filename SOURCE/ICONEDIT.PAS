@@ -241,9 +241,6 @@ end;
 
 procedure CanvasClick(Sender: PUIObject); far;
 begin
-	{Update preview image}
-	{DEBUG}
-
 	{After a flood fill, the canvas object will switch to pencil tool automatically.
 	 Ensure the pencil/flood fill buttons are updated accordingly}
 	if (Canvas^.GetTool = ToolPencil) and not (SActive in BtnPencil^.State) then

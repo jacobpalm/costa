@@ -475,6 +475,14 @@ begin
 		Halt(1);
 	End;
 
+	{Make sure library directories exists to avoid apps crashing when trying to read
+	 from them}
+	{$I-}
+	MkDir('CONFIG');
+	MkDir('ICONS');
+	MkDir('THEMES');
+	{$I+}
+
 	{Load settings and theme}
 	Self.LoadSystemSettings;
 	Self.LoadTheme(Setting.ThmFile);
