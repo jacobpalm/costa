@@ -119,11 +119,12 @@ end;
 procedure TThemePreview.LoadFile(Filename: string);
 var
 	F: File;
+	ExpectedSize: Integer;
 	ErrorCode: Integer;
 	ErrorText: string;
 begin
 	{Load the specified theme file}
-
+	ThemeLoaded := False;
 	Assign(F, ProgramPath + 'THEMES\' + Filename + '.BIN');
 	{$I-}
 	Reset(F, 1);
@@ -131,19 +132,23 @@ begin
 	ErrorCode := IOResult;
 	if ErrorCode = 0 then
 	begin
-		{DEBUG - verify file size before loading}
-		BlockRead(F, ThemeData, SizeOf(ThemeData));
-		BlockRead(F, ThemeName, SizeOf(ThemeName));
-		BlockRead(F, ThemeAuthor, SizeOf(ThemeAuthor));
-		ThemeLoaded := true;
-		Close(F);
-	end
-	else
+		ExpectedSize := SizeOf(ThemeData) + SizeOf(ThemeName) + SizeOf(ThemeAuthor);
+		if FileSize(F) = ExpectedSize then
+		begin
+			BlockRead(F, ThemeData, SizeOf(ThemeData));
+			BlockRead(F, ThemeName, SizeOf(ThemeName));
+			BlockRead(F, ThemeAuthor, SizeOf(ThemeAuthor));
+			ThemeLoaded := true;
+			Close(F);
+		end;
+	end;
+
+	{If loading failed for any reason, restore original theme}
+	if not ThemeLoaded then
 	begin
 		ThemeData := OrigTheme; {Restore original theme}
 		ThemeAuthor := '';
 		ThemeName := '';
-		ThemeLoaded := False;
 		ErrorText := Replace(MSG_LOAD_ERROR_TEXT, Placeholder, GetDosErrorMsg(ErrorCode));
 		ErrorText := Replace(ErrorText, Placeholder, FileName);
 		MsgBox(MSG_LOAD_ERROR_TITLE, ErrorText, MsgError);

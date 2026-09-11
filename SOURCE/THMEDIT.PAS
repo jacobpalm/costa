@@ -171,6 +171,7 @@ procedure LoadTheme(Sender: PUIObject); far;
 var
 	SelectedFile: string;
 	LoadName, LoadAuthor: string[20];
+	ExpectedSize: Integer;
 	FDir: DirStr;
 	FName: NameStr;
 	FExt: ExtStr;
@@ -198,13 +199,14 @@ begin
 	end;
 
 	LoadError := False;
+	ExpectedSize := SizeOf(ThemeData) + SizeOf(LoadName) + SizeOf(LoadAuthor);
 	Assign(F, App^.Path + 'THEMES\' + FName + '.BIN');
 	{$I-}
 	Reset(F, 1);
 	{$I+}
 	if IOResult <> 0 then
 		LoadError := True
-	else if FileSize(F) <> SizeOf(TTheme) + 42 then
+	else if FileSize(F) <> ExpectedSize then
 		LoadError := True;
 
 	if LoadError then
