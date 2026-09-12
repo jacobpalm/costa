@@ -394,7 +394,10 @@ begin
 	IconSize := ImageSize(0, 0, BufferDimension, BufferDimension);
 	{DEBUG - show out of memory error}
 	if MaxAvail < (IconSize * 2) then
+	begin
+		SystemSound(sndError);
 		exit;
+	end;
 
 	GetMem(LinkIconImg, IconSize);
 	GetMem(BackdropImg, IconSize);
@@ -552,6 +555,7 @@ begin
 		exit;
 
 	Assign(F, Filename);
+	FileMode := FileRead;
 	{$I-}
 	Reset(F, 1);
 	{$I+}

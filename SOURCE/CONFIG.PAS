@@ -30,6 +30,10 @@ const
 	CAP_LOADING          = 'Loading...';
 
 	MSG_NO_THEMES        = 'No themes found in THEMES.';
+	MSG_SAVE_ERR_TITLE   = 'Failed to save settings';
+	MSG_SAVE_ERR         = 'Settings could not be saved. Make sure there is' + #13 +
+	                       'enough free space on the drive and that it isn''t' +#13 +
+	                       'isn''t write-protected.';
 
 	LinkCapt             = 0;
 	LinkTarget           = 1;
@@ -195,6 +199,8 @@ begin
 end;
 
 procedure BtnExitClick(Sender: PUIObject); far;
+var
+	SaveSuccess, OverAllSuccess: Boolean;
 begin
 	if ThemeCount > 0 then
 		Setting.ThmFile := SelectedFileName;
@@ -203,10 +209,16 @@ begin
 	DeskSettings.LinkTarget := ChkSetting[LinkTarget]^.GetChecked;
 	DeskSettings.ConfLinkDel := ChkSetting[LinkDelete]^.GetChecked;
 	DeskSettings.ConfExit := ChkSetting[ConfExit]^.GetChecked;
-	Setting.Audio := ChkSetting[Audio]^.GetChecked;
+	Setting.Audio := ChkSetting[Audio]^.GetChecked; {DEBUG - doesn't seem to save?}
 
-	App^.SaveSettings;
-	App^.SaveSystemSettings;
+	OverAllSuccess := App^.SaveSettings;
+	SaveSuccess := App^.SaveSystemSettings;
+	if not SaveSuccess then
+		OverAllSuccess := false;
+
+	if not OverAllSuccess then
+		MsgBox(MSG_SAVE_ERR_TITLE, MSG_SAVE_ERR, msgError);
+
 	App^.Terminate;
 end;
 

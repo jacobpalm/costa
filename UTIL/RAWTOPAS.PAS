@@ -58,6 +58,12 @@ begin
 	end;
 
 	Size := ImageSize(0, 0, 31, 31);
+	if MaxAvail < ImageSize then
+	begin
+			CloseGraph;
+			Writeln('Out of memory');
+			Halt(1);
+	end;
 	GetMem(P, Size);
 
 	FindFirst('..\DATA\IMAGES\*.RAW', Archive, DirInfo);
@@ -66,6 +72,7 @@ begin
 		FSplit(DirInfo.Name, FDir, FName, FExt);
 
 		Assign(F, '..\DATA\IMAGES\' + DirInfo.Name);
+		FileMode := 0;
 		{$I-}
 		Reset(F);
 		{$I+}
@@ -105,6 +112,7 @@ begin
 		{IFDEF DEBUG}
 			{Test reading the image back}
 			Assign(outputfile, '..\ICONS\'+FName+'.BIN');
+			FileMode := 0;
 			{$I-}
 			Reset(outputfile, 1);
 			{$I+}
@@ -149,6 +157,7 @@ begin
 		FSplit(DirInfo.Name, FDir, FName, FExt);
 
 		Assign(F, '..\DATA\THEMES\' + DirInfo.Name);
+		FileMode := 0;
 		{$I-}
 		Reset(F);
 		{$I+}
@@ -228,6 +237,7 @@ begin
 		FSplit(DirInfo.Name, FDir, FName, FExt);
 
 		Assign(F, '..\DATA\CONFIG\'+FName+'.RAW');
+		FileMode := 0;
 		{$I-}
 		Reset(F);
 		{$I+}

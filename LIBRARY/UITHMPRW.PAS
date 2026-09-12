@@ -126,6 +126,7 @@ begin
 	{Load the specified theme file}
 	ThemeLoaded := False;
 	Assign(F, ProgramPath + 'THEMES\' + Filename + '.BIN');
+	FileMode := FileRead;
 	{$I-}
 	Reset(F, 1);
 	{$I+}

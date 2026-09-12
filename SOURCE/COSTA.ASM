@@ -108,7 +108,7 @@ start:
 
 ShrinkMemory:
 	; Calculate required memory size for COSTA.COM to keep
-	lea ax, EndOfResident          ; Label marks the end of the resident code
+	lea ax, [EndOfResident]        ; Label marks the end of the resident code
 	add ax, PARAGRAPH_SIZE - 1     ; Make sure divison rounds up to paragraph
 	shr ax, 4                      ; Bytes in AX div 16 AX = paragraph count
 	mov bx, ax                     ; BX = new size in paragraphs

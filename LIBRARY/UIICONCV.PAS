@@ -251,6 +251,13 @@ begin
 	X2 := X1 + IconSize;
 	Y2 := Y1 + IconSize;
 	Size := ImageSize(X1, Y1, X2, Y2);
+
+	if MaxAvail < Size then
+	begin
+		SystemSound(sndError);
+		exit;
+	end;
+
 	GetMem(p, Size);
 	Mouse.Hide;
 	GetImage(X1, Y1, X2, Y2, p^);

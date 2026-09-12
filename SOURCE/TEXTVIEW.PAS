@@ -197,6 +197,7 @@ begin
 
 	{Open the file for reading}
 	Assign(F, FileName);
+	FileMode := FileRead;
 	{$I-}
 	Reset(F);
 	{$I+}

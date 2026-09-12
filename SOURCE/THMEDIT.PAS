@@ -201,6 +201,7 @@ begin
 	LoadError := False;
 	ExpectedSize := SizeOf(ThemeData) + SizeOf(LoadName) + SizeOf(LoadAuthor);
 	Assign(F, App^.Path + 'THEMES\' + FName + '.BIN');
+	FileMode := FileRead;
 	{$I-}
 	Reset(F, 1);
 	{$I+}

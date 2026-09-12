@@ -72,7 +72,7 @@ begin
 	Size := ImageSize(0, 0, 31, 31); {Coords don't matter, just size}
 
 	{Do we have enough memory to load the icon?}
-	if MaxAvail < ImageSize then
+	if MaxAvail < Size then
 		IconError := True;
 
 	{Get absolute position of the object}
@@ -81,6 +81,7 @@ begin
 	if not IconError then
 	begin
 		Assign(F, Filename);
+		FileMode := FileRead;
 		{$I-}
 		Reset(F, 1);
 		{$I+}

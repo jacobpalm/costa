@@ -42,6 +42,10 @@ const
 	MbLeft               = 1;
 	MbRight              = 2;
 
+	FileRead             = 0;
+	FileWrite            = 1;
+	FileReadWrite        = 2;
+
 	{Standard DOS error messages used by Turbo Pascal}
 	MSG_DOSERROR_1       = 'Invalid function';
 	MSG_DOSERROR_2       = 'File not found';
@@ -274,7 +278,7 @@ type
 			function    Path: DirStr;
 
 			procedure   LoadSystemSettings;
-			procedure   SaveSystemSettings;
+			function    SaveSystemSettings: boolean;
 
 			procedure   SetConfigFile(Filename: String; Ptr: pointer; MemSize: Integer);
 			function    LoadSettings: boolean;
@@ -374,11 +378,6 @@ implementation
 const
 	GlobalSettings               = 'CONFIG\SYSTEM.BIN';
 
-	{Message strings}
-	MSG_SAVE_SETTING_ERROR_TITLE = 'Error saving settings';
-	MSG_SAVE_SETTING_ERROR_TEXT  = 'Could not write to the settings file' + #13 +
-	                               '%s.' + #13 +
-	                               'Verify that the path exists and isn''t read-only.';
 	MSG_GRAPHICS_ERROR           = 'Graphics error: ';
 
 
@@ -543,9 +542,8 @@ end;
 
 procedure TApplication.Terminate;
 begin
-	{Debug - close windows nicely?}
-
-	If Assigned(OnExit) then
+	{Any windows are not closed "nicely" - the application must perform its pre-exit routines before calling Terminate}
+	if Assigned(OnExit) then
 		OnExit(@Self);
 
 	Self.Done; {Call destructor, in case any descendant objects have additional cleanup code}
@@ -608,6 +606,7 @@ begin
 	if FileExists(ThemeFile) then
 	begin
 		Assign(F, ThemeFile);
+		FileMode := FileRead;
 		{$I-}
 		Reset(F, 1);
 		{$I+}
@@ -637,6 +636,7 @@ begin
 		exit;
 
 	Assign(F, Self.Path + GlobalSettings);
+	FileMode := FileRead;
 	{$I-}
 	Reset(F, 1);
 	{$I+}
@@ -653,7 +653,7 @@ begin
 	Close(F);
 end;
 
-procedure TApplication.SaveSystemSettings;
+function TApplication.SaveSystemSettings: Boolean;
 var
 	F: file;
 begin
@@ -663,12 +663,12 @@ begin
 	{$I+}
 	if IOResult <> 0 then
 	begin
-		{MsgBox(MSG_SAVE_SETTING_ERROR_TITLE, MSG_SAVE_SETTING_ERROR_TEXT, MsgError);}
-		{DEBUG - this must be handled alternatively, MsgBox can't be included in the library}
-		Exit;
+		SaveSystemSettings := False;
+		exit;
 	end;
 	BlockWrite(F, Setting, SizeOf(TLibSetting));
 	Close(F);
+	SaveSystemSettings := True;
 end;
 
 procedure TApplication.SetConfigFile(Filename: String; Ptr: pointer; MemSize: Integer);
@@ -709,9 +709,11 @@ begin
 	end;
 
 	Assign(F, Filename);
+	FileMode := FileRead;
 	{$I-}
 	Reset(F, 1);
 	{$I+}
+	FileMode := 2;
 	if IOResult <> 0 then
 	begin
 		LoadSettings := false;
@@ -750,8 +752,6 @@ begin
 	{$I+}
 	if IOResult <> 0 then
 	begin
-		{MsgBox(MSG_SAVE_SETTING_ERROR_TITLE, MSG_SAVE_SETTING_ERROR_TEXT, MsgError);}
-		{DEBUG - this must be handled alternatively, MsgBox can't be included in the library}
 		SaveSettings := false;
 		Exit;
 	end;
