@@ -7,7 +7,7 @@ more.
 The low system requirements make Costa especially useful for older machines,
 which are also the machines that typically run the DOS operating system.
 
-![The Costa GUI](https://costa.jacobpalm.dk/img/aboutbox.png)
+![The Costa GUI](https://costa.jacobpalm.dk/assets/img/screenshots/aboutbox.png)
 
 ## System requirements
 Costa is designed for MS-DOS, but tested with PC-DOS, DR-DOS, FreeDOS,
@@ -114,13 +114,15 @@ MAKE DESKTOP.EXE
 This will compile the desktop application only, as well as any units the
 desktop depends on.
 
-Lastly, an option to build a redistributable package ready for
-[SvarDOS](http://svardos.org) exists. To build this, simple call *MAKE* like
-so:
+### Building for release
+When building a new release of Costa to be distributed, make should be run
+with the *RELEASE* parameter. This will create a ZIP archive containing all
+required files, as well as an SVP package for [SvarDOS](http://svardos.org).
 
 ```
-MAKE SVARDOS
+MAKE -B RELEASE
 ```
 
-This will produce a package called *COSTA.SVP*, ready for installation on
-SvarDOS.
+Before building a release, make sure to follow the instructions in the file
+*_RELEASE.TXT*. This includes instructions to update version numbers, update
+documentation etc. before building.
