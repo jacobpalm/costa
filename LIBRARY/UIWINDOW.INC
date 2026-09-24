@@ -16,7 +16,6 @@ begin
 	MenuObj          := nil;
 	BackdropP        := nil;
 	BackdropS        := 0;
-	EventQueue       := nil;
 	PreserveBackdrop := False;
 	BorderStyle      := BorDialog;
 	FGColor          := Thm.WinText;
@@ -64,77 +63,6 @@ begin
 	 drawing child objects}
 	TUIObject.Draw;
 	DrawChildren;
-end;
-
-procedure TWindow.QueueEvent(Sender: PUIObject; Event: TEventType; MouseX, MouseY, MouseButton: Word; Key: TKeyPress);
-var
-	NewEvent: PEvent;
-	NewEventNode, CheckEventNode: PEventNode;
-begin
-	{Create a new event record in memory and assign its data}
-	NewEvent := New(PEvent);
-	NewEvent^.Sender := Sender;
-	NewEvent^.Event := Event;
-	NewEvent^.MouseX := MouseX;
-	NewEvent^.MouseY := MouseY;
-	NewEvent^.MouseButton := MouseButton;
-	NewEvent^.Key := Key;
-
-	{Create a new node for the event queue and point it to the event record}
-	NewEventNode := New(PEventNode);
-	NewEventNode^.EventData := NewEvent;
-	NewEventNode^.Next := nil;
-
-	{If there is no queue, set new node as queue}
-	if Self.EventQueue = nil then
-	begin
-		Self.EventQueue := NewEventNode;
-		Exit;
-	end;
-
-	{If there is an existing queue, iterate through each item until a node with no
-	 Next node is found}
-	CheckEventNode := Self.EventQueue;
-	while Assigned(CheckEventNode^.Next) do
-		CheckEventNode := CheckEventNode^.Next;
-
-	{Set Next of last node to the new node}
-	CheckEventNode^.Next := NewEventNode;
-end;
-
-procedure TWindow.GetEvent(var Event: TEvent);
-var
-	TempNode: PEventNode;
-begin
-	if not (Assigned(Self.EventQueue)) then
-	begin
-		{Debug - this is where to check for user events}
-		FillChar(Event, SizeOf(Event), 0);
-		Exit;
-	end;
-
-	Event := Self.EventQueue^.EventData^;
-
-	{Save event node pointer, and remove it from the queue by setting queue header to next event node}
-	TempNode := Self.EventQueue;
-	Self.EventQueue := Self.EventQueue^.Next;
-
-	{Dispose of the event itself and the event node that held it}
-	Dispose(TempNode^.EventData);
-	Dispose(TempNode);
-end;
-
-procedure TWindow.ClearEventQueue;
-var
-	TempNode: PEventNode;
-begin
-	while Assigned(Self.EventQueue) do
-	begin
-		TempNode := Self.EventQueue;
-		Self.EventQueue := Self.EventQueue^.Next;
-		Dispose(TempNode^.EventData);
-		Dispose(TempNode);
-	end;
 end;
 
 procedure TWindow.Run;
@@ -223,8 +151,6 @@ destructor TWindow.Done;
 begin
 	if Assigned(BackdropP) then
 		FreeMem(BackdropP, BackdropS);
-
-	Self.ClearEventQueue;
 
 	{Call ancestor destructor for properties that aren't specific to TWindow}
 	inherited Done;

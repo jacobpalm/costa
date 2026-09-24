@@ -100,24 +100,6 @@ type
 		Next:   PHotkeyNode; {Pointer to next node in linked list}
 	end;
 
-	TKeyPress = string[2];
-	TEventType = (evCleared, evClick, evRightClick, evKeyPress, evRedraw, evChange, evTimer);
-	PEvent = ^TEvent;
-	TEvent = record
-		Sender:      PUIObject;
-		Event:       TEventType;
-		MouseX,
-		MouseY,
-		MouseButton: Word;
-		Key:         TKeyPress;
-	end;
-
-	PEventNode = ^TEventNode;
-	TEventNode = record
-		EventData: PEvent;
-		Next:      PEventNode;
-	end;
-
 	{Base object which all objects, visual or not, are based on}
 	TUIObject = object
 		public
@@ -203,18 +185,14 @@ type
 	{Window object}
 	TWindow = object(TContainer)
 		public
-			OnRun:            TEventProc;
-			OnClose:          TEventProc;
+			OnRun:      TEventProc;
+			OnClose:    TEventProc;
 
 			constructor Init(X, Y: Integer; Parent: PContainer);
 			destructor  Done; virtual;
 
 			procedure   CheckEvent; virtual;
 			procedure   Draw; virtual;
-
-			procedure   QueueEvent(Sender: PUIObject; Event: TEventType; MouseX, MouseY, MouseButton: Word; Key: TKeyPress);
-			procedure   GetEvent(var Event: TEvent);
-			procedure   ClearEventQueue;
 
 			procedure   Run;
 			procedure   Close;
@@ -228,7 +206,6 @@ type
 			PreserveBackdrop: Boolean;         {If true, backdrop is preserved when window is drawn and restored when closed}
 			BackdropP:        Pointer;         {Stores background image to restore when window is closed}
 			BackdropS:        Word;            {Size of memory block used by BackdropP}
-			EventQueue:       PEventNode;
 			procedure         RestoreBackdrop;
 	end;
 
