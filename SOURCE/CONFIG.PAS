@@ -1,5 +1,7 @@
 program Configuration;
 
+{$M 4096, 0, 655360} {Require 4 KB stack}
+
 uses
 	CostaLib, UIButton, UITxtbox, UIChkbox, UILabel, UIIcon, UIFrame, UIThmPrw, MsgDlg, AboutDlg, DOS;
 

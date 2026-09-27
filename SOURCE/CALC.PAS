@@ -1,5 +1,6 @@
 program Calculator;
 
+{$M 4096, 0, 655360} {Require 4 KB stack}
 {$R-} {Disable range checking}
 
 uses

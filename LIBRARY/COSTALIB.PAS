@@ -1,5 +1,7 @@
 unit CostaLib;
 
+{$DEFINE DEBUG}
+
 interface
 
 uses
@@ -353,9 +355,17 @@ procedure SystemSound(SoundType: TSystemSound);
 implementation
 
 const
-	GlobalSettings               = 'CONFIG\SYSTEM.BIN';
+	GlobalSettings      = 'CONFIG\SYSTEM.BIN';
 
-	MSG_GRAPHICS_ERROR           = 'Graphics error: ';
+	StackMark:     Char = #143; {Used in debugging to fill the stack with a known character, so that run-time stack usage can be
+	                             measured}
+
+	MSG_GRAPHICS_ERROR  = 'Graphics error: ';
+
+{$IFDEF DEBUG}
+var
+	StartingSP: Word; {When debugging, holds the offset where the stack pointer was when program started}
+{$ENDIF}
 
 
 {----------------------------------------------------------------------------}
@@ -380,6 +390,39 @@ asm
 
 	pop ds                 {Restore DS}
 end;
+
+{$IFDEF DEBUG}
+	procedure DebugMarkStackStart;
+	var
+		P: ^Char;
+		I: Word;
+	begin
+		StartingSP := SPtr;
+		{Leave 256 bytes before SPtr untouched, just for safety}
+		for I := 0 to StartingSP - 256 do
+		begin
+			P := Ptr(SSeg, I); {Move pointer to stack segment, offset I}
+			P^ := StackMark;   {Set byte at pointer to the stack mark}
+		end;
+	end;
+
+	function DebugGetStackUsed: Word;
+	var
+		P: ^Char;
+		I: Word;
+	begin
+		I := 0;
+		while I < StartingSP do
+		begin
+			P := Ptr(SSeg, I); {Move pointer to stack segment, offset I}
+			{If byte at pointer isn't our stack mark, it has been modified}
+			if P^ <> StackMark then
+				break;
+			Inc(I);
+		end;
+		DebugGetStackUsed := StartingSP - I;
+	end;
+{$ENDIF}
 
 
 {$I UIOBJECT.INC}
@@ -432,6 +475,12 @@ begin
 	Window   := nil;
 	OnRun    := nil;
 	OnExit   := nil;
+
+	{$IFDEF DEBUG}
+		{If debugging, fill the stack with an identifiable mark so
+		 stack usage can be measured at program exit}
+		DebugMarkStackStart;
+	{$ENDIF}
 
 	{Retrieve full path of the executable}
 	FullPath := ParamStr(0);
@@ -526,6 +575,11 @@ begin
 	Self.Done; {Call destructor, in case any descendant objects have additional cleanup code}
 
 	CloseGraph;
+
+	{$IFDEF DEBUG}
+		WriteLn('Stack used during runtime: ', DebugGetStackUsed, ' bytes');
+	{$ENDIF}
+
 	Halt(ExitCode);
 end;
 

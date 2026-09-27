@@ -1,5 +1,7 @@
 program ThemeEditor;
 
+{$M 6144, 0, 655360} {Require 6 KB stack}
+
 uses
 	CostaLib, UIButton, UILabel, UITxtbox, UIArea, UIFrame, UIIcon, UIThmPrw,
 	AboutDlg, MsgDlg, InputDlg, ThmSelec, FileDlg, DOS, Graph;

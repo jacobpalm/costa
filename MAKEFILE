@@ -47,7 +47,7 @@ ZIPCMD = ZIP -9rkDX
 # -$L- = Disable local debug symbols
 # -$R- = Disable range checking and virtual method call checking
 # -GD  = Generate detailed map file for each executable
-TPCSWITCHES = -M -GD -$D-
+TPCSWITCHES = -M -$D- -$L- -$R- -GD
 TPCCMD = $(TPC) $(TPCSWITCHES)
 
 # TASM/TLINK options for COSTA.COM

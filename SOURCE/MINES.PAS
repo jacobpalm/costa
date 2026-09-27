@@ -1,6 +1,7 @@
 program Minesweeper;
-
 {Minesweeper for Costa by Jacob Palm}
+
+{$M 4096, 0, 655360} {Require 4 KB stack}
 
 uses
 	CostaLib, UIMineFl, UIButton, UILabel, UITimer, Graph, AboutDlg;

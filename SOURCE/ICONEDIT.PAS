@@ -1,5 +1,7 @@
 program IconEditor;
 
+{$M 6144, 0, 655360} {Require 6 KB stack}
+
 uses
 	CostaLib, UIIcon, UIButton, UIArea, UILabel, UIIconCv, MsgDlg, FileDlg, InputDlg, AboutDlg, Graph, DOS;
 

@@ -1,5 +1,7 @@
 program Textview;
 
+{$M 5120, 0, 655360} {Require 5 KB stack}
+
 uses
 	Costalib, UIButton, UITxtbox, MsgDlg, AboutDlg, FileDlg, Graph;
 

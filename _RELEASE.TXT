@@ -20,6 +20,7 @@ when releasing a new version.
 - Update year in LICENSE
 - Update version information in the CONST section of each unit
 - Update information in SVARDOS\APPINFO\COSTA.LSM
+- Make sure {$DEFINE DEBUG} isn't present anywhere
 - Compile all EXE files by running
   MAKE -B all
 - For SvarDOS releases, run
