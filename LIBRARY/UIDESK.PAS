@@ -406,16 +406,17 @@ begin
   GetImage(DrawX, DrawY, DrawX + BufferDimension, DrawY + BufferDimension, BackdropImg^);
 	Mouse.Show;
 
-	{Center mouse on icon}
-	Mouse.Move(DrawX + (BufferDimension div 2), DrawY + (BufferDimension div 2));
-
 	MouseSupport := Mouse.Supported;
+
+	{Center mouse on icon}
 	CursorX := DrawX + (BufferDimension div 2);
 	CursorY := DrawY + (BufferDimension div 2);
+	Mouse.Move(CursorX, CursorY);
 
 	CurGridX := CursorX div LinkGridSize;
 	CurGridY := CursorY div LinkGridSize;
 	ClearInputBuffer;
+
 	repeat
 		Key := GetKey;
 
@@ -430,7 +431,7 @@ begin
 		if Key = KeyEnter then
 			break;
 
-		if MouseSupport and (Length(Key) = 0) then
+		if (Length(Key) = 0) then
 		begin
 			CursorX := Mouse.X;
 			CursorY := Mouse.Y;
@@ -449,7 +450,7 @@ begin
 		if CursorY > MaxY then CursorY := MaxY;
 
 		{If icon is moved with arrow keys, set cursor position}
-		if (CursorX <> Mouse.X) and (CursorY <> Mouse.Y) then
+		if (CursorX <> Mouse.X) or (CursorY <> Mouse.Y) then
 			Mouse.Move(CursorX, CursorY);
 
 		{Calculate grid position}
@@ -480,7 +481,6 @@ begin
 			LastGridY := CurGridY;
 
 			{Reduce flicker}
-			{Sleep(10);} {DEBUG}
 			while (Port[$3DA] and 8) = 0 do;
 		end;
 
