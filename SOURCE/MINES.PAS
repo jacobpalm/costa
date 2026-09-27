@@ -236,6 +236,7 @@ begin
 		MineField^.NewGame;
 		UpdateStatus('');
 		TiStatusClick(nil); {Update time display immediately}
+		LblSound^.AddState(SDirty); {Make sure status label is visible on top of background}
 	end
 	else
 		MineField^.ResumeGame;
