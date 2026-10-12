@@ -226,6 +226,8 @@ begin
 
 	TxtName^.SetText(RTrim(LoadName));
 	TxtAuthor^.SetText(RTrim(LoadAuthor));
+	SelectedObject := Desk;
+	BtnObject^.SetCaption(CAP_OBJECT[Ord(SelectedObject)]);
 	SelectColor(ThemeData.Desk, False);
 	ThemeFile := SelectedFile;
 	PrwTheme^.LoadMem(@ThemeData, LoadName, LoadAuthor);
