@@ -72,7 +72,7 @@ begin
 		FSplit(DirInfo.Name, FDir, FName, FExt);
 
 		Assign(F, '..\DATA\IMAGES\' + DirInfo.Name);
-		FileMode := 0;
+		FileMode := FileRead;
 		{$I-}
 		Reset(F);
 		{$I+}
@@ -112,7 +112,7 @@ begin
 		{IFDEF DEBUG}
 			{Test reading the image back}
 			Assign(outputfile, '..\ICONS\'+FName+'.BIN');
-			FileMode := 0;
+			FileMode := FileRead;
 			{$I-}
 			Reset(outputfile, 1);
 			{$I+}
@@ -149,6 +149,7 @@ var
 	FDir: DirStr;
 	FName: NameStr;
 	FExt: ExtStr;
+	ErrCode: Integer;
 begin
 	FindFirst('..\DATA\THEMES\*.RAW', Archive, DirInfo);
 	while DosError = 0 do
@@ -157,10 +158,11 @@ begin
 		FSplit(DirInfo.Name, FDir, FName, FExt);
 
 		Assign(F, '..\DATA\THEMES\' + DirInfo.Name);
-		FileMode := 0;
+		FileMode := FileRead;
 		{$I-}
 		Reset(F);
 		{$I+}
+		ErrCode := IOResult; {Clear IOResult}
 
 		FillChar(ThemeAuthor, SizeOf(ThemeAuthor), 0);
 		FillChar(ThemeName, SizeOf(ThemeName), 0);
@@ -237,7 +239,7 @@ begin
 		FSplit(DirInfo.Name, FDir, FName, FExt);
 
 		Assign(F, '..\DATA\CONFIG\'+FName+'.RAW');
-		FileMode := 0;
+		FileMode := FileRead;
 		{$I-}
 		Reset(F);
 		{$I+}

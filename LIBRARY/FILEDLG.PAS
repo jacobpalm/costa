@@ -485,6 +485,7 @@ end;
 function FileSelect(DefaultPattern, StartPath: string): string;
 var
 	OriginalPath: string;
+	ErrCode: Integer;
 begin
 	ReturnedFile := '';
 	Pattern := DefaultPattern;
@@ -509,6 +510,7 @@ begin
 	{$I-}
 	ChDir(OriginalPath); {Restore original path}
 	{$I+}
+	ErrCode := IOResult; {Clear IOResult}
 end;
 
 end.

@@ -259,11 +259,11 @@ type
 			procedure   LoadSystemSettings;
 			function    SaveSystemSettings: boolean;
 
-			procedure   SetConfigFile(Filename: String; Ptr: pointer; MemSize: Integer);
+			procedure   SetConfigFile(FileName: String; Ptr: pointer; MemSize: Integer);
 			function    LoadSettings: boolean;
 			function    SaveSettings: boolean;
 
-			procedure   LoadTheme(Filename: string);
+			procedure   LoadTheme(FileName: string);
 
 			procedure   OpenWindow(Win: PWindow);
 			procedure   CloseWindow;
@@ -272,7 +272,7 @@ type
 			procedure   Terminate;
 		private
 			Window:     PWindowNode;
-			ConfFile:   String[8];   {Filename without extension of apps config file, if any}
+			ConfFile:   String[8];   {FileName without extension of apps config file, if any}
 			ConfPtr:    Pointer;     {Pointer to, and size off, app config - usually a Record type declared by user}
 			ConfLen:    Integer;
 	end;
@@ -296,7 +296,6 @@ type
 	end;
 
 	{Settings for the library, saved to disk}
-	PLibSetting = ^TLibSetting;
 	TLibSetting = record
 		Audio:       Boolean;
 		ThmFile:     string[8];
@@ -331,7 +330,7 @@ var
 	NoParent:       PContainer;  {Null parent pointer, used when creating top-level windows}
 
 function  FileExists(const FileName: string): Boolean;
-function  Valid8dot3(Filename: string): Boolean;
+function  Valid8dot3(FileName: string): Boolean;
 
 procedure ClearInputBuffer;
 function  GetKey: string;
@@ -507,6 +506,8 @@ begin
 	MkDir('ICONS');
 	MkDir('THEMES');
 	{$I+}
+	{Clear IOResult}
+	ErrorCode := IOResult;
 
 	{Load settings and theme}
 	Self.LoadSystemSettings;
@@ -604,7 +605,7 @@ begin
 	Path := ProgramPath;
 end;
 
-procedure TApplication.LoadTheme(Filename: String);
+procedure TApplication.LoadTheme(FileName: String);
 var
 	ThemeFile: string;
 	F: file;
@@ -630,10 +631,10 @@ begin
 	ExpectedSize := SizeOf(TTheme) + 42;
 
 	{If no filename specified, use default theme}
-	if Length(Filename) = 0 then
-		Filename := 'DEFAULT';
+	if Length(FileName) = 0 then
+		FileName := 'DEFAULT';
 
-	ThemeFile := Self.Path + 'THEMES\' + Filename + '.BIN';
+	ThemeFile := Self.Path + 'THEMES\' + FileName + '.BIN';
 	if FileExists(ThemeFile) then
 	begin
 		Assign(F, ThemeFile);
@@ -656,31 +657,25 @@ end;
 procedure TApplication.LoadSystemSettings;
 var
 	F: file;
+	FileName: String;
 begin
+	FileName := Self.Path + GlobalSettings;
+	if not FileExists(FileName) then
+		Exit;
 
-	{Set defaults - will be overwritten if settings file loads successfully}
-	FillChar(Setting, SizeOf(TLibSetting), 0);
-	Setting.Audio       := False;
-	Setting.ThmFile     := 'DEFAULT';
-
-	if not FileExists(Self.Path + GlobalSettings) then
-		exit;
-
-	Assign(F, Self.Path + GlobalSettings);
-	FileMode := FileRead;
+	Assign(F, FileName);
 	{$I-}
 	Reset(F, 1);
 	{$I+}
+
+	{If file couldn't be opened for read, exit procedure}
 	if IOResult <> 0 then
-		exit;
+		Exit;
 
-	if FileSize(F) <> SizeOf(TLibSetting) then
-	begin
-		Close(F);
-		exit;
-	end;
+	{If filesize matches expectation, load settings from it}
+	if FileSize(F) = SizeOf(Setting) then
+		BlockRead(F, Setting, SizeOf(Setting));
 
-	BlockRead(F, Setting, SizeOf(TLibSetting));
 	Close(F);
 end;
 
@@ -702,10 +697,10 @@ begin
 	SaveSystemSettings := True;
 end;
 
-procedure TApplication.SetConfigFile(Filename: String; Ptr: pointer; MemSize: Integer);
+procedure TApplication.SetConfigFile(FileName: String; Ptr: pointer; MemSize: Integer);
 begin
 	{Input validation - anything off? Then clear everything to be safe}
-	if (Length(Filename) > 8) or (Length(FileName) < 1) or
+	if (Length(FileName) > 8) or (Length(FileName) < 1) or
 		 (Ptr = nil) or (MemSize < 1) then
 	begin
 		ConfFile := '';
@@ -714,7 +709,7 @@ begin
 		exit;
 	end;
 
-	ConfFile := Filename;
+	ConfFile := FileName;
 	ConfPtr := Ptr;
 	ConfLen := MemSize;
 end;
@@ -722,7 +717,7 @@ end;
 function TApplication.LoadSettings: boolean;
 var
 	F: file;
-	Filename: String;
+	FileName: String;
 begin
 	{Validate config vars before attempting load}
 	if (ConfPtr = nil) or (Length(ConfFile) = 0) or (ConfLen < 1) then
@@ -731,20 +726,19 @@ begin
 		Exit;
 	end;
 
-	Filename := Self.Path + 'CONFIG\' + ConfFile + '.BIN';
+	FileName := Self.Path + 'CONFIG\' + ConfFile + '.BIN';
 
-	if not FileExists(Filename) then
+	if not FileExists(FileName) then
 	begin
 		LoadSettings := false;
 		Exit;
 	end;
 
-	Assign(F, Filename);
+	Assign(F, FileName);
 	FileMode := FileRead;
 	{$I-}
 	Reset(F, 1);
 	{$I+}
-	FileMode := 2;
 	if IOResult <> 0 then
 	begin
 		LoadSettings := false;
@@ -766,7 +760,7 @@ end;
 function TApplication.SaveSettings: boolean;
 var
 	F: file;
-	Filename: String;
+	FileName: String;
 begin
 	{Validate config vars before attempting load}
 	if (ConfPtr = nil) or (Length(ConfFile) = 0) or (ConfLen < 1) then
@@ -775,9 +769,9 @@ begin
 		Exit;
 	end;
 
-	Filename := Self.Path + 'CONFIG\' + ConfFile + '.BIN';
+	FileName := Self.Path + 'CONFIG\' + ConfFile + '.BIN';
 
-	Assign(F, Filename);
+	Assign(F, FileName);
 	{$I-}
 	Rewrite(F, 1);
 	{$I+}
@@ -905,36 +899,36 @@ begin
 	FileExists := (DosError = 0);
 end;
 
-function Valid8dot3(Filename: string): Boolean;
+function Valid8dot3(FileName: string): Boolean;
 var
 	DotPos, NameLen, ExtLen, i: Integer;
 begin
 	Valid8dot3 := false;
 
-	if Length(Filename) = 0 then
+	if Length(FileName) = 0 then
 		exit;
 
-	DotPos := Pos('.', Filename);
+	DotPos := Pos('.', FileName);
 	if DotPos = 0 then
 	begin
-		{Filename does not include extension}
-		NameLen := Length(Filename);
+		{FileName does not include extension}
+		NameLen := Length(FileName);
 		if (NameLen > 8) then
 		exit;
 	end
 	else
 	begin
-		{Filename includes extension}
+		{FileName includes extension}
 		NameLen := DotPos - 1;
-		ExtLen := Length(Filename) - DotPos;
+		ExtLen := Length(FileName) - DotPos;
 
 		if (NameLen > 8) or (ExtLen > 3) then
 			exit;
 	end;
 
 	{Check for invalid characters}
-	for i := 1 to Length(Filename) do
-		if not (Filename[i] in ['A'..'Z', 'a'..'z', '0'..'9', '_', '~',
+	for i := 1 to Length(FileName) do
+		if not (FileName[i] in ['A'..'Z', 'a'..'z', '0'..'9', '_', '~',
 		                        '!', '@', '#', '$', '%', '^', '&', '(',
 		                        ')', '-', '{', '}', '''', '.']) then
 			exit;
