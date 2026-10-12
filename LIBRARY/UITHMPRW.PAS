@@ -88,25 +88,42 @@ procedure TThemePreview.Draw;
 var
 	OldTheme: String[8];
 begin
-	{Set positions and sizes of preview objects based on current size of preview frame}
-	ImgPreviewLink^.Move(12, Height - 48);
-	LblPreviewLink^.Move(56, Height - 41);
-	WinPreview^.Move(12, 10);
-	WinPreview^.Resize(Width - 28, 121);
-	ImgPreview^.Move(6, 6);
-	LblPreviewInfo^.Move(50, 13);
-
-	TxtPreview^.Move(6, 51);
-	TxtPreview^.Resize(WinPreview^.Width - 23, TxtPreview^.Height);
-	BtnPreview1^.Move(6, WinPreview^.Height - 40);
-	BtnPreview2^.Move(WinPreview^.Width - 110, WinPreview^.Height - 40);
-
 	{If a theme file is loaded, apply it for preview}
 	if ThemeLoaded then
 		Thm := ThemeData;
 
 	{Set frame background color}
 	Self.BGColor := Thm.Desk;
+
+	{Set positions and sizes of preview objects based on current size of preview frame,
+	 and colors based on current theme}
+	WinPreview^.SetBgColor(Thm.Win);
+	WinPreview^.Move(12, 10);
+	WinPreview^.Resize(Width - 28, 121);
+	ImgPreview^.Move(6, 6);
+	LblPreviewInfo^.SetFgColor(Thm.WinText);
+	LblPreviewInfo^.Move(50, 13);
+	TxtPreview^.SetFgColor(Thm.TxtText);
+	TxtPreview^.SetBgColor(Thm.Txt);
+	TxtPreview^.Move(6, 51);
+	TxtPreview^.Resize(WinPreview^.Width - 23, TxtPreview^.Height);
+	with BtnPreview1^ do
+	begin
+		SetFgColor(Thm.WinText);
+		SetBgColor(Thm.Btn);
+		Move(6, WinPreview^.Height - 40);
+	end;
+	with BtnPreview2^ do
+	begin
+		SetFgColor(Thm.WinText);
+		SetBgColor(Thm.Btn);
+		Move(WinPreview^.Width - 110, WinPreview^.Height - 40);
+	end;
+
+	{Link on "desktop"}
+	ImgPreviewLink^.Move(12, Height - 48);
+	LblPreviewLink^.SetFgColor(Thm.DeskText);
+	LblPreviewLink^.Move(56, Height - 41);
 
 	{Draw the container, which will also draw its children}
 	Inherited Draw;
