@@ -82,3 +82,21 @@ KeyCtrlHome  = #0 + #119;
 KeyCtrlEnd   = #0 + #117;
 KeyCtrlPgDwn = #0 + #118;
 KeyCtrlPgUp  = #0 + #132;
+
+KeyNumpad0   = #0 + #82;
+KeyNumpad1   = #0 + #79;
+KeyNumpad2   = #0 + #80;
+KeyNumpad3   = #0 + #81;
+KeyNumpad4   = #0 + #75;
+KeyNumpad5   = #0 + #76;
+KeyNumpad6   = #0 + #77;
+KeyNumpad7   = #0 + #71;
+KeyNumpad8   = #0 + #72;
+KeyNumpad9   = #0 + #73;
+
+KeyNumpadDec = #0 + #83;
+KeyNumpadMul = #0 + #55;
+KeyNumpadSub = #0 + #74;
+KeyNumpadAdd = #0 + #78;
+KeyNumpadEnt = #0 + #156;
+KeyNumpadDiv = #0 + #181;

@@ -56,6 +56,7 @@ var
 	BtnAbout,
 	BtnExit:             PButton;
 	FrmClientArea:       PFrame;
+	MenuBar:             PMenuBar;
 
 	HkBackspace,
 	HkEscape:            PHotKey;
@@ -453,23 +454,24 @@ begin
 		Width := ScreenWidth;
 		Height := ScreenHeight;
 		BorderStyle := BorNone;
+		MenuBar := EnableMenu;
 	end;
 
-	New(BtnLog, Init(2, 2, CAP_SHOW_LOG, WinMain));
+	New(BtnLog, Init(2, 2, CAP_SHOW_LOG, MenuBar));
 	With BtnLog^ do
 	begin
 		OnClick := BtnLogClick;
 		AddHotkey(KeyAltL);
 	end;
 
-	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
+	New(BtnAbout, Init(446, 2, CAP_ABOUT, MenuBar));
 	With BtnAbout^ do
 	begin
 		OnClick := BtnAboutClick;
 		AddHotKey(KeyAltA);
 	end;
 
-	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
+	New(BtnExit, Init(545, 2, CAP_EXIT, MenuBar));
 	With BtnExit^ do
 	begin
 		OnClick := BtnExitClick;
@@ -526,6 +528,17 @@ begin
 		BtnNumb[i]^.OnClick := BtnNumbClick;
 		BtnNumb[i]^.AddHotKey(Char(Ord('0') + i));
 	end;
+	BtnNumb[0]^.AddHotkey(KeyNumpad0);
+	BtnNumb[1]^.AddHotkey(KeyNumpad1);
+	BtnNumb[2]^.AddHotkey(KeyNumpad2);
+	BtnNumb[3]^.AddHotkey(KeyNumpad3);
+	BtnNumb[4]^.AddHotkey(KeyNumpad4);
+	BtnNumb[5]^.AddHotkey(KeyNumpad5);
+	BtnNumb[6]^.AddHotkey(KeyNumpad6);
+	BtnNumb[7]^.AddHotkey(KeyNumpad7);
+	BtnNumb[8]^.AddHotkey(KeyNumpad8);
+	BtnNumb[9]^.AddHotkey(KeyNumpad9);
+
 	New(BtnDecimal, Init(112, 170, '.', FrmCalc));
 	With BtnDecimal^ do
 	begin
@@ -533,6 +546,7 @@ begin
 		OnClick := BtnDecimalClick;
 		AddHotKey('.'); {Add both so it works with both decimal signs}
 		AddHotKey(',');
+		AddHotkey(KeyNumpadDec);
 	end;
 
 	{Clear and Clear Everything buttons}
@@ -558,6 +572,7 @@ begin
 		Width := 40;
 		OnClick := BtnOperatorClick;
 		AddHotKey('/');
+		AddHotKey(KeyNumpadDiv);
 	end;
 	New(BtnMultiply, Init(162, 38, '*', FrmCalc));
 	With BtnMultiply^ do
@@ -565,6 +580,7 @@ begin
 		Width := 40;
 		OnClick := BtnOperatorClick;
 		AddHotKey('*');
+		AddHotKey(KeyNumpadMul);
 	end;
 	New(BtnSubstract, Init(162, 71, '-', FrmCalc));
 	With BtnSubstract^ do
@@ -572,6 +588,7 @@ begin
 		Width := 40;
 		OnClick := BtnOperatorClick;
 		AddHotKey('-');
+		AddHotKey(KeyNumpadSub);
 	end;
 	New(BtnAdd, Init(162, 104, '+', FrmCalc));
 	With BtnAdd^ do
@@ -579,6 +596,7 @@ begin
 		Width := 40;
 		OnClick := BtnOperatorClick;
 		AddHotKey('+');
+		AddHotKey(KeyNumpadAdd);
 	end;
 
 	New(BtnEquals, Init(162, 137, '=', FrmCalc));
@@ -589,6 +607,7 @@ begin
 		OnClick := BtnEqualsClick;
 		AddHotKey('=');
 		AddHotKey(KeyEnter);
+		AddHotkey(KeyNumpadEnt);
 	end;
 
 	New(AreaLog, Init(240, 11, FrmClientArea));
