@@ -946,12 +946,12 @@ begin
 				SoundNote(400, 30);
 			end;
 		SLoose:
-			for i := 0 to 8 do
+			for i := 0 to 2 do
 			begin
-				SoundNote(37, 15);
-				SoundNote(50, 15);
-				SoundNote(37, 5);
-				SoundNote(65, 10);
+				SoundNote(37, 8);
+				SoundNote(50, 8);
+				SoundNote(37, 2);
+				SoundNote(65, 4);
 			end;
 		SClear:
 				SoundNote(400, 30);

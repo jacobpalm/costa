@@ -52,6 +52,7 @@ var
 
 	App:        PApplication;
 	WinMain:    PWindow;
+	MenuBar:    PMenuBar;
 
 	BtnOpen, BtnPageUp, BtnPageDown, BtnAbout, BtnExit: PButton;
 	HkUp, HkDown, HkHome, HkEnd: PHotkey;
@@ -403,16 +404,17 @@ begin
 		Height := ScreenHeight;
 		OnDraw := WinMainDraw;
 		BorderStyle := BorNone;
+		MenuBar := EnableMenu;
 	end;
 
-	New(BtnOpen, Init(3, 2, CAP_OPEN, WinMain));
+	New(BtnOpen, Init(3, 2, CAP_OPEN, MenuBar));
 	with BtnOpen^ do
 	begin
 		OnClick := BtnOpenClick;
 		AddHotkey(KeyAltO);
 	end;
 
-	New(BtnPageUp, Init(102, 2, CAP_PAGE_UP, WinMain));
+	New(BtnPageUp, Init(102, 2, CAP_PAGE_UP, MenuBar));
 	with BtnPageUp^ do
 	begin
 		OnClick := PageScrollEvent;
@@ -421,7 +423,7 @@ begin
 		AddHotkey(KeyPageUp);
 	end;
 
-	New(BtnPageDown, Init(201, 2, CAP_PAGE_DOWN, WinMain));
+	New(BtnPageDown, Init(201, 2, CAP_PAGE_DOWN, MenuBar));
 	with BtnPageDown^ do
 	begin
 		OnClick := PageScrollEvent;
@@ -430,14 +432,14 @@ begin
 		AddHotkey(KeyPageDown);
 	end;
 
-	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
+	New(BtnAbout, Init(446, 2, CAP_ABOUT, MenuBar));
 	with BtnAbout^ do
 	begin
 		OnClick := BtnAboutClick;
 		AddHotkey(KeyAltA);
 	end;
 
-	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
+	New(BtnExit, Init(545, 2, CAP_EXIT, MenuBar));
 	with BtnExit^ do
 	begin
 		OnClick := BtnExitClick;

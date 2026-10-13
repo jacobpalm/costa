@@ -11,9 +11,9 @@ begin
 	Width            := DefaultW;
 	Height           := DefaultH;
 	DoClose          := False;
+	MenuBarObj       := nil;
 	OnRun            := nil;
 	OnClose          := nil;
-	MenuObj          := nil;
 	BackdropP        := nil;
 	BackdropS        := 0;
 	PreserveBackdrop := False;
@@ -147,10 +147,29 @@ begin
 	Self.DoClose := True;
 end;
 
+function TWindow.EnableMenu: PMenuBar;
+begin
+	{If already initialized, make sure it is visible - otherwise create new instance}
+	if Assigned(Self.MenuBarObj) then
+		Self.MenuBarObj^.RemoveState(SHidden)
+	else
+		New(Self.MenuBarObj, Init(@Self));
+
+	EnableMenu := Self.MenuBarObj;
+end;
+
+procedure TWindow.DisableMenu;
+begin
+	if Assigned(Self.MenuBarObj) then
+		Self.MenuBarObj^.AddState(SHidden);
+end;
+
 destructor TWindow.Done;
 begin
 	if Assigned(BackdropP) then
 		FreeMem(BackdropP, BackdropS);
+
+	{No need to clean up MenuBarObj, it's a child object like any other}
 
 	{Call ancestor destructor for properties that aren't specific to TWindow}
 	inherited Done;

@@ -19,7 +19,8 @@ const
 	ScreenHeight         = 349;
 	MaxColor             = 15;
 
-	MenuItemHeight       = 16;   {Height of a menu item in pixels}
+	MenuBarHeight        = 28;   {Used when setting height of menu bar, and when calculating offset for
+	                              other child objects in windows}
 
 	CharArrowUp:    Char = #24;  {Arrows symbols for fonts}
 	CharArrowDown:  Char = #25;
@@ -77,8 +78,7 @@ type
 	PWindow      = ^TWindow;
 	PWindowNode  = ^TWindowNode;
 	PContainer   = ^TContainer;
-	PMenu        = ^TMenu;
-	PMenuItem    = ^TMenuItem;
+	PMenuBar     = ^TMenuBar;
 
 	{Event procedure type, to ensure all event procedures have the same signature}
 	TEventProc   = procedure(Sender: PUIObject);
@@ -88,13 +88,10 @@ type
 	TState       = (SEnabled, SHidden, SActive, SSelected, SDirty);
 	TStateSet    = set of TState;
 
-	TBorderStyle = (BorNone, Bor3D, Bor3DSunken, BorFrame, BorDialog, BorHorSeparator, BorVerSeparator);
+	TBorderStyle = (BorNone, Bor3D, Bor3DSunken, BorFrame, BorDialog, BorHorSeparator, BorVerSeparator, Bor3DBottom);
 
 	TOrientation = (OrHorizontal, OrVertical, OrBoth); {Orientation for centering objects}
 	TAlign       = (AlLeft, AlCenter, AlRight);        {Text alignment}
-
-	{Menu types}
-	TMenuStyle   = (MsPopup, MsMenuBar);
 
 	{Linked list of hotkeys, to allow multiple hotkeys per object}
 	THotkeyNode = record
@@ -178,7 +175,7 @@ type
 			procedure   Draw; virtual;
 			procedure   DrawChildren;
 			procedure   DrawDirtyObjects;
-			procedure   GetClientArea(var X, Y: Integer; Var W, H: Word);
+			procedure   GetClientArea(var X, Y: Integer; var W, H: Word);
 			function    IsContainer: boolean; virtual;
 		private
 			Objects:    PObjectNode; {Linked list of objects in the container}
@@ -199,11 +196,12 @@ type
 			procedure   Run;
 			procedure   Close;
 
-			procedure   SaveBackdrop;
+			function    EnableMenu: PMenuBar;
+			procedure   DisableMenu;
 
-			{procedure   SetMenuBar(MenuBar: PMenu);}
+			procedure   SaveBackdrop;
 		private
-			MenuObj:          PMenu;           {Menu bar object, if any}
+			MenuBarObj:       PMenuBar;        {Menu bar - in effect just a container at top of window}
 			DoClose:          Boolean;         {Set to true to close the window by exiting Run loop}
 			PreserveBackdrop: Boolean;         {If true, backdrop is preserved when window is drawn and restored when closed}
 			BackdropP:        Pointer;         {Stores background image to restore when window is closed}
@@ -217,27 +215,12 @@ type
 		Next:    PWindowNode;
 	end;
 
-	{Menu object, placed at the top of a window or displayed as a popup menu}
-	TMenu = object(TContainer)
+	{Menu bar object, attached to top of a window to display command buttons}
+	TMenuBar = object(TContainer)
 		public
-			constructor Init(Style: TMenuStyle; Parent: PContainer);
-			destructor  Done; virtual;
-			procedure   Draw; virtual;
-			procedure   AddMenuItem(Item: PMenuItem);
-		private
-			MenuStyle:  TMenuStyle;
-	end;
+			constructor Init(Parent: PContainer);
 
-	{Menu item object, to be added to a menu}
-	TMenuItem = object(TUIObject)
-		public
-			constructor Init(Cap: string; AsSeperator: Boolean; Parent: PMenu);
-			destructor  Done; virtual;
-			procedure   CheckEvent; virtual;
 			procedure   Draw; virtual;
-		private
-			Caption:   string;
-			Seperator: Boolean;
 	end;
 
 	{Main application object, to which windows can be added}
@@ -423,7 +406,9 @@ end;
 	end;
 {$ENDIF}
 
-
+{----------------------------------------------------------------------------}
+{ Base UI object implementation }
+{----------------------------------------------------------------------------}
 {$I UIOBJECT.INC}
 
 {----------------------------------------------------------------------------}
@@ -446,8 +431,6 @@ begin
 		{Trigger OnClick event, if assigned}
 		Self.Click;
 end;
-
-{$I UIMENU.INC}
 
 {----------------------------------------------------------------------------}
 { Application object implementation }
@@ -612,10 +595,10 @@ var
 	ExpectedSize: LongInt;
 begin
 	{Default colors - will be overwritten if theme file loads successfully}
-	Thm.Desk      := Cyan;
+	Thm.Desk      := LightBlue;
 	Thm.DeskText  := Black;
-	Thm.Win       := LightGray;
-	Thm.Btn       := LightGray;
+	Thm.Win       := Cyan;
+	Thm.Btn       := Cyan;
 	Thm.Txt       := White;
 	Thm.TxtText   := Black;
 	Thm.WinText   := Black;
@@ -785,9 +768,20 @@ begin
 	SaveSettings := true;
 end;
 
+{----------------------------------------------------------------------------}
+{ Container object implementation }
+{----------------------------------------------------------------------------}
 {$I UICONT.INC}
 
+{----------------------------------------------------------------------------}
+{ Window object implementation }
+{----------------------------------------------------------------------------}
 {$I UIWINDOW.INC}
+
+{----------------------------------------------------------------------------}
+{ Menu bar object implementation }
+{----------------------------------------------------------------------------}
+{$I UIMENU.INC}
 
 {----------------------------------------------------------------------------}
 { Mouse object implementation }

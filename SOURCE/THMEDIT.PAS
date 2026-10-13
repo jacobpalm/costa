@@ -66,6 +66,7 @@ var
 	LblObject,
 	LblColor:         PLabel;
 	HkNextColor:      PHotkey;
+	MenuBar:          PMenuBar;
 
 	ThemeFile:        String;
 	ThemeChanged:     Boolean;
@@ -392,45 +393,46 @@ begin
 		Height := ScreenHeight;
 		OnRun := WinMainRun;
 		BorderStyle := BorNone;
+		MenuBar := EnableMenu;
 	end;
 
 	{Main screen}
-	New(BtnNew, Init(2, 2, CAP_NEW, WinMain));
+	New(BtnNew, Init(2, 2, CAP_NEW, MenuBar));
 	with BtnNew^ do
 	begin
 		OnClick := NewTheme;
 		AddHotKey(KeyAltN);
 	end;
 
-	New(BtnOpen, Init(101, 2, CAP_OPEN, WinMain));
+	New(BtnOpen, Init(101, 2, CAP_OPEN, MenuBar));
 	with BtnOpen^ do
 	begin
 		OnClick := LoadTheme;
 		AddHotKey(KeyAltO);
 	end;
 
-	New(BtnSave, Init(200, 2, CAP_SAVE, WinMain));
+	New(BtnSave, Init(200, 2, CAP_SAVE, MenuBar));
 	with BtnSave^ do
 	begin
 		OnClick := BtnSaveClick;
 		AddHotKey(KeyAltS);
 	end;
 
-	New(BtnSaveAs, Init(299, 2, CAP_SAVE_AS, WinMain));
+	New(BtnSaveAs, Init(299, 2, CAP_SAVE_AS, MenuBar));
 	with BtnSaveAs^ do
 	begin
 		OnClick := BtnSaveClick;
 		AddHotKey(KeyAltV);
 	end;
 
-	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
+	New(BtnAbout, Init(446, 2, CAP_ABOUT, MenuBar));
 	with BtnAbout^ do
 	begin
 		OnClick := BtnAboutClick;
 		AddHotKey(KeyAltA);
 	end;
 
-	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
+	New(BtnExit, Init(545, 2, CAP_EXIT, MenuBar));
 	with BtnExit^ do
 	begin
 		OnClick := BtnExitClick;

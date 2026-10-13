@@ -50,21 +50,27 @@ const
 
 var
 	{UI objects}
-	App: PApplication;
-	WinMain: PWindow;
-	BtnNew, BtnOpen, BtnSave, BtnSaveAs: PButton;
-	BtnExit, BtnAbout: PButton;
-	AreaPreview: PArea;
-	Canvas: PIconCanvas;
-	BtnPencil, BtnFloodFill: PButton;
-	AreaColor: array[0..MaxColor] of PArea;
-	LblPreview, LblColor: PLabel;
+	App:          PApplication;
+	WinMain:      PWindow;
+	BtnNew,
+	BtnOpen,
+	BtnSave,
+	BtnSaveAs,
+	BtnExit,
+	BtnAbout:     PButton;
+	AreaPreview:  PArea;
+	Canvas:       PIconCanvas;
+	BtnPencil,
+	BtnFloodFill: PButton;
+	AreaColor:    array[0..MaxColor] of PArea;
+	LblPreview,
+	LblColor:     PLabel;
+	MenuBar:      PMenuBar;
 
-	HkColor: PHotkey;
+	HkColor:      PHotkey;
 
 {Forward declarations}
 function UnsavedChangesToKeep: Boolean; forward;
-
 
 
 {SetDrawColor changes the currently selected drawing color and moves the
@@ -285,39 +291,40 @@ begin
 		Width := ScreenWidth;
 		Height := ScreenHeight;
 		BorderStyle := BorNone;
+		MenuBar := EnableMenu;
 	end;
 
-	New(BtnNew, Init(2, 2, CAP_NEW, WinMain));
+	New(BtnNew, Init(2, 2, CAP_NEW, MenuBar));
 	With BtnNew^ do
 	begin
 		OnClick := BtnNewClick;
 		AddHotkey(KeyAltN);
 	end;
-	New(BtnOpen, Init(101, 2, CAP_OPEN, WinMain));
+	New(BtnOpen, Init(101, 2, CAP_OPEN, MenuBar));
 	With BtnOpen^ do
 	begin
 		OnClick := BtnOpenClick;
 		AddHotkey(KeyAltO);
 	end;
-	New(BtnSave, Init(200, 2, CAP_SAVE, WinMain));
+	New(BtnSave, Init(200, 2, CAP_SAVE, MenuBar));
 	With BtnSave^ do
 	begin
 		OnClick := BtnSaveClick;
 		AddHotkey(KeyAltS);
 	end;
-	New(BtnSaveAs, Init(299, 2, CAP_SAVE_AS, WinMain));
+	New(BtnSaveAs, Init(299, 2, CAP_SAVE_AS, MenuBar));
 	With BtnSaveAs^ do
 	begin
 		OnClick := BtnSaveClick;
 		AddHotkey(KeyAltV);
 	end;
-	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
+	New(BtnAbout, Init(446, 2, CAP_ABOUT, MenuBar));
 	With BtnAbout^ do
 	begin
 		OnClick := BtnAboutClick;
 		AddHotkey(KeyAltA);
 	end;
-	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
+	New(BtnExit, Init(545, 2, CAP_EXIT, MenuBar));
 	With BtnExit^ do
 	begin
 		OnClick := BtnExitClick;

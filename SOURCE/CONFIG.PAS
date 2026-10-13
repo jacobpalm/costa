@@ -71,6 +71,7 @@ var
 	LblTheme,
 	LblNoThemes:    PLabel;
 	ChkSetting:     array[0..5] of PCheckbox;
+	MenuBar:        PMenuBar;
 
 	{Shared variables}
 	NewThemeList:   PThemeList;
@@ -255,15 +256,16 @@ begin
 		Height := ScreenHeight;
 		OnRun := WinMainRun;
 		BorderStyle := BorNone;
+		MenuBar := EnableMenu;
 	end;
 
-	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
+	New(BtnAbout, Init(446, 2, CAP_ABOUT, MenuBar));
 	with BtnAbout^ do
 	begin
 		OnClick := BtnAboutClick;
 		AddHotkey(KeyAltA);
 	end;
-	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
+	New(BtnExit, Init(545, 2, CAP_EXIT, MenuBar));
 	with BtnExit^ do
 	begin
 		OnClick := BtnExitClick;

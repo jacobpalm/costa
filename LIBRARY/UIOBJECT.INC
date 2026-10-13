@@ -172,6 +172,7 @@ begin
 		BorHorSeparator,
 		BorVerSeparator: GetBorderWidth := 2;
 		BorDialog:       GetBorderWidth := 6;
+		Bor3DBottom:     GetBorderWidth := 0;
 	end;
 end;
 
@@ -237,6 +238,17 @@ begin
 		Line(X2 - 1, Y1 + 2, X2 - 1, Y2 - 1);
 		Line(X1 + 2, Y2 - 1, X2 - 2, Y2 - 1);
 		Exit;
+	end;
+
+	if Self.BorderStyle = Bor3DBottom then
+	begin
+			{Bottom border}
+			SetColor(Black);
+			Line(X1, Y2, X2, Y2);
+			{Inner border}
+			SetColor(Thm.Shadow);
+			Line(X1, Y2 - 1, X2, Y2 - 1);
+			Exit;
 	end;
 
 	if Self.BorderStyle = BorFrame then

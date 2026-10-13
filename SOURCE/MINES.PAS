@@ -50,6 +50,7 @@ var
 	LblTime,
 	LblSound:    PLabel;
 	CFieldAlign: PContainer;
+	MenuBar:     PMenuBar;
 
 	{Size dialog window}
 	WinSetSize:  PWindow;
@@ -360,39 +361,40 @@ begin
 		BgColor := DarkGray;
 		OnDraw := WinMainDraw;
 		BorderStyle := BorNone;
+		MenuBar := EnableMenu;
 	end;
 
-	New(BtnNew, Init(3, 2, CAP_NEW_GAME, WinMain));
+	New(BtnNew, Init(3, 2, CAP_NEW_GAME, MenuBar));
 	With BtnNew^ do
 	begin
 		OnClick := BtnNewClick;
 		AddHotKey(KeyAltN);
 	end;
-	New(BtnPause, Init(102, 2, CAP_PAUSE, WinMain));
+	New(BtnPause, Init(102, 2, CAP_PAUSE, MenuBar));
 	With BtnPause^ do
 	begin
 		OnClick := BtnPauseClick;
 		AddHotKey(KeyAltP);
 	end;
-	New(BtnSetSize, Init(201, 2, CAP_SIZE, WinMain));
+	New(BtnSetSize, Init(201, 2, CAP_SIZE, MenuBar));
 	With BtnSetSize^ do
 	begin
 		OnClick := BtnSetSizeClick;
 		AddHotKey(KeyAltZ);
 	end;
-	New(BtnSound, Init(300, 2, CAP_SOUND, WinMain));
+	New(BtnSound, Init(300, 2, CAP_SOUND, MenuBar));
 	With BtnSound^ do
 	begin
 		OnClick := BtnSoundClick;
 		AddHotKey(KeyAltS);
 	end;
-	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
+	New(BtnAbout, Init(446, 2, CAP_ABOUT, MenuBar));
 	With BtnAbout^ do
 	begin
 		OnClick := BtnAboutClick;
 		AddHotKey(KeyAltA);
 	end;
-	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
+	New(BtnExit, Init(545, 2, CAP_EXIT, MenuBar));
 	With BtnExit^ do
 	begin
 		OnClick := BtnExitClick;

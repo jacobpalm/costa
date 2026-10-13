@@ -49,11 +49,11 @@ begin
 	if SHidden in State then
 		exit;
 
+	{Call inherited Draw to handle state etc. and allow OnDraw events before drawing children}
+	TUIObject.Draw;
+
 	{TContainer has no visible element, so just draw its children}
 	DrawChildren;
-
-	{Call inherited Draw to handle state etc.}
-	TUIObject.Draw;
 end;
 
 procedure TContainer.CheckEvent;

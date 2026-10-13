@@ -87,10 +87,10 @@ var
 	BtnAbout,
 	BtnExit:       PButton;
 	FrmTic:        PFrame;
-
 	LblMessage,
 	LblPlayers,
 	LblSound:      PLabel;
+	MenuBar:       PMenuBar;
 
 	PlayField:     Array[1..3, 1..3] of PField;
 
@@ -671,6 +671,7 @@ begin
 		OnRun := WinMainRun;
 		BorderStyle := BorNone;
 		BgColor := Green;
+		MenuBar := EnableMenu;
 	end;
 
 	New(FrmTic, Init(209, 80, WinMain));
@@ -691,42 +692,42 @@ begin
 		end;
 	end;
 
-	PlayField[1, 3]^.AddHotkey('1');
-	PlayField[2, 3]^.AddHotkey('2');
-	PlayField[3, 3]^.AddHotkey('3');
-	PlayField[1, 2]^.AddHotkey('4');
-	PlayField[2, 2]^.AddHotkey('5');
-	PlayField[3, 2]^.AddHotkey('6');
-	PlayField[1, 1]^.AddHotkey('7');
-	PlayField[2, 1]^.AddHotkey('8');
-	PlayField[3, 1]^.AddHotkey('9');
+	PlayField[1, 3]^.AddHotkey(KeyNumpad1);
+	PlayField[2, 3]^.AddHotkey(KeyNumpad2);
+	PlayField[3, 3]^.AddHotkey(KeyNumpad3);
+	PlayField[1, 2]^.AddHotkey(KeyNumpad4);
+	PlayField[2, 2]^.AddHotkey(KeyNumpad5);
+	PlayField[3, 2]^.AddHotkey(KeyNumpad6);
+	PlayField[1, 1]^.AddHotkey(KeyNumpad7);
+	PlayField[2, 1]^.AddHotkey(KeyNumpad8);
+	PlayField[3, 1]^.AddHotkey(KeyNumpad9);
 
-	New(BtnNew, Init(2, 2, CAP_NEW_GAME, WinMain));
+	New(BtnNew, Init(2, 2, CAP_NEW_GAME, MenuBar));
 	With BtnNew^ do
 	begin
 		OnClick := BtnNewClick;
 		AddHotkey(KeyAltN);
 	end;
-	New(BtnGameMode, Init(101, 2, CAP_GAME_MODE, WinMain));
+	New(BtnGameMode, Init(101, 2, CAP_GAME_MODE, MenuBar));
 	With BtnGameMode^ do
 	begin
 		OnClick := BtnGameModeClick;
 		AddHotkey(KeyAltM);
 	end;
-	New(BtnSound, Init(200, 2, CAP_SOUND, WinMain));
+	New(BtnSound, Init(200, 2, CAP_SOUND, MenuBar));
 	With BtnSound^ do
 	begin
 		OnClick := BtnSoundClick;
 		AddHotkey(KeyAltS);
 	end;
 
-	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
+	New(BtnAbout, Init(446, 2, CAP_ABOUT, MenuBar));
 	With BtnAbout^ do
 	begin
 		OnClick := BtnAboutClick;
 		AddHotkey(KeyAltA);
 	end;
-	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
+	New(BtnExit, Init(545, 2, CAP_EXIT, MenuBar));
 	With BtnExit^ do
 	begin
 		OnClick := BtnExitClick;

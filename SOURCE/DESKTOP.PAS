@@ -67,6 +67,7 @@ var
 	BtnNext:     PButton;
 	LblDesktop:  PLabel;
 	HkDesktop:   array[1..MaxDesktops] of PHotkey;
+	MenuBar:     PMenuBar;
 
 	DesktopFile: PathStr;
 
@@ -406,28 +407,29 @@ begin
 		Height := ScreenHeight;
 		BorderStyle := BorNone;
 		OnClose := WinMainClose;
+		MenuBar := EnableMenu;
 	end;
 
-	New(BtnAdd, Init(2, 2, CAP_ADD, WinMain));
+	New(BtnAdd, Init(2, 2, CAP_ADD, MenuBar));
 	With BtnAdd^ do
 	begin
 		OnClick := BtnAddClick;
 		AddHotkey(KeyAltD);
 	end;
-	New(BtnRun, Init(101, 2, CAP_RUN, WinMain));
+	New(BtnRun, Init(101, 2, CAP_RUN, MenuBar));
 	With BtnRun^ do
 	begin
 		OnClick := BtnRunClick;
 		AddHotkey(KeyAltR);
 	end;
 
-	New(BtnAbout, Init(446, 2, CAP_ABOUT, WinMain));
+	New(BtnAbout, Init(446, 2, CAP_ABOUT, MenuBar));
 	With BtnAbout^ do
 	begin
 		OnClick := BtnAboutClick;
 		AddHotkey(KeyAltA);
 	end;
-	New(BtnExit, Init(545, 2, CAP_EXIT, WinMain));
+	New(BtnExit, Init(545, 2, CAP_EXIT, MenuBar));
 	With BtnExit^ do
 	begin
 		OnClick := BtnExitClick;
@@ -435,21 +437,21 @@ begin
 		AddHotkey(KeyAltF4);
 	end;
 
-	New(LblDesktop, Init(10, 10, ' / ', WinMain));
+	New(LblDesktop, Init(10, 10, ' / ', MenuBar));
 	With LblDesktop^ do
 	begin
 		AutoSize;
 		Center(OrHorizontal);
 		Transparent := false;
 	end;
-	New(BtnPrevious, Init(254, 2, HotkeyChr + CharArrowLeft, WinMain));
+	New(BtnPrevious, Init(254, 2, HotkeyChr + CharArrowLeft, MenuBar));
 	With BtnPrevious^ do
 	begin
 		Width := 42;
 		OnClick := BtnPreviousClick;
 		AddHotkey(KeyLeft);
 	end;
-	New(BtnNext, Init(340, 2, HotkeyChr + CharArrowRight, WinMain));
+	New(BtnNext, Init(340, 2, HotkeyChr + CharArrowRight, MenuBar));
 	With BtnNext^ do
 	begin
 		Width := 42;
