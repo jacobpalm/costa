@@ -10,7 +10,7 @@ const
 	AppName              = 'Calculator';
 	AppVersion           = '2.0';
 	AppAuthor            = 'Jacob Palm';
-	AppIcon	             = 'CALC';
+	AppIcon              = 'CALC';
 	AppConfigFile        = 'CALC';
 
 	CAP_ABOUT            = #127 + 'About...';

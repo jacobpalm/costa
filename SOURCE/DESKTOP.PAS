@@ -28,11 +28,16 @@ const
 	CAP_RUN                   = #127 + 'Run...';
 	CAP_ABOUT                 = #127 + 'About...';
 	CAP_EXIT                  = 'E' + #127 + 'xit';
+	CAP_DELETE                = 'D' + #127 + 'elete';
+	CAP_DONT_DELETE           = #127 + 'Don''t delete';
+	CAP_STAY                  = #127 + 'Stay';
 
-	MSG_EXIT_PROMPT           = 'This will exit Costa and return you' + #13 +
-	                            'the DOS prompt.';
+	MSG_EXIT_PROMPT           = 'Do you want to exit Costa and return' + #13 +
+	                            'to the DOS prompt?' + #13 + #13 +
+	                            'You can start Costa again by running' + #13 +
+	                            'COSTA.COM.';
 	MSG_REMOVE_LINK           = 'This will permanently delete this' + #13 +
-	                            'desktop link. Are you sure?';
+	                            'desktop icon. Are you sure?';
 	MSG_SAVE_ERROR            = '%s. Could not write to' + #13;
 	MSG_LOAD_ERROR            = 'Could not open desktop file for reading. The' + #13 +
 	                            'file may corrupt or inaccesible:' + #13;
@@ -267,7 +272,7 @@ begin
 		DoExit := true
 	else
 		{Otherwise, ask for confirmation}
-		if MsgBox(MSG_EXIT_PROMPT, MsgYesNo) then
+		if MsgChoice(MSG_EXIT_PROMPT, CAP_EXIT, KeyAltX, CAP_STAY, KeyAltS) then
 			DoExit := true;
 
 	if DoExit then
@@ -315,7 +320,7 @@ begin
 		begin
 			if Settings.ConfLinkDel then
 				{Link delete confirmation enabled, prompt user}
-				result := MsgBox(MSG_REMOVE_LINK, MsgYesNo)
+				result := MsgChoice(MSG_REMOVE_LINK, CAP_DELETE, KeyAltE, CAP_DONT_DELETE, KeyAltD)
 			else
 				{Link delete confirmation disabled, just proceed}
 				result := true;

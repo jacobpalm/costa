@@ -24,6 +24,9 @@ const
 	CAP_AUTHOR        = 'Theme a' + #127 + 'uthor';
 	CAP_OBJECT_SEL    = 'O' + #127 + 'bject selected:';
 	CAP_COLOR_SEL     = #127 + 'Color for object:';
+	CAP_DISCARD       = 'D' + #127 + 'iscard';
+	CAP_OVERWRITE     = 'Over' + #127 + 'write';
+	CAP_CANCEL        = #127 + 'Cancel';
 
 	MSG_FILE_EXISTS   = 'The specified file already exists. Do you want' + #13 +
 	                    'to overwrite it?';
@@ -148,7 +151,7 @@ var
 begin
 	if ThemeChanged then
 	begin
-		DoSave := MsgBox(MSG_UNSAVED, MsgYesNo);
+		DoSave := MsgChoice(MSG_UNSAVED, CAP_SAVE, KeyAltS, CAP_DISCARD, KeyAltI);
 		if DoSave then
 			if not SaveTheme(false) then
 				exit; {Theme was not saved, exit}
@@ -178,7 +181,7 @@ var
 begin
 	if ThemeChanged then
 	begin
-		DoSave := MsgBox(MSG_UNSAVED, MsgYesNo);
+		DoSave := MsgChoice(MSG_UNSAVED, CAP_SAVE, KeyAltS, CAP_DISCARD, KeyAltI);
 		if DoSave then
 			if not SaveTheme(false) then
 				exit; {Theme was not saved, exit}
@@ -261,7 +264,7 @@ begin
 	{Check if file already exists}
 	if FileExists(Filename) and (Filename <> ThemeFile) then
 	begin
-		MbResult := MsgBox(MSG_FILE_EXISTS, MsgYesNo);
+		MbResult := MsgChoice(MSG_FILE_EXISTS, CAP_OVERWRITE, KeyAltI, CAP_CANCEL, KeyAltC);
 		if MbResult = false then
 			exit;
 	end;
@@ -346,7 +349,7 @@ begin
 	if ThemeChanged = True then
 	begin
 		{Otherwise, ask to save}
-		DoSave := MsgBox(MSG_UNSAVED, MsgYesNo);
+		DoSave := MsgChoice(MSG_UNSAVED, CAP_SAVE, KeyAltS, CAP_DISCARD, KeyAltI);
 		if DoSave then
 			{User wants to save before exiting}
 			if not SaveTheme(false) then

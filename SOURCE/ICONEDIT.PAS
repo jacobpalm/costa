@@ -24,9 +24,13 @@ const
 	CAP_COLOR         = #127 + 'Color';
 	CAP_PREVIEW       = 'Preview';
 	CAP_TOOLS         = 'Tools';
+	CAP_DISCARD       = 'D' + #127 + 'iscard';
+	CAP_OVERWRITE     = 'Over' + #127 + 'write';
+	CAP_CANCEL        = #127 + 'Cancel';
 
 	MSG_UNSAVED       = 'This icon contains unsaved changes. Do you' + #13 +
-	                    'want to save it before you continue?';
+	                    'want to save your changes before you' + #13 +
+	                    'continue?';
 	MSG_SAVE          = 'Type a name for the icon file below to save it. Type just the name,' + #13 +
 	                    'without path or extension (8 letters max, for example: MYICON).';
 	MSG_INVALID_NAME  = 'The filename you specified was too long or invalid.' + #13 +
@@ -35,8 +39,8 @@ const
 	MSG_FILE_EXISTS   = 'The specified icon file already exists. Do you want' + #13 +
 	                    'to overwrite it with this icon?';
 	MSG_SAVE_ERROR    = 'The icon could not be saved. Verify that the filename is valid:' + #13;
-	MSG_ALREADY_OPEN  = 'The icon you selected is already opened.' + #13 +
-	                    'Do you want to discard all changes and reload' + #13 +
+	MSG_ALREADY_OPEN  = 'The icon you selected is already opened. Do' + #13 +
+	                    'you want to discard all changes and reload' + #13 +
 	                    'the icon as it was last saved?';
 	MSG_INVALID_ICON  = 'The selected file is not a valid icon file.' + #13 +
 	                    'Please select a .BIN file from the ICONS directory.';
@@ -146,7 +150,7 @@ begin
 	{If the icon is already loaded, but has been changed, ask if we should reload it}
 	if (FName = Canvas^.GetIconFile) and (Canvas^.IsChanged) then
 	begin
-		MbResult := MsgBox(MSG_ALREADY_OPEN, MsgYesNo);
+		MbResult := MsgChoice(MSG_ALREADY_OPEN, CAP_DISCARD, KeyAltI, CAP_CANCEL, KeyAltC);
 		if MbResult = false then
 			exit;
 	end;
@@ -182,7 +186,7 @@ begin
 	if FileExists(ProgramPath + 'ICONS\' + Filename + '.BIN') and (Filename <> Canvas^.GetIconFile) then
 	begin
 		{Another file with same name exists, confirm overwrite and exit if the user doesn't want to do so}
-		MbResult := MsgBox(MSG_FILE_EXISTS, MsgYesNo);
+		MbResult := MsgChoice(MSG_FILE_EXISTS, CAP_OVERWRITE, KeyAltI, CAP_CANCEL, KeyAltC);
 		if MbResult = false then
 			exit;
 	end;
@@ -262,7 +266,8 @@ begin
 	if not Canvas^.IsChanged then
 		exit;
 
-	MbResult := MsgBox(MSG_UNSAVED, MsgYesNo);
+	{Ask if user wants to save unsaved changed}
+	MbResult := MsgChoice(MSG_UNSAVED, CAP_SAVE, KeyAltS, CAP_DISCARD, KeyAltI);
 	if MbResult = true then
 	begin
 		BtnSaveClick(nil);

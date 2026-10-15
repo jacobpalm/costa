@@ -23,7 +23,7 @@ const
 	CAP_BUTTON           = 'Button';
 	CAP_TEXTBOX          = 'Textbox';
 	CAP_CURR_THEME       = 'This is your current' + #13 + 'theme.';
-	CAP_PREVIEW_LINK     = 'Preview link';
+	CAP_PREVIEW_LINK     = 'Preview icon';
 	CAP_PREVIEW_EXE      = 'preview.exe';
 	CAP_SETTINGS         = 'Settings' + #13 +
 	                       'Tweak various aspects of Costa.';
