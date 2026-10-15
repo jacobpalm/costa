@@ -4,14 +4,16 @@ By Jacob Palm
 Changelog
 ------------------------------------------------------------------------------
 
-Costa 2.0 is a major release of Costa. All of Costa has been translated from
-the BASIC programming language to the Pascal language, and large parts of the
-UI code has been rewritten to use features that weren't available in BASIC.
-The result is significantly smaller and faster programs. The support for
-object-oriented programming in Pascal also makes coding apps using the Costa
-UI library a lot easier, and the code easier to read and maintain.
- -New feature 1
- -New feature 2
+Costa 2.0 is a major release of Costa, although it might not look like it.
+All of Costa has converted to or rewritten in Turbo Pascal, removing the need
+for a run-time BASIC module. Some parts have been rewritten in Assembly, to
+ensure low memory needs and high performance in parts of the program where it
+really matters.
+ -Heavy optimizations - Costa now only takes up around half the amount of
+  disk space than version 1.8.0, and runs faster.
+ -New launcher, COSTA.COM. Optimized to use only 1.3 kilobytes memory when
+  running, ensuring your programs and games have as much memory available as
+  possible.
  -...
 
 For older versions, see the complete changelog at https://costa.jacobpalm.dk

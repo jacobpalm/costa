@@ -21,29 +21,11 @@ when releasing a new version.
 - Update version information in the CONST section of each unit
 - Update information in SVARDOS\APPINFO\COSTA.LSM
 - Make sure {$DEFINE DEBUG} isn't present anywhere
-- Compile all EXE files by running
-  MAKE -B all
-- For SvarDOS releases, run
-  MAKE -B svardos
-- Remove all .BIN files except from DESKDEF.BIN from the CONFIG directory
-- Exclude the following from the ZIP file:
-  - Directories:
-    - LIBRARY
-    - SOURCE
-    - .git
-  - Files:
-    - .gitattributes
-    - .gitignore
-    - .ds_store files from all subdirectories, if packaging on a Mac
-    - All files in the root directory of the project, except:
-      - LICENSE,
-      - EGAVGA.BGI
-      - HELP.TXT
-      - CHANGES.TXT
-      - *.EXE
+- Compile all EXE files and build ZIP and SvarDOS package by running:
+  MAKE -B release
 - Merge Git branch to main, if any
-- Tag a release on GitHub for this version, and add the ZIP archive for
-  the release
+- Tag a release on Git for this version, and add the ZIP + SvarDOS archives
+  for the release
 - After final commit and push to Git, create ZIP archive of source for
   own archive
 - Update website with download link, archive and screenshots

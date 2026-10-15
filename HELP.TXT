@@ -68,7 +68,7 @@ Using Costa
 
 2.2 Exiting Costa
 
- To exit Costa, close any program you have running to return to the desktop.
+ To exit Costa, close any program you have running and return to the desktop.
  Once you see the desktop, simply click the "Exit" button and then confirm
  that you want to exit.
 
@@ -107,8 +107,8 @@ Using Costa
  To close the menu without choosing any options, click "Cancel" or press the
  Escape key.
 
- To add a new desktop icon, click the "Add icon" button in the top right
- corner of the desktop. A dialog will appear, allowing you to define the
+ To add a new desktop icon, click the "Add..." button in the top right corner
+ of the desktop. A dialog will appear, allowing you to define the
  properties of your new icon. If you click "Cancel" in this dialog, no new
  icon will be added.
 
@@ -163,11 +163,12 @@ Customizing Costa
 
  Costa supports five different desktops. Using the arrow buttons on the menu
  bar, you can switch back and forth between these (arrow keys can be used as
- well).
+ well). You can also press 1-5 on your keyboard to switch to a specific
+ desktop.
 
  Each desktop has its own icons. How you use the desktops is up to you - you
- can simply use them in order if your icons can't fit on the first, or you
- can use one for games, one for apps, and so forth.
+ can simply use them if your icons can't fit on the first, or you could use
+ one for games, one for apps etc.
 
 3.2 Launching the Configuration program
 
