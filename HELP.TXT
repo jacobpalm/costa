@@ -6,6 +6,7 @@ User Guide
 1.0 Before you start
  1.1 What is Costa?
  1.2 System requirements
+ 1.3 Mouse support
 2.0 Using Costa
  2.1 Starting Costa
  2.2 Exiting Costa
@@ -51,12 +52,27 @@ Before you start
  - A recommended minimum of 200 KB available memory while running Costa. When
    running external programs or games, Costa will use about 8 KB RAM.
  - MS-DOS 4.0 or newer, or a compatible operating system.
- - A mouse is optional. If used, a mouse driver must be loaded (DOSBox has a
-   built-in mouse driver).
+ - A mouse is optional. If used, a mouse driver must be loaded (see section
+   1.3 in this document).
 
  Although not required, a 386 or better CPU is recommended, as well as disk
  caching software (SmartDrive or similar) when running on older machines -
  especially if running Costa from a floppy drive.
+
+1.3 Mouse support
+
+ Costa works with any standard serial or PS/2 mouse, provided that a driver
+ is loaded. Since different mouse types might require different drivers,
+ Costa cannot provide drivers for all of them. Therefore, a driver must
+ already be installed and working. Costa will then utilize it to provide
+ mouse support.
+
+ Most DOS emulators - like DOSBox - have a built-in mouse driver, and should
+ work out of the box.
+
+ If your mouse isn't working with Costa, check that you have a driver loaded
+ and that it is Microsoft Mouse compatible. Free drivers, such as CTMOUSE,
+ should work if you don't have an original driver for your specific mouse.
 
 Using Costa
 ------------------------------------------------------------------------------
