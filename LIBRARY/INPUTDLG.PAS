@@ -3,7 +3,7 @@ unit InputDlg;
 
 interface
 
-function InputBox(Title, Prompt, IconFile, DefaultValue: string): string;
+function InputBox(Prompt, IconFile, DefaultValue: string): string;
 
 implementation
 
@@ -21,7 +21,6 @@ var
 	BtnOK,
 	BtnCancel:   PButton;
 	ImgIcon:     PIcon;
-	LblTitle,
 	LblText:     PLabel;
 
 	ReturnValue: string;
@@ -37,14 +36,14 @@ begin
 	WinInputBox^.Close;
 end;
 
-function InputBox(Title, Prompt, IconFile, DefaultValue: string): string;
+function InputBox(Prompt, IconFile, DefaultValue: string): string;
 begin
 	{Create the Window and all child objects}
 	New(WinInputBox, Init(0, 0, NoParent));
 	with WinInputBox^ do
 	begin
 		Width := PrintW(Prompt) + 76;
-		Height := PrintH(Prompt) + 120;
+		Height := PrintH(Prompt) + 104;
 		if Width < 194 then Width := 194;
 		Center(OrBoth);
 		SaveBackdrop;
@@ -55,8 +54,7 @@ begin
 	New(BtnCancel, Init(WinInputBox^.Width - 111, WinInputBox^.Height - 40, CAP_CANCEL, WinInputBox));
 	New(TxtInput, Init(6, WinInputBox^.Height - 69, CAP_INPUT, WinInputBox));
 	TxtInput^.Width := WinInputBox^.Width - 24;
-	New(LblTitle, Init(50, 9, Title, WinInputBox));
-	New(LblText, Init(50, 25, Prompt, WinInputBox));
+	New(LblText, Init(50, 9, Prompt, WinInputBox));
 	With BtnOK^ do
 	begin
 		OnClick := BtnClick;

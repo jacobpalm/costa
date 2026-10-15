@@ -6,47 +6,40 @@ uses
 	CostaLib, UIIcon, UIButton, UIArea, UILabel, UIIconCv, MsgDlg, FileDlg, InputDlg, AboutDlg, Graph, DOS;
 
 const
-	AppName                = 'Icon Editor';
-	AppVersion             = '2.0';
-	AppAuthor              = 'Jacob Palm';
-	AppIcon                = 'PAINT';
+	AppName           = 'Icon Editor';
+	AppVersion        = '2.0';
+	AppAuthor         = 'Jacob Palm';
+	AppIcon           = 'PAINT';
 
-	MaxColor               = 15; {Colors 0-15 are valid}
+	MaxColor          = 15; {Colors 0-15 are valid}
 
-	CAP_EXIT               = 'E' + #127 + 'xit';
-	CAP_ABOUT              = #127 + 'About...';
-	CAP_NEW                = #127 + 'New';
-	CAP_OPEN               = #127 + 'Open...';
-	CAP_SAVE               = #127 + 'Save';
-	CAP_SAVE_AS            = 'Sa' + #127 + 've as...';
-	CAP_PENCIL             = 'P' + #127 + 'encil';
-	CAP_FILL               = #127 + 'Fill';
-	CAP_COLOR              = #127 + 'Color';
-	CAP_PREVIEW            = 'Preview';
-	CAP_TOOLS              = 'Tools';
+	CAP_EXIT          = 'E' + #127 + 'xit';
+	CAP_ABOUT         = #127 + 'About...';
+	CAP_NEW           = #127 + 'New';
+	CAP_OPEN          = #127 + 'Open...';
+	CAP_SAVE          = #127 + 'Save';
+	CAP_SAVE_AS       = 'Sa' + #127 + 've as...';
+	CAP_PENCIL        = 'P' + #127 + 'encil';
+	CAP_FILL          = #127 + 'Fill';
+	CAP_COLOR         = #127 + 'Color';
+	CAP_PREVIEW       = 'Preview';
+	CAP_TOOLS         = 'Tools';
 
-	MSG_UNSAVED_TITLE      = 'Icon has been modified';
-	MSG_UNSAVED_TEXT       = 'This icon contains unsaved changes. Do you' + #13 +
-	                         'want to save it before you continue?';
-	MSG_SAVE_TITLE         = 'Save icon file';
-	MSG_SAVE_TEXT          = 'Type a name for the icon file below, without path or' + #13 +
-	                         'extension (8 letters max, for example: MYICON).';
-	MSG_INVALID_NAME_TITLE = 'Invalid filename';
-	MSG_INVALID_NAME_TEXT  = 'The filename you specified was too long or invalid.' + #13 +
-	                         'Do not type a path or extension, only a filename' + #13 +
-	                         'with a maximum length of 8 characters.';
-	MSG_FILE_EXISTS_TITLE  = 'File already exists';
-	MSG_FILE_EXISTS_TEXT   = 'The specified icon file already exists. Do you want' + #13 +
-	                         'to overwrite it with this icon?';
-	MSG_SAVE_ERROR_TITLE   = 'Could not save icon';
-	MSG_SAVE_ERROR_TEXT    = 'The icon could not be saved. Verify that the filename is valid:' + #13;
-	MSG_ALREADY_OPEN_TITLE = 'File already open';
-	MSG_ALREADY_OPEN_TEXT  = 'The icon you selected is already opened.' + #13 +
-	                         'Do you want to discard all changes and reload' + #13 +
-	                         'the icon as it was last saved?';
-	MSG_INVALID_ICON_TITLE = 'Invalid icon file';
-	MSG_INVALID_ICON_TEXT  = 'The selected file is not a valid icon file.' + #13 +
-	                         'Please select a .BIN file from the ICONS directory.';
+	MSG_UNSAVED       = 'This icon contains unsaved changes. Do you' + #13 +
+	                    'want to save it before you continue?';
+	MSG_SAVE          = 'Type a name for the icon file below to save it. Type just the name,' + #13 +
+	                    'without path or extension (8 letters max, for example: MYICON).';
+	MSG_INVALID_NAME  = 'The filename you specified was too long or invalid.' + #13 +
+	                    'Do not type a path or extension, only a filename' + #13 +
+	                    'with a maximum length of 8 characters.';
+	MSG_FILE_EXISTS   = 'The specified icon file already exists. Do you want' + #13 +
+	                    'to overwrite it with this icon?';
+	MSG_SAVE_ERROR    = 'The icon could not be saved. Verify that the filename is valid:' + #13;
+	MSG_ALREADY_OPEN  = 'The icon you selected is already opened.' + #13 +
+	                    'Do you want to discard all changes and reload' + #13 +
+	                    'the icon as it was last saved?';
+	MSG_INVALID_ICON  = 'The selected file is not a valid icon file.' + #13 +
+	                    'Please select a .BIN file from the ICONS directory.';
 
 var
 	{UI objects}
@@ -147,13 +140,13 @@ begin
 	FSplit(IconToLoad, FPath, FName, FExt);
 	if (FPath <> ProgramPath + 'ICONS\') or (FExt <> '.BIN') then
 	begin
-		MsgBox(MSG_INVALID_ICON_TITLE, MSG_INVALID_ICON_TEXT, MsgError);
+		MsgBox(MSG_INVALID_ICON, MsgError);
 	end;
 
 	{If the icon is already loaded, but has been changed, ask if we should reload it}
 	if (FName = Canvas^.GetIconFile) and (Canvas^.IsChanged) then
 	begin
-		MbResult := MsgBox(MSG_ALREADY_OPEN_TITLE, MSG_ALREADY_OPEN_TEXT, MsgQuest);
+		MbResult := MsgBox(MSG_ALREADY_OPEN, MsgYesNo);
 		if MbResult = false then
 			exit;
 	end;
@@ -170,7 +163,7 @@ begin
 	{If icon hasn't already been saved, or SaveAs specified, prompt for a filename}
 	if (Length(Canvas^.GetIconFile) = 0) or (Sender = PUIObject(BtnSaveAs)) then
 	begin
-		Filename := UpperCase(InputBox(MSG_SAVE_TITLE, MSG_SAVE_TEXT, AppIcon, ''));
+		Filename := UpperCase(InputBox(MSG_SAVE, AppIcon, ''));
 
 		if Length(Filename) = 0 then
 			exit;
@@ -178,7 +171,7 @@ begin
 		{Validate input}
 		if not Valid8dot3(FileName + '.BIN') then
 		begin
-			MsgBox(MSG_INVALID_NAME_TITLE, MSG_INVALID_NAME_TEXT, MsgError);
+			MsgBox(MSG_INVALID_NAME, MsgError);
 			exit;
 		end;
 	end
@@ -189,7 +182,7 @@ begin
 	if FileExists(ProgramPath + 'ICONS\' + Filename + '.BIN') and (Filename <> Canvas^.GetIconFile) then
 	begin
 		{Another file with same name exists, confirm overwrite and exit if the user doesn't want to do so}
-		MbResult := MsgBox(MSG_FILE_EXISTS_TITLE, MSG_FILE_EXISTS_TEXT, MsgQuest);
+		MbResult := MsgBox(MSG_FILE_EXISTS, MsgYesNo);
 		if MbResult = false then
 			exit;
 	end;
@@ -198,7 +191,7 @@ begin
 
 	{if he file could not be saved, show an error}
 	if Canvas^.IsChanged then
-		MsgBox(MSG_SAVE_ERROR_TITLE, MSG_SAVE_ERROR_TEXT + Filename, MsgError);
+		MsgBox(MSG_SAVE_ERROR + Filename, MsgError);
 end;
 
 procedure BtnToolClick(Sender: PUIObject); far;
@@ -269,7 +262,7 @@ begin
 	if not Canvas^.IsChanged then
 		exit;
 
-	MbResult := MsgBox(MSG_UNSAVED_TITLE, MSG_UNSAVED_TEXT, MsgQuest);
+	MbResult := MsgBox(MSG_UNSAVED, MsgYesNo);
 	if MbResult = true then
 	begin
 		BtnSaveClick(nil);

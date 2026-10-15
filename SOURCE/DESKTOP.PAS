@@ -29,24 +29,18 @@ const
 	CAP_ABOUT                 = #127 + 'About...';
 	CAP_EXIT                  = 'E' + #127 + 'xit';
 
-	MSG_REMOVE_LINK_TITLE     = 'Remove desktop link';
+	MSG_EXIT_PROMPT           = 'This will exit Costa and return you' + #13 +
+	                            'the DOS prompt.';
 	MSG_REMOVE_LINK           = 'This will permanently delete this' + #13 +
 	                            'desktop link. Are you sure?';
-	MSG_EXIT                  = 'Exit Costa';
-	MSG_EXIT_PROMPT           = 'This will exit Costa and return you to' + #13 +
-	                            'the DOS prompt. Continue?';
-	MSG_SAVE_ERROR_TITLE      = 'Error writing to file';
 	MSG_SAVE_ERROR            = '%s. Could not write to' + #13;
-	MSG_LOAD_ERROR_TITLE      = 'Error loading desktop links';
-	MSG_LOAD_ERROR            = 'Could not open file for reading. The' + #13 +
+	MSG_LOAD_ERROR            = 'Could not open desktop file for reading. The' + #13 +
 	                            'file may corrupt or inaccesible:' + #13;
 	MSG_OUT_OF_MEMORY         = 'Out of memory.';
-	MSG_NOT_A_PROGRAM_TITLE   = 'Not a program';
-	MSG_NOT_A_PROGRAM         = 'The file you are trying to run is not a program.' + #13 +
-	                            'Only .EXE, .COM and .BAT files can be executed.';
-	MSG_FILE_NOT_FOUND_TITLE  = 'File not found';
+	MSG_NOT_A_PROGRAM         = 'The file you are trying to run is not' + #13 +
+	                            'a program. Only .EXE, .COM and .BAT' + #13 +
+	                            'files can be executed.';
 	MSG_PROGRAM_NOT_FOUND     = 'The program or file was not found:' + #13;
-	MSG_COMSPEC_TITLE         = 'COMSPEC not set';
 	MSG_COMSPEC               = 'The COMSPEC environment variable is not set.' + #13 +
 	                            'This is required to run batch files.';
 	MSG_RUN_COSTA             = 'This program is intended to be run from within Costa.' + #10 + #13 +
@@ -101,7 +95,7 @@ begin
 	{If still not found, don't run it}
 	if not FileExists(OutLink.Filename) then
 	begin
-		MsgBox(MSG_FILE_NOT_FOUND_TITLE, MSG_PROGRAM_NOT_FOUND + OutLink.Filename, MsgError);
+		MsgBox(MSG_PROGRAM_NOT_FOUND + OutLink.Filename, MsgError);
 		exit;
 	end;
 
@@ -109,7 +103,7 @@ begin
 	FExt := UpperCase(FExt);
 	if (FExt <> '.EXE') and (FExt <> '.COM') and (FExt <> '.BAT') then
 	begin
-		MsgBox(MSG_NOT_A_PROGRAM_TITLE, MSG_NOT_A_PROGRAM, MsgError);
+		MsgBox(MSG_NOT_A_PROGRAM, MsgError);
 		exit;
 	end;
 
@@ -120,7 +114,7 @@ begin
 		ComSpec := GetEnv('COMSPEC');
 		if Length(ComSpec) = 0 then
 		begin
-			MsgBox(MSG_COMSPEC_TITLE, MSG_COMSPEC, MsgError);
+			MsgBox(MSG_COMSPEC, MsgError);
 			exit;
 		end;
 		{Move batch filename and parameters to parameters}
@@ -153,7 +147,7 @@ begin
 	ErrorCode := IOResult;
 	if ErrorCode <> 0 then
 	begin
-		MsgBox(MSG_SAVE_ERROR_TITLE, Replace(MSG_SAVE_ERROR, Placeholder, GetDosErrorMsg(ErrorCode)) + RunFile, MsgError);
+		MsgBox(Replace(MSG_SAVE_ERROR, Placeholder, GetDosErrorMsg(ErrorCode)) + RunFile, MsgError);
 		exit;
 	end;
 
@@ -205,7 +199,7 @@ begin
 			exit;
 
 		{If we reach here, loading failed - show error message}
-		MsgBox(MSG_LOAD_ERROR_TITLE, MSG_LOAD_ERROR + DesktopFile, MsgError);
+		MsgBox(MSG_LOAD_ERROR + DesktopFile, MsgError);
 	end;
 
 	{If loading failed or file wasn't found, try to load default desktop links}
@@ -273,7 +267,7 @@ begin
 		DoExit := true
 	else
 		{Otherwise, ask for confirmation}
-		if MsgBox(MSG_EXIT, MSG_EXIT_PROMPT, MsgQuest) then
+		if MsgBox(MSG_EXIT_PROMPT, MsgYesNo) then
 			DoExit := true;
 
 	if DoExit then
@@ -321,7 +315,7 @@ begin
 		begin
 			if Settings.ConfLinkDel then
 				{Link delete confirmation enabled, prompt user}
-				result := MsgBox(MSG_REMOVE_LINK_TITLE, MSG_REMOVE_LINK, MsgQuest)
+				result := MsgBox(MSG_REMOVE_LINK, MsgYesNo)
 			else
 				{Link delete confirmation disabled, just proceed}
 				result := true;
@@ -472,7 +466,7 @@ begin
 	begin
 		New(HkDesktop[i], Init(#0 + Chr(KeyAltNoBase + i - 1), WinMain)); {Alt+1, Alt+2, ...}
 		HkDesktop[i]^.OnClick := HkDesktopClick;
-		HkDesktop[i]^.AddHotkey(Chr(48 + i)); {Also add '1', '2', ... as hotkeys}
+		HkDesktop[i]^.AddHotkey(Chr(48 + i)); {Add '1', '2', ... as hotkeys}
 	end;
 end;
 

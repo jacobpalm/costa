@@ -155,6 +155,7 @@ begin
 	else
 		New(Self.MenuBarObj, Init(@Self));
 
+	Include(State, SDirty);
 	EnableMenu := Self.MenuBarObj;
 end;
 
@@ -162,6 +163,7 @@ procedure TWindow.DisableMenu;
 begin
 	if Assigned(Self.MenuBarObj) then
 		Self.MenuBarObj^.AddState(SHidden);
+	Include(State, SDirty);
 end;
 
 destructor TWindow.Done;

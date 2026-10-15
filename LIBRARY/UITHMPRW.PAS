@@ -40,15 +40,14 @@ type
 implementation
 
 const
-	CAP_BUTTON           = 'Button';
-	CAP_TEXTBOX          = 'Textbox';
-	CAP_PREVIEW          = 'This is a preview of' + #13 + 'the theme.';
-	CAP_PREVIEW_LINK     = 'Preview link';
-	CAP_PREVIEW_EXE      = 'preview.exe';
+	CAP_BUTTON       = 'Button';
+	CAP_TEXTBOX      = 'Textbox';
+	CAP_PREVIEW      = 'This is a preview of' + #13 + 'the theme.';
+	CAP_PREVIEW_LINK = 'Preview link';
+	CAP_PREVIEW_EXE  = 'preview.exe';
 
-	MSG_LOAD_ERROR_TITLE = 'Error loading';
-	MSG_LOAD_ERROR_TEXT  = '%s. The theme file %s.BIN' + #13 +
-	                       'could not be loaded.';
+	MSG_LOAD_ERROR   = '%s. The theme file %s.BIN' + #13 +
+	                   'could not be loaded.';
 
 constructor TThemePreview.Init(X, Y: Integer; Parent: PContainer);
 const
@@ -167,9 +166,9 @@ begin
 		ThemeData := OrigTheme; {Restore original theme}
 		ThemeAuthor := '';
 		ThemeName := '';
-		ErrorText := Replace(MSG_LOAD_ERROR_TEXT, Placeholder, GetDosErrorMsg(ErrorCode));
+		ErrorText := Replace(MSG_LOAD_ERROR, Placeholder, GetDosErrorMsg(ErrorCode));
 		ErrorText := Replace(ErrorText, Placeholder, FileName);
-		MsgBox(MSG_LOAD_ERROR_TITLE, ErrorText, MsgError);
+		MsgBox(ErrorText, MsgError);
 	end;
 
 	{Update preview info label to show theme name and author}

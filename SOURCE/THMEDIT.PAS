@@ -25,27 +25,21 @@ const
 	CAP_OBJECT_SEL    = 'O' + #127 + 'bject selected:';
 	CAP_COLOR_SEL     = #127 + 'Color for object:';
 
-	MSG_FILE_EXISTS_TITLE      = 'File already exists';
-	MSG_FILE_EXISTS_PROMPT     = 'The specified file already exists. Do you want' + #13 +
-	                             'to overwrite it?';
-	MSG_INVALID_THEME_FILE     = 'The selected file is not a valid theme file. Please' + #13 +
-	                             'select a .BIN file from the THEMES directory.';
-	MSG_ERROR_OPENING_TITLE    = 'Error opening theme file';
-	MSG_ERROR_OPENING          = 'The selected theme file could not be opened.' + #13 +
-	                             'Please check the file and try again.';
-	MSG_UNSAVED_CHANGES_TITLE  = 'Theme has been modified';
-	MSG_UNSAVED_CHANGES_PROMPT = 'This theme contains unsaved changes. Do you' + #13 +
-	                             'want to save before you continue?';
-	MSG_FILENAME_TITLE	       = 'Save theme file';
-	MSG_FILENAME_PROMPT        = 'Type a name for the theme file below, without path or' + #13 +
-	                             'extension (8 letters max, for example: MYTHEME).';
-	MSG_INVALID_FILENAME       = 'The filename you specified was too long or invalid.' + #13 +
-	                             'Do not type a path or extension, only a filename' + #13 +
-	                             'with a maximum length of 8 characters.';
-	MSG_ERROR_SAVING_TITLE     = 'Error saving theme file';
-	MSG_ERROR_SAVING           = 'The theme file could not be saved. Verify free disk' + #13 +
-	                             'space and that the directory isn''t write-protected.';
-	MSG_PREVIEW                = 'This is a preview of' + #13 + 'your theme';
+	MSG_FILE_EXISTS   = 'The specified file already exists. Do you want' + #13 +
+	                    'to overwrite it?';
+	MSG_INVALID_THEME = 'The selected file is not a valid theme file. Please' + #13 +
+	                    'select a .BIN file from the THEMES directory.';
+	MSG_OPEN_ERROR    = 'The selected theme file could not be opened.' + #13 +
+	                    'Please check the file and try again.';
+	MSG_UNSAVED       = 'This theme contains unsaved changes. Do you' + #13 +
+	                    'want to save before you continue?';
+	MSG_SAVE          = 'Type a name for the theme file below to save it. Type just the name,' + #13 +
+	                    'without path or extension (8 letters max, for example: MYTHEME).';
+	MSG_INVALID_NAME  = 'The filename you specified was too long or invalid.' + #13 +
+	                    'Do not type a path or extension, only a filename' + #13 +
+	                    'with a maximum length of 8 characters.';
+	MSG_SAVE_ERROR    = 'The theme file could not be saved. Verify free disk' + #13 +
+	                    'space and that the directory isn''t write-protected.';
 
 var
 	App:              PApplication;
@@ -154,7 +148,7 @@ var
 begin
 	if ThemeChanged then
 	begin
-		DoSave := MsgBox(MSG_UNSAVED_CHANGES_TITLE, MSG_UNSAVED_CHANGES_PROMPT, MsgQuest);
+		DoSave := MsgBox(MSG_UNSAVED, MsgYesNo);
 		if DoSave then
 			if not SaveTheme(false) then
 				exit; {Theme was not saved, exit}
@@ -184,7 +178,7 @@ var
 begin
 	if ThemeChanged then
 	begin
-		DoSave := MsgBox(MSG_UNSAVED_CHANGES_TITLE, MSG_UNSAVED_CHANGES_PROMPT, MsgQuest);
+		DoSave := MsgBox(MSG_UNSAVED, MsgYesNo);
 		if DoSave then
 			if not SaveTheme(false) then
 				exit; {Theme was not saved, exit}
@@ -197,7 +191,7 @@ begin
 	FSplit(SelectedFile, FDir, FName, FExt);
 	if not (FDir = App^.Path + 'THEMES\') or not (FExt = '.BIN') then
 	begin
-		MsgBox(MSG_ERROR_OPENING_TITLE, MSG_INVALID_THEME_FILE, MsgError);
+		MsgBox(MSG_INVALID_THEME, MsgError);
 		exit;
 	end;
 
@@ -216,7 +210,7 @@ begin
 	if LoadError then
 	begin
 		Close(F);
-		MsgBox(MSG_ERROR_OPENING_TITLE, MSG_ERROR_OPENING, MsgError);
+		MsgBox(MSG_OPEN_ERROR, MsgError);
 		exit;
 	end;
 
@@ -247,7 +241,7 @@ begin
 
 	if (Length(ThemeFile) = 0) or SaveAs then
 	begin
-		Filename := UpperCase(InputBox(MSG_FILENAME_TITLE, MSG_FILENAME_PROMPT, AppIcon, ''));
+		Filename := UpperCase(InputBox(MSG_SAVE, AppIcon, ''));
 
 		{Validate input}
 		if Length(Filename) = 0 then
@@ -255,7 +249,7 @@ begin
 
 		if not Valid8dot3(FileName + '.BIN') then
 		begin
-			MsgBox(MSG_ERROR_SAVING_TITLE, MSG_INVALID_FILENAME, MsgError);
+			MsgBox(MSG_INVALID_NAME, MsgError);
 			exit;
 		end;
 
@@ -267,7 +261,7 @@ begin
 	{Check if file already exists}
 	if FileExists(Filename) and (Filename <> ThemeFile) then
 	begin
-		MbResult := MsgBox(MSG_FILE_EXISTS_TITLE, MSG_FILE_EXISTS_PROMPT, MsgQuest);
+		MbResult := MsgBox(MSG_FILE_EXISTS, MsgYesNo);
 		if MbResult = false then
 			exit;
 	end;
@@ -282,7 +276,7 @@ begin
 	{$I+}
 	if IOResult <> 0 then
 	begin
-		MsgBox(MSG_ERROR_SAVING_TITLE, MSG_ERROR_SAVING, MsgError);
+		MsgBox(MSG_SAVE_ERROR, MsgError);
 		exit;
 	end;
 	BlockWrite(F, ThemeData, SizeOf(TTheme));
@@ -352,7 +346,7 @@ begin
 	if ThemeChanged = True then
 	begin
 		{Otherwise, ask to save}
-		DoSave := MsgBox(MSG_UNSAVED_CHANGES_TITLE, MSG_UNSAVED_CHANGES_PROMPT, MsgQuest);
+		DoSave := MsgBox(MSG_UNSAVED, MsgYesNo);
 		if DoSave then
 			{User wants to save before exiting}
 			if not SaveTheme(false) then

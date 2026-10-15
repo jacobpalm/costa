@@ -22,11 +22,11 @@ const
 	CAP_EXIT             = 'E' + #127 + 'xit';
 	CAP_LOADING          = 'Loading...';
 
-	MSG_OPEN_ERROR_TITLE = 'Error opening file';
 	MSG_FILE_NOT_FOUND   = 'File not found: ' + #13;
 	MSG_READ_ERROR       = '%s. Cannot open ' + #13;
-	MSG_MEMORY_TEXT      = 'Not enough memory to open this file.';
-	MSG_END_OF_FILE      = '* end of file *';
+	MSG_LOWMEM           = 'Not enough memory to open this file.';
+
+	STR_END_OF_FILE      = '* end of file *';
 
 type
 	{String type for storing lines of text}
@@ -74,7 +74,7 @@ begin
 	FreeLines; {Free any previously allocated lines}
 	FileOpened := False;
 	WinMain^.AddState(SDirty);
-	MsgBox(MSG_OPEN_ERROR_TITLE, MSG_MEMORY_TEXT, MsgError);
+	MsgBox(MSG_LOWMEM, MsgError);
 	CustomHeapError := 1; {Make GetMem return a nil pointer}
 end;
 
@@ -194,7 +194,7 @@ begin
 	{Check if file exists}
 	if not FileExists(FileName) then
 	begin
-		MsgBox(MSG_OPEN_ERROR_TITLE, MSG_FILE_NOT_FOUND + FileName, MsgError);
+		MsgBox(MSG_FILE_NOT_FOUND + FileName, MsgError);
 		Exit;
 	end;
 
@@ -207,7 +207,7 @@ begin
 	ErrorCode := IOResult;
 	if ErrorCode <> 0 then
 	begin
-		MsgBox(MSG_OPEN_ERROR_TITLE, Replace(MSG_READ_ERROR, Placeholder, GetDosErrorMsg(ErrorCode)) + FileName, MsgError);
+		MsgBox(Replace(MSG_READ_ERROR, Placeholder, GetDosErrorMsg(ErrorCode)) + FileName, MsgError);
 		Exit;
 	end;
 
@@ -270,7 +270,7 @@ begin
 	{Add end of file indicator, since the textbox doesn't have scrollbars to indicate
 	 position}
 	AddLine('');
-	AddLine(MSG_END_OF_FILE);
+	AddLine(STR_END_OF_FILE);
 
 	StartLine := 1;
 	if not FileOpened then

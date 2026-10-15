@@ -137,26 +137,27 @@ LIBRARY:
 	$(TPCCMD) $(LIBDIR)\RUNDLG.PAS $(LIBPATHS)
 
 
-# SvarDOS build #############################################################
+# Full release build, create ZIP +  SvarDOS package #########################
 
 RELEASE: ALL
+	# After building, make sure all directories exist
 	DELTREE /Y $(SVARDIR)\PROGS
 	MKDIR $(SVARDIR)\PROGS
 	MKDIR $(SVARDIR)\PROGS\COSTA
 	MKDIR $(SVARDIR)\PROGS\COSTA\CONFIG
 	MKDIR $(SVARDIR)\PROGS\COSTA\ICONS
 	MKDIR $(SVARDIR)\PROGS\COSTA\THEMES
+
+	# Copy files to directories
 	COPY $(COSTADIR)\*.EXE $(SVARAPPDIR) /Y
 	COPY $(COSTADIR)\*.COM $(SVARAPPDIR) /Y
 	COPY $(COSTADIR)\*.BGI $(SVARAPPDIR) /Y
 	COPY $(COSTADIR)\*.TXT $(SVARAPPDIR) /Y
 	COPY $(COSTADIR)\LICENSE $(SVARAPPDIR)/Y
+	COPY $(COSTADIR)\CONFIG\DESKDEF.BIN $(SVARAPPDIR)\CONFIG
 	XCOPY $(COSTADIR)\CONFIG $(SVARAPPDIR)\CONFIG /Y
 	XCOPY $(COSTADIR)\ICONS $(SVARAPPDIR)\ICONS /Y
 	XCOPY $(COSTADIR)\THEMES $(SVARAPPDIR)\THEMES /Y
-
-	# Delete user config files, to provide fresh defaults
-	DEL $(SVARAPPDIR)\CONFIG\DESK?.BIN
 
 	# Delete MacOS junk files, if any
 	DEL $(SVARDIR)\DS_STO~1
@@ -170,11 +171,12 @@ RELEASE: ALL
 	# Development files start with underscore, delete them
 	DEL $(SVARAPPDIR)\_*.*
 
-	# Create zip package - SVP extension required by SvarDOS
+	# Create SvarDOS package - ZIP with SVP extension
 	CD $(SVARDIR)
-	$(ZIPCMD) COSTA.SVP . | MORE
+	$(ZIPCMD) COSTA.SVP .
 	MOVE COSTA.SVP $(COSTADIR) /Y
 
+	# Create ZIP archive of Costa
 	CD $(SVARAPPDIR)
 	$(ZIPCMD) COSTA.ZIP .
 	MOVE COSTA.ZIP $(COSTADIR) /Y

@@ -22,9 +22,7 @@ const
 	CAP_ICON                  = #127 + 'Icon...';
 	CAP_PAUSE_ON_EXIT         = 'Pause after e' + #127 + 'xit';
 
-	MSG_INVALID_PROGRAM_TITLE = 'Invalid program';
 	MSG_PROGRAM_MISSING       = 'The ''Filename'' field cannot be empty.';
-	MSG_INVALID_ICON_TITLE    = 'Invalid icon file';
 	MSG_INVALID_ICON          = 'The selected file is not a valid icon file.' + #13 +
 	                            'Please select a .BIN file from the ICONS directory.';
 
@@ -70,7 +68,7 @@ begin
 	end
 	else
 	begin
-		MsgBox(MSG_INVALID_PROGRAM_TITLE, MSG_PROGRAM_MISSING, MsgInfo);
+		MsgBox(MSG_PROGRAM_MISSING, MsgInfo);
 	end;
 end;
 
@@ -115,7 +113,7 @@ begin
 			ImgIcon^.SetIcon(FName);
 		end
 		else
-			MsgBox(MSG_INVALID_ICON_TITLE, MSG_INVALID_ICON, MsgError);
+			MsgBox(MSG_INVALID_ICON, MsgError);
 	end;
 end;
 

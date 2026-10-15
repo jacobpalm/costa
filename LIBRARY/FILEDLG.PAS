@@ -27,7 +27,6 @@ const
 	CAP_SELECT      = #127 + 'Select';
 	CAP_CANCEL      = #127 + 'Cancel';
 
-	MSG_ERROR_TITLE = 'Error';
 	MSG_DOS_ERROR   = '%s while trying to read' + #13 + '%s';
 	MSG_DRIVE_ERROR = 'Drive %s: not ready. Make sure there is a' + #13 +
 	                  'disk in the drive.';
@@ -67,7 +66,7 @@ var
 begin
 	ErrMsg := Replace(MSG_DOS_ERROR, Placeholder, GetDosErrorMsg(ErrorCode));
 	ErrMsg := Replace(ErrMsg, Placeholder, Path);
-	MsgBox(MSG_ERROR_TITLE, ErrMsg, MsgError);
+	MsgBox(ErrMsg, MsgError);
 end;
 
 procedure GetChildFiles(Path: String; FilePattern: String);
@@ -174,7 +173,7 @@ begin
 
 	if DiskCheck = -1 then
 	begin
-		MsgBox(MSG_ERROR_TITLE, Replace(MSG_DRIVE_ERROR, Placeholder, DriveLetter), msgError);
+		MsgBox(Replace(MSG_DRIVE_ERROR, Placeholder, DriveLetter), msgError);
 		exit;
 	end;
 

@@ -30,9 +30,8 @@ const
 	CAP_THEMES           = 'Theme' + #13 +
 	                       'Choose colors for the UI.';
 	CAP_LOADING          = 'Loading...';
+	CAP_NO_THEMES        = 'No themes found in THEMES.';
 
-	MSG_NO_THEMES        = 'No themes found in THEMES.';
-	MSG_SAVE_ERR_TITLE   = 'Failed to save settings';
 	MSG_SAVE_ERR         = 'Settings could not be saved. Make sure there is' + #13 +
 	                       'enough free space on the drive and that it isn''t' +#13 +
 	                       'isn''t write-protected.';
@@ -220,7 +219,7 @@ begin
 		OverAllSuccess := false;
 
 	if not OverAllSuccess then
-		MsgBox(MSG_SAVE_ERR_TITLE, MSG_SAVE_ERR, msgError);
+		MsgBox(MSG_SAVE_ERR, msgError);
 
 	App^.Terminate;
 end;
@@ -330,7 +329,7 @@ begin
 		AddHotkey(KeyAltN);
 		AddHotkey(KeyRight);
 	end;
-	New(LblNoThemes, Init(0, FrmTheme^.Height - 30, MSG_NO_THEMES, FrmTheme));
+	New(LblNoThemes, Init(0, FrmTheme^.Height - 30, CAP_NO_THEMES, FrmTheme));
 	with LblNoThemes^ do
 	begin
 		AutoSize;

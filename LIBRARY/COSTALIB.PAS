@@ -1,6 +1,6 @@
 unit CostaLib;
 
-{$DEFINE DEBUG}
+{DEFINE DEBUG}
 
 interface
 
@@ -39,8 +39,13 @@ const
 	DosFuncConInpNoEcho  = $08;   {Function: Console Input Without Echo}
 
 	MouseInt             = $33;   {Mouse drive interrupt}
-	MouseFuncResetDriver = $0000; {Function: Reset driver and read status}
+	MouseFuncResetAll    = $0000; {Function: Reset mouse software + hardware and read status}
+	MouseFuncResetDriver = $0021; {Function: Reset mouse software}
 	MouseFuncSetHandler  = $000C; {Function: Set Mouse Handler Routine}
+	MouseFuncShowCursor  = $0001; {Function: Move cursor to CX, DX}
+	MouseFuncHideCursor  = $0002; {Function: Move cursor to CX, DX}
+	MouseFuncPoll        = $0003;
+	MouseFuncMoveCursor  = $0004; {Function: Move cursor to CX, DX}
 	MbNone               = 0;     {Mouse button states}
 	MbLeft               = 1;
 	MbRight              = 2;
@@ -363,8 +368,8 @@ asm
 	mov ax, seg Mouse.X
 	mov ds, ax
 
-	mov ax, 3               {Poll mouse state}
-	int 33h
+	mov ax, MouseFuncPoll  {Poll mouse state}
+	int MouseInt
 
 	mov Mouse.Clicked, bx  {Save mouse state to variables}
 	mov Mouse.X, cx
@@ -789,7 +794,7 @@ end;
 
 constructor TMouse.Init;
 var
-	regs: registers;
+	Regs: registers;
 begin
 	Visible := False;
 	X       := 0;
@@ -798,42 +803,42 @@ begin
 	Support := false;
 
 	{Check that mouse interrupt is assigned. If it isn't, calling it could hang the system}
-	regs.ah := DosFuncGetIntVector;
-	regs.al := MouseInt;
-	Intr(DosInt, regs);
-	if (regs.es = 0) or (regs.bx = 0) then
+	Regs.ah := DosFuncGetIntVector;
+	Regs.al := MouseInt;
+	Intr(DosInt, Regs);
+	if (Regs.es = 0) or (Regs.bx = 0) then
 		exit;
 
 	{Mouse interrupt OK, call it and verify that mouse is available}
-	regs.ax := MouseFuncResetDriver;
-	Intr(MouseInt, regs);
+	Regs.ax := MouseFuncResetAll;
+	Intr(MouseInt, Regs);
 	Support := Regs.ax > 0;
 	if not Support then
 		exit;
 
 	{If mouse is available, install MouseHandler in the driver so that is is called whenever mouse is moved or clicked}
 	Regs.AX := MouseFuncSetHandler;
-	Regs.CX := $FFFF;
+	Regs.CX := $FFFF;                 {FFFF = all mouse events}
 	Regs.ES := Seg(MouseHandler);
 	Regs.DX := Ofs(MouseHandler);
 	Intr(MouseInt, Regs);
 end;
 
 procedure TMouse.Hide;
-var
-	Regs: Registers;
 begin
 	{Don't call interrupt if no mouse or already hidden}
 	If Not Support Or Not Visible Then
 		Exit;
-	Regs.ax := 2;
-	Intr(MouseInt, Regs);
+
+	asm
+		mov AX, MouseFuncHideCursor;
+		int 33h;
+	end;
+
 	Visible := False;
 end;
 
 procedure TMouse.Move(Left, Top: Integer);
-var
-	regs: registers;
 begin
 	{Can't move mouse if no mouse support}
 	if not Support then
@@ -846,21 +851,25 @@ begin
 	Self.X := Left;
 	Self.Y := Top;
 
-	regs.ax := 4;
-	regs.cx := Left;
-	regs.dx := Top;
-	Intr(MouseInt, regs);
+	asm
+		mov AX, MouseFuncMoveCursor;
+		mov CX, Left;
+		mov DX, Top;
+		int MouseInt;
+	end;
 end;
 
 procedure TMouse.Show;
-Var
-	Regs: Registers;
 Begin
 	{Don't call interrupt if no mouse or already visible}
 	If Not Support Then
 		Exit;
-	Regs.ax := 1;
-	Intr(MouseInt, Regs);
+
+	asm
+		mov AX, MouseFuncShowCursor;
+		int 33H;
+	end;
+
 	Visible := True;
 End;
 
@@ -870,15 +879,21 @@ Begin
 End;
 
 destructor TMouse.Done;
-var
-	Regs: Registers;
 begin
 	if not Support then
 		exit;
 
-	{Reset mouse driver}
-	Regs.AX := MouseFuncResetDriver;
-	Intr(MouseInt, Regs);
+	asm
+		{CX = 0 removes mouse event handler. This should be done automatically by
+		 MouseFuncResetDriver, but doesn't always seem to be the case}
+		mov AX, MouseFuncSetHandler
+		xor CX, CX
+		int MouseInt
+
+		{Reset mouse driver}
+		mov AX, MouseFuncResetDriver
+		int MouseInt
+	end;
 end;
 
 {----------------------------------------------------------------------------}
