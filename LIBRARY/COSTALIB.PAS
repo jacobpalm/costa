@@ -840,16 +840,17 @@ end;
 
 procedure TMouse.Move(Left, Top: Integer);
 begin
-	{Can't move mouse if no mouse support}
-	if not Support then
-		Exit;
-
 	if (Left < 0) or (Left > ScreenWidth) or
 	   (Top < 0) or (Top > ScreenHeight) then
 		Exit; {Out of bounds}
 
 	Self.X := Left;
 	Self.Y := Top;
+
+	{Can't move mouse if no mouse support, but variables are set above anyway
+	 in case something depends on being able to control mouse pos}
+	if not Support then
+		Exit;
 
 	asm
 		mov AX, MouseFuncMoveCursor;

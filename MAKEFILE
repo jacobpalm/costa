@@ -188,5 +188,7 @@ CLEAN:
 	del $(COSTADIR)\*.TPU
 	del $(COSTADIR)\*.OBJ
 	del $(COSTADIR)\*.MAP
+	del $(COSTADIR)\*.SVP
+	del $(COSTADIR)\*.TR
 	@echo.
 	@echo Cleaned up build files.

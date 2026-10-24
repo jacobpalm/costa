@@ -33,9 +33,7 @@ const
 	CAP_STAY                  = #127 + 'Stay';
 
 	MSG_EXIT_PROMPT           = 'Do you want to exit Costa and return' + #13 +
-	                            'to the DOS prompt?' + #13 + #13 +
-	                            'You can start Costa again by running' + #13 +
-	                            'COSTA.COM.';
+	                            'to the DOS prompt?';
 	MSG_REMOVE_LINK           = 'This will permanently delete this' + #13 +
 	                            'desktop icon. Are you sure?';
 	MSG_SAVE_ERROR            = '%s. Could not write to' + #13;
