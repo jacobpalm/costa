@@ -1,0 +1,193 @@
+# Main Costa makefile
+# By Jacob Palm
+# Licensed under the MIT License. See LICENSE file for details.
+#
+# Ensure "make" utility is available in your PATH before running.
+# Built and tested with Borland Make 3.6
+#
+# To build all units and applications, run:
+#   make all
+#
+# To build all library units, run:
+#   make library
+#
+# To build only specific applications, run:
+#   make COSTA.COM
+#   make DESKTOP.EXE
+#   etc.
+#
+# To build package for SvarDOS, run:
+#   make SVARDOS
+#
+# To clean up compiler leftovers (TPUs, lists etc.) run:
+#   make clean
+
+# Paths for Costa and its source files
+COSTADIR   = C:\COSTA
+LIBDIR     = $(COSTADIR)\LIBRARY
+SOURCEDIR  = $(COSTADIR)\SOURCE
+
+# Output path for SvarDOS build
+SVARDIR    = $(COSTADIR)\SVARDOS
+SVARAPPDIR = $(SVARDIR)\PROGS\COSTA
+
+# Paths for compilers/linkers - recommended to add these in your PATH, but can be set here
+TPC = TPC
+TASM = TASM
+TLINK = TLINK
+BINOBJ = BINOBJ
+
+# Zip command for SvarDOS packaging - using Info-ZIP
+ZIPCMD = ZIP -9rkDX
+
+# Settings for compilers/linkers
+
+# -M   = Make modified units
+# -$D- = Disable debug info
+# -$L- = Disable local debug symbols
+# -$R- = Disable range checking and virtual method call checking
+# -GD  = Generate detailed map file for each executable
+TPCSWITCHES = -M -$D- -$L- -$R- -GD
+TPCCMD = $(TPC) $(TPCSWITCHES)
+
+# TASM/TLINK options for COSTA.COM
+# /ZN = Debug info disabled
+TASMSWITCHES = /zi /v
+TASMCMD = $(TASM) $(TASMSWITCHES)
+# /m = MAP
+# /t = Make COM program
+TLINKSWITCHES = /t
+TLINKCMD = $(TLINK) $(TLINKSWITCHES)
+
+# BINOBJ options for building binary object files, used for graphics drivers
+BINOBJCMD = $(BINOBJ)
+
+# Compiler paths for library and application source files
+LIBPATHS = -U$(LIBDIR) -I$(LIBDIR) -O$(LIBDIR) -E$(COSTADIR)
+APPPATHS = -U$(SOURCEDIR) -I$(SOURCEDIR) -O$(SOURCEDIR) -E$(COSTADIR)
+
+
+# Generate all applications #################################################
+
+ALL: COSTA.COM DESKTOP.EXE ICONEDIT.EXE MINES.EXE TEXTVIEW.EXE CONFIG.EXE CALC.EXE TICTAC.EXE THMEDIT.EXE
+	@echo.
+	@echo All applications built.
+
+
+# Launcher ##################################################################
+
+COSTA.COM:
+	$(TASMCMD) $(SOURCEDIR)\COSTA.ASM
+	$(TLINKCMD) COSTA.OBJ
+
+
+# Applications ##############################################################
+
+DESKTOP.EXE: LIBRARY
+	$(TPCCMD) $(SOURCEDIR)\DESKEDIT.PAS $(APPPATHS)
+	$(TPCCMD) $(SOURCEDIR)\DESKMENU.PAS $(APPPATHS)
+	$(TPCCMD) $(SOURCEDIR)\DESKTOP.PAS $(APPPATHS)
+
+ICONEDIT.EXE: LIBRARY
+	$(TPCCMD) $(LIBDIR)\UIICONCV.PAS $(LIBPATHS)
+	$(TPCCMD) $(SOURCEDIR)\ICONEDIT.PAS $(APPPATHS)
+
+MINES.EXE: LIBRARY
+	$(TPCCMD) $(LIBDIR)\UIMINEFL.PAS $(LIBPATHS)
+	$(TPCCMD) $(SOURCEDIR)\MINES.PAS $(APPPATHS)
+
+TEXTVIEW.EXE: LIBRARY
+	$(TPCCMD) $(SOURCEDIR)\TEXTVIEW.PAS $(APPPATHS)
+
+THMEDIT.EXE: LIBRARY
+   $(TPCCMD) $(SOURCEDIR)\THMEDIT.PAS $(APPPATHS)
+
+CALC.EXE: LIBRARY
+   $(TPCCMD) $(SOURCEDIR)\CALC.PAS $(APPPATHS)
+
+TICTAC.EXE: LIBRARY
+   $(TPCCMD) $(SOURCEDIR)\TICTAC.PAS $(APPPATHS)
+
+CONFIG.EXE: LIBRARY
+	$(TPCCMD) $(SOURCEDIR)\CONFIG.PAS $(APPPATHS)
+
+
+# Library ###################################################################
+
+# Build main library first, then UI controls, then dialogs that depend on
+# controls
+
+LIBRARY:
+	$(TPCCMD) $(LIBDIR)\COSTALIB.PAS $(LIBPATHS)
+	$(TPCCMD) $(LIBDIR)\UIAREA.PAS $(LIBPATHS)
+	$(TPCCMD) $(LIBDIR)\UIBUTTON.PAS $(LIBPATHS)
+	$(TPCCMD) $(LIBDIR)\UICHKBOX.PAS $(LIBPATHS)
+	$(TPCCMD) $(LIBDIR)\UIFRAME.PAS $(LIBPATHS)
+	$(TPCCMD) $(LIBDIR)\UIICON.PAS $(LIBPATHS)
+	$(TPCCMD) $(LIBDIR)\UILABEL.PAS $(LIBPATHS)
+	$(TPCCMD) $(LIBDIR)\UILIST.PAS $(LIBPATHS)
+	$(TPCCMD) $(LIBDIR)\UITIMER.PAS $(LIBPATHS)
+	$(TPCCMD) $(LIBDIR)\UILOG.PAS $(LIBPATHS)
+	$(TPCCMD) $(LIBDIR)\UITXTBOX.PAS $(LIBPATHS)
+	$(TPCCMD) $(LIBDIR)\UITHMPRW.PAS $(LIBPATHS)
+	$(TPCCMD) $(LIBDIR)\ABOUTDLG.PAS $(LIBPATHS)
+	$(TPCCMD) $(LIBDIR)\FILEDLG.PAS $(LIBPATHS)
+	$(TPCCMD) $(LIBDIR)\INPUTDLG.PAS $(LIBPATHS)
+	$(TPCCMD) $(LIBDIR)\MSGDLG.PAS $(LIBPATHS)
+	$(TPCCMD) $(LIBDIR)\RUNDLG.PAS $(LIBPATHS)
+
+
+# Full release build, create ZIP +  SvarDOS package #########################
+
+RELEASE: ALL
+	# After building, make sure all directories exist
+	DELTREE /Y $(SVARDIR)\PROGS
+	MKDIR $(SVARDIR)\PROGS
+	MKDIR $(SVARDIR)\PROGS\COSTA
+	MKDIR $(SVARDIR)\PROGS\COSTA\CONFIG
+	MKDIR $(SVARDIR)\PROGS\COSTA\ICONS
+	MKDIR $(SVARDIR)\PROGS\COSTA\THEMES
+
+	# Copy files to directories
+	COPY $(COSTADIR)\*.EXE $(SVARAPPDIR) /Y
+	COPY $(COSTADIR)\*.COM $(SVARAPPDIR) /Y
+	COPY $(COSTADIR)\*.BGI $(SVARAPPDIR) /Y
+	COPY $(COSTADIR)\*.TXT $(SVARAPPDIR) /Y
+	COPY $(COSTADIR)\LICENSE $(SVARAPPDIR)/Y
+	COPY $(COSTADIR)\CONFIG\DESKDEF.BIN $(SVARAPPDIR)\CONFIG
+	XCOPY $(COSTADIR)\ICONS $(SVARAPPDIR)\ICONS /Y
+	XCOPY $(COSTADIR)\THEMES $(SVARAPPDIR)\THEMES /Y
+
+	# Delete MacOS junk files, if any
+	DEL $(SVARDIR)\DS_STO~1
+	DEL $(SVARDIR)\APPINFO\DS_STO~1
+	DEL $(SVARDIR)\PROGS\DS_STO~1
+	DEL $(SVARAPPDIR)\DS_STO~1
+	DEL $(SVARAPPDIR)\CONFIG\DS_STO~1
+	DEL $(SVARAPPDIR)\ICONS\DS_STO~1
+	DEL $(SVARAPPDIR)\THEMES\DS_STO~1
+
+	# Development files start with underscore, delete them
+	DEL $(SVARAPPDIR)\_*.*
+
+	# Create SvarDOS package - ZIP with SVP extension
+	CD $(SVARDIR)
+	$(ZIPCMD) COSTA.SVP .
+	MOVE COSTA.SVP $(COSTADIR) /Y
+
+	# Create ZIP archive of Costa
+	CD $(SVARAPPDIR)
+	$(ZIPCMD) COSTA.ZIP .
+	MOVE COSTA.ZIP $(COSTADIR) /Y
+	CD $(COSTADIR)
+
+# Clean up ##################################################################
+
+CLEAN:
+	del $(COSTADIR)\*.TPU
+	del $(COSTADIR)\*.OBJ
+	del $(COSTADIR)\*.MAP
+	del $(COSTADIR)\*.SVP
+	del $(COSTADIR)\*.TR
+	@echo.
+	@echo Cleaned up build files.

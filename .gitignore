@@ -1,22 +1,39 @@
 # Program files
 *.EXE
-COSTA.BAT
+*.COM
 
 # Compiler leftovers
 *.OBJ
 ~ELNK.TMP
 *.QDB
 *.DSK
+*.TPU
+*.MAP
 
-# Costa run-time data
-DATA/TEMP/
+# Turbo Debugger trace files
+*.TR
 
-# Costa profile and configuration data
-DATA/CONFIG/*.DAT
-!DATA/CONFIG/FILETYPE.DAT
+# Costa profile and configuration data - user specific data
+CONFIG/*.BIN
+# We do want the template for recreating the first desktop to be included
+!CONFIG/DESKDEF.BIN
+
+#Intermediate file formats used when converting data
+*.RAW
 
 #Backups
 *.BAK
+*.DRAWIO.bkp
 
-# Mac system files
+# OS temp/metadata files
 .DS_Store
+Thumbs.db
+desktop.ini
+
+# Distribution files
+SVARDOS/PROGS
+*.SVP
+*.ZIP
+
+# Batch files created on the fly for testing
+*TEST*.BAT
