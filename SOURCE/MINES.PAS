@@ -11,6 +11,7 @@ const
 	AppVersion        = '2.0';
 	AppAuthor         = 'Jacob Palm';
 	AppIcon           = 'MINE';
+	AppConfigFile     = 'MINES';
 
 	CAP_NEW_GAME      = #127 + 'New game';
 	CAP_PAUSE         = #127 + 'Pause';
@@ -31,6 +32,12 @@ const
 	MSG_SOUND         = 'Sound:';
 	MSG_ON            = 'On';
 	MSG_OFF           = 'Off';
+
+type
+	TMineSetting = record
+		SoundOn:   boolean;
+		FieldSize: TMinefieldSize;
+	end;
 
 var
 	App:         PApplication;
@@ -59,6 +66,8 @@ var
 
 	Flagged:     integer;
 	SizeChanged: boolean; {Size dialog changed field size}
+
+	Settings:    TMineSetting;
 
 
 procedure UpdateStatus(Msg: string);
@@ -178,14 +187,15 @@ end;
 procedure BtnSizeClick(Sender: PUIObject); far;
 begin
 	if PButton(Sender) = BtnSize[0] then
-		MineField^.SetFieldSize(SSmall);
+		Settings.FieldSize := SSmall;
 	if PButton(Sender) = BtnSize[1] then
-		MineField^.SetFieldSize(SMedium);
+		Settings.FieldSize := SMedium;
 	if PButton(Sender) = BtnSize[2] then
-		MineField^.SetFieldSize(SLarge);
+		Settings.FieldSize := SLarge;
 	if PButton(Sender) = BtnSize[3] then
-		MineField^.SetFieldSize(SUltra);
+		Settings.FieldSize := SUltra;
 
+	MineField^.SetFieldSize(Settings.FieldSize);
 	SizeChanged := True;
 	WinSetSize^.Close;
 end;
@@ -233,8 +243,9 @@ begin
 	if SizeChanged then
 	begin
 		SizeChanged := False;
-		DrawBackground;
+		{DrawBackground;}
 		MineField^.NewGame;
+		WinMain^.AddState(SDirty);
 		UpdateStatus('');
 		TiStatusClick(nil); {Update time display immediately}
 		LblSound^.AddState(SDirty); {Make sure status label is visible on top of background}
@@ -249,6 +260,7 @@ var
 begin
 	{Toggle sound setting}
 	MineField^.SetSound(not MineField^.GetSound);
+	Settings.SoundOn := MineField^.GetSound;
 
 	{Update status display}
 	if MineField^.GetSound then
@@ -269,6 +281,7 @@ end;
 
 procedure BtnExitClick(Sender: PUIObject); far;
 begin
+	App^.SaveSettings;
 	App^.Terminate;
 end;
 
@@ -348,6 +361,23 @@ begin
 		Line(XOffSet + X * 9, YOffset, XOffSet + X * 9, YOffset + 45);
 	for Y := 0 to 5 do
 		Line(XOffSet, YOffSet + Y * 9, XOffSet + 72, YOffSet + Y * 9);
+end;
+
+procedure AppRun(Sender: PUIObject); far;
+begin
+	if not App^.LoadSettings then
+	begin
+		{Failed to load settings, use defaults}
+		Settings.SoundOn := true;
+		Settings.FieldSize := SMedium;
+	end
+	else
+	begin
+		{Loaded settings, so use them}
+		MineField^.SetFieldSize(Settings.FieldSize);
+		if not Settings.SoundOn then
+			BtnSoundClick(nil);
+	end;
 end;
 
 procedure InitUI;
@@ -526,6 +556,8 @@ begin
 		Version := AppVersion;
 		Author := AppAuthor;
 		Icon := AppIcon;
+		SetConfigFile(AppConfigFile, @Settings, SizeOf(TMineSetting));
+		OnRun := AppRun;
 	end;
 
 	InitUI;
@@ -533,5 +565,4 @@ begin
 	{Start application}
 	App^.OpenWindow(WinMain);
 	App^.Run;
-	App^.Terminate;
 end.

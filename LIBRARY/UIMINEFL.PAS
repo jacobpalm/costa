@@ -549,7 +549,7 @@ begin
 	until MinesPlaced = Mines; {Mines hold the number of mines to place for current field size}
 
 	{Draw the field}
-	Draw;
+	Self.AddState(SDirty);
 
 	{Don't play the new game sound if we were already in a new game, to avoid delay
 	 while starting the first game on app launch}
