@@ -29,7 +29,7 @@ especially if running Costa from a floppy drive.
 
 ## Licensing
 Costa is open source, and released under the MIT License. See the
-[*LICENSE* file](https://github.com/jacobpalm/costa/blob/master/LICENSE)
+[*LICENSE* file](https://codeberg.org/jacobpalm/costa/src/branch/master/LICENSE)
 for more information on how you may use the code, and what credits
 should be given if you do, as well as the terms for distributing the
 releases I make.
